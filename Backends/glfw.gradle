@@ -1,0 +1,30 @@
+/*
+ * Copyright 2012-2015 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+dependencies {
+    compile project(":ScapesEngine:Backends:SWTDialogs")
+    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.0a:natives-linux"
+    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.0a:natives-linux"
+    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.0a:natives-osx"
+    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.0a:natives-windows"
+    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.0a:natives-windows"
+    runtimeLinux32 "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86:4.5"
+    runtimeLinux64 "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:4.5"
+    runtimeMacOSX "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:4.5"
+    runtimeWindows32 "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:4.5"
+    runtimeWindows64 "org.eclipse.swt:org.eclipse.swt.win32.win32.x86_64:4.5"
+}

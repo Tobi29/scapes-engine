@@ -1,0 +1,713 @@
+/*
+ * Copyright 2012-2015 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import java.util.stream.Collectors
+
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+
+configurations {
+    runtimeLinux32
+    runtimeLinux64
+    runtimeMacOSX
+    runtimeWindows32
+    runtimeWindows64
+    runtimePlatform
+    nativesLinux32
+    nativesLinux64
+    nativesMacOSX
+    nativesWindows32
+    nativesWindows64
+    nativesPlatform
+
+    String os = System.properties["os.name"].toLowerCase()
+    String arch = System.properties["os.arch"]
+    if (os.contains("linux")) {
+        if (arch.contains("64")) {
+            runtimePlatform.extendsFrom runtimeLinux64
+            nativesPlatform.extendsFrom nativesLinux64
+        } else {
+            runtimePlatform.extendsFrom runtimeLinux32
+            nativesPlatform.extendsFrom nativesLinux32
+        }
+    } else if (os.contains("mac")) {
+        runtimePlatform.extendsFrom runtimeMacOSX
+        nativesPlatform.extendsFrom nativesMacOSX
+    } else if (os.contains("windows")) {
+        if (arch.contains("64")) {
+            runtimePlatform.extendsFrom runtimeWindows64
+            nativesPlatform.extendsFrom nativesWindows64
+        } else {
+            runtimePlatform.extendsFrom runtimeWindows32
+            nativesPlatform.extendsFrom nativesWindows32
+        }
+    }
+}
+
+afterEvaluate {
+    sourceSets.main.runtimeClasspath += configurations.runtimePlatform
+
+    idea {
+        module {
+            scopes.RUNTIME.plus += [configurations.runtimePlatform]
+        }
+    }
+}
+
+idea {
+    module {
+        excludeDirs += file("$rootDir/runtime")
+    }
+}
+
+apply plugin: ScapesEngineApplication
+
+class ScapesEngineApplication implements Plugin<Project> {
+    private ScapesEngineApplicationExtension appExtension
+
+    @Override
+    void apply(Project target) {
+        // Application properties
+        target.extensions.
+                create("application", ScapesEngineApplicationExtension)
+
+        // Natives task
+        def nativesTask = target.tasks.create("natives", Copy)
+        nativesTask.description = "Extract natives for runtime"
+        nativesTask.group = "run"
+        def natives = new File(target.buildDir, "natives")
+        nativesTask.from({ ->
+            target.configurations.nativesPlatform.files.stream().
+                    map({
+                        target.zipTree(it).files.stream().filter({
+                            it.isFile() && it.name.matches(
+                                    "(.+)\\.(dll|so(.[0-9]+)?|jnilib|dylib)")
+                        }).collect(Collectors.toList())
+                    }).collect(Collectors.toList())
+        }) {
+            eachFile { FileCopyDetails fcp ->
+                String[] segments = [fcp.name]
+                fcp.relativePath = new RelativePath(true, segments)
+            }
+        }
+        nativesTask.into natives
+
+        // Run task
+        def runTask = target.tasks.create("run", JavaExec)
+        runTask.description = "Runs this project as a JVM application"
+        runTask.group = "Run"
+        runTask.conventionMapping.main = { target.application.mainClass }
+        target.afterEvaluate {
+            runTask.classpath = target.sourceSets.main.runtimeClasspath
+        }
+        runTask.jvmArgs "-Xms2048M", "-Xmx2048M", "-XX:+UseG1GC",
+                "-XX:MaxGCPauseMillis=1"
+        if (target.rootProject.hasProperty("runArgs")) {
+            runTask.args Eval.me(target.rootProject.runArgs)
+        }
+        if (target.rootProject.hasProperty("jvmArgs")) {
+            runTask.jvmArgs Eval.me(target.rootProject.jvmArgs)
+        }
+        if (System.properties["os.name"].toLowerCase().contains("mac")) {
+            runTask.jvmArgs "-XstartOnFirstThread"
+        }
+        if (target.rootProject.hasProperty("runtime")) {
+            runTask.jvmArgs "-Duser.dir=$target.rootProject.runtime"
+        } else {
+            runTask.jvmArgs "-Duser.dir=${target.file('runtime')}"
+        }
+        runTask.jvmArgs "-Djava.library.path=$natives.absolutePath"
+        runTask.standardInput = System.in
+        runTask.dependsOn target.classes
+        runTask.dependsOn nativesTask
+
+        // Platform deploy tasks
+        def deployLinux32Task = addDeployLinuxTask(target, "32",
+                target.configurations.runtimeLinux32,
+                target.configurations.nativesLinux32)
+        def deployLinux64Task = addDeployLinuxTask(target, "64",
+                target.configurations.runtimeLinux64,
+                target.configurations.nativesLinux64)
+        def deployMacOSXTask = addDeployMacOSXTask(target)
+        def deployWindowsTask = addDeployWindowsTask(target)
+
+        // Full deploy task
+        def deployTask = target.tasks.create("deploy", Task)
+        deployTask.group = "Deployment"
+        if (deployLinux32Task != null) {
+            deployTask.dependsOn deployLinux32Task
+        }
+        if (deployLinux64Task != null) {
+            deployTask.dependsOn deployLinux64Task
+        }
+        if (deployMacOSXTask != null) {
+            deployTask.dependsOn deployMacOSXTask
+        }
+        if (deployWindowsTask != null) {
+            deployTask.dependsOn deployWindowsTask
+        }
+    }
+
+    private Task addDeployLinuxTask(Project target, String arch,
+            Configuration runtime, Configuration natives) {
+        def name = "${-> target.project.name.toLowerCase()}"
+        def libPath = "/usr/share/java"
+        if (target.rootProject.hasProperty("libPath")) {
+            libPath = target.rootProject.libPath
+        }
+        def binPath = "/usr/bin"
+        if (target.rootProject.hasProperty("binPath")) {
+            binPath = target.rootProject.binPath
+        }
+
+        // Script task
+        def scriptTask = target.tasks.
+                create("scriptLinux$arch", StartupScriptTask)
+        scriptTask.libPath = "$libPath/$name"
+        scriptTask.mainClass = "${-> target.application.mainClass}"
+        scriptTask.output = new File(scriptTask.temporaryDir, name)
+
+        // Main task
+        def task = target.tasks.create("deployLinux$arch", Tar)
+        task.dependsOn scriptTask
+        task.description =
+                "Contains tarball that can be extracted into root for easier package creation"
+        task.group = "Deployment"
+        task.dependsOn target.jar
+        task.baseName = "${-> target.project.name}-Linux$arch"
+        task.compression = Compression.GZIP
+        task.from(scriptTask.output, { into "$binPath" })
+        task.from(target.configurations.runtime + runtime +
+                target.files(target.jar),
+                { into "$libPath/$name" })
+        task.from({ ->
+            natives.files.stream().
+                    map({
+                        target.zipTree(it).files.stream().filter({
+                            it.isFile() &&
+                                    it.name.matches("(.+)\\.so(.[0-9]+)?")
+                        }).collect(Collectors.toList())
+                    }).collect(Collectors.toList())
+        }) {
+            eachFile { FileCopyDetails fcp ->
+                String[] segments = [libPath, name, fcp.name]
+                fcp.relativePath = new RelativePath(true, segments)
+            }
+        }
+        return task
+    }
+
+    private Task addDeployMacOSXTask(Project target) {
+        def jre = getJRE(target, "MacOSX")
+        if (jre == null) {
+            target.logger.warn "No JRE for Mac OS X found!"
+            return
+        }
+        pruneJREMacOSX(jre)
+        // Bundle task
+        def bundleTask = target.tasks.
+                create("bundleMacOSX", AppBundlerTask)
+        bundleTask.dependsOn target.jar
+        bundleTask.fullName = "${-> target.application.fullName}"
+        bundleTask.version = "${-> target.application.version}"
+        bundleTask.company = "${-> target.application.company}"
+        bundleTask.copyright = "${-> target.application.copyright}"
+        bundleTask.mainClass = "${-> target.application.mainClass}"
+        bundleTask.appbundler =
+                target.rootProject.file("resources/appbundler-1.0ea.jar")
+        bundleTask.jre = jre
+        bundleTask.icon = target.file("project/Icon.icns")
+        bundleTask.classpath = target.configurations.runtime +
+                target.configurations.runtimeMacOSX + target.files(target.jar)
+        bundleTask.output =
+                "${-> bundleTask.temporaryDir}/${-> target.project.name}.app"
+
+        // Natives task
+        def nativesTask = target.tasks.create("nativesMacOSX", Copy)
+        nativesTask.dependsOn bundleTask
+        nativesTask.from({ ->
+            target.configurations.nativesMacOSX.files.stream().
+                    map({
+                        target.zipTree(it).files.stream().filter({
+                            it.isFile() &&
+                                    it.name.matches("(.+)\\.(jnilib|dylib)")
+                        }).collect(Collectors.toList())
+                    }).collect(Collectors.toList())
+        }) {
+            eachFile { FileCopyDetails fcp ->
+                String[] segments = [fcp.name]
+                fcp.relativePath = new RelativePath(true, segments)
+            }
+        }
+        nativesTask.into "${-> bundleTask.output}/Contents/MacOS"
+
+        // Main task
+        def task = target.tasks.create("deployMacOSX", Tar)
+        task.description =
+                "Mac OS X Application containing necessary files to run the game"
+        task.group = "Deployment"
+        task.dependsOn nativesTask
+        task.baseName = "${target.project.name}-MacOSX"
+        task.compression = Compression.GZIP
+        task.from bundleTask.output.parentFile
+        return task
+    }
+
+    private Task addDeployWindowsTask(Project target) {
+        def jre32 = new File(target.buildDir,
+                "tmp/prepareWindows/install/32/jre")
+        if (!jre32.exists()) {
+            def extracted = getJRE(target, "Windows/32", jre32.parentFile)
+            if (extracted == null) {
+                target.logger.warn "No 32-Bit JRE for Windows found!"
+                return
+            }
+            pruneJREWindows(extracted)
+            extracted.renameTo(jre32)
+        }
+        def jre64 = new File(target.buildDir,
+                "tmp/prepareWindows/install/64/jre")
+        if (!jre64.exists()) {
+            def extracted = getJRE(target, "Windows/64", jre64.parentFile)
+            if (extracted == null) {
+                target.logger.warn "No 64-Bit JRE for Windows found!"
+                return
+            }
+            pruneJREWindows(extracted)
+            extracted.renameTo(jre64)
+        }
+
+        // Program task
+        def programTask = target.tasks.create("programWindows", Launch4jTask)
+        programTask.fullName = "${-> target.application.fullName}"
+        programTask.version = "${-> target.application.version}"
+        programTask.company = "${-> target.application.company}"
+        programTask.copyright = "${-> target.application.copyright}"
+        programTask.mainClass = "${-> target.application.mainClass}"
+        programTask.launch4j =
+                target.rootProject.file("resources/Launch4j/launch4j.jar")
+        programTask.icon = target.file("project/Icon.ico")
+        programTask.exeMemoryMin = 1024
+        programTask.exeMemoryMax = 2048
+        programTask.exeType = "gui"
+        programTask.runInAppData = true
+        programTask.manifest =
+                target.rootProject.file("resources/Program.manifest")
+        programTask.output = new File(programTask.temporaryDir,
+                target.project.name + ".exe")
+
+        // Command task
+        def programCmdTask = target.tasks.
+                create("programCmdWindows", Launch4jTask)
+        programCmdTask.fullName = "${-> target.application.fullName}"
+        programCmdTask.version = "${-> target.application.version}"
+        programCmdTask.company = "${-> target.application.company}"
+        programCmdTask.copyright = "${-> target.application.copyright}"
+        programCmdTask.mainClass = "${-> target.application.mainClass}"
+        programCmdTask.launch4j =
+                target.rootProject.file("resources/Launch4j/launch4j.jar")
+        programCmdTask.icon = target.file("project/Icon.ico")
+        programCmdTask.exeMemoryMin = 1024
+        programCmdTask.exeMemoryMax = 2048
+        programCmdTask.exeType = "console"
+        programCmdTask.runInAppData = false
+        programCmdTask.manifest =
+                target.rootProject.file("resources/Program.manifest")
+        programCmdTask.output = new File(programCmdTask.temporaryDir,
+                target.project.name + "Cmd.exe")
+
+        // Prepare Task
+        def prepareTask = target.tasks.create("prepareWindows", Copy)
+        prepareTask.dependsOn target.jar
+        prepareTask.dependsOn programTask
+        prepareTask.dependsOn programCmdTask
+        prepareTask.from target.rootProject.file("resources/Setup.iss")
+        prepareTask.from target.file("project/installer")
+        prepareTask.from(programTask.output, { into "install/common" })
+        prepareTask.from(programCmdTask.output, { into "install/common" })
+        prepareTask.from(target.files(target.jar),
+                { into "install/common/lib" })
+        prepareTask.from(target.configurations.runtime,
+                { into "install/common/lib" })
+        prepareTask.from({ ->
+            target.configurations.nativesWindows32.files.stream().
+                    map({
+                        target.zipTree(it).files.stream().filter({
+                            it.isFile() && it.name.matches("(.+)\\.dll")
+                        }).collect(Collectors.toList())
+                    }).collect(Collectors.toList())
+        }) {
+            eachFile { FileCopyDetails fcp ->
+                String[] segments = ["install", "32", name]
+                fcp.relativePath = new RelativePath(true, segments)
+            }
+        }
+        prepareTask.from({ ->
+            target.configurations.nativesWindows64.files.stream().
+                    map({
+                        target.zipTree(it).files.stream().filter({
+                            it.isFile() && it.name.matches("(.+)\\.dll")
+                        }).collect(Collectors.toList())
+                    }).collect(Collectors.toList())
+        }) {
+            eachFile { FileCopyDetails fcp ->
+                String[] segments = ["install", "64", name]
+                fcp.relativePath = new RelativePath(true, segments)
+            }
+        }
+        prepareTask.from(target.configurations.runtimeWindows32,
+                { into "install/32/lib" })
+        prepareTask.from(target.configurations.runtimeWindows64,
+                { into "install/64/lib" })
+        prepareTask.from(target.rootProject.
+                file("resources/Install/Windows"), { into "install" })
+        prepareTask.into prepareTask.temporaryDir
+
+        // Pack task
+        def packTask = target.tasks.create("packWindows", Exec)
+        packTask.dependsOn prepareTask
+        def innoEXE = target.rootProject.
+                file("resources/Inno Setup 5/ISCC.exe").absolutePath
+        def innoArgs = ["/DApplicationFullName=${-> escapeWindows(target.application.fullName)}",
+                "/DApplicationVersion=${-> escapeWindows(target.application.version)}",
+                "/DApplicationCompany=${-> escapeWindows(target.application.company)}",
+                "/DApplicationCopyright=${-> escapeWindows(target.application.copyright)}",
+                "/DApplicationURL=${-> escapeWindows(target.application.url)}",
+                "/DApplicationUUID=${-> escapeWindows(target.application.uuid)}",
+                "/DApplicationName=${-> escapeWindows(target.name)}"]
+        def innoISS = new File(prepareTask.temporaryDir,
+                "Setup.iss").absolutePath
+        if (System.properties["os.name"].toLowerCase().contains("win")) {
+            def commandLine = [innoEXE]
+            commandLine += innoArgs
+            commandLine += innoISS
+            packTask.commandLine commandLine
+        } else {
+            def commandLine = ["wine", innoEXE]
+            commandLine += innoArgs
+            commandLine += "Z:${innoISS}"
+            packTask.commandLine commandLine
+        }
+
+        // Main task
+        def task = target.tasks.create("deployWindows", Copy)
+        task.dependsOn packTask
+        task.group = "Deployment"
+        task.description = "Windows Installer with bundled JRE"
+        task.from new File(prepareTask.temporaryDir, "output/setup.exe")
+        task.rename({
+            "${-> target.project.name}-Setup-${-> target.project.version}.exe"
+        })
+        task.into new File(target.buildDir, "distributions")
+        return task
+    }
+
+    private
+    static File getJRE(Project target, String platform) {
+        return getJRE(target, platform,
+                new File(target.buildDir, "jres/" + platform))
+    }
+
+    private
+    static File getJRE(Project target, String platform, File file) {
+        def jres = target.rootProject.file("resources/JRE/" + platform).
+                listFiles((FileFilter) {
+                    !it.isDirectory() && !it.isHidden()
+                })
+        if (jres == null || jres.length == 0) {
+            return null
+        }
+        // Workaround for automatic expanding failing on 2nd build
+        if (!file.exists()) {
+            target.copy {
+                from {
+                    target.tarTree(jres[0])
+                }
+                into file
+            }
+        }
+        def jre = file.listFiles((FileFilter) {
+            it.isDirectory() && !it.isHidden()
+        })
+        if (jre == null || jre.length == 0) {
+            return null
+        }
+        return jre[0]
+    }
+    private static
+    final List<String> jreExtensions = ["dnsns.jar", "sunjce_provider.jar",
+            "sunec.jar", "sunpkcs11.jar", "sunmscapi.jar"]
+
+    private static void pruneJREMacOSX(File jre) {
+        def jreHome = new File(jre, "Contents/Home")
+        pruneJRE(jreHome)
+        def lib = new File(jreHome, "lib")
+        deleteLibrary(lib, "libdecora_sse")
+        deleteLibrary(lib, "libfxplugins")
+        deleteLibrary(lib, "libglass")
+        deleteLibrary(lib, "libglib-lite")
+        deleteLibrary(lib, "libgstreamer-lite")
+        deleteLibrary(lib, "libjavafx_font")
+        deleteLibrary(lib, "libjavafx_font_t2k")
+        deleteLibrary(lib, "libjavafx_iio")
+        deleteLibrary(lib, "libjfxmedia")
+        deleteLibrary(lib, "libjfxwebkit")
+        deleteLibrary(lib, "libprism_common")
+        deleteLibrary(lib, "libprism_es2")
+        deleteLibrary(lib, "libprism_sw")
+    }
+
+    private static void pruneJREWindows(File jre) {
+        pruneJRE(jre)
+        def lib = new File(jre, "lib")
+        def bin = new File(jre, "bin")
+        delete(bin, "dtplugin")
+        delete(bin, "plugin2")
+        deleteBinary(bin, "javacpl")
+        deleteBinary(bin, "jucheck")
+        deleteBinary(bin, "jabswitch")
+        deleteBinary(bin, "kinit")
+        deleteBinary(bin, "klist")
+        deleteBinary(bin, "ktab")
+        deleteLibrary(bin, "java_crw_demo")
+        deleteLibrary(bin, "JavaAccessBridge-32")
+        deleteLibrary(bin, "JavaAccessBridge")
+        deleteLibrary(bin, "JAWTAccessBridge-32")
+        deleteLibrary(bin, "JAWTAccessBridge")
+        deleteLibrary(bin, "WindowsAccessBridge-32")
+        deleteLibrary(bin, "WindowsAccessBridge")
+        deleteLibrary(bin, "wsdetect")
+        deleteLibrary(bin, "deploy")
+        deleteLibrary(bin, "jfr")
+        deleteLibrary(bin, "decora_sse")
+        deleteLibrary(bin, "fxplugins")
+        deleteLibrary(bin, "glass")
+        deleteLibrary(bin, "glib-lite")
+        deleteLibrary(bin, "gstreamer-lite")
+        deleteLibrary(bin, "javafx_font")
+        deleteLibrary(bin, "javafx_font_t2k")
+        deleteLibrary(bin, "javafx_iio")
+        deleteLibrary(bin, "jfxmedia")
+        deleteLibrary(bin, "jfxwebkit")
+        deleteLibrary(bin, "prism_common")
+        deleteLibrary(bin, "prism_d3d")
+        deleteLibrary(bin, "prism_es2")
+        deleteLibrary(bin, "prism_sw")
+
+        delete(lib, "deploy.jar")
+        delete(lib, "plugin.jar")
+        delete(lib, "deploy")
+    }
+
+    private static void pruneJRE(File jre) {
+        def lib = new File(jre, "lib")
+        def bin = new File(jre, "bin")
+        def ext = new File(lib, "ext")
+        def unusedExtensions = ext.listFiles((FileFilter) {
+            !jreExtensions.contains(it.name)
+        })
+        if (unusedExtensions != null) {
+            for (File file : unusedExtensions) {
+                file.delete()
+            }
+        }
+        delete(jre, "THIRDPARTYLICENSEREADME-JAVAFX.txt")
+        delete(jre, "plugin")
+
+        delete(bin, "javacpl.cpl")
+        deleteBinary(bin, "rmid")
+        deleteBinary(bin, "rmiregistry")
+        deleteBinary(bin, "tnameserv")
+        deleteBinary(bin, "keytool")
+        deleteBinary(bin, "policytool")
+        deleteBinary(bin, "orbd")
+        deleteBinary(bin, "servertool")
+        deleteBinary(bin, "javaws")
+
+        delete(lib, "javaws.jar")
+        delete(lib, "jfr")
+        delete(lib, "jfr.jar")
+        delete(lib, "oblique-fonts")
+        delete(lib, "desktop")
+        delete(lib, "ant-javafx.jar")
+        delete(lib, "javafx.properties")
+        delete(lib, "jfxswt.jar")
+    }
+
+    private static void delete(File dir, String name) {
+        def file = new File(dir, name)
+        if (file.isDirectory()) {
+            file.deleteDir()
+        } else {
+            file.delete()
+        }
+    }
+
+    private static void deleteBinary(File dir, String name) {
+        def file = new File(dir, name)
+        file.delete()
+        new File(file.parentFile, file.name + ".exe").delete()
+    }
+
+    private static void deleteLibrary(File dir, String name) {
+        def file = new File(dir, name)
+        file.delete()
+        new File(file.parentFile, file.name + ".dll").delete()
+        new File(file.parentFile, file.name + ".so").delete()
+        new File(file.parentFile, file.name + ".dylib").delete()
+    }
+
+    private static String escapeWindows(String str) {
+        return str.replaceAll(" ", "\\ ")
+    }
+}
+
+class ScapesEngineApplicationExtension {
+    def String fullName
+    def String version
+    def String company
+    def String url
+    def String copyright
+    def String uuid
+    def String mainClass
+}
+
+class StartupScriptTask extends DefaultTask {
+    @Input
+    def libPath, mainClass
+    @OutputFile
+    def File output
+
+    @TaskAction
+    void run() {
+        BufferedWriter writer = output.newWriter()
+        writer.write "#!/bin/bash\n"
+        writer.write "for file in $libPath/*.jar; do\n"
+        writer.write "    CP=\"\$CP:\$file\"\n"
+        writer.write "done\n"
+        writer.write "exec -a scapes java -Djava.library.path=$libPath -cp \$CP $mainClass \$@\n"
+        writer.close()
+    }
+}
+
+class AppBundlerTask extends DefaultTask {
+    def String output
+    @Input
+    def fullName, version, company, copyright, mainClass
+    @InputDirectory
+    def File jre
+    @InputFile
+    def File appbundler, icon
+    @InputFiles
+    def FileCollection classpath
+
+    @OutputDirectory
+    File getOutput() {
+        project.file(output)
+    }
+
+    @TaskAction
+    void run() {
+        def outputFile = getOutput()
+        ant.taskdef(name: "bundleapp",
+                classpath: appbundler.absolutePath,
+                classname: "com.oracle.appbundler.AppBundlerTask")
+        ant.bundleapp(outputdirectory: outputFile.parentFile.absolutePath,
+                name: outputFile.name - ".app",
+                displayname: fullName,
+                identifier: mainClass,
+                shortversion: version,
+                icon: icon.absolutePath,
+                mainclassname: mainClass,
+                copyright: copyright,
+                applicationCategory: "public.app-category.games",
+                executableName: fullName) {
+            classpath.addToAntBuilder(ant, "classpath",
+                    FileCollection.AntType.FileSet)
+            arch(name: "x86_64")
+            runtime(dir: jre.absolutePath + "/Contents/Home")
+            option(value: "-XstartOnFirstThread")
+            option(value: "-Xms1024M")
+            option(value: "-Xmx2048M")
+            option(value: "-XX:+UseG1GC")
+            option(value: "-XX:MaxGCPauseMillis=1")
+            option(value: "-Xdock:icon=Contents/resources/Icon.icns")
+            argument(value: "\$HOME/Library/Application Support/$fullName")
+        }
+    }
+}
+
+class Launch4jTask extends DefaultTask {
+    def File output
+    @Input
+    def exeMemoryMin, exeMemoryMax, exeType, fullName, version, company, copyright, mainClass
+    @Input
+    boolean runInAppData
+    @InputFile
+    def File launch4j, icon, manifest
+
+    @OutputFile
+    File getOutput() {
+        project.file(output)
+    }
+
+    @TaskAction
+    void run() {
+        ant.taskdef(name: "launch4j",
+                classpath: launch4j.absolutePath,
+                classname: "net.sf.launch4j.ant.Launch4jTask")
+        def winVersion = version.replaceAll("_", ".")
+        Map<String, String> configMap = [headerType: exeType,
+                outfile: getOutput().absolutePath,
+                dontWrapJar: "true",
+                icon: icon.absolutePath,
+                manifest: manifest.absolutePath]
+        Map<String, String> versionMap = [fileversion: winVersion,
+                txtfileversion: version,
+                filedescription: fullName,
+                copyright: copyright,
+                productversion: winVersion,
+                productname: fullName,
+                txtproductversion: version,
+                companyname: company,
+                internalname: fullName,
+                originalfilename: output.name]
+        Map<String, String> classPathMap = [mainClass: mainClass,
+                cp: "%EXEDIR%\\lib\\*"];
+        Map<String, String> jreMap = [initialheapsize: exeMemoryMin,
+                maxheapsize: exeMemoryMax,
+                path: "%EXEDIR%\\jre"]
+        if (runInAppData) {
+            ant.launch4j {
+                config(configMap) {
+                    classPath(classPathMap)
+                    jre(jreMap) {
+                        opt("-Duser.dir=\"%APPDATA%\\${fullName}\"")
+                        opt("-Djava.library.path=\"%EXEDIR%\"")
+                    }
+                    versioninfo(versionMap)
+                }
+            }
+        } else {
+            ant.launch4j {
+                config(configMap) {
+                    classPath(classPathMap)
+                    jre(jreMap)
+                    versioninfo(versionMap)
+                }
+            }
+        }
+    }
+}
