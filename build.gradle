@@ -28,8 +28,8 @@ dependencies {
 
 idea {
     module {
-        excludeDirs += file("$rootDir/resources/Inno Setup 5")
-        excludeDirs += file("$rootDir/resources/JRE")
-        excludeDirs += file("$rootDir/resources/Launch4j")
+        excludeDirs += file("resources/Inno Setup 5")
+        excludeDirs += file("resources/JRE")
+        excludeDirs += file("resources/Launch4j")
     }
 }
