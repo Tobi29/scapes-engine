@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -177,17 +177,21 @@ public final class ArrayUtil {
         return text.toString();
     }
 
-    public static byte[] fromHexadecimal(String text) {
-        text = REPLACE.matcher(text).replaceAll("");
-        if ((text.length() & 1) == 1) {
-            throw new IllegalArgumentException("String has uneven length");
+    public static byte[] fromHexadecimal(String text) throws IOException {
+        try {
+            text = REPLACE.matcher(text).replaceAll("");
+            if ((text.length() & 1) == 1) {
+                throw new IOException("String has uneven length");
+            }
+            byte[] array = new byte[text.length() >> 1];
+            for (int i = 0; i < text.length(); i += 2) {
+                array[i >> 1] = (byte) Integer
+                        .parseUnsignedInt(text.substring(i, i + 2), 16);
+            }
+            return array;
+        } catch (NumberFormatException e) {
+            throw new IOException(e);
         }
-        byte[] array = new byte[text.length() >> 1];
-        for (int i = 0; i < text.length(); i += 2) {
-            array[i >> 1] = (byte) Integer
-                    .parseUnsignedInt(text.substring(i, i + 2), 16);
-        }
-        return array;
     }
 
     public static String toBase64(byte... array) {

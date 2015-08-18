@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.tests;
 
 import org.junit.Assert;
@@ -21,6 +20,7 @@ import org.junit.Test;
 import org.tobi29.scapes.engine.utils.ArrayUtil;
 import org.tobi29.scapes.engine.utils.tests.util.RandomInput;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 public class ArrayUtilTest {
@@ -35,7 +35,7 @@ public class ArrayUtilTest {
     }
 
     @Test
-    public void testHexadecimal() {
+    public void testHexadecimal() throws IOException {
         for (byte[] array : RandomInput.createRandomArrays(64, 4)) {
             String hex = ArrayUtil.toHexadecimal(array);
             byte[] bytes = ArrayUtil.fromHexadecimal(hex);
@@ -49,7 +49,7 @@ public class ArrayUtilTest {
     }
 
     @Test
-    public void testHexadecimalGrouped() {
+    public void testHexadecimalGrouped() throws IOException {
         for (byte[] array : RandomInput.createRandomArrays(64, 4)) {
             for (int group = 1; group < 16; group++) {
                 String hex = ArrayUtil.toHexadecimal(group, array);
@@ -66,7 +66,7 @@ public class ArrayUtilTest {
     }
 
     @Test
-    public void testHexadecimalGroup() {
+    public void testHexadecimalGroup() throws IOException {
         String hex = "ff 0f 00 f0 ff";
         byte[] bytes = ArrayUtil.fromHexadecimal(hex);
         String hex2 = ArrayUtil.toHexadecimal(1, bytes);
