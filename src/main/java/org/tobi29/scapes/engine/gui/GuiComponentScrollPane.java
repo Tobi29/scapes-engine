@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 public class GuiComponentScrollPane extends GuiComponentVisiblePane {
@@ -24,7 +23,12 @@ public class GuiComponentScrollPane extends GuiComponentVisiblePane {
         super(parent, x, y, width, height);
         GuiComponentSliderVert slider =
                 new GuiComponentSliderVert(this, width - 10, 0, 10, height, 0);
-        viewport = new GuiComponentScrollPaneViewport(this, slider, 0, 0, width,
+        viewport = newViewport(slider, scrollStep);
+    }
+
+    protected GuiComponentScrollPaneViewport newViewport(
+            GuiComponentSliderVert slider, int scrollStep) {
+        return new GuiComponentScrollPaneViewport(this, slider, 0, 0, width,
                 height, scrollStep);
     }
 

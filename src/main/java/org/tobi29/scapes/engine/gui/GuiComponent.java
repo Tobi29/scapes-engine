@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
@@ -227,10 +226,9 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             while (!changeComponents.isEmpty()) {
                 Pair<Boolean, GuiComponent> component = changeComponents.poll();
                 if (component.a) {
-                    components.add(component.b);
+                    append(component.b);
                 } else {
-                    components.remove(component.b);
-                    component.b.removed();
+                    drop(component.b);
                 }
             }
             double mouseXX = mouseX - x;
@@ -255,6 +253,15 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     protected void updateChild(GuiComponent component, double mouseX,
             double mouseY, boolean inside, ScapesEngine engine) {
         component.update(mouseX, mouseY, inside, engine);
+    }
+
+    protected void append(GuiComponent component) {
+        components.add(component);
+    }
+
+    protected void drop(GuiComponent component) {
+        components.remove(component);
+        component.removed();
     }
 
     protected void transform(Matrix matrix) {

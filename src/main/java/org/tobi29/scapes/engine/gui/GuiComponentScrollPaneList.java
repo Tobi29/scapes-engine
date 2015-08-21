@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
-
-import org.tobi29.scapes.engine.ScapesEngine;
 
 public class GuiComponentScrollPaneList extends GuiComponentScrollPane {
     public GuiComponentScrollPaneList(GuiComponent parent, int x, int y,
@@ -25,9 +22,26 @@ public class GuiComponentScrollPaneList extends GuiComponentScrollPane {
     }
 
     @Override
-    public void update(double mouseX, double mouseY, boolean mouseInside,
-            ScapesEngine engine) {
-        super.update(mouseX, mouseY, mouseInside, engine);
+    protected GuiComponentScrollPaneViewport newViewport(
+            GuiComponentSliderVert slider, int scrollStep) {
+        return new GuiComponentScrollPaneViewport(this, slider, 0, 0, width,
+                height, scrollStep) {
+            @Override
+            protected void append(GuiComponent component) {
+                components.add(component);
+                layout();
+            }
+
+            @Override
+            protected void drop(GuiComponent component) {
+                components.remove(component);
+                component.removed();
+                layout();
+            }
+        };
+    }
+
+    protected void layout() {
         int i = 0;
         for (GuiComponent component : viewport.components) {
             component.setY(i);
