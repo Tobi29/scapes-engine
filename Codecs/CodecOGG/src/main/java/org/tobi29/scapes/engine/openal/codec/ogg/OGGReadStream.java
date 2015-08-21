@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.openal.codec.ogg;
 
 import com.jcraft.jogg.Packet;
@@ -66,6 +65,10 @@ public class OGGReadStream implements ReadableAudioStream {
     @Override
     public int rate() {
         return rate;
+    }
+
+    @Override
+    public void frame() {
     }
 
     @Override

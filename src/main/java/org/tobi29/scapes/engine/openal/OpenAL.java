@@ -63,11 +63,11 @@ public interface OpenAL {
 
     int getBuffersQueued(int id);
 
-    int getBuffersPrecessed(int id);
+    int getBuffersProcessed(int id);
 
     void queue(int id, int buffer);
 
-    int unqueue();
+    int unqueue(int id);
 
     int getBuffer(int id);
 }

@@ -24,6 +24,8 @@ public interface ReadableAudioStream extends AutoCloseable {
 
     int rate();
 
+    void frame();
+
     default boolean getSome(FloatBuffer buffer) throws IOException {
         return getSome(buffer, buffer.remaining());
     }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
@@ -36,13 +35,15 @@ public class GuiComponentButton extends GuiComponent {
     @Override
     public void clickLeft(GuiComponentEvent event, ScapesEngine engine) {
         super.clickLeft(event, engine);
-        engine.sounds().playSound("Engine:sound/Click.ogg", 1.0f, 1.0f);
+        engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f);
     }
 
     @Override
     public void clickRight(GuiComponentEvent event, ScapesEngine engine) {
         super.clickRight(event, engine);
-        engine.sounds().playSound("Engine:sound/Click.ogg", 1.0f, 1.0f);
+        engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f);
     }
 
     @Override

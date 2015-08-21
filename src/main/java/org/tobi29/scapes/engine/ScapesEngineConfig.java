@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine;
 
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 
 public class ScapesEngineConfig {
     private final TagStructure tagStructure;
-    private double fps, musicVolume, soundVolume, resolutionMultiplier;
+    private double fps, resolutionMultiplier;
     private boolean vSync, fullscreen;
 
     ScapesEngineConfig(TagStructure tagStructure) {
@@ -28,8 +27,6 @@ public class ScapesEngineConfig {
         vSync = tagStructure.getBoolean("VSync");
         fps = tagStructure.getDouble("Framerate");
         resolutionMultiplier = tagStructure.getDouble("ResolutionMultiplier");
-        musicVolume = tagStructure.getDouble("MusicVolume");
-        soundVolume = tagStructure.getDouble("SoundVolume");
         fullscreen = tagStructure.getBoolean("Fullscreen");
     }
 
@@ -60,22 +57,18 @@ public class ScapesEngineConfig {
         tagStructure.setDouble("ResolutionMultiplier", resolutionMultiplier);
     }
 
-    public double musicVolume() {
-        return musicVolume;
+    public double volume(String channel) {
+        return tagStructure.getStructure("Volumes").getTagEntrySet().stream()
+                .filter(entry -> channel.startsWith(entry.getKey()) &&
+                        entry.getValue() instanceof Number)
+                .sorted((entry1, entry2) -> entry2.getKey().length() -
+                        entry1.getKey().length())
+                .mapToDouble(entry -> ((Number) entry.getValue()).doubleValue())
+                .findFirst().orElse(1.0);
     }
 
-    public void setMusicVolume(double musicVolume) {
-        this.musicVolume = musicVolume;
-        tagStructure.setDouble("MusicVolume", musicVolume);
-    }
-
-    public double soundVolume() {
-        return soundVolume;
-    }
-
-    public void setSoundVolume(double soundVolume) {
-        this.soundVolume = soundVolume;
-        tagStructure.setDouble("SoundVolume", soundVolume);
+    public void setVolume(String channel, double value) {
+        tagStructure.getStructure("Volumes").setDouble(channel, value);
     }
 
     public boolean isFullscreen() {

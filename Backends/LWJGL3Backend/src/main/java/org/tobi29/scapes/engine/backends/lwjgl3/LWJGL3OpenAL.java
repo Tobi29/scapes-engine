@@ -199,7 +199,7 @@ public class LWJGL3OpenAL implements OpenAL {
     }
 
     @Override
-    public int getBuffersPrecessed(int id) {
+    public int getBuffersProcessed(int id) {
         return AL10.alGetSourcei(id, AL10.AL_BUFFERS_PROCESSED);
     }
 
@@ -209,8 +209,8 @@ public class LWJGL3OpenAL implements OpenAL {
     }
 
     @Override
-    public int unqueue() {
-        return AL10.alSourceUnqueueBuffers(1);
+    public int unqueue(int id) {
+        return AL10.alSourceUnqueueBuffers(id);
     }
 
     @Override

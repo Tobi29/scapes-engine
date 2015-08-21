@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.openal.codec.wav;
 
 import org.tobi29.scapes.engine.openal.codec.ReadableAudioStream;
@@ -82,6 +81,10 @@ public class WAVReadStream implements ReadableAudioStream {
     @Override
     public int rate() {
         return rate;
+    }
+
+    @Override
+    public void frame() {
     }
 
     @Override

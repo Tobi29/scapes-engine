@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.openal;
 
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -22,20 +21,20 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import java.util.Optional;
 
 public class EffectAudio implements Audio {
-    private final String asset;
+    private final String asset, channel;
     private final Vector3 pos, velocity;
-    private final float pitch, gain, range;
+    private final float pitch, gain;
     private final boolean hasPosition;
     private double time;
 
-    public EffectAudio(String asset, Vector3 pos, Vector3 velocity, float pitch,
-            float gain, float range, boolean hasPosition) {
+    public EffectAudio(String asset, String channel, Vector3 pos,
+            Vector3 velocity, float pitch, float gain, boolean hasPosition) {
         this.asset = asset;
+        this.channel = channel;
         this.pos = pos;
         this.velocity = velocity;
         this.pitch = pitch;
         this.gain = gain;
-        this.range = range;
         this.hasPosition = hasPosition;
     }
 
@@ -54,12 +53,22 @@ public class EffectAudio implements Audio {
             if (!lagSilence) {
                 Optional<AudioData> audio = sounds.get(asset);
                 if (audio.isPresent()) {
-                    sounds.playSound(audio.get().buffer(), pitch, gain, range,
-                            pos, velocity, false, hasPosition);
+                    float gain = this.gain * sounds.volume(channel);
+                    sounds.playSound(audio.get().buffer(), pitch, gain, pos,
+                            velocity, false, hasPosition);
                 }
             }
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean isPlaying(String channel) {
+        return false;
+    }
+
+    @Override
+    public void stop(SoundSystem sounds, OpenAL openAL) {
     }
 }

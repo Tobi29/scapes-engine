@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.openal;
 
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -23,13 +22,14 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 import java.util.Optional;
 
 public class StaticAudio implements Audio {
-    private final String asset;
+    private final String asset, channel;
     private int buffer = -1, source = -1;
     private float pitch, gain, pitchAL, gainAL;
     private boolean playing, dispose;
 
-    StaticAudio(String asset, float pitch, float gain) {
+    StaticAudio(String asset, String channel, float pitch, float gain) {
         this.asset = asset;
+        this.channel = channel;
         this.pitch = pitch;
         this.gain = gain;
     }
@@ -56,10 +56,10 @@ public class StaticAudio implements Audio {
             }
         }
         if (source == -1) {
-            source = openAL.createSource();
+            source = sounds.takeSource();
         }
         if (gain > 0.001f) {
-            float gainAL = gain * sounds.soundVolume();
+            float gainAL = gain * sounds.volume(channel);
             float pitchAL = pitch;
             if (playing) {
                 if (FastMath.abs(gainAL - this.gainAL) > 0.001f) {
@@ -73,7 +73,7 @@ public class StaticAudio implements Audio {
             } else {
                 playing = true;
                 if (buffer != -1) {
-                    sounds.playSound(buffer, source, pitchAL, gainAL, 16.0f,
+                    sounds.playSound(buffer, source, pitchAL, gainAL,
                             Vector3d.ZERO, Vector3d.ZERO, true, false);
                 }
                 this.gainAL = gainAL;
@@ -86,11 +86,19 @@ public class StaticAudio implements Audio {
             }
         }
         if (dispose) {
-            openAL.stop(source);
-            openAL.setBuffer(source, 0);
-            openAL.deleteSource(source);
+            stop(sounds, openAL);
             return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean isPlaying(String channel) {
+        return this.channel.startsWith(channel);
+    }
+
+    @Override
+    public void stop(SoundSystem sounds, OpenAL openAL) {
+        sounds.releaseSource(source);
     }
 }

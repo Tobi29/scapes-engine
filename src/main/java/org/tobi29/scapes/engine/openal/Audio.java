@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.openal;
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
@@ -21,4 +20,8 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 public interface Audio {
     boolean poll(SoundSystem sounds, OpenAL openAL, Vector3 listenerPosition,
             double speedFactor, boolean lagSilence);
+
+    boolean isPlaying(String channel);
+
+    void stop(SoundSystem sounds, OpenAL openAL);
 }

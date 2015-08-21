@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.openal.codec.mp3;
 
 import javazoom.jl.decoder.*;
@@ -31,7 +30,8 @@ public class MP3ReadStream implements ReadableAudioStream {
     private final Decoder decoder;
     private final Bitstream bitstream;
     private final OutputBuffer output;
-    private final int channels, rate;
+    private final int channels;
+    private int rate, outputRate;
 
     public MP3ReadStream(ReadableByteChannel channel) throws IOException {
         this.channel = channel;
@@ -42,15 +42,16 @@ public class MP3ReadStream implements ReadableAudioStream {
             throw new IOException("Unable to read first frame");
         } else {
             channels = header.mode() == Header.SINGLE_CHANNEL ? 1 : 2;
-            rate = getSampleRate(header.sample_frequency(), header.version());
             output = new OutputBuffer();
             decoder.setOutputBuffer(output);
             decodeFrame(header);
+            outputRate = rate;
         }
     }
 
-    private static int getSampleRate(int sampleFrequency, int version) {
-        switch (sampleFrequency) {
+    private static int getSampleRate(Header header) {
+        int version = header.version();
+        switch (header.sample_frequency()) {
             case 0:
                 if (version == 1) {
                     return 44100;
@@ -87,6 +88,11 @@ public class MP3ReadStream implements ReadableAudioStream {
     }
 
     @Override
+    public void frame() {
+        outputRate = rate;
+    }
+
+    @Override
     public boolean getSome(FloatBuffer buffer, int len) throws IOException {
         int limit = buffer.limit();
         buffer.limit(buffer.position() + len);
@@ -107,6 +113,10 @@ public class MP3ReadStream implements ReadableAudioStream {
     }
 
     private boolean decodeFrame(FloatBuffer buffer) throws IOException {
+        if (outputRate != rate) {
+            // TODO: Need to git an mp3 file that actually does this to test
+            return true;
+        }
         if (!checkFrame()) {
             return false;
         }
@@ -115,6 +125,7 @@ public class MP3ReadStream implements ReadableAudioStream {
         output.buffer.limit(output.buffer.position() + len);
         buffer.put(output.buffer);
         output.buffer.limit(limit);
+        checkFrame();
         return true;
     }
 
@@ -139,6 +150,7 @@ public class MP3ReadStream implements ReadableAudioStream {
 
     private void decodeFrame(Header header) throws IOException {
         try {
+            rate = getSampleRate(header);
             output.buffer.clear();
             decoder.decodeFrame(header, bitstream);
             output.buffer.limit(output.index[0]);
