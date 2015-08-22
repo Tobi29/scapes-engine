@@ -225,8 +225,8 @@ class ScapesEngineApplication implements Plugin<Project> {
         bundleTask.company = "${-> target.application.company}"
         bundleTask.copyright = "${-> target.application.copyright}"
         bundleTask.mainClass = "${-> target.application.mainClass}"
-        bundleTask.appbundler =
-                target.rootProject.file("resources/appbundler-1.0ea.jar")
+        bundleTask.appbundler = target.rootProject.
+                file("ScapesEngine/resources/appbundler-1.0ea.jar")
         bundleTask.jre = jre
         bundleTask.icon = target.file("project/Icon.icns")
         bundleTask.classpath = target.configurations.runtime +
@@ -296,15 +296,15 @@ class ScapesEngineApplication implements Plugin<Project> {
         programTask.company = "${-> target.application.company}"
         programTask.copyright = "${-> target.application.copyright}"
         programTask.mainClass = "${-> target.application.mainClass}"
-        programTask.launch4j =
-                target.rootProject.file("resources/Launch4j/launch4j.jar")
+        programTask.launch4j = target.rootProject.
+                file("ScapesEngine/resources/Launch4j/launch4j.jar")
         programTask.icon = target.file("project/Icon.ico")
         programTask.exeMemoryMin = 1024
         programTask.exeMemoryMax = 2048
         programTask.exeType = "gui"
         programTask.runInAppData = true
-        programTask.manifest =
-                target.rootProject.file("resources/Program.manifest")
+        programTask.manifest = target.rootProject.
+                file("ScapesEngine/resources/Program.manifest")
         programTask.output = new File(programTask.temporaryDir,
                 target.project.name + ".exe")
 
@@ -316,15 +316,15 @@ class ScapesEngineApplication implements Plugin<Project> {
         programCmdTask.company = "${-> target.application.company}"
         programCmdTask.copyright = "${-> target.application.copyright}"
         programCmdTask.mainClass = "${-> target.application.mainClass}"
-        programCmdTask.launch4j =
-                target.rootProject.file("resources/Launch4j/launch4j.jar")
+        programCmdTask.launch4j = target.rootProject.
+                file("ScapesEngine/resources/Launch4j/launch4j.jar")
         programCmdTask.icon = target.file("project/Icon.ico")
         programCmdTask.exeMemoryMin = 1024
         programCmdTask.exeMemoryMax = 2048
         programCmdTask.exeType = "console"
         programCmdTask.runInAppData = false
-        programCmdTask.manifest =
-                target.rootProject.file("resources/Program.manifest")
+        programCmdTask.manifest = target.rootProject.
+                file("ScapesEngine/resources/Program.manifest")
         programCmdTask.output = new File(programCmdTask.temporaryDir,
                 target.project.name + "Cmd.exe")
 
@@ -333,7 +333,8 @@ class ScapesEngineApplication implements Plugin<Project> {
         prepareTask.dependsOn target.jar
         prepareTask.dependsOn programTask
         prepareTask.dependsOn programCmdTask
-        prepareTask.from target.rootProject.file("resources/Setup.iss")
+        prepareTask.from target.rootProject.
+                file("ScapesEngine/resources/Setup.iss")
         prepareTask.from target.file("project/installer")
         prepareTask.from(programTask.output, { into "install/common" })
         prepareTask.from(programCmdTask.output, { into "install/common" })
@@ -372,14 +373,16 @@ class ScapesEngineApplication implements Plugin<Project> {
         prepareTask.from(target.configurations.runtimeWindows64,
                 { into "install/64/lib" })
         prepareTask.from(target.rootProject.
-                file("resources/Install/Windows"), { into "install" })
+                file("ScapesEngine/resources/Install/Windows"),
+                { into "install" })
         prepareTask.into prepareTask.temporaryDir
 
         // Pack task
         def packTask = target.tasks.create("packWindows", Exec)
         packTask.dependsOn prepareTask
         def innoEXE = target.rootProject.
-                file("resources/Inno Setup 5/ISCC.exe").absolutePath
+                file(
+                        "ScapesEngine/resources/Inno Setup 5/ISCC.exe").absolutePath
         def innoArgs = ["/DApplicationFullName=${-> escapeWindows(target.application.fullName)}",
                 "/DApplicationVersion=${-> escapeWindows(target.application.version)}",
                 "/DApplicationCompany=${-> escapeWindows(target.application.company)}",
@@ -422,7 +425,8 @@ class ScapesEngineApplication implements Plugin<Project> {
 
     private
     static File getJRE(Project target, String platform, File file) {
-        def jres = target.rootProject.file("resources/JRE/" + platform).
+        def jres = target.rootProject.
+                file("ScapesEngine/resources/JRE/" + platform).
                 listFiles((FileFilter) {
                     !it.isDirectory() && !it.isHidden()
                 })
