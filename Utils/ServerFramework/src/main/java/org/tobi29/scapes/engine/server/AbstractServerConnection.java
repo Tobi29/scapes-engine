@@ -32,8 +32,7 @@ import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class AbstractServerConnection<P>
-        implements PlayConnection<P> {
+public abstract class AbstractServerConnection {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AbstractServerConnection.class);
     protected final TaskExecutor taskExecutor;

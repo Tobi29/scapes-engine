@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Random;
 
-public class UnknownConnection<P> implements Connection {
+public class UnknownConnection implements Connection {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(UnknownConnection.class);
     private static final byte[] CONNECTION_KEY;
@@ -40,12 +40,12 @@ public class UnknownConnection<P> implements Connection {
 
     private final byte[] connectionHeader;
     private final ByteBuffer buffer;
-    private final AbstractServerConnection<P> connection;
+    private final AbstractServerConnection connection;
     private SocketChannel channel;
     private boolean done;
 
     public UnknownConnection(SocketChannel channel,
-            AbstractServerConnection<P> connection, byte[] connectionHeader) {
+            AbstractServerConnection connection, byte[] connectionHeader) {
         this.channel = channel;
         this.connection = connection;
         this.connectionHeader = connectionHeader;
