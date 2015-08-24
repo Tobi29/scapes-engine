@@ -59,9 +59,7 @@ public class SoundSystem {
 
     public void dispose() {
         try {
-            audios.forEach(audio -> {
-                audio.stop(this, openAL);
-            });
+            audios.forEach(audio -> audio.stop(this, openAL));
             audios.clear();
             for (int i = 0; i < sources.length; i++) {
                 int source = sources[i];
