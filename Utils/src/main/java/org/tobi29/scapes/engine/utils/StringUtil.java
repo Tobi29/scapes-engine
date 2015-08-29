@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+import java.util.regex.Pattern;
+
 /**
- * Utility class for creating 64-bit hashes from {@code String}s
+ * Utility class for {@code String}s
  */
-public final class StringLongHash {
-    private StringLongHash() {
+public final class StringUtil {
+    private static final Pattern REPLACE_Q = Pattern.compile("\\?");
+    private static final Pattern REPLACE_W = Pattern.compile("\\*");
+
+    private StringUtil() {
     }
 
     /**
@@ -46,5 +50,13 @@ public final class StringLongHash {
             h = 31 * h + value.charAt(i);
         }
         return h;
+    }
+
+    public static Pattern wildcard(String exp) {
+        // Replace "?" with ".?" and "*" with ".*"
+        String regex =
+                REPLACE_W.matcher(REPLACE_Q.matcher(exp).replaceAll(".?"))
+                        .replaceAll(".*");
+        return Pattern.compile(regex);
     }
 }

@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.utils.io;
 
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.StringLongHash;
+import org.tobi29.scapes.engine.utils.StringUtil;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
 
 import javax.crypto.*;
@@ -50,7 +50,7 @@ public class PacketBundleChannel {
 
     static {
         Random random = new Random(
-                StringLongHash.hash("Totally secure initialization vector :P"));
+                StringUtil.hash("Totally secure initialization vector :P"));
         byte[] array = new byte[16];
         random.nextBytes(array);
         IV = new IvParameterSpec(array);
