@@ -1,0 +1,113 @@
+/*
+ * Copyright 2012-2015 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+Closure download = { path, file ->
+    file.parentFile.mkdirs()
+    URL url = new URL(path);
+    InputStream streamIn = url.openStream()
+    try {
+        OutputStream streamOut = file.newOutputStream()
+        try {
+            streamOut << streamIn
+        } finally {
+            streamOut.close()
+        }
+    } finally {
+        streamIn.close()
+    }
+}
+
+def host, file, tar
+host = "http://downloads.sourceforge.net/project/qtjambi/4.8.7"
+file = "qtjambi-linux32-community-4.8.7.tar.gz"
+tar = rootProject.file("qtjambi/linux32/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiLinux32Tar = tarTree(tar)
+
+host = "http://downloads.sourceforge.net/project/qtjambi/4.8.7"
+file = "qtjambi-linux64-community-4.8.7.tar.gz"
+tar = rootProject.file("qtjambi/linux64/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiLinux64Tar = tarTree(tar)
+
+host = "http://downloads.sourceforge.net/project/qtjambi/4.8.6"
+file = "qtjambi-macosx-community-4.8.6.tar.gz"
+tar = rootProject.file("qtjambi/macosx/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiMacOSXTar = tarTree(tar)
+
+host = "http://www.labstory.se/compiledqt/win32"
+file = "qtjambi-4.8.5.jar"
+tar = rootProject.file("qtjambi/windows32/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiWindows32 = files(tar)
+
+host = "http://www.labstory.se/compiledqt/win32"
+file = "qtjambi-native-win32-msvc2012-4.8.5.jar"
+tar = rootProject.file("qtjambi/windows32/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiWindows32Natives = files(tar)
+
+host = "http://www.labstory.se/compiledqt/win64"
+file = "qtjambi-4.8.5.jar"
+tar = rootProject.file("qtjambi/windows64/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiWindows64 = files(tar)
+
+host = "http://www.labstory.se/compiledqt/win64"
+file = "qtjambi-native-win64-msvc2012x64-4.8.5.jar"
+tar = rootProject.file("qtjambi/windows64/$file")
+if (!tar.exists()) {
+    download("$host/$file", tar)
+}
+ext.qtJambiWindows64Natives = files(tar)
+
+qtJambiLinux32Tar.forEach {} // Git gradle to actually extract shit
+ext.qtJambiLinux32 = files(qtJambiLinux32Tar.matching {
+    include "qtjambi-linux32-community-4.8.7/qtjambi-4.8.7.jar"
+})
+ext.qtJambiLinux32Natives = files(qtJambiLinux32Tar.
+        matching {
+            include "qtjambi-linux32-community-4.8.7/qtjambi-native-linux32-gcc-4.8.7.jar"
+        })
+
+qtJambiLinux64Tar.forEach {} // Git gradle to actually extract shit
+ext.qtJambiLinux64 = files(qtJambiLinux64Tar.matching {
+    include "qtjambi-linux64-community-4.8.7/qtjambi-4.8.7.jar"
+})
+ext.qtJambiLinux64Natives = files(qtJambiLinux64Tar.
+        matching {
+            include "qtjambi-linux64-community-4.8.7/qtjambi-native-linux64-gcc-4.8.7.jar"
+        })
+
+qtJambiMacOSXTar.forEach {} // Git gradle to actually extract shit
+ext.qtJambiMacOSX = files(qtJambiMacOSXTar.
+        matching { include "qtjambi-macosx-community-4.8.6/qtjambi-4.8.6.jar" })
+ext.qtJambiMacOSXNatives = files(qtJambiMacOSXTar.
+        matching {
+            include "qtjambi-macosx-community-4.8.6/qtjambi-native-macosx-gcc-4.8.6.jar"
+        })
