@@ -13,10 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
+import java.io.IOException;
+
 public interface RandomReadableByteStream extends ReadableByteStream {
+    @Override
+    default void skip(int len) throws IOException {
+        position(position() + len);
+    }
+
     int position();
 
     ReadableByteStream position(int pos);

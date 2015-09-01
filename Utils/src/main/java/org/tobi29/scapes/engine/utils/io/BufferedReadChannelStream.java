@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
 import org.tobi29.scapes.engine.utils.BufferCreator;
@@ -21,6 +20,7 @@ import org.tobi29.scapes.engine.utils.BufferCreator;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 
 public class BufferedReadChannelStream implements ReadableByteStream {
     private final ReadableByteChannel channel;
@@ -34,6 +34,23 @@ public class BufferedReadChannelStream implements ReadableByteStream {
     @Override
     public int remaining() {
         return buffer.remaining();
+    }
+
+    @Override
+    public void skip(int len) throws IOException {
+        int skip = len - buffer.remaining();
+        if (skip < 0) {
+            buffer.position(buffer.position() + len);
+        } else {
+            buffer.position(buffer.limit());
+            if (channel instanceof SeekableByteChannel) {
+                SeekableByteChannel seekableChannel =
+                        (SeekableByteChannel) channel;
+                seekableChannel.position(seekableChannel.position() + skip);
+            } else {
+                read(BufferCreator.bytes(skip));
+            }
+        }
     }
 
     @Override
@@ -128,16 +145,12 @@ public class BufferedReadChannelStream implements ReadableByteStream {
         return true;
     }
 
-    private boolean read(ByteBuffer buffer) {
-        try {
-            while (buffer.hasRemaining()) {
-                int length = channel.read(buffer);
-                if (length == -1) {
-                    return false;
-                }
+    private boolean read(ByteBuffer buffer) throws IOException {
+        while (buffer.hasRemaining()) {
+            int length = channel.read(buffer);
+            if (length == -1) {
+                return false;
             }
-        } catch (IOException e) {
-            return false;
         }
         return true;
     }
