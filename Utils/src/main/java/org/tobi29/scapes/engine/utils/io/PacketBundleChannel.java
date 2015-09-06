@@ -103,10 +103,6 @@ public class PacketBundleChannel {
 
     public void queueBundle() throws IOException {
         dataStreamOut.buffer().flip();
-        if (!dataStreamOut.buffer().hasRemaining()) {
-            dataStreamOut.buffer().clear();
-            return;
-        }
         byteBufferStreamOut.buffer().clear();
         byteBufferStreamOut.position(CHECKSUM_LENGTH);
         CompressionUtil.filter(dataStreamOut, byteBufferStreamOut, deflater);
