@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine;
 
 import org.tobi29.scapes.engine.gui.Gui;
@@ -24,6 +23,8 @@ import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class GameState {
     protected static final VAO CURSOR;
@@ -40,13 +41,14 @@ public abstract class GameState {
 
     protected final VAO vao;
     protected final ScapesEngine engine;
-    protected Scene scene, newScene;
+    protected final AtomicReference<Scene> newScene = new AtomicReference<>();
+    protected Scene scene;
     protected FBO fboScene, fboFront, fboBack;
 
     protected GameState(ScapesEngine engine, Scene scene) {
         this.engine = engine;
         this.scene = scene;
-        newScene = scene;
+        newScene.set(scene);
         vao = VAOUtility.createVTI(
                 new float[]{0.0f, 512.0f, 0.0f, 800.0f, 512.0f, 0.0f, 0.0f,
                         0.0f, 0.0f, 800.0f, 0.0f, 0.0f},
@@ -99,10 +101,7 @@ public abstract class GameState {
     }
 
     public void setScene(Scene scene) {
-        if (this.scene == newScene) {
-            this.scene = null;
-        }
-        newScene = scene;
+        newScene.set(scene);
     }
 
     public void step(double delta) {
@@ -115,14 +114,14 @@ public abstract class GameState {
     public abstract void stepComponent(double delta);
 
     public void render(GL gl, double delta, boolean updateSize) {
+        Scene newScene = this.newScene.getAndSet(null);
         if (newScene != null) {
-            if (scene != null && scene != newScene) {
+            if (scene != null) {
                 scene.dispose(gl);
             }
             newScene.setState(this);
+            newScene.init(gl);
             scene = newScene;
-            newScene = null;
-            scene.init(gl);
             if (fboScene != null) {
                 fboScene.dispose(gl);
                 fboScene = null;
