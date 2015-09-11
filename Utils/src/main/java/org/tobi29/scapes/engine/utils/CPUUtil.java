@@ -17,7 +17,7 @@ public final class CPUUtil {
     }
 
     public static class Reader {
-        private Map<Long, Long> lastThreadTimes = new ConcurrentHashMap<>();
+        private final Map<Long, Long> lastThreadTimes = new ConcurrentHashMap<>();
         private long lastTime;
 
         public double totalCPU() {
