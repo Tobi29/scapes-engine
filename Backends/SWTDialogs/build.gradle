@@ -24,7 +24,7 @@ dependencies {
     compile project(":ScapesEngine:Utils")
     compile project(":ScapesEngine:Utils:SWTUtils")
     compile project(":ScapesEngine:Backends:GLFWBackend")
-    compile "org.slf4j:slf4j-api:1.7.10"
+    compile "org.slf4j:slf4j-api:1.7.12"
 
     provided "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:4.5"
 
