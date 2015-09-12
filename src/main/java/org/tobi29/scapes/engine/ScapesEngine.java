@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine;
 
 import org.slf4j.Logger;
@@ -51,6 +50,7 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ScapesEngine implements Crashable {
     private static final Logger LOGGER =
@@ -72,9 +72,10 @@ public class ScapesEngine implements Crashable {
     private final boolean debug;
     private final GuiDebugLayer debugGui;
     private final GuiWidgetDebugValues.Element usedMemoryDebug, maxMemoryDebug;
+    private final AtomicReference<GameState> newState = new AtomicReference<>();
     private GuiController guiController;
     private boolean mouseGrabbed;
-    private GameState state, newState;
+    private GameState state;
     private StateThread stateThread;
 
     public ScapesEngine(Game game, Path home, boolean debug) {
@@ -253,7 +254,7 @@ public class ScapesEngine implements Crashable {
     }
 
     public void setState(GameState state) {
-        newState = state;
+        newState.set(state);
     }
 
     @SuppressWarnings({"OverlyBroadCatchBlock", "CallToSystemExit"})
@@ -330,6 +331,7 @@ public class ScapesEngine implements Crashable {
     }
 
     public void step(GL gl, double delta) {
+        GameState newState = this.newState.getAndSet(null);
         if (newState != null) {
             if (stateThread != null) {
                 stateThread.joiner.join();
@@ -343,7 +345,6 @@ public class ScapesEngine implements Crashable {
                 state.disposeState(gl);
                 state = newState;
             }
-            newState = null;
             state.init(gl);
         }
         if (state.isThreaded()) {
