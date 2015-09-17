@@ -24,6 +24,7 @@ import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
 
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class GameState {
@@ -64,13 +65,13 @@ public abstract class GameState {
         dispose(gl);
         scene.removeAllGui();
         if (fboScene != null) {
-            fboScene.dispose(gl);
+            fboScene.ensureDisposed(gl);
         }
         if (fboFront != null) {
-            fboFront.dispose(gl);
+            fboFront.ensureDisposed(gl);
         }
         if (fboBack != null) {
-            fboBack.dispose(gl);
+            fboBack.ensureDisposed(gl);
         }
         gl.shaders().clearCache(gl);
         gl.textures().clearCache(gl);
@@ -123,15 +124,15 @@ public abstract class GameState {
             newScene.init(gl);
             scene = newScene;
             if (fboScene != null) {
-                fboScene.dispose(gl);
+                fboScene.ensureDisposed(gl);
                 fboScene = null;
             }
             if (fboFront != null) {
-                fboFront.dispose(gl);
+                fboFront.ensureDisposed(gl);
                 fboFront = null;
             }
             if (fboBack != null) {
-                fboBack.dispose(gl);
+                fboBack.ensureDisposed(gl);
                 fboBack = null;
             }
         }
@@ -140,20 +141,20 @@ public abstract class GameState {
         if (fboScene == null) {
             fboScene =
                     new FBO(sceneWidth, sceneHeight, scene.colorAttachments(),
-                            true, true, false, gl);
+                            true, true, false);
             scene.initFBO(0, fboScene);
         }
         if (updateSize) {
             if (fboScene != null) {
-                fboScene.setSize(sceneWidth, sceneHeight, gl);
+                fboScene.setSize(sceneWidth, sceneHeight);
                 scene.initFBO(0, fboScene);
             }
             if (fboFront != null) {
-                fboFront.setSize(sceneWidth, sceneHeight, gl);
+                fboFront.setSize(sceneWidth, sceneHeight);
                 scene.initFBO(1, fboFront);
             }
             if (fboBack != null) {
-                fboBack.setSize(sceneWidth, sceneHeight, gl);
+                fboBack.setSize(sceneWidth, sceneHeight);
                 scene.initFBO(2, fboBack);
             }
         }
@@ -172,7 +173,7 @@ public abstract class GameState {
         } else if (renderPasses == 1) {
             if (fboFront == null) {
                 fboFront = new FBO(sceneWidth, sceneHeight,
-                        scene.colorAttachments(), false, true, false, gl);
+                        scene.colorAttachments(), false, true, false);
                 scene.initFBO(1, fboFront);
             }
             fboFront.activate(gl);
@@ -183,12 +184,12 @@ public abstract class GameState {
         } else {
             if (fboFront == null) {
                 fboFront = new FBO(sceneWidth, sceneHeight,
-                        scene.colorAttachments(), false, true, false, gl);
+                        scene.colorAttachments(), false, true, false);
                 scene.initFBO(1, fboFront);
             }
             if (fboBack == null) {
                 fboBack = new FBO(sceneWidth, sceneHeight,
-                        scene.colorAttachments(), false, true, false, gl);
+                        scene.colorAttachments(), false, true, false);
                 scene.initFBO(2, fboBack);
             }
             fboFront.activate(gl);
@@ -228,15 +229,19 @@ public abstract class GameState {
 
     public void renderPostProcess(GL gl, FBO fbo, FBO depthFBO, int i) {
         gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f);
-        TextureFBOColor[] texturesColor = fbo.texturesColor();
-        for (int j = 1; j < texturesColor.length; j++) {
-            gl.activeTexture(j + 1);
-            texturesColor[j].bind(gl);
+        Iterator<TextureFBOColor> texturesColor =
+                fbo.texturesColor().iterator();
+        TextureFBOColor textureColor = texturesColor.next();
+        int j = 2;
+        while (texturesColor.hasNext()) {
+            gl.activeTexture(j);
+            texturesColor.next().bind(gl);
+            j++;
         }
         gl.activeTexture(1);
         depthFBO.textureDepth().bind(gl);
         gl.activeTexture(0);
-        texturesColor[0].bind(gl);
+        textureColor.bind(gl);
         vao.render(gl, scene.postProcessing(gl, i));
     }
 

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.texture;
 
 import org.tobi29.scapes.engine.opengl.GL;
@@ -27,6 +26,13 @@ public class TextureFBOColor extends Texture {
         super(width, height, null, 0, minFilter, magFilter, wrapS, wrapT);
         this.alpha = alpha;
         this.hdr = hdr;
+    }
+
+    public void resize(int width, int height, GL gl) {
+        dispose(gl);
+        this.width = width;
+        this.height = height;
+        store(gl);
     }
 
     @Override
