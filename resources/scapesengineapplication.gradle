@@ -175,6 +175,7 @@ class ScapesEngineApplication implements Plugin<Project> {
         // Script task
         def scriptTask = target.tasks.
                 create("scriptLinux$arch", StartupScriptTask)
+        scriptTask.execName = "$name"
         scriptTask.libPath = "$libPath/$name"
         scriptTask.mainClass = "${-> target.application.mainClass}"
         scriptTask.output = new File(scriptTask.temporaryDir, name)
@@ -590,7 +591,7 @@ class ScapesEngineApplicationExtension {
 
 class StartupScriptTask extends DefaultTask {
     @Input
-    def libPath, mainClass
+    def execName, libPath, mainClass
     @OutputFile
     def File output
 
@@ -598,10 +599,8 @@ class StartupScriptTask extends DefaultTask {
     void run() {
         BufferedWriter writer = output.newWriter()
         writer.write "#!/bin/bash\n"
-        writer.write "for file in $libPath/*.jar; do\n"
-        writer.write "    CP=\"\$CP:\$file\"\n"
-        writer.write "done\n"
-        writer.write "exec -a scapes java -Djava.library.path=$libPath -cp \$CP $mainClass \$@\n"
+        writer.write "export CLASSPATH=\"$libPath/*\""
+        writer.write "exec -a $execName java -Djava.library.path=$libPath $mainClass \$@\n"
         writer.close()
     }
 }
