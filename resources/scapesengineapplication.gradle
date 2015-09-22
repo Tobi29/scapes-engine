@@ -599,7 +599,7 @@ class StartupScriptTask extends DefaultTask {
     void run() {
         BufferedWriter writer = output.newWriter()
         writer.write "#!/bin/bash\n"
-        writer.write "export CLASSPATH=\"$libPath/*\""
+        writer.write "export CLASSPATH=\"$libPath/*\"\n"
         writer.write "exec -a $execName java -Djava.library.path=$libPath $mainClass \$@\n"
         writer.close()
     }
