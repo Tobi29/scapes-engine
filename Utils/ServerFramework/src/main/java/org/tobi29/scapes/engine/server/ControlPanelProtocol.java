@@ -56,6 +56,7 @@ public class ControlPanelProtocol implements Connection {
 
     private final PacketBundleChannel channel;
     private final Queue<String[]> queue = new ConcurrentLinkedQueue<>();
+    private final Queue<Runnable> closeHooks = new ConcurrentLinkedQueue<>();
     private final Map<String, IOConsumer<String[]>> commands =
             new ConcurrentHashMap<>();
     private final String password;
@@ -129,6 +130,10 @@ public class ControlPanelProtocol implements Connection {
         commands.put(command, consumer);
     }
 
+    public void closeHook(Runnable runnable) {
+        closeHooks.add(runnable);
+    }
+
     @Override
     public void register(Selector selector, int opt) throws IOException {
         channel.register(selector, opt);
@@ -155,6 +160,9 @@ public class ControlPanelProtocol implements Connection {
 
     @Override
     public void close() throws IOException {
+        while (!closeHooks.isEmpty()) {
+            closeHooks.poll().run();
+        }
         channel.close();
     }
 
