@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
 import org.slf4j.Logger;
@@ -100,7 +99,7 @@ public class GraphicsSystem {
             vaoDebug.setValue(VAO.vaos());
             if (triggerScreenshot) {
                 triggerScreenshot = false;
-                int width = gl.sceneWidth(), height = gl.sceneHeight();
+                int width = gl.contentWidth(), height = gl.contentHeight();
                 Image image = gl.screenShot(0, 0, width, height);
                 Path path = engine.home().resolve("screenshots/" +
                         System.currentTimeMillis() +
