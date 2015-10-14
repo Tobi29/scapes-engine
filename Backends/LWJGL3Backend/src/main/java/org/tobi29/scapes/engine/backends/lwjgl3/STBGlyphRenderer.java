@@ -155,8 +155,4 @@ public class STBGlyphRenderer implements GlyphRenderer {
     public int pageCode(char character) {
         return character & pageTileMask;
     }
-
-    @Override
-    public void dispose() {
-    }
 }
