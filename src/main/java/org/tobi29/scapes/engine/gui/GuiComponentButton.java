@@ -16,15 +16,15 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.Mesh;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.utils.Pair;
 
 public class GuiComponentButton extends GuiComponent {
     private boolean hover;
-    private VAO vao;
+    private Pair<VAO,Texture> vao;
 
     public GuiComponentButton(GuiComponent parent, int x, int y, int width,
             int height) {
@@ -47,10 +47,9 @@ public class GuiComponentButton extends GuiComponent {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, FontRenderer font,
-            double delta) {
-        gl.textures().unbind(gl);
-        vao.render(gl, shader);
+    public void renderComponent(GL gl, Shader shader, double delta) {
+        vao.b.bind(gl);
+        vao.a.render(gl, shader);
     }
 
     @Override
@@ -62,20 +61,6 @@ public class GuiComponentButton extends GuiComponent {
     }
 
     private void updateMesh() {
-        float a;
-        if (hover) {
-            a = 0.8f;
-        } else {
-            a = 0.6f;
-        }
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, width, height, 0.2f);
-        mesh.addVertex(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, a, 0.0f, 0.0f);
-        mesh.addVertex(0.0f, height, 0.0f, 0.0f, 0.0f, 0.0f, a, 0.0f, 0.0f);
-        mesh.addVertex(width, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, a, 0.0f, 0.0f);
-        mesh.addVertex(width, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, a, 0.0f, 0.0f);
-        mesh.addVertex(0.0f, height, 0.0f, 0.0f, 0.0f, 0.0f, a, 0.0f, 0.0f);
-        mesh.addVertex(width, height, 0.0f, 0.0f, 0.0f, 0.0f, a, 0.0f, 0.0f);
-        vao = mesh.finish();
+        vao = gui.style().button(width, height, hover);
     }
 }

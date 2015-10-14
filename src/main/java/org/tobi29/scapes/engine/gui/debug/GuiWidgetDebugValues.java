@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui.debug;
 
 import org.tobi29.scapes.engine.ScapesEngine;
@@ -24,12 +23,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class GuiWidgetDebugValues extends GuiWidget {
+public class GuiWidgetDebugValues extends GuiComponentWidget {
     private final Map<String, Element> elements = new ConcurrentHashMap<>();
     private final GuiComponentScrollPaneViewport scrollPane;
 
-    public GuiWidgetDebugValues() {
-        super(32, 32, 360, 240, "Debug Values");
+    public GuiWidgetDebugValues(GuiComponent parent) {
+        super(parent, 32, 32, 360, 240, "Debug Values");
         scrollPane = new GuiComponentScrollPaneList(this, 10, 10, 340, 220, 20)
                 .viewport();
     }

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import java.util.Optional;
 
 public interface GuiController {
+
     void update(double delta);
 
     boolean processTextField(TextFieldData data, boolean multiline);
@@ -45,16 +45,8 @@ public interface GuiController {
 
     class TextFieldData {
         @SuppressWarnings("StringBufferField")
-        public StringBuilder text;
-        public int cursor, selectionStart, selectionEnd;
-
-        public TextFieldData(String text, int cursor, int selectionStart,
-                int selectionEnd) {
-            this.text = new StringBuilder(text);
-            this.cursor = cursor;
-            this.selectionStart = selectionStart;
-            this.selectionEnd = selectionEnd;
-        }
+        public StringBuilder text = new StringBuilder(100);
+        public int cursor, selectionStart = -1, selectionEnd;
 
         public void selectAll() {
             cursor = text.length();

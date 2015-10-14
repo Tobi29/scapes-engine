@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -70,6 +69,24 @@ public class Mesh {
 
     public void vertex(float x, float y, float z) {
         addVertex(x, y, z, r, g, b, a, tx, ty, nx, ny, nz);
+    }
+
+    public void addRectangle(float minX, float minY, float maxX, float maxY,
+            float z, float minTX, float minTY, float maxTX, float maxTY,
+            float r, float g, float b, float a) {
+        if (triangles) {
+            addVertex(minX, minY, z, r, g, b, a, minTX, minTY);
+            addVertex(minX, maxY, z, r, g, b, a, minTX, maxTY);
+            addVertex(maxX, minY, z, r, g, b, a, maxTX, minTY);
+            addVertex(maxX, minY, z, r, g, b, a, maxTX, minTY);
+            addVertex(minX, maxY, z, r, g, b, a, minTX, maxTY);
+            addVertex(maxX, maxY, z, r, g, b, a, maxTX, maxTY);
+        } else {
+            addVertex(minX, minY, z, r, g, b, a, minTX, minTY);
+            addVertex(minX, maxY, z, r, g, b, a, minTX, maxTY);
+            addVertex(maxX, minY, z, r, g, b, a, maxTX, minTY);
+            addVertex(maxX, maxY, z, r, g, b, a, maxTX, maxTY);
+        }
     }
 
     public void addVertex(float x, float y, float z, float tx, float ty) {

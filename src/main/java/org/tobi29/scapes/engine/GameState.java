@@ -24,7 +24,9 @@ import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class GameState {
@@ -42,6 +44,7 @@ public abstract class GameState {
 
     protected final VAO vao;
     protected final ScapesEngine engine;
+    protected final List<Gui> guis = new ArrayList<>();
     protected final AtomicReference<Scene> newScene = new AtomicReference<>();
     protected Scene scene;
     protected FBO fboScene, fboFront, fboBack;
@@ -209,13 +212,13 @@ public abstract class GameState {
         gl.checkError("Post-Processing");
         Shader shader = gl.shaders().get("Engine:shader/Gui", gl);
         scene.renderGui(gl, shader, delta);
-        engine.globalGUI().render(gl, shader, gl.defaultFont(), delta);
+        MatrixStack matrixStack = gl.matrixStack();
+        engine.globalGUI().render(gl, shader, delta);
         GuiController guiController = engine.guiController();
         if (guiController.isSoftwareMouse() && !isMouseGrabbed()) {
             gl.setProjectionOrthogonal(0.0f, 0.0f, gl.contentWidth(),
                     gl.containerHeight());
             gl.textures().bind("Engine:image/Cursor", gl);
-            MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
             matrix.translate((float) guiController.cursorX(),
                     (float) guiController.cursorY(), 0.0f);

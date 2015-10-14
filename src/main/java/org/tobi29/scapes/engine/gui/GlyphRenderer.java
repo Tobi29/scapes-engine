@@ -25,8 +25,6 @@ public interface GlyphRenderer {
 
     int pageCode(char character);
 
-    void dispose();
-
     class GlyphPage {
         private final ByteBuffer buffer;
         private final float[] width;

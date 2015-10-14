@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.scenes;
 
 import org.tobi29.scapes.engine.GameState;
@@ -65,7 +64,7 @@ public abstract class Scene {
 
     public void renderGui(GL gl, Shader shader, double delta) {
         for (GuiComponent gui : guis) {
-            gui.render(gl, shader, gl.defaultFont(), delta);
+            gui.render(gl, shader, delta);
         }
     }
 

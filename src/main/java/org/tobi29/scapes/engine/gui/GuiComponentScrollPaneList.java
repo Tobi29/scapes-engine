@@ -15,6 +15,10 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
+
+import java.util.Map;
+
 public class GuiComponentScrollPaneList extends GuiComponentScrollPane {
     public GuiComponentScrollPaneList(GuiComponent parent, int x, int y,
             int width, int height, int scrollStep) {
@@ -27,15 +31,14 @@ public class GuiComponentScrollPaneList extends GuiComponentScrollPane {
         return new GuiComponentScrollPaneViewport(this, slider, 0, 0, width,
                 height, scrollStep) {
             @Override
-            protected void append(GuiComponent component) {
-                components.add(component);
+            protected void append(GuiComponent component, double x, double y) {
+                super.append(component, x, y);
                 layout();
             }
 
             @Override
             protected void drop(GuiComponent component) {
-                components.remove(component);
-                component.removed();
+                super.drop(component);
                 layout();
             }
         };
@@ -43,8 +46,9 @@ public class GuiComponentScrollPaneList extends GuiComponentScrollPane {
 
     protected void layout() {
         int i = 0;
-        for (GuiComponent component : viewport.components) {
-            component.setY(i);
+        for (Map.Entry<GuiComponent, MutableVector2> entry : viewport.components
+                .entrySet()) {
+            entry.getValue().setY(i);
             i += viewport.scrollStep;
         }
         viewport.setMaxY(i - viewport.scrollStep);

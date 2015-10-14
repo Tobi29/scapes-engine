@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
 import org.slf4j.Logger;
@@ -32,10 +31,10 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FontRenderer {
+    public static final Text EMPTY_TEXT = new Text(new TextVAO[0], "", 0);
     private static final Logger LOGGER =
             LoggerFactory.getLogger(FontRenderer.class);
     private static final GlyphPage[] EMPTY_GLYPH_PAGE = new GlyphPage[0];
-    private static final TextVAO[] EMPTY_TEXT_VAO = new TextVAO[0];
     private final GlyphRenderer glyphRenderer;
     private GlyphPage[] pages = EMPTY_GLYPH_PAGE;
 
@@ -68,7 +67,7 @@ public class FontRenderer {
     public Text render(String text, float x, float y, float size, float r,
             float g, float b, float a) {
         if (text == null) {
-            return new Text();
+            return EMPTY_TEXT;
         }
         return render(text, x, y, size, size, size, Float.MAX_VALUE, r, g, b, a,
                 0, text.length(), false);
@@ -77,7 +76,7 @@ public class FontRenderer {
     public Text render(String text, float x, float y, float size, float limit,
             float r, float g, float b, float a) {
         if (text == null) {
-            return new Text();
+            return EMPTY_TEXT;
         }
         return render(text, x, y, size, size, size, limit, r, g, b, a, 0,
                 text.length(), false);
@@ -87,7 +86,7 @@ public class FontRenderer {
             float height, float line, float limit, float r, float g, float b,
             float a, int start, int end, boolean cropped) {
         if (text == null || start == -1) {
-            return new Text();
+            return EMPTY_TEXT;
         }
         Map<Integer, Mesh> meshes = new ConcurrentHashMap<>();
         int length = 0;
@@ -154,26 +153,22 @@ public class FontRenderer {
             vaos[i++] = new TextVAO(entry.getValue().finish(),
                     pages[entry.getKey()].texture);
         }
-        return new Text(vaos, length);
+        return new Text(vaos, text, length);
     }
 
-    @OpenGLFunction
-    public void dispose(GL gl) {
+    public void dispose() {
         Arrays.stream(pages).filter(Objects::nonNull)
-                .forEach(page -> page.texture.dispose(gl));
-        glyphRenderer.dispose();
+                .forEach(page -> page.texture.markDisposed());
     }
 
     public static class Text {
         private final TextVAO[] vaos;
+        private final String text;
         private final int length;
 
-        private Text() {
-            this(EMPTY_TEXT_VAO, 0);
-        }
-
-        private Text(TextVAO[] vaos, int length) {
+        private Text(TextVAO[] vaos, String text, int length) {
             this.vaos = vaos;
+            this.text = text;
             this.length = length;
         }
 
@@ -190,6 +185,10 @@ public class FontRenderer {
                 }
                 vao.vao.render(gl, shader);
             });
+        }
+
+        public String text() {
+            return text;
         }
 
         public int length() {

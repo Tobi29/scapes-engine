@@ -17,19 +17,13 @@ package org.tobi29.scapes.engine;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.gui.Gui;
-import org.tobi29.scapes.engine.gui.GuiAlignment;
-import org.tobi29.scapes.engine.gui.GuiController;
-import org.tobi29.scapes.engine.gui.GuiControllerDefault;
+import org.tobi29.scapes.engine.gui.*;
 import org.tobi29.scapes.engine.gui.debug.GuiDebugLayer;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
 import org.tobi29.scapes.engine.openal.SoundSystem;
-import org.tobi29.scapes.engine.opengl.Container;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
-import org.tobi29.scapes.engine.opengl.GraphicsSystem;
+import org.tobi29.scapes.engine.opengl.*;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.Sync;
@@ -145,14 +139,18 @@ public class ScapesEngine implements Crashable {
             engineTag.setBoolean("Fullscreen", false);
             config = new ScapesEngineConfig(engineTag);
         }
-        globalGui = new Gui(GuiAlignment.STRETCH);
-        debugGui = new GuiDebugLayer();
+        game.init();
+        container = backend.createContainer(this);
+        container.loadFont("Engine:font/QuicksandPro-Regular");
+        FontRenderer font = new FontRenderer(
+                container.createGlyphRenderer("Quicksand Pro", 64));
+        GuiStyle style = new GuiBasicStyle(font, container.gl().textures());
+        globalGui = new Gui(style, GuiAlignment.STRETCH);
+        debugGui = new GuiDebugLayer(style);
         globalGui.add(debugGui);
         GuiWidgetDebugValues debugValues = debugGui.values();
         usedMemoryDebug = debugValues.get("Runtime-Memory-Used");
         maxMemoryDebug = debugValues.get("Runtime-Memory-Max");
-        game.init();
-        container = backend.createContainer(this);
         graphics = new GraphicsSystem(this, container.gl());
         sounds = new SoundSystem(this, container.al());
         controller = container.controller();

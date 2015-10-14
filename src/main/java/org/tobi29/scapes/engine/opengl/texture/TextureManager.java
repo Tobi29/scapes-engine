@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.texture;
 
 import org.slf4j.Logger;
@@ -73,6 +72,10 @@ public class TextureManager {
             texture = load(asset);
         }
         return texture;
+    }
+
+    public Texture empty() {
+        return empty;
     }
 
     private Texture load(String asset) {

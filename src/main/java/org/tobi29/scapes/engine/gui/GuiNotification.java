@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.Mesh;
+import org.tobi29.scapes.engine.opengl.OpenGL;
+import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -25,11 +27,14 @@ public class GuiNotification extends Gui {
     private final Gui parent;
     private final VAO vao;
     private final double speed;
+    private final float x, y;
     private double progress;
 
     public GuiNotification(Gui parent, int x, int y, int width, int height,
-            GuiAlignment alignment, double time) {
-        super(x, y, width, height, alignment);
+            GuiStyle style, GuiAlignment alignment, double time) {
+        super(width, height, style, alignment);
+        this.x = x;
+        this.y = y;
         this.parent = parent;
         Mesh mesh = new Mesh(true);
         GuiUtils.renderShadow(mesh, 0.0f, 0.0f, width, height, 0.2f);
@@ -45,8 +50,7 @@ public class GuiNotification extends Gui {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, FontRenderer font,
-            double delta) {
+    public void renderComponent(GL gl, Shader shader, double delta) {
         progress += speed * delta;
         gl.textures().unbind(gl);
         gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -58,9 +62,9 @@ public class GuiNotification extends Gui {
 
     @Override
     protected void transform(Matrix matrix) {
-        double sin = FastMath.sin(progress * FastMath.PI) - 1.0;
-        double sqr = sin * sin;
+        float sin = (float) FastMath.sin(progress * FastMath.PI) - 1.0f;
+        float sqr = sin * sin;
         sqr *= sqr;
-        matrix.translate(x, (float) (y + sqr * sin * height), 0);
+        matrix.translate(x, y + sqr * sin * height, 0.0f);
     }
 }

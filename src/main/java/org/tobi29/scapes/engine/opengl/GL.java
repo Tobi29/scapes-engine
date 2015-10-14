@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
 import org.tobi29.scapes.engine.ScapesEngine;
@@ -28,7 +27,6 @@ import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f;
 
 public abstract class GL implements OpenGL {
     protected final ScapesEngine engine;
-    private final FontRenderer defaultFont;
     private final TextureManager textureManager;
     private final ShaderManager shaderManager;
     private final MatrixStack matrixStack;
@@ -47,12 +45,6 @@ public abstract class GL implements OpenGL {
         shaderManager = new ShaderManager(engine);
         resolutionMultiplier = engine.config().resolutionMultiplier();
         container.loadFont("Engine:font/QuicksandPro-Regular");
-        defaultFont = new FontRenderer(
-                container.createGlyphRenderer("Quicksand Pro", 64));
-    }
-
-    public FontRenderer defaultFont() {
-        return defaultFont;
     }
 
     public void reshape(int contentWidth, int contentHeight, int containerWidth,
@@ -66,7 +58,6 @@ public abstract class GL implements OpenGL {
 
     public void dispose() {
         textureManager.clearCache(this);
-        defaultFont.dispose(this);
         VAO.disposeAll(this);
     }
 

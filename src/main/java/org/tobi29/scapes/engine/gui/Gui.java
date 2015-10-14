@@ -13,39 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.utils.Pair;
 
 public class Gui extends GuiComponent {
+    protected final GuiStyle style;
     private final GuiAlignment alignment;
     private GuiComponent lastClicked;
 
-    public Gui(GuiAlignment alignment) {
-        this(0, 0, 800, 512, alignment);
+    public Gui(GuiStyle style, GuiAlignment alignment) {
+        this(800, 512, style, alignment);
     }
 
-    public Gui(int x, int y, int width, int height, GuiAlignment alignment) {
-        super(x, y, width, height);
+    public Gui(int width, int height, GuiStyle style, GuiAlignment alignment) {
+        super(width, height);
+        this.style = style;
         this.alignment = alignment;
     }
 
     public void add(Gui add) {
-        changeComponents.add(new Pair<>(true, add));
+        add(add, 0.0f, 0.0f);
+    }
+
+    public void add(Gui add, float x, float y) {
+        changeComponents.add(() -> append(add, x, y));
     }
 
     @Override
-    public void render(GL gl, Shader shader, FontRenderer font, double delta) {
+    public void render(GL gl, Shader shader, double delta) {
         if (visible) {
             if (alignment == GuiAlignment.STRETCH) {
-                super.render(gl, shader, font, delta);
+                super.render(gl, shader, delta);
             } else {
                 MatrixStack matrixStack = gl.matrixStack();
                 Matrix matrix = matrixStack.push();
@@ -60,7 +63,7 @@ public class Gui extends GuiComponent {
                         matrix.translate(-800.0f + 800.0f / ratio, 0.0f, 0.0f);
                         break;
                 }
-                super.render(gl, shader, font, delta);
+                super.render(gl, shader, delta);
                 matrixStack.pop();
             }
         }
@@ -70,6 +73,10 @@ public class Gui extends GuiComponent {
     public void update(double mouseX, double mouseY, boolean mouseInside,
             ScapesEngine engine) {
         super.update(alignedX(mouseX, engine), mouseY, mouseInside, engine);
+    }
+
+    public GuiStyle style() {
+        return style;
     }
 
     public GuiComponent lastClicked() {
@@ -83,22 +90,22 @@ public class Gui extends GuiComponent {
     protected double alignedX(double x, ScapesEngine engine) {
         switch (alignment) {
             case LEFT:
-                x *= engine.container().containerWidth() * 512.0f /
+                x *= engine.container().containerWidth() * 512.0 /
                         engine.container().containerHeight() /
-                        800.0f;
+                        800.0;
                 return x;
             case CENTER: {
-                float width = engine.container().containerWidth() * 512.0f /
+                double width = engine.container().containerWidth() * 512.0 /
                         engine.container().containerHeight();
-                x *= width / 800.0f;
-                x += (800.0f - width) * 0.5f;
+                x *= width / 800.0;
+                x += (800.0 - width) * 0.5;
                 return x;
             }
             case RIGHT: {
-                float width = engine.container().containerWidth() * 512.0f /
+                double width = engine.container().containerWidth() * 512.0 /
                         engine.container().containerHeight();
-                x *= width / 800.0f;
-                x += 800.0f - width;
+                x *= width / 800.0;
+                x += 800.0 - width;
                 return x;
             }
         }

@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.scenes;
 
 import org.tobi29.scapes.engine.gui.Gui;
 import org.tobi29.scapes.engine.gui.GuiAlignment;
 import org.tobi29.scapes.engine.gui.GuiComponentIcon;
+import org.tobi29.scapes.engine.gui.GuiStyle;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 
@@ -34,7 +34,7 @@ public class SceneImage extends Scene {
 
     @Override
     public void init(GL gl) {
-        addGui(new GuiImage(image));
+        addGui(new GuiImage(image, state.engine().globalGUI().style()));
     }
 
     @Override
@@ -50,8 +50,8 @@ public class SceneImage extends Scene {
     }
 
     private class GuiImage extends Gui {
-        public GuiImage(Texture texture) {
-            super(GuiAlignment.CENTER);
+        public GuiImage(Texture texture, GuiStyle style) {
+            super(style, GuiAlignment.CENTER);
             int width = texture.width();
             int height = texture.height();
             double ratio = (double) width / height;

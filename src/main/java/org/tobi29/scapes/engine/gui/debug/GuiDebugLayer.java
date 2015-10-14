@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui.debug;
 
 import org.tobi29.scapes.engine.gui.Gui;
 import org.tobi29.scapes.engine.gui.GuiAlignment;
+import org.tobi29.scapes.engine.gui.GuiStyle;
 
 public class GuiDebugLayer extends Gui {
-    private final GuiWidgetDebugValues debugValues = new GuiWidgetDebugValues();
+    private final GuiWidgetDebugValues debugValues =
+            new GuiWidgetDebugValues(this);
 
-    public GuiDebugLayer() {
-        super(GuiAlignment.STRETCH);
-        add(debugValues);
+    public GuiDebugLayer(GuiStyle style) {
+        super(style, GuiAlignment.LEFT);
         debugValues.setVisible(false);
     }
 

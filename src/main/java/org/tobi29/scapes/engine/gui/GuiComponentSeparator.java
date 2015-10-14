@@ -13,43 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.utils.Pair;
 
 public class GuiComponentSeparator extends GuiComponent {
-    private final VAO vao;
+    private final Pair<VAO, Texture> vao;
 
     public GuiComponentSeparator(GuiComponent parent, int x, int y, int width,
             int height) {
         super(parent, x, y, width, height);
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, width, height, 0.1f);
-        float halfHeight = height * 0.5f;
-        mesh.color(0, 0, 0, 0.3f);
-        mesh.vertex(0.0f, 0.0f, 0.0f);
-        mesh.vertex(width, halfHeight, 0.0f);
-        mesh.vertex(width, 0.0f, 0.0f);
-        mesh.vertex(0.0f, halfHeight, 0.0f);
-        mesh.vertex(width, halfHeight, 0.0f);
-        mesh.vertex(0.0f, 0.0f, 0.0f);
-        mesh.color(0.2f, 0.2f, 0.2f, 0.3f);
-        mesh.vertex(0.0f, halfHeight, 0.0f);
-        mesh.vertex(width, height, 0.0f);
-        mesh.vertex(width, halfHeight, 0.0f);
-        mesh.vertex(0.0f, height, 0.0f);
-        mesh.vertex(width, height, 0.0f);
-        mesh.vertex(0.0f, halfHeight, 0.0f);
-        vao = mesh.finish();
+        vao = gui.style().separator(width, height);
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, FontRenderer font,
-            double delta) {
-        gl.textures().unbind(gl);
-        gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f);
-        vao.render(gl, shader);
+    public void renderComponent(GL gl, Shader shader, double delta) {
+        vao.b.bind(gl);
+        vao.a.render(gl, shader);
     }
 }
