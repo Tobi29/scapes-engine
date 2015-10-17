@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
-import org.tobi29.scapes.engine.utils.ArrayUtil;
+import org.tobi29.scapes.engine.utils.Checksum;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
 
 import java.io.IOException;
@@ -32,72 +31,74 @@ public final class ChecksumUtil {
     }
 
     /**
-     * Creates a SHA1 checksum from the given {@code byte[]}
+     * Creates a checksum from the given array
      *
      * @param array Byte array that will be used to create the checksum
-     * @return A {@code String} that represents a hexadecimal encoding of the
-     * checksum
+     * @return A {@link Checksum} containing the checksum
      */
-    public static String getChecksum(byte... array) {
-        return getChecksum(array, Algorithm.SHA256);
+    public static Checksum checksum(byte[] array) {
+        return checksum(array, Algorithm.SHA256);
     }
 
     /**
-     * Creates a checksum from the given {@code byte[]}
+     * Creates a checksum from the given array
      *
      * @param array     Byte array that will be used to create the checksum
      * @param algorithm The algorithm that will be used to create the checksum
-     * @return A {@code String} that represents a hexadecimal encoding of the
-     * checksum
+     * @return A {@link Checksum} containing the checksum
      */
-    public static String getChecksum(byte[] array, Algorithm algorithm) {
-        return ArrayUtil.toHexadecimal(createChecksum(array, algorithm));
+    public static Checksum checksum(byte[] array, Algorithm algorithm) {
+        MessageDigest digest = algorithm.digest();
+        digest.update(array);
+        return new Checksum(digest.digest());
     }
 
     /**
-     * Creates a checksum from the given {@code byte[]}
+     * Creates a checksum from the given {@link ByteBuffer}
      *
-     * @param array Byte array that will be used to create the checksum
-     * @return A {@code byte[]} containing the checksum
+     * @param buffer {@link ByteBuffer} that will be used to create the checksum
+     * @return A {@link Checksum} containing the checksum
      */
-    public static byte[] createChecksum(byte[] array) {
-        return createChecksum(array, Algorithm.SHA256);
+    public static Checksum checksum(ByteBuffer buffer) {
+        return checksum(buffer, Algorithm.SHA256);
     }
 
     /**
-     * Creates a checksum from the given {@code byte[]}
+     * Creates a checksum from the given {@link ByteBuffer}
      *
-     * @param array     Byte array that will be used to create the checksum
+     * @param buffer    {@link ByteBuffer} that will be used to create the checksum
      * @param algorithm The algorithm that will be used to create the checksum
-     * @return A {@code byte[]} containing the checksum
+     * @return A {@link Checksum} containing the checksum
      */
-    public static byte[] createChecksum(byte[] array, Algorithm algorithm) {
-        MessageDigest complete = algorithm.digest();
-        complete.update(array);
-        return complete.digest();
-    }
-
-    public static byte[] createChecksum(ByteBuffer buffer) {
-        return createChecksum(buffer, Algorithm.SHA256);
-    }
-
-    public static byte[] createChecksum(ByteBuffer buffer,
-            Algorithm algorithm) {
+    public static Checksum checksum(ByteBuffer buffer, Algorithm algorithm) {
         MessageDigest digest = algorithm.digest();
         digest.update(buffer);
-        return digest.digest();
+        return new Checksum(digest.digest());
     }
 
-    public static byte[] createChecksum(ReadableByteStream input)
+    /**
+     * Creates a checksum from the given {@link ReadableByteStream}
+     *
+     * @param input {@link ReadableByteStream} that will be used to create the checksum
+     * @return A {@link Checksum} containing the checksum
+     */
+    public static Checksum checksum(ReadableByteStream input)
             throws IOException {
-        return createChecksum(input, Algorithm.SHA256);
+        return checksum(input, Algorithm.SHA256);
     }
 
-    public static byte[] createChecksum(ReadableByteStream input,
+    /**
+     * Creates a checksum from the given {@link ReadableByteStream}
+     *
+     * @param input     {@link ReadableByteStream} that will be used to create the checksum
+     * @param algorithm The algorithm that will be used to create the checksum
+     * @return A {@link Checksum} containing the checksum
+     */
+    public static Checksum checksum(ReadableByteStream input,
             Algorithm algorithm) throws IOException {
         MessageDigest digest = algorithm.digest();
         ProcessStream.process(input, digest::update);
-        return digest.digest();
+        return new Checksum(digest.digest());
     }
 
     /**
