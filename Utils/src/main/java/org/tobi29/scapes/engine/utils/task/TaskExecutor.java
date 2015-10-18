@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.task;
 
 import org.tobi29.scapes.engine.utils.Crashable;
@@ -99,6 +98,30 @@ public class TaskExecutor {
         return thread.joinable.joiner();
     }
 
+    public void addTask(OneshotTask task, String name) {
+        addTask(task, name, 0);
+    }
+
+    public void addTask(OneshotTask task, String name, long delay) {
+        addTask(task, name, delay, false);
+    }
+
+    public void addTask(OneshotTask task, String name, long delay,
+            boolean async) {
+        addTask(() -> {
+            task.run();
+            return -1;
+        }, name, delay, async);
+    }
+
+    public void addTask(Task task, String name) {
+        addTask(task, name, 0);
+    }
+
+    public void addTask(Task task, String name, long delay) {
+        addTask(task, name, delay, false);
+    }
+
     public void addTask(Task task, String name, long delay, boolean async) {
         delay += System.currentTimeMillis();
         synchronized (tasks) {
@@ -132,6 +155,11 @@ public class TaskExecutor {
     @FunctionalInterface
     public interface Task {
         long run();
+    }
+
+    @FunctionalInterface
+    public interface OneshotTask {
+        void run();
     }
 
     @FunctionalInterface
