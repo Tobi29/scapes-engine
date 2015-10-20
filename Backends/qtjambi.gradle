@@ -1,0 +1,41 @@
+/*
+ * Copyright 2012-2015 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+apply from: "$rootDir/ScapesEngine/resources/qtjambi.gradle"
+
+dependencies {
+    compile project(":ScapesEngine:Backends:QtJambiBackend")
+    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.0a:natives-linux"
+    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.0a:natives-linux"
+    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.0a:natives-osx"
+    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.0a:natives-windows"
+    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.0a:natives-windows"
+    nativesLinux32 "net.java.jinput:jinput-platform:2.0.6:natives-linux"
+    nativesLinux64 "net.java.jinput:jinput-platform:2.0.6:natives-linux"
+    nativesMacOSX "net.java.jinput:jinput-platform:2.0.6:natives-osx"
+    nativesWindows32 "net.java.jinput:jinput-platform:2.0.6:natives-windows"
+    nativesWindows64 "net.java.jinput:jinput-platform:2.0.6:natives-windows"
+
+    runtimeLinux32 qtJambiLinux32
+    nativesLinux32 qtJambiLinux32Natives
+    runtimeLinux64 qtJambiLinux64
+    nativesLinux64 qtJambiLinux64Natives
+    runtimeMacOSX qtJambiMacOSX
+    nativesMacOSX qtJambiMacOSXNatives
+    runtimeWindows32 qtJambiWindows32
+    nativesWindows32 qtJambiWindows32Natives
+    runtimeWindows64 qtJambiWindows64
+    nativesWindows64 qtJambiWindows64Natives
+}
