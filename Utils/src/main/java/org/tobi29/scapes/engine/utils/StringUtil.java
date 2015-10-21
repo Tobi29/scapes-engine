@@ -15,6 +15,9 @@
  */
 package org.tobi29.scapes.engine.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
@@ -58,5 +61,32 @@ public final class StringUtil {
                 REPLACE_W.matcher(REPLACE_Q.matcher(exp).replaceAll(".?"))
                         .replaceAll(".*");
         return Pattern.compile(regex);
+    }
+
+    /**
+     * Assembles a list of replace operations
+     *
+     * @param array Matcher and replacement strings
+     *              Requires 2 arguments per pattern
+     * @return A {@link Function} that runs the replaces on a string
+     */
+    public static Function<String, String> replace(String... array) {
+        if (array.length % 2 != 0) {
+            throw new IllegalArgumentException(
+                    "Amount of arguments has to be a power of 2");
+        }
+        List<Function<String, String>> patterns =
+                new ArrayList<>(array.length >> 1);
+        for (int i = 0; i < array.length; i += 2) {
+            Pattern pattern = Pattern.compile(array[i]);
+            String replace = array[i + 1];
+            patterns.add(str -> pattern.matcher(str).replaceAll(replace));
+        }
+        return str -> {
+            for (Function<String, String> pattern : patterns) {
+                str = pattern.apply(str);
+            }
+            return str;
+        };
     }
 }
