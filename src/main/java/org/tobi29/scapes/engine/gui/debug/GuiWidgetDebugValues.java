@@ -27,16 +27,17 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
     private final Map<String, Element> elements = new ConcurrentHashMap<>();
     private final GuiComponentScrollPaneViewport scrollPane;
 
-    public GuiWidgetDebugValues(GuiComponent parent) {
-        super(parent, 32, 32, 360, 240, "Debug Values");
-        scrollPane = new GuiComponentScrollPaneList(this, 10, 10, 340, 220, 20)
-                .viewport();
+    public GuiWidgetDebugValues(GuiLayoutData parent) {
+        super(parent, 360, 240, "Debug Values");
+        scrollPane =
+                add(10, 10, p -> new GuiComponentScrollPane(p, 340, 220, 20))
+                        .viewport();
     }
 
     public synchronized Element get(String key) {
         Element element = elements.get(key);
         if (element == null) {
-            element = new Element(scrollPane, key);
+            element = scrollPane.addVert(0, 0, p -> new Element(p, key));
             elements.put(key, element);
         }
         return element;
@@ -50,10 +51,11 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         private final GuiComponentText value;
         private final AtomicReference<String> text = new AtomicReference<>();
 
-        private Element(GuiComponent parent, String key) {
-            super(parent, 0, 0, 378, 20);
-            new GuiComponentTextButton(this, 10, 2, 180, 15, 12, key);
-            value = new GuiComponentText(this, 200, 5, 12, "");
+        private Element(GuiLayoutData parent, String key) {
+            super(parent, 378, 20);
+            addHori(3, 3,
+                    p -> new GuiComponentTextButton(p, 180, 15, 12, key));
+            value = addHori(3, 3, p -> new GuiComponentText(p, 12, ""));
         }
 
         public void setValue(String value) {

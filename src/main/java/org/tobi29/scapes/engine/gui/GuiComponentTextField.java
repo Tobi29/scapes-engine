@@ -23,44 +23,43 @@ public class GuiComponentTextField extends GuiComponentButton {
     protected final GuiComponentEditableText text;
     protected final boolean major;
 
-    public GuiComponentTextField(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text) {
-        this(parent, x, y, width, height, textSize, text, false);
+    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
+            int textSize, String text) {
+        this(parent, width, height, textSize, text, false);
     }
 
-    public GuiComponentTextField(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text, boolean hiddenText) {
-        this(parent, x, y, width, height, textSize, text, Integer.MAX_VALUE,
+    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
+            int textSize, String text, boolean hiddenText) {
+        this(parent, width, height, textSize, text, Integer.MAX_VALUE,
                 hiddenText);
     }
 
-    public GuiComponentTextField(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text, int maxLength) {
-        this(parent, x, y, width, height, textSize, text, maxLength, false);
+    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
+            int textSize, String text, int maxLength) {
+        this(parent, width, height, textSize, text, maxLength, false);
     }
 
-    public GuiComponentTextField(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text, int maxLength,
-            boolean hiddenText) {
-        this(parent, x, y, width, height, textSize, text, maxLength, hiddenText,
+    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
+            int textSize, String text, int maxLength, boolean hiddenText) {
+        this(parent, width, height, textSize, text, maxLength, hiddenText,
                 false);
     }
 
-    public GuiComponentTextField(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text, int maxLength,
-            boolean hiddenText, boolean major) {
-        this(parent, x, y, width, height, 4, textSize, text, maxLength,
-                hiddenText, major);
+    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
+            int textSize, String text, int maxLength, boolean hiddenText,
+            boolean major) {
+        this(parent, width, height, 4, textSize, text, maxLength, hiddenText,
+                major);
     }
 
-    public GuiComponentTextField(GuiComponent parent, int x, int y, int width,
-            int height, int textX, int textSize, String text, int maxLength,
+    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
+            int textX, int textSize, String text, int maxLength,
             boolean hiddenText, boolean major) {
-        super(parent, x, y, width, height);
+        super(parent, width, height);
         int textY = (height - textSize) / 2;
-        this.text =
-                new GuiComponentEditableText(this, textX, textY, width - textX,
-                        textSize, text, maxLength);
+        this.text = addSub(textX, textY,
+                p -> new GuiComponentEditableText(p, width - textX, textSize,
+                        text, maxLength));
         this.major = major;
         if (hiddenText) {
             this.text.setTextFilter(str -> {

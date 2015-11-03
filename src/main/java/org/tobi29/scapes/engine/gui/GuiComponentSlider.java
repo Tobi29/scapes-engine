@@ -34,18 +34,17 @@ public class GuiComponentSlider extends GuiComponent {
     private FontRenderer.Text vaoText;
     private Pair<VAO, Texture> vao;
 
-    public GuiComponentSlider(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text, double value) {
-        this(parent, x, y, width, height, textSize, text, value,
+    public GuiComponentSlider(GuiLayoutData parent, int width, int height,
+            int textSize, String text, double value) {
+        this(parent, width, height, textSize, text, value,
                 (text1, value1) -> text1 + ": " +
                         (int) (value1 * 100) +
                         '%');
     }
 
-    public GuiComponentSlider(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text, double value,
-            TextFilter textFilter) {
-        super(parent, x, y, width, height);
+    public GuiComponentSlider(GuiLayoutData parent, int width, int height,
+            int textSize, String text, double value, TextFilter textFilter) {
+        super(parent, width, height);
         this.text = text;
         this.textSize = textSize;
         this.value = value;

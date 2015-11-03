@@ -14,38 +14,35 @@ public class GuiComponentEditableText extends GuiComponentText {
     protected boolean active;
     protected FontRenderer.Text vaoCursor, vaoSelection;
 
-    public GuiComponentEditableText(GuiComponent parent, int x, int y,
+    public GuiComponentEditableText(GuiLayoutData parent, int textSize,
+            String text) {
+        this(parent, Integer.MAX_VALUE, textSize, text);
+    }
+
+    public GuiComponentEditableText(GuiLayoutData parent, int textSize,
+            String text, float r, float g, float b, float a) {
+        this(parent, Integer.MAX_VALUE, textSize, text, r, g, b, a);
+    }
+
+    public GuiComponentEditableText(GuiLayoutData parent, int width,
             int textSize, String text) {
-        this(parent, x, y, Integer.MAX_VALUE, textSize, text);
+        this(parent, width, textSize, text, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public GuiComponentEditableText(GuiComponent parent, int x, int y,
+    public GuiComponentEditableText(GuiLayoutData parent, int width,
             int textSize, String text, float r, float g, float b, float a) {
-        this(parent, x, y, Integer.MAX_VALUE, textSize, text, r, g, b, a);
+        this(parent, width, textSize, text, Integer.MAX_VALUE, r, g, b, a);
     }
 
-    public GuiComponentEditableText(GuiComponent parent, int x, int y,
-            int width, int textSize, String text) {
-        this(parent, x, y, width, textSize, text, 1.0f, 1.0f, 1.0f, 1.0f);
+    public GuiComponentEditableText(GuiLayoutData parent, int width,
+            int textSize, String text, int maxLength) {
+        this(parent, width, textSize, text, maxLength, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public GuiComponentEditableText(GuiComponent parent, int x, int y,
-            int width, int textSize, String text, float r, float g, float b,
+    public GuiComponentEditableText(GuiLayoutData parent, int width,
+            int textSize, String text, int maxLength, float r, float g, float b,
             float a) {
-        this(parent, x, y, width, textSize, text, Integer.MAX_VALUE, r, g, b,
-                a);
-    }
-
-    public GuiComponentEditableText(GuiComponent parent, int x, int y,
-            int width, int textSize, String text, int maxLength) {
-        this(parent, x, y, width, textSize, text, maxLength, 1.0f, 1.0f, 1.0f,
-                1.0f);
-    }
-
-    public GuiComponentEditableText(GuiComponent parent, int x, int y,
-            int width, int textSize, String text, int maxLength, float r,
-            float g, float b, float a) {
-        super(parent, x, y, width, textSize, text, r, g, b, a);
+        super(parent, width, textSize, text, r, g, b, a);
         this.maxLength = maxLength;
         updateText();
         data.cursor = data.text.length();

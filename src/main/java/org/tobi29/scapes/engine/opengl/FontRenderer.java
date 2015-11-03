@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FontRenderer {
-    public static final Text EMPTY_TEXT = new Text(new TextVAO[0], "", 0);
+    public static final Text EMPTY_TEXT = new Text(new TextVAO[0], "", 0.0, 0);
     private static final Logger LOGGER =
             LoggerFactory.getLogger(FontRenderer.class);
     private static final GlyphPage[] EMPTY_GLYPH_PAGE = new GlyphPage[0];
@@ -89,6 +89,7 @@ public class FontRenderer {
             return EMPTY_TEXT;
         }
         Map<Integer, Mesh> meshes = new ConcurrentHashMap<>();
+        double textWidth = 0.0;
         int length = 0;
         float xx = 0.0f, yy = 0.0f;
         for (int i = 0; i < text.length(); i++) {
@@ -144,6 +145,7 @@ public class FontRenderer {
                     mesh.vertex(xxx + w, yyy, 0.0f);
                 }
                 xx += actualWidth;
+                textWidth = FastMath.max(textWidth, xx);
                 length++;
             }
         }
@@ -153,7 +155,7 @@ public class FontRenderer {
             vaos[i++] = new TextVAO(entry.getValue().finish(),
                     pages[entry.getKey()].texture);
         }
-        return new Text(vaos, text, length);
+        return new Text(vaos, text, textWidth, length);
     }
 
     public void dispose() {
@@ -164,11 +166,13 @@ public class FontRenderer {
     public static class Text {
         private final TextVAO[] vaos;
         private final String text;
+        private final double width;
         private final int length;
 
-        private Text(TextVAO[] vaos, String text, int length) {
+        private Text(TextVAO[] vaos, String text, double width, int length) {
             this.vaos = vaos;
             this.text = text;
+            this.width = width;
             this.length = length;
         }
 
@@ -189,6 +193,10 @@ public class FontRenderer {
 
         public String text() {
             return text;
+        }
+
+        public double width() {
+            return width;
         }
 
         public int length() {

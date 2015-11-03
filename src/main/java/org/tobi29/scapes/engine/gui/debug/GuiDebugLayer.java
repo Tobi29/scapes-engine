@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.gui.GuiStyle;
 
 public class GuiDebugLayer extends Gui {
     private final GuiWidgetDebugValues debugValues =
-            new GuiWidgetDebugValues(this);
+            add(32, 32, GuiWidgetDebugValues::new);
 
     public GuiDebugLayer(GuiStyle style) {
         super(style, GuiAlignment.LEFT);

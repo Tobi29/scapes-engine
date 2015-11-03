@@ -24,9 +24,8 @@ import org.tobi29.scapes.engine.utils.Pair;
 public class GuiComponentSeparator extends GuiComponent {
     private final Pair<VAO, Texture> vao;
 
-    public GuiComponentSeparator(GuiComponent parent, int x, int y, int width,
-            int height) {
-        super(parent, x, y, width, height);
+    public GuiComponentSeparator(GuiLayoutData parent, int width, int height) {
+        super(parent, width, height);
         vao = gui.style().separator(width, height);
     }
 

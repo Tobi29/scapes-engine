@@ -24,11 +24,10 @@ import org.tobi29.scapes.engine.utils.Pair;
 
 public class GuiComponentButton extends GuiComponent {
     private boolean hover;
-    private Pair<VAO,Texture> vao;
+    private Pair<VAO, Texture> vao;
 
-    public GuiComponentButton(GuiComponent parent, int x, int y, int width,
-            int height) {
-        super(parent, x, y, width, height);
+    public GuiComponentButton(GuiLayoutData parent, int width, int height) {
+        super(parent, width, height);
         updateMesh();
     }
 

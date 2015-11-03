@@ -21,30 +21,32 @@ import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.math.FastMath;
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 import java.util.Optional;
 
-public class GuiComponentScrollPaneViewport extends GuiComponent {
+public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     protected final int scrollStep;
     protected final Optional<GuiComponentSliderVert> slider;
     private double maxY, scroll;
 
-    public GuiComponentScrollPaneViewport(GuiComponent parent, int x, int y,
-            int width, int height, int scrollStep) {
-        this(parent, Optional.empty(), x, y, width, height, scrollStep);
-    }
-
-    public GuiComponentScrollPaneViewport(GuiComponent parent,
-            GuiComponentSliderVert slider, int x, int y, int width, int height,
-            int scrollStep) {
-        this(parent, Optional.of(slider), x, y, width, height, scrollStep);
-    }
-
-    private GuiComponentScrollPaneViewport(GuiComponent parent,
-            Optional<GuiComponentSliderVert> slider, int x, int y, int width,
+    public GuiComponentScrollPaneViewport(GuiLayoutData parent, int width,
             int height, int scrollStep) {
-        super(parent, x, y, width, height);
+        this(parent, Optional.empty(), width, height, scrollStep);
+    }
+
+    public GuiComponentScrollPaneViewport(GuiLayoutData parent,
+            GuiComponentSliderVert slider, int width, int height,
+            int scrollStep) {
+        this(parent, Optional.of(slider), width, height, scrollStep);
+    }
+
+    private GuiComponentScrollPaneViewport(GuiLayoutData parent,
+            Optional<GuiComponentSliderVert> slider, int width, int height,
+            int scrollStep) {
+        super(parent, width, height);
         this.slider = slider;
         this.scrollStep = scrollStep;
     }
@@ -52,28 +54,20 @@ public class GuiComponentScrollPaneViewport extends GuiComponent {
     @Override
     public void render(GL gl, Shader shader, double delta) {
         if (visible) {
-            int yy = 0;
-            GuiComponent child = this;
-            while (true) {
-                if (!child.parent.isPresent()) {
-                    break;
-                }
-                GuiComponent parent = child.parent.get();
-                MutableVector2 pos = parent.components.get(child);
-                if (pos == null) {
-                    return;
-                }
-                yy += pos.floatY();
-                child = parent;
-            }
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
             transform(matrix);
             renderComponent(gl, shader, delta);
+            Vector3 start = matrix.modelView().multiply(Vector3d.ZERO);
+            Vector3 end = matrix.modelView()
+                    .multiply(new Vector3d(width, height, 0.0));
             matrix = matrixStack.push();
             matrix.translate(0.0f, (float) -scroll, 0.0f);
-            gl.enableScissor(0, yy, 800, height);
-            components.forEach((component, pos) -> {
+            gl.enableScissor(start.intX(), start.intY(),
+                    end.intX() - start.intX(), end.intY() - start.intY());
+            GuiLayoutManager layout = new GuiLayoutManager();
+            components.forEach(component -> {
+                Vector2 pos = layout.layout(component);
                 if (!inside(pos)) {
                     return;
                 }
@@ -113,6 +107,22 @@ public class GuiComponentScrollPaneViewport extends GuiComponent {
     }
 
     @Override
+    public void updateChildren(double mouseX, double mouseY, boolean inside,
+            ScapesEngine engine) {
+        while (!changeComponents.isEmpty()) {
+            changeComponents.poll().run();
+        }
+        GuiLayoutManager layout = new GuiLayoutManager();
+        components.forEach(component -> {
+            Vector2 pos = layout.layout(component);
+            double mouseXX = mouseX - pos.doubleX();
+            double mouseYY = mouseY - pos.doubleY();
+            updateChild(component, mouseXX, mouseYY, inside, engine);
+        });
+        setMaxY(layout.size().doubleY());
+    }
+
+    @Override
     protected void updateChild(GuiComponent component, double mouseX,
             double mouseY, boolean inside, ScapesEngine engine) {
         boolean childInside = inside && inside(component);
@@ -120,18 +130,18 @@ public class GuiComponentScrollPaneViewport extends GuiComponent {
     }
 
     protected boolean inside(GuiComponent component) {
-        MutableVector2 pos = components.get(component);
-        return pos != null && inside(pos);
+        GuiLayoutData data = component.parent;
+        return !(data instanceof GuiLayoutDataAbsolute) ||
+                inside(((GuiLayoutDataAbsolute) data).pos());
     }
 
-    protected boolean inside(MutableVector2 pos) {
+    protected boolean inside(Vector2 pos) {
         double y = pos.doubleY() - scroll;
         return y > -scrollStep && y < height;
     }
 
     public void setMaxY(double maxY) {
-        this.maxY = maxY;
-        maxY += scrollStep;
+        this.maxY = maxY - scrollStep;
         if (slider.isPresent()) {
             if (maxY <= 0) {
                 slider.get().setSliderHeight(height);

@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 
-public class Gui extends GuiComponent {
+public class Gui extends GuiComponentPane {
     protected final GuiStyle style;
     private final GuiAlignment alignment;
     private GuiComponent lastClicked;
@@ -31,17 +31,13 @@ public class Gui extends GuiComponent {
     }
 
     public Gui(int width, int height, GuiStyle style, GuiAlignment alignment) {
-        super(width, height);
+        super(new GuiLayoutDataRoot(), width, height);
         this.style = style;
         this.alignment = alignment;
     }
 
     public void add(Gui add) {
-        add(add, 0.0f, 0.0f);
-    }
-
-    public void add(Gui add, float x, float y) {
-        changeComponents.add(() -> append(add, x, y));
+        changeComponents.add(() -> append(add));
     }
 
     @Override

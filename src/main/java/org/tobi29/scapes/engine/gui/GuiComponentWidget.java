@@ -23,18 +23,18 @@ import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
 
-public class GuiComponentWidget extends GuiComponent {
+public class GuiComponentWidget extends GuiComponentPane {
     private final Pair<VAO, Texture> vao;
     private final GuiComponentWidgetTitle titleBar;
     private double dragX, dragY;
     private boolean dragging;
 
-    public GuiComponentWidget(GuiComponent parent, int x, int y, int width,
-            int height, String name) {
-        super(parent, x, y, width, height);
+    public GuiComponentWidget(GuiLayoutData parent, int width, int height,
+            String name) {
+        super(parent, width, height);
         vao = gui.style().widget(width, height);
-        titleBar =
-                new GuiComponentWidgetTitle(this, 0, -16, width, 16, 12, name);
+        titleBar = addSub(0, -16,
+                p -> new GuiComponentWidgetTitle(p, width, 16, 12, name));
     }
 
     @Override
@@ -47,14 +47,11 @@ public class GuiComponentWidget extends GuiComponent {
     public void update(double mouseX, double mouseY, boolean mouseInside,
             ScapesEngine engine) {
         super.update(mouseX, mouseY, mouseInside, engine);
-        if (!parent.isPresent()) {
+        GuiLayoutData data = parent;
+        if (!(data instanceof GuiLayoutDataAbsolute)) {
             return;
         }
-        GuiComponent parent = this.parent.get();
-        MutableVector2 pos = parent.components.get(this);
-        if (pos == null) {
-            return;
-        }
+        MutableVector2 pos = ((GuiLayoutDataAbsolute) data).posMutable();
         double mouseXX = mouseX + pos.doubleX();
         double mouseYY = mouseY + pos.doubleY();
         GuiController guiController = engine.guiController();

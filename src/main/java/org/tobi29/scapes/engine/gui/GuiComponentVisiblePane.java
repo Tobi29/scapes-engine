@@ -21,12 +21,12 @@ import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 
-public class GuiComponentVisiblePane extends GuiComponent {
+public class GuiComponentVisiblePane extends GuiComponentPane {
     private final Pair<VAO, Texture> vao;
 
-    public GuiComponentVisiblePane(GuiComponent parent, int x, int y, int width,
+    public GuiComponentVisiblePane(GuiLayoutData parent, int width,
             int height) {
-        super(parent, x, y, width, height);
+        super(parent, width, height);
         vao = gui.style().pane(width, height);
     }
 

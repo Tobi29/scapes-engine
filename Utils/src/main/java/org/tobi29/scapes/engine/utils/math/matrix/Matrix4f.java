@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.matrix;
 
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 import java.nio.FloatBuffer;
 
@@ -184,6 +185,18 @@ public class Matrix4f {
         d.v32 = v02 * o.v30 + v12 * o.v31 + v22 * o.v32 + v32 * o.v33;
         d.v33 = v03 * o.v30 + v13 * o.v31 + v23 * o.v32 + v33 * o.v33;
         d.changed = true;
+    }
+
+    public Vector3 multiply(Vector3 v) {
+        double x = v.doubleX();
+        double y = v.doubleY();
+        double z = v.doubleZ();
+        double w = 1.0;
+        double v1 = v00 * x + v10 * y + v20 * z + v30 * w;
+        double v2 = v01 * x + v11 * y + v21 * z + v31 * w;
+        double v3 = v02 * x + v12 * y + v22 * z + v32 * w;
+        double v4 = v03 * x + v13 * y + v23 * z + v33 * w;
+        return new Vector3d(v1, v2, v3);
     }
 
     public void perspective(float fov, float aspectRatio, float near,

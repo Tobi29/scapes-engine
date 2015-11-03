@@ -20,32 +20,32 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 
 public class GuiComponentText extends GuiComponent {
-    protected final int textSize;
+    protected final int textSize, textWidth;
     protected final float r, g, b, a;
     protected String text;
     protected TextFilter textFilter = str -> str;
     protected FontRenderer.Text vaoText;
 
-    public GuiComponentText(GuiComponent parent, int x, int y, int textSize,
+    public GuiComponentText(GuiLayoutData parent, int textSize, String text) {
+        this(parent, Integer.MAX_VALUE, textSize, text);
+    }
+
+    public GuiComponentText(GuiLayoutData parent, int textSize, String text,
+            float r, float g, float b, float a) {
+        this(parent, Integer.MAX_VALUE, textSize, text, r, g, b, a);
+    }
+
+    public GuiComponentText(GuiLayoutData parent, int width, int textSize,
             String text) {
-        this(parent, x, y, Integer.MAX_VALUE, textSize, text);
+        this(parent, width, textSize, text, 1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    public GuiComponentText(GuiComponent parent, int x, int y, int textSize,
+    public GuiComponentText(GuiLayoutData parent, int width, int textSize,
             String text, float r, float g, float b, float a) {
-        this(parent, x, y, Integer.MAX_VALUE, textSize, text, r, g, b, a);
-    }
-
-    public GuiComponentText(GuiComponent parent, int x, int y, int width,
-            int textSize, String text) {
-        this(parent, x, y, width, textSize, text, 1.0f, 1.0f, 1.0f, 1.0f);
-    }
-
-    public GuiComponentText(GuiComponent parent, int x, int y, int width,
-            int textSize, String text, float r, float g, float b, float a) {
-        super(parent, x, y, width, textSize);
+        super(parent, width, textSize);
         this.text = text;
         this.textSize = textSize;
+        textWidth = width;
         this.r = r;
         this.g = g;
         this.b = b;
@@ -77,7 +77,8 @@ public class GuiComponentText extends GuiComponent {
     protected void updateText() {
         FontRenderer font = gui.style().font();
         vaoText = font.render(textFilter.filter(text), 0.0f, 0.0f, textSize,
-                width, r, g, b, a);
+                textWidth, r, g, b, a);
+        width = (int) vaoText.width();
     }
 
     public interface TextFilter {

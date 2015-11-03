@@ -10,18 +10,18 @@ public class GuiComponentWidgetTitle extends GuiComponent {
     protected final Pair<VAO, Texture> vao;
     protected final GuiComponentText text;
 
-    public GuiComponentWidgetTitle(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text) {
-        this(parent, x, y, width, height, 4, textSize, text);
+    public GuiComponentWidgetTitle(GuiLayoutData parent, int width, int height,
+            int textSize, String text) {
+        this(parent, width, height, 4, textSize, text);
     }
 
-    public GuiComponentWidgetTitle(GuiComponent parent, int x, int y, int width,
-            int height, int textX, int textSize, String text) {
-        super(parent, x, y, width, height);
+    public GuiComponentWidgetTitle(GuiLayoutData parent, int width, int height,
+            int textX, int textSize, String text) {
+        super(parent, width, height);
         vao = gui.style().pane(width, height);
         int textY = (height - textSize) / 2;
-        this.text = new GuiComponentText(this, textX, textY, width - textX,
-                textSize, text);
+        this.text = addSub(textX, textY,
+                p -> new GuiComponentText(p, width - textX, textSize, text));
     }
 
     @Override

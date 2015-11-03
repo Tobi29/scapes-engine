@@ -13,12 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
+
+import java.util.function.Function;
+
 public class GuiComponentPane extends GuiComponent {
-    public GuiComponentPane(GuiComponent parent, int x, int y, int width,
-            int height) {
-        super(parent, x, y, width, height);
+    public GuiComponentPane(GuiLayoutData parent, int width, int height) {
+        super(parent, width, height);
+    }
+
+    public <T extends GuiComponent> T add(double x, double y,
+            Function<GuiLayoutDataAbsolute, T> child) {
+        return add(new Vector2d(x, y), child);
+    }
+
+    public <T extends GuiComponent> T add(Vector2 pos,
+            Function<GuiLayoutDataAbsolute, T> child) {
+        GuiLayoutDataAbsolute layoutData = new GuiLayoutDataAbsolute(this, pos);
+        T component = child.apply(layoutData);
+        append(component);
+        return component;
+    }
+
+    public <T extends GuiComponent> T addHori(double marginX, double marginY,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addHori(marginX, marginY, marginX, marginY, child);
+    }
+
+    public <T extends GuiComponent> T addHori(double marginStartX,
+            double marginStartY, double marginEndX, double marginEndY,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addHori(new Vector2d(marginStartX, marginStartY),
+                new Vector2d(marginEndX, marginEndY), child);
+    }
+
+    public <T extends GuiComponent> T addHori(Vector2 marginStart,
+            Vector2 marginEnd, Function<GuiLayoutDataHorizontal, T> child) {
+        GuiLayoutDataHorizontal layoutData =
+                new GuiLayoutDataHorizontal(this, marginStart, marginEnd);
+        T component = child.apply(layoutData);
+        append(component);
+        return component;
+    }
+
+    public <T extends GuiComponent> T addVert(double marginX, double marginY,
+            Function<GuiLayoutDataVertical, T> child) {
+        return addVert(marginX, marginY, marginX, marginY, child);
+    }
+
+    public <T extends GuiComponent> T addVert(double marginStartX,
+            double marginStartY, double marginEndX, double marginEndY,
+            Function<GuiLayoutDataVertical, T> child) {
+        return addVert(new Vector2d(marginStartX, marginStartY),
+                new Vector2d(marginEndX, marginEndY), child);
+    }
+
+    public <T extends GuiComponent> T addVert(Vector2 marginStart,
+            Vector2 marginEnd, Function<GuiLayoutDataVertical, T> child) {
+        GuiLayoutDataVertical layoutData =
+                new GuiLayoutDataVertical(this, marginStart, marginEnd);
+        T component = child.apply(layoutData);
+        append(component);
+        return component;
     }
 }

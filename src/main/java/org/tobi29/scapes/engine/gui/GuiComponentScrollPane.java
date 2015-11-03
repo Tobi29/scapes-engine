@@ -18,18 +18,19 @@ package org.tobi29.scapes.engine.gui;
 public class GuiComponentScrollPane extends GuiComponentVisiblePane {
     protected final GuiComponentScrollPaneViewport viewport;
 
-    public GuiComponentScrollPane(GuiComponent parent, int x, int y, int width,
-            int height, int scrollStep) {
-        super(parent, x, y, width, height);
-        GuiComponentSliderVert slider =
-                new GuiComponentSliderVert(this, width - 10, 0, 10, height, 0);
+    public GuiComponentScrollPane(GuiLayoutData parent, int width, int height,
+            int scrollStep) {
+        super(parent, width, height);
+        GuiComponentSliderVert slider = add(width - 10, 0,
+                p -> new GuiComponentSliderVert(p, 10, height, 0));
         viewport = newViewport(slider, scrollStep);
     }
 
     protected GuiComponentScrollPaneViewport newViewport(
             GuiComponentSliderVert slider, int scrollStep) {
-        return new GuiComponentScrollPaneViewport(this, slider, 0, 0, width,
-                height, scrollStep);
+        return add(0, 0,
+                p -> new GuiComponentScrollPaneViewport(p, slider, width,
+                        height, scrollStep));
     }
 
     public GuiComponentScrollPaneViewport viewport() {

@@ -26,9 +26,9 @@ public class GuiComponentIcon extends GuiComponent {
     private final Pair<VAO, Texture> vaoBorder;
     private float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
 
-    public GuiComponentIcon(GuiComponent parent, int x, int y, int width,
-            int height, Texture texture) {
-        super(parent, x, y, width, height);
+    public GuiComponentIcon(GuiLayoutData parent, int width, int height,
+            Texture texture) {
+        super(parent, width, height);
         this.texture = texture;
         vao = VAOUtility.createVTI(
                 new float[]{0.0f, height, 0.0f, width, height, 0.0f, 0.0f, 0.0f,

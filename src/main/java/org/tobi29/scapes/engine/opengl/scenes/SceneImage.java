@@ -55,10 +55,10 @@ public class SceneImage extends Scene {
             int width = texture.width();
             int height = texture.height();
             double ratio = (double) width / height;
-            width = (int) (512 * ratio * scale);
-            height = (int) (512 * scale);
-            icon = new GuiComponentIcon(this, (800 - width) / 2,
-                    (512 - height) / 2, width, height, texture);
+            int w = (int) (512 * ratio * scale);
+            int h = (int) (512 * scale);
+            icon = add((800 - w) / 2, (512 - h) / 2,
+                    p -> new GuiComponentIcon(p, w, h, texture));
         }
     }
 }

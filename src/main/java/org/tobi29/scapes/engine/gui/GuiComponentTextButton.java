@@ -18,17 +18,17 @@ package org.tobi29.scapes.engine.gui;
 public class GuiComponentTextButton extends GuiComponentButton {
     protected final GuiComponentText text;
 
-    public GuiComponentTextButton(GuiComponent parent, int x, int y, int width,
-            int height, int textSize, String text) {
-        this(parent, x, y, width, height, 4, textSize, text);
+    public GuiComponentTextButton(GuiLayoutData parent, int width, int height,
+            int textSize, String text) {
+        this(parent, width, height, 4, textSize, text);
     }
 
-    public GuiComponentTextButton(GuiComponent parent, int x, int y, int width,
-            int height, int textX, int textSize, String text) {
-        super(parent, x, y, width, height);
+    public GuiComponentTextButton(GuiLayoutData parent, int width, int height,
+            int textX, int textSize, String text) {
+        super(parent, width, height);
         int textY = (height - textSize) / 2;
-        this.text = new GuiComponentText(this, textX, textY, width - textX,
-                textSize, text);
+        this.text = addSub(textX, textY,
+                p -> new GuiComponentText(p, width - textX, textSize, text));
     }
 
     public String text() {
