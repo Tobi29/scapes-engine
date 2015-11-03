@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag;
 
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream;
@@ -24,6 +23,7 @@ import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -131,13 +131,24 @@ public class TagStructureWriterJSON extends TagStructureJSON
         } else if (tag instanceof Long) {
             writer.write(key, (Long) tag);
         } else if (tag instanceof Float) {
-            writer.write(key, (Float) tag);
+            writer.write(key, armor((Float) tag));
         } else if (tag instanceof Double) {
-            writer.write(key, (Double) tag);
+            writer.write(key, armor((Double) tag));
         } else if (tag instanceof String) {
             writer.write(key, (String) tag);
         } else {
             throw new IOException("Invalid type: " + tag.getClass());
         }
+    }
+
+    private BigDecimal armor(double value) {
+        if (value == Double.POSITIVE_INFINITY) {
+            return POSITIVE_INFINITY;
+        } else if (value == Double.NEGATIVE_INFINITY) {
+            return POSITIVE_INFINITY;
+        } else if (Double.isNaN(value)) {
+            return NAN;
+        }
+        return new BigDecimal(value);
     }
 }

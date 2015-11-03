@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag;
 
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
@@ -22,8 +21,17 @@ import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 
 public class TagStructureJSON {
+    // Workarounds to store non-finite numbers
+    protected static final BigDecimal POSITIVE_INFINITY =
+            new BigDecimal(Double.MAX_VALUE).add(new BigDecimal("1.0"));
+    protected static final BigDecimal NEGATIVE_INFINITY =
+            POSITIVE_INFINITY.multiply(new BigDecimal("-1.0"));
+    protected static final BigDecimal NAN =
+            POSITIVE_INFINITY.add(new BigDecimal("2.0"));
+
     public static void write(TagStructure tagStructure, OutputStream streamOut)
             throws IOException {
         tagStructure.write(new TagStructureWriterJSON(streamOut));

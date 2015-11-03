@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag;
 
 import org.tobi29.scapes.engine.utils.Pair;
@@ -26,6 +25,7 @@ import javax.json.stream.JsonParser;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 
 public class TagStructureReaderJSON extends TagStructureJSON
         implements TagStructureReader {
@@ -133,8 +133,8 @@ public class TagStructureReaderJSON extends TagStructureJSON
                     if (reader.isIntegralNumber()) {
                         tag = new Pair<>(key, reader.getLong());
                     } else {
-                        tag = new Pair<>(key,
-                                reader.getBigDecimal().doubleValue());
+                        BigDecimal value = reader.getBigDecimal();
+                        tag = new Pair<>(key, unarmor(value));
                     }
                     event = reader.next();
                     break;
@@ -193,5 +193,16 @@ public class TagStructureReaderJSON extends TagStructureJSON
 
     @Override
     public void endList() throws IOException {
+    }
+
+    private double unarmor(BigDecimal value) {
+        if (value.compareTo(POSITIVE_INFINITY) == 0) {
+            return Double.POSITIVE_INFINITY;
+        } else if (value.compareTo(NEGATIVE_INFINITY) == 0) {
+            return Double.NEGATIVE_INFINITY;
+        } else if (value.compareTo(NAN) == 0) {
+            return Double.NaN;
+        }
+        return value.doubleValue();
     }
 }
