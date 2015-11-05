@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
 import org.lwjgl.glfw.*;
@@ -53,7 +52,6 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     private final GLFWControllers controllers;
     private final Map<Integer, ControllerJoystick> virtualJoysticks =
             new ConcurrentHashMap<>();
-    @SuppressWarnings("FieldCanBeLocal")
     private final GLFWErrorCallback errorFun;
     private final GLFWWindowSizeCallback windowSizeFun;
     private final GLFWWindowCloseCallback windowCloseFun;
