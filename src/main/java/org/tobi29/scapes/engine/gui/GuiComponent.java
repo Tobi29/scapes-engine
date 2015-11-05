@@ -50,13 +50,11 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     private final long uid = UID_COUNTER.getAndIncrement();
     protected int width, height;
     protected boolean visible = true, hovering;
-    protected long lastClick;
 
     protected GuiComponent(GuiLayoutData parent, int width, int height) {
         this.width = width;
         this.height = height;
         this.parent = parent;
-        lastClick = System.currentTimeMillis();
         GuiComponent other = this;
         while (true) {
             if (other instanceof Gui) {

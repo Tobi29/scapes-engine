@@ -82,6 +82,7 @@ public class FontRenderer {
                 text.length(), false);
     }
 
+    @SuppressWarnings("AccessToStaticFieldLockedOnInstance")
     public synchronized Text render(String text, float x, float y, float width,
             float height, float line, float limit, float r, float g, float b,
             float a, int start, int end, boolean cropped) {
