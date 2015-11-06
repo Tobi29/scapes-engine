@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
 import org.tobi29.scapes.engine.utils.BufferCreator;
@@ -31,6 +30,13 @@ public interface ReadableByteStream {
 
     default void skip(int len) throws IOException {
         get(BufferCreator.bytes(len));
+    }
+
+    default void skip(long len) throws IOException {
+        while (len > Integer.MAX_VALUE) {
+            skip(Integer.MAX_VALUE);
+        }
+        skip((int) len);
     }
 
     default ReadableByteStream get(ByteBuffer buffer) throws IOException {
