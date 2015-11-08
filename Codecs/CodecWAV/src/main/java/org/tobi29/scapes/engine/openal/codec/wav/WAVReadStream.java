@@ -38,7 +38,7 @@ public class WAVReadStream implements ReadableAudioStream {
     private final ReadableByteStream stream;
     private final int channels, rate, bytes;
     private final float offset, scale;
-    private ByteBuffer buffer =
+    private final ByteBuffer buffer =
             BufferCreator.bytes(BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
 
     public WAVReadStream(ReadableByteChannel channel) throws IOException {

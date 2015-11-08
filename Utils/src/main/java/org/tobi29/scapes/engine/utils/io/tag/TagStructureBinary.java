@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag;
 
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
@@ -157,7 +156,6 @@ public class TagStructureBinary {
             }
         }
 
-        @SuppressWarnings("unchecked")
         private static void analyze(TagStructure tagStructure,
                 Map<String, KeyOccurrence> keys) {
             for (Map.Entry<String, Object> entry : tagStructure
@@ -172,8 +170,8 @@ public class TagStructureBinary {
                 Object value = entry.getValue();
                 if (value instanceof TagStructure) {
                     analyze((TagStructure) value, keys);
-                } else if (value instanceof List<?>) {
-                    ((List<TagStructure>) value).stream()
+                } else if (value instanceof TagStructure.StructureList) {
+                    ((TagStructure.StructureList) value).stream()
                             .forEach(child -> analyze(child, keys));
                 }
             }

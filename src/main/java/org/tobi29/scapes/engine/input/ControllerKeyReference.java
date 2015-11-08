@@ -101,9 +101,9 @@ public class ControllerKeyReference {
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder(20);
-        str.append(key.toString());
+        str.append(key);
         for (ControllerKey key : modifiers) {
-            str.append(',').append(key.toString());
+            str.append(',').append(key);
         }
         return str.toString();
     }
