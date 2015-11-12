@@ -121,6 +121,10 @@ public class StreamAudio implements Audio {
             Arrays.stream(queuedBuffers).forEach(openAL::deleteBuffer);
             source = -1;
         }
+        if (stream != null) {
+            stream.close();
+            stream = null;
+        }
     }
 
     private boolean stream(OpenAL openAL, int buffer) throws IOException {
