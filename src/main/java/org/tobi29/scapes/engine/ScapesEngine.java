@@ -59,7 +59,7 @@ public class ScapesEngine implements Crashable {
     private final Runtime runtime;
     private final TagStructure tagStructure;
     private final ScapesEngineConfig config;
-    private final Path home, temp;
+    private final Path home;
     private final FileSystemContainer assets;
     private final FileCache fileCache;
     private final TaskExecutor taskExecutor;
@@ -92,22 +92,12 @@ public class ScapesEngine implements Crashable {
         LOGGER.info("Starting Scapes-Engine: {} (Game: {})", this, game);
         try {
             assets = new FileSystemContainer();
-            temp = Files.createTempDirectory("ScapesEngine");
-            runtime.addShutdownHook(new Thread(() -> {
-                try {
-                    FileUtil.deleteDir(temp);
-                } catch (IOException e) {
-                    LOGGER.warn("Failed to delete temporary directory: {}",
-                            e.toString());
-                }
-            }));
             assets.registerFileSystem("Class",
                     new ClasspathPath(getClass().getClassLoader(), ""));
             assets.registerFileSystem("Engine",
                     new ClasspathPath(getClass().getClassLoader(),
                             "assets/scapes/tobi29/engine/"));
-            fileCache = new FileCache(this.home.resolve("cache"),
-                    temp.resolve("cache"));
+            fileCache = new FileCache(this.home.resolve("cache"));
             fileCache.check();
             Files.createDirectories(this.home.resolve("screenshots"));
         } catch (IOException e) {
@@ -217,10 +207,6 @@ public class ScapesEngine implements Crashable {
 
     public Path home() {
         return home;
-    }
-
-    public Path temp() {
-        return temp;
     }
 
     public FileSystemContainer files() {
