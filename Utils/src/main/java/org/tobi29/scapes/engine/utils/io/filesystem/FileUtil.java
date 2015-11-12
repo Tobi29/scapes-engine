@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.filesystem;
 
 import org.apache.tika.Tika;
@@ -62,7 +61,9 @@ public class FileUtil {
 
             @Override
             public String mimeType() throws IOException {
-                return new Tika().detect(readIO(), path.toString());
+                try (InputStream streamIn = readIO()) {
+                    return new Tika().detect(streamIn, path.toString());
+                }
             }
         };
     }
