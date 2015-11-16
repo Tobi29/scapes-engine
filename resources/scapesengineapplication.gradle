@@ -91,10 +91,14 @@ class ScapesEngineApplication implements Plugin<Project> {
         nativesTask.from({ ->
             target.configurations.nativesPlatform.files.stream().
                     map({
-                        target.zipTree(it).files.stream().filter({
-                            it.isFile() && it.name.matches(
-                                    "(.+)\\.(dll|so(.[0-9]+)?|jnilib|dylib)")
-                        }).collect(Collectors.toList())
+                        if (it.name.endsWith(".jar")) {
+                            return target.zipTree(it).files.stream().filter({
+                                it.isFile() && it.name.matches(
+                                        "(.+)\\.(dll|so(.[0-9]+)?|jnilib|dylib)")
+                            }).collect(Collectors.toList())
+                        } else {
+                            return it
+                        }
                     }).collect(Collectors.toList())
         }) {
             eachFile { FileCopyDetails fcp ->
