@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
 import java.nio.*;
@@ -85,6 +84,12 @@ public final class BufferCreator {
         return bytes(size << 3).asDoubleBuffer();
     }
 
+    /**
+     * Creates a {@code ByteBuffer} and copies the array into it
+     *
+     * @param array Array to write
+     * @return A {@code ByteBuffer}, with position at 0 and limit at length of array
+     */
     public static ByteBuffer wrap(byte... array) {
         ByteBuffer buffer = bytes(array.length);
         buffer.put(array);
@@ -92,6 +97,12 @@ public final class BufferCreator {
         return buffer;
     }
 
+    /**
+     * Creates a {@code ShortBuffer} and copies the array into it
+     *
+     * @param array Array to write
+     * @return A {@code ShortBuffer}, with position at 0 and limit at length of array
+     */
     public static ShortBuffer wrap(short... array) {
         ShortBuffer buffer = shorts(array.length);
         buffer.put(array);
@@ -99,6 +110,12 @@ public final class BufferCreator {
         return buffer;
     }
 
+    /**
+     * Creates a {@code IntBuffer} and copies the array into it
+     *
+     * @param array Array to write
+     * @return A {@code IntBuffer}, with position at 0 and limit at length of array
+     */
     public static IntBuffer wrap(int... array) {
         IntBuffer buffer = ints(array.length);
         buffer.put(array);
@@ -106,6 +123,12 @@ public final class BufferCreator {
         return buffer;
     }
 
+    /**
+     * Creates a {@code LongBuffer} and copies the array into it
+     *
+     * @param array Array to write
+     * @return A {@code LongBuffer}, with position at 0 and limit at length of array
+     */
     public static LongBuffer wrap(long... array) {
         LongBuffer buffer = longs(array.length);
         buffer.put(array);
@@ -113,6 +136,12 @@ public final class BufferCreator {
         return buffer;
     }
 
+    /**
+     * Creates a {@code FloatBuffer} and copies the array into it
+     *
+     * @param array Array to write
+     * @return A {@code FloatBuffer}, with position at 0 and limit at length of array
+     */
     public static FloatBuffer wrap(float... array) {
         FloatBuffer buffer = floats(array.length);
         buffer.put(array);
@@ -120,6 +149,12 @@ public final class BufferCreator {
         return buffer;
     }
 
+    /**
+     * Creates a {@code DoubleBuffer} and copies the array into it
+     *
+     * @param array Array to write
+     * @return A {@code DoubleBuffer}, with position at 0 and limit at length of array
+     */
     public static DoubleBuffer wrap(double... array) {
         DoubleBuffer buffer = doubles(array.length);
         buffer.put(array);

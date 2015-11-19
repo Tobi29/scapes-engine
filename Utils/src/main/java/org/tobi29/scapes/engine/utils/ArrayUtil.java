@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.utils;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -29,10 +28,23 @@ public final class ArrayUtil {
     private ArrayUtil() {
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(byte... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(byte[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -45,10 +57,23 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(short... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(short[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -61,10 +86,23 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(int... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(int[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -77,10 +115,23 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(long... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(long[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -93,10 +144,23 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(float... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(float[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -109,10 +173,23 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(double... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(double[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -125,10 +202,23 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Joins all values of a given array into a string separated by ", "
+     *
+     * @param array Array for values
+     * @return A String containing the joined values
+     */
     public static String join(Object... array) {
         return join(array, ", ");
     }
 
+    /**
+     * Joins all values of a given array into a string
+     *
+     * @param array     Array for values
+     * @param delimiter Separator to put between values
+     * @return A String containing the joined values
+     */
     public static String join(Object[] array, String delimiter) {
         StringBuilder text = new StringBuilder(array.length << 1);
         int length = array.length - 1;
@@ -141,6 +231,12 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Converts a byte array into a hexadecimal string
+     *
+     * @param array Array to convert
+     * @return String containing the hexadecimal data
+     */
     public static String toHexadecimal(byte... array) {
         StringBuilder text = new StringBuilder(array.length << 1);
         for (byte value : array) {
@@ -155,6 +251,13 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Converts a byte array into a hexadecimal string
+     *
+     * @param groups How many bytes to group until separated by a space
+     * @param array  Array to convert
+     * @return String containing the hexadecimal data
+     */
     public static String toHexadecimal(int groups, byte... array) {
         StringBuilder text =
                 new StringBuilder((array.length << 1) + array.length / groups);
@@ -177,6 +280,14 @@ public final class ArrayUtil {
         return text.toString();
     }
 
+    /**
+     * Converts a hexadecimal string to a byte array
+     * Silently discards spaces
+     *
+     * @param text String to convert
+     * @return A byte array containing the data
+     * @throws IOException Thrown in case of an invalid string
+     */
     public static byte[] fromHexadecimal(String text) throws IOException {
         try {
             text = REPLACE.matcher(text).replaceAll("");
@@ -194,49 +305,82 @@ public final class ArrayUtil {
         }
     }
 
+    /**
+     * Converts a byte array to a Base64 string
+     *
+     * @param array Array to convert
+     * @return String containing the data
+     */
     public static String toBase64(byte... array) {
         return new String(Base64.getEncoder().encode(array),
                 StandardCharsets.UTF_8);
     }
 
+    /**
+     * Converts a Base64 string to a byte array
+     *
+     * @param text Base64 String to convert
+     * @return Byte array containing the data
+     */
     public static byte[] fromBase64(String text) {
         return Base64.getDecoder().decode(text);
     }
 
+    /**
+     * Fills the given array with values
+     *
+     * @param array    Array to fill
+     * @param supplier Supplier called for each value written to the array
+     */
     public static void fill(int[] array, IntSupplier supplier) {
         for (int i = 0; i < array.length; i++) {
             array[i] = supplier.getAsInt();
         }
     }
 
+    /**
+     * Fills the given array with values
+     *
+     * @param array    Array to fill
+     * @param supplier Supplier called for each value written to the array
+     */
     public static void fill(long[] array, LongSupplier supplier) {
         for (int i = 0; i < array.length; i++) {
             array[i] = supplier.getAsLong();
         }
     }
 
+    /**
+     * Fills the given array with values
+     *
+     * @param array    Array to fill
+     * @param supplier Supplier called for each value written to the array
+     */
     public static void fill(double[] array, DoubleSupplier supplier) {
         for (int i = 0; i < array.length; i++) {
             array[i] = supplier.getAsDouble();
         }
     }
 
+    /**
+     * Fills the given array with values
+     *
+     * @param array    Array to fill
+     * @param supplier Supplier called for each value written to the array
+     */
     public static <E> void fill(E[] array, Supplier<E> supplier) {
         for (int i = 0; i < array.length; i++) {
             array[i] = supplier.get();
         }
     }
 
-    public static <T, R> R[] map(T[] values,
-            Function<? super T, ? extends R> function, Class<R> type) {
-        @SuppressWarnings("unchecked") R[] array =
-                (R[]) Array.newInstance(type, values.length);
-        for (int i = 0; i < array.length; i++) {
-            array[i] = function.apply(values[i]);
-        }
-        return array;
-    }
-
+    /**
+     * Fills a buffer with the given value
+     *
+     * @param buffer Buffer to fill
+     * @param value  Value written to the buffer
+     * @return The given buffer
+     */
     public static ByteBuffer fill(ByteBuffer buffer, byte value) {
         while (buffer.hasRemaining()) {
             buffer.put(value);
