@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.input;
+
+import java8.util.stream.Stream;
+import org.tobi29.scapes.engine.utils.Streams;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
-public class ControllerJoystick implements Controller {
+public class ControllerJoystick implements ControllerBasic {
     private static final Pattern REPLACE = Pattern.compile(" |/|-");
     private final String name, id;
     private final byte[] states;
@@ -67,7 +68,7 @@ public class ControllerJoystick implements Controller {
 
     @Override
     public Stream<PressEvent> pressEvents() {
-        return pressEvents.stream();
+        return Streams.of(pressEvents);
     }
 
     @Override

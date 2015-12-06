@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPublicKeySpec;
@@ -29,6 +29,8 @@ import java.util.Arrays;
 
 public final class RSAUtil {
     private static final KeyFactory FACTORY;
+    // TODO: Need better key storage to be more future proof
+    private static final BigInteger E = new BigInteger("65537");
 
     static {
         try {
@@ -38,17 +40,17 @@ public final class RSAUtil {
         }
     }
 
-    public static RSAPrivateCrtKey readPrivate(String str)
+    public static RSAPrivateKey readPrivate(String str)
             throws InvalidKeySpecException {
         PKCS8EncodedKeySpec keySpec =
                 new PKCS8EncodedKeySpec(ArrayUtil.fromBase64(str));
-        return (RSAPrivateCrtKey) FACTORY.generatePrivate(keySpec);
+        return (RSAPrivateKey) FACTORY.generatePrivate(keySpec);
     }
 
-    public static PublicKey extractPublic(RSAPrivateCrtKey key)
+    public static PublicKey extractPublic(RSAPrivateKey key)
             throws InvalidKeySpecException {
         RSAPublicKeySpec publicKeySpec =
-                new RSAPublicKeySpec(key.getModulus(), key.getPublicExponent());
+                new RSAPublicKeySpec(key.getModulus(), E);
         return FACTORY.generatePublic(publicKeySpec);
     }
 

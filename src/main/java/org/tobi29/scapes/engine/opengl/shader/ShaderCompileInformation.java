@@ -13,81 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.shader;
+
+import java8.util.function.Consumer;
+import org.tobi29.scapes.engine.utils.Streams;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ShaderCompileInformation {
-    private final Map<String, String> vertexVariables =
-            new ConcurrentHashMap<>(), fragmentVariables =
+    private static final Pattern REPEAT =
+            Pattern.compile("#repeat ([0-9]+) (.*)");
+    private static final Pattern INDEX = Pattern.compile("\\$i");
+    private final Map<String, Consumer<ShaderPreprocessor>>
+            preCompileListeners = new ConcurrentHashMap<>();
+    private final Map<String, Consumer<Shader>> postCompileListeners =
             new ConcurrentHashMap<>();
-    private final Map<String, PostCompileListener> postCompileListeners =
-            new ConcurrentHashMap<>();
-
-    public void supplyExternal(String key, int value) {
-        supplyExternal(key, String.valueOf(value));
+    
+    public void supplyPreCompile(Consumer<ShaderPreprocessor> listener) {
+        preCompileListeners.put("Oi", listener);
     }
 
-    public void supplyExternal(String key, float value) {
-        supplyExternal(key, String.valueOf(value));
+    public void supplyPreCompile(String id,
+            Consumer<ShaderPreprocessor> listener) {
+        preCompileListeners.put(id, listener);
     }
 
-    public void supplyExternal(String key, String value) {
-        String define = "#define " + key;
-        supplyVariable(define + " _SCAPES_ENGINE_EXTERNAL",
-                define + ' ' + value);
-    }
-
-    public void supplyDefine(String key, boolean value) {
-        String define = "#define " + key;
-        String replace = define + " _SCAPES_ENGINE_DEFINE";
-        if (value) {
-            supplyVariable(replace, define);
-        } else {
-            supplyVariable(replace, "");
-        }
-    }
-
-    public void supplyVariable(String key, String value) {
-        vertexVariables.put(key, value);
-        fragmentVariables.put(key, value);
-    }
-
-    public void supplyVertexVariable(String key, String value) {
-        vertexVariables.put(key, value);
-    }
-
-    public void supplyFragmentVariable(String key, String value) {
-        fragmentVariables.put(key, value);
-    }
-
-    public void supplyPostCompile(String id, PostCompileListener listener) {
+    public void supplyPostCompile(String id, Consumer<Shader> listener) {
         postCompileListeners.put(id, listener);
     }
 
-    protected String processVertexSource(String source) {
-        for (Map.Entry<String, String> entry : vertexVariables.entrySet()) {
-            source = source.replaceAll(entry.getKey(), entry.getValue());
+    protected String processSource(String source) {
+        Matcher matcher = REPEAT.matcher(source);
+        StringBuffer buffer = new StringBuffer(source.length());
+        while (matcher.find()) {
+            int amount = 1;
+            try {
+                amount = Integer.parseInt(matcher.group(1));
+            } catch (NumberFormatException e) {
+            }
+            String replacement = matcher.group(2) + '\n';
+            StringBuilder loop =
+                    new StringBuilder(amount * replacement.length());
+            for (int i = 0; i < amount; i++) {
+                loop.append(INDEX.matcher(replacement)
+                        .replaceAll(String.valueOf(i)));
+            }
+            matcher.appendReplacement(buffer,
+                    Matcher.quoteReplacement(loop.toString()));
         }
+        matcher.appendTail(buffer);
+        source = buffer.toString();
         return source;
     }
 
-    protected String processFragmentSource(String source) {
-        for (Map.Entry<String, String> entry : fragmentVariables.entrySet()) {
-            source = source.replaceAll(entry.getKey(), entry.getValue());
-        }
-        return source;
+    protected ShaderPreprocessor preCompile() {
+        ShaderPreprocessor processor = new ShaderPreprocessor();
+        Streams.of(preCompileListeners.values())
+                .forEach(listener -> listener.accept(processor));
+        return processor;
     }
 
     protected void postCompile(Shader shader) {
-        postCompileListeners.values()
-                .forEach(listener -> listener.postCompile(shader));
-    }
-
-    @FunctionalInterface
-    public interface PostCompileListener {
-        void postCompile(Shader shader);
+        Streams.of(postCompileListeners.values())
+                .forEach(listener -> listener.accept(shader));
     }
 }

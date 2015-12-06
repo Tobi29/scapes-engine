@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
@@ -28,35 +27,27 @@ public class GuiComponentButton extends GuiComponent {
 
     public GuiComponentButton(GuiLayoutData parent, int width, int height) {
         super(parent, width, height);
+        onClick((event, engine) -> engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
+        onHover(event -> {
+            switch (event.state()) {
+                case ENTER:
+                    hover = true;
+                    updateMesh();
+                    break;
+                case LEAVE:
+                    hover = false;
+                    updateMesh();
+                    break;
+            }
+        });
         updateMesh();
-    }
-
-    @Override
-    public void clickLeft(GuiComponentEvent event, ScapesEngine engine) {
-        super.clickLeft(event, engine);
-        engine.sounds()
-                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f);
-    }
-
-    @Override
-    public void clickRight(GuiComponentEvent event, ScapesEngine engine) {
-        super.clickRight(event, engine);
-        engine.sounds()
-                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f);
     }
 
     @Override
     public void renderComponent(GL gl, Shader shader, double delta) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
-    }
-
-    @Override
-    public void setHover(boolean hover, ScapesEngine engine) {
-        if (this.hover != hover) {
-            this.hover = hover;
-            updateMesh();
-        }
     }
 
     private void updateMesh() {

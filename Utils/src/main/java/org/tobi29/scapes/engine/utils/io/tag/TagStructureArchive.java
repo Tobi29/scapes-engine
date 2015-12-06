@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.tag;
 
+import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;

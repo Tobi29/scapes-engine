@@ -170,9 +170,6 @@ public interface OpenGL {
     void bindAttributeLocation(int shader, int id, String name);
 
     @OpenGLFunction
-    void bindFragmentLocation(int shader, int id, String name);
-
-    @OpenGLFunction
     int getUniformLocation(int program, String uniform);
 
     @OpenGLFunction

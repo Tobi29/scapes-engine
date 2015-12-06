@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.io;
 
 import java.io.IOException;
 
-@FunctionalInterface
 public interface IOSupplier<T> {
     T get() throws IOException;
 }

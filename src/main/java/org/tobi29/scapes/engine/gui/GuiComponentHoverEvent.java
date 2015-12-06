@@ -13,11 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 public class GuiComponentHoverEvent extends GuiComponentEvent {
     private final State state;
+
+    public GuiComponentHoverEvent(GuiComponentEvent event, State state) {
+        this(event.x(), event.y(), state);
+    }
 
     public GuiComponentHoverEvent(double x, double y, State state) {
         super(x, y);
@@ -30,6 +33,7 @@ public class GuiComponentHoverEvent extends GuiComponentEvent {
 
     public enum State {
         ENTER,
-        HOVER
+        HOVER,
+        LEAVE
     }
 }

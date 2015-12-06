@@ -22,9 +22,9 @@ import org.lwjgl.openal.AL11;
 import org.lwjgl.openal.ALContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.openal.AudioFormat;
-import org.tobi29.scapes.engine.openal.OpenAL;
-import org.tobi29.scapes.engine.openal.SoundException;
+import org.tobi29.scapes.engine.sound.AudioFormat;
+import org.tobi29.scapes.engine.sound.SoundException;
+import org.tobi29.scapes.engine.sound.openal.OpenAL;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
@@ -222,6 +222,9 @@ public class LWJGL3OpenAL implements OpenAL {
     private ByteBuffer direct(ByteBuffer buffer) {
         if (buffer == null) {
             return null;
+        }
+        if (buffer.isDirect()) {
+            return buffer;
         }
         direct(buffer.remaining());
         directBuffer.put(buffer);

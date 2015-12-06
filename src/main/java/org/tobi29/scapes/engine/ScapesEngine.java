@@ -15,22 +15,19 @@
  */
 package org.tobi29.scapes.engine;
 
+import java8.util.Optional;
+import java8.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.gui.*;
-import org.tobi29.scapes.engine.gui.debug.GuiDebugLayer;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.input.ControllerDefault;
-import org.tobi29.scapes.engine.input.ControllerKey;
-import org.tobi29.scapes.engine.openal.SoundSystem;
 import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.Sync;
-import org.tobi29.scapes.engine.utils.io.filesystem.CrashReportFile;
-import org.tobi29.scapes.engine.utils.io.filesystem.FileCache;
-import org.tobi29.scapes.engine.utils.io.filesystem.FileSystemContainer;
-import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
+import org.tobi29.scapes.engine.utils.io.filesystem.*;
 import org.tobi29.scapes.engine.utils.io.filesystem.classpath.ClasspathPath;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructureJSON;
@@ -38,8 +35,6 @@ import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -53,18 +48,18 @@ public class ScapesEngine implements Crashable {
     private final Container container;
     private final GraphicsSystem graphics;
     private final SoundSystem sounds;
-    private final ControllerDefault controller;
     private final Game game;
-    private final Gui globalGui;
+    private final GuiStyle guiStyle;
+    private final GuiStack guiStack = new GuiStack();
     private final Runtime runtime;
     private final TagStructure tagStructure;
     private final ScapesEngineConfig config;
-    private final Path home;
+    private final FilePath home;
     private final FileSystemContainer assets;
     private final FileCache fileCache;
     private final TaskExecutor taskExecutor;
     private final boolean debug;
-    private final GuiDebugLayer debugGui;
+    private final GuiWidgetDebugValues debugValues;
     private final GuiWidgetDebugValues.Element usedMemoryDebug, maxMemoryDebug;
     private final AtomicReference<GameState> newState = new AtomicReference<>();
     private GuiController guiController;
@@ -72,12 +67,17 @@ public class ScapesEngine implements Crashable {
     private GameState state;
     private StateThread stateThread;
 
-    public ScapesEngine(Game game, Path home, boolean debug) {
-        this(game, loadBackend(), home, debug);
+    public ScapesEngine(Game game, FilePath home, boolean debug) {
+        this(game, loadBackend(), home, home.resolve("cache"), debug);
     }
 
     public ScapesEngine(Game game, ScapesEngineBackendProvider backend,
-            Path home, boolean debug) {
+            FilePath home, FilePath cache, boolean debug) {
+        this(game, backend::createContainer, home, cache, debug);
+    }
+
+    public ScapesEngine(Game game, Function<ScapesEngine, Container> backend,
+            FilePath home, FilePath cache, boolean debug) {
         if (instance != null) {
             throw new ScapesEngineException(
                     "You can only have one engine running at a time!");
@@ -97,19 +97,21 @@ public class ScapesEngine implements Crashable {
             assets.registerFileSystem("Engine",
                     new ClasspathPath(getClass().getClassLoader(),
                             "assets/scapes/tobi29/engine/"));
-            fileCache = new FileCache(this.home.resolve("cache"));
+            fileCache = new FileCache(cache);
             fileCache.check();
-            Files.createDirectories(this.home.resolve("screenshots"));
+            FileUtil.createDirectories(this.home.resolve("screenshots"));
         } catch (IOException e) {
             throw new ScapesEngineException(
-                    "Failed to create virtual file system: " + e.toString());
+                    "Failed to create virtual file system: " + e);
         }
         checkSystem();
+        LOGGER.info("Creating task executor");
         taskExecutor = new TaskExecutor(this, "Engine");
         tagStructure = new TagStructure();
         try {
-            Path configPath = this.home.resolve("ScapesEngine.json");
-            if (Files.exists(configPath)) {
+            LOGGER.info("Reading config");
+            FilePath configPath = this.home.resolve("ScapesEngine.json");
+            if (FileUtil.exists(configPath)) {
                 FileUtil.read(configPath,
                         stream -> TagStructureJSON.read(tagStructure, stream));
             }
@@ -120,6 +122,7 @@ public class ScapesEngine implements Crashable {
             config =
                     new ScapesEngineConfig(tagStructure.getStructure("Engine"));
         } else {
+            LOGGER.info("Setting defaults to config");
             TagStructure engineTag = tagStructure.getStructure("Engine");
             engineTag.setBoolean("VSync", true);
             engineTag.setDouble("Framerate", 60.0);
@@ -129,33 +132,42 @@ public class ScapesEngine implements Crashable {
             engineTag.setBoolean("Fullscreen", false);
             config = new ScapesEngineConfig(engineTag);
         }
+        LOGGER.info("Initializing game");
         game.init();
-        container = backend.createContainer(this);
-        container.loadFont("Engine:font/QuicksandPro-Regular");
-        FontRenderer font = new FontRenderer(
-                container.createGlyphRenderer("Quicksand Pro", 64));
-        GuiStyle style = new GuiBasicStyle(font, container.gl().textures());
-        globalGui = new Gui(style, GuiAlignment.STRETCH);
-        debugGui = new GuiDebugLayer(style);
-        globalGui.add(debugGui);
-        GuiWidgetDebugValues debugValues = debugGui.values();
+        LOGGER.info("Creating container");
+        container = backend.apply(this);
+        LOGGER.info("Loading default font");
+        String fontName = container.loadFont("Engine:font/QuicksandPro-Regular")
+                .orElse("Quicksand Pro");
+        FontRenderer font =
+                new FontRenderer(container.createGlyphRenderer(fontName, 64));
+        LOGGER.info("Setting up GUI");
+        guiStyle = new GuiBasicStyle(font, container.gl().textures());
+        Gui debugGui = new Gui(guiStyle, GuiAlignment.LEFT) {
+            @Override
+            public boolean valid() {
+                return true;
+            }
+        };
+        debugValues = debugGui.add(32, 32, GuiWidgetDebugValues::new);
+        debugValues.setVisible(false);
+        guiStack.add("99-Debug", debugGui);
         usedMemoryDebug = debugValues.get("Runtime-Memory-Used");
         maxMemoryDebug = debugValues.get("Runtime-Memory-Max");
+        LOGGER.info("Creating graphics system");
         graphics = new GraphicsSystem(this, container.gl());
-        sounds = new SoundSystem(this, container.al());
-        controller = container.controller();
-        guiController = new GuiControllerDefault(this, controller);
+        LOGGER.info("Creating sound system");
+        sounds = container.sound();
+        guiController = new GuiControllerDummy();
     }
 
     private static ScapesEngineBackendProvider loadBackend() {
         for (ScapesEngineBackendProvider backend : ServiceLoader
                 .load(ScapesEngineBackendProvider.class)) {
             try {
-                if (backend.available()) {
-                    LOGGER.debug("Loaded backend: {}",
-                            backend.getClass().getName());
-                    return backend;
-                }
+                LOGGER.debug("Loaded backend: {}",
+                        backend.getClass().getName());
+                return backend;
             } catch (ServiceConfigurationError e) {
                 LOGGER.warn("Unable to load backend provider: {}",
                         e.toString());
@@ -171,6 +183,10 @@ public class ScapesEngine implements Crashable {
         LOGGER.info("Java: {} (MaxMemory: {}, Processors: {})",
                 System.getProperty("java.version"),
                 runtime.maxMemory() / 1048576, runtime.availableProcessors());
+    }
+
+    public boolean debug() {
+        return debug;
     }
 
     public Container container() {
@@ -189,12 +205,16 @@ public class ScapesEngine implements Crashable {
         return game;
     }
 
-    public Gui globalGUI() {
-        return globalGui;
+    public GuiStack guiStack() {
+        return guiStack;
     }
 
-    public ControllerDefault controller() {
-        return controller;
+    public GuiStyle guiStyle() {
+        return guiStyle;
+    }
+
+    public Optional<ControllerDefault> controller() {
+        return container().controller();
     }
 
     public GuiController guiController() {
@@ -205,7 +225,7 @@ public class ScapesEngine implements Crashable {
         this.guiController = guiController;
     }
 
-    public Path home() {
+    public FilePath home() {
         return home;
     }
 
@@ -230,7 +250,7 @@ public class ScapesEngine implements Crashable {
     }
 
     public GuiWidgetDebugValues debugValues() {
-        return debugGui.values();
+        return debugValues;
     }
 
     public GameState state() {
@@ -268,13 +288,19 @@ public class ScapesEngine implements Crashable {
         graphics.render(delta);
     }
 
-    public void dispose() {
+    public void halt() {
         if (stateThread != null) {
             stateThread.joiner.join();
             stateThread = null;
         }
-        graphics.dispose();
+    }
+    public void dispose() {
+        halt();
+        LOGGER.info("Disposing last state");
+        state.disposeState();
+        LOGGER.info("Disposing sound system");
         sounds.dispose();
+        LOGGER.info("Disposing game");
         game.dispose();
         try {
             FileUtil.write(home.resolve("ScapesEngine.json"),
@@ -283,7 +309,10 @@ public class ScapesEngine implements Crashable {
         } catch (IOException e) {
             LOGGER.warn("Failed to save config file!");
         }
+        LOGGER.info("Shutting down tasks");
         taskExecutor.shutdown();
+        LOGGER.info("Stopped Scapes-Engine");
+        instance = null;
     }
 
     @Override
@@ -296,12 +325,12 @@ public class ScapesEngine implements Crashable {
     private void writeCrash(Throwable e) {
         LOGGER.error("Scapes engine shutting down because of crash", e);
         Map<String, String> debugValues = new ConcurrentHashMap<>();
-        for (Map.Entry<String, GuiWidgetDebugValues.Element> entry : debugGui
-                .values().elements()) {
+        for (Map.Entry<String, GuiWidgetDebugValues.Element> entry : this.debugValues
+                .elements()) {
             debugValues.put(entry.getKey(), entry.getValue().toString());
         }
         try {
-            Path crashReportFile = CrashReportFile.file(home);
+            FilePath crashReportFile = CrashReportFile.file(home);
             CrashReportFile.writeCrashReport(e, crashReportFile, "ScapesEngine",
                     debugValues);
             container.openFile(crashReportFile);
@@ -325,7 +354,6 @@ public class ScapesEngine implements Crashable {
                 state = newState;
                 game.initLate(gl);
             } else {
-                state.scene().dispose(gl);
                 state.disposeState(gl);
                 state = newState;
             }
@@ -349,23 +377,17 @@ public class ScapesEngine implements Crashable {
     private void step(double delta, GameState state) {
         taskExecutor.tick();
         boolean mouseGrabbed =
-                this.state.isMouseGrabbed() || guiController.isSoftwareMouse();
+                this.state.isMouseGrabbed() || guiController.captureCursor();
         if (this.mouseGrabbed != mouseGrabbed) {
             this.mouseGrabbed = mouseGrabbed;
             container.setMouseGrabbed(mouseGrabbed);
         }
-        controller.poll();
+        container.update(delta);
         usedMemoryDebug.setValue(
                 (runtime.totalMemory() - runtime.freeMemory()) / 1048576);
         maxMemoryDebug.setValue(runtime.maxMemory() / 1048576);
-        if (controller.isPressed(ControllerKey.KEY_F2)) {
-            graphics.triggerScreenshot();
-        }
-        if (debug && controller.isPressed(ControllerKey.KEY_F3)) {
-            debugGui.toggleDebugValues();
-        }
         state.step(delta);
-        globalGui.update(this);
+        guiStack.step(this);
         game.step();
         guiController.update(delta);
     }

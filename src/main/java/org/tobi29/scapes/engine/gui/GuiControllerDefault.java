@@ -13,45 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.input.Controller;
+import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
+import org.tobi29.scapes.engine.opengl.Container;
 import org.tobi29.scapes.engine.utils.MutableSingle;
 
 import java.util.regex.Pattern;
 
-public class GuiControllerDefault implements GuiController {
+public abstract class GuiControllerDefault implements GuiController {
     private static final Pattern REPLACE = Pattern.compile("\n");
-    private final ScapesEngine engine;
-    private final ControllerDefault controller;
-    private final double scrollSensitivity;
-    private double cursorX, cursorY, scroll, guiCursorX, guiCursorY;
+    protected final ScapesEngine engine;
+    protected final ControllerDefault controller;
 
-    public GuiControllerDefault(ScapesEngine engine,
+    protected GuiControllerDefault(ScapesEngine engine,
             ControllerDefault controller) {
-        this(engine, controller, 1.0);
-    }
-
-    public GuiControllerDefault(ScapesEngine engine,
-            ControllerDefault controller, double scrollSensitivity) {
         this.engine = engine;
         this.controller = controller;
-        this.scrollSensitivity = scrollSensitivity;
     }
 
     @Override
-    public void update(double delta) {
-        cursorX = controller.x();
-        cursorY = controller.y();
-        scroll = controller.scrollY() * scrollSensitivity;
-        double width = engine.container().containerWidth();
-        double height = engine.container().containerHeight();
-        guiCursorX = cursorX / width * 800.0;
-        guiCursorY = cursorY / height * 512.0;
+    public void focusTextField(TextFieldData data, boolean multiline) {
     }
 
     @Override
@@ -60,20 +45,21 @@ public class GuiControllerDefault implements GuiController {
         boolean shift = controller.isDown(ControllerKey.KEY_LEFT_SHIFT) ||
                 controller.isDown(ControllerKey.KEY_RIGHT_SHIFT);
         if (controller.isModifierDown()) {
+            Container container = engine.container();
             controller.pressEvents().filter(event -> event.state() !=
-                    Controller.PressState.RELEASE).forEach(event -> {
+                    ControllerBasic.PressState.RELEASE).forEach(event -> {
                 switch (event.key()) {
                     case KEY_A:
                         data.selectAll();
                         break;
                     case KEY_C:
-                        data.copy().ifPresent(controller::clipboardCopy);
+                        data.copy().ifPresent(container::clipboardCopy);
                         break;
                     case KEY_X:
-                        data.cut().ifPresent(controller::clipboardCopy);
+                        data.cut().ifPresent(container::clipboardCopy);
                         break;
                     case KEY_V:
-                        String paste = controller.clipboardPaste();
+                        String paste = container.clipboardPaste();
                         if (paste != null) {
                             if (!multiline) {
                                 paste = REPLACE.matcher(paste).replaceAll("");
@@ -93,7 +79,7 @@ public class GuiControllerDefault implements GuiController {
                 }
             });
             controller.pressEvents().filter(event -> event.state() !=
-                    Controller.PressState.RELEASE).forEach(event -> {
+                    ControllerBasic.PressState.RELEASE).forEach(event -> {
                 switch (event.key()) {
                     case KEY_LEFT:
                         data.left(shift);
@@ -139,52 +125,7 @@ public class GuiControllerDefault implements GuiController {
     }
 
     @Override
-    public double cursorX() {
-        return cursorX;
-    }
-
-    @Override
-    public double cursorY() {
-        return cursorY;
-    }
-
-    @Override
-    public double guiCursorX() {
-        return guiCursorX;
-    }
-
-    @Override
-    public double guiCursorY() {
-        return guiCursorY;
-    }
-
-    @Override
-    public boolean isSoftwareMouse() {
+    public boolean captureCursor() {
         return false;
-    }
-
-    @Override
-    public boolean leftClick() {
-        return controller.isPressed(ControllerKey.BUTTON_LEFT);
-    }
-
-    @Override
-    public boolean rightClick() {
-        return controller.isPressed(ControllerKey.BUTTON_RIGHT);
-    }
-
-    @Override
-    public boolean leftDrag() {
-        return controller.isDown(ControllerKey.BUTTON_LEFT);
-    }
-
-    @Override
-    public boolean rightDrag() {
-        return controller.isDown(ControllerKey.BUTTON_RIGHT);
-    }
-
-    @Override
-    public double scroll() {
-        return scroll;
     }
 }

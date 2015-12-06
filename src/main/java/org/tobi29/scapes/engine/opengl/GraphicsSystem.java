@@ -25,10 +25,10 @@ import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.opengl.texture.TextureManager;
 import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 public class GraphicsSystem {
     private static final Logger LOGGER =
@@ -53,8 +53,8 @@ public class GraphicsSystem {
     }
 
     public void dispose() {
+        engine.halt();
         GameState state = engine.state();
-        state.scene().dispose(gl);
         state.dispose(gl);
         gl.dispose();
     }
@@ -101,7 +101,7 @@ public class GraphicsSystem {
                 triggerScreenshot = false;
                 int width = gl.contentWidth(), height = gl.contentHeight();
                 Image image = gl.screenShot(0, 0, width, height);
-                Path path = engine.home().resolve("screenshots/" +
+                FilePath path = engine.home().resolve("screenshots/" +
                         System.currentTimeMillis() +
                         ".png");
                 engine.taskExecutor().runTask(joiner -> {

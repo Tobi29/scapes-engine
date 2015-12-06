@@ -13,21 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
+import java8.util.Optional;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
+import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
-import org.tobi29.scapes.engine.openal.OpenAL;
+import org.tobi29.scapes.engine.input.ControllerTouch;
+import org.tobi29.scapes.engine.input.FileType;
+import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.Collection;
-import java.util.Optional;
 
 public interface Container {
+    FormFactor formFactor();
+
     int containerWidth();
 
     int containerHeight();
@@ -42,17 +49,21 @@ public interface Container {
 
     void updateContainer();
 
+    void update(double delta);
+
     GL gl();
 
-    OpenAL al();
+    SoundSystem sound();
 
-    ControllerDefault controller();
+    Optional<ControllerDefault> controller();
 
     Collection<ControllerJoystick> joysticks();
 
     boolean joysticksChanged();
 
-    boolean loadFont(String asset);
+    Optional<ControllerTouch> touch();
+
+    Optional<String> loadFont(String asset);
 
     GlyphRenderer createGlyphRenderer(String fontName, int size);
 
@@ -60,15 +71,22 @@ public interface Container {
 
     void stop();
 
-    Path[] openFileDialog(Pair<String, String>[] extensions, String title,
-            boolean multiple);
+    void clipboardCopy(String value);
 
-    Optional<Path> saveFileDialog(Pair<String, String>[] extensions,
+    String clipboardPaste();
+
+    void openFileDialog(FileType type, String title, boolean multiple,
+            IOBiConsumer<String, ReadableByteStream> result) throws IOException;
+
+    Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
             String title);
 
     void message(MessageType messageType, String title, String message);
 
-    void openFile(Path path);
+    void dialog(String title, GuiController.TextFieldData text,
+            boolean multiline);
+
+    void openFile(FilePath path);
 
     enum MessageType {
         ERROR,
@@ -76,5 +94,10 @@ public interface Container {
         WARNING,
         QUESTION,
         PLAIN
+    }
+
+    enum FormFactor {
+        DESKTOP,
+        PHONE
     }
 }

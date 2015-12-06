@@ -15,19 +15,19 @@
  */
 package org.tobi29.scapes.engine.opengl;
 
+import java8.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.opengl.texture.TextureCustom;
+import org.tobi29.scapes.engine.opengl.texture.TextureCustomUnmanaged;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FontRenderer {
@@ -50,8 +50,8 @@ public class FontRenderer {
         GlyphRenderer.GlyphPage page = glyphRenderer.page(id);
         int imageSize = page.size();
         Texture texture =
-                new TextureCustom(imageSize, imageSize, page.buffer(), 2,
-                        TextureFilter.LINEAR, TextureFilter.LINEAR,
+                new TextureCustomUnmanaged(imageSize, imageSize, page.buffer(),
+                        2, TextureFilter.LINEAR, TextureFilter.LINEAR,
                         TextureWrap.CLAMP, TextureWrap.CLAMP);
         timestamp = System.currentTimeMillis() - timestamp;
         LOGGER.debug("Rendered font page in {} ms", timestamp);
@@ -112,7 +112,11 @@ public class FontRenderer {
                     break;
                 }
                 if (i >= start && i < end) {
-                    Mesh mesh = meshes.computeIfAbsent(id, key -> new Mesh());
+                    Mesh mesh = meshes.get(id);
+                    if (mesh == null) {
+                        mesh = new Mesh();
+                        meshes.put(id, mesh);
+                    }
                     float xxx, yyy, w, h, tx, ty, tw, th;
                     if (cropped) {
                         xxx = xx + x;
@@ -160,7 +164,7 @@ public class FontRenderer {
     }
 
     public void dispose() {
-        Arrays.stream(pages).filter(Objects::nonNull)
+        Streams.of(pages).filter(Objects::nonNull)
                 .forEach(page -> page.texture.markDisposed());
     }
 
@@ -184,7 +188,7 @@ public class FontRenderer {
 
         @OpenGLFunction
         public void render(GL gl, Shader shader, boolean textured) {
-            Arrays.stream(vaos).forEach(vao -> {
+            Streams.of(vaos).forEach(vao -> {
                 if (textured) {
                     vao.texture.bind(gl);
                 }

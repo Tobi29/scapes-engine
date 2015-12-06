@@ -23,6 +23,7 @@ import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.opengl.texture.TextureManager;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.graphics.Cam;
+import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f;
 
 public abstract class GL implements OpenGL {
@@ -54,10 +55,12 @@ public abstract class GL implements OpenGL {
         this.containerWidth = containerWidth;
         this.containerHeight = containerHeight;
         this.resolutionMultiplier = resolutionMultiplier;
+        shaderManager.disposeAll(this);
     }
 
     public void dispose() {
-        textureManager.clearCache(this);
+        textureManager.clearCache();
+        Texture.disposeAll(this);
         VAO.disposeAll(this);
     }
 
@@ -118,6 +121,10 @@ public abstract class GL implements OpenGL {
         return (int) (contentHeight * resolutionMultiplier);
     }
 
+    public double sceneSpace() {
+        return FastMath.max(sceneWidth(), sceneHeight()) / 1920.0;
+    }
+
     public int contentWidth() {
         return contentWidth;
     }
@@ -136,9 +143,9 @@ public abstract class GL implements OpenGL {
 
     @OpenGLFunction
     public void reset() {
-        Texture.disposeAll(this);
-        VAO.disposeAll(this);
-        FBO.disposeAll(this);
-        shaderManager.clearCache(this);
+        Texture.resetAll();
+        VAO.resetAll();
+        FBO.resetAll();
+        shaderManager.resetAll();
     }
 }

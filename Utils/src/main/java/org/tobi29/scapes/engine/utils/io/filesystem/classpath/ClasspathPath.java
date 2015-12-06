@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.filesystem.classpath;
 
 import org.tobi29.scapes.engine.utils.io.filesystem.Path;
-import org.tobi29.scapes.engine.utils.io.filesystem.Resource;
+import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
 public class ClasspathPath implements Path {
     private final ClassLoader classLoader;
@@ -29,7 +28,7 @@ public class ClasspathPath implements Path {
     }
 
     @Override
-    public Resource get(String path) {
+    public ReadSource get(String path) {
         return new ClasspathResource(classLoader, this.path + path);
     }
 

@@ -15,23 +15,22 @@
  */
 package org.tobi29.scapes.engine.opengl;
 
+import java8.util.stream.Stream;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBODepth;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class FBO {
     private static final List<FBO> FBOS = new ArrayList<>();
     private static int currentBO;
     private final TextureFBOColor[] texturesColor;
     private final TextureFBODepth textureDepth;
-    private boolean stored;
     private int framebufferID;
     private int width, currentWidth;
     private int height, currentHeight;
@@ -65,6 +64,12 @@ public class FBO {
         }
     }
 
+    public static void resetAll() {
+        while (!FBOS.isEmpty()) {
+            FBOS.get(0).reset();
+        }
+    }
+
     @OpenGLFunction
     public void deactivate(GL gl) {
         gl.bindFBO(lastFBO);
@@ -93,14 +98,14 @@ public class FBO {
                 textureColor.resize(width, height, gl);
             }
         }
-        if (!stored) {
+        if (framebufferID == -1) {
             store(gl);
         }
     }
 
     @OpenGLFunction
     public void ensureDisposed(GL gl) {
-        if (stored) {
+        if (framebufferID != -1) {
             dispose(gl);
         }
     }
@@ -113,33 +118,33 @@ public class FBO {
         attach(gl);
         if (gl.checkFBO() != FBOStatus.COMPLETE) {
             for (TextureFBOColor textureColor : texturesColor) {
-                textureColor.dispose(gl);
+                textureColor.detached();
             }
             if (textureDepth != null) {
-                textureDepth.dispose(gl);
+                textureDepth.detached();
             }
             bindTextures(gl);
             attach(gl);
         }
         gl.clear(0.0f, 0.0f, 0.0f, 0.0f);
         deactivate(gl);
-        stored = true;
         FBOS.add(this);
     }
 
     @OpenGLFunction
     private void dispose(GL gl) {
-        if (framebufferID != -1) {
-            gl.deleteFBO(framebufferID);
-            for (TextureFBOColor textureColor : texturesColor) {
-                textureColor.dispose(gl);
-            }
-            if (textureDepth != null) {
-                textureDepth.dispose(gl);
-            }
-            framebufferID = -1;
+        gl.deleteFBO(framebufferID);
+        for (TextureFBOColor textureColor : texturesColor) {
+            textureColor.markDisposed();
         }
-        stored = false;
+        if (textureDepth != null) {
+            textureDepth.markDisposed();
+        }
+        reset();
+    }
+
+    private void reset() {
+        framebufferID = -1;
         FBOS.remove(this);
     }
 
@@ -157,7 +162,7 @@ public class FBO {
     }
 
     public Stream<TextureFBOColor> texturesColor() {
-        return Arrays.stream(texturesColor);
+        return Streams.of(texturesColor);
     }
 
     public TextureFBOColor textureColor(int i) {
@@ -175,7 +180,6 @@ public class FBO {
         lastFBO = currentBO;
         currentBO = framebufferID;
         gl.bindFBO(framebufferID);
-        gl.drawbuffersFBO(texturesColor.length);
     }
 
     private void bindTextures(GL gl) {
@@ -189,10 +193,11 @@ public class FBO {
 
     private void attach(GL gl) {
         if (textureDepth != null) {
-            gl.attachDepth(textureDepth.textureID());
+            textureDepth.attachDepth(gl);
         }
         for (int i = 0; i < texturesColor.length; i++) {
-            gl.attachColor(texturesColor[i].textureID(), i);
+            texturesColor[i].attachColor(gl, i);
         }
+        gl.drawbuffersFBO(texturesColor.length);
     }
 }

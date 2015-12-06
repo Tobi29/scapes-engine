@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
-@FunctionalInterface
+import org.tobi29.scapes.engine.ScapesEngine;
+
 public interface GuiComponentEventListener {
-    void click(GuiComponentEvent event);
+    void click(GuiComponentEvent event, ScapesEngine engine);
 }

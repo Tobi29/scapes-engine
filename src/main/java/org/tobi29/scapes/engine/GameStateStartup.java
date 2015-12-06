@@ -13,33 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine;
 
+import org.tobi29.scapes.engine.gui.GuiAlignment;
 import org.tobi29.scapes.engine.gui.GuiComponentIcon;
+import org.tobi29.scapes.engine.gui.GuiState;
+import org.tobi29.scapes.engine.gui.GuiStyle;
 import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.scenes.SceneImage;
+import org.tobi29.scapes.engine.opengl.scenes.Scene;
+import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class GameStateStartup extends GameState {
     private final GameState nextState;
-    private final SceneImage scene;
+    private final String image;
+    private final double scale;
+    private GuiComponentIcon icon;
     private double time;
     private int warmUp;
 
-    public GameStateStartup(GameState nextState, SceneImage scene,
-            ScapesEngine engine) {
+    public GameStateStartup(GameState nextState, String image, double scale,
+            Scene scene, ScapesEngine engine) {
         super(engine, scene);
+        this.image = image;
+        this.scale = scale;
         this.nextState = nextState;
         this.scene = scene;
     }
 
     @Override
-    public void dispose(GL gl) {
-    }
-
-    @Override
     public void init(GL gl) {
+        engine.guiStack().add("20-Image",
+                new GuiImage(engine.graphics().textures().get(image),
+                        engine.guiStyle()));
     }
 
     @Override
@@ -53,21 +59,33 @@ public class GameStateStartup extends GameState {
     }
 
     @Override
-    public void stepComponent(double delta) {
-        GuiComponentIcon image = scene.image();
-        if (image != null) {
+    public void step(double delta) {
+        if (icon != null) {
             if (warmUp > 20) {
                 time += delta / 5.0;
                 float a = (float) FastMath.sinTable(time * FastMath.PI);
                 a = FastMath.min(a * 1.4f, 1.0f);
-                image.setColor(1.0f, 1.0f, 1.0f, a);
+                icon.setColor(1.0f, 1.0f, 1.0f, a);
                 if (time > 1.0) {
                     engine.setState(nextState);
                 }
             } else {
-                image.setColor(1.0f, 1.0f, 1.0f, 0.0f);
+                icon.setColor(1.0f, 1.0f, 1.0f, 0.0f);
                 warmUp++;
             }
+        }
+    }
+
+    private class GuiImage extends GuiState {
+        public GuiImage(Texture texture, GuiStyle style) {
+            super(GameStateStartup.this, style, GuiAlignment.CENTER);
+            int width = texture.width();
+            int height = texture.height();
+            double ratio = (double) width / height;
+            int w = (int) (540 * ratio * scale);
+            int h = (int) (540 * scale);
+            icon = add((960 - w) / 2, (540 - h) / 2,
+                    p -> new GuiComponentIcon(p, w, h, texture));
         }
     }
 }

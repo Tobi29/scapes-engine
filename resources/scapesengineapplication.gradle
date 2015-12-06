@@ -200,10 +200,14 @@ class ScapesEngineApplication implements Plugin<Project> {
         task.from({ ->
             natives.files.stream().
                     map({
-                        target.zipTree(it).files.stream().filter({
-                            it.isFile() &&
-                                    it.name.matches("(.+)\\.so(.[0-9]+)?")
-                        }).collect(Collectors.toList())
+                        if (it.name.endsWith(".jar")) {
+                            target.zipTree(it).files.stream().filter({
+                                it.isFile() &&
+                                        it.name.matches("(.+)\\.so(.[0-9]+)?")
+                            }).collect(Collectors.toList())
+                        } else {
+                            return it
+                        }
                     }).collect(Collectors.toList())
         }) {
             eachFile { FileCopyDetails fcp ->
@@ -245,10 +249,14 @@ class ScapesEngineApplication implements Plugin<Project> {
         nativesTask.from({ ->
             target.configurations.nativesMacOSX.files.stream().
                     map({
-                        target.zipTree(it).files.stream().filter({
-                            it.isFile() &&
-                                    it.name.matches("(.+)\\.(jnilib|dylib)")
-                        }).collect(Collectors.toList())
+                        if (it.name.endsWith(".jar")) {
+                            target.zipTree(it).files.stream().filter({
+                                it.isFile() &&
+                                        it.name.matches("(.+)\\.(jnilib|dylib)")
+                            }).collect(Collectors.toList())
+                        } else {
+                            return it
+                        }
                     }).collect(Collectors.toList())
         }) {
             eachFile { FileCopyDetails fcp ->
@@ -350,9 +358,13 @@ class ScapesEngineApplication implements Plugin<Project> {
         prepareTask.from({ ->
             target.configurations.nativesWindows32.files.stream().
                     map({
-                        target.zipTree(it).files.stream().filter({
-                            it.isFile() && it.name.matches("(.+)\\.dll")
-                        }).collect(Collectors.toList())
+                        if (it.name.endsWith(".jar")) {
+                            target.zipTree(it).files.stream().filter({
+                                it.isFile() && it.name.matches("(.+)\\.dll")
+                            }).collect(Collectors.toList())
+                        } else {
+                            return it
+                        }
                     }).collect(Collectors.toList())
         }) {
             eachFile { FileCopyDetails fcp ->
@@ -363,9 +375,13 @@ class ScapesEngineApplication implements Plugin<Project> {
         prepareTask.from({ ->
             target.configurations.nativesWindows64.files.stream().
                     map({
-                        target.zipTree(it).files.stream().filter({
-                            it.isFile() && it.name.matches("(.+)\\.dll")
-                        }).collect(Collectors.toList())
+                        if (it.name.endsWith(".jar")) {
+                            target.zipTree(it).files.stream().filter({
+                                it.isFile() && it.name.matches("(.+)\\.dll")
+                            }).collect(Collectors.toList())
+                        } else {
+                            return it
+                        }
                     }).collect(Collectors.toList())
         }) {
             eachFile { FileCopyDetails fcp ->

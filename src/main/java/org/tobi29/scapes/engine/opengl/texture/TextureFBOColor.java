@@ -16,9 +16,11 @@
 package org.tobi29.scapes.engine.opengl.texture;
 
 import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 
 public class TextureFBOColor extends Texture {
     private final boolean alpha, hdr;
+    private boolean attached = true;
 
     public TextureFBOColor(int width, int height, TextureFilter minFilter,
             TextureFilter magFilter, TextureWrap wrapS, TextureWrap wrapT,
@@ -35,6 +37,16 @@ public class TextureFBOColor extends Texture {
         store(gl);
     }
 
+    @OpenGLFunction
+    public void attachColor(GL gl, int i) {
+        ensureStored(gl);
+        gl.attachColor(textureID, i);
+    }
+
+    public void detached() {
+        attached = false;
+    }
+
     @Override
     protected void store(GL gl) {
         textureID = gl.createTexture();
@@ -46,5 +58,10 @@ public class TextureFBOColor extends Texture {
         }
         dirtyFilter = true;
         TEXTURES.add(this);
+    }
+
+    @Override
+    protected boolean used(long time) {
+        return attached;
     }
 }

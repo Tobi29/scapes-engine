@@ -16,8 +16,11 @@
 package org.tobi29.scapes.engine.opengl.texture;
 
 import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 
 public class TextureFBODepth extends Texture {
+    private boolean attached = true;
+
     public TextureFBODepth(int width, int height, TextureFilter minFilter,
             TextureFilter magFilter, TextureWrap wrapS, TextureWrap wrapT) {
         super(width, height, null, 0, minFilter, magFilter, wrapS, wrapT);
@@ -30,6 +33,16 @@ public class TextureFBODepth extends Texture {
         store(gl);
     }
 
+    @OpenGLFunction
+    public void attachDepth(GL gl) {
+        ensureStored(gl);
+        gl.attachDepth(textureID);
+    }
+
+    public void detached() {
+        attached = false;
+    }
+
     @Override
     protected void store(GL gl) {
         textureID = gl.createTexture();
@@ -37,5 +50,10 @@ public class TextureFBODepth extends Texture {
         gl.bufferTextureDepth(width, height, null);
         dirtyFilter = true;
         TEXTURES.add(this);
+    }
+
+    @Override
+    protected boolean used(long time) {
+        return attached;
     }
 }

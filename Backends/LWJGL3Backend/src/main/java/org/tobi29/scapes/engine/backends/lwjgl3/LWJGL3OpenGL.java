@@ -148,10 +148,10 @@ public class LWJGL3OpenGL extends GL {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         int w = engine.container().contentWidth();
         int h = engine.container().contentHeight();
-        GL11.glScissor((int) ((double) x / 800 * w),
-                (int) ((double) (512 - y - height) / 512 * h) + 1,
-                (int) ((double) width / 800 * w),
-                (int) ((double) height / 512 * h));
+        GL11.glScissor((int) ((double) x / 960 * w),
+                (int) ((double) (540 - y - height) / 540 * h) + 1,
+                (int) ((double) width / 960 * w),
+                (int) ((double) height / 540 * h));
     }
 
     @Override
@@ -352,18 +352,13 @@ public class LWJGL3OpenGL extends GL {
             byte[] infoBytes = new byte[length];
             log.get(infoBytes);
             String out = new String(infoBytes);
-            LOGGER.info("Shader log: {}", out);
+            LOGGER.info("Program log: {}", out);
         }
     }
 
     @Override
     public void bindAttributeLocation(int shader, int id, String name) {
         GL20.glBindAttribLocation(shader, id, name);
-    }
-
-    @Override
-    public void bindFragmentLocation(int shader, int id, String name) {
-        GL30.glBindFragDataLocation(shader, id, name);
     }
 
     @Override
@@ -767,6 +762,9 @@ public class LWJGL3OpenGL extends GL {
     private ByteBuffer direct(ByteBuffer buffer) {
         if (buffer == null) {
             return null;
+        }
+        if (buffer.isDirect()) {
+            return buffer;
         }
         direct(buffer.remaining());
         directBuffer.put(buffer);

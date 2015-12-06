@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
-import org.tobi29.scapes.engine.input.Controller;
+import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerKey;
 
@@ -89,8 +89,8 @@ public class GLFWControllers {
                         ControllerKey button = ControllerKey.button(i);
                         if (button != ControllerKey.UNKNOWN) {
                             virtualJoystick.addPressEvent(button,
-                                    value ? Controller.PressState.PRESS :
-                                            Controller.PressState.RELEASE);
+                                    value ? ControllerBasic.PressState.PRESS :
+                                            ControllerBasic.PressState.RELEASE);
                         }
                     }
                 }

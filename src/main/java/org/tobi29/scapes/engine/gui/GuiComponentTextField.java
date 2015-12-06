@@ -81,9 +81,7 @@ public class GuiComponentTextField extends GuiComponentButton {
     }
 
     @Override
-    public void update(double mouseX, double mouseY, boolean mouseInside,
-            ScapesEngine engine) {
-        super.update(mouseX, mouseY, mouseInside, engine);
+    protected void updateComponent(ScapesEngine engine) {
         GuiComponent current = gui.lastClicked();
         if (current == this || current == text || major) {
             text.setActive(true);

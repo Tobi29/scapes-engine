@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
-import java.io.IOException;
-import java.util.Objects;
+import java8.util.Objects;
 
-@FunctionalInterface
+import java.io.IOException;
+
 public interface IOFunction<T, R> {
     static <T> IOFunction<T, T> identity() {
         return t -> t;

@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.server;
 
+import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.SleepUtil;
@@ -29,7 +30,10 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class AbstractServerConnection {
@@ -65,7 +69,7 @@ public abstract class AbstractServerConnection {
         LOGGER.info("Starting socket thread...");
         ServerSocketChannel channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
-        channel.bind(address);
+        channel.socket().bind(address);
         joiners.add(taskExecutor.runTask(joiner -> {
             try {
                 while (!joiner.marked()) {
@@ -97,7 +101,7 @@ public abstract class AbstractServerConnection {
             }
         }, "Socket"));
         joiner = new Joiner(joiners);
-        return (A) channel.getLocalAddress();
+        return (A) channel.socket().getLocalSocketAddress();
     }
 
     public void stop() {

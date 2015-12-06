@@ -15,19 +15,29 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import java8.util.Optional;
 import org.tobi29.scapes.engine.opengl.*;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 
 public class GuiComponentIcon extends GuiComponent {
-    private final Texture texture;
     private final VAO vao;
     private final Pair<VAO, Texture> vaoBorder;
     private float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
+    private Optional<Texture> texture;
+
+    public GuiComponentIcon(GuiLayoutData parent, int width, int height) {
+        this(parent, width, height, Optional.empty());
+    }
 
     public GuiComponentIcon(GuiLayoutData parent, int width, int height,
             Texture texture) {
+        this(parent, width, height, Optional.of(texture));
+    }
+
+    public GuiComponentIcon(GuiLayoutData parent, int width, int height,
+            Optional<Texture> texture) {
         super(parent, width, height);
         this.texture = texture;
         vao = VAOUtility.createVTI(
@@ -38,6 +48,14 @@ public class GuiComponentIcon extends GuiComponent {
         vaoBorder = gui.style().border(width, height);
     }
 
+    public void setIcon(Texture texture) {
+        this.texture = Optional.of(texture);
+    }
+
+    public void unsetIcon() {
+        texture = Optional.empty();
+    }
+
     public void setColor(float r, float g, float b, float a) {
         this.r = r;
         this.g = g;
@@ -46,16 +64,14 @@ public class GuiComponentIcon extends GuiComponent {
     }
 
     @Override
-    public void removed() {
-        texture.markDisposed();
-    }
-
-    @Override
     public void renderComponent(GL gl, Shader shader, double delta) {
-        texture.bind(gl);
-        gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, r, g, b, a);
-        vao.render(gl, shader);
-        vaoBorder.b.bind(gl);
-        vaoBorder.a.render(gl, shader);
+        Optional<Texture> texture = this.texture;
+        if (texture.isPresent()) {
+            texture.get().bind(gl);
+            gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, r, g, b, a);
+            vao.render(gl, shader);
+            vaoBorder.b.bind(gl);
+            vaoBorder.a.render(gl, shader);
+        }
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine;
 
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 
 public class ScapesEngineConfig {
@@ -58,13 +59,13 @@ public class ScapesEngineConfig {
     }
 
     public double volume(String channel) {
-        return tagStructure.getStructure("Volumes").getTagEntrySet().stream()
+        return Streams.of(tagStructure.getStructure("Volumes").getTagEntrySet())
                 .filter(entry -> channel.startsWith(entry.getKey()) &&
                         entry.getValue() instanceof Number)
                 .sorted((entry1, entry2) -> entry2.getKey().length() -
                         entry1.getKey().length())
                 .mapToDouble(entry -> ((Number) entry.getValue()).doubleValue())
-                .findFirst().orElse(1.0);
+                .findAny().orElse(1.0);
     }
 
     public void setVolume(String channel, double value) {

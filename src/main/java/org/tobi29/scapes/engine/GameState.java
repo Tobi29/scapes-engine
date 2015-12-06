@@ -15,36 +15,17 @@
  */
 package org.tobi29.scapes.engine;
 
-import org.tobi29.scapes.engine.gui.Gui;
-import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.opengl.*;
-import org.tobi29.scapes.engine.opengl.matrix.Matrix;
-import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class GameState {
-    protected static final VAO CURSOR;
-
-    static {
-        CURSOR = VAOUtility.createVCTI(
-                new float[]{-16.0f, -16.0f, 0.0f, 16.0f, -16.0f, 0.0f, -16.0f,
-                        16.0f, 0.0f, 16.0f, 16.0f, 0.0f},
-                new float[]{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f},
-                new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f},
-                new int[]{0, 1, 2, 1, 2, 3}, RenderType.TRIANGLES);
-    }
-
     protected final VAO vao;
     protected final ScapesEngine engine;
-    protected final List<Gui> guis = new ArrayList<>();
     protected final AtomicReference<Scene> newScene = new AtomicReference<>();
     protected Scene scene;
     protected FBO fboScene, fboFront, fboBack;
@@ -54,8 +35,8 @@ public abstract class GameState {
         this.scene = scene;
         newScene.set(scene);
         vao = VAOUtility.createVTI(
-                new float[]{0.0f, 512.0f, 0.0f, 800.0f, 512.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 800.0f, 0.0f, 0.0f},
+                new float[]{0.0f, 540.0f, 0.0f, 960.0f, 540.0f, 0.0f, 0.0f,
+                        0.0f, 0.0f, 960.0f, 0.0f, 0.0f},
                 new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f},
                 new int[]{0, 1, 2, 3, 2, 1}, RenderType.TRIANGLES);
     }
@@ -65,8 +46,9 @@ public abstract class GameState {
     }
 
     public void disposeState(GL gl) {
+        scene.dispose(gl);
         dispose(gl);
-        scene.removeAllGui();
+        disposeState();
         if (fboScene != null) {
             fboScene.ensureDisposed(gl);
         }
@@ -76,29 +58,26 @@ public abstract class GameState {
         if (fboBack != null) {
             fboBack.ensureDisposed(gl);
         }
-        gl.shaders().clearCache(gl);
-        gl.textures().clearCache(gl);
+        gl.shaders().disposeAll(gl);
+        gl.textures().clearCache();
     }
 
-    public abstract void dispose(GL gl);
+    public void disposeState() {
+        scene.dispose();
+        dispose();
+    }
+
+    public void dispose(GL gl) {
+    }
+
+    public void dispose() {
+    }
 
     public abstract void init(GL gl);
 
     public abstract boolean isMouseGrabbed();
 
     public abstract boolean isThreaded();
-
-    public void add(Gui gui) {
-        if (gui != null) {
-            scene.addGui(gui);
-        }
-    }
-
-    public void remove(Gui gui) {
-        if (gui != null) {
-            scene.removeGui(gui);
-        }
-    }
 
     public Scene scene() {
         return scene;
@@ -108,20 +87,14 @@ public abstract class GameState {
         newScene.set(scene);
     }
 
-    public void step(double delta) {
-        if (scene != null) {
-            scene.stepGui(engine);
-        }
-        stepComponent(delta);
-    }
-
-    public abstract void stepComponent(double delta);
+    public abstract void step(double delta);
 
     public void render(GL gl, double delta, boolean updateSize) {
         Scene newScene = this.newScene.getAndSet(null);
         if (newScene != null) {
             if (scene != null) {
                 scene.dispose(gl);
+                scene.dispose();
             }
             newScene.setState(this);
             newScene.init(gl);
@@ -168,7 +141,7 @@ public abstract class GameState {
         scene.renderScene(gl);
         fboScene.deactivate(gl);
         gl.checkError("Scene-Rendering");
-        gl.setProjectionOrthogonal(0.0f, 0.0f, 800.0f, 512.0f);
+        gl.setProjectionOrthogonal(0.0f, 0.0f, 960.0f, 540.0f);
         int renderPasses = scene.renderPasses() - 1;
         if (renderPasses == 0) {
             gl.viewport(0, 0, gl.contentWidth(), gl.contentHeight());
@@ -211,20 +184,7 @@ public abstract class GameState {
         }
         gl.checkError("Post-Processing");
         Shader shader = gl.shaders().get("Engine:shader/Gui", gl);
-        scene.renderGui(gl, shader, delta);
-        MatrixStack matrixStack = gl.matrixStack();
-        engine.globalGUI().render(gl, shader, delta);
-        GuiController guiController = engine.guiController();
-        if (guiController.isSoftwareMouse() && !isMouseGrabbed()) {
-            gl.setProjectionOrthogonal(0.0f, 0.0f, gl.contentWidth(),
-                    gl.containerHeight());
-            gl.textures().bind("Engine:image/Cursor", gl);
-            Matrix matrix = matrixStack.push();
-            matrix.translate((float) guiController.cursorX(),
-                    (float) guiController.cursorY(), 0.0f);
-            CURSOR.render(gl, shader);
-            matrixStack.pop();
-        }
+        engine.guiStack().render(gl, shader, delta, engine);
         gl.checkError("Gui-Rendering");
         scene.postRender(gl, delta);
         gl.checkError("Post-Render");

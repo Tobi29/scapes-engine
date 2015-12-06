@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.shader;
 
+import java8.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.utils.io.ProcessStream;
-import org.tobi29.scapes.engine.utils.io.filesystem.Resource;
+import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
@@ -32,19 +32,25 @@ import java.util.Queue;
 
 public class Shader {
     private static final Logger LOGGER = LoggerFactory.getLogger(Shader.class);
-    private final Queue<Uniform> uniforms = new ArrayDeque<>();
+    private final Queue<Consumer<GL>> uniforms = new ArrayDeque<>();
     private final int[] uniformLocations;
     private final int vertexShader, fragmentShader, program;
 
     @OpenGLFunction
-    public Shader(Resource vertexResource, Resource fragmentResource,
-            Properties properties, ShaderCompileInformation information, GL gl)
+    public Shader(ReadSource vertexResource, ReadSource fragmentResource,
+            Properties properties, ShaderPreprocessor processor, GL gl)
             throws IOException {
+        processor.supplyVariable("\\$SCENE_WIDTH", gl.sceneWidth());
+        processor.supplyVariable("\\$SCENE_HEIGHT", gl.sceneHeight());
+        processor.supplyVariable("\\$CONTAINER_WIDTH", gl.containerWidth());
+        processor.supplyVariable("\\$CONTAINER_HEIGHT", gl.containerHeight());
+        processor.supplyVariable("\\$CONTENT_WIDTH", gl.contentWidth());
+        processor.supplyVariable("\\$CONTENT_HEIGHT", gl.contentHeight());
         vertexShader = createShader(
-                information.processVertexSource(readSource(vertexResource)),
+                processor.processVertexSource(readSource(vertexResource)),
                 gl.createVertexObject(), gl);
         fragmentShader = createShader(
-                information.processFragmentSource(readSource(fragmentResource)),
+                processor.processFragmentSource(readSource(fragmentResource)),
                 gl.createFragmentObject(), gl);
         program = gl.createProgram();
         gl.attach(program, vertexShader);
@@ -53,12 +59,6 @@ public class Shader {
             String attribute = properties.getProperty("Attribute." + i);
             if (attribute != null) {
                 gl.bindAttributeLocation(program, i, attribute);
-            }
-        }
-        for (int i = 0; i < 8; i++) {
-            String fragment = properties.getProperty("Fragment." + i);
-            if (fragment != null) {
-                gl.bindFragmentLocation(program, i, fragment);
             }
         }
         gl.link(program);
@@ -75,10 +75,9 @@ public class Shader {
                 uniformLocations[i] = gl.getUniformLocation(program, uniform);
             }
         }
-        information.postCompile(this);
     }
 
-    private static String readSource(Resource resource) throws IOException {
+    private static String readSource(ReadSource resource) throws IOException {
         return resource.readReturn(stream -> ProcessStream
                 .process(stream, ProcessStream.asString()));
     }
@@ -94,8 +93,10 @@ public class Shader {
         return program;
     }
 
-    public Queue<Uniform> uniforms() {
-        return uniforms;
+    public void updateUniforms(GL gl) {
+        while (!uniforms.isEmpty()) {
+            uniforms.poll().accept(gl);
+        }
     }
 
     public int uniformLocation(int uniform) {
@@ -263,10 +264,5 @@ public class Shader {
             uniforms.add(shaderGL -> shaderGL
                     .setUniformMatrix4(uniformLocation, transpose, matrices));
         }
-    }
-
-    @FunctionalInterface
-    public interface Uniform {
-        void set(GL gl);
     }
 }

@@ -13,24 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
+import java8.util.Optional;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Queue;
 
 public class VAO {
-    private static final List<VAO> VAO_LIST = new ArrayList<>();
+    private static final List<VAO> VAOS = new ArrayList<>();
     private static int disposeOffset;
     private final RenderType renderType;
     private final int length, stride;
@@ -69,7 +68,7 @@ public class VAO {
                 .order(ByteOrder.nativeOrder());
         ByteBuffer indexBuffer = BufferCreatorNative.bytes(index.length << 1)
                 .order(ByteOrder.nativeOrder());
-        attributes.forEach(
+        Streams.of(attributes).forEach(
                 attribute -> addToBuffer(attribute, vertices, vertexBuffer));
         for (int i : index) {
             indexBuffer.putShort((short) i);
@@ -79,8 +78,8 @@ public class VAO {
 
     @OpenGLFunction
     public static void disposeUnused(GL gl) {
-        for (int i = disposeOffset; i < VAO_LIST.size(); i += 16) {
-            VAO vao = VAO_LIST.get(i);
+        for (int i = disposeOffset; i < VAOS.size(); i += 16) {
+            VAO vao = VAOS.get(i);
             assert vao.stored;
             if (vao.markAsDisposed || !vao.used) {
                 vao.dispose(gl);
@@ -93,14 +92,19 @@ public class VAO {
 
     @OpenGLFunction
     public static void disposeAll(GL gl) {
-        VAO_LIST.forEach(VAO::markAsDisposed);
-        while (!VAO_LIST.isEmpty()) {
-            disposeUnused(gl);
+        while (!VAOS.isEmpty()) {
+            VAOS.get(0).dispose(gl);
+        }
+    }
+
+    public static void resetAll() {
+        while (!VAOS.isEmpty()) {
+            VAOS.get(0).reset();
         }
     }
 
     public static int vaos() {
-        return VAO_LIST.size();
+        return VAOS.size();
     }
 
     private void storeAttribute(GL gl, VAOAttributeData attribute) {
@@ -279,10 +283,7 @@ public class VAO {
         Matrix matrix = gl.matrixStack().current();
         gl.bindVAO(arrayID);
         gl.activateShader(shader.programID());
-        Queue<Shader.Uniform> uniforms = shader.uniforms();
-        while (!uniforms.isEmpty()) {
-            uniforms.poll().set(gl);
-        }
+        shader.updateUniforms(gl);
         int uniformLocation = shader.uniformLocation(0);
         if (uniformLocation != -1) {
             gl.setUniformMatrix4(uniformLocation, false,
@@ -336,9 +337,9 @@ public class VAO {
             gl.bufferVBODataArray(data.a);
             gl.bindVBOElement(indexID);
             gl.bufferVBODataElement(data.b);
-            attributes.stream()
+            Streams.of(attributes)
                     .forEach(attribute -> storeAttribute(gl, attribute));
-            VAO_LIST.add(this);
+            VAOS.add(this);
             stored = true;
             if (weak) {
                 this.data = Optional.empty();
@@ -350,8 +351,13 @@ public class VAO {
         gl.deleteVBO(vertexID);
         gl.deleteVBO(indexID);
         gl.deleteVAO(arrayID);
-        VAO_LIST.remove(this);
+        reset();
+    }
+
+    private void reset() {
+        VAOS.remove(this);
         stored = false;
+        markAsDisposed = false;
     }
 
     public void setWeak(boolean value) {

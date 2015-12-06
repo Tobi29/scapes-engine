@@ -13,15 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 public class GuiComponentEvent {
-    private final double x, y;
+    private final double x, y, relativeX, relativeY;
+    private final boolean screen;
 
     public GuiComponentEvent(double x, double y) {
+        this(x, y, Double.NaN, Double.NaN);
+    }
+
+    public GuiComponentEvent(double x, double y, double relativeX,
+            double relativeY) {
+        this(x, y, relativeX, relativeY, true);
+    }
+
+    public GuiComponentEvent(double x, double y, double relativeX,
+            double relativeY, boolean screen) {
         this.x = x;
         this.y = y;
+        this.relativeX = relativeX;
+        this.relativeY = relativeY;
+        this.screen = screen;
+    }
+
+    public GuiComponentEvent(GuiComponentEvent parent, double x, double y) {
+        this(parent.x - x, parent.y - y, parent.relativeX, parent.relativeY,
+                parent.screen);
+    }
+
+    public GuiComponentEvent(double x, GuiComponentEvent parent) {
+        this(x, parent.relativeX, parent);
+    }
+
+    public GuiComponentEvent(double x, double relativeX,
+            GuiComponentEvent parent) {
+        this(x, parent.y, relativeX, parent.relativeY, parent.screen);
     }
 
     public double x() {
@@ -30,5 +57,17 @@ public class GuiComponentEvent {
 
     public double y() {
         return y;
+    }
+
+    public double relativeX() {
+        return relativeX;
+    }
+
+    public double relativeY() {
+        return relativeY;
+    }
+
+    public boolean screen() {
+        return screen;
     }
 }

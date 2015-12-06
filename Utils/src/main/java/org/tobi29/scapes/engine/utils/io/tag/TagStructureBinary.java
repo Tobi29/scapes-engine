@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.utils.io.tag;
 
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
@@ -55,7 +56,7 @@ public class TagStructureBinary {
     protected static final byte ID_TAG_STRING = 0x71;
 
     protected static String readKey(ReadableByteStream stream,
-            KeyDictionary dictionary) throws IOException {
+                                    KeyDictionary dictionary) throws IOException {
         byte alias = stream.get();
         if (alias == -1) {
             return stream.getString();
@@ -65,7 +66,7 @@ public class TagStructureBinary {
     }
 
     protected static void writeKey(String key, WritableByteStream stream,
-            KeyDictionary dictionary) throws IOException {
+                                   KeyDictionary dictionary) throws IOException {
         Byte alias = dictionary.getAlias(key);
         if (alias == null) {
             stream.put(0xFF);
@@ -76,25 +77,25 @@ public class TagStructureBinary {
     }
 
     public static TagStructure write(TagStructure tagStructure,
-            WritableByteStream stream) throws IOException {
+                                     WritableByteStream stream) throws IOException {
         return write(tagStructure, stream, (byte) -1);
     }
 
     public static TagStructure write(TagStructure tagStructure,
-            WritableByteStream stream, byte compression) throws IOException {
+                                     WritableByteStream stream, byte compression) throws IOException {
         return write(tagStructure, stream, compression, true);
     }
 
     public static TagStructure write(TagStructure tagStructure,
-            WritableByteStream stream, byte compression, boolean useDictionary)
+                                     WritableByteStream stream, byte compression, boolean useDictionary)
             throws IOException {
         return write(tagStructure, stream, compression, useDictionary,
                 new ByteBufferStream());
     }
 
     public static TagStructure write(TagStructure tagStructure,
-            WritableByteStream stream, byte compression, boolean useDictionary,
-            ByteBufferStream compressionStream) throws IOException {
+                                     WritableByteStream stream, byte compression, boolean useDictionary,
+                                     ByteBufferStream compressionStream) throws IOException {
         tagStructure.write(new TagStructureWriterBinary(stream, compression,
                 useDictionary, compressionStream));
         return tagStructure;
@@ -106,12 +107,12 @@ public class TagStructureBinary {
     }
 
     public static TagStructure read(TagStructure tagStructure,
-            ReadableByteStream stream) throws IOException {
+                                    ReadableByteStream stream) throws IOException {
         return read(tagStructure, stream, new ByteBufferStream());
     }
 
     public static TagStructure read(TagStructure tagStructure,
-            ReadableByteStream stream, ByteBufferStream compressionStream)
+                                    ReadableByteStream stream, ByteBufferStream compressionStream)
             throws IOException {
         tagStructure
                 .read(new TagStructureReaderBinary(stream, compressionStream));
@@ -144,20 +145,20 @@ public class TagStructureBinary {
             Map<String, KeyOccurrence> keys = new ConcurrentHashMap<>();
             analyze(tagStructure, keys);
             if (keys.size() > 255) {
-                keys.entrySet().stream().sorted((entry1, entry2) ->
+                Streams.of(keys.entrySet()).sorted((entry1, entry2) ->
                         entry1.getValue().count == entry2.getValue().count ? 0 :
                                 entry1.getValue().count <
                                         entry2.getValue().count ? 1 : -1)
                         .limit(255).map(Map.Entry::getKey)
                         .forEach(this::addKeyAlias);
             } else {
-                keys.entrySet().stream().map(Map.Entry::getKey)
+                Streams.of(keys.entrySet()).map(Map.Entry::getKey)
                         .forEach(this::addKeyAlias);
             }
         }
 
         private static void analyze(TagStructure tagStructure,
-                Map<String, KeyOccurrence> keys) {
+                                    Map<String, KeyOccurrence> keys) {
             for (Map.Entry<String, Object> entry : tagStructure
                     .getTagEntrySet()) {
                 String key = entry.getKey();
@@ -171,7 +172,7 @@ public class TagStructureBinary {
                 if (value instanceof TagStructure) {
                     analyze((TagStructure) value, keys);
                 } else if (value instanceof TagStructure.StructureList) {
-                    ((TagStructure.StructureList) value).stream()
+                    Streams.of((TagStructure.StructureList) value)
                             .forEach(child -> analyze(child, keys));
                 }
             }

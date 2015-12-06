@@ -15,11 +15,15 @@
  */
 package org.tobi29.scapes.engine.utils;
 
+import com.owtelse.codec.Base64;
+import java8.util.function.DoubleSupplier;
+import java8.util.function.IntSupplier;
+import java8.util.function.LongSupplier;
+import java8.util.function.Supplier;
+
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.function.*;
 import java.util.regex.Pattern;
 
 public final class ArrayUtil {
@@ -296,8 +300,8 @@ public final class ArrayUtil {
             }
             byte[] array = new byte[text.length() >> 1];
             for (int i = 0; i < text.length(); i += 2) {
-                array[i >> 1] = (byte) Integer
-                        .parseUnsignedInt(text.substring(i, i + 2), 16);
+                array[i >> 1] =
+                        (byte) Integer.parseInt(text.substring(i, i + 2), 16);
             }
             return array;
         } catch (NumberFormatException e) {
@@ -312,8 +316,11 @@ public final class ArrayUtil {
      * @return String containing the data
      */
     public static String toBase64(byte... array) {
-        return new String(Base64.getEncoder().encode(array),
-                StandardCharsets.UTF_8);
+        try {
+            return Base64.encode(array);
+        } catch (UnsupportedEncodingException e) {
+            throw new UnsupportedJVMException(e);
+        }
     }
 
     /**
@@ -323,7 +330,11 @@ public final class ArrayUtil {
      * @return Byte array containing the data
      */
     public static byte[] fromBase64(String text) {
-        return Base64.getDecoder().decode(text);
+        try {
+            return Base64.decode(text);
+        } catch (UnsupportedEncodingException e) {
+            throw new UnsupportedJVMException(e);
+        }
     }
 
     /**

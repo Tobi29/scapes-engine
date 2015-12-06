@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.VAO;
@@ -30,7 +29,7 @@ public class GuiComponentSlider extends GuiComponent {
     private final int textX, textY;
     private final TextFilter textFilter;
     private double value;
-    private boolean hover, dragging;
+    private boolean hover;
     private FontRenderer.Text vaoText;
     private Pair<VAO, Texture> vao;
 
@@ -51,14 +50,27 @@ public class GuiComponentSlider extends GuiComponent {
         this.textFilter = textFilter;
         textX = 4;
         textY = (height - textSize) / 2;
+        onDragLeft(event -> {
+            this.value = FastMath.clamp((event.x() - 8) / (width - 16.0), 0, 1);
+            updateText();
+            updateMesh();
+        });
+        onClick((event, engine) -> engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
+        onHover(event -> {
+            switch (event.state()) {
+                case ENTER:
+                    hover = true;
+                    updateMesh();
+                    break;
+                case LEAVE:
+                    hover = false;
+                    updateMesh();
+                    break;
+            }
+        });
         updateMesh();
         updateText();
-    }
-
-    @Override
-    public void clickLeft(GuiComponentEvent event, ScapesEngine engine) {
-        super.clickLeft(event, engine);
-        dragging = true;
     }
 
     @Override
@@ -66,44 +78,6 @@ public class GuiComponentSlider extends GuiComponent {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
         vaoText.render(gl, shader);
-    }
-
-    @Override
-    public void setHover(boolean hover, ScapesEngine engine) {
-        if (this.hover != hover) {
-            this.hover = hover;
-            updateMesh();
-        }
-    }
-
-    @Override
-    public void update(double mouseX, double mouseY, boolean mouseInside,
-            ScapesEngine engine) {
-        super.update(mouseX, mouseY, mouseInside, engine);
-        if (dragging) {
-            if (engine.guiController().leftDrag()) {
-                value = FastMath.clamp((mouseX - 8) / (width - 16.0), 0, 1);
-                updateText();
-                updateMesh();
-                if (hovering) {
-                    hover(new GuiComponentHoverEvent(mouseX, mouseY,
-                            GuiComponentHoverEvent.State.HOVER));
-                } else {
-                    hover(new GuiComponentHoverEvent(mouseX, mouseY,
-                            GuiComponentHoverEvent.State.ENTER));
-                    hovering = true;
-                }
-            } else {
-                dragging = false;
-            }
-        }
-        if (checkInside(mouseX, mouseY)) {
-            if (engine.guiController().leftClick()) {
-                engine.sounds()
-                        .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f,
-                                1.0f);
-            }
-        }
     }
 
     private void updateText() {

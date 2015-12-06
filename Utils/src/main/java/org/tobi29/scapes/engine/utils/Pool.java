@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java8.util.function.Supplier;
+import java8.util.Spliterator;
+import java8.util.Spliterators;
+import java8.util.stream.Stream;
+import java8.util.stream.StreamSupport;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Using {@linkplain #push()} you can retrieve objects from this pool, modify
@@ -118,6 +123,12 @@ public class Pool<E> implements Iterable<E> {
                 }
                 return list.get(i++);
             }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException(
+                        "Cannot remove object from pool");
+            }
         };
     }
 
@@ -127,8 +138,7 @@ public class Pool<E> implements Iterable<E> {
      *
      * @return An {@code Spliterator} to iterate through the {@code Pool}'s data
      */
-    @Override
-    public Spliterator<E> spliterator() {
+    public Spliterator<E> spliterator8() {
         return Spliterators.spliterator(iterator(), size, 0);
     }
 
@@ -139,7 +149,7 @@ public class Pool<E> implements Iterable<E> {
      * @return An {@code Stream} to iterate through the {@code Pool}'s data
      */
     public Stream<E> stream() {
-        return StreamSupport.stream(spliterator(), false);
+        return StreamSupport.stream(spliterator8(), false);
     }
 
     public boolean contains(E element) {

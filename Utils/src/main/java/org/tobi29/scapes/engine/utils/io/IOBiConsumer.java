@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.utils.io;
 
-import java.io.IOException;
-import java.util.Objects;
+import java8.util.Objects;
 
-@FunctionalInterface
+import java.io.IOException;
+
 public interface IOBiConsumer<T, U> {
     void accept(T t, U u) throws IOException;
 

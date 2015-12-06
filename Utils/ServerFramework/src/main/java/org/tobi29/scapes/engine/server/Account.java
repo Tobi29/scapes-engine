@@ -15,24 +15,23 @@
  */
 package org.tobi29.scapes.engine.server;
 
+import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.RSAUtil;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream;
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.interfaces.RSAPrivateCrtKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Optional;
 import java.util.Properties;
 
 public class Account {
@@ -45,9 +44,9 @@ public class Account {
         this.nickname = nickname;
     }
 
-    public static Account read(Path path) throws IOException {
+    public static Account read(FilePath path) throws IOException {
         String key = null, nickname = "";
-        if (Files.exists(path)) {
+        if (FileUtil.exists(path)) {
             Properties properties = new Properties();
             FileUtil.read(path, stream -> properties
                     .load(new ByteStreamInputStream(stream)));
@@ -61,12 +60,13 @@ public class Account {
         return new Account(genKey(), nickname);
     }
 
+    @SuppressWarnings("UnnecessaryToStringCall")
     public static Optional<KeyPair> key(String str) {
         if (str == null) {
             return Optional.empty();
         }
         try {
-            RSAPrivateCrtKey privateKey = RSAUtil.readPrivate(str);
+            RSAPrivateKey privateKey = RSAUtil.readPrivate(str);
             PublicKey publicKey = RSAUtil.extractPublic(privateKey);
             return Optional.of(new KeyPair(publicKey, privateKey));
         } catch (InvalidKeySpecException | IllegalArgumentException e) {
@@ -120,7 +120,7 @@ public class Account {
         return Optional.empty();
     }
 
-    public void write(Path path) throws IOException {
+    public void write(FilePath path) throws IOException {
         Properties properties = new Properties();
         properties.setProperty("Key", key(keyPair));
         properties.setProperty("Nickname", nickname);

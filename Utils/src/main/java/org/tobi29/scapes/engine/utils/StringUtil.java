@@ -15,9 +15,10 @@
  */
 package org.tobi29.scapes.engine.utils;
 
+import java8.util.function.Function;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**

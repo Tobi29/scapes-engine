@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
+import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.function.IntFunction;
 
 /**
  * Utility class to read an entire stream and process it as a byte array.
@@ -138,7 +137,6 @@ public final class ProcessStream {
         };
     }
 
-    @FunctionalInterface
     public interface StreamProcessor<E> {
         void process(ByteBuffer buffer) throws IOException;
 

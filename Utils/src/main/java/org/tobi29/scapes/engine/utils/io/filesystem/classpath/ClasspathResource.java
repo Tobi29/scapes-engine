@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.filesystem.classpath;
 
 import org.apache.tika.Tika;
@@ -21,7 +20,7 @@ import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream;
 import org.tobi29.scapes.engine.utils.io.IOConsumer;
 import org.tobi29.scapes.engine.utils.io.IOFunction;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
-import org.tobi29.scapes.engine.utils.io.filesystem.Resource;
+import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +30,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
-public class ClasspathResource implements Resource {
+public class ClasspathResource implements ReadSource {
     private final ClassLoader classLoader;
     private final String path;
 

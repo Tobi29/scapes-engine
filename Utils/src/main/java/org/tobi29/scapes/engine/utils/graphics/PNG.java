@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.graphics;
 
 import ar.com.hjg.pngj.*;
+import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream;
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.function.IntFunction;
 
 public final class PNG {
     private PNG() {

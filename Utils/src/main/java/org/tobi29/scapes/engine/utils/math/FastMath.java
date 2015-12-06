@@ -28,8 +28,8 @@ public final class FastMath {
     public static final double RAD_2_DEG = 180.0 / PI;
     public static final double DEG_2_RAD = PI / 180.0;
     public static final double TWO_PI = 6.28318530717958647692;
-    private static final double[] SIN = new double[1000000];
-    private static final double[] ASIN = new double[1000000];
+    private static final double[] SIN = new double[10000];
+    private static final double[] ASIN = new double[10000];
 
     static {
         for (int i = 0; i < SIN.length; i++) {

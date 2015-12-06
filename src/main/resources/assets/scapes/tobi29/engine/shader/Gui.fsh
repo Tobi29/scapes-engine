@@ -1,11 +1,11 @@
-#version 150
+#version 330
 
 uniform sampler2D uniform_Texture;
 
 in vec4 varying_Color;
 in vec2 varying_Texture;
 
-out vec4 out_Color;
+layout(location = 0) out vec4 out_Color;
 
 void main(void)  {
     vec4 color = texture(uniform_Texture, varying_Texture);

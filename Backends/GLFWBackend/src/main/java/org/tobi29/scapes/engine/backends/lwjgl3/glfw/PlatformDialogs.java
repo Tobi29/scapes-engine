@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
+import java8.util.Optional;
 import org.tobi29.scapes.engine.opengl.Container;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 
-import java.nio.file.Path;
-import java.util.Optional;
+import java.io.IOException;
 
 public interface PlatformDialogs {
-    Path[] openFileDialog(Pair<String, String>[] extensions, String title,
-            boolean multiple);
+    void openFileDialog(Pair<String, String>[] extensions, String title,
+            boolean multiple, IOBiConsumer<String, ReadableByteStream> result)
+            throws IOException;
 
-    Optional<Path> saveFileDialog(Pair<String, String>[] extensions,
+    Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
             String title);
 
     void message(Container.MessageType messageType, String title,
             String message);
 
-    void openFile(Path path);
+    void openFile(FilePath path);
 }

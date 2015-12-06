@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.server;
 
+import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.BufferCreator;
@@ -24,7 +25,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Random;
 
 public class UnknownConnection implements Connection {

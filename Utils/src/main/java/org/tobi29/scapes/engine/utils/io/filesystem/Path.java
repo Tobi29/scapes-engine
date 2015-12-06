@@ -17,5 +17,5 @@
 package org.tobi29.scapes.engine.utils.io.filesystem;
 
 public interface Path {
-    Resource get(String path);
+    ReadSource get(String path);
 }

@@ -19,8 +19,8 @@ import org.tobi29.scapes.engine.utils.BufferCreator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.channels.SeekableByteChannel;
 
 public class BufferedReadChannelStream implements ReadableByteStream {
     private final ReadableByteChannel channel;
@@ -43,10 +43,14 @@ public class BufferedReadChannelStream implements ReadableByteStream {
             buffer.position(buffer.position() + len);
         } else {
             buffer.position(buffer.limit());
-            if (channel instanceof SeekableByteChannel) {
+            /*if (channel instanceof SeekableByteChannel) {
                 SeekableByteChannel seekableChannel =
                         (SeekableByteChannel) channel;
                 seekableChannel.position(seekableChannel.position() + skip);
+            } else {*/
+            if (channel instanceof FileChannel) {
+                FileChannel fileChannel = (FileChannel) channel;
+                fileChannel.position(fileChannel.position() + skip);
             } else {
                 read(BufferCreator.bytes(skip));
             }

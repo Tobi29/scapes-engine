@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
 import org.slf4j.Logger;
@@ -24,14 +23,13 @@ import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.CompressionUtil;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 public class ServerInfo {
     private static final Logger LOGGER =
@@ -40,25 +38,15 @@ public class ServerInfo {
     private final Image image;
     private final ByteBuffer buffer;
 
-    public ServerInfo(String name, Path iconPath) {
+    public ServerInfo(String name) {
+        this(name, new Image());
+    }
+    public ServerInfo(String name, FilePath iconPath) {
+        this(name, image(iconPath));
+    }
+
+    public ServerInfo(String name, Image image) {
         this.name = name;
-        Image image = new Image();
-        if (Files.exists(iconPath)) {
-            try {
-                Image icon = FileUtil.readReturn(iconPath,
-                        stream -> PNG.decode(stream, BufferCreator::bytes));
-                int width = icon.width();
-                if (width != icon.height()) {
-                    LOGGER.warn("The icon has to be square sized.");
-                } else if (width > 256) {
-                    LOGGER.warn("The icon may not be larger than 256x256.");
-                } else {
-                    image = icon;
-                }
-            } catch (IOException e) {
-                LOGGER.warn("Unable to load icon: {}", e.getMessage());
-            }
-        }
         this.image = image;
         ByteBuffer buffer;
         try {
@@ -100,6 +88,26 @@ public class ServerInfo {
             name = "Invalid server info";
         }
         this.image = image;
+    }
+
+    private static Image image(FilePath path) {
+        if (FileUtil.exists(path)) {
+            try {
+                Image image = FileUtil.readReturn(path,
+                        stream -> PNG.decode(stream, BufferCreator::bytes));
+                int width = image.width();
+                if (width != image.height()) {
+                    LOGGER.warn("The icon has to be square sized.");
+                } else if (width > 256) {
+                    LOGGER.warn("The icon may not be larger than 256x256.");
+                } else {
+                    return image;
+                }
+            } catch (IOException e) {
+                LOGGER.warn("Unable to load icon: {}", e.getMessage());
+            }
+        }
+        return new Image();
     }
 
     public String getName() {

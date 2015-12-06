@@ -15,10 +15,11 @@
  */
 package org.tobi29.scapes.engine.server;
 
+import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.io.IOConsumer;
-import org.tobi29.scapes.engine.utils.io.PacketBundleChannel;
+import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -72,8 +73,10 @@ public class ControlPanelProtocol implements Connection {
         addCommand("Core:End", command -> {
             throw new ConnectionCloseException("Remote connection end");
         });
-        addCommand("Core:CommandsList", command -> send("Core:CommandsSend",
-                commands.keySet().stream().toArray(String[]::new)));
+        addCommand("Core:CommandsList", command -> {
+            Set<String> set = commands.keySet();
+            send("Core:CommandsSend", set.toArray(new String[set.size()]));
+        });
     }
 
     public ControlPanelProtocol(SocketChannel channel, String password) {
@@ -139,6 +142,7 @@ public class ControlPanelProtocol implements Connection {
         channel.register(selector, opt);
     }
 
+    @SuppressWarnings("UnnecessaryToStringCall")
     @Override
     public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
         try {
@@ -168,7 +172,7 @@ public class ControlPanelProtocol implements Connection {
 
     public boolean tick() throws IOException {
         boolean processing = false;
-        Optional<ReadableByteStream> bundle = channel.fetch();
+        Optional<RandomReadableByteStream> bundle = channel.fetch();
         if (bundle.isPresent()) {
             ReadableByteStream input = bundle.get();
             WritableByteStream output = channel.getOutputStream();

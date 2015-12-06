@@ -11,7 +11,7 @@ public class GuiComponentEditableText extends GuiComponentText {
     protected final GuiController.TextFieldData data =
             new GuiController.TextFieldData();
     protected final int maxLength;
-    protected boolean active;
+    protected boolean active, focused;
     protected FontRenderer.Text vaoCursor, vaoSelection;
 
     public GuiComponentEditableText(GuiLayoutData parent, int textSize,
@@ -99,10 +99,12 @@ public class GuiComponentEditableText extends GuiComponentText {
     }
 
     @Override
-    public void update(double mouseX, double mouseY, boolean mouseInside,
-            ScapesEngine engine) {
-        super.update(mouseX, mouseY, mouseInside, engine);
+    protected void updateComponent(ScapesEngine engine) {
         if (active) {
+            if (!focused) {
+                engine.guiController().focusTextField(data, false);
+                focused = true;
+            }
             if (engine.guiController().processTextField(data, false)) {
                 if (data.text.length() > maxLength) {
                     data.text.delete(maxLength, data.text.length());
@@ -114,6 +116,7 @@ public class GuiComponentEditableText extends GuiComponentText {
         } else {
             data.selectionStart = -1;
             data.cursor = data.text.length();
+            focused = false;
         }
     }
 }

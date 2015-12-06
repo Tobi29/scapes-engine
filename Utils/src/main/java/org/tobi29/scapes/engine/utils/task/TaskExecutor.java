@@ -16,8 +16,12 @@
 package org.tobi29.scapes.engine.utils.task;
 
 import org.tobi29.scapes.engine.utils.Crashable;
+import org.tobi29.scapes.engine.utils.Streams;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -43,7 +47,7 @@ public class TaskExecutor {
         this.name = name + '-';
         root = true;
         threadPools = new EnumMap<>(Priority.class);
-        Arrays.stream(Priority.values()).forEach(priority -> threadPools
+        Streams.of(Priority.values()).forEach(priority -> threadPools
                 .put(priority, new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L,
                         TimeUnit.SECONDS, new SynchronousQueue<>(),
                         new PriorityThreadFactory(priority.priority))));
@@ -131,10 +135,14 @@ public class TaskExecutor {
 
     public void shutdown() {
         if (root) {
-            threadPools.values().forEach(ThreadPoolExecutor::shutdown);
-            threadPools.values().forEach(threadPool -> {
+            Streams.of(threadPools.values())
+                    .forEach(ThreadPoolExecutor::shutdown);
+            Streams.of(threadPools.values()).forEach(threadPool -> {
                 try {
-                    threadPool.awaitTermination(10, TimeUnit.SECONDS);
+                    if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
+                        Streams.of(Thread.getAllStackTraces().keySet())
+                                .forEach(System.out::println);
+                    }
                 } catch (InterruptedException e) {
                 }
             });
@@ -152,17 +160,14 @@ public class TaskExecutor {
         }
     }
 
-    @FunctionalInterface
     public interface Task {
         long run();
     }
 
-    @FunctionalInterface
     public interface OneshotTask {
         void run();
     }
 
-    @FunctionalInterface
     public interface ASyncTask {
         void run(Joiner joiner) throws Exception;
     }

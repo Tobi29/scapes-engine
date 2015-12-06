@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.swt.util.widgets;
 
+import java8.util.function.Function;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-
-import java.util.function.Function;
 
 public class InputDialog extends Dialog {
     private final Shell shell;
@@ -34,14 +32,15 @@ public class InputDialog extends Dialog {
     public InputDialog(Shell parent, String title, String button) {
         super(parent);
         this.button = button;
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.SHEET | SWT.PRIMARY_MODAL);
+        shell = new Shell(parent,
+                SWT.DIALOG_TRIM | SWT.SHEET | SWT.PRIMARY_MODAL);
         shell.setMinimumSize(450, 0);
         shell.setText(title);
         shell.setLayout(new GridLayout(1, false));
     }
 
     public <C extends Control> C add(String label,
-                                     Function<Shell, ? extends C> supplier) {
+            Function<Shell, ? extends C> supplier) {
         Label fieldLabel = new Label(shell, SWT.NONE);
         fieldLabel.setText(label);
         C field = supplier.apply(shell);

@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.input;
+
+import java8.util.stream.Stream;
+import org.tobi29.scapes.engine.utils.Streams;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Stream;
 
-public abstract class ControllerDefault implements Controller {
+public abstract class ControllerDefault implements ControllerBasic {
     private final byte[] states;
     private final Queue<PressEvent> pressEventQueue =
             new ConcurrentLinkedQueue<>();
@@ -39,21 +40,6 @@ public abstract class ControllerDefault implements Controller {
     @Override
     public boolean isActive() {
         return active;
-    }
-
-    @Override
-    public boolean isDown(ControllerKey key) {
-        return states[key.id()] >= 1;
-    }
-
-    @Override
-    public boolean isPressed(ControllerKey key) {
-        return states[key.id()] >= 2;
-    }
-
-    @Override
-    public Stream<PressEvent> pressEvents() {
-        return pressEvents.stream();
     }
 
     @Override
@@ -104,12 +90,27 @@ public abstract class ControllerDefault implements Controller {
     }
 
     @Override
+    public boolean isDown(ControllerKey key) {
+        return states[key.id()] >= 1;
+    }
+
+    @Override
+    public boolean isPressed(ControllerKey key) {
+        return states[key.id()] >= 2;
+    }
+
+    @Override
+    public Stream<PressEvent> pressEvents() {
+        return Streams.of(pressEvents);
+    }
+
+    @Override
     public void addPressEvent(ControllerKey key, PressState state) {
         pressEventQueue.add(new PressEvent(key, state));
     }
 
     public Stream<KeyTypeEvent> typeEvents() {
-        return typeEvents.stream();
+        return Streams.of(typeEvents);
     }
 
     public abstract boolean isModifierDown();
@@ -140,6 +141,10 @@ public abstract class ControllerDefault implements Controller {
 
     public void addTypeEvent(char character) {
         typeEventQueue.add(new KeyTypeEvent(character));
+    }
+
+    public void clearTypeEvents() {
+        typeEvents = Collections.emptyList();
     }
 
     public void set(double x, double y) {
@@ -174,10 +179,6 @@ public abstract class ControllerDefault implements Controller {
     public synchronized void clearStates() {
         Arrays.fill(states, (byte) 0);
     }
-
-    public abstract void clipboardCopy(String value);
-
-    public abstract String clipboardPaste();
 
     public static class KeyTypeEvent {
         private final char character;

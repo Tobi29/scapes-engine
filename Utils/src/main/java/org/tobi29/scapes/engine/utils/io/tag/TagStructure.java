@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag;
 
+import java8.util.Objects;
 import org.tobi29.scapes.engine.utils.Pair;
 
 import java.io.IOException;

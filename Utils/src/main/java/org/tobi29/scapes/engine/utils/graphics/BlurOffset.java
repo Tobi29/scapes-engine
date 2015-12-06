@@ -68,7 +68,6 @@ public final class BlurOffset {
     /**
      * Functional interface to modify blur weights
      */
-    @FunctionalInterface
     public interface GaussianCurve {
         /**
          * Modifies blur weight

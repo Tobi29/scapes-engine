@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
 
+import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.function.IntFunction;
 
 public class ByteBufferStream
         implements RandomWritableByteStream, RandomReadableByteStream {

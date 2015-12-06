@@ -21,11 +21,12 @@ import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileSystemContainer;
-import org.tobi29.scapes.engine.utils.io.filesystem.Resource;
+import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,8 +83,8 @@ public class TextureManager {
         try {
             Properties properties = new Properties();
             FileSystemContainer files = engine.files();
-            Resource imageResource = files.get(asset + ".png");
-            Resource propertiesResource = files.get(asset + ".properties");
+            ReadSource imageResource = files.get(asset + ".png");
+            ReadSource propertiesResource = files.get(asset + ".properties");
             if (propertiesResource.exists()) {
                 try (InputStream streamIn = propertiesResource.readIO()) {
                     properties.load(streamIn);
@@ -104,10 +105,11 @@ public class TextureManager {
         empty.bind(gl);
     }
 
-    public void clearCache(GL gl) {
-        for (Texture texture : cache.values()) {
-            texture.dispose(gl);
+    public void clearCache() {
+        Iterator<TextureAsset> iterator = cache.values().iterator();
+        while (iterator.hasNext()) {
+            iterator.next().uncache();
+            iterator.remove();
         }
-        cache.clear();
     }
 }

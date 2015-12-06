@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import java8.util.function.Function;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
-import java.util.function.Function;
 
 public class GuiComponentPane extends GuiComponent {
     public GuiComponentPane(GuiLayoutData parent, int width, int height) {

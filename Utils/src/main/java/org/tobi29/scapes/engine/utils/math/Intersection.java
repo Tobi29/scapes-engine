@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math;
 
+import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
-
-import java.util.Optional;
 
 public class Intersection {
     private final Vector3 intersection;

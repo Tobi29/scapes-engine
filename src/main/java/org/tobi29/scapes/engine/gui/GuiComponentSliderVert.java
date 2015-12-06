@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
@@ -26,7 +25,7 @@ import org.tobi29.scapes.engine.utils.math.FastMath;
 public class GuiComponentSliderVert extends GuiComponent {
     private double value;
     private int sliderHeight;
-    private boolean hover, dragging;
+    private boolean hover;
     private Pair<VAO, Texture> vao;
 
     public GuiComponentSliderVert(GuiLayoutData parent, int width, int height,
@@ -39,58 +38,32 @@ public class GuiComponentSliderVert extends GuiComponent {
         super(parent, width, height);
         this.sliderHeight = sliderHeight;
         this.value = value;
+        onDragLeft(event -> {
+            this.value = FastMath.clamp((event.y() - this.sliderHeight * 0.5) /
+                    (height - this.sliderHeight), 0, 1);
+            updateMesh();
+        });
+        onClick((event, engine) -> engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
+        onHover(event -> {
+            switch (event.state()) {
+                case ENTER:
+                    hover = true;
+                    updateMesh();
+                    break;
+                case LEAVE:
+                    hover = false;
+                    updateMesh();
+                    break;
+            }
+        });
         updateMesh();
-    }
-
-    @Override
-    public void clickLeft(GuiComponentEvent event, ScapesEngine engine) {
-        super.clickLeft(event, engine);
-        dragging = true;
     }
 
     @Override
     public void renderComponent(GL gl, Shader shader, double delta) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
-    }
-
-    @Override
-    public void setHover(boolean hover, ScapesEngine engine) {
-        if (this.hover != hover) {
-            this.hover = hover;
-            updateMesh();
-        }
-    }
-
-    @Override
-    public void update(double mouseX, double mouseY, boolean mouseInside,
-            ScapesEngine engine) {
-        super.update(mouseX, mouseY, mouseInside, engine);
-        if (dragging) {
-            if (engine.guiController().leftDrag()) {
-                value = FastMath.clamp(
-                        (mouseY - sliderHeight * 0.5) / (height - sliderHeight),
-                        0, 1);
-                updateMesh();
-                if (hovering) {
-                    hover(new GuiComponentHoverEvent(mouseX, mouseY,
-                            GuiComponentHoverEvent.State.HOVER));
-                } else {
-                    hover(new GuiComponentHoverEvent(mouseX, mouseY,
-                            GuiComponentHoverEvent.State.ENTER));
-                    hovering = true;
-                }
-            } else {
-                dragging = false;
-            }
-        }
-        if (checkInside(mouseX, mouseY)) {
-            if (engine.guiController().leftClick()) {
-                engine.sounds()
-                        .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f,
-                                1.0f);
-            }
-        }
     }
 
     public double value() {

@@ -24,18 +24,16 @@ import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class GuiNotification extends Gui {
-    private final Gui parent;
     private final VAO vao;
     private final double speed;
     private final float x, y;
     private double progress;
 
-    public GuiNotification(Gui parent, int x, int y, int width, int height,
-            GuiStyle style, GuiAlignment alignment, double time) {
+    public GuiNotification(int x, int y, int width, int height, GuiStyle style,
+            GuiAlignment alignment, double time) {
         super(width, height, style, alignment);
         this.x = x;
         this.y = y;
-        this.parent = parent;
         Mesh mesh = new Mesh(true);
         GuiUtils.renderShadow(mesh, 0.0f, 0.0f, width, height, 0.2f);
         mesh.addVertex(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.0f, 0.0f);
@@ -46,7 +44,6 @@ public class GuiNotification extends Gui {
         mesh.addVertex(width, height, 0.0f, 0.0f, 0.0f, 0.0f, 0.3f, 0.0f, 0.0f);
         vao = mesh.finish();
         speed = 1.0 / time;
-        parent.add(this);
     }
 
     @Override
@@ -55,9 +52,7 @@ public class GuiNotification extends Gui {
         gl.textures().unbind(gl);
         gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f);
         vao.render(gl, shader);
-        if (progress >= 1.0) {
-            parent.remove(this);
-        }
+        progress = FastMath.min(progress, 1.1);
     }
 
     @Override
@@ -66,5 +61,10 @@ public class GuiNotification extends Gui {
         float sqr = sin * sin;
         sqr *= sqr;
         matrix.translate(x, y + sqr * sin * height, 0.0f);
+    }
+
+    @Override
+    public boolean valid() {
+        return progress < 1.05;
     }
 }

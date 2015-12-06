@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.gui.debug;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.*;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +29,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
     private final GuiComponentScrollPaneViewport scrollPane;
 
     public GuiWidgetDebugValues(GuiLayoutData parent) {
-        super(parent, 360, 240, "Debug Values");
+        super(parent, 360, 256, "Debug Values");
         scrollPane =
                 add(10, 10, p -> new GuiComponentScrollPane(p, 340, 220, 20))
                         .viewport();
@@ -43,6 +44,15 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         return element;
     }
 
+    public synchronized void clear() {
+        Iterator<Map.Entry<String, Element>> iterator =
+                elements.entrySet().iterator();
+        while (iterator.hasNext()) {
+            scrollPane.remove(iterator.next().getValue());
+            iterator.remove();
+        }
+    }
+
     public Set<Map.Entry<String, Element>> elements() {
         return elements.entrySet();
     }
@@ -53,8 +63,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
 
         private Element(GuiLayoutData parent, String key) {
             super(parent, 378, 20);
-            addHori(3, 3,
-                    p -> new GuiComponentTextButton(p, 180, 15, 12, key));
+            addHori(3, 3, p -> new GuiComponentTextButton(p, 180, 15, 12, key));
             value = addHori(3, 3, p -> new GuiComponentText(p, 12, ""));
         }
 
@@ -95,9 +104,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         }
 
         @Override
-        public void update(double mouseX, double mouseY, boolean mouseInside,
-                ScapesEngine engine) {
-            super.update(mouseX, mouseY, mouseInside, engine);
+        public void updateComponent(ScapesEngine engine) {
             String newText = text.getAndSet(null);
             if (newText != null) {
                 value.setText(newText);

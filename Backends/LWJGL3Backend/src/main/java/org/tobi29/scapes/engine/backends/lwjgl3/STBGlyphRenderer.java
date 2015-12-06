@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
+import java8.util.Optional;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
@@ -59,7 +59,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
         glyphBuffer = BufferCreatorNative.bytesD(glyphSize * glyphSize);
     }
 
-    public static boolean loadFont(ReadSource font) {
+    public static Optional<String> loadFont(ReadSource font) {
         try {
             ByteBuffer buffer =
                     ProcessStream.processSource(font, ProcessStream.asBuffer());
@@ -80,11 +80,11 @@ public class STBGlyphRenderer implements GlyphRenderer {
                 nameBuffer.get(nameArray);
                 String name = new String(nameArray);
                 FONTS.put(name, new Pair<>(fontBuffer, infoBuffer));
-                return true;
+                return Optional.of(name);
             }
         } catch (IOException e) {
         }
-        return false;
+        return Optional.empty();
     }
 
     public static GlyphRenderer fromFont(String name, int size) {

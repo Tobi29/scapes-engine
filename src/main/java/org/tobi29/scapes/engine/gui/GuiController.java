@@ -15,33 +15,23 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import java.util.Optional;
+import java8.util.Optional;
+import java8.util.stream.Stream;
+import org.tobi29.scapes.engine.input.ControllerBasic;
+import org.tobi29.scapes.engine.utils.Pair;
 
 public interface GuiController {
-
     void update(double delta);
+
+    void focusTextField(TextFieldData data, boolean multiline);
 
     boolean processTextField(TextFieldData data, boolean multiline);
 
-    double cursorX();
+    Stream<GuiCursor> cursors();
 
-    double cursorY();
+    Stream<Pair<GuiCursor, ControllerBasic.PressEvent>> clicks();
 
-    double guiCursorX();
-
-    double guiCursorY();
-
-    boolean isSoftwareMouse();
-
-    boolean leftClick();
-
-    boolean rightClick();
-
-    boolean leftDrag();
-
-    boolean rightDrag();
-
-    double scroll();
+    boolean captureCursor();
 
     class TextFieldData {
         @SuppressWarnings("StringBufferField")

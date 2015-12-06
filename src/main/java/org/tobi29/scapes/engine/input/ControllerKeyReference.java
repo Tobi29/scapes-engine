@@ -1,9 +1,15 @@
 package org.tobi29.scapes.engine.input;
 
-import java.util.*;
-import java.util.function.Function;
+import java8.util.function.Predicate;
+import java8.util.stream.Collectors;
+import java8.util.Optional;
+import java8.util.function.Function;
+import org.tobi29.scapes.engine.utils.Streams;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class ControllerKeyReference {
     private static final Pattern SPLIT = Pattern.compile(",");
@@ -13,7 +19,7 @@ public class ControllerKeyReference {
     public ControllerKeyReference(ControllerKey key,
             ControllerKey... modifiers) {
         this.key = key;
-        this.modifiers = Arrays.stream(modifiers).collect(Collectors.toList());
+        this.modifiers = Streams.of(modifiers).collect(Collectors.toList());
     }
 
     public ControllerKeyReference(ControllerKey key,
@@ -39,7 +45,7 @@ public class ControllerKeyReference {
         List<ControllerKey> modifiers;
         if (split.length > 1) {
             String[] modifierSplit = SPLIT.split(split[1]);
-            modifiers = Arrays.stream(modifierSplit).map(ControllerKey::valueOf)
+            modifiers = Streams.of(modifierSplit).map(ControllerKey::valueOf)
                     .collect(Collectors.toList());
         } else {
             modifiers = Collections.emptyList();
@@ -48,25 +54,25 @@ public class ControllerKeyReference {
                 modifiers);
     }
 
-    public static Optional<ControllerKeyReference> isDown(Controller controller,
+    public static Optional<ControllerKeyReference> isDown(ControllerBasic controller,
             ControllerKeyReference... references) {
         return mostSpecific(reference -> reference.isDown(controller),
                 references);
     }
 
     public static Optional<ControllerKeyReference> isPressed(
-            Controller controller, ControllerKeyReference... references) {
+            ControllerBasic controller, ControllerKeyReference... references) {
         return mostSpecific(reference -> reference.isPressed(controller),
                 references);
     }
 
     private static Optional<ControllerKeyReference> mostSpecific(
-            Function<ControllerKeyReference, Boolean> check,
+            Predicate<ControllerKeyReference> check,
             ControllerKeyReference... references) {
         int length = -1;
         Optional<ControllerKeyReference> key = Optional.empty();
         for (ControllerKeyReference reference : references) {
-            if (check.apply(reference) && reference.modifiers.size() > length) {
+            if (check.test(reference) && reference.modifiers.size() > length) {
                 key = Optional.of(reference);
                 length = reference.modifiers.size();
             }
@@ -74,7 +80,7 @@ public class ControllerKeyReference {
         return key;
     }
 
-    public boolean isDown(Controller controller) {
+    public boolean isDown(ControllerBasic controller) {
         if (!controller.isDown(key)) {
             return false;
         }
@@ -86,7 +92,7 @@ public class ControllerKeyReference {
         return true;
     }
 
-    public boolean isPressed(Controller controller) {
+    public boolean isPressed(ControllerBasic controller) {
         if (!controller.isPressed(key)) {
             return false;
         }

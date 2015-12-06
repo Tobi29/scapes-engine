@@ -43,7 +43,7 @@ public class FileSystemContainer implements Path {
     }
 
     @Override
-    public Resource get(String path) {
+    public ReadSource get(String path) {
         Pair<String, String> location = splitPath(path);
         return fileSystem(location.a).get(location.b);
     }

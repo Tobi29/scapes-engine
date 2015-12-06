@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
+import java8.util.Optional;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
@@ -27,19 +28,25 @@ import org.tobi29.scapes.engine.backends.lwjgl3.GLFWKeyMap;
 import org.tobi29.scapes.engine.backends.lwjgl3.STBGlyphRenderer;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.spi.GLFWDialogsProvider;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
+import org.tobi29.scapes.engine.gui.GuiComponent;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerKey;
+import org.tobi29.scapes.engine.input.ControllerTouch;
+import org.tobi29.scapes.engine.input.FileType;
 import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
 import org.tobi29.scapes.engine.opengl.GraphicsException;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Sync;
+import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -175,6 +182,11 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     }
 
     @Override
+    public FormFactor formFactor() {
+        return FormFactor.DESKTOP;
+    }
+
+    @Override
     public void setMouseGrabbed(boolean value) {
         if (value) {
             mouseGrabbed = true;
@@ -195,6 +207,18 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     }
 
     @Override
+    public void update(double delta) {
+        poll();
+        if (isPressed(ControllerKey.KEY_F2)) {
+            engine.graphics().triggerScreenshot();
+        }
+        if (engine.debug() && isPressed(ControllerKey.KEY_F3)) {
+            GuiComponent debugValues = engine.debugValues();
+            debugValues.setVisible(!debugValues.isVisible());
+        }
+    }
+
+    @Override
     public Collection<ControllerJoystick> joysticks() {
         joysticksChanged = false;
         Collection<ControllerJoystick> collection =
@@ -204,7 +228,12 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     }
 
     @Override
-    public boolean loadFont(String asset) {
+    public Optional<ControllerTouch> touch() {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<String> loadFont(String asset) {
         return STBGlyphRenderer.loadFont(engine.files().get(asset + ".ttf"));
     }
 
@@ -245,6 +274,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 visible = true;
             }
         }
+        LOGGER.info("Disposing graphics system");
+        engine.graphics().dispose();
         engine.dispose();
         GLFW.glfwDestroyWindow(window);
         GLFW.glfwTerminate();
@@ -265,13 +296,25 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     }
 
     @Override
-    public Path[] openFileDialog(Pair<String, String>[] extensions,
-            String title, boolean multiple) {
-        return exec(() -> dialogs.openFileDialog(extensions, title, multiple));
+    public void clipboardCopy(String value) {
+        GLFW.glfwSetClipboardString(window, value);
     }
 
     @Override
-    public Optional<Path> saveFileDialog(Pair<String, String>[] extensions,
+    public String clipboardPaste() {
+        return GLFW.glfwGetClipboardString(window);
+    }
+
+    @Override
+    public void openFileDialog(FileType type, String title, boolean multiple,
+            IOBiConsumer<String, ReadableByteStream> result)
+            throws IOException {
+        execIO(() -> dialogs
+                .openFileDialog(type.extensions(), title, multiple, result));
+    }
+
+    @Override
+    public Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
             String title) {
         return exec(() -> dialogs.saveFileDialog(extensions, title));
     }
@@ -282,7 +325,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     }
 
     @Override
-    public void openFile(Path path) {
+    public void openFile(FilePath path) {
         exec(() -> dialogs.openFile(path));
     }
 
@@ -307,7 +350,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 !engine.tagStructure().getStructure("Compatibility")
                         .getBoolean("ForceLegacyGL")) {
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 2);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3);
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,
                     GLFW.GLFW_OPENGL_CORE_PROFILE);
             GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT, GL11.GL_TRUE);
@@ -353,15 +396,5 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         clearStates();
         GLFW.glfwDestroyWindow(window);
         visible = false;
-    }
-
-    @Override
-    public void clipboardCopy(String value) {
-        GLFW.glfwSetClipboardString(window, value);
-    }
-
-    @Override
-    public String clipboardPaste() {
-        return GLFW.glfwGetClipboardString(window);
     }
 }

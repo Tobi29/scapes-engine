@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw.dialogs.swt;
 
+import java8.util.Optional;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
@@ -25,13 +25,14 @@ import org.eclipse.swt.widgets.Shell;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.PlatformDialogs;
 import org.tobi29.scapes.engine.opengl.Container;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
+import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
+import java.io.IOException;
 
 public class PlatformDialogsSWT implements PlatformDialogs {
-    private static final Path[] EMPTY_PATH = {};
     private final String name;
 
     public PlatformDialogsSWT(String name) {
@@ -39,8 +40,9 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public Path[] openFileDialog(Pair<String, String>[] extensions,
-            String title, boolean multiple) {
+    public void openFileDialog(Pair<String, String>[] extensions, String title,
+            boolean multiple, IOBiConsumer<String, ReadableByteStream> result)
+            throws IOException {
         String[] filterExtensions = new String[extensions.length];
         String[] filterNames = new String[extensions.length];
         for (int i = 0; i < extensions.length; i++) {
@@ -60,19 +62,20 @@ public class PlatformDialogsSWT implements PlatformDialogs {
         boolean successful = fileDialog.open() != null;
         disposeShell(shell);
         if (!successful) {
-            return EMPTY_PATH;
+            return;
         }
         String filterPath = fileDialog.getFilterPath();
         String[] fileNames = fileDialog.getFileNames();
-        Path[] files = new Path[fileNames.length];
-        for (int i = 0; i < fileNames.length; i++) {
-            files[i] = Paths.get(filterPath, fileNames[i]).toAbsolutePath();
+        for (String fileName : fileNames) {
+            FilePath path = FileUtil.path(filterPath).resolve(fileName)
+                    .toAbsolutePath();
+            FileUtil.read(path, stream -> result
+                    .accept(path.getFileName().toString(), stream));
         }
-        return files;
     }
 
     @Override
-    public Optional<Path> saveFileDialog(Pair<String, String>[] extensions,
+    public Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
             String title) {
         String[] filterExtensions = new String[extensions.length];
         String[] filterNames = new String[extensions.length];
@@ -93,8 +96,9 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             return Optional.empty();
         }
         String fileName = fileDialog.getFileName();
-        return Optional.of(Paths.get(fileDialog.getFilterPath(), fileName)
-                .toAbsolutePath());
+        return Optional
+                .of(FileUtil.path(fileDialog.getFilterPath()).resolve(fileName)
+                        .toAbsolutePath());
     }
 
     @Override
@@ -124,7 +128,7 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public void openFile(Path path) {
+    public void openFile(FilePath path) {
         Program.launch(path.toString());
     }
 

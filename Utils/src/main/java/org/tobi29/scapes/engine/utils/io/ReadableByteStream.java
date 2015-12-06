@@ -64,9 +64,11 @@ public interface ReadableByteStream {
         ByteBuffer buffer = ByteBuffer.wrap(src, off, len);
         boolean available = getSome(buffer);
         int position = buffer.position();
+        position -= off;
         if (position == 0 && !available) {
             return -1;
         }
+        assert position <= len;
         return position;
     }
 

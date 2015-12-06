@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.gui;
 
-@FunctionalInterface
 public interface GuiComponentHoverListener {
     void hover(GuiComponentHoverEvent event);
 }

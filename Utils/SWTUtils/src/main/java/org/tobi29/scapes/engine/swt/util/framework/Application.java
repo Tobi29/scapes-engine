@@ -1,17 +1,17 @@
 package org.tobi29.scapes.engine.swt.util.framework;
 
+import java8.util.Optional;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.SleepUtil;
 import org.tobi29.scapes.engine.utils.io.filesystem.CrashReportFile;
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
+import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class Application implements Runnable, Crashable {
@@ -45,12 +45,12 @@ public abstract class Application implements Runnable, Crashable {
     @SuppressWarnings("CallToSystemExit")
     @Override
     public void crash(Throwable e) {
-        Optional<Path> report = writeCrash(e);
+        Optional<FilePath> report = writeCrash(e);
         if (!report.isPresent()) {
             System.exit(1);
             return;
         }
-        Path path = report.get();
+        FilePath path = report.get();
         if (!Program.launch(path.toString())) {
             display.asyncExec(() -> {
                 Program.launch(path.toString());
@@ -61,9 +61,9 @@ public abstract class Application implements Runnable, Crashable {
         }
     }
 
-    private Optional<Path> writeCrash(Throwable e) {
+    private Optional<FilePath> writeCrash(Throwable e) {
         try {
-            Path path = Files.createTempFile("CrashReport", ".txt");
+            FilePath path = FileUtil.createTempFile("CrashReport", ".txt");
             Map<String, String> debugValues = new ConcurrentHashMap<>();
             CrashReportFile
                     .writeCrashReport(e, path, "ScapesEngine", debugValues);

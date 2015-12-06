@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.texture;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.utils.graphics.MipMapGenerator;
@@ -23,21 +24,21 @@ import org.tobi29.scapes.engine.utils.graphics.MipMapGenerator;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class Texture {
     protected static final List<Texture> TEXTURES = new ArrayList<>();
-    protected static final Queue<Texture> DISPOSE_TEXTURES =
-            new ConcurrentLinkedQueue<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(Texture.class);
+    private static int disposeOffset;
     protected final int mipmaps;
     protected ByteBuffer buffer;
     protected boolean dirtyFilter = true;
-    protected int textureID = -1, width = -1, height = -1;
+    protected int textureID, width = -1, height = -1;
     protected TextureFilter minFilter = TextureFilter.NEAREST, magFilter =
             TextureFilter.NEAREST;
     protected TextureWrap wrapS = TextureWrap.REPEAT, wrapT =
             TextureWrap.REPEAT;
+    protected boolean markAsDisposed;
+    protected long used;
 
     protected Texture(int width, int height, ByteBuffer buffer, int mipmaps,
             TextureFilter minFilter, TextureFilter magFilter, TextureWrap wrapS,
@@ -54,9 +55,16 @@ public abstract class Texture {
 
     @OpenGLFunction
     public static void disposeUnused(GL gl) {
-        while (!DISPOSE_TEXTURES.isEmpty()) {
-            DISPOSE_TEXTURES.poll().dispose(gl);
+        long time = System.currentTimeMillis();
+        for (int i = disposeOffset; i < TEXTURES.size(); i += 16) {
+            Texture texture = TEXTURES.get(i);
+            assert texture.textureID != 0;
+            if (texture.markAsDisposed || !texture.used(time)) {
+                texture.dispose(gl);
+            }
         }
+        disposeOffset++;
+        disposeOffset &= 15;
     }
 
     @OpenGLFunction
@@ -66,15 +74,19 @@ public abstract class Texture {
         }
     }
 
+    public static void resetAll() {
+        while (!TEXTURES.isEmpty()) {
+            TEXTURES.get(0).reset();
+        }
+    }
+
     public static int textureCount() {
         return TEXTURES.size();
     }
 
     @OpenGLFunction
     public void bind(GL gl) {
-        if (textureID == -1) {
-            store(gl);
-        }
+        ensureStored(gl);
         gl.bindTexture(textureID);
         if (dirtyFilter) {
             gl.minFilter(minFilter, mipmaps > 0);
@@ -82,6 +94,21 @@ public abstract class Texture {
             gl.wrapS(wrapS);
             gl.wrapT(wrapT);
             dirtyFilter = false;
+        }
+    }
+
+    @OpenGLFunction
+    public void ensureStored(GL gl) {
+        if (textureID == 0) {
+            store(gl);
+        }
+        used = System.currentTimeMillis();
+    }
+
+    @OpenGLFunction
+    public void ensureDisposed(GL gl) {
+        if (textureID != 0) {
+            dispose(gl);
         }
     }
 
@@ -100,31 +127,24 @@ public abstract class Texture {
         TEXTURES.add(this);
     }
 
+    protected boolean used(long time) {
+        return time - used < 1000;
+    }
+
     @OpenGLFunction
-    public void dispose(GL gl) {
-        if (textureID != -1) {
-            gl.deleteTexture(textureID);
-            textureID = -1;
-        }
+    protected void dispose(GL gl) {
+        gl.deleteTexture(textureID);
+        reset();
+    }
+
+    protected void reset() {
         TEXTURES.remove(this);
+        textureID = 0;
+        markAsDisposed = false;
     }
 
     public void markDisposed() {
-        DISPOSE_TEXTURES.add(this);
-    }
-
-    public TextureFilter filterMag() {
-        return magFilter;
-    }
-
-    public TextureFilter filterMin() {
-        return minFilter;
-    }
-
-    public void setFilter(TextureFilter magFilter, TextureFilter minFilter) {
-        this.magFilter = magFilter;
-        this.minFilter = minFilter;
-        dirtyFilter = true;
+        markAsDisposed = true;
     }
 
     public int width() {
@@ -135,22 +155,16 @@ public abstract class Texture {
         return height;
     }
 
-    public TextureWrap wrapS() {
-        return wrapS;
-    }
-
-    public TextureWrap wrapT() {
-        return wrapT;
-    }
-
     public void setWrap(TextureWrap wrapS, TextureWrap wrapT) {
         this.wrapS = wrapS;
         this.wrapT = wrapT;
         dirtyFilter = true;
     }
 
-    public int textureID() {
-        return textureID;
+    public void setFilter(TextureFilter magFilter, TextureFilter minFilter) {
+        this.magFilter = magFilter;
+        this.minFilter = minFilter;
+        dirtyFilter = true;
     }
 
     public ByteBuffer buffer() {

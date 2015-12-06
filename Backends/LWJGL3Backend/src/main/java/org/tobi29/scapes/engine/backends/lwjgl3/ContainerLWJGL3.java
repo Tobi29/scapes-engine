@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
+import java8.util.Optional;
+import java8.util.function.Supplier;
 import org.lwjgl.LWJGLUtil;
 import org.lwjgl.Sys;
 import org.lwjgl.opengl.GL11;
@@ -23,18 +24,22 @@ import org.lwjgl.opengl.GLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
-import org.tobi29.scapes.engine.openal.OpenAL;
 import org.tobi29.scapes.engine.opengl.Container;
 import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.sound.SoundSystem;
+import org.tobi29.scapes.engine.sound.openal.OpenALSoundSystem;
+import org.tobi29.scapes.engine.utils.MutablePair;
 import org.tobi29.scapes.engine.utils.MutableSingle;
+import org.tobi29.scapes.engine.utils.io.IORunnable;
+import org.tobi29.scapes.engine.utils.io.IOSupplier;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 
-import java.util.Optional;
+import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Supplier;
 
 public abstract class ContainerLWJGL3 extends ControllerDefault
         implements Container {
@@ -44,7 +49,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected final ScapesEngine engine;
     protected final Thread mainThread;
     protected final LWJGL3OpenGL openGL;
-    protected final LWJGL3OpenAL openAL;
+    protected final OpenALSoundSystem openAL;
     protected final boolean superModifier;
     protected GLContext context;
     protected boolean focus = true, valid, visible, containerResized = true,
@@ -57,7 +62,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         mainThread = Thread.currentThread();
         LOGGER.info("LWJGL version: {}", Sys.getVersion());
         openGL = new LWJGL3OpenGL(engine, this);
-        openAL = new LWJGL3OpenAL();
+        openAL = new OpenALSoundSystem(engine, new LWJGL3OpenAL());
         superModifier = LWJGLUtil.getPlatform() == LWJGLUtil.Platform.MACOSX;
     }
 
@@ -95,6 +100,9 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         }
         if (!context.getCapabilities().OpenGL32) {
             return Optional.of("Your graphics card has no OpenGL 3.2 support!");
+        }
+        if (!context.getCapabilities().OpenGL33) {
+            return Optional.of("Your graphics card has no OpenGL 3.3 support!");
         }
         return Optional.empty();
     }
@@ -135,18 +143,23 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     }
 
     @Override
-    public OpenAL al() {
+    public SoundSystem sound() {
         return openAL;
     }
 
     @Override
-    public ControllerDefault controller() {
-        return this;
+    public Optional<ControllerDefault> controller() {
+        return Optional.of(this);
     }
 
     @Override
     public boolean joysticksChanged() {
         return joysticksChanged;
+    }
+
+    @Override
+    public void dialog(String title, GuiController.TextFieldData text,
+            boolean multiline) {
     }
 
     protected Optional<String> initContext() {
@@ -179,18 +192,62 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         joinable.joiner().join();
     }
 
+    protected void execIO(IORunnable runnable) throws IOException {
+        Thread thread = Thread.currentThread();
+        if (thread == mainThread) {
+            runnable.run();
+            return;
+        }
+        Joiner.Joinable joinable = new Joiner.Joinable();
+        MutableSingle<IOException> output = new MutableSingle<>();
+        tasks.add(() -> {
+            try {
+                runnable.run();
+            } catch (IOException e) {
+                output.a = e;
+            }
+            joinable.join();
+        });
+        joinable.joiner().join();
+        if (output.a != null) {
+            throw new IOException(output.a);
+        }
+    }
+
     protected <R> R exec(Supplier<R> runnable) {
         Thread thread = Thread.currentThread();
         if (thread == mainThread) {
             return runnable.get();
         }
         Joiner.Joinable joinable = new Joiner.Joinable();
-        MutableSingle<R> output = new MutableSingle<>(null);
+        MutableSingle<R> output = new MutableSingle<>();
         tasks.add(() -> {
             output.a = runnable.get();
             joinable.join();
         });
         joinable.joiner().join();
         return output.a;
+    }
+
+    protected <R> R execIO(IOSupplier<R> runnable) throws IOException {
+        Thread thread = Thread.currentThread();
+        if (thread == mainThread) {
+            return runnable.get();
+        }
+        Joiner.Joinable joinable = new Joiner.Joinable();
+        MutablePair<IOException, R> output = new MutablePair<>();
+        tasks.add(() -> {
+            try {
+                output.b = runnable.get();
+            } catch (IOException e) {
+                output.a = e;
+            }
+            joinable.join();
+        });
+        joinable.joiner().join();
+        if (output.a != null) {
+            throw new IOException(output.a);
+        }
+        return output.b;
     }
 }

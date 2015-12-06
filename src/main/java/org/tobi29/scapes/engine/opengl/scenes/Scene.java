@@ -16,57 +16,12 @@
 package org.tobi29.scapes.engine.opengl.scenes;
 
 import org.tobi29.scapes.engine.GameState;
-import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.gui.GuiComponent;
 import org.tobi29.scapes.engine.opengl.FBO;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.utils.Pair;
-
-import java.util.Collections;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class Scene {
-    protected final Set<GuiComponent> guis =
-            Collections.newSetFromMap(new ConcurrentHashMap<>());
-    protected final Queue<Pair<Boolean, GuiComponent>> changeGuis =
-            new ConcurrentLinkedQueue<>();
     protected GameState state;
-
-    public void addGui(GuiComponent add) {
-        changeGuis.add(new Pair<>(true, add));
-    }
-
-    public void removeGui(GuiComponent remove) {
-        changeGuis.add(new Pair<>(false, remove));
-    }
-
-    public void removeAllGui() {
-        guis.stream().map(component -> new Pair<>(false, component))
-                .forEach(changeGuis::add);
-    }
-
-    public void stepGui(ScapesEngine engine) {
-        while (!changeGuis.isEmpty()) {
-            Pair<Boolean, GuiComponent> component = changeGuis.poll();
-            if (component.a) {
-                guis.add(component.b);
-            } else {
-                guis.remove(component.b);
-                component.b.removed();
-            }
-        }
-        guis.forEach(gui -> gui.update(engine));
-    }
-
-    public void renderGui(GL gl, Shader shader, double delta) {
-        for (GuiComponent gui : guis) {
-            gui.render(gl, shader, delta);
-        }
-    }
 
     public GameState state() {
         return state;
@@ -106,5 +61,8 @@ public abstract class Scene {
     public void initFBO(int i, FBO fbo) {
     }
 
-    public abstract void dispose(GL gl);
+    public void dispose(GL gl) {
+    }
+
+    public abstract void dispose();
 }

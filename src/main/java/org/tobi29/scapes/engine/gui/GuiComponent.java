@@ -15,32 +15,51 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import java8.util.Optional;
+import java8.util.function.BiConsumer;
+import java8.util.function.Consumer;
+import java8.util.function.Function;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
 
 public abstract class GuiComponent implements Comparable<GuiComponent> {
     private static final AtomicLong UID_COUNTER =
             new AtomicLong(Long.MIN_VALUE);
-    protected final Set<GuiComponentEventListener> events =
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> clickLeft =
             Collections.newSetFromMap(new ConcurrentHashMap<>());
-    protected final Set<GuiComponentHoverListener> hovers =
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> pressLeft =
             Collections.newSetFromMap(new ConcurrentHashMap<>());
-    protected final Set<GuiComponentEventListener> rightEvents =
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> dragLeft =
             Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> dropLeft =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>>
+            clickRight = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>>
+            pressRight = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> dragRight =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> dropRight =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> scroll =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    protected final Set<BiConsumer<GuiComponentHoverEvent, ScapesEngine>>
+            hovers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     protected final GuiLayoutData parent;
     protected final Gui gui;
     protected final Queue<Runnable> changeComponents =
@@ -49,7 +68,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             new ConcurrentSkipListSet<>();
     private final long uid = UID_COUNTER.getAndIncrement();
     protected int width, height;
-    protected boolean visible = true, hovering;
+    protected boolean visible = true, hover, hovering;
 
     protected GuiComponent(GuiLayoutData parent, int width, int height) {
         this.width = width;
@@ -73,57 +92,207 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     public <T extends GuiComponent> T addSub(Vector2 pos,
             Function<GuiLayoutDataAbsolute, T> child) {
-        GuiLayoutDataAbsolute layoutData = new GuiLayoutDataAbsolute(this, pos);
+        GuiLayoutDataAbsolute layoutData =
+                new GuiLayoutDataAbsolute(this, pos, true);
         T component = child.apply(layoutData);
         append(component);
         return component;
     }
 
-    public void addLeftClick(GuiComponentEventListener add) {
-        events.add(add);
+    public void onClickLeft(Consumer<GuiComponentEvent> add) {
+        onClickLeft((event, engine) -> add.accept(event));
     }
 
-    public void addRightClick(GuiComponentEventListener add) {
-        rightEvents.add(add);
+    public void onClickLeft(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        clickLeft.add(add);
     }
 
-    public void addHover(GuiComponentHoverListener add) {
+    public void onPressLeft(Consumer<GuiComponentEvent> add) {
+        onPressLeft((event, engine) -> add.accept(event));
+    }
+
+    public void onPressLeft(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        pressLeft.add(add);
+    }
+
+    public void onDragLeft(Consumer<GuiComponentEvent> add) {
+        onDragLeft((event, engine) -> add.accept(event));
+    }
+
+    public void onDragLeft(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        dragLeft.add(add);
+    }
+
+    public void onDropLeft(Consumer<GuiComponentEvent> add) {
+        onDropLeft((event, engine) -> add.accept(event));
+    }
+
+    public void onDropLeft(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        dropLeft.add(add);
+    }
+
+    public void onClickRight(Consumer<GuiComponentEvent> add) {
+        onClickRight((event, engine) -> add.accept(event));
+    }
+
+    public void onClickRight(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        clickRight.add(add);
+    }
+
+    public void onPressRight(Consumer<GuiComponentEvent> add) {
+        onPressRight((event, engine) -> add.accept(event));
+    }
+
+    public void onPressRight(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        pressRight.add(add);
+    }
+
+    public void onDragRight(Consumer<GuiComponentEvent> add) {
+        onDragRight((event, engine) -> add.accept(event));
+    }
+
+    public void onDragRight(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        dragRight.add(add);
+    }
+
+    public void onDropRight(Consumer<GuiComponentEvent> add) {
+        onDropRight((event, engine) -> add.accept(event));
+    }
+
+    public void onDropRight(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        dropRight.add(add);
+    }
+
+    public void onClick(Consumer<GuiComponentEvent> add) {
+        onClick((event, engine) -> add.accept(event));
+    }
+
+    public void onClick(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        clickLeft.add(add);
+        clickRight.add(add);
+    }
+
+    public void onScroll(Consumer<GuiComponentEvent> add) {
+        onScroll((event, engine) -> add.accept(event));
+    }
+
+    public void onScroll(BiConsumer<GuiComponentEvent, ScapesEngine> add) {
+        scroll.add(add);
+    }
+
+    public void onHover(Consumer<GuiComponentHoverEvent> add) {
+        onHover((event, engine) -> add.accept(event));
+    }
+
+    public void onHover(BiConsumer<GuiComponentHoverEvent, ScapesEngine> add) {
         hovers.add(add);
     }
 
-    public void removeLeftClick(GuiComponentEventListener remove) {
-        events.remove(remove);
-    }
-
-    public void removeRightClock(GuiComponentEventListener remove) {
-        rightEvents.remove(remove);
-    }
-
-    public void removeHover(GuiComponentHoverListener remove) {
-        hovers.remove(remove);
-    }
-
-    public void clickLeft(GuiComponentEvent event, ScapesEngine engine) {
-        for (GuiComponentEventListener event1 : events) {
-            event1.click(event);
+    public boolean clickLeft(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : clickLeft) {
+            listener.accept(event, engine);
+            success = true;
         }
         gui.setLastClicked(this);
+        return success;
     }
 
-    public void clickRight(GuiComponentEvent event, ScapesEngine engine) {
-        for (GuiComponentEventListener rightEvent : rightEvents) {
-            rightEvent.click(event);
+    public boolean pressLeft(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : pressLeft) {
+            listener.accept(event, engine);
+            success = true;
         }
         gui.setLastClicked(this);
+        return success;
     }
 
-    public void hover(GuiComponentHoverEvent event) {
-        for (GuiComponentHoverListener hover : hovers) {
-            hover.hover(event);
+    public boolean dragLeft(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : dragLeft) {
+            listener.accept(event, engine);
+            success = true;
         }
+        return success;
     }
 
-    public boolean checkInside(double x, double y) {
+    public boolean dropLeft(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : dropLeft) {
+            listener.accept(event, engine);
+            success = true;
+        }
+        return success;
+    }
+
+    public boolean clickRight(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : clickRight) {
+            listener.accept(event, engine);
+            success = true;
+        }
+        gui.setLastClicked(this);
+        return success;
+    }
+
+    public boolean pressRight(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : pressRight) {
+            listener.accept(event, engine);
+            success = true;
+        }
+        gui.setLastClicked(this);
+        return success;
+    }
+
+    public boolean dragRight(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : dragRight) {
+            listener.accept(event, engine);
+            success = true;
+        }
+        return success;
+    }
+
+    public boolean dropRight(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : dropRight) {
+            listener.accept(event, engine);
+            success = true;
+        }
+        return success;
+    }
+
+    public boolean scroll(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        for (BiConsumer<GuiComponentEvent, ScapesEngine> listener : scroll) {
+            listener.accept(event, engine);
+            success = true;
+        }
+        return success;
+    }
+
+    public boolean hover(GuiComponentEvent event, ScapesEngine engine) {
+        boolean success = false;
+        GuiComponentHoverEvent hoverEvent;
+        if (hovering) {
+            hoverEvent = new GuiComponentHoverEvent(event,
+                    GuiComponentHoverEvent.State.ENTER);
+        } else {
+            hoverEvent = new GuiComponentHoverEvent(event,
+                    GuiComponentHoverEvent.State.HOVER);
+            hovering = true;
+        }
+        hover = true;
+        for (BiConsumer<GuiComponentHoverEvent, ScapesEngine> listener : hovers) {
+            listener.accept(hoverEvent, engine);
+            success = true;
+        }
+        return success;
+    }
+
+    protected boolean checkInside(double x, double y) {
         return x >= 0 && y >= 0 && x < width && y < height;
     }
 
@@ -131,25 +300,41 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return gui;
     }
 
-    public void render(GL gl, Shader shader, double delta) {
+    public boolean ignoresEvents() {
+        return false;
+    }
+
+    protected void render(GL gl, Shader shader, double delta) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
             transform(matrix);
             renderComponent(gl, shader, delta);
-            renderChildren(gl, shader, delta);
-            renderOverlay(gl, shader);
+            MatrixStack matrixStack1 = gl.matrixStack();
+            GuiLayoutManager layout = layoutManager();
+            Streams.of(components).forEach(component -> {
+                Vector2 pos = layout.layout(component);
+                Matrix childMatrix = matrixStack1.push();
+                childMatrix.translate(pos.floatX(), pos.floatY(), 0.0f);
+                component.render(gl, shader, delta);
+                matrixStack1.pop();
+            });
             matrixStack.pop();
         }
     }
 
-    public void renderComponent(GL gl, Shader shader, double delta) {
+    protected void renderOverlays(GL gl, Shader shader) {
+        if (visible) {
+            Streams.of(components)
+                    .forEach(component -> component.renderOverlays(gl, shader));
+            renderOverlay(gl, shader);
+        }
     }
 
-    public void renderOverlay(GL gl, Shader shader) {
+    protected void renderComponent(GL gl, Shader shader, double delta) {
     }
 
-    public void setHover(boolean hover, ScapesEngine engine) {
+    protected void renderOverlay(GL gl, Shader shader) {
     }
 
     public boolean isVisible() {
@@ -160,42 +345,103 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         this.visible = visible;
     }
 
-    public void update(ScapesEngine engine) {
-        GuiController guiController = engine.guiController();
-        update(guiController.guiCursorX(), guiController.guiCursorY(), true,
-                engine);
-    }
-
-    public void update(double mouseX, double mouseY, boolean mouseInside,
-            ScapesEngine engine) {
+    protected void update(ScapesEngine engine) {
         if (visible) {
-            updateComponent();
-            boolean inside = mouseInside && checkInside(mouseX, mouseY);
-            if (inside) {
-                GuiController guiController = engine.guiController();
-                if (guiController.leftClick()) {
-                    clickLeft(new GuiComponentEvent(mouseX, mouseY), engine);
+            updateComponent(engine);
+            if (hovering && !hover) {
+                hovering = false;
+                for (BiConsumer<GuiComponentHoverEvent, ScapesEngine> listener : hovers) {
+                    GuiComponentHoverEvent event =
+                            new GuiComponentHoverEvent(Double.NaN, Double.NaN,
+                                    GuiComponentHoverEvent.State.LEAVE);
+                    listener.accept(event, engine);
                 }
-                if (guiController.rightClick()) {
-                    clickRight(new GuiComponentEvent(mouseX, mouseY), engine);
-                }
-                setHover(true, engine);
-                if (hovering) {
-                    hover(new GuiComponentHoverEvent(mouseX, mouseY,
-                            GuiComponentHoverEvent.State.HOVER));
-                } else {
-                    hover(new GuiComponentHoverEvent(mouseX, mouseY,
-                            GuiComponentHoverEvent.State.ENTER));
-                    hovering = true;
-                }
-            } else {
-                resetHover(engine);
             }
-            updateChildren(mouseX, mouseY, inside, engine);
+            if (hover) {
+                hover = false;
+            }
+            updateChildren(engine);
         }
     }
 
-    public void updateComponent() {
+    protected Optional<GuiComponent> fireEvent(GuiComponentEvent event,
+            EventSink listener, ScapesEngine engine) {
+        if (visible) {
+            boolean inside = checkInside(event.x(), event.y());
+            if (inside) {
+                GuiLayoutManager layout = layoutManager();
+                for (GuiComponent component : components) {
+                    Vector2 pos = layout.layout(component);
+                    if (!component.parent.blocksEvents()) {
+                        Optional<GuiComponent> sink = component.fireEvent(
+                                new GuiComponentEvent(event, pos.doubleX(),
+                                        pos.doubleY()), listener, engine);
+                        if (sink.isPresent()) {
+                            return sink;
+                        }
+                    }
+                }
+                if (!ignoresEvents()) {
+                    listener.accept(this, event, engine);
+                    return Optional.of(this);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    protected Set<GuiComponent> fireRecursiveEvent(GuiComponentEvent event,
+            EventSink listener, ScapesEngine engine) {
+        if (visible) {
+            boolean inside = checkInside(event.x(), event.y());
+            if (inside) {
+                GuiLayoutManager layout = layoutManager();
+                Set<GuiComponent> sinks = new HashSet<>();
+                for (GuiComponent component : components) {
+                    Vector2 pos = layout.layout(component);
+                    if (!component.parent.blocksEvents()) {
+                        sinks.addAll(component.fireRecursiveEvent(
+                                new GuiComponentEvent(event, pos.doubleX(),
+                                        pos.doubleY()), listener, engine));
+                    }
+                }
+                if (!ignoresEvents()) {
+                    if (listener.accept(this, event, engine)) {
+                        sinks.add(this);
+                    }
+                }
+                return sinks;
+            }
+        }
+        return Collections.emptySet();
+    }
+
+    protected boolean sendEvent(GuiComponentEvent event,
+            GuiComponent destination, EventDestination listener,
+            ScapesEngine engine) {
+        if (visible) {
+            GuiLayoutManager layout = layoutManager();
+            for (GuiComponent component : components) {
+                Vector2 pos = layout.layout(component);
+                if (!component.parent.blocksEvents()) {
+                    boolean success = component.sendEvent(
+                            new GuiComponentEvent(event, pos.doubleX(),
+                                    pos.doubleY()), destination, listener,
+                            engine);
+                    if (success) {
+                        return true;
+                    }
+                }
+            }
+            if (destination == this) {
+                listener.accept(event, engine);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected void updateComponent(ScapesEngine engine) {
     }
 
     protected void transform(Matrix matrix) {
@@ -227,50 +473,22 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     }
 
     public void removeAll() {
-        components.forEach(this::remove);
+        Streams.of(components).forEach(this::remove);
     }
 
     public void removed() {
-        components.forEach(GuiComponent::removed);
+        Streams.of(components).forEach(GuiComponent::removed);
     }
 
-    public void renderChildren(GL gl, Shader shader, double delta) {
-        MatrixStack matrixStack = gl.matrixStack();
-        GuiLayoutManager layout = new GuiLayoutManager();
-        components.forEach(component -> {
-            Vector2 pos = layout.layout(component);
-            Matrix childMatrix = matrixStack.push();
-            childMatrix.translate(pos.floatX(), pos.floatY(), 0.0f);
-            component.render(gl, shader, delta);
-            matrixStack.pop();
-        });
-    }
-
-    public void updateChildren(double mouseX, double mouseY, boolean inside,
-            ScapesEngine engine) {
+    protected void updateChildren(ScapesEngine engine) {
         while (!changeComponents.isEmpty()) {
             changeComponents.poll().run();
         }
-        GuiLayoutManager layout = new GuiLayoutManager();
-        components.forEach(component -> {
-            Vector2 pos = layout.layout(component);
-            double mouseXX = mouseX - pos.doubleX();
-            double mouseYY = mouseY - pos.doubleY();
-            updateChild(component, mouseXX, mouseYY, inside, engine);
-        });
+        Streams.of(components).forEach(component -> component.update(engine));
     }
 
-    protected void resetHover(ScapesEngine engine) {
-        hovering = false;
-        setHover(false, engine);
-        for (GuiComponent component : components) {
-            component.resetHover(engine);
-        }
-    }
-
-    protected void updateChild(GuiComponent component, double mouseX,
-            double mouseY, boolean inside, ScapesEngine engine) {
-        component.update(mouseX, mouseY, inside, engine);
+    protected GuiLayoutManager layoutManager() {
+        return new GuiLayoutManager(Vector2d.ZERO);
     }
 
     protected void append(GuiComponent component) {
@@ -280,5 +498,14 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     protected void drop(GuiComponent component) {
         components.remove(component);
         component.removed();
+    }
+
+    public interface EventSink {
+        boolean accept(GuiComponent component, GuiComponentEvent event,
+                ScapesEngine engine);
+    }
+
+    public interface EventDestination {
+        void accept(GuiComponentEvent event, ScapesEngine engine);
     }
 }

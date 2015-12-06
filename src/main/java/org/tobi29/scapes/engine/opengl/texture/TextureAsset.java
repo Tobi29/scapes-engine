@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.texture;
 
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
@@ -25,6 +24,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class TextureAsset extends Texture {
+    private boolean cached = true;
+
     public TextureAsset(ReadableByteStream stream, Properties properties)
             throws IOException {
         this(PNG.decode(stream, BufferCreatorNative::bytes), properties);
@@ -39,5 +40,14 @@ public class TextureAsset extends Texture {
                         .get(properties.getProperty("MagFilter", "Nearest")),
                 TextureWrap.get(properties.getProperty("WrapS", "Repeat")),
                 TextureWrap.get(properties.getProperty("WrapT", "Repeat")));
+    }
+
+    @Override
+    protected boolean used(long time) {
+        return cached;
+    }
+
+    public void uncache() {
+        cached = false;
     }
 }
