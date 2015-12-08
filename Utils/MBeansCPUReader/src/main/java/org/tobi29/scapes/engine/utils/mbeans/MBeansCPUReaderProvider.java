@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.utils.mbeans;
 
+import java8.util.Maps;
 import org.tobi29.scapes.engine.utils.CPUUtil;
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider;
 
@@ -7,6 +8,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class MBeansCPUReaderProvider implements CPUReaderProvider {
     private static final ThreadMXBean THREADS =
@@ -20,7 +22,7 @@ public class MBeansCPUReaderProvider implements CPUReaderProvider {
     @Override
     public CPUUtil.Reader reader() {
         return new CPUUtil.Reader() {
-            private final Map<Long, Long> lastThreadTimes =
+            private final ConcurrentMap<Long, Long> lastThreadTimes =
                     new ConcurrentHashMap<>();
             private long lastTime;
 
@@ -47,7 +49,8 @@ public class MBeansCPUReaderProvider implements CPUReaderProvider {
                     for (long thread : threads) {
                         long threadTime = THREADS.getThreadCpuTime(thread);
                         double threadDelta = threadTime -
-                                lastThreadTimes.getOrDefault(thread, 0L);
+                                Maps.getOrDefaultConcurrent(lastThreadTimes,
+                                        thread, 0L);
                         threadTimes.put(thread, threadTime);
                         threadDelta /= delta;
                         cpu += threadDelta;
