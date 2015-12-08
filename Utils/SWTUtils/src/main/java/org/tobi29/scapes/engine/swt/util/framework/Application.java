@@ -3,6 +3,10 @@ package org.tobi29.scapes.engine.swt.util.framework;
 import java8.util.Optional;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.swt.util.platform.Platform;
+import org.tobi29.scapes.engine.swt.util.platform.PlatformLinux;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.SleepUtil;
 import org.tobi29.scapes.engine.utils.io.filesystem.CrashReportFile;
@@ -15,6 +19,15 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class Application implements Runnable, Crashable {
+    protected static final Platform PLATFORM;
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(Application.class);
+
+    static {
+        // TODO: Pick based on SWT implementation
+        PLATFORM = new PlatformLinux();
+    }
+
     protected final Display display;
     protected final TaskExecutor taskExecutor;
 
@@ -23,6 +36,18 @@ public abstract class Application implements Runnable, Crashable {
         Display.setAppVersion(version);
         display = Display.getDefault();
         taskExecutor = new TaskExecutor(this, id);
+    }
+
+    public static Platform platform() {
+        return PLATFORM;
+    }
+
+    public Display display() {
+        return display;
+    }
+
+    public TaskExecutor taskExecutor() {
+        return taskExecutor;
     }
 
     @Override
