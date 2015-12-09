@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
 import java8.util.Optional;
+import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.opengl.Container;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
@@ -34,6 +35,9 @@ public interface PlatformDialogs {
 
     void message(Container.MessageType messageType, String title,
             String message);
+
+    void dialog(String title, GuiController.TextFieldData text,
+            boolean multiline);
 
     void openFile(FilePath path);
 }

@@ -16,14 +16,15 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw.dialogs.swt;
 
 import java8.util.Optional;
+import java8.util.function.Consumer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.PlatformDialogs;
+import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.opengl.Container;
+import org.tobi29.scapes.engine.swt.util.widgets.InputDialog;
+import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
@@ -50,24 +51,29 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             filterExtensions[i] = extension.a;
             filterNames[i] = extension.b;
         }
-        int style = SWT.OPEN | SWT.APPLICATION_MODAL;
-        if (multiple) {
-            style |= SWT.MULTI;
-        }
-        Shell shell = createShell();
-        FileDialog fileDialog = new FileDialog(shell, style);
-        fileDialog.setText(title);
-        fileDialog.setFilterExtensions(filterExtensions);
-        fileDialog.setFilterNames(filterNames);
-        boolean successful = fileDialog.open() != null;
-        disposeShell(shell);
-        if (!successful) {
+        MutableSingle<Boolean> successful = new MutableSingle<>();
+        MutableSingle<String> filterPath = new MutableSingle<>();
+        MutableSingle<String[]> fileNames = new MutableSingle<>();
+        shell(shell -> {
+            int style = SWT.OPEN | SWT.APPLICATION_MODAL;
+            if (multiple) {
+                style |= SWT.MULTI;
+            }
+            FileDialog fileDialog = new FileDialog(shell, style);
+            fileDialog.setText(title);
+            fileDialog.setFilterExtensions(filterExtensions);
+            fileDialog.setFilterNames(filterNames);
+            successful.a = fileDialog.open() != null;
+            if (successful.a) {
+                filterPath.a = fileDialog.getFilterPath();
+                fileNames.a = fileDialog.getFileNames();
+            }
+        });
+        if (!successful.a) {
             return;
         }
-        String filterPath = fileDialog.getFilterPath();
-        String[] fileNames = fileDialog.getFileNames();
-        for (String fileName : fileNames) {
-            FilePath path = FileUtil.path(filterPath).resolve(fileName)
+        for (String fileName : fileNames.a) {
+            FilePath path = FileUtil.path(filterPath.a).resolve(fileName)
                     .toAbsolutePath();
             FileUtil.read(path, stream -> result
                     .accept(path.getFileName().toString(), stream));
@@ -84,47 +90,77 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             filterExtensions[i] = extension.a;
             filterNames[i] = extension.b;
         }
-        Shell shell = createShell();
-        FileDialog fileDialog =
-                new FileDialog(shell, SWT.SAVE | SWT.APPLICATION_MODAL);
-        fileDialog.setText(title);
-        fileDialog.setFilterExtensions(filterExtensions);
-        fileDialog.setFilterNames(filterNames);
-        boolean successful = fileDialog.open() != null;
-        disposeShell(shell);
-        if (!successful) {
+        MutableSingle<Boolean> successful = new MutableSingle<>();
+        MutableSingle<String> filterPath = new MutableSingle<>();
+        MutableSingle<String> fileName = new MutableSingle<>();
+        shell(shell -> {
+            FileDialog fileDialog =
+                    new FileDialog(shell, SWT.SAVE | SWT.APPLICATION_MODAL);
+            fileDialog.setText(title);
+            fileDialog.setFilterExtensions(filterExtensions);
+            fileDialog.setFilterNames(filterNames);
+            successful.a = fileDialog.open() != null;
+            if (successful.a) {
+                filterPath.a = fileDialog.getFilterPath();
+                fileName.a = fileDialog.getFileName();
+            }
+        });
+        if (!successful.a) {
             return Optional.empty();
         }
-        String fileName = fileDialog.getFileName();
-        return Optional
-                .of(FileUtil.path(fileDialog.getFilterPath()).resolve(fileName)
-                        .toAbsolutePath());
+        return Optional.of(FileUtil.path(filterPath.a).resolve(fileName.a)
+                .toAbsolutePath());
     }
 
     @Override
     public void message(Container.MessageType messageType, String title,
             String message) {
-        int style = SWT.APPLICATION_MODAL;
-        switch (messageType) {
-            case ERROR:
-                style |= SWT.ICON_ERROR;
-                break;
-            case INFORMATION:
-                style |= SWT.ICON_INFORMATION;
-                break;
-            case WARNING:
-                style |= SWT.ICON_WARNING;
-                break;
-            case QUESTION:
-                style |= SWT.ICON_QUESTION;
-                break;
-        }
-        Shell shell = createShell();
-        MessageBox messageBox = new MessageBox(shell, style);
-        messageBox.setText(title);
-        messageBox.setMessage(message);
-        messageBox.open();
-        disposeShell(shell);
+        shell(shell -> {
+            int style = SWT.APPLICATION_MODAL;
+            switch (messageType) {
+                case ERROR:
+                    style |= SWT.ICON_ERROR;
+                    break;
+                case INFORMATION:
+                    style |= SWT.ICON_INFORMATION;
+                    break;
+                case WARNING:
+                    style |= SWT.ICON_WARNING;
+                    break;
+                case QUESTION:
+                    style |= SWT.ICON_QUESTION;
+                    break;
+            }
+            MessageBox messageBox = new MessageBox(shell, style);
+            messageBox.setText(title);
+            messageBox.setMessage(message);
+            messageBox.open();
+        });
+    }
+
+    @Override
+    public void dialog(String title, GuiController.TextFieldData text,
+            boolean multiline) {
+        shell(shell -> {
+            InputDialog dialog = new InputDialog(shell, title);
+            int style;
+            if (multiline) {
+                style = SWT.BORDER | SWT.MULTI;
+            } else {
+                style = SWT.BORDER | SWT.SINGLE;
+            }
+            Text textField = dialog.add("Text", d -> new Text(d, style));
+            String str = text.text.toString();
+            textField.setText(str);
+            textField.setSelection(str.length());
+            dialog.open(() -> {
+                if (text.text.length() > 0) {
+                    text.text.delete(0, Integer.MAX_VALUE);
+                }
+                text.text.append(textField.getText());
+                text.cursor = text.text.length();
+            });
+        });
     }
 
     @Override
@@ -132,9 +168,20 @@ public class PlatformDialogsSWT implements PlatformDialogs {
         Program.launch(path.toString());
     }
 
+    private void shell(Consumer<Shell> consumer) {
+        Shell shell = createShell();
+        try {
+            consumer.accept(shell);
+        } finally {
+            disposeShell(shell);
+        }
+    }
+
     private Shell createShell() {
         Shell shell = new Shell();
         shell.setText(name);
+        // TODO: Test on MacOSX and Windows
+        shell.setSize(0, 0);
         return shell;
     }
 

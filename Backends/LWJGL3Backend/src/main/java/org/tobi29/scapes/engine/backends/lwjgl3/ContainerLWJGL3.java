@@ -157,11 +157,6 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         return joysticksChanged;
     }
 
-    @Override
-    public void dialog(String title, GuiController.TextFieldData text,
-            boolean multiline) {
-    }
-
     protected Optional<String> initContext() {
         context = GLContext.createFromCurrent();
         return checkContext(context);

@@ -29,6 +29,7 @@ import org.tobi29.scapes.engine.backends.lwjgl3.STBGlyphRenderer;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.spi.GLFWDialogsProvider;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.gui.GuiComponent;
+import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerKey;
 import org.tobi29.scapes.engine.input.ControllerTouch;
@@ -208,7 +209,6 @@ public class ContainerGLFW extends ContainerLWJGL3 {
 
     @Override
     public void update(double delta) {
-        poll();
         if (isPressed(ControllerKey.KEY_F2)) {
             engine.graphics().triggerScreenshot();
         }
@@ -322,6 +322,12 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     @Override
     public void message(MessageType messageType, String title, String message) {
         exec(() -> dialogs.message(messageType, title, message));
+    }
+
+    @Override
+    public void dialog(String title, GuiController.TextFieldData text,
+            boolean multiline) {
+        exec(() -> dialogs.dialog(title, text, multiline));
     }
 
     @Override
