@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.utils;
 
+import java8.util.Optional;
 import java8.util.Spliterator;
 import java8.util.stream.RefStreams;
 import java8.util.stream.Stream;
@@ -22,6 +23,13 @@ public class Streams {
 
     public static <T> Stream<T> of(T item) {
         return RefStreams.of(item);
+    }
+
+    public static <T> Stream<T> of(Optional<T> item) {
+        if (item.isPresent()) {
+            return RefStreams.of(item.get());
+        }
+        return of();
     }
 
     @SafeVarargs
