@@ -19,7 +19,7 @@ import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
-import org.tobi29.scapes.engine.opengl.Container;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.utils.MutableSingle;
 
 import java.util.regex.Pattern;

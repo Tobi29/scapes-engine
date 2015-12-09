@@ -17,7 +17,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.gui.GuiController;
-import org.tobi29.scapes.engine.opengl.Container;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;

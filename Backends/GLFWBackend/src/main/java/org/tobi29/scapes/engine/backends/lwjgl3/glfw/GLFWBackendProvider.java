@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.Container;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 
 public class GLFWBackendProvider implements ScapesEngineBackendProvider {

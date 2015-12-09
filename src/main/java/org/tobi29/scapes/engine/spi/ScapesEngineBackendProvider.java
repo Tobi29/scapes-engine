@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.spi;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.Container;
+import org.tobi29.scapes.engine.Container;
 
 public interface ScapesEngineBackendProvider {
     boolean available();

@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.opengl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.GameState;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;

@@ -22,7 +22,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.PlatformDialogs;
 import org.tobi29.scapes.engine.gui.GuiController;
-import org.tobi29.scapes.engine.opengl.Container;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.swt.util.widgets.InputDialog;
 import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.Pair;

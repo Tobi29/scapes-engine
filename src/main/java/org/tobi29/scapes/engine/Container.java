@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerTouch;
 import org.tobi29.scapes.engine.input.FileType;
+import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;
