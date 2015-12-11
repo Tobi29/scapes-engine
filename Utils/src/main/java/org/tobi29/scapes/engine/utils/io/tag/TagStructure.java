@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.utils.io.tag;
 
 import java8.util.Objects;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.Streams;
 
 import java.io.IOException;
 import java.util.*;
@@ -491,7 +492,7 @@ public class TagStructure {
             } else if (value instanceof StructureList) {
                 StructureList original = (StructureList) value;
                 StructureList list = new StructureList(original.size());
-                list.addAll(original);
+                Streams.of(original).map(TagStructure::copy).forEach(list::add);
                 tag.tags.put(entry.getKey(), list);
             } else if (value instanceof byte[]) {
                 byte[] array = (byte[]) value;
