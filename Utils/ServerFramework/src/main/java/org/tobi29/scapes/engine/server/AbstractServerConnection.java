@@ -19,7 +19,6 @@ import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.SleepUtil;
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
@@ -40,16 +39,23 @@ public abstract class AbstractServerConnection {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AbstractServerConnection.class);
     protected final TaskExecutor taskExecutor;
-    private final int workerCount;
     private final List<NetWorkerThread> workers = new ArrayList<>();
     private final byte[] connectionHeader;
-    private Joiner joiner;
+    private final List<Joiner> joiners = new ArrayList<>();
 
     protected AbstractServerConnection(TaskExecutor taskExecutor,
-            byte[] connectionHeader, TagStructure tagStructure) {
+            byte[] connectionHeader) {
         this.taskExecutor = taskExecutor;
         this.connectionHeader = connectionHeader;
-        workerCount = tagStructure.getInteger("WorkerCount");
+    }
+
+    public void workers(int workerCount) throws IOException {
+        LOGGER.info("Starting worker {} threads...", workerCount);
+        for (int i = 0; i < workerCount; i++) {
+            NetWorkerThread worker = new NetWorkerThread();
+            joiners.add(taskExecutor.runTask(worker, "Connection-Worker-" + i));
+            workers.add(worker);
+        }
     }
 
     public int start(int port) throws IOException {
@@ -59,13 +65,6 @@ public abstract class AbstractServerConnection {
 
     @SuppressWarnings("unchecked")
     public <A extends SocketAddress> A start(A address) throws IOException {
-        LOGGER.info("Starting worker {} threads...", workerCount);
-        List<Joiner> joiners = new ArrayList<>(workerCount + 1);
-        for (int i = 0; i < workerCount; i++) {
-            NetWorkerThread worker = new NetWorkerThread();
-            joiners.add(taskExecutor.runTask(worker, "Connection-Worker-" + i));
-            workers.add(worker);
-        }
         LOGGER.info("Starting socket thread...");
         ServerSocketChannel channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
@@ -100,12 +99,28 @@ public abstract class AbstractServerConnection {
                 channel.close();
             }
         }, "Socket"));
-        joiner = new Joiner(joiners);
         return (A) channel.socket().getLocalSocketAddress();
     }
 
+    public boolean addClient(Connection client) throws IOException {
+        int load = Integer.MAX_VALUE;
+        NetWorkerThread bestWorker = null;
+        for (NetWorkerThread worker : workers) {
+            int workerLoad = worker.connections.size();
+            if (workerLoad < load) {
+                bestWorker = worker;
+                load = workerLoad;
+            }
+        }
+        if (bestWorker == null) {
+            return false;
+        }
+        bestWorker.addConnection(client);
+        return true;
+    }
+
     public void stop() {
-        joiner.join();
+        new Joiner(joiners).join();
     }
 
     protected abstract Optional<Connection> newConnection(SocketChannel channel,
