@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
+import org.tobi29.scapes.engine.utils.io.ProcessStream;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructureBinary;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructureJSON;
@@ -79,5 +79,13 @@ public class TagStructureTest {
         TagStructureJSON.read(reread, new ByteBufferStream(channel.buffer()));
         Assert.assertEquals("Read structure doesn't match written one", read,
                 reread);
+    }
+
+    @Test
+    public void testCopy() throws IOException {
+        TagStructure tagStructure = TagStructureTemplate.createTagStructure();
+        TagStructure copy = tagStructure.copy();
+        Assert.assertEquals("Copied structure doesn't match original one",
+                tagStructure, copy);
     }
 }

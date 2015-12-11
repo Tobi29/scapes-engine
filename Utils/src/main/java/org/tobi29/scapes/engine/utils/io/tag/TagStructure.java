@@ -492,7 +492,7 @@ public class TagStructure {
                 StructureList original = (StructureList) value;
                 StructureList list = new StructureList(original.size());
                 list.addAll(original);
-                tags.put(entry.getKey(), list);
+                tag.tags.put(entry.getKey(), list);
             } else if (value instanceof byte[]) {
                 byte[] array = (byte[]) value;
                 byte[] copy = new byte[array.length];
