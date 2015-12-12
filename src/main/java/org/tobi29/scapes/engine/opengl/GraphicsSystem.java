@@ -56,7 +56,7 @@ public class GraphicsSystem {
     public void dispose() {
         engine.halt();
         GameState state = engine.state();
-        state.dispose(gl);
+        state.disposeState(gl);
         gl.dispose();
     }
 
