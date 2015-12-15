@@ -74,7 +74,7 @@ public abstract class AbstractServerConnection {
                 while (!joiner.marked()) {
                     SocketChannel client = channel.accept();
                     if (client == null) {
-                        SleepUtil.sleep(100);
+                        joiner.sleep(100);
                     } else {
                         client.configureBlocking(false);
                         int load = Integer.MAX_VALUE;
@@ -143,7 +143,7 @@ public abstract class AbstractServerConnection {
         }
 
         @Override
-        public void run(Joiner joiner) {
+        public void run(Joiner.Joinable joiner) {
             try {
                 while (!joiner.marked()) {
                     boolean processing = false;

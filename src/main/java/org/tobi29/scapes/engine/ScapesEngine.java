@@ -22,7 +22,10 @@ import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.gui.*;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.input.ControllerDefault;
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.FontRenderer;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
+import org.tobi29.scapes.engine.opengl.GraphicsSystem;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 import org.tobi29.scapes.engine.utils.Crashable;
@@ -294,6 +297,7 @@ public class ScapesEngine implements Crashable {
             stateThread = null;
         }
     }
+
     public void dispose() {
         halt();
         LOGGER.info("Disposing last state");
@@ -401,7 +405,7 @@ public class ScapesEngine implements Crashable {
         }
 
         @Override
-        public void run(Joiner joiner) {
+        public void run(Joiner.Joinable joiner) {
             try {
                 Sync sync = new Sync(config.fps(), 5000000000L, true,
                         "Engine-Update");

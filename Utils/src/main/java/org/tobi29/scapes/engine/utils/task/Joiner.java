@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.task;
 
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.List;
 
 public class Joiner {
     private final Joinable[] joinables;
-    private volatile boolean marked;
 
     private Joiner(Joinable thread) {
         joinables = new Joinable[]{thread};
@@ -41,12 +39,14 @@ public class Joiner {
         joinables = list.toArray(new Joinable[list.size()]);
     }
 
+    @SuppressWarnings("NakedNotify")
     public void join() {
         for (Joinable thread : joinables) {
-            thread.joiner.marked = true;
+            thread.marked = true;
         }
         for (Joinable thread : joinables) {
             synchronized (thread) {
+                thread.notifyAll();
                 while (!thread.joining) {
                     try {
                         thread.wait();
@@ -57,13 +57,9 @@ public class Joiner {
         }
     }
 
-    public boolean marked() {
-        return marked;
-    }
-
     public static class Joinable {
         private final Joiner joiner;
-        private volatile boolean joining;
+        private volatile boolean joining, marked;
 
         public Joinable() {
             joiner = new Joiner(this);
@@ -76,6 +72,18 @@ public class Joiner {
 
         public Joiner joiner() {
             return joiner;
+        }
+
+        public boolean marked() {
+            return marked;
+        }
+
+        @SuppressWarnings("WaitNotInLoop")
+        public synchronized void sleep(long time) {
+            try {
+                wait(time);
+            } catch (InterruptedException e) {
+            }
         }
     }
 }

@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.utils.task;
 
+import java8.util.function.LongSupplier;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.Streams;
 
@@ -63,7 +64,7 @@ public class TaskExecutor {
                     try {
                         if (task.async) {
                             runTask(joiner -> {
-                                long delay = task.task.run();
+                                long delay = task.task.getAsLong();
                                 if (delay < 0) {
                                     task.stopped = true;
                                 } else {
@@ -71,7 +72,7 @@ public class TaskExecutor {
                                 }
                             }, task.name);
                         } else {
-                            long delay = task.task.run();
+                            long delay = task.task.getAsLong();
                             if (delay < 0) {
                                 task.stopped = true;
                             } else {
@@ -102,15 +103,15 @@ public class TaskExecutor {
         return thread.joinable.joiner();
     }
 
-    public void addTask(OneshotTask task, String name) {
+    public void addTask(Runnable task, String name) {
         addTask(task, name, 0);
     }
 
-    public void addTask(OneshotTask task, String name, long delay) {
+    public void addTask(Runnable task, String name, long delay) {
         addTask(task, name, delay, false);
     }
 
-    public void addTask(OneshotTask task, String name, long delay,
+    public void addTask(Runnable task, String name, long delay,
             boolean async) {
         addTask(() -> {
             task.run();
@@ -118,15 +119,15 @@ public class TaskExecutor {
         }, name, delay, async);
     }
 
-    public void addTask(Task task, String name) {
+    public void addTask(LongSupplier task, String name) {
         addTask(task, name, 0);
     }
 
-    public void addTask(Task task, String name, long delay) {
+    public void addTask(LongSupplier task, String name, long delay) {
         addTask(task, name, delay, false);
     }
 
-    public void addTask(Task task, String name, long delay, boolean async) {
+    public void addTask(LongSupplier task, String name, long delay, boolean async) {
         delay += System.currentTimeMillis();
         synchronized (tasks) {
             tasks.add(new TaskWorker(task, name, delay, async));
@@ -160,26 +161,18 @@ public class TaskExecutor {
         }
     }
 
-    public interface Task {
-        long run();
-    }
-
-    public interface OneshotTask {
-        void run();
-    }
-
     public interface ASyncTask {
-        void run(Joiner joiner) throws Exception;
+        void run(Joiner.Joinable joiner) throws Exception;
     }
 
     private static class TaskWorker {
-        private final Task task;
+        private final LongSupplier task;
         private final String name;
         private final boolean async;
         private long delay;
         private boolean stopped;
 
-        private TaskWorker(Task task, String name, long delay, boolean async) {
+        private TaskWorker(LongSupplier task, String name, long delay, boolean async) {
             this.task = task;
             this.name = name;
             this.delay = delay;
@@ -204,7 +197,7 @@ public class TaskExecutor {
             try {
                 Thread thread = Thread.currentThread();
                 thread.setName(name);
-                task.run(joinable.joiner());
+                task.run(joinable);
             } catch (Throwable e) { // Yes this catches ThreadDeath, so don't use it
                 crashHandler.crash(e);
             } finally {
