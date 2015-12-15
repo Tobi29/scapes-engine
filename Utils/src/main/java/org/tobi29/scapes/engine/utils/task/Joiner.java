@@ -40,16 +40,25 @@ public class Joiner {
     }
 
     @SuppressWarnings("NakedNotify")
+    public void wake() {
+        for (Joinable thread : joinables) {
+            synchronized (thread) {
+                thread.notifyAll();
+            }
+        }
+    }
+
+    @SuppressWarnings("NakedNotify")
     public void join() {
         for (Joinable thread : joinables) {
             thread.marked = true;
         }
         for (Joinable thread : joinables) {
-            synchronized (thread) {
-                thread.notifyAll();
-                while (!thread.joining) {
+            while (!thread.joining) {
+                synchronized (thread) {
+                    thread.notifyAll();
                     try {
-                        thread.wait();
+                        thread.wait(100);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -76,6 +85,10 @@ public class Joiner {
 
         public boolean marked() {
             return marked;
+        }
+
+        public void sleep() {
+            sleep(0);
         }
 
         @SuppressWarnings("WaitNotInLoop")
