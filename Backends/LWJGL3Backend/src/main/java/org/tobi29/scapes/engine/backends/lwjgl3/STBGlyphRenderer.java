@@ -32,9 +32,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class STBGlyphRenderer implements GlyphRenderer {
-    private static final Map<String, Pair<ByteBuffer, ByteBuffer>> FONTS =
+    private static final Map<String, Pair<ByteBuffer, STBTTFontinfo>> FONTS =
             new ConcurrentHashMap<>();
-    private final ByteBuffer info;
+    private final STBTTFontinfo info;
     private final int tiles, pageTiles, pageTileBits, pageTileMask, glyphSize,
             imageSize;
     private final float tileSize, size, scale;
@@ -44,7 +44,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
             BufferCreatorNative.intsD(1), intBuffer4 =
             BufferCreatorNative.intsD(1);
 
-    public STBGlyphRenderer(ByteBuffer info, int size) {
+    public STBGlyphRenderer(STBTTFontinfo info, int size) {
         this.info = info;
         this.size = size;
         int tileBits = 3;
@@ -67,7 +67,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
                     BufferCreatorNative.bytesD(buffer.remaining());
             fontBuffer.put(buffer);
             fontBuffer.flip();
-            ByteBuffer infoBuffer = STBTTFontinfo.malloc();
+            STBTTFontinfo infoBuffer = STBTTFontinfo.malloc();
             if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer) != 0) {
                 // TODO: Seems to work fine for ASCII characters, needs proper testing
                 // TODO: This probably leaks the string
@@ -88,7 +88,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
     }
 
     public static GlyphRenderer fromFont(String name, int size) {
-        Pair<ByteBuffer, ByteBuffer> font = FONTS.get(name);
+        Pair<ByteBuffer, STBTTFontinfo> font = FONTS.get(name);
         if (font == null) {
             throw new IllegalArgumentException("Unknown font: " + name);
         }

@@ -17,11 +17,11 @@
 
 dependencies {
     compile project(":ScapesEngine:Backends:SWTDialogs")
-    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.0a:natives-linux"
-    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.0a:natives-linux"
-    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.0a:natives-osx"
-    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.0a:natives-windows"
-    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.0a:natives-windows"
+    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.0b:natives-linux"
+    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.0b:natives-linux"
+    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.0b:natives-osx"
+    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.0b:natives-windows"
+    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.0b:natives-windows"
     runtimeLinux32 "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86:4.5"
     runtimeLinux64 "org.eclipse.swt:org.eclipse.swt.gtk.linux.x86_64:4.5"
     runtimeMacOSX "org.eclipse.swt:org.eclipse.swt.cocoa.macosx.x86_64:4.5"

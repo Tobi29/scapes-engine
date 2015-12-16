@@ -46,7 +46,6 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -76,7 +75,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     public ContainerGLFW(ScapesEngine engine) {
         super(engine);
         dialogs = DIALOGS_PROVIDER.createDialogs(engine);
-        errorFun = Callbacks.errorCallbackPrint();
+        errorFun = GLFWErrorCallback.createPrint();
         GLFW.glfwSetErrorCallback(errorFun);
         if (GLFW.glfwInit() != GL11.GL_TRUE) {
             throw new GraphicsException("Unable to initialize GLFW");
@@ -84,44 +83,47 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         LOGGER.info("GLFW version: {}", GLFW.glfwGetVersionString());
         sync = new Sync(engine.config().fps(), 5000000000L, false, "Rendering");
         controllers = new GLFWControllers(virtualJoysticks);
-        windowSizeFun = GLFW.GLFWWindowSizeCallback((window, width, height) -> {
-            containerWidth = width;
-            containerHeight = height;
-            containerResized = true;
-        });
-        windowCloseFun = GLFW.GLFWWindowCloseCallback(window -> engine.stop());
-        windowFocusFun = GLFW.GLFWWindowFocusCallback(
-                (window, focused) -> focus = focused == GL11.GL_TRUE);
+        windowSizeFun =
+                GLFWWindowSizeCallback.create((window, width, height) -> {
+                    containerWidth = width;
+                    containerHeight = height;
+                    containerResized = true;
+                });
+        windowCloseFun =
+                GLFWWindowCloseCallback.create(window -> engine.stop());
+        windowFocusFun = GLFWWindowFocusCallback
+                .create((window, focused) -> focus = focused == GL11.GL_TRUE);
         frameBufferSizeFun =
-                GLFW.GLFWFramebufferSizeCallback((window, width, height) -> {
+                GLFWFramebufferSizeCallback.create((window, width, height) -> {
                     contentWidth = width;
                     contentHeight = height;
                     containerResized = true;
                 });
-        keyFun = GLFW.GLFWKeyCallback((window, key, scancode, action, mods) -> {
-            ControllerKey virtualKey = GLFWKeyMap.key(key);
-            if (virtualKey != null) {
-                if (virtualKey == ControllerKey.KEY_BACKSPACE &&
-                        action != GLFW.GLFW_RELEASE) {
-                    addTypeEvent((char) 127);
-                }
-                switch (action) {
-                    case GLFW.GLFW_PRESS:
-                        addPressEvent(virtualKey, PressState.PRESS);
-                        break;
-                    case GLFW.GLFW_REPEAT:
-                        addPressEvent(virtualKey, PressState.REPEAT);
-                        break;
-                    case GLFW.GLFW_RELEASE:
-                        addPressEvent(virtualKey, PressState.RELEASE);
-                        break;
-                }
-            }
-        });
-        charFun = GLFW.GLFWCharCallback(
-                (window, codepoint) -> addTypeEvent((char) codepoint));
-        mouseButtonFun =
-                GLFW.GLFWMouseButtonCallback((window, button, action, mods) -> {
+        keyFun = GLFWKeyCallback
+                .create((window, key, scancode, action, mods) -> {
+                    ControllerKey virtualKey = GLFWKeyMap.key(key);
+                    if (virtualKey != null) {
+                        if (virtualKey == ControllerKey.KEY_BACKSPACE &&
+                                action != GLFW.GLFW_RELEASE) {
+                            addTypeEvent((char) 127);
+                        }
+                        switch (action) {
+                            case GLFW.GLFW_PRESS:
+                                addPressEvent(virtualKey, PressState.PRESS);
+                                break;
+                            case GLFW.GLFW_REPEAT:
+                                addPressEvent(virtualKey, PressState.REPEAT);
+                                break;
+                            case GLFW.GLFW_RELEASE:
+                                addPressEvent(virtualKey, PressState.RELEASE);
+                                break;
+                        }
+                    }
+                });
+        charFun = GLFWCharCallback
+                .create((window, codepoint) -> addTypeEvent((char) codepoint));
+        mouseButtonFun = GLFWMouseButtonCallback
+                .create((window, button, action, mods) -> {
                     ControllerKey virtualKey = ControllerKey.button(button);
                     if (virtualKey != ControllerKey.UNKNOWN) {
                         switch (action) {
@@ -134,7 +136,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                         }
                     }
                 });
-        cursorPosFun = GLFW.GLFWCursorPosCallback((window, xpos, ypos) -> {
+        cursorPosFun = GLFWCursorPosCallback.create((window, xpos, ypos) -> {
             if (skipMouseCallback) {
                 skipMouseCallback = false;
                 if (mouseGrabbed) {
@@ -158,7 +160,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 }
             }
         });
-        scrollFun = GLFW.GLFWScrollCallback((window, xoffset, yoffset) -> {
+        scrollFun = GLFWScrollCallback.create((window, xoffset, yoffset) -> {
             if (xoffset != 0.0 || yoffset != 0.0) {
                 addScroll(xoffset, yoffset);
             }
@@ -250,7 +252,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 tasks.poll().run();
             }
             if (!valid) {
-                if (context != null) {
+                if (window != 0) {
                     engine.graphics().reset();
                     cleanWindow();
                 }
@@ -342,11 +344,11 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         IntBuffer xBuffer = BufferCreatorNative.intsD(1);
         IntBuffer yBuffer = BufferCreatorNative.intsD(1);
         GLFW.glfwGetMonitorPos(monitor, xBuffer, yBuffer);
-        ByteBuffer videoMode = GLFW.glfwGetVideoMode(monitor);
+        GLFWVidMode videoMode = GLFW.glfwGetVideoMode(monitor);
         int monitorX = xBuffer.get(0);
         int monitorY = yBuffer.get(0);
-        int monitorWidth = GLFWvidmode.width(videoMode);
-        int monitorHeight = GLFWvidmode.height(videoMode);
+        int monitorWidth = videoMode.width();
+        int monitorHeight = videoMode.height();
         GLFW.glfwDefaultWindowHints();
         GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE);
         // >:V Seriously, stop with this crap!
@@ -401,6 +403,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     protected void cleanWindow() {
         clearStates();
         GLFW.glfwDestroyWindow(window);
+        window = 0;
         visible = false;
     }
 }

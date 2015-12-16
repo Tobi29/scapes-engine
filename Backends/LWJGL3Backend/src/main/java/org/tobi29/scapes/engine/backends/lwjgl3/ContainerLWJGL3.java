@@ -17,16 +17,16 @@ package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import java8.util.Optional;
 import java8.util.function.Supplier;
-import org.lwjgl.LWJGLUtil;
-import org.lwjgl.Sys;
+import org.lwjgl.Version;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.system.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
-import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.sound.openal.OpenALSoundSystem;
@@ -50,7 +50,6 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected final LWJGL3OpenGL openGL;
     protected final OpenALSoundSystem openAL;
     protected final boolean superModifier;
-    protected GLContext context;
     protected boolean focus = true, valid, visible, containerResized = true,
             joysticksChanged;
     protected int containerWidth, containerHeight, contentWidth, contentHeight;
@@ -59,48 +58,49 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected ContainerLWJGL3(ScapesEngine engine) {
         this.engine = engine;
         mainThread = Thread.currentThread();
-        LOGGER.info("LWJGL version: {}", Sys.getVersion());
+        LOGGER.info("LWJGL version: {}", Version.getVersion());
         openGL = new LWJGL3OpenGL(engine, this);
         openAL = new OpenALSoundSystem(engine, new LWJGL3OpenAL());
-        superModifier = LWJGLUtil.getPlatform() == LWJGLUtil.Platform.MACOSX;
+        superModifier = Platform.get() == Platform.MACOSX;
     }
 
-    private static Optional<String> checkContext(GLContext context) {
+    private static Optional<String> checkContext() {
         LOGGER.info("OpenGL: {} (Vendor: {}, Renderer: {})",
                 GL11.glGetString(GL11.GL_VERSION),
                 GL11.glGetString(GL11.GL_VENDOR),
                 GL11.glGetString(GL11.GL_RENDERER));
-        if (!context.getCapabilities().OpenGL11) {
+        GLCapabilities capabilities = org.lwjgl.opengl.GL.getCapabilities();
+        if (!capabilities.OpenGL11) {
             return Optional.of("Your graphics card has no OpenGL 1.1 support!");
         }
-        if (!context.getCapabilities().OpenGL12) {
+        if (!capabilities.OpenGL12) {
             return Optional.of("Your graphics card has no OpenGL 1.2 support!");
         }
-        if (!context.getCapabilities().OpenGL13) {
+        if (!capabilities.OpenGL13) {
             return Optional.of("Your graphics card has no OpenGL 1.3 support!");
         }
-        if (!context.getCapabilities().OpenGL14) {
+        if (!capabilities.OpenGL14) {
             return Optional.of("Your graphics card has no OpenGL 1.4 support!");
         }
-        if (!context.getCapabilities().OpenGL15) {
+        if (!capabilities.OpenGL15) {
             return Optional.of("Your graphics card has no OpenGL 1.5 support!");
         }
-        if (!context.getCapabilities().OpenGL20) {
+        if (!capabilities.OpenGL20) {
             return Optional.of("Your graphics card has no OpenGL 2.0 support!");
         }
-        if (!context.getCapabilities().OpenGL21) {
+        if (!capabilities.OpenGL21) {
             return Optional.of("Your graphics card has no OpenGL 2.1 support!");
         }
-        if (!context.getCapabilities().OpenGL30) {
+        if (!capabilities.OpenGL30) {
             return Optional.of("Your graphics card has no OpenGL 3.0 support!");
         }
-        if (!context.getCapabilities().OpenGL31) {
+        if (!capabilities.OpenGL31) {
             return Optional.of("Your graphics card has no OpenGL 3.1 support!");
         }
-        if (!context.getCapabilities().OpenGL32) {
+        if (!capabilities.OpenGL32) {
             return Optional.of("Your graphics card has no OpenGL 3.2 support!");
         }
-        if (!context.getCapabilities().OpenGL33) {
+        if (!capabilities.OpenGL33) {
             return Optional.of("Your graphics card has no OpenGL 3.3 support!");
         }
         return Optional.empty();
@@ -157,8 +157,8 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     }
 
     protected Optional<String> initContext() {
-        context = GLContext.createFromCurrent();
-        return checkContext(context);
+        org.lwjgl.opengl.GL.createCapabilities();
+        return checkContext();
     }
 
     @Override
