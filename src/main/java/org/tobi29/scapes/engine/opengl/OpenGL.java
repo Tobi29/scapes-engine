@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl;
 
+import org.tobi29.scapes.engine.opengl.shader.ShaderPreprocessor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
+import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.graphics.Image;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -131,7 +133,8 @@ public interface OpenGL {
     void activateShader(int id);
 
     @OpenGLFunction
-    int createProgram();
+    Pair<Integer, int[]> createProgram(String asset,
+            ShaderPreprocessor processor) throws IOException;
 
     @OpenGLFunction
     int createFragmentObject();
@@ -141,30 +144,6 @@ public interface OpenGL {
 
     @OpenGLFunction
     void deleteProgram(int id);
-
-    @OpenGLFunction
-    void deleteShader(int id);
-
-    @OpenGLFunction
-    void attach(int id, int object);
-
-    @OpenGLFunction
-    void link(int id);
-
-    @OpenGLFunction
-    boolean checkLinkStatus(int id);
-
-    @OpenGLFunction
-    void source(int id, String code);
-
-    @OpenGLFunction
-    void compile(int id);
-
-    @OpenGLFunction
-    void printLogShader(int id);
-
-    @OpenGLFunction
-    void printLogProgram(int id);
 
     @OpenGLFunction
     void bindAttributeLocation(int shader, int id, String name);

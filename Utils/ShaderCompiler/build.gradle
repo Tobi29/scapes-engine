@@ -16,20 +16,15 @@
 
 
 apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply plugin: 'antlr'
 
 version = "0.0.0_1"
 
 dependencies {
     compile project(":ScapesEngine:Utils")
-    compile project(":ScapesEngine:Utils:ShaderCompiler")
+    compile "org.antlr:antlr4-runtime:4.5.1-1"
+
+    antlr "org.antlr:antlr4:4.5.1-1"
 
     testCompile "junit:junit:4.12"
-}
-
-idea {
-    module {
-        excludeDirs += file("resources/Inno Setup 5")
-        excludeDirs += file("resources/JRE")
-        excludeDirs += file("resources/Launch4j")
-    }
 }

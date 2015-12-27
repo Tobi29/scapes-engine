@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import org.lwjgl.opengl.*;
@@ -23,16 +22,25 @@ import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.*;
 import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.shader.ShaderPreprocessor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
+import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.graphics.Image;
+import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream;
+import org.tobi29.scapes.engine.utils.io.ProcessStream;
+import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.shader.*;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Map;
+import java.util.Properties;
 
 public class LWJGL3OpenGL extends GL {
     private static final Logger LOGGER =
@@ -277,8 +285,35 @@ public class LWJGL3OpenGL extends GL {
     }
 
     @Override
-    public int createProgram() {
-        return GL20.glCreateProgram();
+    public Pair<Integer, int[]> createProgram(String asset,
+            ShaderPreprocessor processor) throws IOException {
+        processor.supplyProperty("SCENE_WIDTH", sceneWidth());
+        processor.supplyProperty("SCENE_HEIGHT", sceneHeight());
+        processor.supplyProperty("CONTAINER_WIDTH", containerWidth());
+        processor.supplyProperty("CONTAINER_HEIGHT", containerHeight());
+        processor.supplyProperty("CONTENT_WIDTH", contentWidth());
+        processor.supplyProperty("CONTENT_HEIGHT", contentHeight());
+        ReadSource vertex = engine.files().get(asset + ".vsh");
+        ReadSource fragment = engine.files().get(asset + ".fsh");
+        ReadSource props = engine.files().get(asset + ".properties");
+        if (vertex.exists() || fragment.exists() || props.exists()) {
+            if (!vertex.exists() || !fragment.exists() || !props.exists()) {
+                throw new IOException(
+                        "Missing files for GLSL shader: " + asset);
+            }
+            Properties properties = new Properties();
+            props.read(stream -> properties
+                    .load(new ByteStreamInputStream(stream)));
+            return programGLSL(vertex.readReturn(stream -> ProcessStream
+                            .process(stream, ProcessStream.asString())),
+                    fragment.readReturn(stream -> ProcessStream
+                            .process(stream, ProcessStream.asString())),
+                    properties, processor);
+        }
+        ReadSource program = engine.files().get(asset + ".program");
+        return programProgram(program.readReturn(stream -> ProcessStream
+                        .process(stream, ProcessStream.asString())),
+                processor.properties());
     }
 
     @Override
@@ -297,64 +332,6 @@ public class LWJGL3OpenGL extends GL {
             activeShader = 0;
         }
         GL20.glDeleteProgram(id);
-    }
-
-    @Override
-    public void deleteShader(int id) {
-        GL20.glDeleteShader(id);
-    }
-
-    @Override
-    public void attach(int id, int object) {
-        GL20.glAttachShader(id, object);
-    }
-
-    @Override
-    public void link(int id) {
-        GL20.glLinkProgram(id);
-    }
-
-    @Override
-    public boolean checkLinkStatus(int id) {
-        return GL20.glGetProgrami(id, GL20.GL_LINK_STATUS) == GL11.GL_TRUE;
-    }
-
-    @Override
-    public void source(int id, String code) {
-        GL20.glShaderSource(id, code);
-    }
-
-    @Override
-    public void compile(int id) {
-        GL20.glCompileShader(id);
-    }
-
-    @Override
-    public void printLogShader(int id) {
-        int length = GL20.glGetShaderi(id, GL20.GL_INFO_LOG_LENGTH);
-        if (length > 1) {
-            intBuffer.put(0, length);
-            ByteBuffer log = direct(length);
-            GL20.glGetShaderInfoLog(id, intBuffer, log);
-            byte[] infoBytes = new byte[length];
-            log.get(infoBytes);
-            String out = new String(infoBytes);
-            LOGGER.info("Shader log: {}", out);
-        }
-    }
-
-    @Override
-    public void printLogProgram(int id) {
-        int length = GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH);
-        if (length > 1) {
-            intBuffer.put(0, length);
-            ByteBuffer log = direct(length);
-            GL20.glGetProgramInfoLog(id, intBuffer, log);
-            byte[] infoBytes = new byte[length];
-            log.get(infoBytes);
-            String out = new String(infoBytes);
-            LOGGER.info("Program log: {}", out);
-        }
     }
 
     @Override
@@ -485,7 +462,6 @@ public class LWJGL3OpenGL extends GL {
     public void setAttribute4f(int id, float v0, float v1, float v2, float v3) {
         GL20.glVertexAttrib4f(id, v0, v1, v2, v3);
     }
-    // Texture
 
     @Override
     public void bindTexture(int id) {
@@ -604,6 +580,7 @@ public class LWJGL3OpenGL extends GL {
         GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x, y, width, height,
                 GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, direct(buffer));
     }
+    // Texture
 
     @Override
     public void replaceTextureMipMap(int x, int y, int width, int height,
@@ -662,7 +639,6 @@ public class LWJGL3OpenGL extends GL {
             GL13.glActiveTexture(GL13.GL_TEXTURE0 + i);
         }
     }
-    // VAO
 
     @Override
     public void bindVAO(int id) {
@@ -713,8 +689,6 @@ public class LWJGL3OpenGL extends GL {
         }
     }
 
-    // VBO
-
     @Override
     public void bindVBOArray(int id) {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, id);
@@ -746,6 +720,7 @@ public class LWJGL3OpenGL extends GL {
     public void deleteVBO(int id) {
         GL15.glDeleteBuffers(id);
     }
+    // VAO
 
     @Override
     public void drawTriangles(int length, long offset) {
@@ -757,6 +732,154 @@ public class LWJGL3OpenGL extends GL {
     public void drawLines(int length, long offset) {
         GL11.glDrawElements(GL11.GL_LINES, length, GL11.GL_UNSIGNED_SHORT,
                 offset);
+    }
+
+    public void deleteShader(int id) {
+        GL20.glDeleteShader(id);
+    }
+
+    public void attach(int id, int object) {
+        GL20.glAttachShader(id, object);
+    }
+
+    // VBO
+
+    public void detach(int id, int object) {
+        GL20.glDetachShader(id, object);
+    }
+
+    public void link(int id) {
+        GL20.glLinkProgram(id);
+    }
+
+    public boolean checkLinkStatus(int id) {
+        return GL20.glGetProgrami(id, GL20.GL_LINK_STATUS) == GL11.GL_TRUE;
+    }
+
+    public void source(int id, String code) {
+        GL20.glShaderSource(id, code);
+    }
+
+    public void compile(int id) {
+        GL20.glCompileShader(id);
+    }
+
+    public void printLogShader(int id) {
+        int length = GL20.glGetShaderi(id, GL20.GL_INFO_LOG_LENGTH);
+        if (length > 1) {
+            intBuffer.put(0, length);
+            ByteBuffer log = direct(length);
+            GL20.glGetShaderInfoLog(id, intBuffer, log);
+            byte[] infoBytes = new byte[length];
+            log.get(infoBytes);
+            String out = new String(infoBytes);
+            LOGGER.info("Shader log: {}", out);
+        }
+    }
+
+    public void printLogProgram(int id) {
+        int length = GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH);
+        if (length > 1) {
+            intBuffer.put(0, length);
+            ByteBuffer log = direct(length);
+            GL20.glGetProgramInfoLog(id, intBuffer, log);
+            byte[] infoBytes = new byte[length];
+            log.get(infoBytes);
+            String out = new String(infoBytes);
+            LOGGER.info("Program log: {}", out);
+        }
+    }
+
+    public Pair<Integer, int[]> programGLSL(String vertexSource,
+            String fragmentSource, Properties properties,
+            ShaderPreprocessor processor) throws IOException {
+        int vertex = createShader(processor.processVertexSource(vertexSource),
+                createVertexObject());
+        int fragment =
+                createShader(processor.processFragmentSource(fragmentSource),
+                        createFragmentObject());
+        int program = GL20.glCreateProgram();
+        attach(program, vertex);
+        attach(program, fragment);
+        for (int i = 0; i < 8; i++) {
+            String attribute = properties.getProperty("Attribute." + i);
+            if (attribute != null) {
+                bindAttributeLocation(program, i, attribute);
+            }
+        }
+        link(program);
+        if (!checkLinkStatus(program)) {
+            LOGGER.error("Failed to link status bar!");
+            printLogProgram(program);
+        }
+        int[] uniformLocations = new int[32];
+        for (int i = 0; i < 32; i++) {
+            String uniform = properties.getProperty("Uniform." + i);
+            if (uniform == null) {
+                uniformLocations[i] = -1;
+            } else {
+                uniformLocations[i] = getUniformLocation(program, uniform);
+            }
+        }
+        detach(program, vertex);
+        detach(program, fragment);
+        deleteShader(vertex);
+        deleteShader(fragment);
+        return new Pair<>(program, uniformLocations);
+    }
+
+    private int createShader(String source, int shader) {
+        source(shader, source);
+        compile(shader);
+        printLogShader(shader);
+        return shader;
+    }
+
+    public Pair<Integer, int[]> programProgram(String source,
+            Map<String, String> properties) throws IOException {
+        try {
+            ShaderCompiler compiler = new ShaderCompiler();
+            compiler.compile(source);
+            GLSLGenerator generator = new GLSLGenerator("#version 330");
+            String vertexSource =
+                    generator.generateVertex(compiler, properties);
+            String fragmentSource =
+                    generator.generateFragment(compiler, properties);
+            int vertex = createVertexObject();
+            source(vertex, vertexSource);
+            compile(vertex);
+            printLogShader(vertex);
+            int fragment = createFragmentObject();
+            source(fragment, fragmentSource);
+            compile(fragment);
+            printLogShader(fragment);
+            int program = GL20.glCreateProgram();
+            attach(program, vertex);
+            attach(program, fragment);
+            link(program);
+            if (!checkLinkStatus(program)) {
+                LOGGER.error("Failed to link status bar!");
+                printLogProgram(program);
+            }
+            Uniform[] uniforms = compiler.uniforms();
+            int[] uniformLocations = new int[uniforms.length];
+            for (int i = 0; i < uniforms.length; i++) {
+                Uniform uniform = uniforms[i];
+                if (uniform == null) {
+                    uniformLocations[i] = -1;
+                } else {
+                    uniformLocations[i] =
+                            getUniformLocation(program, uniform.name);
+                }
+            }
+            detach(program, vertex);
+            detach(program, fragment);
+            deleteShader(vertex);
+            deleteShader(fragment);
+            return new Pair<>(program, uniformLocations);
+        } catch (ShaderCompileException | ShaderGenerateException e) {
+            throw new IOException(e);
+        }
     }
 
     @SuppressWarnings("ReturnOfNull")

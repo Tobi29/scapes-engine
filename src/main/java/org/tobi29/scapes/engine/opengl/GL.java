@@ -59,12 +59,6 @@ public abstract class GL implements OpenGL {
         shaderManager.disposeAll(this);
     }
 
-    public void dispose() {
-        textureManager.clearCache();
-        Texture.disposeAll(this);
-        VAO.disposeAll(this);
-    }
-
     public TextureManager textures() {
         return textureManager;
     }
@@ -140,6 +134,14 @@ public abstract class GL implements OpenGL {
 
     public int containerHeight() {
         return containerHeight;
+    }
+
+    @OpenGLFunction
+    public void dispose() {
+        Texture.disposeAll(this);
+        VAO.disposeAll(this);
+        FBO.disposeAll(this);
+        shaderManager.resetAll();
     }
 
     @OpenGLFunction

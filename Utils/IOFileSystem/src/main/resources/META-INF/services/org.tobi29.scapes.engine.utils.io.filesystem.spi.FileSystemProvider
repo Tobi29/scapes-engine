@@ -13,10 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-Attribute.0=attribute_Position
-Attribute.1=attribute_Color
-Attribute.2=attribute_Texture
-
-Uniform.1=uniform_ModelViewProjectionMatrix
-Uniform.3=uniform_Texture
+org.tobi29.scapes.engine.utils.io.filesystem.io.IOFileSystemProvider

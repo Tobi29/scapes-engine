@@ -17,89 +17,41 @@ package org.tobi29.scapes.engine.opengl.shader;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ShaderPreprocessor {
-    private static final Pattern REPEAT =
-            Pattern.compile("#repeat ([0-9]+) (.*)");
-    private static final Pattern INDEX = Pattern.compile("\\$i");
     private final Map<String, String> vertexVariables =
             new ConcurrentHashMap<>(), fragmentVariables =
-            new ConcurrentHashMap<>();
-
-    public void supplyExternal(String key, Object value) {
-        supplyExternal(key, String.valueOf(value));
-    }
-
-    public void supplyExternal(String key, String value) {
-        String define = "#define " + key;
-        supplyVariable(define + " _SCAPES_ENGINE_EXTERNAL",
-                define + ' ' + value);
-    }
-
-    public void supplyDefine(String key, boolean value) {
-        String define = "#define " + key;
-        String replace = define + " _SCAPES_ENGINE_DEFINE";
-        if (value) {
-            supplyVariable(replace, define);
-        } else {
-            supplyVariable(replace, "");
-        }
-    }
-
-    public void supplyVariable(String key, Object value) {
-        supplyVariable(key, String.valueOf(value));
-    }
+            new ConcurrentHashMap<>(), properties = new ConcurrentHashMap<>();
 
     public void supplyVariable(String key, String value) {
         vertexVariables.put(key, value);
         fragmentVariables.put(key, value);
     }
 
-    public void supplyVertexVariable(String key, String value) {
-        vertexVariables.put(key, value);
+    public void supplyProperty(String key, Object value) {
+        supplyProperty(key, String.valueOf(value));
     }
 
-    public void supplyFragmentVariable(String key, String value) {
-        fragmentVariables.put(key, value);
+    public void supplyProperty(String key, String value) {
+        properties.put(key, value);
+        supplyVariable("\\$" + key, value);
     }
 
-    protected String processSource(String source) {
-        Matcher matcher = REPEAT.matcher(source);
-        StringBuffer buffer = new StringBuffer(source.length());
-        while (matcher.find()) {
-            int amount = 1;
-            try {
-                amount = Integer.parseInt(matcher.group(1));
-            } catch (NumberFormatException e) {
-            }
-            String replacement = matcher.group(2) + '\n';
-            StringBuilder loop =
-                    new StringBuilder(amount * replacement.length());
-            for (int i = 0; i < amount; i++) {
-                loop.append(INDEX.matcher(replacement)
-                        .replaceAll(String.valueOf(i)));
-            }
-            matcher.appendReplacement(buffer,
-                    Matcher.quoteReplacement(loop.toString()));
-        }
-        matcher.appendTail(buffer);
-        source = buffer.toString();
-        return source;
+    public Map<String, String> properties() {
+        return properties;
     }
 
-    protected String processVertexSource(String source) {
+    public String processVertexSource(String source) {
         for (Map.Entry<String, String> entry : vertexVariables.entrySet()) {
             source = source.replaceAll(entry.getKey(), entry.getValue());
         }
-        return processSource(source);
+        return source;
     }
 
-    protected String processFragmentSource(String source) {
+    public String processFragmentSource(String source) {
         for (Map.Entry<String, String> entry : fragmentVariables.entrySet()) {
             source = source.replaceAll(entry.getKey(), entry.getValue());
         }
-        return processSource(source);
+        return source;
     }
 }

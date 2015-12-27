@@ -28,7 +28,7 @@ import java.util.List;
 
 public class FBO {
     private static final List<FBO> FBOS = new ArrayList<>();
-    private static int currentBO;
+    private static int currentFBO;
     private final TextureFBOColor[] texturesColor;
     private final TextureFBODepth textureDepth;
     private int framebufferID;
@@ -62,18 +62,20 @@ public class FBO {
         while (!FBOS.isEmpty()) {
             FBOS.get(0).dispose(gl);
         }
+        currentFBO = 0;
     }
 
     public static void resetAll() {
         while (!FBOS.isEmpty()) {
             FBOS.get(0).reset();
         }
+        currentFBO = 0;
     }
 
     @OpenGLFunction
     public void deactivate(GL gl) {
         gl.bindFBO(lastFBO);
-        currentBO = lastFBO;
+        currentFBO = lastFBO;
         lastFBO = 0;
     }
 
@@ -98,33 +100,27 @@ public class FBO {
                 textureColor.resize(width, height, gl);
             }
         }
-        if (framebufferID == -1) {
+        if (framebufferID == 0) {
             store(gl);
         }
     }
 
     @OpenGLFunction
     public void ensureDisposed(GL gl) {
-        if (framebufferID != -1) {
+        if (framebufferID != 0) {
             dispose(gl);
         }
     }
 
     @OpenGLFunction
     private void store(GL gl) {
-        bindTextures(gl);
         framebufferID = gl.createFBO();
         bind(gl);
         attach(gl);
-        if (gl.checkFBO() != FBOStatus.COMPLETE) {
-            for (TextureFBOColor textureColor : texturesColor) {
-                textureColor.detached();
-            }
-            if (textureDepth != null) {
-                textureDepth.detached();
-            }
-            bindTextures(gl);
-            attach(gl);
+        FBOStatus status = gl.checkFBO();
+        if (status != FBOStatus.COMPLETE) {
+            // TODO: Add error handling
+            System.out.println(status);
         }
         gl.clear(0.0f, 0.0f, 0.0f, 0.0f);
         deactivate(gl);
@@ -144,7 +140,8 @@ public class FBO {
     }
 
     private void reset() {
-        framebufferID = -1;
+        framebufferID = 0;
+        lastFBO = 0;
         FBOS.remove(this);
     }
 
@@ -177,18 +174,9 @@ public class FBO {
     }
 
     private void bind(GL gl) {
-        lastFBO = currentBO;
-        currentBO = framebufferID;
+        lastFBO = currentFBO;
+        currentFBO = framebufferID;
         gl.bindFBO(framebufferID);
-    }
-
-    private void bindTextures(GL gl) {
-        for (TextureFBOColor aTexturesColor : texturesColor) {
-            aTexturesColor.bind(gl);
-        }
-        if (textureDepth != null) {
-            textureDepth.bind(gl);
-        }
     }
 
     private void attach(GL gl) {

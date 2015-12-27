@@ -45,7 +45,7 @@ public class ShaderCompileInformation {
         postCompileListeners.put(id, listener);
     }
 
-    protected String processSource(String source) {
+    public String processSource(String source) {
         Matcher matcher = REPEAT.matcher(source);
         StringBuffer buffer = new StringBuffer(source.length());
         while (matcher.find()) {
@@ -69,14 +69,14 @@ public class ShaderCompileInformation {
         return source;
     }
 
-    protected ShaderPreprocessor preCompile() {
+    public ShaderPreprocessor preCompile() {
         ShaderPreprocessor processor = new ShaderPreprocessor();
         Streams.of(preCompileListeners.values())
                 .forEach(listener -> listener.accept(processor));
         return processor;
     }
 
-    protected void postCompile(Shader shader) {
+    public void postCompile(Shader shader) {
         Streams.of(postCompileListeners.values())
                 .forEach(listener -> listener.accept(shader));
     }

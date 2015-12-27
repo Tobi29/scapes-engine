@@ -127,6 +127,11 @@ public class GraphicsSystem {
     }
 
     @OpenGLFunction
+    public void clear() {
+        gl.dispose();
+    }
+
+    @OpenGLFunction
     public void reset() {
         gl.reset();
     }

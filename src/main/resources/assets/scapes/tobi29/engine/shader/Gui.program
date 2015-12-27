@@ -1,0 +1,22 @@
+uniform 1 Matrix4 uniform_ModelViewProjectionMatrix;
+uniform 3 Texture2 uniform_Texture;
+
+shader vertex(0 Vector4 attribute_Position,
+              1 Vector4 attribute_Color,
+              2 Vector2 attribute_Texture) {
+    varying_Texture = attribute_Texture;
+    varying_Color = attribute_Color;
+    out_Position = uniform_ModelViewProjectionMatrix * attribute_Position;
+}
+
+shader fragment(Vector4 varying_Color,
+                Vector2 varying_Texture) {
+    Vector4 color = texture(uniform_Texture, varying_Texture);
+    out_Color.a = color.a * varying_Color.a;
+    if (out_Color.a <= 0.01) {
+        discard;
+    }
+    out_Color.rgb = color.rgb * varying_Color.rgb;
+}
+
+outputs(0 Vector4 out_Color);
