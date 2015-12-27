@@ -69,6 +69,26 @@ public class Joiner {
         }
     }
 
+    @SuppressWarnings("NakedNotify")
+    public void join(Runnable runnable) {
+        for (Joinable thread : joinables) {
+            thread.marked = true;
+        }
+        for (Joinable thread : joinables) {
+            while (!thread.joining) {
+                synchronized (thread) {
+                    thread.woken.set(true);
+                    thread.notifyAll();
+                    runnable.run();
+                    try {
+                        thread.wait(100);
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        }
+    }
+
     public static class Joinable {
         private final Joiner joiner;
         private final AtomicBoolean woken = new AtomicBoolean();
