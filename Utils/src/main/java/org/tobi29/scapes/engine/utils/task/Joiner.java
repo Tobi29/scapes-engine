@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Joiner {
     private final Joinable[] joinables;
@@ -43,6 +44,7 @@ public class Joiner {
     public void wake() {
         for (Joinable thread : joinables) {
             synchronized (thread) {
+                thread.woken.set(true);
                 thread.notifyAll();
             }
         }
@@ -56,6 +58,7 @@ public class Joiner {
         for (Joinable thread : joinables) {
             while (!thread.joining) {
                 synchronized (thread) {
+                    thread.woken.set(true);
                     thread.notifyAll();
                     try {
                         thread.wait(100);
@@ -68,6 +71,7 @@ public class Joiner {
 
     public static class Joinable {
         private final Joiner joiner;
+        private final AtomicBoolean woken = new AtomicBoolean();
         private volatile boolean joining, marked;
 
         public Joinable() {
@@ -93,9 +97,11 @@ public class Joiner {
 
         @SuppressWarnings("WaitNotInLoop")
         public synchronized void sleep(long time) {
-            try {
-                wait(time);
-            } catch (InterruptedException e) {
+            if (!woken.getAndSet(false)) {
+                try {
+                    wait(time);
+                } catch (InterruptedException e) {
+                }
             }
         }
     }
