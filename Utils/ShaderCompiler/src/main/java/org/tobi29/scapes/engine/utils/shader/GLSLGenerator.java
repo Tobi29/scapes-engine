@@ -86,6 +86,8 @@ public class GLSLGenerator {
                 return "sin(" + argument0 + ')';
             case "cos":
                 return "cos(" + argument0 + ')';
+            case "float":
+                return "float(" + argument0 + ')';
             case "vector2":
                 return "vec2(" + argument0 + ')';
             case "vector3":
