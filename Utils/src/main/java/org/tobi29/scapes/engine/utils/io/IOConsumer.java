@@ -15,18 +15,8 @@
  */
 package org.tobi29.scapes.engine.utils.io;
 
-import java8.util.Objects;
-
 import java.io.IOException;
 
 public interface IOConsumer<T> {
     void accept(T t) throws IOException;
-
-    default IOConsumer<T> andThen(IOConsumer<? super T> after) {
-        Objects.requireNonNull(after);
-        return (T t) -> {
-            accept(t);
-            after.accept(t);
-        };
-    }
 }

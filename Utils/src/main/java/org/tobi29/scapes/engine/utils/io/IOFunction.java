@@ -15,8 +15,6 @@
  */
 package org.tobi29.scapes.engine.utils.io;
 
-import java8.util.Objects;
-
 import java.io.IOException;
 
 public interface IOFunction<T, R> {
@@ -25,16 +23,4 @@ public interface IOFunction<T, R> {
     }
 
     R apply(T t) throws IOException;
-
-    default <V> IOFunction<V, R> compose(
-            IOFunction<? super V, ? extends T> before) {
-        Objects.requireNonNull(before);
-        return (V v) -> apply(before.apply(v));
-    }
-
-    default <V> IOFunction<T, V> andThen(
-            IOFunction<? super R, ? extends V> after) {
-        Objects.requireNonNull(after);
-        return (T t) -> after.apply(apply(t));
-    }
 }
