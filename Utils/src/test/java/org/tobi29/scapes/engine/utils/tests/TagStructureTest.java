@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.tests;
 import org.junit.Assert;
 import org.junit.Test;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
-import org.tobi29.scapes.engine.utils.io.ProcessStream;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructureBinary;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructureJSON;

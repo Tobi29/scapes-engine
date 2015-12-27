@@ -57,7 +57,9 @@ public class Account {
         if (keyPair.isPresent()) {
             return new Account(keyPair.get(), nickname);
         }
-        return new Account(genKey(), nickname);
+        Account account = new Account(genKey(), nickname);
+        account.write(path);
+        return account;
     }
 
     @SuppressWarnings("UnnecessaryToStringCall")

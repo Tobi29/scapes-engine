@@ -3,7 +3,6 @@ package org.tobi29.scapes.engine.input;
 import java8.util.function.Predicate;
 import java8.util.stream.Collectors;
 import java8.util.Optional;
-import java8.util.function.Function;
 import org.tobi29.scapes.engine.utils.Streams;
 
 import java.util.ArrayList;
