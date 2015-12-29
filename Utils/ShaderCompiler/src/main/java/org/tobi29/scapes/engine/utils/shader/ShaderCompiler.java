@@ -835,10 +835,8 @@ public class ShaderCompiler {
             String name = signature.Identifier().getText();
             List<ShaderParameter> parameters = new ArrayList<>();
             parameters(signature.shaderParameterList(), parameters);
-            Types returned = Types.Void;
-            ShaderSignature shaderSignature =
-                    new ShaderSignature(name, returned, parameters
-                            .toArray(new ShaderParameter[parameters.size()]));
+            ShaderSignature shaderSignature = new ShaderSignature(name,
+                    parameters.toArray(new ShaderParameter[parameters.size()]));
             Expression compound =
                     compound(shader.compoundStatement().blockItemList());
             ShaderFunction function =
@@ -862,10 +860,8 @@ public class ShaderCompiler {
         if (outputs != null) {
             List<ShaderParameter> parameters = new ArrayList<>();
             parameters(outputs.shaderParameterList(), parameters);
-            Types returned = Types.Void;
-            ShaderSignature outputsSignature =
-                    new ShaderSignature("outputs", returned, parameters
-                            .toArray(new ShaderParameter[parameters.size()]));
+            ShaderSignature outputsSignature = new ShaderSignature("outputs",
+                    parameters.toArray(new ShaderParameter[parameters.size()]));
             this.outputs = Optional.of(outputsSignature);
             return;
         }
@@ -878,12 +874,12 @@ public class ShaderCompiler {
             List<Parameter> parameters = new ArrayList<>();
             parameters(signature.parameterList(), parameters);
             Types returned = type(signature.typeSpecifier());
-            FunctionSignature shaderSignature =
+            FunctionSignature functionSignature =
                     new FunctionSignature(name, returned, parameters
                             .toArray(new Parameter[parameters.size()]));
             Expression compound =
                     compound(function.compoundStatement().blockItemList());
-            functions.add(new Function(shaderSignature, compound));
+            functions.add(new Function(functionSignature, compound));
             return;
         }
     }

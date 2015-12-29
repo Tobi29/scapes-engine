@@ -40,7 +40,6 @@ public class Joiner {
         joinables = list.toArray(new Joinable[list.size()]);
     }
 
-    @SuppressWarnings("NakedNotify")
     public void wake() {
         for (Joinable thread : joinables) {
             synchronized (thread) {
@@ -50,7 +49,6 @@ public class Joiner {
         }
     }
 
-    @SuppressWarnings("NakedNotify")
     public void join() {
         for (Joinable thread : joinables) {
             thread.marked = true;
@@ -69,7 +67,6 @@ public class Joiner {
         }
     }
 
-    @SuppressWarnings("NakedNotify")
     public void join(Runnable runnable) {
         for (Joinable thread : joinables) {
             thread.marked = true;
