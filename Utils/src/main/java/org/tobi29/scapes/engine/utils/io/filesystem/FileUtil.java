@@ -15,8 +15,8 @@
  */
 package org.tobi29.scapes.engine.utils.io.filesystem;
 
-import java8.util.stream.Stream;
 import java8.util.function.Predicate;
+import java8.util.stream.Stream;
 import org.threeten.bp.Instant;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
 import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream;
@@ -27,6 +27,7 @@ import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -132,6 +133,16 @@ public class FileUtil {
         IMPL.stream(path, consumer);
     }
 
+    public static void consume(FilePath path, IOConsumer<FilePath> consumer)
+            throws IOException {
+        IMPL.stream(path, paths -> {
+            Iterator<FilePath> iterator = paths.iterator();
+            while (iterator.hasNext()) {
+                consumer.accept(iterator.next());
+            }
+        });
+    }
+
     public static List<FilePath> list(FilePath path) throws IOException {
         return IMPL.list(path);
     }
@@ -145,6 +156,16 @@ public class FileUtil {
     public static void streamRecursive(FilePath path,
             IOConsumer<Stream<FilePath>> consumer) throws IOException {
         IMPL.streamRecursive(path, consumer);
+    }
+
+    public static void consumeRecursive(FilePath path,
+            IOConsumer<FilePath> consumer) throws IOException {
+        IMPL.streamRecursive(path, paths -> {
+            Iterator<FilePath> iterator = paths.iterator();
+            while (iterator.hasNext()) {
+                consumer.accept(iterator.next());
+            }
+        });
     }
 
     public static List<FilePath> listRecursive(FilePath path)
@@ -163,7 +184,8 @@ public class FileUtil {
         IMPL.setLastModifiedTime(path, value);
     }
 
-    public static Instant getLastModifiedTime(FilePath path) throws IOException {
+    public static Instant getLastModifiedTime(FilePath path)
+            throws IOException {
         return IMPL.getLastModifiedTime(path);
     }
 
