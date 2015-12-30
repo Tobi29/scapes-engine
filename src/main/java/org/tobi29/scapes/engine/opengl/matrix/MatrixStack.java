@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.matrix;
 
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
-
-import java.nio.FloatBuffer;
 
 public class MatrixStack {
     private final Matrix[] stack;
@@ -26,10 +23,8 @@ public class MatrixStack {
 
     public MatrixStack(int matrices) {
         stack = new Matrix[matrices];
-        FloatBuffer modelViewBuffer = BufferCreatorNative.floatsD(16);
-        FloatBuffer normalBuffer = BufferCreatorNative.floatsD(9);
         for (int i = 0; i < stack.length; i++) {
-            stack[i] = new Matrix(modelViewBuffer, normalBuffer);
+            stack[i] = new Matrix(BufferCreatorNative::floatsD);
         }
         stack[0].identity();
     }
@@ -49,9 +44,7 @@ public class MatrixStack {
         if (i < 0) {
             throw new IllegalStateException("Stack underflow.");
         }
-        Matrix bottom = stack[i];
-        bottom.markChanged();
-        return bottom;
+        return stack[i];
     }
 
     public Matrix current() {

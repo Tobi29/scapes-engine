@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.opengl.matrix;
 
+import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f;
 
@@ -25,9 +25,9 @@ public class Matrix {
     private final Matrix4f modelViewMatrix;
     private final Matrix3f normalMatrix;
 
-    public Matrix(FloatBuffer modelViewBuffer, FloatBuffer normalBuffer) {
-        modelViewMatrix = new Matrix4f(modelViewBuffer);
-        normalMatrix = new Matrix3f(normalBuffer);
+    public Matrix(IntFunction<FloatBuffer> buffer) {
+        modelViewMatrix = new Matrix4f(buffer);
+        normalMatrix = new Matrix3f(buffer);
     }
 
     public void copy(Matrix matrix) {
@@ -51,11 +51,6 @@ public class Matrix {
     public void rotate(float angle, float x, float y, float z) {
         modelViewMatrix.rotate(angle, x, y, z);
         normalMatrix.rotate(angle, x, y, z);
-    }
-
-    public void markChanged() {
-        modelViewMatrix.markChanged();
-        normalMatrix.markChanged();
     }
 
     public Matrix4f modelView() {

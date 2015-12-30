@@ -13,82 +13,91 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.matrix;
 
-import org.tobi29.scapes.engine.utils.BufferCreator;
+import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 import java.nio.FloatBuffer;
 
 public class Matrix3f {
-    private final FloatBuffer buffer;
-    private float v00, v01, v02, v10, v11, v12, v20, v21, v22;
-    private boolean changed = true;
+    private static final int V00, V01, V02, V10, V11, V12, V20, V21, V22;
 
-    public Matrix3f() {
-        this(BufferCreator.floats(9));
+    static {
+        int i = 0;
+        V00 = i++;
+        V01 = i++;
+        V02 = i++;
+        V10 = i++;
+        V11 = i++;
+        V12 = i++;
+        V20 = i++;
+        V21 = i++;
+        V22 = i++;
     }
 
-    public Matrix3f(FloatBuffer buffer) {
-        this.buffer = buffer;
+    private final FloatBuffer b;
+
+    public Matrix3f(IntFunction<FloatBuffer> buffer) {
+        b = buffer.apply(9);
     }
 
     public FloatBuffer getBuffer() {
-        if (changed) {
-            changed = false;
-            buffer.rewind();
-            buffer.put(v00);
-            buffer.put(v01);
-            buffer.put(v02);
-            buffer.put(v10);
-            buffer.put(v11);
-            buffer.put(v12);
-            buffer.put(v20);
-            buffer.put(v21);
-            buffer.put(v22);
-        }
-        buffer.rewind();
-        return buffer;
+        b.rewind();
+        return b;
     }
 
     public void copy(Matrix3f matrix) {
-        v00 = matrix.v00;
-        v01 = matrix.v01;
-        v02 = matrix.v02;
-        v10 = matrix.v10;
-        v11 = matrix.v11;
-        v12 = matrix.v12;
-        v20 = matrix.v20;
-        v21 = matrix.v21;
-        v22 = matrix.v22;
-        changed = true;
+        b.rewind();
+        matrix.b.rewind();
+        b.put(matrix.b);
+    }
+
+    private float g() {
+        return b.get();
+    }
+
+    private float gc() {
+        return g(b.position());
+    }
+
+    private float g(int i) {
+        return b.get(i);
+    }
+
+    private void s(float value) {
+        b.put(value);
+    }
+
+    private void s(int i, float value) {
+        b.put(i, value);
     }
 
     public void identity() {
-        v00 = 1.0f;
-        v01 = 0.0f;
-        v02 = 0.0f;
-        v10 = 0.0f;
-        v11 = 1.0f;
-        v12 = 0.0f;
-        v20 = 0.0f;
-        v21 = 0.0f;
-        v22 = 1.0f;
-        changed = true;
+        s(V00, 1.0f);
+        s(V01, 0.0f);
+        s(V02, 0.0f);
+        s(V10, 0.0f);
+        s(V11, 1.0f);
+        s(V12, 0.0f);
+        s(V20, 0.0f);
+        s(V21, 0.0f);
+        s(V22, 1.0f);
     }
 
     public void scale(float x, float y, float z) {
-        v00 *= x;
-        v10 *= y;
-        v20 *= z;
-        v01 *= x;
-        v11 *= y;
-        v21 *= z;
-        v02 *= x;
-        v12 *= y;
-        v22 *= z;
-        changed = true;
+        b.rewind();
+        for (int i = 0; i < 4; i++) {
+            s(gc() * x);
+        }
+        for (int i = 0; i < 4; i++) {
+            s(gc() * y);
+        }
+        for (int i = 0; i < 4; i++) {
+            s(gc() * z);
+        }
     }
 
     public void rotate(float angle, float x, float y, float z) {
@@ -110,25 +119,70 @@ public class Matrix3f {
         float f20 = xz * oneMinusCos + ySin;
         float f21 = yz * oneMinusCos - xSin;
         float f22 = z * z * oneMinusCos + cos;
+        float v00 = g(V00);
+        float v01 = g(V01);
+        float v02 = g(V02);
+        float v10 = g(V10);
+        float v11 = g(V11);
+        float v12 = g(V12);
+        float v20 = g(V20);
+        float v21 = g(V21);
+        float v22 = g(V22);
         float t00 = v00 * f00 + v10 * f01 + v20 * f02;
         float t01 = v01 * f00 + v11 * f01 + v21 * f02;
         float t02 = v02 * f00 + v12 * f01 + v22 * f02;
         float t10 = v00 * f10 + v10 * f11 + v20 * f12;
         float t11 = v01 * f10 + v11 * f11 + v21 * f12;
         float t12 = v02 * f10 + v12 * f11 + v22 * f12;
-        v20 = v00 * f20 + v10 * f21 + v20 * f22;
-        v21 = v01 * f20 + v11 * f21 + v21 * f22;
-        v22 = v02 * f20 + v12 * f21 + v22 * f22;
-        v00 = t00;
-        v01 = t01;
-        v02 = t02;
-        v10 = t10;
-        v11 = t11;
-        v12 = t12;
-        changed = true;
+        s(V20, v00 * f20 + v10 * f21 + v20 * f22);
+        s(V21, v01 * f20 + v11 * f21 + v21 * f22);
+        s(V22, v02 * f20 + v12 * f21 + v22 * f22);
+        s(V00, t00);
+        s(V01, t01);
+        s(V02, t02);
+        s(V10, t10);
+        s(V11, t11);
+        s(V12, t12);
     }
 
-    public void markChanged() {
-        changed = true;
+    public void multiply(Matrix3f o, Matrix3f d) {
+        float v00 = g(V00);
+        float v01 = g(V01);
+        float v02 = g(V02);
+        float v10 = g(V10);
+        float v11 = g(V11);
+        float v12 = g(V12);
+        float v20 = g(V20);
+        float v21 = g(V21);
+        float v22 = g(V22);
+        float o00 = o.g(V00);
+        float o01 = o.g(V01);
+        float o02 = o.g(V02);
+        float o10 = o.g(V10);
+        float o11 = o.g(V11);
+        float o12 = o.g(V12);
+        float o20 = o.g(V20);
+        float o21 = o.g(V21);
+        float o22 = o.g(V22);
+        d.s(V00, v00 * o00 + v10 * o01 + v20 * o02);
+        d.s(V01, v01 * o00 + v11 * o01 + v21 * o02);
+        d.s(V02, v02 * o00 + v12 * o01 + v22 * o02);
+        d.s(V10, v00 * o10 + v10 * o11 + v20 * o12);
+        d.s(V11, v01 * o10 + v11 * o11 + v21 * o12);
+        d.s(V12, v02 * o10 + v12 * o11 + v22 * o12);
+        d.s(V20, v00 * o20 + v10 * o21 + v20 * o22);
+        d.s(V21, v01 * o20 + v11 * o21 + v21 * o22);
+        d.s(V22, v02 * o20 + v12 * o21 + v22 * o22);
+    }
+
+    public Vector3 multiply(Vector3 v) {
+        double x = v.doubleX();
+        double y = v.doubleY();
+        double z = v.doubleZ();
+        double w = 1.0;
+        double v1 = g(V00) * x + g(V10) * y + g(V20) * z;
+        double v2 = g(V01) * x + g(V11) * y + g(V21) * z;
+        double v3 = g(V02) * x + g(V12) * y + g(V22) * z;
+        return new Vector3d(v1, v2, v3);
     }
 }

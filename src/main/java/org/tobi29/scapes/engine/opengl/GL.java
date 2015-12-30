@@ -40,9 +40,8 @@ public abstract class GL implements OpenGL {
     protected GL(ScapesEngine engine, Container container) {
         this.engine = engine;
         matrixStack = new MatrixStack(64);
-        projectionMatrix = new Matrix4f(BufferCreatorNative.floatsD(16));
-        modelViewProjectionMatrix =
-                new Matrix4f(BufferCreatorNative.floatsD(16));
+        projectionMatrix = new Matrix4f(BufferCreatorNative::floatsD);
+        modelViewProjectionMatrix = new Matrix4f(BufferCreatorNative::floatsD);
         textureManager = new TextureManager(engine);
         shaderManager = new ShaderManager(engine);
         resolutionMultiplier = engine.config().resolutionMultiplier();
