@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine;
 
 import org.tobi29.scapes.engine.opengl.GL;
@@ -38,4 +37,8 @@ public abstract class Game {
     public abstract void step();
 
     public abstract void dispose();
+
+    public ScapesEngine engine() {
+        return engine;
+    }
 }
