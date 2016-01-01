@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-Closure subProjects = { root ->
-    def list = []
-    new File(rootDir, root.replaceAll(":", "/")).eachDir() { dir ->
-        dir.eachFile({
-            if (it.name == "build.gradle") {
-                list += root + ":" + dir.name
-            }
-        })
-    }
-    list.toArray(new java.lang.String[0])
-}
 
-include "ScapesEngine"
-include "ScapesEngine:Utils"
-include subProjects("ScapesEngine:Backends")
-include subProjects("ScapesEngine:Codecs")
-include subProjects("ScapesEngine:Utils")
-include subProjects("ScapesEngine:Utils:SQLFramework")
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+
+version = "0.0.0_1"
+
+dependencies {
+    compile project(":ScapesEngine")
+    compile project(":ScapesEngine:Utils")
+    compile "org.slf4j:slf4j-api:1.7.13"
+
+    testCompile "junit:junit:4.12"
+}
