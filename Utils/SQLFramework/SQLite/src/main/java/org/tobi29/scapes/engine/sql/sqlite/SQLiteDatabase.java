@@ -42,12 +42,13 @@ public class SQLiteDatabase implements SQLDatabase, AutoCloseable {
                 return;
             }
             try {
-                while (!joiner.marked()) {
+                while (!joiner.marked() || !queue.isEmpty()) {
                     while (!queue.isEmpty()) {
                         queue.poll().run();
                     }
                     joiner.sleep();
                 }
+                assert queue.isEmpty();
             } finally {
                 connection.dispose();
             }
