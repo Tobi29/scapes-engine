@@ -7,7 +7,7 @@ public class SQLiteConfig {
 
     public enum JournalMode {
         DELETE,
-        TUNCATE,
+        TRUNCATE,
         PERSIST,
         MEMORY,
         WAL,
