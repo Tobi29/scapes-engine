@@ -29,105 +29,81 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 public class GuiComponentScrollPaneViewport extends GuiComponentPane {
-    protected final Optional<GuiComponentSliderVert> slider;
+    protected Optional<GuiComponentSliderVert> slider = Optional.empty();
     private double maxY, scroll;
 
-    public GuiComponentScrollPaneViewport(GuiLayoutData parent, int width,
-            int height, int scrollStep) {
-        this(parent, Optional.empty(), width, height, scrollStep);
-    }
-
     public GuiComponentScrollPaneViewport(GuiLayoutData parent,
-            GuiComponentSliderVert slider, int width, int height,
             int scrollStep) {
-        this(parent, Optional.of(slider), width, height, scrollStep);
-    }
-
-    private GuiComponentScrollPaneViewport(GuiLayoutData parent,
-            Optional<GuiComponentSliderVert> slider, int width, int height,
-            int scrollStep) {
-        super(parent, width, height);
-        this.slider = slider;
+        super(parent);
         onScroll(event -> {
             if (event.screen()) {
                 scroll -= event.relativeY();
             } else {
                 scroll -= event.relativeY() * scrollStep;
             }
-            scroll = FastMath.clamp(scroll, 0, Math.max(0, maxY - height));
-            Optional<GuiComponentSliderVert> currentSlider = this.slider;
-            if (currentSlider.isPresent()) {
-                double limit = Math.max(0, maxY - height);
+            scroll = FastMath.clamp(scroll, 0,
+                    Math.max(0, maxY - event.size().doubleY()));
+            Optional<GuiComponentSliderVert> slider = this.slider;
+            if (slider.isPresent()) {
+                double limit = Math.max(0, maxY - event.size().doubleY());
                 if (limit > 0.0) {
-                    currentSlider.get().setValue(scroll / limit);
+                    slider.get().setValue(scroll / limit);
                 } else {
-                    currentSlider.get().setValue(0.0);
+                    slider.get().setValue(0.0);
                 }
             }
         });
     }
 
     @Override
-    public void render(GL gl, Shader shader, double delta) {
+    public void render(GL gl, Shader shader, double delta, Vector2 size) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
-            transform(matrix);
-            renderComponent(gl, shader, delta);
             Vector3 start = matrix.modelView().multiply(Vector3d.ZERO);
-            Vector3 end = matrix.modelView()
-                    .multiply(new Vector3d(width, height, 0.0));
+            Vector3 end = matrix.modelView().multiply(
+                    new Vector3d(size.doubleX(), size.doubleY(), 0.0));
+            matrixStack.pop();
             gl.enableScissor(start.intX(), start.intY(),
                     end.intX() - start.intX(), end.intY() - start.intY());
-            GuiLayoutManager layout = layoutManager();
-            Streams.of(components).forEach(component -> {
-                Vector2 pos = layout.layout(component);
-                if (!inside(pos, component)) {
-                    return;
-                }
-                Matrix childMatrix = matrixStack.push();
-                childMatrix.translate(pos.floatX(), pos.floatY(), 0.0f);
-                component.render(gl, shader, delta);
-                matrixStack.pop();
-            });
+            super.render(gl, shader, delta, size);
             gl.disableScissor();
-            renderOverlay(gl, shader);
-            matrixStack.pop();
         }
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine) {
+    protected void updateComponent(ScapesEngine engine, Vector2 size) {
+        Optional<GuiComponentSliderVert> slider = this.slider;
         if (slider.isPresent()) {
-            scroll = slider.get().value() * Math.max(0, maxY - height);
+            scroll = slider.get().value() * Math.max(0, maxY - size.doubleY());
         }
     }
 
     @Override
-    public void updateChildren(ScapesEngine engine) {
+    public void updateChildren(ScapesEngine engine, Vector2 size) {
         while (!changeComponents.isEmpty()) {
             changeComponents.poll().run();
         }
-        GuiLayoutManager layout = layoutManager();
-        Streams.of(components).forEach(component -> {
-            layout.layout(component);
-            component.update(engine);
+        GuiLayoutManager layout = layoutManager(size);
+        Streams.of(layout.layout()).forEach(component -> {
+            if (component.a.removing) {
+                drop(component.a);
+            } else {
+                component.a.update(engine, component.c);
+            }
         });
-        setMaxY(layout.size().doubleY());
+        setMaxY(layout.size().doubleY(), size.doubleY());
     }
 
     @Override
-    protected GuiLayoutManager layoutManager() {
-        return new GuiLayoutManager(new Vector2d(0.0, -scroll));
+    protected GuiLayoutManager layoutManager(Vector2 size) {
+        return new GuiLayoutManagerVertical(new Vector2d(0.0, -scroll), size,
+                components);
     }
 
-    protected boolean inside(Vector2 pos, GuiComponent component) {
-        double y = pos.doubleY();
-        return y > -component.height && y < height;
-    }
-
-    public void setMaxY(double maxY) {
+    public void setMaxY(double maxY, double height) {
         this.maxY = maxY;
+        Optional<GuiComponentSliderVert> slider = this.slider;
         if (slider.isPresent()) {
             if (maxY <= 0) {
                 slider.get().setSliderHeight(height);
@@ -136,5 +112,13 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
                         (int) FastMath.min(height * height / maxY, height));
             }
         }
+    }
+
+    public void setSlider(GuiComponentSliderVert slider) {
+        this.slider = Optional.of(slider);
+    }
+
+    public void removeSlider() {
+        slider = Optional.empty();
     }
 }

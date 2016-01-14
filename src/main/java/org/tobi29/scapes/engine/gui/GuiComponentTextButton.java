@@ -15,20 +15,22 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
+
 public class GuiComponentTextButton extends GuiComponentButton {
     protected final GuiComponentText text;
 
-    public GuiComponentTextButton(GuiLayoutData parent, int width, int height,
-            int textSize, String text) {
-        this(parent, width, height, 4, textSize, text);
+    public GuiComponentTextButton(GuiLayoutData parent, int textSize,
+            String text) {
+        this(parent, 4, textSize, text);
     }
 
-    public GuiComponentTextButton(GuiLayoutData parent, int width, int height,
-            int textX, int textSize, String text) {
-        super(parent, width, height);
-        int textY = (height - textSize) / 2;
-        this.text = addSub(textX, textY,
-                p -> new GuiComponentText(p, width - textX, textSize, text));
+    public GuiComponentTextButton(GuiLayoutData parent, int textX, int textSize,
+            String text) {
+        super(parent);
+        this.text = addSubHori(textX, 0, -1, textSize,
+                p -> new GuiComponentText(p, text));
     }
 
     public String text() {
@@ -41,6 +43,11 @@ public class GuiComponentTextButton extends GuiComponentButton {
 
     public void setTextFilter(TextFilter textFilter) {
         text.setTextFilter(textFilter::filter);
+    }
+
+    @Override
+    protected GuiLayoutManager layoutManager(Vector2 size) {
+        return new GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components);
     }
 
     public interface TextFilter {

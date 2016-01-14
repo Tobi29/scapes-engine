@@ -15,22 +15,16 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-public class GuiComponentScrollPane extends GuiComponentVisiblePane {
+public class GuiComponentScrollPane extends GuiComponentVisibleSlab {
     protected final GuiComponentScrollPaneViewport viewport;
 
-    public GuiComponentScrollPane(GuiLayoutData parent, int width, int height,
-            int scrollStep) {
-        super(parent, width, height);
-        GuiComponentSliderVert slider = add(width - 10, 0,
-                p -> new GuiComponentSliderVert(p, 10, height, 0));
-        viewport = newViewport(slider, scrollStep);
-    }
-
-    protected GuiComponentScrollPaneViewport newViewport(
-            GuiComponentSliderVert slider, int scrollStep) {
-        return add(0, 0,
-                p -> new GuiComponentScrollPaneViewport(p, slider, width,
-                        height, scrollStep));
+    public GuiComponentScrollPane(GuiLayoutData parent, int scrollStep) {
+        super(parent);
+        viewport = addHori(0, 0, -1, -1,
+                p -> new GuiComponentScrollPaneViewport(p, scrollStep));
+        GuiComponentSliderVert slider =
+                addHori(0, 0, 10, -1, p -> new GuiComponentSliderVert(p, 0));
+        viewport.setSlider(slider);
     }
 
     public GuiComponentScrollPaneViewport viewport() {

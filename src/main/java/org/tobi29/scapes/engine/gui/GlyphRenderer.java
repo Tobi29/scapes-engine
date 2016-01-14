@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import java.nio.ByteBuffer;
@@ -27,12 +26,12 @@ public interface GlyphRenderer {
 
     class GlyphPage {
         private final ByteBuffer buffer;
-        private final float[] width;
+        private final double[] width;
         private final int size, tiles;
-        private final float tileSize;
+        private final double tileSize;
 
-        public GlyphPage(ByteBuffer buffer, float[] width, int size, int tiles,
-                float tileSize) {
+        public GlyphPage(ByteBuffer buffer, double[] width, int size, int tiles,
+                double tileSize) {
             this.buffer = buffer;
             this.width = width;
             this.size = size;
@@ -45,7 +44,7 @@ public interface GlyphRenderer {
         }
 
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
-        public float[] width() {
+        public double[] width() {
             return width;
         }
 
@@ -57,7 +56,7 @@ public interface GlyphRenderer {
             return tiles;
         }
 
-        public float tileSize() {
+        public double tileSize() {
             return tileSize;
         }
     }

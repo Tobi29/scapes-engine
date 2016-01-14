@@ -4,22 +4,23 @@ import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public interface GuiStyle {
     FontRenderer font();
 
-    Pair<VAO, Texture> pane(float width, float height);
+    Pair<VAO, Texture> pane(Vector2 size);
 
-    Pair<VAO, Texture> button(float width, float height, boolean hover);
+    Pair<VAO, Texture> button(Vector2 size, boolean hover);
 
-    Pair<VAO, Texture> border(float width, float height);
+    Pair<VAO, Texture> border(Vector2 size);
 
-    Pair<VAO, Texture> slider(float width, float height, boolean horizontal,
-            float value, float size, boolean hover);
+    Pair<VAO, Texture> slider(Vector2 size, boolean horizontal, double value,
+            double sliderSize, boolean hover);
 
-    Pair<VAO, Texture> separator(float width, float height);
+    Pair<VAO, Texture> separator(Vector2 size);
 
-    Pair<VAO, Texture> widget(float width, float height);
+    Pair<VAO, Texture> widget(Vector2 size);
 
-    Pair<VAO, Texture> widgetTitle(float width, float height);
+    Pair<VAO, Texture> widgetTitle(Vector2 size);
 }

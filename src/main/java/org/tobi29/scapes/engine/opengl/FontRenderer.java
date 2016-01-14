@@ -64,8 +64,8 @@ public class FontRenderer {
                 page.tileSize());
     }
 
-    public Text render(String text, float x, float y, float size, float r,
-            float g, float b, float a) {
+    public Text render(String text, double x, double y, double size, double r,
+            double g, double b, double a) {
         if (text == null) {
             return EMPTY_TEXT;
         }
@@ -73,8 +73,8 @@ public class FontRenderer {
                 0, text.length(), false);
     }
 
-    public Text render(String text, float x, float y, float size, float limit,
-            float r, float g, float b, float a) {
+    public Text render(String text, double x, double y, double size,
+            double limit, double r, double g, double b, double a) {
         if (text == null) {
             return EMPTY_TEXT;
         }
@@ -83,16 +83,16 @@ public class FontRenderer {
     }
 
     @SuppressWarnings("AccessToStaticFieldLockedOnInstance")
-    public synchronized Text render(String text, float x, float y, float width,
-            float height, float line, float limit, float r, float g, float b,
-            float a, int start, int end, boolean cropped) {
+    public synchronized Text render(String text, double x, double y,
+            double width, double height, double line, double limit, double r,
+            double g, double b, double a, int start, int end, boolean cropped) {
         if (text == null || start == -1) {
             return EMPTY_TEXT;
         }
         Map<Integer, Mesh> meshes = new ConcurrentHashMap<>();
         double textWidth = 0.0;
         int length = 0;
-        float xx = 0.0f, yy = 0.0f;
+        double xx = 0.0f, yy = 0.0f;
         for (int i = 0; i < text.length(); i++) {
             char letter = text.charAt(i);
             if (letter == '\n') {
@@ -106,8 +106,8 @@ public class FontRenderer {
                     initPage(id);
                 }
                 GlyphPage page = pages[id];
-                float letterWidth = page.width[pageLetter];
-                float actualWidth = letterWidth * width;
+                double letterWidth = page.width[pageLetter];
+                double actualWidth = letterWidth * width;
                 if (xx + actualWidth > limit) {
                     break;
                 }
@@ -117,14 +117,14 @@ public class FontRenderer {
                         mesh = new Mesh();
                         meshes.put(id, mesh);
                     }
-                    float xxx, yyy, w, h, tx, ty, tw, th;
+                    double xxx, yyy, w, h, tx, ty, tw, th;
                     if (cropped) {
                         xxx = xx + x;
                         yyy = yy + y;
                         w = width * letterWidth;
                         h = height;
                         tx = (pageLetter % page.tiles + 0.125f) * page.tileSize;
-                        ty = (FastMath.floor((float) pageLetter / page.tiles) +
+                        ty = (FastMath.floor((double) pageLetter / page.tiles) +
                                 0.125f) * page.tileSize;
                         tw = page.tileSize * letterWidth * 0.75f;
                         th = page.tileSize * 0.75f;
@@ -134,20 +134,20 @@ public class FontRenderer {
                         w = width * 1.5f;
                         h = height * 1.5f;
                         tx = (pageLetter % page.tiles) * page.tileSize;
-                        ty = FastMath.floor((float) pageLetter / page.tiles) *
+                        ty = FastMath.floor((double) pageLetter / page.tiles) *
                                 page.tileSize;
                         tw = page.tileSize;
                         th = page.tileSize;
                     }
-                    mesh.color(r, g, b, a);
-                    mesh.texture(tx, ty);
-                    mesh.vertex(xxx, yyy, 0.0f);
-                    mesh.texture(tx, ty + th);
-                    mesh.vertex(xxx, yyy + h, 0.0f);
-                    mesh.texture(tx + tw, ty + th);
-                    mesh.vertex(xxx + w, yyy + h, 0.0f);
-                    mesh.texture(tx + tw, ty);
-                    mesh.vertex(xxx + w, yyy, 0.0f);
+                    mesh.color((float) r, (float) g, (float) b, (float) a);
+                    mesh.texture((float) tx, (float) ty);
+                    mesh.vertex((float) xxx, (float) yyy, 0.0f);
+                    mesh.texture((float) tx, (float) (ty + th));
+                    mesh.vertex((float) xxx, (float) (yyy + h), 0.0f);
+                    mesh.texture((float) (tx + tw), (float) (ty + th));
+                    mesh.vertex((float) (xxx + w), (float) (yyy + h), 0.0f);
+                    mesh.texture((float) (tx + tw), (float) ty);
+                    mesh.vertex((float) (xxx + w), (float) yyy, 0.0f);
                 }
                 xx += actualWidth;
                 textWidth = FastMath.max(textWidth, xx);
@@ -221,12 +221,12 @@ public class FontRenderer {
 
     private static class GlyphPage {
         private final Texture texture;
-        private final float[] width;
+        private final double[] width;
         private final int tiles;
-        private final float tileSize;
+        private final double tileSize;
 
-        public GlyphPage(Texture texture, float[] width, int tiles,
-                float tileSize) {
+        public GlyphPage(Texture texture, double[] width, int tiles,
+                double tileSize) {
             this.texture = texture;
             this.width = width;
             this.tiles = tiles;

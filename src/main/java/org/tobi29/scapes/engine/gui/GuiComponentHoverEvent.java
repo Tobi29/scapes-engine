@@ -15,15 +15,18 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+
 public class GuiComponentHoverEvent extends GuiComponentEvent {
     private final State state;
 
     public GuiComponentHoverEvent(GuiComponentEvent event, State state) {
-        this(event.x(), event.y(), state);
+        this(event.x(), event.y(), state, event.size());
     }
 
-    public GuiComponentHoverEvent(double x, double y, State state) {
-        super(x, y);
+    public GuiComponentHoverEvent(double x, double y, State state,
+            Vector2 size) {
+        super(x, y, size);
         this.state = state;
     }
 

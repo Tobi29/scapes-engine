@@ -15,10 +15,7 @@
  */
 package org.tobi29.scapes.engine;
 
-import org.tobi29.scapes.engine.gui.GuiAlignment;
-import org.tobi29.scapes.engine.gui.GuiComponentIcon;
-import org.tobi29.scapes.engine.gui.GuiState;
-import org.tobi29.scapes.engine.gui.GuiStyle;
+import org.tobi29.scapes.engine.gui.*;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
@@ -78,14 +75,16 @@ public class GameStateStartup extends GameState {
 
     private class GuiImage extends GuiState {
         public GuiImage(Texture texture, GuiStyle style) {
-            super(GameStateStartup.this, style, GuiAlignment.CENTER);
+            super(GameStateStartup.this, style);
             int width = texture.width();
             int height = texture.height();
             double ratio = (double) width / height;
             int w = (int) (540 * ratio * scale);
             int h = (int) (540 * scale);
-            icon = add((960 - w) / 2, (540 - h) / 2,
-                    p -> new GuiComponentIcon(p, w, h, texture));
+            spacer();
+            icon = addHori((960 - w) / 2, (540 - h) / 2, w, h,
+                    p -> new GuiComponentIcon(p, texture));
+            spacer();
         }
     }
 }

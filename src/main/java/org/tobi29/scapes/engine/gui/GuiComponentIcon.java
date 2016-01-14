@@ -20,32 +20,25 @@ import org.tobi29.scapes.engine.opengl.*;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentIcon extends GuiComponent {
-    private final VAO vao;
-    private final Pair<VAO, Texture> vaoBorder;
+    private VAO vao;
+    private Pair<VAO, Texture> vaoBorder;
     private float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
     private Optional<Texture> texture;
 
-    public GuiComponentIcon(GuiLayoutData parent, int width, int height) {
-        this(parent, width, height, Optional.empty());
+    public GuiComponentIcon(GuiLayoutData parent) {
+        this(parent, Optional.empty());
     }
 
-    public GuiComponentIcon(GuiLayoutData parent, int width, int height,
-            Texture texture) {
-        this(parent, width, height, Optional.of(texture));
+    public GuiComponentIcon(GuiLayoutData parent, Texture texture) {
+        this(parent, Optional.of(texture));
     }
 
-    public GuiComponentIcon(GuiLayoutData parent, int width, int height,
-            Optional<Texture> texture) {
-        super(parent, width, height);
+    public GuiComponentIcon(GuiLayoutData parent, Optional<Texture> texture) {
+        super(parent);
         this.texture = texture;
-        vao = VAOUtility.createVTI(
-                new float[]{0.0f, height, 0.0f, width, height, 0.0f, 0.0f, 0.0f,
-                        0.0f, width, 0.0f, 0.0f},
-                new float[]{0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
-                new int[]{0, 1, 2, 3, 2, 1}, RenderType.TRIANGLES);
-        vaoBorder = gui.style().border(width, height);
     }
 
     public void setIcon(Texture texture) {
@@ -64,7 +57,8 @@ public class GuiComponentIcon extends GuiComponent {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta) {
+    public void renderComponent(GL gl, Shader shader, double delta,
+            double width, double height) {
         Optional<Texture> texture = this.texture;
         if (texture.isPresent()) {
             texture.get().bind(gl);
@@ -73,5 +67,16 @@ public class GuiComponentIcon extends GuiComponent {
             vaoBorder.b.bind(gl);
             vaoBorder.a.render(gl, shader);
         }
+    }
+
+    @Override
+    protected void updateMesh(Vector2 size) {
+        vao = VAOUtility.createVTI(
+                new float[]{0.0f, size.floatY(), 0.0f, size.floatX(),
+                        size.floatY(), 0.0f, 0.0f, 0.0f, 0.0f, size.floatX(),
+                        0.0f, 0.0f},
+                new float[]{0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+                new int[]{0, 1, 2, 3, 2, 1}, RenderType.TRIANGLES);
+        vaoBorder = gui.style().border(size);
     }
 }

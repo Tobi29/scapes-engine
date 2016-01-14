@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
-public enum GuiAlignment {
-    STRETCH,
-    LEFT,
-    CENTER,
-    RIGHT
+public class GuiComponentGroupSlab extends GuiComponentSlab {
+    public GuiComponentGroupSlab(GuiLayoutData parent) {
+        super(parent);
+    }
+
+    @Override
+    public boolean ignoresEvents() {
+        return true;
+    }
 }

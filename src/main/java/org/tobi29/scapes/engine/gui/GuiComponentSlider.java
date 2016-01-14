@@ -15,45 +15,39 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.FontRenderer;
+import java8.util.function.Function;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentSlider extends GuiComponent {
-    private final String text;
-    private final float textSize;
-    private final int textX, textY;
-    private final TextFilter textFilter;
+public class GuiComponentSlider extends GuiComponentSlab {
+    protected final GuiComponentText text;
+    private final Function<Double, String> textFilter;
     private double value;
     private boolean hover;
-    private FontRenderer.Text vaoText;
     private Pair<VAO, Texture> vao;
 
-    public GuiComponentSlider(GuiLayoutData parent, int width, int height,
-            int textSize, String text, double value) {
-        this(parent, width, height, textSize, text, value,
-                (text1, value1) -> text1 + ": " +
-                        (int) (value1 * 100) +
-                        '%');
+    public GuiComponentSlider(GuiLayoutData parent, int textSize, String text,
+            double value) {
+        this(parent, textSize, text, value, (text1, value1) -> text1 + ": " +
+                (int) (value1 * 100) +
+                '%');
     }
 
-    public GuiComponentSlider(GuiLayoutData parent, int width, int height,
-            int textSize, String text, double value, TextFilter textFilter) {
-        super(parent, width, height);
-        this.text = text;
-        this.textSize = textSize;
+    public GuiComponentSlider(GuiLayoutData parent, int textSize, String text,
+            double value, TextFilter textFilter) {
+        super(parent);
         this.value = value;
-        this.textFilter = textFilter;
-        textX = 4;
-        textY = (height - textSize) / 2;
+        this.textFilter = v -> textFilter.filter(text, v);
+        this.text = addSubHori(4, 0, -1, textSize,
+                p -> new GuiComponentText(p, this.textFilter.apply(value)));
         onDragLeft(event -> {
-            this.value = FastMath.clamp((event.x() - 8) / (width - 16.0), 0, 1);
-            updateText();
-            updateMesh();
+            setValue(FastMath.clamp(
+                    (event.x() - 8) / (event.size().doubleX() - 16.0), 0, 1));
         });
         onClick((event, engine) -> engine.sounds()
                 .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
@@ -61,34 +55,26 @@ public class GuiComponentSlider extends GuiComponent {
             switch (event.state()) {
                 case ENTER:
                     hover = true;
-                    updateMesh();
+                    dirty.set(true);
                     break;
                 case LEAVE:
                     hover = false;
-                    updateMesh();
+                    dirty.set(true);
                     break;
             }
         });
-        updateMesh();
-        updateText();
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta) {
+    public void renderComponent(GL gl, Shader shader, double delta,
+            double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
-        vaoText.render(gl, shader);
     }
 
-    private void updateText() {
-        FontRenderer font = gui.style().font();
-        vaoText = font.render(textFilter.filter(text, value), textX, textY,
-                textSize, width, 1.0f, 1.0f, 1.0f, 1);
-    }
-
-    private void updateMesh() {
-        vao = gui.style()
-                .slider(width, height, true, (float) value, 16.0f, hover);
+    @Override
+    protected void updateMesh(Vector2 size) {
+        vao = gui.style().slider(size, true, (float) value, 16.0f, hover);
     }
 
     public double value() {
@@ -97,7 +83,8 @@ public class GuiComponentSlider extends GuiComponent {
 
     public void setValue(double value) {
         this.value = value;
-        updateMesh();
+        dirty.set(true);
+        text.setText(textFilter.apply(value));
     }
 
     public interface TextFilter {

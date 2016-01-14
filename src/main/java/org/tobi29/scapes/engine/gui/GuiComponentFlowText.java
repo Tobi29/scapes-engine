@@ -20,24 +20,40 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentText extends GuiComponent {
+public class GuiComponentFlowText extends GuiComponent {
+    protected final int textWidth;
     protected final float r, g, b, a;
     protected String text;
     protected TextFilter textFilter = str -> str;
     protected FontRenderer.Text vaoText;
 
-    public GuiComponentText(GuiLayoutData parent, String text) {
-        this(parent, text, 1.0f, 1.0f, 1.0f, 1.0f);
+    public GuiComponentFlowText(GuiLayoutData parent, String text) {
+        this(parent, Integer.MAX_VALUE, text);
     }
 
-    public GuiComponentText(GuiLayoutData parent, String text, float r, float g,
-            float b, float a) {
+    public GuiComponentFlowText(GuiLayoutData parent, String text, float r,
+            float g, float b, float a) {
+        this(parent, Integer.MAX_VALUE, text, r, g, b, a);
+    }
+
+    public GuiComponentFlowText(GuiLayoutData parent, int width, String text) {
+        this(parent, width, text, 1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public GuiComponentFlowText(GuiLayoutData parent, int width, String text,
+            float r, float g, float b, float a) {
         super(parent);
         this.text = text;
+        textWidth = width;
         this.r = r;
         this.g = g;
         this.b = b;
         this.a = a;
+        FontRenderer font = gui.style().font();
+        FontRenderer.Text vaoText =
+                font.render(textFilter.filter(text), 0.0, 0.0, parent.height(),
+                        textWidth, r, g, b, a);
+        parent.setWidth(vaoText.width());
     }
 
     public String text() {
@@ -66,7 +82,8 @@ public class GuiComponentText extends GuiComponent {
     protected void updateMesh(Vector2 size) {
         FontRenderer font = gui.style().font();
         vaoText = font.render(textFilter.filter(text), 0.0, 0.0, size.doubleY(),
-                size.doubleX(), r, g, b, a);
+                textWidth, r, g, b, a);
+        parent.setWidth(vaoText.width());
     }
 
     public interface TextFilter {

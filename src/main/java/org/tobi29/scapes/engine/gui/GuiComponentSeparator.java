@@ -20,18 +20,24 @@ import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentSeparator extends GuiComponent {
-    private final Pair<VAO, Texture> vao;
+    private Pair<VAO, Texture> vao;
 
-    public GuiComponentSeparator(GuiLayoutData parent, int width, int height) {
-        super(parent, width, height);
-        vao = gui.style().separator(width, height);
+    public GuiComponentSeparator(GuiLayoutData parent) {
+        super(parent);
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta) {
+    public void renderComponent(GL gl, Shader shader, double delta,
+            double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
+    }
+
+    @Override
+    protected void updateMesh(Vector2 size) {
+        vao = gui.style().separator(size);
     }
 }

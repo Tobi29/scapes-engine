@@ -15,9 +15,13 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
+
 public class GuiComponentEvent {
     private final double x, y, relativeX, relativeY;
     private final boolean screen;
+    private final Vector2 size;
 
     public GuiComponentEvent(double x, double y) {
         this(x, y, Double.NaN, Double.NaN);
@@ -30,16 +34,33 @@ public class GuiComponentEvent {
 
     public GuiComponentEvent(double x, double y, double relativeX,
             double relativeY, boolean screen) {
+        this(x, y, relativeX, relativeY, screen,
+                new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    }
+
+    public GuiComponentEvent(double x, double y, Vector2 size) {
+        this(x, y, Double.NaN, Double.NaN, size);
+    }
+
+    public GuiComponentEvent(double x, double y, double relativeX,
+            double relativeY, Vector2 size) {
+        this(x, y, relativeX, relativeY, true, size);
+    }
+
+    public GuiComponentEvent(double x, double y, double relativeX,
+            double relativeY, boolean screen, Vector2 size) {
         this.x = x;
         this.y = y;
         this.relativeX = relativeX;
         this.relativeY = relativeY;
         this.screen = screen;
+        this.size = size;
     }
 
-    public GuiComponentEvent(GuiComponentEvent parent, double x, double y) {
+    public GuiComponentEvent(GuiComponentEvent parent, double x, double y,
+            Vector2 size) {
         this(parent.x - x, parent.y - y, parent.relativeX, parent.relativeY,
-                parent.screen);
+                parent.screen, size);
     }
 
     public GuiComponentEvent(double x, GuiComponentEvent parent) {
@@ -48,7 +69,8 @@ public class GuiComponentEvent {
 
     public GuiComponentEvent(double x, double relativeX,
             GuiComponentEvent parent) {
-        this(x, parent.y, relativeX, parent.relativeY, parent.screen);
+        this(x, parent.y, relativeX, parent.relativeY, parent.screen,
+                parent.size);
     }
 
     public double x() {
@@ -69,5 +91,9 @@ public class GuiComponentEvent {
 
     public boolean screen() {
         return screen;
+    }
+
+    public Vector2 size() {
+        return size;
     }
 }

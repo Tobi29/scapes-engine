@@ -21,27 +21,26 @@ import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentSliderVert extends GuiComponent {
-    private double value;
-    private int sliderHeight;
+    private double value, sliderHeight;
     private boolean hover;
     private Pair<VAO, Texture> vao;
 
-    public GuiComponentSliderVert(GuiLayoutData parent, int width, int height,
-            double value) {
-        this(parent, width, height, 16, value);
+    public GuiComponentSliderVert(GuiLayoutData parent, double value) {
+        this(parent, 16, value);
     }
 
-    public GuiComponentSliderVert(GuiLayoutData parent, int width, int height,
-            int sliderHeight, double value) {
-        super(parent, width, height);
+    public GuiComponentSliderVert(GuiLayoutData parent, int sliderHeight,
+            double value) {
+        super(parent);
         this.sliderHeight = sliderHeight;
         this.value = value;
         onDragLeft(event -> {
             this.value = FastMath.clamp((event.y() - this.sliderHeight * 0.5) /
-                    (height - this.sliderHeight), 0, 1);
-            updateMesh();
+                    (event.size().doubleY() - this.sliderHeight), 0, 1);
+            dirty.set(true);
         });
         onClick((event, engine) -> engine.sounds()
                 .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
@@ -49,21 +48,27 @@ public class GuiComponentSliderVert extends GuiComponent {
             switch (event.state()) {
                 case ENTER:
                     hover = true;
-                    updateMesh();
+                    dirty.set(true);
                     break;
                 case LEAVE:
                     hover = false;
-                    updateMesh();
+                    dirty.set(true);
                     break;
             }
         });
-        updateMesh();
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta) {
+    public void renderComponent(GL gl, Shader shader, double delta,
+            double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
+    }
+
+    @Override
+    protected void updateMesh(Vector2 size) {
+        vao = gui.style()
+                .slider(size, false, (float) value, sliderHeight, hover);
     }
 
     public double value() {
@@ -72,17 +77,11 @@ public class GuiComponentSliderVert extends GuiComponent {
 
     public void setValue(double value) {
         this.value = value;
-        updateMesh();
+        dirty.set(true);
     }
 
-    public void setSliderHeight(int value) {
+    public void setSliderHeight(double value) {
         sliderHeight = value;
-        updateMesh();
-    }
-
-    private void updateMesh() {
-        vao = gui.style()
-                .slider(width, height, false, (float) value, sliderHeight,
-                        hover);
+        dirty.set(true);
     }
 }

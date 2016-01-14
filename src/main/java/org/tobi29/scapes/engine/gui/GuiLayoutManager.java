@@ -1,63 +1,62 @@
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
-public class GuiLayoutManager {
-    private final MutableVector2 offset = new MutableVector2d();
-    private final MutableVector2 size = new MutableVector2d();
-    private final Vector2 start;
-    private double heightAdd;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-    public GuiLayoutManager(Vector2 start) {
+public abstract class GuiLayoutManager {
+    protected final List<GuiComponent> components;
+    protected final Vector2 start, maxSize;
+    protected Vector2 size;
+
+    protected GuiLayoutManager(Vector2 start, Vector2 maxSize,
+            Set<GuiComponent> components) {
         this.start = start;
-        offset.set(start);
+        this.maxSize = maxSize;
+        this.components = new ArrayList<>(components.size());
+        this.components.addAll(components);
     }
 
-    public Vector2 layout(GuiComponent component) {
-        GuiLayoutData data = component.parent;
-        Vector2 pos = Vector2d.ZERO;
-        if (data instanceof GuiLayoutDataAbsolute) {
-            pos = ((GuiLayoutDataAbsolute) data).pos().plus(start);
-            setSize(pos.plus(new Vector2d(component.width, component.height)));
-        } else if (data instanceof GuiLayoutDataHorizontal) {
-            GuiLayoutDataHorizontal dataHorizontal =
-                    (GuiLayoutDataHorizontal) data;
-            Vector2 marginStart = dataHorizontal.marginStart();
-            Vector2 marginEnd = dataHorizontal.marginEnd();
-            pos = offset.now().plus(marginStart);
-            offset.plusX(component.width + marginStart.doubleX() +
-                    marginEnd.doubleX());
-            heightAdd = FastMath.max(heightAdd,
-                    component.height + marginStart.doubleY() +
-                            marginEnd.doubleY());
-            setSize(pos.plus(new Vector2d(component.width, component.height))
-                    .plus(marginEnd));
-        } else if (data instanceof GuiLayoutDataVertical) {
-            GuiLayoutDataVertical dataVertical = (GuiLayoutDataVertical) data;
-            Vector2 marginStart = dataVertical.marginStart();
-            Vector2 marginEnd = dataVertical.marginEnd();
-            offset.setX(0.0);
-            offset.plusY(heightAdd);
-            heightAdd = 0.0;
-            pos = offset.now().plus(marginStart);
-            offset.plusY(component.height + marginStart.doubleY() +
-                    marginEnd.doubleY());
-            setSize(pos.plus(new Vector2d(component.width, component.height))
-                    .plus(marginEnd));
+    public List<Triple<GuiComponent, Vector2, Vector2>> layout() {
+        List<Triple<GuiComponent, Vector2, Vector2>> output =
+                new ArrayList<>(components.size());
+        layout(output);
+        return output;
+    }
+
+    protected abstract void layout(
+            List<Triple<GuiComponent, Vector2, Vector2>> output);
+
+    protected Vector2 size(Vector2 size, Vector2 maxSize) {
+        if (size.doubleX() < 0.0) {
+            size = new Vector2d(maxSize.doubleX(), size.doubleY());
         }
-        return pos;
+        if (size.doubleY() < 0.0) {
+            size = new Vector2d(size.doubleX(), maxSize.doubleY());
+        }
+        return size;
     }
 
-    private void setSize(Vector2 size) {
-        this.size.setX(size.doubleX());
-        this.size.setY(size.doubleY());
+    protected void size(MutableVector2 size, Vector2 maxSize) {
+        if (size.doubleX() < 0.0) {
+            size.setX(maxSize.doubleX());
+        }
+        if (size.doubleY() < 0.0) {
+            size.setY(maxSize.doubleY());
+        }
+    }
+
+    protected void setSize(Vector2 size, MutableVector2 outSize) {
+        outSize.setX(size.doubleX());
+        outSize.setY(size.doubleY());
     }
 
     public Vector2 size() {
-        return size.now().minus(start);
+        return size.minus(start);
     }
 }

@@ -62,6 +62,7 @@ public class ScapesEngine implements Crashable {
     private final FileCache fileCache;
     private final TaskExecutor taskExecutor;
     private final boolean debug;
+    private final GuiNotifications notifications;
     private final GuiWidgetDebugValues debugValues;
     private final GuiWidgetDebugValues.Element usedMemoryDebug, maxMemoryDebug;
     private final AtomicReference<GameState> newState = new AtomicReference<>();
@@ -91,25 +92,19 @@ public class ScapesEngine implements Crashable {
         this.home = home;
         runtime = Runtime.getRuntime();
         game.engine = this;
-        Thread.currentThread().setName("Engine-Rendering-Thread");
-        LOGGER.info("Starting Scapes-Engine: {} (Game: {})", this, game);
-        try {
-            assets = new FileSystemContainer();
-            assets.registerFileSystem("Class",
-                    new ClasspathPath(getClass().getClassLoader(), ""));
-            assets.registerFileSystem("Engine",
-                    new ClasspathPath(getClass().getClassLoader(),
-                            "assets/scapes/tobi29/engine/"));
-            fileCache = new FileCache(cache);
-            fileCache.check();
-            FileUtil.createDirectories(this.home.resolve("screenshots"));
-        } catch (IOException e) {
-            throw new ScapesEngineException(
-                    "Failed to create virtual file system: " + e);
-        }
         checkSystem();
+        LOGGER.info("Starting Scapes-Engine: {} (Game: {})", this, game);
         LOGGER.info("Creating task executor");
         taskExecutor = new TaskExecutor(this, "Engine");
+        LOGGER.info("Initializing asset system");
+        assets = new FileSystemContainer();
+        assets.registerFileSystem("Class",
+                new ClasspathPath(getClass().getClassLoader(), ""));
+        assets.registerFileSystem("Engine",
+                new ClasspathPath(getClass().getClassLoader(),
+                        "assets/scapes/tobi29/engine/"));
+        LOGGER.info("Initializing game");
+        game.init();
         tagStructure = new TagStructure();
         try {
             LOGGER.info("Reading config");
@@ -135,8 +130,14 @@ public class ScapesEngine implements Crashable {
             engineTag.setBoolean("Fullscreen", false);
             config = new ScapesEngineConfig(engineTag);
         }
-        LOGGER.info("Initializing game");
-        game.init();
+        try {
+            fileCache = new FileCache(cache);
+            fileCache.check();
+            FileUtil.createDirectories(this.home.resolve("screenshots"));
+        } catch (IOException e) {
+            throw new ScapesEngineException(
+                    "Failed to initialize file cache: " + e);
+        }
         LOGGER.info("Creating container");
         container = backend.apply(this);
         LOGGER.info("Loading default font");
@@ -146,13 +147,15 @@ public class ScapesEngine implements Crashable {
                 new FontRenderer(container.createGlyphRenderer(fontName, 64));
         LOGGER.info("Setting up GUI");
         guiStyle = new GuiBasicStyle(font, container.gl().textures());
-        Gui debugGui = new Gui(guiStyle, GuiAlignment.LEFT) {
+        notifications = new GuiNotifications(guiStyle);
+        guiStack.add("90-Notifications", notifications);
+        Gui debugGui = new Gui(guiStyle) {
             @Override
             public boolean valid() {
                 return true;
             }
         };
-        debugValues = debugGui.add(32, 32, GuiWidgetDebugValues::new);
+        debugValues = debugGui.add(32, 32, 360, 256, GuiWidgetDebugValues::new);
         debugValues.setVisible(false);
         guiStack.add("99-Debug", debugGui);
         usedMemoryDebug = debugValues.get("Runtime-Memory-Used");
@@ -214,6 +217,10 @@ public class ScapesEngine implements Crashable {
 
     public GuiStyle guiStyle() {
         return guiStyle;
+    }
+
+    public GuiNotifications notifications() {
+        return notifications;
     }
 
     public Optional<ControllerDefault> controller() {

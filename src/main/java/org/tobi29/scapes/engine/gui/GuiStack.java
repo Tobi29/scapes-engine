@@ -10,6 +10,7 @@ import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.Streams;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -46,7 +47,8 @@ public class GuiStack {
     public void step(ScapesEngine engine) {
         Streams.of(guis.values()).forEach(gui -> {
             if (gui.valid()) {
-                gui.update(engine);
+                gui.update(engine,
+                        new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE));
             } else {
                 remove(gui);
             }

@@ -37,7 +37,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
     private final STBTTFontinfo info;
     private final int tiles, pageTiles, pageTileBits, pageTileMask, glyphSize,
             imageSize;
-    private final float tileSize, size, scale;
+    private final double tileSize, size, scale;
     private final ByteBuffer glyphBuffer;
     private final IntBuffer intBuffer1 = BufferCreatorNative.intsD(1),
             intBuffer2 = BufferCreatorNative.intsD(1), intBuffer3 =
@@ -99,7 +99,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
     public synchronized GlyphPage page(int id) {
         ByteBuffer buffer =
                 BufferCreatorNative.bytesD(imageSize * imageSize << 2);
-        float[] width = new float[pageTiles];
+        double[] width = new double[pageTiles];
         int i = 0;
         int offset = id << pageTileBits;
         for (int y = 0; y < tiles; y++) {
@@ -109,13 +109,13 @@ public class STBGlyphRenderer implements GlyphRenderer {
                 char c = (char) (i + offset);
                 STBTruetype.stbtt_GetCodepointHMetrics(info, c, intBuffer1,
                         intBuffer2);
-                float widthX = intBuffer1.get(0) * scale;
+                double widthX = intBuffer1.get(0) * scale;
                 if (!Character.isISOControl(c)) {
                     STBTruetype.stbtt_GetCodepointBox(info, c, intBuffer1,
                             intBuffer2, intBuffer3, intBuffer4);
-                    float offsetX = FastMath.max(
+                    double offsetX = FastMath.max(
                             size * 0.25f + intBuffer1.get(0) * scale, 0.0f);
-                    float offsetY = FastMath.max(
+                    double offsetY = FastMath.max(
                             size * 1.5f - intBuffer4.get(0) * scale, 0.0f);
                     int renderX = FastMath.max(FastMath.round(offsetX), 0);
                     int renderY = FastMath.max(FastMath.round(offsetY), 0);
@@ -124,7 +124,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
                     renderX += xx;
                     renderY += yy;
                     STBTruetype.stbtt_MakeCodepointBitmap(info, glyphBuffer,
-                            glyphSize, glyphSize, glyphSize, scale, scale, c);
+                            glyphSize, glyphSize, glyphSize, (float)scale,  (float)scale, c);
                     for (int yyy = 0; yyy < sizeY; yyy++) {
                         buffer.position(
                                 (renderY + yyy) * imageSize + renderX << 2);

@@ -7,13 +7,14 @@ public class GuiLayoutDataVertical extends GuiLayoutData {
     private final Vector2 marginStart, marginEnd;
 
     public GuiLayoutDataVertical(GuiComponent parent, Vector2 marginStart,
-            Vector2 marginEnd) {
-        this(parent, marginStart, marginEnd, false);
+            Vector2 marginEnd, Vector2 size, long priority) {
+        this(parent, marginStart, marginEnd, size, priority, false);
     }
 
     public GuiLayoutDataVertical(GuiComponent parent, Vector2 marginStart,
-            Vector2 marginEnd, boolean blocksEvents) {
-        super(Optional.of(parent), blocksEvents);
+            Vector2 marginEnd, Vector2 size, long priority,
+            boolean blocksEvents) {
+        super(Optional.of(parent), size, priority, blocksEvents);
         this.marginStart = marginStart;
         this.marginEnd = marginEnd;
     }

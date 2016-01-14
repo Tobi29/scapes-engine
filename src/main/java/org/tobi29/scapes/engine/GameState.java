@@ -183,6 +183,9 @@ public abstract class GameState {
             renderPostProcess(gl, fboFront, fboScene, renderPasses);
         }
         gl.checkError("Post-Processing");
+        gl.setProjectionOrthogonal(0.0f, 0.0f,
+                (float) engine.container().containerWidth() /
+                        engine.container().containerHeight() * 540.0f, 540.0f);
         Shader shader = gl.shaders().get("Engine:shader/Gui", gl);
         engine.guiStack().render(gl, shader, delta, engine);
         gl.checkError("Gui-Rendering");

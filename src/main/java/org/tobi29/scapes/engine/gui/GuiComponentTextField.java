@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 import java.util.Arrays;
 
@@ -23,43 +24,36 @@ public class GuiComponentTextField extends GuiComponentButton {
     protected final GuiComponentEditableText text;
     protected final boolean major;
 
-    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
-            int textSize, String text) {
-        this(parent, width, height, textSize, text, false);
+    public GuiComponentTextField(GuiLayoutData parent, int textSize,
+            String text) {
+        this(parent, textSize, text, false);
     }
 
-    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
-            int textSize, String text, boolean hiddenText) {
-        this(parent, width, height, textSize, text, Integer.MAX_VALUE,
-                hiddenText);
+    public GuiComponentTextField(GuiLayoutData parent, int textSize,
+            String text, boolean hiddenText) {
+        this(parent, textSize, text, Integer.MAX_VALUE, hiddenText);
     }
 
-    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
-            int textSize, String text, int maxLength) {
-        this(parent, width, height, textSize, text, maxLength, false);
+    public GuiComponentTextField(GuiLayoutData parent, int textSize,
+            String text, int maxLength) {
+        this(parent, textSize, text, maxLength, false);
     }
 
-    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
-            int textSize, String text, int maxLength, boolean hiddenText) {
-        this(parent, width, height, textSize, text, maxLength, hiddenText,
-                false);
+    public GuiComponentTextField(GuiLayoutData parent, int textSize,
+            String text, int maxLength, boolean hiddenText) {
+        this(parent, textSize, text, maxLength, hiddenText, false);
     }
 
-    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
-            int textSize, String text, int maxLength, boolean hiddenText,
-            boolean major) {
-        this(parent, width, height, 4, textSize, text, maxLength, hiddenText,
-                major);
+    public GuiComponentTextField(GuiLayoutData parent, int textSize,
+            String text, int maxLength, boolean hiddenText, boolean major) {
+        this(parent, 4, textSize, text, maxLength, hiddenText, major);
     }
 
-    public GuiComponentTextField(GuiLayoutData parent, int width, int height,
-            int textX, int textSize, String text, int maxLength,
-            boolean hiddenText, boolean major) {
-        super(parent, width, height);
-        int textY = (height - textSize) / 2;
-        this.text = addSub(textX, textY,
-                p -> new GuiComponentEditableText(p, width - textX, textSize,
-                        text, maxLength));
+    public GuiComponentTextField(GuiLayoutData parent, int textX, int textSize,
+            String text, int maxLength, boolean hiddenText, boolean major) {
+        super(parent);
+        this.text = addSubHori(textX, 0, -1, textSize,
+                p -> new GuiComponentEditableText(p, text, maxLength));
         this.major = major;
         if (hiddenText) {
             this.text.setTextFilter(str -> {
@@ -81,7 +75,7 @@ public class GuiComponentTextField extends GuiComponentButton {
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine) {
+    protected void updateComponent(ScapesEngine engine, Vector2 size) {
         GuiComponent current = gui.lastClicked();
         if (current == this || current == text || major) {
             text.setActive(true);

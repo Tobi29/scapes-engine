@@ -22,15 +22,15 @@ import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentVisiblePane extends GuiComponentPane {
+public class GuiComponentVisibleSlab extends GuiComponentSlab {
     private Pair<VAO, Texture> vao;
 
-    public GuiComponentVisiblePane(GuiLayoutData parent) {
+    public GuiComponentVisibleSlab(GuiLayoutData parent) {
         super(parent);
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta,
+    protected void renderComponent(GL gl, Shader shader, double delta,
             double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);

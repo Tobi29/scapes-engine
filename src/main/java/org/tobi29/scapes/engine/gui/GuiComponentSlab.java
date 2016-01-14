@@ -19,14 +19,14 @@ import java8.util.function.Function;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
-public class GuiComponentPane extends GuiComponent {
-    public GuiComponentPane(GuiLayoutData parent) {
+public class GuiComponentSlab extends GuiComponent {
+    public GuiComponentSlab(GuiLayoutData parent) {
         super(parent);
     }
 
     public <T extends GuiComponent> T add(double x, double y, double width,
             double height, Function<GuiLayoutDataAbsolute, T> child) {
-        return add(new Vector2d(x, y), new Vector2d(width, height), 0, child);
+        return add(x, y, width, height, 0, child);
     }
 
     public <T extends GuiComponent> T add(double x, double y, double width,
@@ -45,70 +45,70 @@ public class GuiComponentPane extends GuiComponent {
         return component;
     }
 
-    public <T extends GuiComponent> T addVert(double marginX, double marginY,
+    public <T extends GuiComponent> T addHori(double marginX, double marginY,
             double width, double height,
-            Function<GuiLayoutDataVertical, T> child) {
-        return addVert(marginX, marginY, marginX, marginY, width, height,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addHori(marginX, marginY, marginX, marginY, width, height,
                 child);
     }
 
-    public <T extends GuiComponent> T addVert(double marginStartX,
+    public <T extends GuiComponent> T addHori(double marginStartX,
             double marginStartY, double marginEndX, double marginEndY,
             double width, double height,
-            Function<GuiLayoutDataVertical, T> child) {
-        return addVert(marginStartX, marginStartY, marginEndX, marginEndY,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addHori(marginStartX, marginStartY, marginEndX, marginEndY,
                 width, height, 0, child);
     }
 
-    public <T extends GuiComponent> T addVert(double marginStartX,
+    public <T extends GuiComponent> T addHori(double marginStartX,
             double marginStartY, double marginEndX, double marginEndY,
             double width, double height, long priority,
-            Function<GuiLayoutDataVertical, T> child) {
-        return addVert(new Vector2d(marginStartX, marginStartY),
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addHori(new Vector2d(marginStartX, marginStartY),
                 new Vector2d(marginEndX, marginEndY),
                 new Vector2d(width, height), priority, child);
     }
 
-    public <T extends GuiComponent> T addVert(Vector2 marginStart,
+    public <T extends GuiComponent> T addHori(Vector2 marginStart,
             Vector2 marginEnd, Vector2 size, long priority,
-            Function<GuiLayoutDataVertical, T> child) {
-        GuiLayoutDataVertical layoutData =
-                new GuiLayoutDataVertical(this, marginStart, marginEnd, size,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        GuiLayoutDataHorizontal layoutData =
+                new GuiLayoutDataHorizontal(this, marginStart, marginEnd, size,
                         priority);
         T component = child.apply(layoutData);
         append(component);
         return component;
     }
 
-    protected <T extends GuiComponent> T addSubVert(double marginX,
+    protected <T extends GuiComponent> T addSubHori(double marginX,
             double marginY, double width, double height,
-            Function<GuiLayoutDataVertical, T> child) {
-        return addSubVert(marginX, marginY, marginX, marginY, width, height,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addSubHori(marginX, marginY, marginX, marginY, width, height,
                 child);
     }
 
-    public <T extends GuiComponent> T addSubVert(double marginStartX,
+    public <T extends GuiComponent> T addSubHori(double marginStartX,
             double marginStartY, double marginEndX, double marginEndY,
             double width, double height,
-            Function<GuiLayoutDataVertical, T> child) {
-        return addSubVert(marginStartX, marginStartY, marginEndX, marginEndY,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addSubHori(marginStartX, marginStartY, marginEndX, marginEndY,
                 width, height, 0, child);
     }
 
-    public <T extends GuiComponent> T addSubVert(double marginStartX,
+    public <T extends GuiComponent> T addSubHori(double marginStartX,
             double marginStartY, double marginEndX, double marginEndY,
             double width, double height, long priority,
-            Function<GuiLayoutDataVertical, T> child) {
-        return addSubVert(new Vector2d(marginStartX, marginStartY),
+            Function<GuiLayoutDataHorizontal, T> child) {
+        return addSubHori(new Vector2d(marginStartX, marginStartY),
                 new Vector2d(marginEndX, marginEndY),
                 new Vector2d(width, height), priority, child);
     }
 
-    public <T extends GuiComponent> T addSubVert(Vector2 marginStart,
+    public <T extends GuiComponent> T addSubHori(Vector2 marginStart,
             Vector2 marginEnd, Vector2 size, long priority,
-            Function<GuiLayoutDataVertical, T> child) {
-        GuiLayoutDataVertical layoutData =
-                new GuiLayoutDataVertical(this, marginStart, marginEnd, size,
+            Function<GuiLayoutDataHorizontal, T> child) {
+        GuiLayoutDataHorizontal layoutData =
+                new GuiLayoutDataHorizontal(this, marginStart, marginEnd, size,
                         priority, true);
         T component = child.apply(layoutData);
         append(component);
@@ -120,11 +120,11 @@ public class GuiComponentPane extends GuiComponent {
     }
 
     public GuiComponentGroup spacer(long priority) {
-        return addVert(0, 0, 0, 0, -1, -1, priority, GuiComponentGroup::new);
+        return addHori(0, 0, 0, 0, -1, -1, priority, GuiComponentGroup::new);
     }
 
     @Override
     protected GuiLayoutManager layoutManager(Vector2 size) {
-        return new GuiLayoutManagerVertical(Vector2d.ZERO, size, components);
+        return new GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components);
     }
 }

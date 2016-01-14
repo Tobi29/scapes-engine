@@ -48,7 +48,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected final ScapesEngine engine;
     protected final Thread mainThread;
     protected final LWJGL3OpenGL openGL;
-    protected final OpenALSoundSystem openAL;
+    protected final SoundSystem soundSystem;
     protected final boolean superModifier;
     protected boolean focus = true, valid, visible, containerResized = true,
             joysticksChanged;
@@ -60,7 +60,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         mainThread = Thread.currentThread();
         LOGGER.info("LWJGL version: {}", Version.getVersion());
         openGL = new LWJGL3OpenGL(engine, this);
-        openAL = new OpenALSoundSystem(engine, new LWJGL3OpenAL());
+        soundSystem = new OpenALSoundSystem(engine, new LWJGL3OpenAL());
         superModifier = Platform.get() == Platform.MACOSX;
     }
 
@@ -143,7 +143,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
 
     @Override
     public SoundSystem sound() {
-        return openAL;
+        return soundSystem;
     }
 
     @Override

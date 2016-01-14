@@ -15,17 +15,22 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.VAO;
+import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentWidget extends GuiComponentVisiblePane {
+public class GuiComponentWidget extends GuiComponentPane {
     private final GuiComponentWidgetTitle titleBar;
+    private Pair<VAO, Texture> vao;
 
-    public GuiComponentWidget(GuiLayoutData parent, int width, int height,
-            String name) {
-        super(parent, width, height);
-        titleBar = add(0, -16,
-                p -> new GuiComponentWidgetTitle(p, width, 16, 12, name));
+    public GuiComponentWidget(GuiLayoutData parent, String name) {
+        super(parent);
+        titleBar = addVert(0, 0, -1, 16,
+                p -> new GuiComponentWidgetTitle(p, 12, name));
         if (!(parent instanceof GuiLayoutDataAbsolute)) {
             return;
         }
@@ -36,7 +41,14 @@ public class GuiComponentWidget extends GuiComponentVisiblePane {
     }
 
     @Override
-    protected GuiLayoutManager layoutManager() {
-        return new GuiLayoutManager(new Vector2d(0.0, 16.0));
+    public void renderComponent(GL gl, Shader shader, double delta,
+            double width, double height) {
+        vao.b.bind(gl);
+        vao.a.render(gl, shader);
+    }
+
+    @Override
+    public void updateMesh(Vector2 size) {
+        vao = gui.style().widget(size);
     }
 }

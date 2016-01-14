@@ -8,13 +8,14 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 public class GuiLayoutDataAbsolute extends GuiLayoutData {
     private final MutableVector2 pos;
 
-    public GuiLayoutDataAbsolute(GuiComponent parent, Vector2 pos) {
-        this(parent, pos, false);
+    public GuiLayoutDataAbsolute(GuiComponent parent, Vector2 pos, Vector2 size,
+            long priority) {
+        this(parent, pos, size, priority, false);
     }
 
-    public GuiLayoutDataAbsolute(GuiComponent parent, Vector2 pos,
-            boolean blocksEvents) {
-        super(Optional.of(parent), blocksEvents);
+    public GuiLayoutDataAbsolute(GuiComponent parent, Vector2 pos, Vector2 size,
+            long priority, boolean blocksEvents) {
+        super(Optional.of(parent), size, priority, blocksEvents);
         this.pos = new MutableVector2d(pos);
     }
 

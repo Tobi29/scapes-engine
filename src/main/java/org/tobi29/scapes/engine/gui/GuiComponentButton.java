@@ -20,37 +20,39 @@ import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentButton extends GuiComponent {
+public class GuiComponentButton extends GuiComponentSlab {
     private boolean hover;
     private Pair<VAO, Texture> vao;
 
-    public GuiComponentButton(GuiLayoutData parent, int width, int height) {
-        super(parent, width, height);
+    public GuiComponentButton(GuiLayoutData parent) {
+        super(parent);
         onClick((event, engine) -> engine.sounds()
                 .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
         onHover(event -> {
             switch (event.state()) {
                 case ENTER:
                     hover = true;
-                    updateMesh();
+                    dirty.set(true);
                     break;
                 case LEAVE:
                     hover = false;
-                    updateMesh();
+                    dirty.set(true);
                     break;
             }
         });
-        updateMesh();
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta) {
+    public void renderComponent(GL gl, Shader shader, double delta,
+            double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
     }
 
-    private void updateMesh() {
-        vao = gui.style().button(width, height, hover);
+    @Override
+    protected void updateMesh(Vector2 size) {
+        vao = gui.style().button(size, hover);
     }
 }

@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.gui.debug;
 
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.*;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -29,16 +30,17 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
     private final GuiComponentScrollPaneViewport scrollPane;
 
     public GuiWidgetDebugValues(GuiLayoutData parent) {
-        super(parent, 360, 256, "Debug Values");
+        super(parent, "Debug Values");
         scrollPane =
-                add(10, 10, p -> new GuiComponentScrollPane(p, 340, 220, 20))
+                addVert(10, 10, -1, -1, p -> new GuiComponentScrollPane(p, 20))
                         .viewport();
     }
 
     public synchronized Element get(String key) {
         Element element = elements.get(key);
         if (element == null) {
-            element = scrollPane.addVert(0, 0, p -> new Element(p, key));
+            element =
+                    scrollPane.addVert(0, 0, -1, 20, p -> new Element(p, key));
             elements.put(key, element);
         }
         return element;
@@ -57,14 +59,14 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         return elements.entrySet();
     }
 
-    public static class Element extends GuiComponentPane {
+    public static class Element extends GuiComponentSlab {
         private final GuiComponentText value;
         private final AtomicReference<String> text = new AtomicReference<>();
 
         private Element(GuiLayoutData parent, String key) {
-            super(parent, 378, 20);
-            addHori(3, 3, p -> new GuiComponentTextButton(p, 180, 15, 12, key));
-            value = addHori(3, 3, p -> new GuiComponentText(p, 12, ""));
+            super(parent);
+            addHori(2, 2, -1, -1, p -> new GuiComponentTextButton(p, 12, key));
+            value = addHori(4, 4, -1, -1, p -> new GuiComponentText(p, ""));
         }
 
         public void setValue(String value) {
@@ -104,7 +106,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         }
 
         @Override
-        public void updateComponent(ScapesEngine engine) {
+        public void updateComponent(ScapesEngine engine, Vector2 size) {
             String newText = text.getAndSet(null);
             if (newText != null) {
                 value.setText(newText);

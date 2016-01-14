@@ -32,10 +32,9 @@ public class GuiControllerMouse extends GuiControllerDefault {
     public void update(double delta) {
         double cursorX = controller.x();
         double cursorY = controller.y();
-        double width = engine.container().containerWidth();
-        double height = engine.container().containerHeight();
-        double guiCursorX = cursorX / width * 960.0;
-        double guiCursorY = cursorY / height * 540.0;
+        double ratio = 540.0 / engine.container().containerHeight();
+        double guiCursorX = cursorX * ratio;
+        double guiCursorY = cursorY * ratio;
         cursor.set(new Vector2d(cursorX, cursorY),
                 new Vector2d(guiCursorX, guiCursorY));
         if (draggingLeft.isPresent()) {
