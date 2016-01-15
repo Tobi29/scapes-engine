@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
 import java.util.regex.Pattern;
@@ -113,6 +112,10 @@ public final class VersionUtil {
 
         public boolean atMost(Comparison other) {
             return level <= other.level;
+        }
+
+        public boolean in(Comparison lower, Comparison upper) {
+            return level >= lower.level && level <= upper.level;
         }
     }
 
