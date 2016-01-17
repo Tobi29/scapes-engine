@@ -28,3 +28,9 @@ dependencies {
 
     testCompile "junit:junit:4.12"
 }
+
+idea {
+    module {
+        excludeDirs -= file("$buildDir")
+    }
+}
