@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math;
 
 public class Frustum {
@@ -26,6 +25,7 @@ public class Frustum {
     private double nearD;
     private double nh;
     private double nw;
+    private double range;
 
     public Frustum(double angle, double ratio, double nearD, double farD) {
         this();
@@ -48,42 +48,24 @@ public class Frustum {
         nw = nh * ratio;
         fh = this.farD * tang;
         fw = fh * ratio;
+        double size = FastMath.max(fw, fh);
+        range = FastMath.sqrt(farD * farD + size * size);
     }
 
-    public double getAngX() {
-        return angx;
-    }
-
-    public double getAngY() {
-        return angy;
-    }
-
-    public double getAngZ() {
-        return angz;
-    }
-
-    public double getPosX() {
+    public double x() {
         return posx;
     }
 
-    public double getPosY() {
+    public double y() {
         return posy;
     }
 
-    public double getPosZ() {
+    public double z() {
         return posz;
     }
 
-    public double getUpX() {
-        return upx;
-    }
-
-    public double getUpY() {
-        return upy;
-    }
-
-    public double getUpZ() {
-        return upz;
+    public double range() {
+        return range;
     }
 
     public int inView(AABB aabb) {
