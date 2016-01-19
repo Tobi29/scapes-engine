@@ -17,7 +17,7 @@ package org.tobi29.scapes.engine.sound.openal;
 
 import org.tobi29.scapes.engine.sound.AudioFormat;
 import org.tobi29.scapes.engine.sound.PCMUtil;
-import org.tobi29.scapes.engine.sound.codec.ReadableAudioStream;
+import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;

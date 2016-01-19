@@ -17,72 +17,50 @@ package org.tobi29.scapes.engine.utils.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
-import org.tobi29.scapes.engine.utils.io.tag.TagStructureBinary;
-import org.tobi29.scapes.engine.utils.io.tag.TagStructureJSON;
-import org.tobi29.scapes.engine.utils.io.tag.TagStructureXML;
-import org.tobi29.scapes.engine.utils.tests.util.TagStructureTemplate;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class TagStructureTest {
-    @Test
-    public void testUncompressedBinaryFile() throws IOException {
-        TagStructure tagStructure = TagStructureTemplate.createTagStructure();
-        ByteBufferStream channel = new ByteBufferStream();
-        TagStructureBinary.write(tagStructure, channel, (byte) -1);
-        channel.buffer().flip();
-        TagStructure read = new TagStructure();
-        TagStructureBinary.read(read, new ByteBufferStream(channel.buffer()));
-        Assert.assertEquals("Read structure doesn't match written one",
-                tagStructure, read);
-    }
-
-    @Test
-    public void testCompressedBinaryFile() throws IOException {
-        TagStructure tagStructure = TagStructureTemplate.createTagStructure();
-        ByteBufferStream channel = new ByteBufferStream();
-        TagStructureBinary.write(tagStructure, channel, (byte) 1);
-        channel.buffer().flip();
-        TagStructure read = new TagStructure();
-        TagStructureBinary.read(read, new ByteBufferStream(channel.buffer()));
-        Assert.assertEquals("Read structure doesn't match written one",
-                tagStructure, read);
-    }
-
-    @Test
-    public void testXMLFile() throws IOException {
-        TagStructure tagStructure = TagStructureTemplate.createTagStructure();
-        ByteBufferStream channel = new ByteBufferStream();
-        TagStructureXML.write(tagStructure, channel);
-        channel.buffer().flip();
-        TagStructure read = new TagStructure();
-        TagStructureXML.read(read, new ByteBufferStream(channel.buffer()));
-        Assert.assertEquals("Read structure doesn't match written one",
-                tagStructure, read);
-    }
-
-    @Test
-    public void testJSONFile() throws IOException {
-        TagStructure tagStructure = TagStructureTemplate.createTagStructure();
-        ByteBufferStream channel = new ByteBufferStream();
-        TagStructureJSON.write(tagStructure, channel);
-        channel.buffer().flip();
-        TagStructure read = new TagStructure();
-        TagStructureJSON.read(read, new ByteBufferStream(channel.buffer()));
-        channel.buffer().clear();
-        TagStructureJSON.write(read, channel);
-        channel.buffer().flip();
-        TagStructure reread = new TagStructure();
-        TagStructureJSON.read(reread, new ByteBufferStream(channel.buffer()));
-        Assert.assertEquals("Read structure doesn't match written one", read,
-                reread);
+    private static TagStructure createTagStructure() {
+        Random random = new Random();
+        TagStructure tagStructure = new TagStructure();
+        // All primitive tags
+        tagStructure.setBoolean("Boolean", random.nextBoolean());
+        tagStructure.setByte("Byte", (byte) random.nextInt(0x100));
+        byte[] array = new byte[1024];
+        random.nextBytes(array);
+        tagStructure.setByteArray("Byte[]", array);
+        tagStructure.setShort("Short", (short) random.nextInt(0x10000));
+        tagStructure.setInteger("Integer", random.nextInt());
+        tagStructure.setLong("Long", random.nextLong());
+        tagStructure.setFloat("Float", random.nextFloat());
+        tagStructure.setDouble("Double", random.nextDouble());
+        tagStructure.setString("String", "◊Blah blah blah◊");
+        // Filled structure and list
+        TagStructure childStructure = tagStructure.getStructure("Structure");
+        for (int i = 0; i < 256; i++) {
+            childStructure.setByte("Entry#" + i, (byte) i);
+        }
+        List<TagStructure> childList = new ArrayList<>();
+        for (int i = 0; i < 256; i++) {
+            TagStructure listEntry = new TagStructure();
+            listEntry.setInteger("Entry#" + i, i);
+            childList.add(listEntry);
+        }
+        tagStructure.setList("List", childList);
+        // Empty structure and list
+        tagStructure.getStructure("EmptyStructure");
+        tagStructure.setList("EmptyList", new ArrayList<>());
+        return tagStructure;
     }
 
     @Test
     public void testCopy() throws IOException {
-        TagStructure tagStructure = TagStructureTemplate.createTagStructure();
+        TagStructure tagStructure = createTagStructure();
         TagStructure copy = tagStructure.copy();
         Assert.assertEquals("Copied structure doesn't match original one",
                 tagStructure, copy);

@@ -61,8 +61,8 @@ public class STBGlyphRenderer implements GlyphRenderer {
 
     public static Optional<String> loadFont(ReadSource font) {
         try {
-            ByteBuffer buffer =
-                    ProcessStream.processSource(font, ProcessStream.asBuffer());
+            ByteBuffer buffer = font.readReturn(stream -> ProcessStream
+                    .process(stream, ProcessStream.asBuffer()));
             ByteBuffer fontBuffer =
                     BufferCreatorNative.bytesD(buffer.remaining());
             fontBuffer.put(buffer);
@@ -124,7 +124,8 @@ public class STBGlyphRenderer implements GlyphRenderer {
                     renderX += xx;
                     renderY += yy;
                     STBTruetype.stbtt_MakeCodepointBitmap(info, glyphBuffer,
-                            glyphSize, glyphSize, glyphSize, (float)scale,  (float)scale, c);
+                            glyphSize, glyphSize, glyphSize, (float) scale,
+                            (float) scale, c);
                     for (int yyy = 0; yyy < sizeY; yyy++) {
                         buffer.position(
                                 (renderY + yyy) * imageSize + renderX << 2);

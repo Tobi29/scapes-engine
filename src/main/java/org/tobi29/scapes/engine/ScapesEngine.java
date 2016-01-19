@@ -33,7 +33,7 @@ import org.tobi29.scapes.engine.utils.Sync;
 import org.tobi29.scapes.engine.utils.io.filesystem.*;
 import org.tobi29.scapes.engine.utils.io.filesystem.classpath.ClasspathPath;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
-import org.tobi29.scapes.engine.utils.io.tag.TagStructureJSON;
+import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 

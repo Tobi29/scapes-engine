@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.utils.io;
 
 import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,19 +28,6 @@ import java.nio.charset.StandardCharsets;
  */
 public final class ProcessStream {
     private ProcessStream() {
-    }
-
-    /**
-     * Processes the entire stream and invokes the processor with the read data.
-     * The stream will be closed after the stream ended.
-     *
-     * @param source    {@code ReadSource} to read from
-     * @param processor {@code StreamProcessor} to process the stream data
-     * @throws IOException Thrown when an I/O error occurs
-     */
-    public static <E> E processSource(ReadSource source,
-            StreamProcessor<E> processor) throws IOException {
-        return source.readReturn(stream -> process(stream, processor, 1024));
     }
 
     public static <E> E process(ReadableByteStream input,

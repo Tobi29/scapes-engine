@@ -20,8 +20,11 @@ apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
 version = "0.0.0_1"
 
 dependencies {
-    compile project(":ScapesEngine:Utils")
-    compile project(":ScapesEngine:Utils:ShaderCompiler")
+    compile project(":ScapesEngine:Codecs")
+    compile project(":ScapesEngine:FileSystems")
+    compile project(":ScapesEngine:GraphicsUtils")
+    compile project(":ScapesEngine:ShaderCompiler")
+    compile project(":ScapesEngine:Utils:TagStructureJSON")
 
     testCompile "junit:junit:4.12"
 }

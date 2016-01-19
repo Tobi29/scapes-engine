@@ -27,8 +27,16 @@ Closure subProjects = { root ->
 }
 
 include "ScapesEngine"
+include "ScapesEngine:Codecs"
+include "ScapesEngine:FileSystems"
+include "ScapesEngine:GraphicsUtils"
+include "ScapesEngine:ServerFramework"
+include "ScapesEngine:ShaderCompiler"
+include "ScapesEngine:SQLFramework"
+include "ScapesEngine:SWTUtils"
 include "ScapesEngine:Utils"
 include subProjects("ScapesEngine:Backends")
 include subProjects("ScapesEngine:Codecs")
 include subProjects("ScapesEngine:Utils")
-include subProjects("ScapesEngine:Utils:SQLFramework")
+include subProjects("ScapesEngine:FileSystems")
+include subProjects("ScapesEngine:SQLFramework")
