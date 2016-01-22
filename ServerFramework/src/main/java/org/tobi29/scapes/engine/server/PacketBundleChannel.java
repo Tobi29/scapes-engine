@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.server;
 import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.StringUtil;
+import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
 import org.tobi29.scapes.engine.utils.io.*;
 
@@ -47,12 +48,7 @@ public class PacketBundleChannel {
     private static final int BUNDLE_HEADER_SIZE = 4;
     private static final int BUNDLE_MAX_SIZE = 1 << 10 << 10 << 6;
     private static final ThreadLocal<List<WeakReference<ByteBuffer>>>
-            BUFFER_CACHE = new ThreadLocal<List<WeakReference<ByteBuffer>>>() {
-        @Override
-        protected List<WeakReference<ByteBuffer>> initialValue() {
-            return new ArrayList<>();
-        }
-    };
+            BUFFER_CACHE = ThreadLocalUtil.of(ArrayList::new);
 
     static {
         Random random = new Random(
