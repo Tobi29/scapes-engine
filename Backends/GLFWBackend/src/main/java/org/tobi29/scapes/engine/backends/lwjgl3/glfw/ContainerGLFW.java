@@ -337,7 +337,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         exec(() -> dialogs.openFile(path));
     }
 
-    protected void initWindow(boolean fullscreen, boolean vSync) {
+    protected void initWindow(boolean fullscreen, boolean vSync)
+            throws GraphicsCheckException {
         LOGGER.info("Creating GLFW window...");
         String title = engine.game().name();
         long monitor = GLFW.glfwGetPrimaryMonitor();
@@ -366,6 +367,10 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         if (fullscreen) {
             window = GLFW.glfwCreateWindow(monitorWidth, monitorHeight, title,
                     monitor, 0L);
+            if (window == 0) {
+                throw new GraphicsCheckException(
+                        "Failed to create fullscreen window");
+            }
         } else {
             int width, height;
             if (monitorWidth > 1280 && monitorHeight > 720) {
@@ -376,6 +381,9 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 height = 540;
             }
             window = GLFW.glfwCreateWindow(width, height, title, 0L, 0L);
+            if (window == 0) {
+                throw new GraphicsCheckException("Failed to create window");
+            }
             GLFW.glfwSetWindowPos(window, monitorX + (monitorWidth - width) / 2,
                     monitorY + (monitorHeight - height) / 2);
         }
