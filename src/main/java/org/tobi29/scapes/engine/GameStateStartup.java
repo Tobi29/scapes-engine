@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine;
 
 import org.tobi29.scapes.engine.gui.*;
-import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -39,7 +38,7 @@ public class GameStateStartup extends GameState {
     }
 
     @Override
-    public void init(GL gl) {
+    public void init() {
         engine.guiStack().add("20-Image",
                 new GuiImage(engine.graphics().textures().get(image),
                         engine.guiStyle()));
@@ -48,11 +47,6 @@ public class GameStateStartup extends GameState {
     @Override
     public boolean isMouseGrabbed() {
         return true;
-    }
-
-    @Override
-    public boolean isThreaded() {
-        return false;
     }
 
     @Override

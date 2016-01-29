@@ -22,10 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.gui.*;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.input.ControllerDefault;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
-import org.tobi29.scapes.engine.opengl.GraphicsSystem;
+import org.tobi29.scapes.engine.opengl.*;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 import org.tobi29.scapes.engine.utils.Crashable;
@@ -66,10 +63,10 @@ public class ScapesEngine implements Crashable {
     private final GuiWidgetDebugValues debugValues;
     private final GuiWidgetDebugValues.Element usedMemoryDebug, maxMemoryDebug;
     private final AtomicReference<GameState> newState = new AtomicReference<>();
+    private Joiner joiner;
     private GuiController guiController;
     private boolean mouseGrabbed;
-    private GameState state;
-    private StateThread stateThread;
+    private GameState state, renderState;
 
     public ScapesEngine(Game game, FilePath home, boolean debug) {
         this(game, loadBackend(), home, home.resolve("cache"), debug);
@@ -273,12 +270,14 @@ public class ScapesEngine implements Crashable {
 
     @SuppressWarnings({"OverlyBroadCatchBlock", "CallToSystemExit"})
     public int run() {
+        start();
         try {
             container.run();
         } catch (GraphicsCheckException e) {
             LOGGER.error("Failed to initialize graphics:", e);
             container.message(Container.MessageType.ERROR, game.name(),
                     "Unable to initialize graphics:\n" + e.getMessage());
+            joiner.join();
             return 1;
         } catch (Throwable e) {
             writeCrash(e);
@@ -290,19 +289,55 @@ public class ScapesEngine implements Crashable {
             }
             System.exit(1);
         }
+        joiner.join();
         return 0;
+    }
+
+    public void start() {
+        Joiner.Joinable wait = new Joiner.Joinable();
+        joiner = taskExecutor.runTask(joiner -> {
+            try {
+                Sync sync = new Sync(config.fps(), 5000000000L, true,
+                        "Engine-Update");
+                sync.init();
+                step(sync.delta());
+                sync.cap();
+                wait.join();
+                while (!joiner.marked()) {
+                    step(sync.delta());
+                    sync.cap();
+                }
+            } catch (Throwable e) {
+                crash(e);
+            }
+        }, "State");
+        wait.joiner().join();
     }
 
     public void render(double delta) {
         sounds.poll(delta);
-        graphics.render(delta);
+        synchronized (newState) {
+            graphics.render(delta);
+        }
+    }
+
+    public void step(GL gl) {
+        GameState state = this.state;
+        if (renderState != state) {
+            if (renderState == null) {
+                game.initLate(gl);
+            } else {
+                renderState.disposeState(gl);
+                FBO.disposeAll(gl);
+                gl.shaders().disposeAll(gl);
+                gl.textures().clearCache();
+            }
+            renderState = state;
+        }
     }
 
     public void halt() {
-        if (stateThread != null) {
-            stateThread.joiner.join();
-            stateThread = null;
-        }
+        joiner.join();
     }
 
     public void dispose() {
@@ -354,41 +389,22 @@ public class ScapesEngine implements Crashable {
         container.stop();
     }
 
-    public void step(GL gl, double delta) {
-        GameState newState = this.newState.getAndSet(null);
-        if (newState != null) {
-            if (stateThread != null) {
-                stateThread.joiner.join();
-                stateThread = null;
-            }
-            if (state == null) {
-                state = newState;
-                game.initLate(gl);
-            } else {
-                state.disposeState(gl);
-                state = newState;
-            }
-            state.init(gl);
-        }
-        if (state.isThreaded()) {
-            if (stateThread == null) {
-                stateThread = new StateThread(state);
-                stateThread.joiner = taskExecutor.runTask(stateThread, "State",
-                        TaskExecutor.Priority.MEDIUM);
-            }
+    private void step(double delta) {
+        GameState state = newState.getAndSet(null);
+        if (state == null) {
+            state = this.state;
         } else {
-            if (stateThread != null) {
-                stateThread.joiner.join();
-                stateThread = null;
+            synchronized (newState) {
+                if (this.state != null) {
+                    this.state.disposeState();
+                }
+                this.state = state;
+                state.init();
             }
-            step(delta, state);
         }
-    }
-
-    private void step(double delta, GameState state) {
         taskExecutor.tick();
         boolean mouseGrabbed =
-                this.state.isMouseGrabbed() || guiController.captureCursor();
+                state.isMouseGrabbed() || guiController.captureCursor();
         if (this.mouseGrabbed != mouseGrabbed) {
             this.mouseGrabbed = mouseGrabbed;
             container.setMouseGrabbed(mouseGrabbed);
@@ -401,29 +417,5 @@ public class ScapesEngine implements Crashable {
         guiStack.step(this);
         game.step();
         guiController.update(delta);
-    }
-
-    private class StateThread implements TaskExecutor.ASyncTask {
-        private final GameState state;
-        private Joiner joiner;
-
-        private StateThread(GameState state) {
-            this.state = state;
-        }
-
-        @Override
-        public void run(Joiner.Joinable joiner) {
-            try {
-                Sync sync = new Sync(config.fps(), 5000000000L, true,
-                        "Engine-Update");
-                sync.init();
-                while (!joiner.marked()) {
-                    step(sync.delta(), state);
-                    sync.cap();
-                }
-            } catch (Throwable e) {
-                crash(e);
-            }
-        }
     }
 }

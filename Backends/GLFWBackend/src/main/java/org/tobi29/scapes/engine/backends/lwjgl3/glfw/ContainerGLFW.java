@@ -70,7 +70,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     private final GLFWCursorPosCallback cursorPosFun;
     private final GLFWScrollCallback scrollFun;
     private long window;
-    private boolean running = true, skipMouseCallback, mouseGrabbed;
+    private boolean running = true, skipMouseCallback, mouseGrabbed,
+            mouseGrabbedCurrent;
 
     public ContainerGLFW(ScapesEngine engine) {
         super(engine);
@@ -191,22 +192,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
 
     @Override
     public void setMouseGrabbed(boolean value) {
-        if (value) {
-            mouseGrabbed = true;
-            GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
-                    GLFW.GLFW_CURSOR_DISABLED);
-            GLFW.glfwSetCursorPos(window, 0.0, 0.0);
-            mouseX = 0.0;
-            mouseY = 0.0;
-            skipMouseCallback = true;
-        } else {
-            mouseGrabbed = false;
-            mouseX = containerWidth * 0.5;
-            mouseY = containerHeight * 0.5;
-            GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
-                    GLFW.GLFW_CURSOR_NORMAL);
-            GLFW.glfwSetCursorPos(window, mouseX, mouseY);
-        }
+        mouseGrabbed = value;
     }
 
     @Override
@@ -264,6 +250,24 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 }
                 valid = true;
                 containerResized = true;
+            }
+            boolean mouseGrabbed = this.mouseGrabbed;
+            if (mouseGrabbed != mouseGrabbedCurrent) {
+                mouseGrabbedCurrent = mouseGrabbed;
+                if (mouseGrabbed) {
+                    GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
+                            GLFW.GLFW_CURSOR_DISABLED);
+                    GLFW.glfwSetCursorPos(window, 0.0, 0.0);
+                    mouseX = 0.0;
+                    mouseY = 0.0;
+                    skipMouseCallback = true;
+                } else {
+                    mouseX = containerWidth * 0.5;
+                    mouseY = containerHeight * 0.5;
+                    GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
+                            GLFW.GLFW_CURSOR_NORMAL);
+                    GLFW.glfwSetCursorPos(window, mouseX, mouseY);
+                }
             }
             GLFW.glfwPollEvents();
             joysticksChanged = controllers.poll();
@@ -406,6 +410,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         GLFW.glfwSetScrollCallback(window, scrollFun);
         GLFW.glfwMakeContextCurrent(window);
         GLFW.glfwSwapInterval(vSync ? 1 : 0);
+        setMouseGrabbed(mouseGrabbed);
     }
 
     protected void cleanWindow() {

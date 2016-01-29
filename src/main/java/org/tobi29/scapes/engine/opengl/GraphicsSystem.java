@@ -92,7 +92,7 @@ public class GraphicsSystem {
             } else {
                 fboSizeDirty = false;
             }
-            engine.step(gl, delta);
+            engine.step(gl);
             GameState state = engine.state();
             state.render(gl, delta, fboSizeDirty);
             fpsDebug.setValue(1.0 / delta);

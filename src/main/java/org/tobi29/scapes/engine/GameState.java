@@ -47,19 +47,6 @@ public abstract class GameState {
 
     public void disposeState(GL gl) {
         scene.dispose(gl);
-        dispose(gl);
-        disposeState();
-        if (fboScene != null) {
-            fboScene.ensureDisposed(gl);
-        }
-        if (fboFront != null) {
-            fboFront.ensureDisposed(gl);
-        }
-        if (fboBack != null) {
-            fboBack.ensureDisposed(gl);
-        }
-        gl.shaders().disposeAll(gl);
-        gl.textures().clearCache();
     }
 
     public void disposeState() {
@@ -67,17 +54,12 @@ public abstract class GameState {
         dispose();
     }
 
-    public void dispose(GL gl) {
-    }
-
     public void dispose() {
     }
 
-    public abstract void init(GL gl);
+    public abstract void init();
 
     public abstract boolean isMouseGrabbed();
-
-    public abstract boolean isThreaded();
 
     public Scene scene() {
         return scene;
@@ -99,18 +81,6 @@ public abstract class GameState {
             newScene.setState(this);
             newScene.init(gl);
             scene = newScene;
-            if (fboScene != null) {
-                fboScene.ensureDisposed(gl);
-                fboScene = null;
-            }
-            if (fboFront != null) {
-                fboFront.ensureDisposed(gl);
-                fboFront = null;
-            }
-            if (fboBack != null) {
-                fboBack.ensureDisposed(gl);
-                fboBack = null;
-            }
         }
         int sceneWidth = scene.width(gl.sceneWidth());
         int sceneHeight = scene.height(gl.sceneHeight());
