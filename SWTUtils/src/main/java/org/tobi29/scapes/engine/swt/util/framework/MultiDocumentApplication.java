@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.swt.util.framework;
 
+import java8.util.Optional;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
@@ -7,7 +8,6 @@ import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class MultiDocumentApplication extends Application {
