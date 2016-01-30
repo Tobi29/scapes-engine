@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.swt.util;
 
+import java8.util.Optional;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.LineStyleListener;
