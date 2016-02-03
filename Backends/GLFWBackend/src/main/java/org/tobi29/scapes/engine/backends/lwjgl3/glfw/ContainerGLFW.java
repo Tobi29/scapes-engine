@@ -410,7 +410,6 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         GLFW.glfwSetScrollCallback(window, scrollFun);
         GLFW.glfwMakeContextCurrent(window);
         GLFW.glfwSwapInterval(vSync ? 1 : 0);
-        setMouseGrabbed(mouseGrabbed);
     }
 
     protected void cleanWindow() {
