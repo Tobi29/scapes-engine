@@ -44,10 +44,10 @@ public class GuiStack {
         queue.add(remove::removed);
     }
 
-    public void step(ScapesEngine engine) {
+    public void step(ScapesEngine engine, double delta) {
         Streams.of(guis.values()).forEach(gui -> {
             if (gui.valid()) {
-                gui.update(engine,
+                gui.update(engine, delta,
                         new Vector2d(Integer.MAX_VALUE, Integer.MAX_VALUE));
             } else {
                 remove(gui);
@@ -86,10 +86,9 @@ public class GuiStack {
         return Collections.emptySet();
     }
 
-    public void render(GL gl, Shader shader, double delta,
-            ScapesEngine engine) {
-        Streams.of(guis.values())
-                .forEach(gui -> gui.renderGUI(gl, shader, delta));
+    public void render(GL gl, Shader shader, ScapesEngine engine) {
+        Streams.of(guis.values()).forEach(
+                gui -> gui.render(gl, shader, gui.baseSize(gl)));
         Streams.of(guis.values())
                 .forEach(gui -> gui.renderOverlays(gl, shader));
         MatrixStack matrixStack = gl.matrixStack();

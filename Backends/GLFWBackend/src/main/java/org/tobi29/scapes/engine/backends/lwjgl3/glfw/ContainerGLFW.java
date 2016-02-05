@@ -271,7 +271,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             }
             GLFW.glfwPollEvents();
             joysticksChanged = controllers.poll();
-            engine.render(sync.delta());
+            engine.graphics().render(sync.delta());
             containerResized = false;
             sync.cap();
             GLFW.glfwSwapBuffers(window);

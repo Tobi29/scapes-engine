@@ -314,13 +314,6 @@ public class ScapesEngine implements Crashable {
         wait.joiner().join();
     }
 
-    public void render(double delta) {
-        sounds.poll(delta);
-        synchronized (newState) {
-            graphics.render(delta);
-        }
-    }
-
     public void step(GL gl) {
         GameState state = this.state;
         if (renderState != state) {
@@ -394,7 +387,7 @@ public class ScapesEngine implements Crashable {
         if (state == null) {
             state = this.state;
         } else {
-            synchronized (newState) {
+            synchronized (graphics) {
                 if (this.state != null) {
                     this.state.disposeState();
                 }
@@ -414,8 +407,9 @@ public class ScapesEngine implements Crashable {
                 (runtime.totalMemory() - runtime.freeMemory()) / 1048576);
         maxMemoryDebug.setValue(runtime.maxMemory() / 1048576);
         state.step(delta);
-        guiStack.step(this);
+        guiStack.step(this, delta);
         game.step();
         guiController.update(delta);
+        graphics.unlockRender();
     }
 }

@@ -30,8 +30,7 @@ public class GuiComponentSeparator extends GuiComponent {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta,
-            double width, double height) {
+    public void renderComponent(GL gl, Shader shader, double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
     }

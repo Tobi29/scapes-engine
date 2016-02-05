@@ -17,8 +17,6 @@ package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
@@ -115,10 +113,6 @@ public abstract class Gui extends GuiComponentSlab {
             }
         }
         return false;
-    }
-
-    public void renderGUI(GL gl, Shader shader, double delta) {
-        render(gl, shader, delta, baseSize(gl));
     }
 
     public abstract boolean valid();

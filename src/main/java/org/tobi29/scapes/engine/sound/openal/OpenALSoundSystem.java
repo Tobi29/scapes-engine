@@ -188,10 +188,6 @@ public class OpenALSoundSystem implements SoundSystem {
     }
 
     @Override
-    public void poll(double delta) {
-    }
-
-    @Override
     public void dispose() {
         joiner.join();
     }

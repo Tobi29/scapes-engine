@@ -56,7 +56,7 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     }
 
     @Override
-    public void render(GL gl, Shader shader, double delta, Vector2 size) {
+    public void render(GL gl, Shader shader, Vector2 size) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
@@ -66,13 +66,14 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
             matrixStack.pop();
             gl.enableScissor(start.intX(), start.intY(),
                     end.intX() - start.intX(), end.intY() - start.intY());
-            super.render(gl, shader, delta, size);
+            super.render(gl, shader, size);
             gl.disableScissor();
         }
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine, Vector2 size) {
+    protected void updateComponent(ScapesEngine engine, double delta,
+            Vector2 size) {
         Optional<GuiComponentSliderVert> slider = this.slider;
         if (slider.isPresent()) {
             scroll = slider.get().value() * Math.max(0, maxY - size.doubleY());
@@ -80,7 +81,8 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     }
 
     @Override
-    public void updateChildren(ScapesEngine engine, Vector2 size) {
+    public void updateChildren(ScapesEngine engine, double delta,
+            Vector2 size) {
         while (!changeComponents.isEmpty()) {
             changeComponents.poll().run();
         }
@@ -89,7 +91,7 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
             if (component.a.removing) {
                 drop(component.a);
             } else {
-                component.a.update(engine, component.c);
+                component.a.update(engine, delta, component.c);
             }
         });
         setMaxY(layout.size().doubleY(), size.doubleY());

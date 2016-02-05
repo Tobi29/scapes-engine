@@ -21,7 +21,7 @@ import java8.util.function.Consumer;
 import java8.util.function.Function;
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
@@ -317,7 +317,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return false;
     }
 
-    protected void render(GL gl, Shader shader, double delta, Vector2 size) {
+    protected void render(GL gl, Shader shader, Vector2 size) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
@@ -326,7 +326,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                 updateMesh(size);
                 lastSize = size;
             }
-            renderComponent(gl, shader, delta, size.doubleX(), size.doubleY());
+            renderComponent(gl, shader, size.doubleX(), size.doubleY());
             /*{
                 gl.textures().unbind(gl);
                 if (ignoresEvents()) {
@@ -351,7 +351,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                     Matrix childMatrix = matrixStack1.push();
                     childMatrix.translate(component.b.floatX(),
                             component.b.floatY(), 0.0f);
-                    component.a.render(gl, shader, delta, component.c);
+                    component.a.render(gl, shader, component.c);
                     matrixStack1.pop();
                 }
             });
@@ -367,8 +367,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         }
     }
 
-    protected void renderComponent(GL gl, Shader shader, double delta,
-            double width, double height) {
+    protected void renderComponent(GL gl, Shader shader, double width,
+            double height) {
     }
 
     protected void renderOverlay(GL gl, Shader shader) {
@@ -382,9 +382,9 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         this.visible = visible;
     }
 
-    protected void update(ScapesEngine engine, Vector2 size) {
+    protected void update(ScapesEngine engine, double delta, Vector2 size) {
         if (visible) {
-            updateComponent(engine, size);
+            updateComponent(engine, delta, size);
             if (hovering && !hover) {
                 hovering = false;
                 for (BiConsumer<GuiComponentHoverEvent, ScapesEngine> listener : hovers) {
@@ -397,7 +397,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             if (hover) {
                 hover = false;
             }
-            updateChildren(engine, size);
+            updateChildren(engine, delta, size);
         }
     }
 
@@ -482,7 +482,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return false;
     }
 
-    protected void updateComponent(ScapesEngine engine, Vector2 size) {
+    protected void updateComponent(ScapesEngine engine, double delta,
+            Vector2 size) {
     }
 
     protected void transform(Matrix matrix, Vector2 size) {
@@ -531,7 +532,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         Streams.of(components).forEach(GuiComponent::removed);
     }
 
-    protected void updateChildren(ScapesEngine engine, Vector2 size) {
+    protected void updateChildren(ScapesEngine engine, double delta,
+            Vector2 size) {
         while (!changeComponents.isEmpty()) {
             changeComponents.poll().run();
         }
@@ -540,7 +542,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             if (component.a.removing) {
                 drop(component.a);
             } else {
-                component.a.update(engine, component.c);
+                component.a.update(engine, delta, component.c);
             }
         });
     }

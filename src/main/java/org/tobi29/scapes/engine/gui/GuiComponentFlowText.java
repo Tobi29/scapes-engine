@@ -73,8 +73,7 @@ public class GuiComponentFlowText extends GuiComponent {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta,
-            double width, double height) {
+    public void renderComponent(GL gl, Shader shader, double width, double height) {
         vaoText.render(gl, shader);
     }
 

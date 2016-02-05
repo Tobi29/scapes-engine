@@ -30,8 +30,7 @@ public class GuiComponentVisibleSlab extends GuiComponentSlab {
     }
 
     @Override
-    protected void renderComponent(GL gl, Shader shader, double delta,
-            double width, double height) {
+    protected void renderComponent(GL gl, Shader shader, double width, double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
     }

@@ -75,7 +75,7 @@ public class GuiComponentTextField extends GuiComponentButton {
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine, Vector2 size) {
+    protected void updateComponent(ScapesEngine engine, double delta, Vector2 size) {
         GuiComponent current = gui.lastClicked();
         if (current == this || current == text || major) {
             text.setActive(true);

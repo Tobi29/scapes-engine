@@ -30,7 +30,5 @@ public interface SoundSystem {
 
     void stop(String channel);
 
-    void poll(double delta);
-
     void dispose();
 }

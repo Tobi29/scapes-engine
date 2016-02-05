@@ -38,7 +38,7 @@ public class GraphicsSystem {
     private final GuiWidgetDebugValues.Element fpsDebug, widthDebug,
             heightDebug, textureDebug, vaoDebug;
     private final GL gl;
-    private boolean triggerScreenshot;
+    private boolean locked, triggerScreenshot;
     private double resolutionMultiplier = 1.0;
 
     public GraphicsSystem(ScapesEngine engine, GL gl) {
@@ -53,7 +53,7 @@ public class GraphicsSystem {
         vaoDebug = debugValues.get("Graphics-VAOs");
     }
 
-    public void dispose() {
+    public synchronized void dispose() {
         engine.halt();
         GameState state = engine.state();
         state.disposeState(gl);
@@ -72,7 +72,24 @@ public class GraphicsSystem {
         return gl.shaders();
     }
 
-    public void render(double delta) {
+    public synchronized void unlockRender() {
+        locked = false;
+        notifyAll();
+    }
+
+    @SuppressWarnings({"CallToNativeMethodWhileLocked", "WaitNotInLoop"})
+    public synchronized void render(double delta) {
+        // Used to kinda sync up updating and rendering, not perfect,
+        // but good enough to avoid the jitter
+        try {
+            wait((int) delta);
+        } catch (InterruptedException e) {
+        }
+        if (locked) {
+            // This actually does NOT spam like mad
+            LOGGER.trace("Rendering thread not synced");
+        }
+        locked = true;
         try {
             gl.checkError("Pre-Render");
             Container container = engine.container();

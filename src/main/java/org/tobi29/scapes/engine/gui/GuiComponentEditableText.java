@@ -51,7 +51,7 @@ public class GuiComponentEditableText extends GuiComponentText {
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine, Vector2 size) {
+    protected void updateComponent(ScapesEngine engine, double delta, Vector2 size) {
         if (active) {
             if (!focused) {
                 engine.guiController().focusTextField(data, false);
@@ -91,9 +91,8 @@ public class GuiComponentEditableText extends GuiComponentText {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double delta,
-            double width, double height) {
-        super.renderComponent(gl, shader, delta, width, height);
+    public void renderComponent(GL gl, Shader shader, double width, double height) {
+        super.renderComponent(gl, shader, width, height);
         if (active) {
             if (System.currentTimeMillis() / 600 % 2 == 0) {
                 vaoCursor.render(gl, shader);
