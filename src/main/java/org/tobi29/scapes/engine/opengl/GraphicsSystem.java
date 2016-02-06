@@ -28,6 +28,7 @@ import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
+import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
 
@@ -82,7 +83,7 @@ public class GraphicsSystem {
         // Used to kinda sync up updating and rendering, not perfect,
         // but good enough to avoid the jitter
         try {
-            wait((int) delta);
+            wait(FastMath.clamp((int) (delta * 1000.0), 1, 250));
         } catch (InterruptedException e) {
         }
         if (locked) {
