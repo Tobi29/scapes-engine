@@ -155,12 +155,9 @@ public class LWJGL3OpenGL extends GL {
     @Override
     public void enableScissor(int x, int y, int width, int height) {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        int w = engine.container().contentWidth();
-        int h = engine.container().contentHeight();
-        GL11.glScissor((int) ((double) x / 960 * w),
-                (int) ((double) (540 - y - height) / 540 * h) + 1,
-                (int) ((double) width / 960 * w),
-                (int) ((double) height / 540 * h));
+        double h = engine.container().contentHeight() / 540.0;
+        GL11.glScissor((int) (x * h), (int) ((540.0 - y - height) * h),
+                (int) (width * h), (int) (height * h));
     }
 
     @Override
