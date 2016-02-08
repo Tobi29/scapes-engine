@@ -101,7 +101,7 @@ public class ScapesEngine implements Crashable {
                 new ClasspathPath(getClass().getClassLoader(),
                         "assets/scapes/tobi29/engine/"));
         LOGGER.info("Initializing game");
-        game.init();
+        game.initEarly();
         tagStructure = new TagStructure();
         try {
             LOGGER.info("Reading config");
@@ -299,6 +299,7 @@ public class ScapesEngine implements Crashable {
             try {
                 Sync sync = new Sync(config.fps(), 5000000000L, true,
                         "Engine-Update");
+                game.init();
                 sync.init();
                 step(sync.delta());
                 sync.cap();
@@ -317,9 +318,7 @@ public class ScapesEngine implements Crashable {
     public void step(GL gl) {
         GameState state = this.state;
         if (renderState != state) {
-            if (renderState == null) {
-                game.initLate(gl);
-            } else {
+            if (renderState != null) {
                 renderState.disposeState(gl);
                 FBO.disposeAll(gl);
                 gl.shaders().disposeAll(gl);

@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine;
 
-import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.utils.VersionUtil;
 
 public abstract class Game {
@@ -27,9 +26,9 @@ public abstract class Game {
 
     public abstract VersionUtil.Version version();
 
-    public abstract void init();
+    public abstract void initEarly();
 
-    public abstract void initLate(GL gl);
+    public abstract void init();
 
     public abstract void step();
 
