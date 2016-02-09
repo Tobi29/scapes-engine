@@ -76,6 +76,7 @@ public class GraphicsSystem {
         return gl.shaders();
     }
 
+    @SuppressWarnings("WaitNotInLoop")
     public synchronized void lockRender() {
         if (!locked.getAndSet(true)) {
             try {
@@ -85,7 +86,7 @@ public class GraphicsSystem {
         }
     }
 
-    @SuppressWarnings({"CallToNativeMethodWhileLocked", "WaitNotInLoop"})
+    @SuppressWarnings("CallToNativeMethodWhileLocked")
     public synchronized void render(double delta) {
         try {
             gl.checkError("Pre-Render");
