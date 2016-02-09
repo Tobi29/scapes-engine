@@ -289,7 +289,7 @@ public class ScapesEngine implements Crashable {
             }
             System.exit(1);
         }
-        joiner.join();
+        halt();
         return 0;
     }
 
@@ -382,6 +382,7 @@ public class ScapesEngine implements Crashable {
     }
 
     private void step(double delta) {
+        graphics.lockRender();
         GameState state = newState.getAndSet(null);
         if (state == null) {
             state = this.state;
@@ -409,6 +410,5 @@ public class ScapesEngine implements Crashable {
         guiStack.step(this, delta);
         game.step();
         guiController.update(delta);
-        graphics.unlockRender();
     }
 }

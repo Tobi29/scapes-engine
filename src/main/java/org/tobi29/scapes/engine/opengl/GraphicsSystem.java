@@ -28,9 +28,9 @@ import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
-import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GraphicsSystem {
     private static final Logger LOGGER =
@@ -39,7 +39,8 @@ public class GraphicsSystem {
     private final GuiWidgetDebugValues.Element fpsDebug, widthDebug,
             heightDebug, textureDebug, vaoDebug;
     private final GL gl;
-    private boolean locked, triggerScreenshot;
+    private final AtomicBoolean locked = new AtomicBoolean(false);
+    private boolean triggerScreenshot;
     private double resolutionMultiplier = 1.0;
 
     public GraphicsSystem(ScapesEngine engine, GL gl) {
@@ -54,11 +55,13 @@ public class GraphicsSystem {
         vaoDebug = debugValues.get("Graphics-VAOs");
     }
 
-    public synchronized void dispose() {
+    public void dispose() {
         engine.halt();
-        GameState state = engine.state();
-        state.disposeState(gl);
-        gl.dispose();
+        synchronized (this) {
+            GameState state = engine.state();
+            state.disposeState(gl);
+            gl.dispose();
+        }
     }
 
     public ScapesEngine engine() {
@@ -73,24 +76,17 @@ public class GraphicsSystem {
         return gl.shaders();
     }
 
-    public synchronized void unlockRender() {
-        locked = false;
-        notifyAll();
+    public synchronized void lockRender() {
+        if (!locked.getAndSet(true)) {
+            try {
+                wait(16);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     @SuppressWarnings({"CallToNativeMethodWhileLocked", "WaitNotInLoop"})
     public synchronized void render(double delta) {
-        // Used to kinda sync up updating and rendering, not perfect,
-        // but good enough to avoid the jitter
-        try {
-            wait(FastMath.clamp((int) (delta * 1000.0), 1, 250));
-        } catch (InterruptedException e) {
-        }
-        if (locked) {
-            // This actually does NOT spam like mad
-            LOGGER.trace("Rendering thread not synced");
-        }
-        locked = true;
         try {
             gl.checkError("Pre-Render");
             Container container = engine.container();
@@ -138,6 +134,8 @@ public class GraphicsSystem {
         } catch (GraphicsException e) {
             LOGGER.warn("Graphics error during rendering: {}", e.toString());
         }
+        locked.set(false);
+        notifyAll();
     }
 
     public void triggerScreenshot() {
