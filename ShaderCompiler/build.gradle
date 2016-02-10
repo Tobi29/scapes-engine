@@ -22,7 +22,8 @@ version = "0.0.0_1"
 
 dependencies {
     compile project(":ScapesEngine:Utils")
-    compile "org.antlr:antlr4-runtime:4.5.1-1"
+    // Full library included by antlr plugin
+    // compile "org.antlr:antlr4-runtime:4.5.1-1"
 
     antlr "org.antlr:antlr4:4.5.1-1"
 
