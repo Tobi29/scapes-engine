@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag;
 
+import org.tobi29.scapes.engine.utils.Streams;
+
+import java.util.Properties;
 import java.util.UUID;
 
 /**
@@ -46,6 +48,47 @@ public class MultiTag {
     public static UUID readUUID(TagStructure tagStructure) {
         return new UUID(tagStructure.getLong("Most"),
                 tagStructure.getLong("Least"));
+    }
+
+    /**
+     * Utility method to write {@code Properties} into a {@code TagStructure}
+     *
+     * @param properties The {@code Properties} that will be written
+     * @return A newly created {@code TagStructure} containing the data from the
+     * {@code Properties}
+     */
+    public static TagStructure writeProperties(Properties properties) {
+        TagStructure tagStructure = new TagStructure();
+        Streams.of(properties.entrySet()).forEach(entry -> tagStructure
+                .setString(String.valueOf(entry.getKey()),
+                        String.valueOf(entry.getValue())));
+        return tagStructure;
+    }
+
+    /**
+     * Utility method to write a {@code TagStructure} into {@code Properties}
+     *
+     * @param tagStructure The {@code TagStructure} that will be written
+     * @return Newly created {@code Properties} containing the data from the
+     * {@code TagStructure}
+     */
+    public static Properties readProperties(TagStructure tagStructure) {
+        Properties properties = new Properties();
+        readProperties(tagStructure, properties);
+        return properties;
+    }
+
+    /**
+     * Utility method to write a {@code TagStructure} into {@code Properties}
+     *
+     * @param tagStructure The {@code TagStructure} that will be written
+     * @param properties   Existing {@code Properties} object to write to
+     */
+    public static void readProperties(TagStructure tagStructure,
+            Properties properties) {
+        Streams.of(tagStructure.getTagEntrySet()).forEach(entry -> properties
+                .setProperty(String.valueOf(entry.getKey()),
+                        String.valueOf(entry.getValue())));
     }
 
     public interface Readable {

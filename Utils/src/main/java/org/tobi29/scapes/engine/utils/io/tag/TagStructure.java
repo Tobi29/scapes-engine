@@ -240,6 +240,17 @@ public class TagStructure {
     }
 
     /**
+     * Returns the {@code Properties} mapped to the given key, internally using
+     * a {@code MultiTag} to read the value
+     *
+     * @param key The key whose value will be returned
+     * @return The value mapped to the key
+     */
+    public Properties getProperties(String key) {
+        return MultiTag.readProperties(getStructure(key));
+    }
+
+    /**
      * Returns an {@code Set} of all {@code Object} entries in this {@code
      * TagStructure}
      * <p>
@@ -438,6 +449,21 @@ public class TagStructure {
      */
     public UUID setUUID(String key, UUID value) {
         setStructure(key, MultiTag.writeUUID(value));
+        return value;
+    }
+
+    /**
+     * Maps the given {@code Properties} to the key, internally using a {@code
+     * MultiTag} to write the value
+     * <p>
+     * If a value was already mapped to the key, it will be overridden
+     *
+     * @param key   The key that the value will be mapped to
+     * @param value The value that will be mapped
+     * @return The {@code Properties} that was mapped
+     */
+    public Properties setProperties(String key, Properties value) {
+        setStructure(key, MultiTag.writeProperties(value));
         return value;
     }
 
