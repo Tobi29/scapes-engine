@@ -21,6 +21,7 @@ see [Scapes](https://github.com/Tobi29/Scapes)
 ## Dependencies
 ### General
   * Java 8
+  * [SLF4J](http://www.slf4j.org)
   * [PNGJ](https://github.com/leonbloy/pngj)
   * [JSON Processing](https://jsonp.java.net)
   * [Apache Tika](https://tika.apache.org)
@@ -37,3 +38,7 @@ see [Scapes](https://github.com/Tobi29/Scapes)
 ### Codecs
   * [JOrbis](http://www.jcraft.com/jorbis/)
   * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
+
+### SQL Databases
+  * [SQLite4Java](https://bitbucket.org/almworks/sqlite4java)
+  * [MariaDB](https://mariadb.org)
