@@ -208,7 +208,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
 
     @Override
     public Collection<ControllerJoystick> joysticks() {
-        joysticksChanged = false;
+        joysticksChanged.set(false);
         Collection<ControllerJoystick> collection =
                 new ArrayList<>(virtualJoysticks.size());
         collection.addAll(virtualJoysticks.values());
@@ -270,7 +270,9 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 }
             }
             GLFW.glfwPollEvents();
-            joysticksChanged = controllers.poll();
+            if (controllers.poll()) {
+                joysticksChanged.set(true);
+            }
             engine.graphics().render(sync.delta());
             containerResized = false;
             sync.cap();

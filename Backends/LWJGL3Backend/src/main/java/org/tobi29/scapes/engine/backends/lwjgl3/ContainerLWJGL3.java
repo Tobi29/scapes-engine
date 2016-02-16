@@ -39,6 +39,7 @@ import org.tobi29.scapes.engine.utils.task.Joiner;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ContainerLWJGL3 extends ControllerDefault
         implements Container {
@@ -50,8 +51,8 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected final LWJGL3OpenGL openGL;
     protected final SoundSystem soundSystem;
     protected final boolean superModifier;
-    protected boolean focus = true, valid, visible, containerResized = true,
-            joysticksChanged;
+    protected final AtomicBoolean joysticksChanged=new AtomicBoolean(false);
+    protected boolean focus = true, valid, visible, containerResized = true;
     protected int containerWidth, containerHeight, contentWidth, contentHeight;
     protected double mouseX, mouseY;
 
@@ -153,7 +154,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
 
     @Override
     public boolean joysticksChanged() {
-        return joysticksChanged;
+        return joysticksChanged.get();
     }
 
     protected Optional<String> initContext() {
