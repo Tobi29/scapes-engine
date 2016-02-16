@@ -102,7 +102,6 @@ public class GuiStack {
                         Matrix matrix = matrixStack.push();
                         matrix.translate((float) cursor.x(), (float) cursor.y(),
                                 0.0f);
-                        matrix.scale(10, 10, 10);
                         CURSOR.render(gl, shader);
                         matrixStack.pop();
                     });
