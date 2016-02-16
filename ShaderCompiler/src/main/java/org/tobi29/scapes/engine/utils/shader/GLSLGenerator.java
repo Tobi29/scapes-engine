@@ -407,21 +407,21 @@ public class GLSLGenerator {
         }
     }
 
-    public String generateVertex(ShaderCompiler compiler,
+    public String generateVertex(CompiledShader shader,
             Map<String, String> properties) throws ShaderGenerateException {
         if (output.length() > 0) {
             output.delete(0, output.length() - 1);
         }
         this.properties = properties;
-        functions = compiler.functions();
-        ShaderFunction shaderVertex = compiler.shaderVertex().get();
-        ShaderFunction shaderFragment = compiler.shaderFragment().get();
-        Uniform[] uniforms = compiler.uniforms();
+        functions = shader.functions();
+        ShaderFunction shaderVertex = shader.shaderVertex().get();
+        ShaderFunction shaderFragment = shader.shaderFragment().get();
+        Uniform[] uniforms = shader.uniforms();
         header(uniforms, shaderVertex.signature);
         println();
         header(shaderFragment.signature);
         println();
-        header(compiler.declarations());
+        header(shader.declarations());
         println();
         functions(functions);
         println();
@@ -429,21 +429,21 @@ public class GLSLGenerator {
         return output.toString();
     }
 
-    public String generateFragment(ShaderCompiler compiler,
+    public String generateFragment(CompiledShader shader,
             Map<String, String> properties) throws ShaderGenerateException {
         if (output.length() > 0) {
             output.delete(0, output.length() - 1);
         }
         this.properties = properties;
-        functions = compiler.functions();
-        ShaderFunction shaderFragment = compiler.shaderFragment().get();
-        ShaderSignature outputs = compiler.outputs().get();
-        Uniform[] uniforms = compiler.uniforms();
+        functions = shader.functions();
+        ShaderFunction shaderFragment = shader.shaderFragment().get();
+        ShaderSignature outputs = shader.outputs().get();
+        Uniform[] uniforms = shader.uniforms();
         header(uniforms, shaderFragment.signature);
         println();
         header(outputs);
         println();
-        header(compiler.declarations());
+        header(shader.declarations());
         println();
         functions(functions);
         println();

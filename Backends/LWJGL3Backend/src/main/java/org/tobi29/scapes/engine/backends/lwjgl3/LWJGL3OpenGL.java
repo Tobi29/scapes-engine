@@ -41,6 +41,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class LWJGL3OpenGL extends GL {
     private static final Logger LOGGER =
@@ -48,6 +49,11 @@ public class LWJGL3OpenGL extends GL {
     private final int[] lastTextureBind = new int[32];
     private final IntBuffer intBuffer = BufferCreatorNative.intsD(4);
     private final IntBuffer attachBuffer = BufferCreatorNative.intsD(16);
+    private final ShaderCompiler shaderCompiler = new ShaderCompiler();
+    private final GLSLGenerator shaderGenerator =
+            new GLSLGenerator("#version 330");
+    private final Map<String, CompiledShader> shaderCache =
+            new ConcurrentHashMap<>();
     private ByteBuffer directBuffer = BufferCreatorNative.bytesD(4 << 10 << 10);
     private int activeTexture, activeShader;
 
@@ -835,13 +841,11 @@ public class LWJGL3OpenGL extends GL {
     public Pair<Integer, int[]> programProgram(String source,
             Map<String, String> properties) throws IOException {
         try {
-            ShaderCompiler compiler = new ShaderCompiler();
-            compiler.compile(source);
-            GLSLGenerator generator = new GLSLGenerator("#version 330");
+            CompiledShader shader = compiled(source);
             String vertexSource =
-                    generator.generateVertex(compiler, properties);
+                    shaderGenerator.generateVertex(shader, properties);
             String fragmentSource =
-                    generator.generateFragment(compiler, properties);
+                    shaderGenerator.generateFragment(shader, properties);
             int vertex = createVertexObject();
             source(vertex, vertexSource);
             compile(vertex);
@@ -858,7 +862,7 @@ public class LWJGL3OpenGL extends GL {
                 LOGGER.error("Failed to link status bar!");
                 printLogProgram(program);
             }
-            Uniform[] uniforms = compiler.uniforms();
+            Uniform[] uniforms = shader.uniforms();
             int[] uniformLocations = new int[uniforms.length];
             for (int i = 0; i < uniforms.length; i++) {
                 Uniform uniform = uniforms[i];
@@ -877,6 +881,16 @@ public class LWJGL3OpenGL extends GL {
         } catch (ShaderCompileException | ShaderGenerateException e) {
             throw new IOException(e);
         }
+    }
+
+    public CompiledShader compiled(String source)
+            throws ShaderCompileException {
+        CompiledShader shader = shaderCache.get(source);
+        if (shader == null) {
+            shader = shaderCompiler.compile(source);
+            shaderCache.put(source, shader);
+        }
+        return shader;
     }
 
     @SuppressWarnings("ReturnOfNull")

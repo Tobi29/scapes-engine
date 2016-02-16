@@ -776,8 +776,9 @@ public class ShaderCompiler {
         return parser;
     }
 
-    public void compile(String source) throws ShaderCompileException {
+    public CompiledShader compile(String source) throws ShaderCompileException {
         declarations.clear();
+        functions.clear();
         shaderVertex = Optional.empty();
         shaderFragment = Optional.empty();
         uniforms = EMPTY_UNIFORM;
@@ -792,6 +793,15 @@ public class ShaderCompiler {
         } catch (ParseCancellationException e) {
             throw new ShaderCompileException(e);
         }
+        List<Expression> declarations =
+                new ArrayList<>(this.declarations.size());
+        declarations.addAll(this.declarations);
+        List<Function> functions = new ArrayList<>(this.functions.size());
+        functions.addAll(this.functions);
+        CompiledShader shader =
+                new CompiledShader(declarations, functions, shaderVertex,
+                        shaderFragment, outputs, uniforms);
+        return shader;
     }
 
     private void externalDeclaration(
@@ -882,33 +892,5 @@ public class ShaderCompiler {
             functions.add(new Function(functionSignature, compound));
             return;
         }
-    }
-
-    public List<Expression> declarations() {
-        List<Expression> declarations = new ArrayList<>();
-        declarations.addAll(this.declarations);
-        return declarations;
-    }
-
-    public List<Function> functions() {
-        List<Function> functions = new ArrayList<>();
-        functions.addAll(this.functions);
-        return functions;
-    }
-
-    public Uniform[] uniforms() {
-        return uniforms.clone();
-    }
-
-    public Optional<ShaderFunction> shaderVertex() {
-        return shaderVertex;
-    }
-
-    public Optional<ShaderFunction> shaderFragment() {
-        return shaderFragment;
-    }
-
-    public Optional<ShaderSignature> outputs() {
-        return outputs;
     }
 }
