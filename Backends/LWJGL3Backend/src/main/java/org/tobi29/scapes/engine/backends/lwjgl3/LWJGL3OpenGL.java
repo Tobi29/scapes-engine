@@ -737,34 +737,10 @@ public class LWJGL3OpenGL extends GL {
                 offset);
     }
 
-    public void deleteShader(int id) {
-        GL20.glDeleteShader(id);
-    }
-
-    public void attach(int id, int object) {
-        GL20.glAttachShader(id, object);
-    }
-
     // VBO
-
-    public void detach(int id, int object) {
-        GL20.glDetachShader(id, object);
-    }
-
-    public void link(int id) {
-        GL20.glLinkProgram(id);
-    }
 
     public boolean checkLinkStatus(int id) {
         return GL20.glGetProgrami(id, GL20.GL_LINK_STATUS) == GL11.GL_TRUE;
-    }
-
-    public void source(int id, String code) {
-        GL20.glShaderSource(id, code);
-    }
-
-    public void compile(int id) {
-        GL20.glCompileShader(id);
     }
 
     public void printLogShader(int id) {
@@ -802,15 +778,15 @@ public class LWJGL3OpenGL extends GL {
                 createShader(processor.processFragmentSource(fragmentSource),
                         createFragmentObject());
         int program = GL20.glCreateProgram();
-        attach(program, vertex);
-        attach(program, fragment);
+        GL20.glAttachShader(program, vertex);
+        GL20.glAttachShader(program, fragment);
         for (int i = 0; i < 8; i++) {
             String attribute = properties.getProperty("Attribute." + i);
             if (attribute != null) {
                 bindAttributeLocation(program, i, attribute);
             }
         }
-        link(program);
+        GL20.glLinkProgram(program);
         if (!checkLinkStatus(program)) {
             LOGGER.error("Failed to link status bar!");
             printLogProgram(program);
@@ -824,16 +800,16 @@ public class LWJGL3OpenGL extends GL {
                 uniformLocations[i] = getUniformLocation(program, uniform);
             }
         }
-        detach(program, vertex);
-        detach(program, fragment);
-        deleteShader(vertex);
-        deleteShader(fragment);
+        GL20.glDetachShader(program, vertex);
+        GL20.glDetachShader(program, fragment);
+        GL20.glDeleteShader(vertex);
+        GL20.glDeleteShader(fragment);
         return new Pair<>(program, uniformLocations);
     }
 
     private int createShader(String source, int shader) {
-        source(shader, source);
-        compile(shader);
+        GL20.glShaderSource(shader, source);
+        GL20.glCompileShader(shader);
         printLogShader(shader);
         return shader;
     }
@@ -847,17 +823,17 @@ public class LWJGL3OpenGL extends GL {
             String fragmentSource =
                     shaderGenerator.generateFragment(shader, properties);
             int vertex = createVertexObject();
-            source(vertex, vertexSource);
-            compile(vertex);
+            GL20.glShaderSource(vertex, vertexSource);
+            GL20.glCompileShader(vertex);
             printLogShader(vertex);
             int fragment = createFragmentObject();
-            source(fragment, fragmentSource);
-            compile(fragment);
+            GL20.glShaderSource(fragment, fragmentSource);
+            GL20.glCompileShader(fragment);
             printLogShader(fragment);
             int program = GL20.glCreateProgram();
-            attach(program, vertex);
-            attach(program, fragment);
-            link(program);
+            GL20.glAttachShader(program, vertex);
+            GL20.glAttachShader(program, fragment);
+            GL20.glLinkProgram(program);
             if (!checkLinkStatus(program)) {
                 LOGGER.error("Failed to link status bar!");
                 printLogProgram(program);
@@ -873,10 +849,10 @@ public class LWJGL3OpenGL extends GL {
                             getUniformLocation(program, uniform.name);
                 }
             }
-            detach(program, vertex);
-            detach(program, fragment);
-            deleteShader(vertex);
-            deleteShader(fragment);
+            GL20.glDetachShader(program, vertex);
+            GL20.glDetachShader(program, fragment);
+            GL20.glDeleteShader(vertex);
+            GL20.glDeleteShader(fragment);
             return new Pair<>(program, uniformLocations);
         } catch (ShaderCompileException | ShaderGenerateException e) {
             throw new IOException(e);
