@@ -312,7 +312,7 @@ public class ScapesEngine implements Crashable {
             } catch (Throwable e) {
                 crash(e);
             }
-        }, "State");
+        }, "State", TaskExecutor.Priority.HIGH);
         wait.joiner().join();
     }
 
