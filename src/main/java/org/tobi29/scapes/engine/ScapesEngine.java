@@ -301,8 +301,9 @@ public class ScapesEngine implements Crashable {
                         "Engine-Update");
                 game.init();
                 sync.init();
+                graphics.lockRender();
                 step(sync.delta());
-                sync.cap();
+                sync.tick();
                 wait.join();
                 while (!joiner.marked()) {
                     step(sync.delta());
@@ -382,7 +383,6 @@ public class ScapesEngine implements Crashable {
     }
 
     private void step(double delta) {
-        graphics.lockRender();
         GameState state = newState.getAndSet(null);
         if (state == null) {
             state = this.state;

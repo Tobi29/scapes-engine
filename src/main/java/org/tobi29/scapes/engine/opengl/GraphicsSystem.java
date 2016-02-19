@@ -80,7 +80,7 @@ public class GraphicsSystem {
     public synchronized void lockRender() {
         if (!locked.getAndSet(true)) {
             try {
-                wait(16);
+                wait(20);
             } catch (InterruptedException e) {
             }
         }
