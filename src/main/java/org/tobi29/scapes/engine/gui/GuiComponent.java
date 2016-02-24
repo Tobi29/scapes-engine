@@ -19,6 +19,7 @@ import java8.util.Optional;
 import java8.util.function.BiConsumer;
 import java8.util.function.Consumer;
 import java8.util.function.Function;
+import java8.util.stream.Stream;
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
@@ -342,8 +343,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                 matrixStack.pop();
             }*/
             MatrixStack matrixStack1 = gl.matrixStack();
-            GuiLayoutManager layout = layoutManager(size);
-            Streams.of(layout.layout()).forEach(component -> {
+            layoutStream(size).forEach(component -> {
                 if (component.b.doubleX() >= -component.c.doubleX() &&
                         component.b.doubleY() >= -component.c.doubleY() &&
                         component.b.doubleX() <= size.doubleX() &&
@@ -437,9 +437,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         if (visible) {
             boolean inside = checkInside(event.x(), event.y(), event.size());
             if (inside) {
-                GuiLayoutManager layout = layoutManager(event.size());
                 Set<GuiComponent> sinks = new HashSet<>();
-                Streams.of(layout.layout())
+                layoutStream(event.size())
                         .filter(component -> !component.a.parent.blocksEvents())
                         .forEach(component -> sinks.addAll(component.a
                                 .fireRecursiveEvent(new GuiComponentEvent(event,
@@ -537,8 +536,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         while (!changeComponents.isEmpty()) {
             changeComponents.poll().run();
         }
-        GuiLayoutManager layout = layoutManager(size);
-        Streams.of(layout.layout()).forEach(component -> {
+        layoutStream(size).forEach(component -> {
             if (component.a.removing) {
                 drop(component.a);
             } else {
@@ -547,7 +545,22 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         });
     }
 
+    protected Stream<Triple<GuiComponent, Vector2, Vector2>> layoutStream(
+            Vector2 size) {
+        if (components.isEmpty()) {
+            return Streams.of();
+        }
+        return Streams.of(newLayoutManager(size).layout());
+    }
+
     protected GuiLayoutManager layoutManager(Vector2 size) {
+        if (components.isEmpty()) {
+            return GuiLayoutManagerEmpty.INSTANCE;
+        }
+        return newLayoutManager(size);
+    }
+
+    protected GuiLayoutManager newLayoutManager(Vector2 size) {
         return new GuiLayoutManagerAbsolute(Vector2d.ZERO, size, components);
     }
 

@@ -46,7 +46,7 @@ public class GuiComponentTextButton extends GuiComponentButton {
     }
 
     @Override
-    protected GuiLayoutManager layoutManager(Vector2 size) {
+    protected GuiLayoutManager newLayoutManager(Vector2 size) {
         return new GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components);
     }
 

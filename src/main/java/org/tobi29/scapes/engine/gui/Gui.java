@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
@@ -75,8 +74,7 @@ public abstract class Gui extends GuiComponentSlab {
                 event1 = new GuiComponentEvent(event.x(), event);
             }
             Set<GuiComponent> sinks = new HashSet<>();
-            GuiLayoutManager layout = layoutManager(baseSize(engine));
-            Streams.of(layout.layout())
+            layoutStream(baseSize(engine))
                     .filter(component -> !component.a.parent.blocksEvents())
                     .forEach(component -> sinks.addAll(component.a
                             .fireRecursiveEvent(new GuiComponentEvent(event1,

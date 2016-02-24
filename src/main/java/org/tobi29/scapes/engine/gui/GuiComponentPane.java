@@ -124,7 +124,7 @@ public class GuiComponentPane extends GuiComponent {
     }
 
     @Override
-    protected GuiLayoutManager layoutManager(Vector2 size) {
+    protected GuiLayoutManager newLayoutManager(Vector2 size) {
         return new GuiLayoutManagerVertical(Vector2d.ZERO, size, components);
     }
 }

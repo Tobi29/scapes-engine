@@ -29,25 +29,39 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 public class GuiComponentScrollPaneViewport extends GuiComponentPane {
-    protected Optional<GuiComponentSliderVert> slider = Optional.empty();
-    private double maxY, scroll;
+    protected Optional<GuiComponentSliderVert> sliderX = Optional.empty(),
+            sliderY = Optional.empty();
+    protected double maxX, maxY, scrollX, scrollY;
 
     public GuiComponentScrollPaneViewport(GuiLayoutData parent,
             int scrollStep) {
         super(parent);
         onScroll(event -> {
             if (event.screen()) {
-                scroll -= event.relativeY();
+                scrollX -= event.relativeX();
+                scrollY -= event.relativeY();
             } else {
-                scroll -= event.relativeY() * scrollStep;
+                scrollX -= event.relativeX() * scrollStep;
+                scrollY -= event.relativeY() * scrollStep;
             }
-            scroll = FastMath.clamp(scroll, 0,
+            scrollX = FastMath.clamp(scrollX, 0,
+                    Math.max(0, maxX - event.size().doubleX()));
+            scrollY = FastMath.clamp(scrollY, 0,
                     Math.max(0, maxY - event.size().doubleY()));
-            Optional<GuiComponentSliderVert> slider = this.slider;
+            Optional<GuiComponentSliderVert> slider = sliderX;
+            if (slider.isPresent()) {
+                double limit = Math.max(0, maxX - event.size().doubleY());
+                if (limit > 0.0) {
+                    slider.get().setValue(scrollX / limit);
+                } else {
+                    slider.get().setValue(0.0);
+                }
+            }
+            slider = sliderY;
             if (slider.isPresent()) {
                 double limit = Math.max(0, maxY - event.size().doubleY());
                 if (limit > 0.0) {
-                    slider.get().setValue(scroll / limit);
+                    slider.get().setValue(scrollY / limit);
                 } else {
                     slider.get().setValue(0.0);
                 }
@@ -72,15 +86,6 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine, double delta,
-            Vector2 size) {
-        Optional<GuiComponentSliderVert> slider = this.slider;
-        if (slider.isPresent()) {
-            scroll = slider.get().value() * Math.max(0, maxY - size.doubleY());
-        }
-    }
-
-    @Override
     public void updateChildren(ScapesEngine engine, double delta,
             Vector2 size) {
         while (!changeComponents.isEmpty()) {
@@ -94,33 +99,69 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
                 component.a.update(engine, delta, component.c);
             }
         });
-        setMaxY(layout.size().doubleY(), size.doubleY());
+        setMax(layout.size(), size);
     }
 
     @Override
-    protected GuiLayoutManager layoutManager(Vector2 size) {
-        return new GuiLayoutManagerVertical(new Vector2d(0.0, -scroll), size,
-                components);
+    protected GuiLayoutManager newLayoutManager(Vector2 size) {
+        return new GuiLayoutManagerVertical(new Vector2d(-scrollX, -scrollY),
+                size, components);
     }
 
-    public void setMaxY(double maxY, double height) {
-        this.maxY = maxY;
-        Optional<GuiComponentSliderVert> slider = this.slider;
+    private void setMax(Vector2 max, Vector2 size) {
+        maxX = max.doubleX();
+        maxY = max.doubleY();
+        Optional<GuiComponentSliderVert> slider = sliderX;
         if (slider.isPresent()) {
             if (maxY <= 0) {
-                slider.get().setSliderHeight(height);
+                slider.get().setSliderHeight(size.doubleX());
             } else {
-                slider.get().setSliderHeight(
-                        (int) FastMath.min(height * height / maxY, height));
+                slider.get().setSliderHeight((int) FastMath
+                        .min(FastMath.sqr(size.doubleX()) / maxY,
+                                size.doubleX()));
+            }
+        }
+        slider = sliderY;
+        if (slider.isPresent()) {
+            if (maxY <= 0) {
+                slider.get().setSliderHeight(size.doubleY());
+            } else {
+                slider.get().setSliderHeight((int) FastMath
+                        .min(FastMath.sqr(size.doubleY()) / maxY,
+                                size.doubleY()));
             }
         }
     }
 
-    public void setSlider(GuiComponentSliderVert slider) {
-        this.slider = Optional.of(slider);
+    public double maxX() {
+        return maxX;
     }
 
-    public void removeSlider() {
-        slider = Optional.empty();
+    public double maxY() {
+        return maxY;
+    }
+
+    public void setScrollX(double scroll) {
+        scrollX = scroll;
+    }
+
+    public void setScrollY(double scroll) {
+        scrollY = scroll;
+    }
+
+    public void setSliderX(GuiComponentSliderVert slider) {
+        sliderX = Optional.of(slider);
+    }
+
+    public void removeSliderX() {
+        sliderX = Optional.empty();
+    }
+
+    public void setSliderY(GuiComponentSliderVert slider) {
+        sliderY = Optional.of(slider);
+    }
+
+    public void removeSliderY() {
+        sliderY = Optional.empty();
     }
 }

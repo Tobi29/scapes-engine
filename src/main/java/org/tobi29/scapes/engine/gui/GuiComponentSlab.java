@@ -124,7 +124,7 @@ public class GuiComponentSlab extends GuiComponent {
     }
 
     @Override
-    protected GuiLayoutManager layoutManager(Vector2 size) {
+    protected GuiLayoutManager newLayoutManager(Vector2 size) {
         return new GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components);
     }
 }

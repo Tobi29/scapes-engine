@@ -24,7 +24,11 @@ public class GuiComponentScrollPane extends GuiComponentVisibleSlab {
                 p -> new GuiComponentScrollPaneViewport(p, scrollStep));
         GuiComponentSliderVert slider =
                 addHori(0, 0, 10, -1, p -> new GuiComponentSliderVert(p, 0));
-        viewport.setSlider(slider);
+        slider.onDragLeft(event -> {
+            viewport.setScrollY(slider.value() *
+                    Math.max(0, viewport.maxY() - event.size().doubleY()));
+        });
+        viewport.setSliderY(slider);
     }
 
     public GuiComponentScrollPaneViewport viewport() {

@@ -1,6 +1,7 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.utils.Triple;
+import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
@@ -52,8 +53,7 @@ public abstract class GuiLayoutManager {
     }
 
     protected void setSize(Vector2 size, MutableVector2 outSize) {
-        outSize.setX(size.doubleX());
-        outSize.setY(size.doubleY());
+        outSize.set(FastMath.max(size, outSize.now()));
     }
 
     public Vector2 size() {
