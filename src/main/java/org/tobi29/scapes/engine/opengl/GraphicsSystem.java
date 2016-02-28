@@ -42,6 +42,7 @@ public class GraphicsSystem {
     private final AtomicBoolean locked = new AtomicBoolean(false);
     private boolean triggerScreenshot;
     private double resolutionMultiplier = 1.0;
+    private GameState renderState;
 
     public GraphicsSystem(ScapesEngine engine, GL gl) {
         this.engine = engine;
@@ -94,9 +95,11 @@ public class GraphicsSystem {
             int containerWidth = container.containerWidth();
             int containerHeight = container.containerHeight();
             boolean fboSizeDirty;
-            if (container.contentResized() || resolutionMultiplier !=
-                    engine.config().resolutionMultiplier()) {
-                resolutionMultiplier = engine.config().resolutionMultiplier();
+            double resolutionMultiplier =
+                    engine.config().resolutionMultiplier();
+            if (container.contentResized() ||
+                    this.resolutionMultiplier != resolutionMultiplier) {
+                this.resolutionMultiplier = resolutionMultiplier;
                 int contentWidth = container.contentWidth();
                 int contentHeight = container.contentHeight();
                 fboSizeDirty = true;
@@ -107,8 +110,16 @@ public class GraphicsSystem {
             } else {
                 fboSizeDirty = false;
             }
-            engine.step(gl);
             GameState state = engine.state();
+            if (renderState != state) {
+                if (renderState != null) {
+                    renderState.disposeState(gl);
+                    FBO.disposeAll(gl);
+                    gl.shaders().disposeAll(gl);
+                    gl.textures().clearCache();
+                }
+                renderState = state;
+            }
             state.render(gl, delta, fboSizeDirty);
             fpsDebug.setValue(1.0 / delta);
             textureDebug.setValue(Texture.textureCount());

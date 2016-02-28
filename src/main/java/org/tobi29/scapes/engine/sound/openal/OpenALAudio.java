@@ -18,8 +18,8 @@ package org.tobi29.scapes.engine.sound.openal;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 
 public interface OpenALAudio {
-    boolean poll(OpenALSoundSystem sounds, OpenAL openAL, Vector3 listenerPosition,
-            double speedFactor, boolean lagSilence);
+    boolean poll(OpenALSoundSystem sounds, OpenAL openAL,
+            Vector3 listenerPosition, double delta);
 
     boolean isPlaying(String channel);
 

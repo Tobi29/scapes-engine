@@ -316,19 +316,6 @@ public class ScapesEngine implements Crashable {
         wait.joiner().join();
     }
 
-    public void step(GL gl) {
-        GameState state = this.state;
-        if (renderState != state) {
-            if (renderState != null) {
-                renderState.disposeState(gl);
-                FBO.disposeAll(gl);
-                gl.shaders().disposeAll(gl);
-                gl.textures().clearCache();
-            }
-            renderState = state;
-        }
-    }
-
     public void halt() {
         joiner.join();
     }

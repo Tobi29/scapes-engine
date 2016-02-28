@@ -51,7 +51,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected final LWJGL3OpenGL openGL;
     protected final SoundSystem soundSystem;
     protected final boolean superModifier;
-    protected final AtomicBoolean joysticksChanged=new AtomicBoolean(false);
+    protected final AtomicBoolean joysticksChanged = new AtomicBoolean(false);
     protected boolean focus = true, valid, visible, containerResized = true;
     protected int containerWidth, containerHeight, contentWidth, contentHeight;
     protected double mouseX, mouseY;
@@ -61,7 +61,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         mainThread = Thread.currentThread();
         LOGGER.info("LWJGL version: {}", Version.getVersion());
         openGL = new LWJGL3OpenGL(engine, this);
-        soundSystem = new OpenALSoundSystem(engine, new LWJGL3OpenAL());
+        soundSystem = new OpenALSoundSystem(engine, new LWJGL3OpenAL(), 5.0);
         superModifier = Platform.get() == Platform.MACOSX;
     }
 

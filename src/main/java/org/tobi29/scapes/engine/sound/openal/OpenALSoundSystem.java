@@ -23,11 +23,12 @@ import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.sound.SoundException;
 import org.tobi29.scapes.engine.sound.SoundSystem;
-import org.tobi29.scapes.engine.utils.codec.AudioStream;
-import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.Sync;
+import org.tobi29.scapes.engine.utils.codec.AudioStream;
+import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
+import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 import org.tobi29.scapes.engine.utils.task.Joiner;
@@ -54,7 +55,8 @@ public class OpenALSoundSystem implements SoundSystem {
             listenerOrientation = Vector3d.ZERO, listenerVelocity =
             Vector3d.ZERO;
 
-    public OpenALSoundSystem(ScapesEngine engine, OpenAL openAL) {
+    public OpenALSoundSystem(ScapesEngine engine, OpenAL openAL,
+            double latency) {
         this.engine = engine;
         joiner = engine.taskExecutor().runTask(joiner -> {
             openAL.create();
@@ -62,7 +64,7 @@ public class OpenALSoundSystem implements SoundSystem {
                 sources[i] = openAL.createSource();
             }
             openAL.checkError("Initializing");
-            Sync sync = new Sync(240.0, 5000000000L, false, "Sound");
+            Sync sync = new Sync(1000.0 / latency, 5000000000L, false, "Sound");
             sync.init();
             while (!joiner.marked()) {
                 try {
@@ -70,15 +72,16 @@ public class OpenALSoundSystem implements SoundSystem {
                     while (!queue.isEmpty()) {
                         queue.poll().accept(openAL);
                     }
-                    boolean lagSilence = delta >
-                            1.0; // Prevent accumulating sounds on lag spikes
                     Streams.of(audios).filter(audio -> audio
-                            .poll(this, openAL, listenerPosition, delta,
-                                    lagSilence)).forEach(audios::remove);
+                            .poll(this, openAL, listenerPosition, delta))
+                            .forEach(audios::remove);
                     openAL.checkError("Sound-Effects");
                     openAL.setListener(listenerPosition.minus(origin),
                             listenerOrientation, listenerVelocity);
-                    if (!isSoundPlaying(openAL)) {
+                    double distance =
+                            FastMath.pointDistanceSqr(origin, listenerPosition);
+                    if (distance > 1024.0 &&
+                            (distance > 4096.0 || !isSoundPlaying(openAL))) {
                         origin = listenerPosition;
                     }
                     openAL.checkError("Updating-System");

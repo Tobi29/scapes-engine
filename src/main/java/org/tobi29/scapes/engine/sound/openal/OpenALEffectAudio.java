@@ -39,23 +39,21 @@ public class OpenALEffectAudio implements OpenALAudio {
 
     @Override
     public boolean poll(OpenALSoundSystem sounds, OpenAL openAL,
-            Vector3 listenerPosition, double speedFactor, boolean lagSilence) {
+            Vector3 listenerPosition, double delta) {
         boolean flag;
         if (hasPosition) {
-            time += speedFactor;
+            time += delta;
             flag = time >=
                     FastMath.pointDistance(listenerPosition, pos) / 343.3;
         } else {
             flag = true;
         }
         if (flag) {
-            if (!lagSilence) {
-                Optional<OpenALAudioData> audio = sounds.get(openAL, asset);
-                if (audio.isPresent()) {
-                    float gain = this.gain * sounds.volume(channel);
-                    sounds.playSound(openAL, audio.get().buffer(), pitch, gain,
-                            pos, velocity, false, hasPosition);
-                }
+            Optional<OpenALAudioData> audio = sounds.get(openAL, asset);
+            if (audio.isPresent()) {
+                float gain = this.gain * sounds.volume(channel);
+                sounds.playSound(openAL, audio.get().buffer(), pitch, gain, pos,
+                        velocity, false, hasPosition);
             }
             return true;
         }

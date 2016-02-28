@@ -48,7 +48,7 @@ public class OpenALStreamAudio implements OpenALAudio {
 
     @Override
     public boolean poll(OpenALSoundSystem sounds, OpenAL openAL,
-            Vector3 listenerPosition, double speedFactor, boolean lagSilence) {
+            Vector3 listenerPosition, double delta) {
         if (source == -1) {
             source = sounds.takeSource(openAL);
             if (source == -1) {

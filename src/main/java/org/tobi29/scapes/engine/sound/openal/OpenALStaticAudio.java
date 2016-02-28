@@ -51,7 +51,7 @@ public class OpenALStaticAudio implements OpenALAudio, StaticAudio {
 
     @Override
     public boolean poll(OpenALSoundSystem sounds, OpenAL openAL,
-            Vector3 listenerPosition, double speedFactor, boolean lagSilence) {
+            Vector3 listenerPosition, double delta) {
         if (buffer == -1) {
             Optional<OpenALAudioData> audio = sounds.get(openAL, asset);
             if (audio.isPresent()) {
