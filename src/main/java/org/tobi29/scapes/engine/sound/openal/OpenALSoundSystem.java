@@ -64,7 +64,7 @@ public class OpenALSoundSystem implements SoundSystem {
                 sources[i] = openAL.createSource();
             }
             openAL.checkError("Initializing");
-            Sync sync = new Sync(1000.0 / latency, 5000000000L, false, "Sound");
+            Sync sync = new Sync(1000.0 / latency, 0, false, "Sound");
             sync.init();
             while (!joiner.marked()) {
                 try {
@@ -88,7 +88,7 @@ public class OpenALSoundSystem implements SoundSystem {
                 } catch (SoundException e) {
                     LOGGER.warn("Error polling sound-system: {}", e.toString());
                 }
-                sync.cap();
+                sync.cap(joiner);
             }
             try {
                 Streams.of(audios).forEach(audio -> audio.stop(this, openAL));
@@ -141,7 +141,7 @@ public class OpenALSoundSystem implements SoundSystem {
     @Override
     public void playMusic(ReadSource asset, String channel, float pitch,
             float gain, boolean state) {
-        queue.add(openAL -> audios
+        queue(openAL -> audios
                 .add(new OpenALStreamAudio(asset, channel, Vector3d.ZERO,
                         Vector3d.ZERO, pitch, gain, state, false)));
     }
@@ -149,7 +149,7 @@ public class OpenALSoundSystem implements SoundSystem {
     @Override
     public void playMusic(ReadSource asset, String channel, float pitch,
             float gain, Vector3 position, Vector3 velocity, boolean state) {
-        queue.add(openAL -> audios
+        queue(openAL -> audios
                 .add(new OpenALStreamAudio(asset, channel, position, velocity,
                         pitch, gain, state, true)));
     }
@@ -157,7 +157,7 @@ public class OpenALSoundSystem implements SoundSystem {
     @Override
     public void playSound(String asset, String channel, float pitch,
             float gain) {
-        queue.add(openAL -> audios
+        queue(openAL -> audios
                 .add(new OpenALEffectAudio(asset, channel, Vector3d.ZERO,
                         Vector3d.ZERO, pitch, gain, false)));
     }
@@ -165,7 +165,7 @@ public class OpenALSoundSystem implements SoundSystem {
     @Override
     public void playSound(String asset, String channel, Vector3 position,
             Vector3 velocity, float pitch, float gain) {
-        queue.add(openAL -> audios
+        queue(openAL -> audios
                 .add(new OpenALEffectAudio(asset, channel, position, velocity,
                         pitch, gain, true)));
     }
@@ -175,13 +175,13 @@ public class OpenALSoundSystem implements SoundSystem {
             float pitch, float gain) {
         OpenALStaticAudio staticAudio =
                 new OpenALStaticAudio(asset, channel, pitch, gain);
-        queue.add(openAL -> audios.add(staticAudio));
+        queue(openAL -> audios.add(staticAudio));
         return staticAudio;
     }
 
     @Override
     public void stop(String channel) {
-        queue.add(openAL -> {
+        queue(openAL -> {
             Collection<OpenALAudio> stopped =
                     Streams.of(audios).filter(audio -> audio.isPlaying(channel))
                             .collect(Collectors.toList());
@@ -280,6 +280,11 @@ public class OpenALSoundSystem implements SoundSystem {
                 openAL.setBuffer(source, 0);
             }
         }
+    }
+
+    private void queue(Consumer<OpenAL> consumer) {
+        queue.add(consumer);
+        joiner.wake();
     }
 
     private int freeSource(OpenAL openAL, boolean force, boolean take) {

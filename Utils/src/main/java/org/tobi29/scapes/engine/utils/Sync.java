@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+import java8.util.function.LongConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.utils.task.Joiner;
 
 import java.util.concurrent.locks.LockSupport;
 
@@ -41,6 +42,10 @@ public class Sync {
      * @param name         Name used by to log skips
      */
     public Sync(double tps, long minSkipDelay, boolean logSkip, String name) {
+        if (minSkipDelay < 0) {
+            throw new IllegalArgumentException(
+                    "Minimum skip delay is negative");
+        }
         maxDiff = (long) (1000000000.0 / tps);
         this.minSkipDelay = -minSkipDelay;
         this.logSkip = logSkip;
@@ -121,11 +126,39 @@ public class Sync {
      * @see #tick()
      */
     public void cap() {
+        cap(LockSupport::parkNanos);
+    }
+
+    /**
+     * Execute cap and calculate TPS
+     * <p>
+     * Non capping counterpart:
+     *
+     * @param joiner Joiner that the {@link Joiner.Joinable#sleep} method is called on
+     * @see #tick()
+     */
+    @SuppressWarnings("WaitNotInLoop")
+    public void cap(Joiner.Joinable joiner) {
+        cap(sleep -> {
+            // Using nanos is useless as the implementation on wait is bad
+            joiner.sleep(sleep / 1000000);
+        });
+    }
+
+    /**
+     * Execute cap and calculate TPS
+     * <p>
+     * Non capping counterpart:
+     *
+     * @param park Callback for executing the sleep
+     * @see #tick()
+     */
+    public void cap(LongConsumer park) {
         long current = System.nanoTime();
         diff = current - lastSync;
         sync += maxDiff;
         long sleep = sync - current;
-        if (sleep < minSkipDelay && minSkipDelay < 0) {
+        if (sleep < minSkipDelay) {
             if (logSkip) {
                 long oldSync = sync;
                 sync = lastSync + maxDiff;
@@ -136,7 +169,7 @@ public class Sync {
             }
         }
         if (sleep > 0) {
-            LockSupport.parkNanos(sleep);
+            park.accept(sleep);
         }
         long newSync = System.nanoTime();
         tickDiff = newSync - lastSync;
