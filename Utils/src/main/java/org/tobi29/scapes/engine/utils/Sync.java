@@ -141,6 +141,9 @@ public class Sync {
     public void cap(Joiner.Joinable joiner) {
         cap(sleep -> {
             // Using nanos is useless as the implementation on wait is bad
+            if (sleep < 1000000) {
+                return;
+            }
             joiner.sleep(sleep / 1000000);
         });
     }
@@ -167,8 +170,9 @@ public class Sync {
             } else {
                 sync = lastSync + maxDiff;
             }
-        }
-        if (sleep > 0) {
+        } else if (sleep > maxDiff) {
+            park.accept(maxDiff);
+        } else {
             park.accept(sleep);
         }
         long newSync = System.nanoTime();
