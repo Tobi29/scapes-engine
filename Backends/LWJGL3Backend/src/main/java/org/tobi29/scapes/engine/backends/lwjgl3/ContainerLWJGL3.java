@@ -61,7 +61,8 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         mainThread = Thread.currentThread();
         LOGGER.info("LWJGL version: {}", Version.getVersion());
         openGL = new LWJGL3OpenGL(engine, this);
-        soundSystem = new OpenALSoundSystem(engine, new LWJGL3OpenAL(), 5.0);
+        soundSystem =
+                new OpenALSoundSystem(engine, new LWJGL3OpenAL(), 64, 5.0);
         superModifier = Platform.get() == Platform.MACOSX;
     }
 

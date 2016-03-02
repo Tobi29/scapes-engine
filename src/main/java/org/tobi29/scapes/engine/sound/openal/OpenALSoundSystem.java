@@ -48,16 +48,17 @@ public class OpenALSoundSystem implements SoundSystem {
     private final Queue<Consumer<OpenAL>> queue = new ConcurrentLinkedQueue<>();
     private final Set<OpenALAudio> audios =
             Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final int[] sources = new int[64];
+    private final int[] sources;
     private final ScapesEngine engine;
     private final Joiner joiner;
     private Vector3 origin = Vector3d.ZERO, listenerPosition = Vector3d.ZERO,
             listenerOrientation = Vector3d.ZERO, listenerVelocity =
             Vector3d.ZERO;
 
-    public OpenALSoundSystem(ScapesEngine engine, OpenAL openAL,
+    public OpenALSoundSystem(ScapesEngine engine, OpenAL openAL, int maxSources,
             double latency) {
         this.engine = engine;
+        sources = new int[maxSources];
         joiner = engine.taskExecutor().runTask(joiner -> {
             openAL.create();
             for (int i = 0; i < sources.length; i++) {
