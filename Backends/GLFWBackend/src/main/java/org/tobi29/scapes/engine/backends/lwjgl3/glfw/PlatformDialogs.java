@@ -16,8 +16,8 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
 import java8.util.Optional;
-import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.Container;
+import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
@@ -26,18 +26,18 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import java.io.IOException;
 
 public interface PlatformDialogs {
-    void openFileDialog(Pair<String, String>[] extensions, String title,
-            boolean multiple, IOBiConsumer<String, ReadableByteStream> result)
-            throws IOException;
+    void openFileDialog(long window, Pair<String, String>[] extensions,
+            String title, boolean multiple,
+            IOBiConsumer<String, ReadableByteStream> result) throws IOException;
 
-    Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
-            String title);
+    Optional<FilePath> saveFileDialog(long window,
+            Pair<String, String>[] extensions, String title);
 
-    void message(Container.MessageType messageType, String title,
+    void message(long window, Container.MessageType messageType, String title,
             String message);
 
-    void dialog(String title, GuiController.TextFieldData text,
+    void dialog(long window, String title, GuiController.TextFieldData text,
             boolean multiline);
 
-    void openFile(FilePath path);
+    void openFile(long window, FilePath path);
 }

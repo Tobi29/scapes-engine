@@ -20,9 +20,10 @@ import java8.util.function.Consumer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
+import org.lwjgl.glfw.GLFW;
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.PlatformDialogs;
 import org.tobi29.scapes.engine.gui.GuiController;
-import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.swt.util.widgets.InputDialog;
 import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.Pair;
@@ -41,8 +42,9 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public void openFileDialog(Pair<String, String>[] extensions, String title,
-            boolean multiple, IOBiConsumer<String, ReadableByteStream> result)
+    public void openFileDialog(long window, Pair<String, String>[] extensions,
+            String title, boolean multiple,
+            IOBiConsumer<String, ReadableByteStream> result)
             throws IOException {
         String[] filterExtensions = new String[extensions.length];
         String[] filterNames = new String[extensions.length];
@@ -54,7 +56,7 @@ public class PlatformDialogsSWT implements PlatformDialogs {
         MutableSingle<Boolean> successful = new MutableSingle<>();
         MutableSingle<String> filterPath = new MutableSingle<>();
         MutableSingle<String[]> fileNames = new MutableSingle<>();
-        shell(shell -> {
+        shell(window, shell -> {
             int style = SWT.OPEN | SWT.APPLICATION_MODAL;
             if (multiple) {
                 style |= SWT.MULTI;
@@ -81,8 +83,8 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
-            String title) {
+    public Optional<FilePath> saveFileDialog(long window,
+            Pair<String, String>[] extensions, String title) {
         String[] filterExtensions = new String[extensions.length];
         String[] filterNames = new String[extensions.length];
         for (int i = 0; i < extensions.length; i++) {
@@ -93,7 +95,7 @@ public class PlatformDialogsSWT implements PlatformDialogs {
         MutableSingle<Boolean> successful = new MutableSingle<>();
         MutableSingle<String> filterPath = new MutableSingle<>();
         MutableSingle<String> fileName = new MutableSingle<>();
-        shell(shell -> {
+        shell(window, shell -> {
             FileDialog fileDialog =
                     new FileDialog(shell, SWT.SAVE | SWT.APPLICATION_MODAL);
             fileDialog.setText(title);
@@ -113,9 +115,9 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public void message(Container.MessageType messageType, String title,
-            String message) {
-        shell(shell -> {
+    public void message(long window, Container.MessageType messageType,
+            String title, String message) {
+        shell(window, shell -> {
             int style = SWT.APPLICATION_MODAL;
             switch (messageType) {
                 case ERROR:
@@ -139,9 +141,9 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public void dialog(String title, GuiController.TextFieldData text,
-            boolean multiline) {
-        shell(shell -> {
+    public void dialog(long window, String title,
+            GuiController.TextFieldData text, boolean multiline) {
+        shell(window, shell -> {
             InputDialog dialog = new InputDialog(shell, title);
             int style;
             if (multiline) {
@@ -164,16 +166,22 @@ public class PlatformDialogsSWT implements PlatformDialogs {
     }
 
     @Override
-    public void openFile(FilePath path) {
+    public void openFile(long window, FilePath path) {
         Program.launch(path.toString());
     }
 
-    private void shell(Consumer<Shell> consumer) {
+    private void shell(long window, Consumer<Shell> consumer) {
+        if (window != 0) {
+            GLFW.glfwIconifyWindow(window);
+        }
         Shell shell = createShell();
         try {
             consumer.accept(shell);
         } finally {
             disposeShell(shell);
+            if (window != 0) {
+                GLFW.glfwRestoreWindow(window);
+            }
         }
     }
 

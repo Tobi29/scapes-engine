@@ -318,29 +318,29 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             IOBiConsumer<String, ReadableByteStream> result)
             throws IOException {
         execIO(() -> dialogs
-                .openFileDialog(type.extensions(), title, multiple, result));
+                .openFileDialog(window, type.extensions(), title, multiple, result));
     }
 
     @Override
     public Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
             String title) {
-        return exec(() -> dialogs.saveFileDialog(extensions, title));
+        return exec(() -> dialogs.saveFileDialog(window, extensions, title));
     }
 
     @Override
     public void message(MessageType messageType, String title, String message) {
-        exec(() -> dialogs.message(messageType, title, message));
+        exec(() -> dialogs.message(window, messageType, title, message));
     }
 
     @Override
     public void dialog(String title, GuiController.TextFieldData text,
             boolean multiline) {
-        exec(() -> dialogs.dialog(title, text, multiline));
+        exec(() -> dialogs.dialog(window, title, text, multiline));
     }
 
     @Override
     public void openFile(FilePath path) {
-        exec(() -> dialogs.openFile(path));
+        exec(() -> dialogs.openFile(window, path));
     }
 
     protected void initWindow(boolean fullscreen, boolean vSync)
