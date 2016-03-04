@@ -30,7 +30,6 @@ public abstract class Texture {
     private static final Logger LOGGER = LoggerFactory.getLogger(Texture.class);
     private static int disposeOffset;
     protected final int mipmaps;
-    protected ByteBuffer buffer;
     protected boolean dirtyFilter = true;
     protected int textureID, width = -1, height = -1;
     protected TextureFilter minFilter = TextureFilter.NEAREST, magFilter =
@@ -39,18 +38,19 @@ public abstract class Texture {
             TextureWrap.REPEAT;
     protected boolean markAsDisposed;
     protected long used;
+    private ByteBuffer[] buffers;
 
     protected Texture(int width, int height, ByteBuffer buffer, int mipmaps,
             TextureFilter minFilter, TextureFilter magFilter, TextureWrap wrapS,
             TextureWrap wrapT) {
         this.width = width;
         this.height = height;
-        this.buffer = buffer;
         this.mipmaps = mipmaps;
         this.minFilter = minFilter;
         this.magFilter = magFilter;
         this.wrapS = wrapS;
         this.wrapT = wrapT;
+        setBuffer(buffer);
     }
 
     @OpenGLFunction
@@ -113,15 +113,12 @@ public abstract class Texture {
     }
 
     protected void store(GL gl) {
-        buffer.rewind();
         textureID = gl.createTexture();
         gl.bindTexture(textureID);
-        if (mipmaps > 0) {
-            gl.bufferTextureMipMap(width, height, MipMapGenerator
-                    .generateMipMaps(buffer, width, height, mipmaps,
-                            minFilter == TextureFilter.LINEAR));
+        if (buffers.length > 1) {
+            gl.bufferTextureMipMap(width, height, buffers);
         } else {
-            gl.bufferTexture(width, height, true, buffer);
+            gl.bufferTexture(width, height, true, buffers[0]);
         }
         dirtyFilter = true;
         TEXTURES.add(this);
@@ -167,7 +164,13 @@ public abstract class Texture {
         dirtyFilter = true;
     }
 
-    public ByteBuffer buffer() {
-        return buffer;
+    public ByteBuffer buffer(int i) {
+        return buffers[i];
+    }
+
+    public void setBuffer(ByteBuffer buffer) {
+        buffers = MipMapGenerator
+                .generateMipMaps(buffer, width, height, mipmaps,
+                        minFilter == TextureFilter.LINEAR);
     }
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.graphics;
 
 import org.tobi29.scapes.engine.utils.BufferCreatorNative;
@@ -44,6 +43,9 @@ public final class MipMapGenerator {
     public static ByteBuffer[] generateMipMaps(ByteBuffer buffer, int width,
             int height, int mipmaps, boolean alpha) {
         ByteBuffer[] buffers = new ByteBuffer[mipmaps + 1];
+        if (buffer == null) {
+            return buffers;
+        }
         buffers[mipmaps] =
                 generateMipMap(buffer, width, height, mipmaps, alpha);
         for (int i = mipmaps - 1; i >= 0; i--) {
