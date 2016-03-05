@@ -66,7 +66,7 @@ public class ScapesEngine implements Crashable {
     private Joiner joiner;
     private GuiController guiController;
     private boolean mouseGrabbed;
-    private GameState state, renderState;
+    private GameState state;
 
     public ScapesEngine(Game game, FilePath home, boolean debug) {
         this(game, loadBackend(), home, home.resolve("cache"), debug);

@@ -798,10 +798,8 @@ public class ShaderCompiler {
         declarations.addAll(this.declarations);
         List<Function> functions = new ArrayList<>(this.functions.size());
         functions.addAll(this.functions);
-        CompiledShader shader =
-                new CompiledShader(declarations, functions, shaderVertex,
-                        shaderFragment, outputs, uniforms);
-        return shader;
+        return new CompiledShader(declarations, functions, shaderVertex,
+                shaderFragment, outputs, uniforms);
     }
 
     private void externalDeclaration(

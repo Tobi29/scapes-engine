@@ -17,7 +17,9 @@ package org.tobi29.scapes.engine.utils.math;
 
 public class Frustum {
     public final Plane[] pl = new Plane[6];
-    private double posx, posy, posz, angx, angy, angz, upx, upy, upz;
+    private double posx;
+    private double posy;
+    private double posz;
     private double farD;
     private double fh;
     private double fw;
@@ -92,12 +94,6 @@ public class Frustum {
         this.posx = posx;
         this.posy = posy;
         this.posz = posz;
-        this.angx = angx;
-        this.angy = angy;
-        this.angz = angz;
-        this.upx = upx;
-        this.upy = upy;
-        this.upz = upz;
         double zx = posx - angx;
         double zy = posy - angy;
         double zz = posz - angz;
