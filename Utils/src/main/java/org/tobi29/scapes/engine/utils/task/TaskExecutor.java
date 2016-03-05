@@ -56,39 +56,45 @@ public class TaskExecutor {
 
     public void tick() {
         long time = System.currentTimeMillis();
-        synchronized (tasks) {
-            int i = 0;
-            while (i < tasks.size()) {
-                TaskWorker task = tasks.get(i);
-                if (time >= task.delay) {
-                    try {
-                        if (task.async) {
-                            runTask(joiner -> {
-                                long delay = task.task.getAsLong();
-                                if (delay < 0) {
-                                    task.stopped = true;
-                                } else {
-                                    task.delay = time + delay;
-                                }
-                            }, task.name);
-                        } else {
+        int i = 0;
+        while (i < tasks.size()) {
+            TaskWorker task;
+            synchronized (tasks) {
+                if (i >= tasks.size()) {
+                    break;
+                }
+                task = tasks.get(i);
+            }
+            if (time >= task.delay) {
+                try {
+                    if (task.async) {
+                        runTask(joiner -> {
                             long delay = task.task.getAsLong();
                             if (delay < 0) {
                                 task.stopped = true;
                             } else {
                                 task.delay = time + delay;
                             }
+                        }, task.name);
+                    } else {
+                        long delay = task.task.getAsLong();
+                        if (delay < 0) {
+                            task.stopped = true;
+                        } else {
+                            task.delay = time + delay;
                         }
-                    } catch (Throwable e) {
-                        task.stopped = true;
-                        crashHandler.crash(e);
                     }
+                } catch (Throwable e) {
+                    task.stopped = true;
+                    crashHandler.crash(e);
                 }
-                if (task.stopped) {
+            }
+            if (task.stopped) {
+                synchronized (tasks) {
                     tasks.remove(i);
-                } else {
-                    i++;
                 }
+            } else {
+                i++;
             }
         }
     }
@@ -111,8 +117,7 @@ public class TaskExecutor {
         addTask(task, name, delay, false);
     }
 
-    public void addTask(Runnable task, String name, long delay,
-            boolean async) {
+    public void addTask(Runnable task, String name, long delay, boolean async) {
         addTask(() -> {
             task.run();
             return -1;
@@ -127,7 +132,8 @@ public class TaskExecutor {
         addTask(task, name, delay, false);
     }
 
-    public void addTask(LongSupplier task, String name, long delay, boolean async) {
+    public void addTask(LongSupplier task, String name, long delay,
+            boolean async) {
         delay += System.currentTimeMillis();
         synchronized (tasks) {
             tasks.add(new TaskWorker(task, name, delay, async));
@@ -172,7 +178,8 @@ public class TaskExecutor {
         private long delay;
         private boolean stopped;
 
-        private TaskWorker(LongSupplier task, String name, long delay, boolean async) {
+        private TaskWorker(LongSupplier task, String name, long delay,
+                boolean async) {
             this.task = task;
             this.name = name;
             this.delay = delay;
