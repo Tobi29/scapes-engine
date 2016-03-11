@@ -404,31 +404,20 @@ public class GLSLGenerator {
 
     private void ifStatement(IfStatement expression, int level)
             throws ShaderGenerateException {
-        if (expression.statementElse.isPresent()) {
-            if (expression.condition instanceof PropertyExpression) {
-                if (Boolean.parseBoolean(propertyExpression(
-                        (PropertyExpression) expression.condition))) {
-                    statement(expression.statement, level + 1);
-                } else {
-                    statement(expression.statementElse.get(), level + 1);
-                }
-            } else {
-                println(level, "if(" + expression(expression.condition) +
-                        ')');
-                statement(expression.statement, level + 1);
-                println(level, "else");
-                statement(expression.statementElse.get(), level + 1);
+        String condition = expression(expression.condition);
+        if ("true".equals(condition)) {
+            statement(expression.statement, level);
+        } else if ("false".equals(condition)) {
+            if (expression.statementElse.isPresent()) {
+                statement(expression.statementElse.get(), level);
             }
         } else {
-            if (expression.condition instanceof PropertyExpression) {
-                if (Boolean.parseBoolean(propertyExpression(
-                        (PropertyExpression) expression.condition))) {
-                    statement(expression.statement, level + 1);
-                }
-            } else {
-                println(level, "if(" + expression(expression.condition) +
-                        ')');
-                statement(expression.statement, level + 1);
+            println(level, "if(" + condition +
+                    ')');
+            statement(expression.statement, level);
+            if (expression.statementElse.isPresent()) {
+                println(level, "else");
+                statement(expression.statementElse.get(), level);
             }
         }
     }
@@ -676,6 +665,7 @@ public class GLSLGenerator {
         functions(functions);
         println();
         shader(shaderVertex);
+        System.out.println(output);
         return output.toString();
     }
 
