@@ -159,6 +159,8 @@ public class MySQLDatabase implements SQLDatabase {
         return values -> {
             try (PreparedStatement statement = connection
                     .prepareStatement(compiled)) {
+                // MariaDB specific optimization
+                statement.setFetchSize(Integer.MIN_VALUE);
                 int i = 1;
                 for (Object value : values) {
                     resolveObject(value, i++, statement);
