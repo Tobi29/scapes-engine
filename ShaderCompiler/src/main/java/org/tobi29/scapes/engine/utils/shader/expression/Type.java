@@ -1,4 +1,4 @@
-package org.tobi29.scapes.engine.utils.shader;
+package org.tobi29.scapes.engine.utils.shader.expression;
 
 import java8.util.Optional;
 

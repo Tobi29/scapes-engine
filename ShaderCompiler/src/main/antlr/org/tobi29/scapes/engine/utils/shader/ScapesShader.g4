@@ -35,7 +35,7 @@ package org.tobi29.scapes.engine.utils.shader;
 
 primaryExpression
     :   Identifier
-    |   Constant
+    |   constant
     |   property
     |   '(' expression ')'
     ;
@@ -58,23 +58,18 @@ unaryExpression
     :   postfixExpression
     |   '++' unaryExpression
     |   '--' unaryExpression
-    |   unaryOperator castExpression
+    |   unaryOperator unaryExpression
     ;
 
 unaryOperator
     :   '+' | '-' | '~' | '!'
     ;
 
-castExpression
-    :   unaryExpression
-    |   '(' typeSpecifier ')' castExpression
-    ;
-
 multiplicativeExpression
-    :   castExpression
-    |   multiplicativeExpression '*' castExpression
-    |   multiplicativeExpression '/' castExpression
-    |   multiplicativeExpression '%' castExpression
+    :   unaryExpression
+    |   multiplicativeExpression '*' unaryExpression
+    |   multiplicativeExpression '/' unaryExpression
+    |   multiplicativeExpression '%' unaryExpression
     ;
 
 additiveExpression
@@ -156,11 +151,11 @@ declarationField
 
 declarationArray
     :   declaratorArray initDeclaratorArrayList ';'
-    |   declaratorArrayUnsized Identifier '=' '{' initializerArrayList? '}'
+    |   declaratorArrayUnsized Identifier '=' initializerArray
     ;
 
 uniformDeclaration
-    :   'uniform' Constant declarator Identifier ';'
+    :   'uniform' IntegerLiteral declarator Identifier ';'
     ;
 
 initDeclaratorFieldList
@@ -204,7 +199,7 @@ declaratorField
     ;
 
 declaratorArray
-    :   'const'? typeSpecifier '[' integerSize ']'
+    :   'const'? typeSpecifier '[' integerConstant ']'
     ;
 
 declaratorArrayUnsized
@@ -226,11 +221,16 @@ shaderParameterList
     ;
 
 shaderParameterDeclaration
-    :   ('if' '(' property ')')? Constant? declarator Identifier
+    :   ('if' '(' property ')')? IntegerLiteral? declarator Identifier
     ;
 
 initializerField
     :   assignmentExpression
+    ;
+
+initializerArray
+    :   '{' initializerArrayList '}'
+    |   property
     ;
 
 initializerArrayList
@@ -263,7 +263,7 @@ elseStatement
     ;
 
 rangeLoopStatement
-    :   'for' '(' Identifier 'in' integerSize '...' integerSize ')' statement
+    :   'for' '(' Identifier 'in' integerConstant '...' integerConstant ')' statement
     ;
 
 compoundStatement
@@ -317,11 +317,6 @@ functionSignature
     :   typeSpecifier Identifier '(' parameterList? ')'
     ;
 
-integerSize
-    :   Constant
-    |   property
-    ;
-
 Identifier
     :   IdentifierNondigit
         (   IdentifierNondigit
@@ -344,19 +339,40 @@ Digit
     :   [0-9]
     ;
 
-Constant
-    :   IntegerConstant
-    |   FloatingConstant
-    |   CharacterConstant
+constant
+    :   integerConstant
+    |   floatingConstant
+    |   characterConstant
     ;
 
-IntegerConstant
+integerConstant
+    :   IntegerLiteral
+    |   property
+    ;
+
+floatingConstant
+    :   FloatingLiteral
+    |   property
+    ;
+
+characterConstant
+    :   CharacterLiteral
+    |   property
+    ;
+
+IntegerLiteral
     :   Digit+
     ;
 
-fragment
-FloatingConstant
+FloatingLiteral
     :   FractionalConstant ExponentPart?
+    ;
+
+CharacterLiteral
+    :   '\'' CCharSequence '\''
+    |   'L\'' CCharSequence '\''
+    |   'u\'' CCharSequence '\''
+    |   'U\'' CCharSequence '\''
     ;
 
 fragment
@@ -379,14 +395,6 @@ Sign
 fragment
 DigitSequence
     :   Digit+
-    ;
-
-fragment
-CharacterConstant
-    :   '\'' CCharSequence '\''
-    |   'L\'' CCharSequence '\''
-    |   'u\'' CCharSequence '\''
-    |   'U\'' CCharSequence '\''
     ;
 
 fragment

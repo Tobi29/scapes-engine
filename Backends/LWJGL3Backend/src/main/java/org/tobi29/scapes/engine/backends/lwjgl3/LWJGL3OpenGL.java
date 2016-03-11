@@ -34,6 +34,8 @@ import org.tobi29.scapes.engine.utils.io.ProcessStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.shader.*;
+import org.tobi29.scapes.engine.utils.shader.expression.Uniform;
+import org.tobi29.scapes.engine.utils.shader.glsl.GLSLGenerator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

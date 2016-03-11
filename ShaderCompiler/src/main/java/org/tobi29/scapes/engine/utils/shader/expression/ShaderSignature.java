@@ -1,4 +1,4 @@
-package org.tobi29.scapes.engine.utils.shader;
+package org.tobi29.scapes.engine.utils.shader.expression;
 
 public class ShaderSignature {
     public final String name;
