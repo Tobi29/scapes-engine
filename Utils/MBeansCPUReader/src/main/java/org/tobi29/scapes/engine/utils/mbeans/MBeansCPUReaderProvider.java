@@ -1,6 +1,6 @@
 package org.tobi29.scapes.engine.utils.mbeans;
 
-import java8.util.Maps;
+import java8.util.concurrent.ConcurrentMaps;
 import org.tobi29.scapes.engine.utils.CPUUtil;
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider;
 
@@ -48,9 +48,8 @@ public class MBeansCPUReaderProvider implements CPUReaderProvider {
                     }
                     for (long thread : threads) {
                         long threadTime = THREADS.getThreadCpuTime(thread);
-                        double threadDelta = threadTime -
-                                Maps.getOrDefaultConcurrent(lastThreadTimes,
-                                        thread, 0L);
+                        double threadDelta = threadTime - ConcurrentMaps
+                                .getOrDefault(lastThreadTimes, thread, 0L);
                         threadTimes.put(thread, threadTime);
                         threadDelta /= delta;
                         cpu += threadDelta;
