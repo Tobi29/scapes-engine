@@ -665,7 +665,6 @@ public class GLSLGenerator {
         functions(functions);
         println();
         shader(shaderVertex);
-        System.out.println(output);
         return output.toString();
     }
 
