@@ -527,10 +527,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         Streams.of(components).forEach(this::remove);
     }
 
-    public void removed() {
-        Streams.of(components).forEach(GuiComponent::removed);
-    }
-
     protected void updateChildren(ScapesEngine engine, double delta,
             Vector2 size) {
         while (!changeComponents.isEmpty()) {
@@ -570,7 +566,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     protected void drop(GuiComponent component) {
         components.remove(component);
-        component.removed();
     }
 
     protected Vector2 baseSize(ScapesEngine engine) {

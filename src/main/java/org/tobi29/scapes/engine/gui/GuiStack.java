@@ -13,7 +13,6 @@ import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class GuiStack {
@@ -29,19 +28,14 @@ public class GuiStack {
                 new int[]{0, 1, 2, 1, 2, 3}, RenderType.TRIANGLES);
     }
 
-    protected final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
     private final Map<String, Gui> guis = new ConcurrentSkipListMap<>();
 
     public void add(String id, Gui add) {
-        Gui old = guis.put(id, add);
-        if (old != null) {
-            queue.add(old::removed);
-        }
+        guis.put(id, add);
     }
 
     public void remove(Gui remove) {
         guis.values().remove(remove);
-        queue.add(remove::removed);
     }
 
     public void step(ScapesEngine engine, double delta) {
@@ -53,9 +47,6 @@ public class GuiStack {
                 remove(gui);
             }
         });
-        while (!queue.isEmpty()) {
-            queue.poll().run();
-        }
     }
 
     public Optional<GuiComponent> fireEvent(GuiComponentEvent event,
@@ -87,8 +78,8 @@ public class GuiStack {
     }
 
     public void render(GL gl, Shader shader, ScapesEngine engine) {
-        Streams.of(guis.values()).forEach(
-                gui -> gui.render(gl, shader, gui.baseSize(gl)));
+        Streams.of(guis.values())
+                .forEach(gui -> gui.render(gl, shader, gui.baseSize(gl)));
         Streams.of(guis.values())
                 .forEach(gui -> gui.renderOverlays(gl, shader));
         MatrixStack matrixStack = gl.matrixStack();
