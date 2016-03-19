@@ -30,7 +30,6 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class GraphicsSystem {
     private static final Logger LOGGER =
@@ -39,7 +38,6 @@ public class GraphicsSystem {
     private final GuiWidgetDebugValues.Element fpsDebug, widthDebug,
             heightDebug, textureDebug, vaoDebug;
     private final GL gl;
-    private final AtomicBoolean locked = new AtomicBoolean(false);
     private boolean triggerScreenshot;
     private double resolutionMultiplier = 1.0;
     private GameState renderState;
@@ -75,16 +73,6 @@ public class GraphicsSystem {
 
     public ShaderManager shaders() {
         return gl.shaders();
-    }
-
-    @SuppressWarnings("WaitNotInLoop")
-    public synchronized void lockRender() {
-        if (!locked.getAndSet(true)) {
-            try {
-                wait(20);
-            } catch (InterruptedException e) {
-            }
-        }
     }
 
     @SuppressWarnings("CallToNativeMethodWhileLocked")
@@ -146,8 +134,6 @@ public class GraphicsSystem {
         } catch (GraphicsException e) {
             LOGGER.warn("Graphics error during rendering: {}", e.toString());
         }
-        locked.set(false);
-        notifyAll();
     }
 
     public void triggerScreenshot() {

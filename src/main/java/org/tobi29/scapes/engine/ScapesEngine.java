@@ -301,10 +301,9 @@ public class ScapesEngine implements Crashable {
                         "Engine-Update");
                 game.init();
                 sync.init();
-                graphics.lockRender();
                 step(sync.delta());
-                sync.tick();
                 wait.join();
+                sync.cap();
                 while (!joiner.marked()) {
                     step(sync.delta());
                     sync.cap();
