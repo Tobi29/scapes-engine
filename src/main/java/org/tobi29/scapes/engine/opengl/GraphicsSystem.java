@@ -28,6 +28,7 @@ import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
+import org.tobi29.scapes.engine.utils.profiler.Profiler;
 
 import java.io.IOException;
 
@@ -93,44 +94,54 @@ public class GraphicsSystem {
                 fboSizeDirty = true;
                 widthDebug.setValue(contentWidth);
                 heightDebug.setValue(contentHeight);
-                gl.reshape(contentWidth, contentHeight, containerWidth,
-                        containerHeight, resolutionMultiplier);
+                try (Profiler.C ignored = Profiler.section("Reshape")) {
+                    gl.reshape(contentWidth, contentHeight, containerWidth,
+                            containerHeight, resolutionMultiplier);
+                }
             } else {
                 fboSizeDirty = false;
             }
             GameState state = engine.state();
             if (renderState != state) {
-                if (renderState != null) {
-                    renderState.disposeState(gl);
-                    FBO.disposeAll(gl);
-                    gl.shaders().disposeAll(gl);
-                    gl.textures().clearCache();
+                try (Profiler.C ignored = Profiler.section("SwitchState")) {
+                    if (renderState != null) {
+                        renderState.disposeState(gl);
+                        FBO.disposeAll(gl);
+                        gl.shaders().disposeAll(gl);
+                        gl.textures().clearCache();
+                    }
+                    renderState = state;
                 }
-                renderState = state;
             }
-            state.render(gl, delta, fboSizeDirty);
+            try (Profiler.C ignored = Profiler.section("State")) {
+                state.render(gl, delta, fboSizeDirty);
+            }
             fpsDebug.setValue(1.0 / delta);
             textureDebug.setValue(Texture.textureCount());
             vaoDebug.setValue(VAO.vaos());
             if (triggerScreenshot) {
-                triggerScreenshot = false;
-                int width = gl.contentWidth(), height = gl.contentHeight();
-                Image image = gl.screenShot(0, 0, width, height);
-                FilePath path = engine.home().resolve("screenshots/" +
-                        System.currentTimeMillis() +
-                        ".png");
-                engine.taskExecutor().runTask(joiner -> {
-                    try {
-                        FileUtil.write(path,
-                                stream -> PNG.encode(image, stream, 9, false));
-                    } catch (IOException e) {
-                        LOGGER.error("Error saving screenshot: {}",
-                                e.toString());
-                    }
-                }, "Screenshot-Writer");
+                try (Profiler.C ignored = Profiler.section("Screenshot")) {
+                    triggerScreenshot = false;
+                    int width = gl.contentWidth(), height = gl.contentHeight();
+                    Image image = gl.screenShot(0, 0, width, height);
+                    FilePath path = engine.home().resolve("screenshots/" +
+                            System.currentTimeMillis() +
+                            ".png");
+                    engine.taskExecutor().runTask(joiner -> {
+                        try {
+                            FileUtil.write(path, stream -> PNG
+                                    .encode(image, stream, 9, false));
+                        } catch (IOException e) {
+                            LOGGER.error("Error saving screenshot: {}",
+                                    e.toString());
+                        }
+                    }, "Screenshot-Writer");
+                }
             }
-            VAO.disposeUnused(gl);
-            Texture.disposeUnused(gl);
+            try (Profiler.C ignored = Profiler.section("Cleanup")) {
+                VAO.disposeUnused(gl);
+                Texture.disposeUnused(gl);
+            }
         } catch (GraphicsException e) {
             LOGGER.warn("Graphics error during rendering: {}", e.toString());
         }

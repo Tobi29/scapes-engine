@@ -20,9 +20,12 @@ import java8.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.gui.*;
+import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.input.ControllerDefault;
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.FontRenderer;
+import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
+import org.tobi29.scapes.engine.opengl.GraphicsSystem;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 import org.tobi29.scapes.engine.utils.Crashable;
@@ -62,6 +65,7 @@ public class ScapesEngine implements Crashable {
     private final GuiNotifications notifications;
     private final GuiWidgetDebugValues debugValues;
     private final GuiWidgetDebugValues.Element usedMemoryDebug, maxMemoryDebug;
+    private final GuiWidgetProfiler profiler;
     private final AtomicReference<GameState> newState = new AtomicReference<>();
     private Joiner joiner;
     private GuiController guiController;
@@ -154,6 +158,8 @@ public class ScapesEngine implements Crashable {
         };
         debugValues = debugGui.add(32, 32, 360, 256, GuiWidgetDebugValues::new);
         debugValues.setVisible(false);
+        profiler = debugGui.add(32, 32, 360, 256, GuiWidgetProfiler::new);
+        profiler.setVisible(false);
         guiStack.add("99-Debug", debugGui);
         usedMemoryDebug = debugValues.get("Runtime-Memory-Used");
         maxMemoryDebug = debugValues.get("Runtime-Memory-Max");
@@ -258,6 +264,10 @@ public class ScapesEngine implements Crashable {
 
     public GuiWidgetDebugValues debugValues() {
         return debugValues;
+    }
+
+    public GuiWidgetProfiler profiler() {
+        return profiler;
     }
 
     public GameState state() {

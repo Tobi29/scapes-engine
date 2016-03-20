@@ -44,6 +44,7 @@ import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
+import org.tobi29.scapes.engine.utils.profiler.Profiler;
 
 import java.io.IOException;
 import java.nio.IntBuffer;
@@ -204,6 +205,10 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             GuiComponent debugValues = engine.debugValues();
             debugValues.setVisible(!debugValues.isVisible());
         }
+        if (engine.debug() && isPressed(ControllerKey.KEY_F4)) {
+            GuiComponent profiler = engine.profiler();
+            profiler.setVisible(!profiler.isVisible());
+        }
     }
 
     @Override
@@ -273,7 +278,9 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             if (controllers.poll()) {
                 joysticksChanged.set(true);
             }
-            engine.graphics().render(sync.delta());
+            try (Profiler.C ignored = Profiler.section("Render")) {
+                engine.graphics().render(sync.delta());
+            }
             containerResized = false;
             sync.cap();
             GLFW.glfwSwapBuffers(window);
@@ -318,7 +325,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             IOBiConsumer<String, ReadableByteStream> result)
             throws IOException {
         execIO(() -> dialogs
-                .openFileDialog(window, type.extensions(), title, multiple, result));
+                .openFileDialog(window, type.extensions(), title, multiple,
+                        result));
     }
 
     @Override

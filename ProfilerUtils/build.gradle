@@ -20,20 +20,7 @@ apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
 version = "0.0.0_1"
 
 dependencies {
-    compile project(":ScapesEngine:Codecs")
-    compile project(":ScapesEngine:FileSystems")
-    compile project(":ScapesEngine:GraphicsUtils")
-    compile project(":ScapesEngine:ProfilerUtils")
-    compile project(":ScapesEngine:ShaderCompiler")
-    compile project(":ScapesEngine:Utils:TagStructureJSON")
+    compile project(":ScapesEngine:Utils")
 
     testCompile "junit:junit:4.12"
-}
-
-idea {
-    module {
-        excludeDirs += file("resources/Inno Setup 5")
-        excludeDirs += file("resources/JRE")
-        excludeDirs += file("resources/Launch4j")
-    }
 }
