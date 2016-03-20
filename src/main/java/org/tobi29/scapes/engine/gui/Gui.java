@@ -34,7 +34,7 @@ public abstract class Gui extends GuiComponentSlab {
     }
 
     public void add(Gui add) {
-        changeComponents.add(() -> append(add));
+        append(add);
     }
 
     public Optional<GuiComponent> fireNewEvent(GuiComponentEvent event,

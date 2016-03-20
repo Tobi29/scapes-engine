@@ -33,10 +33,8 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -70,8 +68,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             hovers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     protected final GuiLayoutData parent;
     protected final Gui gui;
-    protected final Queue<Runnable> changeComponents =
-            new ConcurrentLinkedQueue<>();
     protected final Set<GuiComponent> components =
             new ConcurrentSkipListSet<>();
     protected final AtomicBoolean dirty = new AtomicBoolean(true);
@@ -520,7 +516,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     }
 
     public void remove(GuiComponent remove) {
-        changeComponents.add(() -> drop(remove));
+        components.remove(remove);
     }
 
     public void removeAll() {
@@ -529,9 +525,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     protected void updateChildren(ScapesEngine engine, double delta,
             Vector2 size) {
-        while (!changeComponents.isEmpty()) {
-            changeComponents.poll().run();
-        }
         layoutStream(size).forEach(component -> {
             if (component.a.removing) {
                 drop(component.a);

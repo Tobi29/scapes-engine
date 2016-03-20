@@ -88,9 +88,6 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     @Override
     public void updateChildren(ScapesEngine engine, double delta,
             Vector2 size) {
-        while (!changeComponents.isEmpty()) {
-            changeComponents.poll().run();
-        }
         GuiLayoutManager layout = layoutManager(size);
         Streams.of(layout.layout()).forEach(component -> {
             if (component.a.removing) {
