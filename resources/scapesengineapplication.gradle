@@ -17,6 +17,7 @@
 import java.util.stream.Collectors
 
 apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply plugin: "idea"
 
 configurations {
     runtimeLinux32

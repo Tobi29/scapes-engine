@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-
 apply plugin: "java"
-apply plugin: "idea"
-apply plugin: "eclipse"
 
 sourceCompatibility = 1.8
 
@@ -33,25 +30,5 @@ jar {
         baseName = "${project.name}"
     } else {
         baseName = "${project.group}.${project.name}"
-    }
-}
-
-configurations {
-    provided
-}
-
-afterEvaluate {
-    sourceSets.main.compileClasspath += configurations.provided
-
-    idea {
-        module {
-            scopes.PROVIDED.plus += [configurations.provided]
-        }
-    }
-
-    eclipse {
-        classpath {
-            plusConfigurations = [configurations.provided]
-        }
     }
 }
