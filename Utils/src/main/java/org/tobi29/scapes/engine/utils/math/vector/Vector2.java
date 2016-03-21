@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.vector;
 
-public abstract class Vector2 extends Number {
+import org.tobi29.scapes.engine.utils.io.tag.MultiTag;
+
+public abstract class Vector2 extends Number implements MultiTag.Writeable {
     public abstract Vector2 plus(int a);
 
     public abstract Vector2 plus(long a);

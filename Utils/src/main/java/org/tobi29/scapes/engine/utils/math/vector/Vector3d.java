@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.vector;
 
+import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class Vector3d extends Vector3 {
@@ -248,5 +248,14 @@ public class Vector3d extends Vector3 {
         Vector3 other = (Vector3) obj;
         return x == other.doubleX() && y == other.doubleY() &&
                 z == other.doubleZ();
+    }
+
+    @Override
+    public TagStructure write() {
+        TagStructure tagStructure = new TagStructure();
+        tagStructure.setDouble("X", x);
+        tagStructure.setDouble("Y", y);
+        tagStructure.setDouble("Z", z);
+        return tagStructure;
     }
 }
