@@ -17,6 +17,7 @@
 
 apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
 apply plugin: 'antlr'
+apply plugin: "idea"
 
 version = "0.0.0_1"
 
