@@ -137,7 +137,6 @@ public class Sync {
      * @param joiner Joiner that the {@link Joiner.Joinable#sleep} method is called on
      * @see #tick()
      */
-    @SuppressWarnings("WaitNotInLoop")
     public void cap(Joiner.Joinable joiner) {
         cap(sleep -> {
             // Using nanos is useless as the implementation on wait is bad
