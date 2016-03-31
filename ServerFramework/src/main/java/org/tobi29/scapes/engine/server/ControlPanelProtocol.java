@@ -178,7 +178,6 @@ public class ControlPanelProtocol implements Connection {
                     byte[] salt = new byte[SALT_LENGTH];
                     input.get(challenge);
                     input.get(salt);
-                    System.out.println(input.remaining());
                     try {
                         Cipher cipher = cipher(Cipher.DECRYPT_MODE, salt);
                         output.put(cipher.doFinal(challenge));
