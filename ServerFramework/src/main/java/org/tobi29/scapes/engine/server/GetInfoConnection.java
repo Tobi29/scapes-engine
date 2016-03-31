@@ -13,27 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 
 public class GetInfoConnection implements Connection {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(GetInfoConnection.class);
-    private final SocketChannel channel;
-    private final ByteBuffer buffer;
-    private boolean done;
+    private final PacketBundleChannel channel;
+    private final long startup;
+    private State state = State.OPEN;
 
-    public GetInfoConnection(SocketChannel channel, ServerInfo serverInfo) {
+    public GetInfoConnection(PacketBundleChannel channel, ServerInfo serverInfo)
+            throws IOException {
         this.channel = channel;
-        buffer = serverInfo.getBuffer();
+        startup = System.nanoTime();
+        WritableByteStream output = channel.getOutputStream();
+        output.put(serverInfo.getBuffer());
+        channel.queueBundle();
+        channel.requestClose();
     }
 
     @Override
@@ -43,27 +46,30 @@ public class GetInfoConnection implements Connection {
 
     @Override
     public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
-        if (!done) {
-            try {
-                int write = channel.write(buffer);
-                if (!buffer.hasRemaining() || write == -1) {
-                    done = true;
-                }
-            } catch (IOException e) {
-                LOGGER.info("Error in info connection: {}", e.toString());
-                done = true;
+        try {
+            if (channel.process()) {
+                state = State.CLOSED;
             }
+        } catch (IOException e) {
+            LOGGER.info("Error in info connection: {}", e.toString());
+            state = State.CLOSED;
         }
-        return true;
+        return false;
     }
 
     @Override
     public boolean isClosed() {
-        return done;
+        return System.nanoTime() - startup > 10000000000L ||
+                state == State.CLOSED;
     }
 
     @Override
     public void close() throws IOException {
         channel.close();
+    }
+
+    private enum State {
+        OPEN,
+        CLOSED
     }
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag.binary;
 
 import java8.util.Optional;
@@ -22,7 +21,6 @@ import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
-import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -102,10 +100,9 @@ public class TagStructureArchive {
 
     public synchronized void setTagStructure(String key,
             TagStructure tagStructure, byte compression) throws IOException {
-        byteStream.buffer().clear();
-        TagStructureBinary.write(tagStructure, byteStream, compression, true,
-                compressionStream);
-        byteStream.put(new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12});
+        TagStructureBinary
+                .write(tagStructure, byteStream, compression, true, byteStream,
+                        compressionStream);
         byteStream.buffer().flip();
         ByteBuffer buffer =
                 BufferCreator.bytes(byteStream.buffer().remaining());

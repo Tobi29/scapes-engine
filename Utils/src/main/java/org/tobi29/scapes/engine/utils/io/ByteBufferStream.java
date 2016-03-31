@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.utils.io;
 
 import java8.util.function.IntFunction;
+import java8.util.function.IntUnaryOperator;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
@@ -25,24 +26,36 @@ import java.nio.ByteBuffer;
 public class ByteBufferStream
         implements RandomWritableByteStream, RandomReadableByteStream {
     private final IntFunction<ByteBuffer> supplier;
+    private final IntUnaryOperator growth;
     private ByteBuffer buffer;
 
     public ByteBufferStream() {
-        this(capacity -> BufferCreator.bytes(capacity + 8192));
+        this(BufferCreator::bytes);
     }
 
     public ByteBufferStream(IntFunction<ByteBuffer> supplier) {
-        this(supplier, supplier.apply(0));
+        this(supplier, length -> length + 8192);
+    }
+
+    public ByteBufferStream(IntFunction<ByteBuffer> supplier,
+            IntUnaryOperator growth) {
+        this(supplier, growth, supplier.apply(growth.applyAsInt(0)));
     }
 
     public ByteBufferStream(ByteBuffer buffer) {
-        this(length -> BufferCreator.bytes(length + 8192), buffer);
+        this(BufferCreator::bytes, buffer);
     }
 
     public ByteBufferStream(IntFunction<ByteBuffer> supplier,
             ByteBuffer buffer) {
+        this(supplier, length -> length + 8192, buffer);
+    }
+
+    public ByteBufferStream(IntFunction<ByteBuffer> supplier,
+            IntUnaryOperator growth, ByteBuffer buffer) {
         this.buffer = buffer;
         this.supplier = supplier;
+        this.growth = growth;
     }
 
     public ByteBuffer buffer() {
@@ -114,12 +127,32 @@ public class ByteBufferStream
     }
 
     public void ensurePut(int len) {
-        while (len > buffer.remaining()) {
-            ByteBuffer newBuffer = supplier.apply(buffer.capacity());
-            buffer.flip();
-            newBuffer.put(buffer);
-            buffer = newBuffer;
+        int used = buffer.position();
+        int size = buffer.capacity();
+        if (len <= size - used) {
+            return;
         }
+        do {
+            size = growth.applyAsInt(size);
+        } while (len > size - used);
+        grow(size);
+    }
+
+    public void grow() {
+        grow(growth.applyAsInt(buffer.capacity()));
+    }
+
+    public void grow(int size) {
+        if (size < buffer.capacity()) {
+            throw new IllegalArgumentException(
+                    "Tried to shrink buffer with " + buffer.capacity() +
+                            " bytes to " + size);
+        }
+        ByteBuffer newBuffer = supplier.apply(size);
+        assert newBuffer.capacity() == size;
+        buffer.flip();
+        newBuffer.put(buffer);
+        buffer = newBuffer;
     }
 
     @Override

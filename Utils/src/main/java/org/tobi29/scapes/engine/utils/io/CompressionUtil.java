@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.utils.io;
 
 import java8.util.function.IntFunction;
+import java8.util.function.IntUnaryOperator;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
@@ -41,13 +42,18 @@ public final class CompressionUtil {
 
     public static ByteBuffer compress(ReadableByteStream input, int level)
             throws IOException {
-        return compress(input, level,
-                length -> BufferCreator.bytes(length + 1024));
+        return compress(input, level, BufferCreator::bytes);
     }
 
     public static ByteBuffer compress(ReadableByteStream input, int level,
             IntFunction<ByteBuffer> supplier) throws IOException {
-        ByteBufferStream stream = new ByteBufferStream(supplier);
+        return compress(input, level, supplier, length -> length + 1024);
+    }
+
+    public static ByteBuffer compress(ReadableByteStream input, int level,
+            IntFunction<ByteBuffer> supplier, IntUnaryOperator growth)
+            throws IOException {
+        ByteBufferStream stream = new ByteBufferStream(supplier, growth);
         compress(input, stream, level);
         return stream.buffer();
     }
@@ -66,12 +72,18 @@ public final class CompressionUtil {
 
     public static ByteBuffer decompress(ReadableByteStream input)
             throws IOException {
-        return decompress(input, length -> BufferCreator.bytes(length + 1024));
+        return decompress(input, BufferCreator::bytes);
     }
 
     public static ByteBuffer decompress(ReadableByteStream input,
             IntFunction<ByteBuffer> supplier) throws IOException {
-        ByteBufferStream output = new ByteBufferStream(supplier);
+        return decompress(input, supplier, length -> length + 1024);
+    }
+
+    public static ByteBuffer decompress(ReadableByteStream input,
+            IntFunction<ByteBuffer> supplier, IntUnaryOperator growth)
+            throws IOException {
+        ByteBufferStream output = new ByteBufferStream(supplier, growth);
         decompress(input, output);
         return output.buffer();
     }

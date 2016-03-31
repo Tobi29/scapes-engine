@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io.tag.binary;
 
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
@@ -27,30 +26,31 @@ import java.io.IOException;
 public class TagStructureWriterBinary extends TagStructureBinary
         implements TagStructureWriter {
     private final WritableByteStream stream;
-    private final ByteBufferStream compressionStream;
+    private final ByteBufferStream compressionStream, byteStream;
     private final byte compression;
     private final boolean useDictionary;
     private KeyDictionary dictionary;
-    private ByteBufferStream byteStream;
     private WritableByteStream structureStream;
 
     public TagStructureWriterBinary(WritableByteStream stream, byte compression,
-            boolean useDictionary, ByteBufferStream compressionStream) {
+            boolean useDictionary, ByteBufferStream byteStream,
+            ByteBufferStream compressionStream) {
         this.stream = stream;
         this.compression = compression;
         this.useDictionary = useDictionary;
+        this.byteStream = byteStream;
         this.compressionStream = compressionStream;
     }
 
     @Override
     public void begin(TagStructure root) throws IOException {
-        stream.put(HEADER_MAGIC);
-        stream.put(HEADER_VERSION);
-        stream.put(compression);
         if (compression >= 0) {
-            byteStream = new ByteBufferStream();
+            byteStream.buffer().clear();
             structureStream = byteStream;
         } else {
+            stream.put(HEADER_MAGIC);
+            stream.put(HEADER_VERSION);
+            stream.put(compression);
             structureStream = stream;
         }
         if (useDictionary) {
@@ -66,9 +66,14 @@ public class TagStructureWriterBinary extends TagStructureBinary
         structureStream.put(ID_STRUCTURE_TERMINATE);
         if (compression >= 0) {
             byteStream.buffer().flip();
+            compressionStream.buffer().clear();
             CompressionUtil.compress(new ByteBufferStream(byteStream.buffer()),
                     compressionStream);
             compressionStream.buffer().flip();
+            byteStream.buffer().clear();
+            stream.put(HEADER_MAGIC);
+            stream.put(HEADER_VERSION);
+            stream.put(compression);
             stream.putInt(compressionStream.buffer().remaining());
             stream.put(compressionStream.buffer());
             compressionStream.buffer().clear();

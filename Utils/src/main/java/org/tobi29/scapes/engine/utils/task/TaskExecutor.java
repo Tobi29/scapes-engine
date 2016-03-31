@@ -68,7 +68,7 @@ public class TaskExecutor {
             if (time >= task.delay) {
                 try {
                     if (task.async) {
-                        runTask(joiner -> {
+                        runTask(() -> {
                             long delay = task.task.getAsLong();
                             if (delay < 0) {
                                 task.stopped = true;
@@ -107,6 +107,18 @@ public class TaskExecutor {
         ThreadWrapper thread = new ThreadWrapper(task, this.name + name);
         threadPools.get(priority).execute(thread);
         return thread.joinable.joiner();
+    }
+
+    public void runTask(Runnable task, String name) {
+        runTask(task, name, Priority.LOW);
+    }
+
+    public void runTask(Runnable task, String name, Priority priority) {
+        threadPools.get(priority).execute(() -> {
+            Thread thread = Thread.currentThread();
+            thread.setName(name);
+            task.run();
+        });
     }
 
     public void addTask(Runnable task, String name) {

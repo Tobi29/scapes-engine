@@ -41,6 +41,7 @@ public class ServerInfo {
     public ServerInfo(String name) {
         this(name, new Image());
     }
+
     public ServerInfo(String name, FilePath iconPath) {
         this(name, image(iconPath));
     }
@@ -57,9 +58,8 @@ public class ServerInfo {
         }
         buffer.flip();
         byte[] array = name.getBytes(StandardCharsets.UTF_8);
-        int size = 1 + array.length + buffer.remaining();
-        this.buffer = BufferCreator.bytes(4 + size);
-        this.buffer.putInt(size);
+        this.buffer =
+                BufferCreator.bytes(1 + array.length + buffer.remaining());
         this.buffer.put((byte) array.length);
         this.buffer.put(array);
         this.buffer.put(buffer);
@@ -67,26 +67,20 @@ public class ServerInfo {
     }
 
     public ServerInfo(ByteBuffer buffer) {
-        this.buffer = buffer;
-        buffer.rewind();
         Image image = new Image();
-        if (buffer.getInt() == buffer.remaining()) {
-            byte[] array = new byte[buffer.get()];
-            buffer.get(array);
-            name = new String(array, StandardCharsets.UTF_8);
-            try {
-                ByteBuffer imageBuffer = CompressionUtil
-                        .decompress(new ByteBufferStream(buffer));
-                imageBuffer.flip();
-                int size = (int) FastMath.sqrt(imageBuffer.remaining() >> 2);
-                image = new Image(size, size, imageBuffer);
-            } catch (IOException e) {
-                LOGGER.warn("Failed to decompress server icon: {}",
-                        e.toString());
-            }
-        } else {
-            name = "Invalid server info";
+        byte[] array = new byte[buffer.get()];
+        buffer.get(array);
+        name = new String(array, StandardCharsets.UTF_8);
+        try {
+            ByteBuffer imageBuffer =
+                    CompressionUtil.decompress(new ByteBufferStream(buffer));
+            imageBuffer.flip();
+            int size = (int) FastMath.sqrt(imageBuffer.remaining() >> 2);
+            image = new Image(size, size, imageBuffer);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to decompress server icon: {}", e.toString());
         }
+        this.buffer = buffer;
         this.image = image;
     }
 

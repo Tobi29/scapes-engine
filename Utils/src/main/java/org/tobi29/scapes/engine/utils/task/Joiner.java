@@ -15,6 +15,8 @@
  */
 package org.tobi29.scapes.engine.utils.task;
 
+import java8.util.function.BooleanSupplier;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,6 +70,13 @@ public class Joiner {
     }
 
     public void join(Runnable runnable) {
+        join(() -> {
+            runnable.run();
+            return false;
+        });
+    }
+
+    public void join(BooleanSupplier supplier) {
         for (Joinable thread : joinables) {
             thread.marked = true;
         }
@@ -76,7 +85,9 @@ public class Joiner {
                 synchronized (thread) {
                     thread.woken.set(true);
                     thread.notifyAll();
-                    runnable.run();
+                    if (!supplier.getAsBoolean()) {
+                        return;
+                    }
                     try {
                         thread.wait(100);
                     } catch (InterruptedException e) {

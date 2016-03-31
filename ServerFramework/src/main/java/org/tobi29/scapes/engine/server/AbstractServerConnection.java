@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -40,12 +41,14 @@ public abstract class AbstractServerConnection {
     protected final TaskExecutor taskExecutor;
     private final List<NetWorkerThread> workers = new ArrayList<>();
     private final byte[] connectionHeader;
+    private final SSLContext context;
     private final List<Joiner> joiners = new ArrayList<>();
 
     protected AbstractServerConnection(TaskExecutor taskExecutor,
-            byte[] connectionHeader) {
+            byte[] connectionHeader, SSLContext context) {
         this.taskExecutor = taskExecutor;
         this.connectionHeader = connectionHeader;
+        this.context = context;
     }
 
     public void workers(int workerCount) throws IOException {
@@ -88,8 +91,11 @@ public abstract class AbstractServerConnection {
                         if (bestWorker == null) {
                             client.close();
                         } else {
+                            PacketBundleChannel bundleChannel =
+                                    new PacketBundleChannel(client,
+                                            taskExecutor, context, false);
                             bestWorker.addConnection(
-                                    new UnknownConnection(client, this,
+                                    new UnknownConnection(bundleChannel, this,
                                             connectionHeader));
                         }
                     }
@@ -122,8 +128,8 @@ public abstract class AbstractServerConnection {
         new Joiner(joiners).join();
     }
 
-    protected abstract Optional<Connection> newConnection(SocketChannel channel,
-            byte id) throws IOException;
+    protected abstract Optional<Connection> newConnection(
+            PacketBundleChannel channel, byte id) throws IOException;
 
     public static class NetWorkerThread implements TaskExecutor.ASyncTask {
         private final Queue<Connection> connectionQueue =

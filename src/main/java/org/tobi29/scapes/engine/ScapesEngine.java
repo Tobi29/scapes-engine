@@ -20,8 +20,8 @@ import java8.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.gui.*;
-import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
+import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
@@ -271,6 +271,9 @@ public class ScapesEngine implements Crashable {
     }
 
     public GameState state() {
+        if (state == null) {
+            throw new IllegalStateException("Engine not running");
+        }
         return state;
     }
 
@@ -333,6 +336,7 @@ public class ScapesEngine implements Crashable {
         halt();
         LOGGER.info("Disposing last state");
         state.disposeState();
+        state = null;
         LOGGER.info("Disposing sound system");
         sounds.dispose();
         LOGGER.info("Disposing game");

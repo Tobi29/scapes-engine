@@ -18,12 +18,11 @@ package org.tobi29.scapes.engine.server;
 import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.utils.BufferCreator;
+import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -39,17 +38,17 @@ public class UnknownConnection implements Connection {
     }
 
     private final byte[] connectionHeader;
-    private final ByteBuffer buffer;
     private final AbstractServerConnection connection;
-    private SocketChannel channel;
-    private boolean done;
+    private final PacketBundleChannel channel;
+    private final long startup;
+    private State state = State.OPEN;
 
-    public UnknownConnection(SocketChannel channel,
+    public UnknownConnection(PacketBundleChannel channel,
             AbstractServerConnection connection, byte[] connectionHeader) {
         this.channel = channel;
         this.connection = connection;
         this.connectionHeader = connectionHeader;
-        buffer = BufferCreator.bytes(connectionHeader.length + 1);
+        startup = System.nanoTime();
     }
 
     @Override
@@ -59,42 +58,49 @@ public class UnknownConnection implements Connection {
 
     @Override
     public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
-        if (!done) {
-            try {
-                int read = channel.read(buffer);
-                if (!buffer.hasRemaining()) {
-                    buffer.rewind();
-                    byte[] header = new byte[connectionHeader.length];
-                    buffer.get(header);
-                    if (Arrays.equals(header, connectionHeader)) {
-                        Optional<Connection> newConnection =
-                                connection.newConnection(channel, buffer.get());
-                        if (newConnection.isPresent()) {
-                            worker.addConnection(newConnection.get());
-                        }
-                        channel = null;
-                    }
-                    done = true;
-                } else if (read == -1) {
-                    done = true;
-                }
-            } catch (IOException e) {
-                LOGGER.info("Error in new connection: {}", e.toString());
-                done = true;
+        try {
+            if (channel.process()) {
+                state = State.CLOSED;
             }
+            Optional<RandomReadableByteStream> bundle = channel.fetch();
+            if (bundle.isPresent()) {
+                ReadableByteStream stream = bundle.get();
+                byte[] header = new byte[connectionHeader.length];
+                stream.get(header);
+                if (Arrays.equals(header, connectionHeader)) {
+                    Optional<Connection> newConnection =
+                            connection.newConnection(channel, stream.get());
+                    if (newConnection.isPresent()) {
+                        worker.addConnection(newConnection.get());
+                        state = State.CONNECTED;
+                        return true;
+                    }
+                }
+                state = State.CLOSED;
+            }
+        } catch (IOException e) {
+            LOGGER.info("Error in new connection: {}", e.toString());
+            state = State.CLOSED;
         }
         return true;
     }
 
     @Override
     public boolean isClosed() {
-        return done;
+        return System.nanoTime() - startup > 10000000000L ||
+                state != State.OPEN;
     }
 
     @Override
     public void close() throws IOException {
-        if (channel != null) {
+        if (state != State.CONNECTED) {
             channel.close();
         }
+    }
+
+    enum State {
+        OPEN,
+        CONNECTED,
+        CLOSED
     }
 }
