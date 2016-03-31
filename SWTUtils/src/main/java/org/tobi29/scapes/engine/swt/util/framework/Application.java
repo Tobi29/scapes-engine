@@ -1,12 +1,12 @@
 package org.tobi29.scapes.engine.swt.util.framework;
 
 import java8.util.Optional;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.swt.util.platform.Platform;
-import org.tobi29.scapes.engine.swt.util.platform.PlatformLinux;
+import org.tobi29.scapes.engine.swt.util.platform.*;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.SleepUtil;
 import org.tobi29.scapes.engine.utils.io.filesystem.CrashReportFile;
@@ -24,8 +24,21 @@ public abstract class Application implements Runnable, Crashable {
             LoggerFactory.getLogger(Application.class);
 
     static {
-        // TODO: Pick based on SWT implementation
-        PLATFORM = new PlatformLinux();
+        switch (SWT.getPlatform()) {
+            case "gtk":
+                PLATFORM = new PlatformLinux();
+                break;
+            case "cocoa":
+                PLATFORM = new PlatformMacOSX();
+                break;
+            case "win32":
+                PLATFORM = new PlatformWindows();
+                break;
+            default:
+                LOGGER.warn("Unknown SWT platform: {}", SWT.getPlatform());
+                PLATFORM = new PlatformUnknown();
+                break;
+        }
     }
 
     protected final Display display;
