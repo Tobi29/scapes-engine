@@ -282,6 +282,7 @@ public abstract class MultiDocumentApplication extends Application {
                 shell = DocumentShell.this;
                 this.document = document;
                 menu = new SmartMenuBar(parent.getShell());
+                composites.put(document, this);
                 addDisposeListener(e -> {
                     composites.remove(this.document);
                     tabItem.ifPresent(Widget::dispose);
