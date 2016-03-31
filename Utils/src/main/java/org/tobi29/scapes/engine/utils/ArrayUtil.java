@@ -329,11 +329,11 @@ public final class ArrayUtil {
      * @param text Base64 String to convert
      * @return Byte array containing the data
      */
-    public static byte[] fromBase64(String text) {
+    public static byte[] fromBase64(String text) throws IOException {
         try {
             return Base64.decode(text);
-        } catch (UnsupportedEncodingException e) {
-            throw new UnsupportedJVMException(e);
+        } catch (IllegalArgumentException | UnsupportedEncodingException e) {
+            throw new IOException(e);
         }
     }
 

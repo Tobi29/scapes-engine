@@ -17,14 +17,17 @@ package org.tobi29.scapes.engine.server;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.StringUtil;
 import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
-import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
-import org.tobi29.scapes.engine.utils.io.*;
+import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
+import org.tobi29.scapes.engine.utils.io.CompressionUtil;
+import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream;
+import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
-import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLEngineResult;
+import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
@@ -32,67 +35,69 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PacketBundleChannel {
-    private static final IvParameterSpec IV;
-    private static final ChecksumUtil.Algorithm CHECKSUM_ALGORITHM =
-            ChecksumUtil.Algorithm.SHA256;
-    private static final int CHECKSUM_LENGTH = CHECKSUM_ALGORITHM.bytes();
     private static final int BUNDLE_HEADER_SIZE = 4;
     private static final int BUNDLE_MAX_SIZE = 1 << 10 << 10 << 6;
     private static final ThreadLocal<List<WeakReference<ByteBuffer>>>
             BUFFER_CACHE = ThreadLocalUtil.of(ArrayList::new);
-
-    static {
-        Random random = new Random(
-                StringUtil.hash("Totally secure initialization vector :P"));
-        byte[] array = new byte[16];
-        random.nextBytes(array);
-        IV = new IvParameterSpec(array);
-    }
-
+    private static final ByteBuffer EMPTY_BUFFER = BufferCreator.bytes(0);
     private final SocketChannel channel;
-    private final ByteBufferStream dataStreamOut = new ByteBufferStream(
-            length -> BufferCreator.bytes(length + 102400)),
-            byteBufferStreamOut = new ByteBufferStream(
-                    length -> BufferCreator.bytes(length + 102400));
-    private final ByteBuffer header = BufferCreator.bytes(BUNDLE_HEADER_SIZE);
-    private final byte[] checksum = new byte[CHECKSUM_LENGTH];
+    private final TaskExecutor taskExecutor;
+    private final AtomicInteger taskCounter = new AtomicInteger();
+    private final ByteBufferStream dataStreamOut =
+            new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 102400), byteBufferStreamOut =
+            new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 102400);
     private final Queue<ByteBuffer> queue = new ConcurrentLinkedQueue<>();
     private final CompressionUtil.Filter deflater, inflater;
-    private final MessageDigest digest = CHECKSUM_ALGORITHM.digest();
-    private final Cipher encryptCipher, decryptCipher;
     private final AtomicInteger inRate = new AtomicInteger(), outRate =
             new AtomicInteger();
-    private final List<WeakReference<ByteBuffer>> bufferCache;
-    private Optional<Selector> selector = Optional.empty();
-    private boolean encrypt, hasInput;
+    private final SSLEngine engine;
+    private final ByteBufferStream myNetData =
+            new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 16384);
+    private final ByteBufferStream peerAppData =
+            new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 16384);
+    private final ByteBufferStream peerNetData =
+            new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 16384);
     private ByteBuffer output, input = BufferCreator.bytes(1024);
+    private Optional<Selector> selector = Optional.empty();
+    private boolean hasInput, close;
+    private State state = State.HANDSHAKE;
 
-    public PacketBundleChannel(SocketChannel channel) {
-        this(channel, null, null);
+    public PacketBundleChannel(SocketChannel channel, TaskExecutor taskExecutor,
+            SSLContext context, boolean client) throws IOException {
+        this((InetSocketAddress) channel.getRemoteAddress(), channel,
+                taskExecutor, context, client);
     }
 
-    public PacketBundleChannel(SocketChannel channel, byte[] encryptKey,
-            byte[] decryptKey) {
+    public PacketBundleChannel(InetSocketAddress address, SocketChannel channel,
+            TaskExecutor taskExecutor, SSLContext context, boolean client)
+            throws IOException {
+        this(address.getHostName(), address.getPort(), channel, taskExecutor,
+                context, client);
+    }
+
+    public PacketBundleChannel(String remoteAddress, int port,
+            SocketChannel channel, TaskExecutor taskExecutor,
+            SSLContext context, boolean client) throws IOException {
         this.channel = channel;
+        this.taskExecutor = taskExecutor;
         deflater = new CompressionUtil.ZDeflater(1);
         inflater = new CompressionUtil.ZInflater();
-        try {
-            encryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-            decryptCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new UnsupportedJVMException(e);
-        }
-        bufferCache = BUFFER_CACHE.get();
-        setKey(encryptKey, decryptKey);
+        engine = context.createSSLEngine(remoteAddress, port);
+        engine.setUseClientMode(client);
+        myNetData.buffer().limit(0);
+        engine.beginHandshake();
     }
 
     public RandomWritableByteStream getOutputStream() {
@@ -106,141 +111,115 @@ public class PacketBundleChannel {
     public void queueBundle() throws IOException {
         dataStreamOut.buffer().flip();
         byteBufferStreamOut.buffer().clear();
-        byteBufferStreamOut.position(CHECKSUM_LENGTH);
         CompressionUtil.filter(dataStreamOut, byteBufferStreamOut, deflater);
-        byteBufferStreamOut.buffer().flip().position(CHECKSUM_LENGTH);
-        digest.update(byteBufferStreamOut.buffer());
         byteBufferStreamOut.buffer().flip();
-        byteBufferStreamOut.put(digest.digest());
-        byteBufferStreamOut.buffer().rewind();
-        ByteBuffer bundle;
-        if (encrypt) {
-            bundle = buffer(BUNDLE_HEADER_SIZE + encryptCipher
-                    .getOutputSize(byteBufferStreamOut.buffer().remaining()));
-        } else {
-            bundle = buffer(BUNDLE_HEADER_SIZE +
-                    byteBufferStreamOut.buffer().remaining());
-        }
-        bundle.position(BUNDLE_HEADER_SIZE);
-        int size;
-        if (encrypt) {
-            try {
-                size = encryptCipher
-                        .doFinal(byteBufferStreamOut.buffer(), bundle);
-            } catch (IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
-                throw new IOException(e);
-            }
-        } else {
-            size = byteBufferStreamOut.buffer().remaining();
-            bundle.put(byteBufferStreamOut.buffer());
-        }
+        int size = byteBufferStreamOut.buffer().remaining();
         if (size > BUNDLE_MAX_SIZE) {
-            throw new IOException(
-                    "Unable to send too large bundle of size: " + size);
+            throw new IOException("Bundle size too large: " + size);
         }
+        ByteBuffer header = buffer(BUNDLE_HEADER_SIZE);
+        header.putInt(size);
+        header.flip();
+        assert header.remaining() == BUNDLE_HEADER_SIZE;
+        queue.add(header);
+        ByteBuffer bundle = buffer(size);
+        bundle.put(byteBufferStreamOut.buffer());
         bundle.flip();
-        bundle.putInt(size);
-        bundle.rewind();
         queue.add(bundle);
         dataStreamOut.buffer().clear();
-        digest.reset();
         selector.ifPresent(Selector::wakeup);
     }
 
     public boolean process() throws IOException {
-        if (output == null) {
+        while (true) {
+            // Glorious design on Java's part:
+            // The SSLEngine locks whilst delegated task runs
+            // Solution: No touchy
+            if (taskCounter.get() > 0) {
+                return false;
+            }
+            if (flush()) {
+                return false;
+            }
+            if (state == State.CLOSED) {
+                return true;
+            }
+            if (state == State.HANDSHAKE) {
+                if (handshake()) {
+                    state = State.OPEN;
+                } else {
+                    return false;
+                }
+            }
+            if (state == State.CLOSING && handshake()) {
+                state = State.CLOSED;
+                continue;
+            }
+            if (output != null) {
+                writeSSL(output);
+                if (output.hasRemaining()) {
+                    continue;
+                }
+                BUFFER_CACHE.get().add(new WeakReference<>(output));
+            }
             output = queue.poll();
-        }
-        if (output != null) {
-            int write = channel.write(output);
-            if (write == -1) {
-                throw new IOException("Connection closed");
+            if (output == null) {
+                if (state == State.OPEN && close) {
+                    engine.closeOutbound();
+                    state = State.CLOSING;
+                } else {
+                    return false;
+                }
             }
-            outRate.getAndAdd(write);
-            if (!output.hasRemaining()) {
-                bufferCache.add(new WeakReference<>(output));
-                output = null;
-            }
-            return true;
         }
-        return false;
     }
 
     public Optional<RandomReadableByteStream> fetch() throws IOException {
-        if (!hasInput) {
-            int read = channel.read(header);
-            if (read == -1) {
-                throw new IOException("Connection closed");
-            }
-            inRate.getAndAdd(read);
-            if (!header.hasRemaining()) {
-                header.flip();
-                int limit = header.getInt();
-                if (limit < 0 || limit > BUNDLE_MAX_SIZE) {
-                    throw new IOException("Invalid bundle length: " + limit);
-                }
-                if (limit > input.capacity()) {
-                    input = BufferCreator.bytes(limit);
-                } else {
-                    input.clear().limit(limit);
-                }
-                hasInput = true;
-                header.clear();
-            }
+        if (state != State.OPEN) {
+            return Optional.empty();
         }
-        if (hasInput) {
-            int read = channel.read(input);
-            if (read == -1) {
-                throw new IOException("Connection closed");
-            }
-            inRate.getAndAdd(read);
-            if (!input.hasRemaining()) {
-                input.flip();
-                byteBufferStreamOut.buffer().clear();
-                ByteBufferStream data;
-                if (encrypt) {
-                    dataStreamOut.buffer().clear();
-                    dataStreamOut.ensurePut(
-                            decryptCipher.getOutputSize(input.remaining()));
-                    try {
-                        decryptCipher.doFinal(input, dataStreamOut.buffer());
-                    } catch (IllegalBlockSizeException | BadPaddingException | ShortBufferException e) {
-                        throw new IOException(e);
+        while (true) {
+            Optional<ByteBuffer> fetch = readSSL();
+            if (fetch.isPresent()) {
+                ByteBuffer buffer = fetch.get();
+                if (!hasInput) {
+                    if (buffer.remaining() != BUNDLE_HEADER_SIZE) {
+                        throw new IOException("Bundle header size invalid: " +
+                                buffer.remaining());
                     }
-                    dataStreamOut.buffer().flip();
-                    data = dataStreamOut;
+                    int limit = buffer.getInt();
+                    if (limit > BUNDLE_MAX_SIZE) {
+                        throw new IOException(
+                                "Bundle size too large: " + buffer.remaining());
+                    }
+                    if (input.capacity() < limit) {
+                        BUFFER_CACHE.get().add(new WeakReference<>(input));
+                        input = buffer(limit);
+                    } else {
+                        input.clear();
+                    }
+                    input.limit(limit);
+                    hasInput = true;
                 } else {
-                    data = new ByteBufferStream(input);
+                    if (buffer.remaining() > input.remaining()) {
+                        throw new IOException("Received buffer too large: " +
+                                buffer.remaining() + " of " +
+                                input.remaining());
+                    }
+                    input.put(buffer);
+                    if (!input.hasRemaining()) {
+                        input.flip();
+                        byteBufferStreamOut.buffer().clear();
+                        CompressionUtil.filter(new ByteBufferStream(input),
+                                byteBufferStreamOut, inflater);
+                        byteBufferStreamOut.buffer().flip();
+                        hasInput = false;
+                        return Optional.of(byteBufferStreamOut);
+                    }
                 }
-                data.get(checksum);
-                digest.update(data.buffer());
-                if (!Arrays.equals(checksum, digest.digest())) {
-                    throw new IOException("Integrity check failed");
-                }
-                data.buffer().flip().position(CHECKSUM_LENGTH);
-                CompressionUtil.filter(data, byteBufferStreamOut, inflater);
-                byteBufferStreamOut.buffer().flip();
-                dataStreamOut.buffer().clear();
-                hasInput = false;
-                return Optional.of(byteBufferStreamOut);
+            } else {
+                return Optional.empty();
             }
-        }
-        return Optional.empty();
-    }
-
-    public void setKey(byte[] encryptKey, byte[] decryptKey) {
-        if (encryptKey == null || decryptKey == null) {
-            encrypt = false;
-        } else {
-            SecretKeySpec encryptKeySpec = new SecretKeySpec(encryptKey, "AES");
-            SecretKeySpec decryptKeySpec = new SecretKeySpec(decryptKey, "AES");
-            try {
-                encryptCipher.init(Cipher.ENCRYPT_MODE, encryptKeySpec, IV);
-                decryptCipher.init(Cipher.DECRYPT_MODE, decryptKeySpec, IV);
-            } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
-                throw new UnsupportedJVMException(e);
-            }
-            encrypt = true;
         }
     }
 
@@ -253,6 +232,10 @@ public class PacketBundleChannel {
         channel.close();
         deflater.close();
         inflater.close();
+    }
+
+    public void requestClose() {
+        close = true;
     }
 
     public int getOutputRate() {
@@ -271,13 +254,13 @@ public class PacketBundleChannel {
         return Optional.empty();
     }
 
-    @SuppressWarnings("ObjectToString")
     @Override
     public String toString() {
         return channel.socket().getRemoteSocketAddress().toString();
     }
 
     private ByteBuffer buffer(int capacity) {
+        List<WeakReference<ByteBuffer>> bufferCache = BUFFER_CACHE.get();
         ByteBuffer bundle = null;
         int i = 0;
         while (i < bufferCache.size()) {
@@ -287,7 +270,7 @@ public class PacketBundleChannel {
             } else if (cacheBuffer.capacity() >= capacity) {
                 bufferCache.remove(i);
                 bundle = cacheBuffer;
-                bundle.clear();
+                bundle.clear().limit(capacity);
                 break;
             } else {
                 i++;
@@ -297,5 +280,123 @@ public class PacketBundleChannel {
             bundle = BufferCreator.bytes(capacity);
         }
         return bundle;
+    }
+
+    private Optional<ByteBuffer> readSSL() throws IOException {
+        fill();
+        do {
+            peerAppData.buffer().clear();
+            SSLEngineResult result =
+                    engine.unwrap(peerNetData.buffer(), peerAppData.buffer());
+            switch (result.getStatus()) {
+                case OK:
+                    peerAppData.buffer().flip();
+                    peerNetData.buffer().compact();
+                    return Optional.of(peerAppData.buffer());
+                case BUFFER_OVERFLOW:
+                    peerAppData.grow();
+                    break;
+                case BUFFER_UNDERFLOW:
+                    peerNetData.buffer().compact();
+                    if (!peerNetData.hasRemaining()) {
+                        peerNetData.grow();
+                    }
+                    return Optional.empty();
+                case CLOSED:
+                    engine.closeOutbound();
+                    state = State.CLOSING;
+                    peerNetData.buffer().compact();
+                    return Optional.empty();
+                default:
+                    throw new IllegalStateException(
+                            "Invalid SSL status: " + result.getStatus());
+            }
+        } while (peerNetData.hasRemaining());
+        peerNetData.buffer().compact();
+        return Optional.empty();
+    }
+
+    private void writeSSL(ByteBuffer buffer) throws IOException {
+        while (true) {
+            myNetData.buffer().clear();
+            SSLEngineResult result = engine.wrap(buffer, myNetData.buffer());
+            switch (result.getStatus()) {
+                case OK:
+                    myNetData.buffer().flip();
+                    return;
+                case BUFFER_OVERFLOW:
+                    myNetData.grow();
+                    break;
+                case BUFFER_UNDERFLOW:
+                    throw new SSLException(
+                            "Buffer underflow occurred after a wrap. I don't think we should ever get here.");
+                case CLOSED:
+                    engine.closeOutbound();
+                    state = State.CLOSING;
+                    myNetData.buffer().flip();
+                    return;
+                default:
+                    throw new IllegalStateException(
+                            "Invalid SSL status: " + result.getStatus());
+            }
+        }
+    }
+
+    private boolean handshake() throws IOException {
+        switch (engine.getHandshakeStatus()) {
+            case FINISHED:
+            case NOT_HANDSHAKING:
+                return true;
+            case NEED_UNWRAP:
+                readSSL();
+                break;
+            case NEED_WRAP:
+                writeSSL(EMPTY_BUFFER);
+                break;
+            case NEED_TASK:
+                Runnable task = engine.getDelegatedTask();
+                if (task != null) {
+                    taskCounter.incrementAndGet();
+                    taskExecutor.runTask(() -> {
+                        task.run();
+                        taskCounter.decrementAndGet();
+                    }, "SSLEngine-Task");
+                }
+                break;
+            default:
+                throw new IllegalStateException(
+                        "Invalid SSL status: " + engine.getHandshakeStatus());
+        }
+        return false;
+    }
+
+    private void fill() throws IOException {
+        int read = channel.read(peerNetData.buffer());
+        peerNetData.buffer().flip();
+        if (read < 0) {
+            engine.closeInbound();
+            state = State.CLOSING;
+        }
+        inRate.getAndAdd(read);
+    }
+
+    private boolean flush() throws IOException {
+        if (!myNetData.hasRemaining()) {
+            return false;
+        }
+        int write = channel.write(myNetData.buffer());
+        if (write < 0) {
+            engine.closeOutbound();
+            state = State.CLOSING;
+        }
+        outRate.getAndAdd(write);
+        return myNetData.hasRemaining();
+    }
+
+    private enum State {
+        HANDSHAKE,
+        OPEN,
+        CLOSING,
+        CLOSED
     }
 }

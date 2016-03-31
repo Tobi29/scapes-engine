@@ -136,9 +136,7 @@ public class BufferedReadChannelStream implements ReadableByteStream {
             return false;
         }
         if (buffer.remaining() < len) {
-            ByteBuffer oldBuffer = buffer.duplicate();
-            buffer.clear();
-            buffer.put(oldBuffer);
+            buffer.compact();
             if (!read(buffer)) {
                 if (buffer.position() < len) {
                     throw new IOException("End of stream");

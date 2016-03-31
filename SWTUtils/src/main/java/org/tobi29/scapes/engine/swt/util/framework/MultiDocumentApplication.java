@@ -1,16 +1,24 @@
 package org.tobi29.scapes.engine.swt.util.framework;
 
 import java8.util.Optional;
+import java8.util.function.Consumer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
+import org.tobi29.scapes.engine.swt.util.widgets.Dialogs;
+import org.tobi29.scapes.engine.swt.util.widgets.OptionalWidget;
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class MultiDocumentApplication extends Application {
+    private final Map<Document, DocumentShell.DocumentComposite> composites =
+            new HashMap<>();
+
     protected MultiDocumentApplication(String name, String id, String version) {
         super(name, id, version);
     }
@@ -41,14 +49,50 @@ public abstract class MultiDocumentApplication extends Application {
         }
     }
 
-    private void open(DocumentShell.DocumentComposite tab) {
-        tab.shell.open();
+    public void replaceTab(Composite source, Document document) {
+        if (source instanceof DocumentShell.DocumentComposite) {
+            open(reuse((DocumentShell.DocumentComposite) source, document));
+        } else {
+            throw new IllegalArgumentException("Not a document composite");
+        }
     }
 
     public void closeTab(Composite source) {
         if (source instanceof DocumentShell.DocumentComposite) {
             closeTabItem((DocumentShell.DocumentComposite) source);
         }
+    }
+
+    public int message(Composite source, int style, String title,
+            String message) {
+        return Dialogs.openMessage(source.getShell(), style, title, message);
+    }
+
+    public void access(Document document,
+            Consumer<Optional<Composite>> consumer) {
+        display.syncExec(() -> accessDocument(document, consumer));
+    }
+
+    public void accessAsync(Document document,
+            Consumer<Optional<Composite>> consumer) {
+        display.asyncExec(() -> accessDocument(document, consumer));
+    }
+
+    private void accessDocument(Document document,
+            Consumer<Optional<Composite>> consumer) {
+        DocumentShell.DocumentComposite composite = composites.get(document);
+        Optional<Composite> optional;
+        if (composite == null) {
+            optional = Optional.empty();
+        } else {
+            assert composite.document == document;
+            optional = Optional.of(composite);
+        }
+        consumer.accept(optional);
+    }
+
+    private void open(DocumentShell.DocumentComposite tab) {
+        tab.shell.open();
     }
 
     private void closeTabItem(DocumentShell.DocumentComposite source) {
@@ -85,14 +129,19 @@ public abstract class MultiDocumentApplication extends Application {
                 .orElseGet(() -> tabFromShell(source.shell, document));
     }
 
+    private DocumentShell.DocumentComposite reuse(
+            DocumentShell.DocumentComposite source, Document document) {
+        source.document.forceClose();
+        source.setDocument(document);
+        source.populate();
+        source.shell.updateTab();
+        return source;
+    }
+
     private Optional<DocumentShell.DocumentComposite> tryReuse(
             DocumentShell.DocumentComposite source, Document document) {
         if (!source.document.modified() && source.document.empty()) {
-            source.document.forceClose();
-            source.setDocument(document);
-            source.populate();
-            source.shell.updateTab();
-            return Optional.of(source);
+            return Optional.of(reuse(source, document));
         }
         return Optional.empty();
     }
@@ -233,8 +282,14 @@ public abstract class MultiDocumentApplication extends Application {
                 shell = DocumentShell.this;
                 this.document = document;
                 menu = new SmartMenuBar(parent.getShell());
-                addDisposeListener(e -> tabItem.ifPresent(Widget::dispose));
-                addDisposeListener(e -> menu.dispose());
+                composites.put(document, this);
+                addDisposeListener(e -> {
+                    composites.remove(this.document);
+                    tabItem.ifPresent(Widget::dispose);
+                    // Changing menu bar now causes Win32 port to crash
+                    display.timerExec(0, () -> OptionalWidget
+                            .ifPresent(menu, SmartMenuBar::dispose));
+                });
                 int updateTime = document.updateTime();
                 if (updateTime >= 0) {
                     long nextStamp = ++updateStamp;
@@ -244,7 +299,9 @@ public abstract class MultiDocumentApplication extends Application {
             }
 
             public void setDocument(Document document) {
+                composites.remove(this.document);
                 this.document = document;
+                composites.put(document, this);
                 int updateTime = document.updateTime();
                 if (updateTime >= 0) {
                     long nextStamp = ++updateStamp;
@@ -270,8 +327,7 @@ public abstract class MultiDocumentApplication extends Application {
                 int updateTime = document.updateTime();
                 if (updateTime >= 0 && !isDisposed()) {
                     long nextStamp = ++this.updateStamp;
-                    shell.getDisplay()
-                            .timerExec(updateTime, () -> loop(nextStamp));
+                    getDisplay().timerExec(updateTime, () -> loop(nextStamp));
                 }
             }
 

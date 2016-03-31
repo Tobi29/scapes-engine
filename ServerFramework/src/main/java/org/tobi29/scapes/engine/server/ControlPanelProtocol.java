@@ -22,54 +22,42 @@ import org.tobi29.scapes.engine.utils.io.IOConsumer;
 import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
-import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import javax.crypto.*;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 import java.io.IOException;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
-import java.security.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class ControlPanelProtocol implements Connection {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ControlPanelProtocol.class);
-    private static final int SALT_LENGTH = 8, AES_MIN_KEY_LENGTH,
-            AES_MAX_KEY_LENGTH;
-
-    static {
-        int length = 16;
-        try {
-            length = Cipher.getMaxAllowedKeyLength("AES") >> 3;
-        } catch (NoSuchAlgorithmException e) {
-            LOGGER.warn("Failed to detect maximum key length", e);
-        }
-        length = FastMath.min(length, 32);
-        AES_MAX_KEY_LENGTH = length;
-        AES_MIN_KEY_LENGTH = FastMath.min(16, length);
-    }
-
+    private static final int CHALLENGE_LENGTH = 1 << 10 << 2, SALT_LENGTH = 8,
+            CHALLENGE_CIPHER_LENGTH = CHALLENGE_LENGTH + SALT_LENGTH;
     private final PacketBundleChannel channel;
     private final Queue<String[]> queue = new ConcurrentLinkedQueue<>();
     private final Queue<Runnable> closeHooks = new ConcurrentLinkedQueue<>();
     private final Map<String, IOConsumer<String[]>> commands =
             new ConcurrentHashMap<>();
     private final String password;
-    private final KeyPair keyPair;
     private State state;
     private byte[] challenge, salt = new byte[SALT_LENGTH];
 
-    private ControlPanelProtocol(String password, SocketChannel channel,
-            KeyPair keyPair) {
-        this.channel = new PacketBundleChannel(channel, null, null);
+    public ControlPanelProtocol(PacketBundleChannel channel, boolean client,
+            String password) throws IOException {
+        this.channel = channel;
         this.password = password;
-        this.keyPair = keyPair;
         addCommand("Core:End", command -> {
             throw new ConnectionCloseException("Remote connection end");
         });
@@ -77,23 +65,24 @@ public class ControlPanelProtocol implements Connection {
             Set<String> set = commands.keySet();
             send("Core:CommandsSend", set.toArray(new String[set.size()]));
         });
-    }
-
-    public ControlPanelProtocol(SocketChannel channel, String password) {
-        this(password, channel, null);
-        state = State.CLIENT_LOGIN_STEP_1;
-    }
-
-    public ControlPanelProtocol(SocketChannel channel, String password,
-            KeyPair keyPair) throws IOException {
-        this(password, channel, keyPair);
-        state = State.SERVER_LOGIN_STEP_1;
-        WritableByteStream output = this.channel.getOutputStream();
-        byte[] array = keyPair.getPublic().getEncoded();
-        output.putInt(array.length);
-        output.put(array);
-        output.putInt(AES_MAX_KEY_LENGTH);
-        this.channel.queueBundle();
+        if (client) {
+            state = State.CLIENT_LOGIN;
+        } else {
+            challenge = new byte[CHALLENGE_LENGTH];
+            new SecureRandom().nextBytes(challenge);
+            salt = new byte[SALT_LENGTH];
+            new SecureRandom().nextBytes(salt);
+            WritableByteStream output = this.channel.getOutputStream();
+            try {
+                Cipher cipher = cipher(Cipher.ENCRYPT_MODE, salt);
+                output.put(cipher.doFinal(challenge));
+                output.put(salt);
+            } catch (IllegalBlockSizeException | BadPaddingException e) {
+                throw new IOException(e);
+            }
+            this.channel.queueBundle();
+            state = State.SERVER_LOGIN;
+        }
     }
 
     public void send(String command, String... arguments) {
@@ -170,101 +159,43 @@ public class ControlPanelProtocol implements Connection {
         channel.close();
     }
 
+    public void requestClose() {
+        channel.requestClose();
+    }
+
     public boolean tick() throws IOException {
+        if (state == State.CLOSED) {
+            return false;
+        }
         boolean processing = false;
         Optional<RandomReadableByteStream> bundle = channel.fetch();
         if (bundle.isPresent()) {
             ReadableByteStream input = bundle.get();
             WritableByteStream output = channel.getOutputStream();
             switch (state) {
-                case CLIENT_LOGIN_STEP_1:
-                    try {
-                        byte[] array = new byte[input.getInt()];
-                        input.get(array);
-                        int keyLength = input.getInt();
-                        keyLength = FastMath.min(keyLength, AES_MAX_KEY_LENGTH);
-                        if (keyLength < AES_MIN_KEY_LENGTH) {
-                            throw new IOException(
-                                    "Key length too short: " + keyLength);
-                        }
-                        byte[] keyServer = new byte[keyLength];
-                        byte[] keyClient = new byte[keyLength];
-                        salt = new byte[SALT_LENGTH];
-                        Random random = new SecureRandom();
-                        random.nextBytes(keyServer);
-                        random.nextBytes(keyClient);
-                        random.nextBytes(salt);
-                        output.putInt(keyLength);
-                        PublicKey rsaKey = KeyFactory.getInstance("RSA")
-                                .generatePublic(new X509EncodedKeySpec(array));
-                        Cipher cipher = Cipher.getInstance("RSA");
-                        cipher.init(Cipher.ENCRYPT_MODE, rsaKey);
-                        output.put(cipher.update(keyServer));
-                        output.put(cipher.update(keyClient));
-                        output.put(cipher.doFinal(salt));
-                        channel.queueBundle();
-                        channel.setKey(keyClient, keyServer);
-                    } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidKeyException | InvalidKeySpecException e) {
-                        throw new IOException(e);
-                    }
-                    state = State.CLIENT_LOGIN_STEP_2;
-                    break;
-                case SERVER_LOGIN_STEP_1:
-                    int keyLength = input.getInt();
-                    keyLength = FastMath.min(keyLength, AES_MAX_KEY_LENGTH);
-                    if (keyLength < AES_MIN_KEY_LENGTH) {
-                        throw new IOException(
-                                "Key length too short: " + keyLength);
-                    }
-                    byte[] keyServer = new byte[keyLength];
-                    byte[] keyClient = new byte[keyLength];
+                case CLIENT_LOGIN:
+                    byte[] challenge = new byte[CHALLENGE_CIPHER_LENGTH];
                     byte[] salt = new byte[SALT_LENGTH];
+                    input.get(challenge);
+                    input.get(salt);
                     try {
-                        Cipher cipher = Cipher.getInstance("RSA");
-                        cipher.init(Cipher.DECRYPT_MODE, keyPair.getPrivate());
-                        byte[] array = new byte[cipher
-                                .getOutputSize(keyLength << 1 + SALT_LENGTH)];
-                        input.get(array);
-                        array = cipher.doFinal(array);
-                        System.arraycopy(array, 0, keyServer, 0, keyLength);
-                        System.arraycopy(array, keyLength, keyClient, 0,
-                                keyLength);
-                        System.arraycopy(array, keyLength << 1, salt, 0,
-                                SALT_LENGTH);
-                    } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | BadPaddingException | IllegalBlockSizeException e) {
-                        throw new IOException(e);
-                    }
-                    channel.setKey(keyServer, keyClient);
-                    challenge = new byte[1 << 10 << 2];
-                    new SecureRandom().nextBytes(challenge);
-                    try {
-                        Cipher cipher = cipher(Cipher.ENCRYPT_MODE, salt);
-                        output.putByteArrayLong(cipher.doFinal(challenge));
-                    } catch (IllegalBlockSizeException | BadPaddingException e) {
-                        throw new IOException(e);
-                    }
-                    channel.queueBundle();
-                    state = State.SERVER_LOGIN_STEP_2;
-                    break;
-                case CLIENT_LOGIN_STEP_2:
-                    byte[] array = input.getByteArrayLong();
-                    try {
-                        Cipher cipher = cipher(Cipher.DECRYPT_MODE, this.salt);
-                        this.salt = null;
-                        output.put(cipher.doFinal(array));
+                        Cipher cipher = cipher(Cipher.DECRYPT_MODE, salt);
+                        output.put(cipher.doFinal(challenge));
                     } catch (IllegalBlockSizeException | BadPaddingException e) {
                         throw new IOException(e);
                     }
                     channel.queueBundle();
                     state = State.OPEN;
                     break;
-                case SERVER_LOGIN_STEP_2:
-                    array = new byte[1 << 10 << 2];
-                    input.get(array);
-                    if (!Arrays.equals(array, challenge)) {
+                case SERVER_LOGIN:
+                    byte[] check = new byte[CHALLENGE_LENGTH];
+                    input.get(check);
+                    if (!Arrays.equals(check, this.challenge)) {
                         throw new ConnectionCloseException(
                                 "Failed password authentication");
                     }
+                    this.challenge = null;
+                    this.salt = null;
                     state = State.OPEN;
                     break;
                 case OPEN:
@@ -293,7 +224,7 @@ public class ControlPanelProtocol implements Connection {
                 break;
         }
         if (channel.process()) {
-            return true;
+            state = State.CLOSED;
         }
         if (state == State.CLOSING) {
             state = State.CLOSED;
@@ -307,10 +238,8 @@ public class ControlPanelProtocol implements Connection {
     }
 
     enum State {
-        CLIENT_LOGIN_STEP_1,
-        CLIENT_LOGIN_STEP_2,
-        SERVER_LOGIN_STEP_1,
-        SERVER_LOGIN_STEP_2,
+        CLIENT_LOGIN,
+        SERVER_LOGIN,
         OPEN,
         CLOSING,
         CLOSED

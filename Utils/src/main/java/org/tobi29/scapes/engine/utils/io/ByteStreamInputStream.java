@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.io;
+
+import org.tobi29.scapes.engine.utils.BufferCreator;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 public class ByteStreamInputStream extends InputStream {
     private final ReadableByteStream stream;
+    private final ByteBuffer single = BufferCreator.bytes(1);
 
     public ByteStreamInputStream(ReadableByteStream stream) {
         this.stream = stream;
@@ -28,7 +31,13 @@ public class ByteStreamInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        return stream.getUByte();
+        single.clear();
+        stream.getSome(single);
+        single.flip();
+        if (!single.hasRemaining()) {
+            return -1;
+        }
+        return single.get();
     }
 
     @Override

@@ -67,4 +67,11 @@ public class InputDialog extends Dialog {
             }
         }
     }
+
+    public void dismiss() {
+        if (shell.isDisposed()) {
+            return;
+        }
+        shell.dispose();
+    }
 }

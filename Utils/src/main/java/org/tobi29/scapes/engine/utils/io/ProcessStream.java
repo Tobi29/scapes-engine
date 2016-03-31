@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.utils.io;
 
 import java8.util.function.IntFunction;
+import java8.util.function.IntUnaryOperator;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 
 import java.io.IOException;
@@ -68,14 +69,19 @@ public final class ProcessStream {
     }
 
     public static StreamProcessor<ByteBuffer> asBuffer() {
-        return asBuffer(capacity -> BufferCreator.bytes(capacity + 8192));
+        return asBuffer(BufferCreator::bytes);
     }
 
     public static StreamProcessor<ByteBuffer> asBuffer(
             IntFunction<ByteBuffer> supplier) {
+        return asBuffer(supplier, length -> length + 8192);
+    }
+
+    public static StreamProcessor<ByteBuffer> asBuffer(
+            IntFunction<ByteBuffer> supplier, IntUnaryOperator growth) {
         return new StreamProcessor<ByteBuffer>() {
             private final ByteBufferStream stream =
-                    new ByteBufferStream(supplier);
+                    new ByteBufferStream(supplier, growth);
 
             @Override
             public void process(ByteBuffer buffer) throws IOException {
@@ -108,7 +114,8 @@ public final class ProcessStream {
     public static StreamProcessor<String> asString(Charset charset) {
         return new StreamProcessor<String>() {
             private final ByteBufferStream stream = new ByteBufferStream(
-                    capacity -> ByteBuffer.wrap(new byte[capacity + 1024]));
+                    length -> ByteBuffer.wrap(new byte[length]),
+                    length -> length + 1024);
 
             @Override
             public void process(ByteBuffer buffer) throws IOException {

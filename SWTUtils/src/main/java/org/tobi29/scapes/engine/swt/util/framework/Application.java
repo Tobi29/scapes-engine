@@ -1,12 +1,14 @@
 package org.tobi29.scapes.engine.swt.util.framework;
 
 import java8.util.Optional;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.swt.util.platform.Platform;
-import org.tobi29.scapes.engine.swt.util.platform.PlatformLinux;
+import org.tobi29.scapes.engine.swt.util.platform.*;
+import org.tobi29.scapes.engine.swt.util.widgets.Dialogs;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.SleepUtil;
 import org.tobi29.scapes.engine.utils.io.filesystem.CrashReportFile;
@@ -24,8 +26,21 @@ public abstract class Application implements Runnable, Crashable {
             LoggerFactory.getLogger(Application.class);
 
     static {
-        // TODO: Pick based on SWT implementation
-        PLATFORM = new PlatformLinux();
+        switch (SWT.getPlatform()) {
+            case "gtk":
+                PLATFORM = new PlatformLinux();
+                break;
+            case "cocoa":
+                PLATFORM = new PlatformMacOSX();
+                break;
+            case "win32":
+                PLATFORM = new PlatformWindows();
+                break;
+            default:
+                LOGGER.warn("Unknown SWT platform: {}", SWT.getPlatform());
+                PLATFORM = new PlatformUnknown();
+                break;
+        }
     }
 
     protected final Display display;
@@ -48,6 +63,34 @@ public abstract class Application implements Runnable, Crashable {
 
     public TaskExecutor taskExecutor() {
         return taskExecutor;
+    }
+
+    public int message(int style, String title, String message) {
+        Optional<Shell> shell = activeShell();
+        if (!shell.isPresent()) {
+            return 0;
+        }
+        return Dialogs.openMessage(shell.get(), style, title, message);
+    }
+
+    public Optional<Shell> activeShell() {
+        Shell shell = display.getActiveShell();
+        if (shell == null) {
+            Shell[] shells = display.getShells();
+            if (shells.length == 0) {
+                return Optional.empty();
+            }
+            return Optional.of(shells[0]);
+        }
+        return Optional.of(shell);
+    }
+
+    public void access(Runnable runnable) {
+        display.syncExec(runnable);
+    }
+
+    public void accessAsync(Runnable runnable) {
+        display.asyncExec(runnable);
     }
 
     @Override

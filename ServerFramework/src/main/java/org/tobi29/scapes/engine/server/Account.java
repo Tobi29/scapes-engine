@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.server;
 import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.utils.RSAUtil;
+import org.tobi29.scapes.engine.utils.SSLUtil;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream;
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream;
@@ -68,8 +68,8 @@ public class Account {
             return Optional.empty();
         }
         try {
-            RSAPrivateKey privateKey = RSAUtil.readPrivate(str);
-            PublicKey publicKey = RSAUtil.extractPublic(privateKey);
+            RSAPrivateKey privateKey = SSLUtil.readPrivate(str);
+            PublicKey publicKey = SSLUtil.extractPublic(privateKey);
             return Optional.of(new KeyPair(publicKey, privateKey));
         } catch (InvalidKeySpecException | IllegalArgumentException e) {
             LOGGER.warn("Failed to parse key: {}", e.toString());
@@ -94,7 +94,7 @@ public class Account {
             return "";
         }
         try {
-            return RSAUtil.writePrivate(keyPair.getPrivate());
+            return SSLUtil.writePrivate(keyPair.getPrivate());
         } catch (InvalidKeySpecException e) {
             return "";
         }
