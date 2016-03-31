@@ -24,10 +24,7 @@ import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLEngineResult;
-import javax.net.ssl.SSLException;
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
@@ -95,6 +92,9 @@ public class PacketBundleChannel {
         deflater = new CompressionUtil.ZDeflater(1);
         inflater = new CompressionUtil.ZInflater();
         engine = context.createSSLEngine(remoteAddress, port);
+        SSLParameters parameters = context.getDefaultSSLParameters();
+        parameters.setEndpointIdentificationAlgorithm("HTTPS");
+        engine.setSSLParameters(parameters);
         engine.setUseClientMode(client);
         myNetData.buffer().limit(0);
         engine.beginHandshake();
