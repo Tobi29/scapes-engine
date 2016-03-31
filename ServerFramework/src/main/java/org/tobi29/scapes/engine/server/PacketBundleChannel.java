@@ -59,7 +59,6 @@ public class PacketBundleChannel {
     private final CompressionUtil.Filter deflater, inflater;
     private final AtomicInteger inRate = new AtomicInteger(), outRate =
             new AtomicInteger();
-    private final List<WeakReference<ByteBuffer>> bufferCache;
     private final SSLEngine engine;
     private final ByteBufferStream myNetData =
             new ByteBufferStream(BufferCreator::bytes,
@@ -95,7 +94,6 @@ public class PacketBundleChannel {
         this.taskExecutor = taskExecutor;
         deflater = new CompressionUtil.ZDeflater(1);
         inflater = new CompressionUtil.ZInflater();
-        bufferCache = BUFFER_CACHE.get();
         engine = context.createSSLEngine(remoteAddress, port);
         engine.setUseClientMode(client);
         myNetData.buffer().limit(0);
@@ -162,7 +160,7 @@ public class PacketBundleChannel {
                 if (output.hasRemaining()) {
                     continue;
                 }
-                bufferCache.add(new WeakReference<>(output));
+                BUFFER_CACHE.get().add(new WeakReference<>(output));
             }
             output = queue.poll();
             if (output == null) {
@@ -195,7 +193,7 @@ public class PacketBundleChannel {
                                 "Bundle size too large: " + buffer.remaining());
                     }
                     if (input.capacity() < limit) {
-                        bufferCache.add(new WeakReference<>(input));
+                        BUFFER_CACHE.get().add(new WeakReference<>(input));
                         input = buffer(limit);
                     } else {
                         input.clear();
@@ -262,6 +260,7 @@ public class PacketBundleChannel {
     }
 
     private ByteBuffer buffer(int capacity) {
+        List<WeakReference<ByteBuffer>> bufferCache = BUFFER_CACHE.get();
         ByteBuffer bundle = null;
         int i = 0;
         while (i < bufferCache.size()) {
