@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.server;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.BufferCreator;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.CompressionUtil;
@@ -24,7 +25,10 @@ import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
-import javax.net.ssl.*;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLEngineResult;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLPeerUnverifiedException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
@@ -32,10 +36,13 @@ import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PacketBundleChannel {
@@ -44,9 +51,12 @@ public class PacketBundleChannel {
     private static final ThreadLocal<List<WeakReference<ByteBuffer>>>
             BUFFER_CACHE = ThreadLocalUtil.of(ArrayList::new);
     private static final ByteBuffer EMPTY_BUFFER = BufferCreator.bytes(0);
+    private final RemoteAddress address;
     private final SocketChannel channel;
     private final TaskExecutor taskExecutor;
+    private final SSLHandle ssl;
     private final AtomicInteger taskCounter = new AtomicInteger();
+    private final AtomicBoolean verified = new AtomicBoolean();
     private final ByteBufferStream dataStreamOut =
             new ByteBufferStream(BufferCreator::bytes,
                     length -> length + 102400), byteBufferStreamOut =
@@ -67,36 +77,25 @@ public class PacketBundleChannel {
             new ByteBufferStream(BufferCreator::bytes,
                     length -> length + 16384);
     private ByteBuffer output, input = BufferCreator.bytes(1024);
+    private Optional<ByteBuffer> spill = Optional.empty();
     private Optional<Selector> selector = Optional.empty();
+    private Optional<IOException> verifyException = Optional.empty();
     private boolean hasInput, close;
     private State state = State.HANDSHAKE;
 
-    public PacketBundleChannel(SocketChannel channel, TaskExecutor taskExecutor,
-            SSLContext context, boolean client) throws IOException {
-        this((InetSocketAddress) channel.getRemoteAddress(), channel,
-                taskExecutor, context, client);
-    }
-
-    public PacketBundleChannel(InetSocketAddress address, SocketChannel channel,
-            TaskExecutor taskExecutor, SSLContext context, boolean client)
+    public PacketBundleChannel(RemoteAddress address, SocketChannel channel,
+            TaskExecutor taskExecutor, SSLHandle ssl, boolean client)
             throws IOException {
-        this(address.getHostName(), address.getPort(), channel, taskExecutor,
-                context, client);
-    }
-
-    public PacketBundleChannel(String remoteAddress, int port,
-            SocketChannel channel, TaskExecutor taskExecutor,
-            SSLContext context, boolean client) throws IOException {
+        this.address = address;
         this.channel = channel;
         this.taskExecutor = taskExecutor;
+        this.ssl = ssl;
         deflater = new CompressionUtil.ZDeflater(1);
         inflater = new CompressionUtil.ZInflater();
-        engine = context.createSSLEngine(remoteAddress, port);
-        SSLParameters parameters = context.getDefaultSSLParameters();
-        parameters.setEndpointIdentificationAlgorithm("HTTPS");
-        engine.setSSLParameters(parameters);
+        engine = ssl.newEngine(address);
         engine.setUseClientMode(client);
         myNetData.buffer().limit(0);
+        input.limit(BUNDLE_HEADER_SIZE);
         engine.beginHandshake();
     }
 
@@ -117,12 +116,8 @@ public class PacketBundleChannel {
         if (size > BUNDLE_MAX_SIZE) {
             throw new IOException("Bundle size too large: " + size);
         }
-        ByteBuffer header = buffer(BUNDLE_HEADER_SIZE);
-        header.putInt(size);
-        header.flip();
-        assert header.remaining() == BUNDLE_HEADER_SIZE;
-        queue.add(header);
-        ByteBuffer bundle = buffer(size);
+        ByteBuffer bundle = buffer(BUNDLE_HEADER_SIZE + size);
+        bundle.putInt(size);
         bundle.put(byteBufferStreamOut.buffer());
         bundle.flip();
         queue.add(bundle);
@@ -146,6 +141,47 @@ public class PacketBundleChannel {
             }
             if (state == State.HANDSHAKE) {
                 if (handshake()) {
+                    if (ssl.requiresVerification()) {
+                        state = State.VERIFY;
+                        taskExecutor.runTask(() -> {
+                            try {
+                                Certificate[] certificates = engine.getSession()
+                                        .getPeerCertificates();
+                                X509Certificate[] x509Certificates =
+                                        Streams.of(certificates)
+                                                .filter(certificate -> certificate instanceof X509Certificate)
+                                                .map(certificate -> (X509Certificate) certificate)
+                                                .toArray(
+                                                        X509Certificate[]::new);
+                                try {
+                                    ssl.verifySession(address, engine,
+                                            x509Certificates);
+                                    verified.set(true);
+                                } catch (IOException e) {
+                                    if (x509Certificates.length == 0 ||
+                                            !ssl.certificateFeedback(
+                                                    x509Certificates)) {
+                                        verifyException = Optional.of(e);
+                                    } else {
+                                        verified.set(true);
+                                    }
+                                }
+                            } catch (SSLPeerUnverifiedException e) {
+                                verifyException = Optional.of(e);
+                            }
+                        }, "SSL-Verify");
+                    } else {
+                        state = State.OPEN;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            if (state == State.VERIFY) {
+                if (verifyException.isPresent()) {
+                    throw new IOException(verifyException.get());
+                }
+                if (verified.get()) {
                     state = State.OPEN;
                 } else {
                     return false;
@@ -178,49 +214,56 @@ public class PacketBundleChannel {
         if (state != State.OPEN) {
             return Optional.empty();
         }
-        while (true) {
+        ByteBuffer buffer;
+        if (spill.isPresent()) {
+            buffer = spill.get();
+            spill = Optional.empty();
+        } else {
             Optional<ByteBuffer> fetch = readSSL();
-            if (fetch.isPresent()) {
-                ByteBuffer buffer = fetch.get();
-                if (!hasInput) {
-                    if (buffer.remaining() != BUNDLE_HEADER_SIZE) {
-                        throw new IOException("Bundle header size invalid: " +
-                                buffer.remaining());
-                    }
-                    int limit = buffer.getInt();
-                    if (limit > BUNDLE_MAX_SIZE) {
-                        throw new IOException(
-                                "Bundle size too large: " + buffer.remaining());
-                    }
-                    if (input.capacity() < limit) {
-                        BUFFER_CACHE.get().add(new WeakReference<>(input));
-                        input = buffer(limit);
-                    } else {
-                        input.clear();
-                    }
-                    input.limit(limit);
-                    hasInput = true;
-                } else {
-                    if (buffer.remaining() > input.remaining()) {
-                        throw new IOException("Received buffer too large: " +
-                                buffer.remaining() + " of " +
-                                input.remaining());
-                    }
-                    input.put(buffer);
-                    if (!input.hasRemaining()) {
-                        input.flip();
-                        byteBufferStreamOut.buffer().clear();
-                        CompressionUtil.filter(new ByteBufferStream(input),
-                                byteBufferStreamOut, inflater);
-                        byteBufferStreamOut.buffer().flip();
-                        hasInput = false;
-                        return Optional.of(byteBufferStreamOut);
-                    }
-                }
-            } else {
+            if (!fetch.isPresent()) {
                 return Optional.empty();
             }
+            buffer = fetch.get();
         }
+        if (buffer.remaining() > input.remaining()) {
+            int limit = buffer.limit();
+            buffer.limit(buffer.position() + input.remaining());
+            input.put(buffer);
+            buffer.limit(limit);
+            spill = Optional.of(buffer);
+        } else {
+            input.put(buffer);
+        }
+        if (input.hasRemaining()) {
+            return Optional.empty();
+        }
+        input.flip();
+        if (!hasInput) {
+            if (input.remaining() != BUNDLE_HEADER_SIZE) {
+                throw new IOException(
+                        "Invalid bundle header size: " + input.remaining());
+            }
+            int limit = input.getInt();
+            if (limit > BUNDLE_MAX_SIZE) {
+                throw new IOException("Bundle size too large: " + limit);
+            }
+            if (input.capacity() < limit) {
+                BUFFER_CACHE.get().add(new WeakReference<>(input));
+                input = buffer(limit);
+            } else {
+                input.clear();
+            }
+            input.limit(limit);
+            hasInput = true;
+            return Optional.empty();
+        }
+        byteBufferStreamOut.buffer().clear();
+        CompressionUtil.filter(new ByteBufferStream(input), byteBufferStreamOut,
+                inflater);
+        byteBufferStreamOut.buffer().flip();
+        hasInput = false;
+        input.clear().limit(BUNDLE_HEADER_SIZE);
+        return Optional.of(byteBufferStreamOut);
     }
 
     public void register(Selector selector, int opt) throws IOException {
@@ -395,6 +438,7 @@ public class PacketBundleChannel {
 
     private enum State {
         HANDSHAKE,
+        VERIFY,
         OPEN,
         CLOSING,
         CLOSED

@@ -1,17 +1,10 @@
-package org.tobi29.scapes.engine.server;
+package org.tobi29.scapes.engine.server.jvm;
 
 import java8.util.function.Predicate;
-import org.tobi29.scapes.engine.utils.Streams;
 
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedTrustManager;
-import java.io.IOException;
 import java.net.Socket;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -27,25 +20,6 @@ public class FeedbackExtendedTrustManager extends X509ExtendedTrustManager {
             Predicate<X509Certificate[]> feedbackPredicate) {
         this.trustManagers = trustManagers;
         this.feedbackPredicate = feedbackPredicate;
-    }
-
-    public static TrustManager[] defaultTrustManager(
-            Predicate<X509Certificate[]> feedbackPredicate) throws IOException {
-        try {
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory
-                    .getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            trustManagerFactory.init((KeyStore) null);
-            X509ExtendedTrustManager[] trustManagers =
-                    Streams.of(trustManagerFactory.getTrustManagers())
-                            .filter(manager -> manager instanceof X509ExtendedTrustManager)
-                            .map(manager -> (X509ExtendedTrustManager) manager)
-                            .toArray(X509ExtendedTrustManager[]::new);
-            return new TrustManager[]{
-                    new FeedbackExtendedTrustManager(trustManagers,
-                            feedbackPredicate)};
-        } catch (NoSuchAlgorithmException | KeyStoreException e) {
-            throw new IOException(e);
-        }
     }
 
     @Override

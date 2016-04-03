@@ -21,10 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -41,14 +39,14 @@ public abstract class AbstractServerConnection {
     protected final TaskExecutor taskExecutor;
     private final List<NetWorkerThread> workers = new ArrayList<>();
     private final byte[] connectionHeader;
-    private final SSLContext context;
+    private final SSLHandle ssl;
     private final List<Joiner> joiners = new ArrayList<>();
 
     protected AbstractServerConnection(TaskExecutor taskExecutor,
-            byte[] connectionHeader, SSLContext context) {
+            byte[] connectionHeader, SSLHandle ssl) {
         this.taskExecutor = taskExecutor;
         this.connectionHeader = connectionHeader;
-        this.context = context;
+        this.ssl = ssl;
     }
 
     public void workers(int workerCount) throws IOException {
@@ -66,7 +64,8 @@ public abstract class AbstractServerConnection {
     }
 
     @SuppressWarnings("unchecked")
-    public <A extends SocketAddress> A start(A address) throws IOException {
+    public InetSocketAddress start(InetSocketAddress address)
+            throws IOException {
         LOGGER.info("Starting socket thread...");
         ServerSocketChannel channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
@@ -92,8 +91,9 @@ public abstract class AbstractServerConnection {
                             client.close();
                         } else {
                             PacketBundleChannel bundleChannel =
-                                    new PacketBundleChannel(client,
-                                            taskExecutor, context, false);
+                                    new PacketBundleChannel(
+                                            new RemoteAddress(address), client,
+                                            taskExecutor, ssl, false);
                             bestWorker.addConnection(
                                     new UnknownConnection(bundleChannel, this,
                                             connectionHeader));
@@ -104,7 +104,7 @@ public abstract class AbstractServerConnection {
                 channel.close();
             }
         }, "Socket"));
-        return (A) channel.socket().getLocalSocketAddress();
+        return (InetSocketAddress) channel.socket().getLocalSocketAddress();
     }
 
     public boolean addClient(Connection client) throws IOException {
