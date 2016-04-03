@@ -33,7 +33,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.zip.ZipFile;
 
-public class FileUtil {
+public final class FileUtil {
     private static final FileUtilImpl IMPL = loadService();
 
     private FileUtil() {

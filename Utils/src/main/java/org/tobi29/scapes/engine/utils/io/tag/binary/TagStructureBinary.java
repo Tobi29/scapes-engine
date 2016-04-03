@@ -15,7 +15,9 @@
  */
 package org.tobi29.scapes.engine.utils.io.tag.binary;
 
+import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.Streams;
+import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
@@ -55,6 +57,12 @@ public class TagStructureBinary {
     protected static final byte ID_TAG_FLOAT_64 = 0x61;
     //   String
     protected static final byte ID_TAG_STRING = 0x71;
+    private static final ThreadLocal<ByteBufferStream> DATA_STREAM =
+            ThreadLocalUtil.of(() -> new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 1048576));
+    private static final ThreadLocal<ByteBufferStream> COMPRESSION_STREAM =
+            ThreadLocalUtil.of(() -> new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 1048576));
 
     protected static String readKey(ReadableByteStream stream,
             KeyDictionary dictionary) throws IOException {
@@ -91,7 +99,7 @@ public class TagStructureBinary {
             WritableByteStream stream, byte compression, boolean useDictionary)
             throws IOException {
         return write(tagStructure, stream, compression, useDictionary,
-                new ByteBufferStream(), new ByteBufferStream());
+                DATA_STREAM.get(), COMPRESSION_STREAM.get());
     }
 
     public static TagStructure write(TagStructure tagStructure,
@@ -110,7 +118,7 @@ public class TagStructureBinary {
 
     public static TagStructure read(TagStructure tagStructure,
             ReadableByteStream stream) throws IOException {
-        return read(tagStructure, stream, new ByteBufferStream());
+        return read(tagStructure, stream, COMPRESSION_STREAM.get());
     }
 
     public static TagStructure read(TagStructure tagStructure,
@@ -201,7 +209,7 @@ public class TagStructureBinary {
             }
         }
 
-        private static class KeyOccurrence {
+        private static final class KeyOccurrence {
             private final int length;
             private int count;
 

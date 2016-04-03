@@ -151,7 +151,7 @@ public final class VersionUtil {
         }
     }
 
-    public static class VersionException extends Exception {
+    public static final class VersionException extends Exception {
         private VersionException(String message) {
             super(message);
         }

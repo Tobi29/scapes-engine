@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils.graphics;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
-public class ColorUtil {
+public final class ColorUtil {
     private ColorUtil() {
     }
 

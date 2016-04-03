@@ -97,7 +97,7 @@ public class GuiWidgetProfiler extends GuiComponentWidget {
         nodes();
     }
 
-    private class Element extends GuiComponentSlab {
+    private final class Element extends GuiComponentSlab {
         private final Profiler.Node node;
         private final GuiComponentTextButton key;
         private final GuiComponentText value;

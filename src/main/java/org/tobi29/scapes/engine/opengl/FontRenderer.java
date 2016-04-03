@@ -168,7 +168,7 @@ public class FontRenderer {
                 .forEach(page -> page.texture.markDisposed());
     }
 
-    public static class Text {
+    public static final class Text {
         private final TextVAO[] vaos;
         private final String text;
         private final double width;
@@ -209,7 +209,7 @@ public class FontRenderer {
         }
     }
 
-    private static class TextVAO {
+    private static final class TextVAO {
         private final VAO vao;
         private final Texture texture;
 

@@ -690,7 +690,7 @@ public class TagStructure {
     }
 
     @SuppressWarnings("ClassExtendsConcreteCollection")
-    public static class StructureList extends ArrayList<TagStructure> {
+    public static final class StructureList extends ArrayList<TagStructure> {
         private StructureList() {
         }
 

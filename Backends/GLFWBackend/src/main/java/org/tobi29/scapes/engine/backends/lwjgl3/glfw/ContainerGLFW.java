@@ -60,6 +60,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     private final GLFWControllers controllers;
     private final Map<Integer, ControllerJoystick> virtualJoysticks =
             new ConcurrentHashMap<>();
+    @SuppressWarnings("FieldCanBeLocal")
     private final GLFWErrorCallback errorFun;
     private final GLFWWindowSizeCallback windowSizeFun;
     private final GLFWWindowCloseCallback windowCloseFun;

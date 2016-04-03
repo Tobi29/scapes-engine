@@ -16,6 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer;
 
-public abstract class RandomNoiseLayer {
-    public abstract int getInt(int x, int y);
+public interface RandomNoiseLayer {
+    abstract int getInt(int x, int y);
 }

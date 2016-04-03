@@ -81,7 +81,7 @@ public class TagStructureReaderJSON extends TagStructureJSON
                     }
                     event = reader.next();
                     break;
-                case START_ARRAY: {
+                case START_ARRAY:
                     String key = this.key;
                     this.key = null;
                     JsonParser.Event next = reader.next();
@@ -127,9 +127,8 @@ public class TagStructureReaderJSON extends TagStructureJSON
                     }
                     event = reader.next();
                     break;
-                }
-                case VALUE_NUMBER: {
-                    String key = this.key;
+                case VALUE_NUMBER:
+                    key = this.key;
                     this.key = null;
                     if (reader.isIntegralNumber()) {
                         tag = new Pair<>(key, reader.getLong());
@@ -139,28 +138,24 @@ public class TagStructureReaderJSON extends TagStructureJSON
                     }
                     event = reader.next();
                     break;
-                }
-                case VALUE_STRING: {
-                    String key = this.key;
+                case VALUE_STRING:
+                    key = this.key;
                     this.key = null;
                     tag = new Pair<>(key, reader.getString());
                     event = reader.next();
                     break;
-                }
-                case VALUE_FALSE: {
-                    String key = this.key;
+                case VALUE_FALSE:
+                    key = this.key;
                     this.key = null;
                     tag = new Pair<>(key, false);
                     event = reader.next();
                     break;
-                }
-                case VALUE_TRUE: {
-                    String key = this.key;
+                case VALUE_TRUE:
+                    key = this.key;
                     this.key = null;
                     tag = new Pair<>(key, true);
                     event = reader.next();
                     break;
-                }
                 case END_OBJECT:
                     tag = new Pair<>(null, SpecialNext.STRUCTURE_TERMINATE);
                     if (reader.hasNext()) {

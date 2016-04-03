@@ -360,7 +360,7 @@ public class IOFileUtilImpl implements FileUtilImpl {
         return ret;
     }
 
-    private static class FilePathImpl implements FilePath {
+    private static final class FilePathImpl implements FilePath {
         private final File file;
 
         private FilePathImpl(File file) {

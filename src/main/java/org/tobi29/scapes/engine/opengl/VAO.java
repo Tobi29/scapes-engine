@@ -405,7 +405,7 @@ public class VAO {
         }
     }
 
-    private static class VAOAttributeData {
+    private static final class VAOAttributeData {
         private final VertexType vertexType;
         private final int id, size, offset;
         private final boolean normalized;

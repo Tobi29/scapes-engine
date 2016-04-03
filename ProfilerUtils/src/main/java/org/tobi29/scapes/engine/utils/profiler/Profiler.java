@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
 
-public class Profiler {
+public final class Profiler {
     private static final Map<Thread, Profiler> PROFILERS = new WeakHashMap<>();
     private static final ThreadLocal<Profiler> INSTANCE =
             ThreadLocalUtil.ofThread(Profiler::new);
@@ -84,7 +84,7 @@ public class Profiler {
         void close();
     }
 
-    public static class Node {
+    public static final class Node {
         public final Optional<Node> parent;
         public final Supplier<String> name;
         public final Map<String, Node> children = new HashMap<>();

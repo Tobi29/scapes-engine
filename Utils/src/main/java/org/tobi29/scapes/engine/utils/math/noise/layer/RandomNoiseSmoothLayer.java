@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer;
 
-public class RandomNoiseSmoothLayer extends RandomNoiseLayer {
+public class RandomNoiseSmoothLayer implements RandomNoiseLayer {
     private final RandomNoiseLayer parent;
 
     public RandomNoiseSmoothLayer(RandomNoiseLayer parent) {

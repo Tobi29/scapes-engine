@@ -24,12 +24,11 @@ import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentWidget extends GuiComponentPane {
-    private final GuiComponentWidgetTitle titleBar;
     private Pair<VAO, Texture> vao;
 
     public GuiComponentWidget(GuiLayoutData parent, String name) {
         super(parent);
-        titleBar = addVert(0, 0, -1, 16,
+        GuiComponentWidgetTitle titleBar = addVert(0, 0, -1, 16,
                 p -> new GuiComponentWidgetTitle(p, 12, name));
         if (!(parent instanceof GuiLayoutDataAbsolute)) {
             return;

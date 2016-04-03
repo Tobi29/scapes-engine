@@ -63,7 +63,7 @@ public abstract class AbstractServerConnection {
         return address.getPort();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("ThrowFromFinallyBlock")
     public InetSocketAddress start(InetSocketAddress address)
             throws IOException {
         LOGGER.info("Starting socket thread...");
@@ -150,31 +150,12 @@ public abstract class AbstractServerConnection {
         @Override
         public void run(Joiner.Joinable joiner) {
             try {
-                while (!joiner.marked()) {
-                    boolean processing = false;
+                while (!joiner.marked() || !connections.isEmpty()) {
                     while (!connectionQueue.isEmpty()) {
                         Connection connection = connectionQueue.poll();
                         connections.add(connection);
                     }
-                    for (Connection connection : connections) {
-                        if (connection.tick(this)) {
-                            processing = true;
-                        }
-                    }
-                    Iterator<Connection> iterator = connections.iterator();
-                    while (iterator.hasNext()) {
-                        Connection connection = iterator.next();
-                        if (connection.isClosed()) {
-                            try {
-                                connection.close();
-                            } catch (IOException e) {
-                                LOGGER.warn("Failed to close connection: {}",
-                                        e.toString());
-                            }
-                            iterator.remove();
-                        }
-                    }
-                    if (!processing && !joiner.marked()) {
+                    if (!process() && !joiner.marked()) {
                         try {
                             selector.select(10);
                             selector.selectedKeys().clear();
@@ -183,6 +164,11 @@ public abstract class AbstractServerConnection {
                                     e.toString());
                         }
                     }
+                }
+                long stopTimeout = System.nanoTime();
+                while (!connections.isEmpty() &&
+                        System.nanoTime() - stopTimeout < 10000000000L) {
+                    process();
                 }
             } finally {
                 for (Connection connection : connections) {
@@ -199,6 +185,26 @@ public abstract class AbstractServerConnection {
                     LOGGER.warn("Failed to close selector: {}", e.toString());
                 }
             }
+        }
+
+        private boolean process() {
+            boolean processing = false;
+            Iterator<Connection> iterator = connections.iterator();
+            while (iterator.hasNext()) {
+                Connection connection = iterator.next();
+                if (connection.isClosed()) {
+                    try {
+                        connection.close();
+                    } catch (IOException e) {
+                        LOGGER.warn("Failed to close connection: {}",
+                                e.toString());
+                    }
+                    iterator.remove();
+                } else if (connection.tick(this)) {
+                    processing = true;
+                }
+            }
+            return processing;
         }
     }
 }

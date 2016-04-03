@@ -9,7 +9,6 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 public class GuiComponentWidgetTitle extends GuiComponentSlab {
-    private final GuiComponentText text;
     private Pair<VAO, Texture> vao;
 
     public GuiComponentWidgetTitle(GuiLayoutData parent, int textSize,
@@ -20,12 +19,12 @@ public class GuiComponentWidgetTitle extends GuiComponentSlab {
     public GuiComponentWidgetTitle(GuiLayoutData parent, int textX,
             int textSize, String text) {
         super(parent);
-        this.text = addSubHori(textX, 0, -1, textSize,
-                p -> new GuiComponentText(p, text));
+        addSubHori(textX, 0, -1, textSize, p -> new GuiComponentText(p, text));
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
+    public void renderComponent(GL gl, Shader shader, double width,
+            double height) {
         vao.b.bind(gl);
         vao.a.render(gl, shader);
     }

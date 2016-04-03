@@ -183,7 +183,7 @@ public class TaskExecutor {
         void run(Joiner.Joinable joiner) throws Exception;
     }
 
-    private static class TaskWorker {
+    private static final class TaskWorker {
         private final LongSupplier task;
         private final String name;
         private final boolean async;
@@ -199,7 +199,7 @@ public class TaskExecutor {
         }
     }
 
-    private class ThreadWrapper implements Runnable {
+    private final class ThreadWrapper implements Runnable {
         private final ASyncTask task;
         private final String name;
         private final Joiner.Joinable joinable;
@@ -225,7 +225,7 @@ public class TaskExecutor {
         }
     }
 
-    private class PriorityThreadFactory implements ThreadFactory {
+    private final class PriorityThreadFactory implements ThreadFactory {
         private final AtomicInteger id = new AtomicInteger(1);
         private final int priority;
         private final ThreadGroup group;

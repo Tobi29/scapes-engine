@@ -13,20 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.tobi29.scapes.engine.server;
 
-package org.tobi29.scapes.engine.utils.math.noise.layer;
-
-public class RandomNoiseFilterLayer implements RandomNoiseLayer {
-    private final int[] filter;
-    private final RandomNoiseLayer parent;
-
-    public RandomNoiseFilterLayer(RandomNoiseLayer parent, int... filter) {
-        this.parent = parent;
-        this.filter = filter;
+public class ConnectionEndException extends ConnectionCloseException {
+    public ConnectionEndException(String message) {
+        super(message);
     }
 
-    @Override
-    public int getInt(int x, int y) {
-        return filter[parent.getInt(x, y)];
+    public ConnectionEndException(Exception e) {
+        super(e);
     }
 }

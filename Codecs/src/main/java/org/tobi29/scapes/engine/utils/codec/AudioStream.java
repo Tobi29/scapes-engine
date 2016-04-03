@@ -28,7 +28,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class AudioStream {
+public final class AudioStream {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(AudioStream.class);
     private static final Map<String, ReadableAudioStreamProvider> CODECS =

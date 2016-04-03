@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.utils.math.noise.layer;
 
 import java.util.Random;
 
-public class RandomNoiseRandomLayer extends RandomNoiseLayer {
+public class RandomNoiseRandomLayer implements RandomNoiseLayer {
     private final int maxRandom;
     private final int[] perm = new int[512];
 

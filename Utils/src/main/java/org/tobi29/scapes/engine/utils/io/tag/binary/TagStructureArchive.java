@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.utils.io.tag.binary;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.BufferCreator;
+import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
@@ -33,19 +34,11 @@ public class TagStructureArchive {
     private static final byte HEADER_VERSION = 1;
     private static final byte[] HEADER_MAGIC = {'S', 'T', 'A', 'R'};
     private static final Charset CHARSET = StandardCharsets.UTF_8;
+    private static final ThreadLocal<ByteBufferStream> DATA_STREAM =
+            ThreadLocalUtil.of(() -> new ByteBufferStream(BufferCreator::bytes,
+                    length -> length + 1048576));
     private final Map<String, ByteBuffer> tagStructures =
             new ConcurrentHashMap<>();
-    private final ByteBufferStream byteStream, compressionStream;
-
-    public TagStructureArchive() {
-        this(new ByteBufferStream(), new ByteBufferStream());
-    }
-
-    public TagStructureArchive(ByteBufferStream byteStream,
-            ByteBufferStream compressionStream) {
-        this.byteStream = byteStream;
-        this.compressionStream = compressionStream;
-    }
 
     public static Optional<TagStructure> extract(String name,
             ReadableByteStream stream) throws IOException {
@@ -98,11 +91,12 @@ public class TagStructureArchive {
         setTagStructure(key, tagStructure, (byte) 1);
     }
 
+    @SuppressWarnings("AccessToStaticFieldLockedOnInstance")
     public synchronized void setTagStructure(String key,
             TagStructure tagStructure, byte compression) throws IOException {
-        TagStructureBinary
-                .write(tagStructure, byteStream, compression, true, byteStream,
-                        compressionStream);
+        ByteBufferStream byteStream = DATA_STREAM.get();
+        byteStream.buffer().clear();
+        TagStructureBinary.write(tagStructure, byteStream, compression);
         byteStream.buffer().flip();
         ByteBuffer buffer =
                 BufferCreator.bytes(byteStream.buffer().remaining());
@@ -119,8 +113,7 @@ public class TagStructureArchive {
         }
         TagStructure tagStructure = new TagStructure();
         TagStructureBinary
-                .read(tagStructure, new ByteBufferStream(buffer.duplicate()),
-                        compressionStream);
+                .read(tagStructure, new ByteBufferStream(buffer.duplicate()));
         return Optional.of(tagStructure);
     }
 
@@ -179,7 +172,7 @@ public class TagStructureArchive {
         }
     }
 
-    public static class Entry {
+    public static final class Entry {
         private final String name;
         private final int length;
 

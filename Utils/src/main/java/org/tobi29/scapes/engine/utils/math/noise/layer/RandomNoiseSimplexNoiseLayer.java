@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils.math.noise.layer;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.noise.value.SimplexNoise;
 
-public class RandomNoiseSimplexNoiseLayer extends RandomNoiseLayer {
+public class RandomNoiseSimplexNoiseLayer implements RandomNoiseLayer {
     private final RandomNoiseLayer parent;
     private final SimplexNoise noise;
     private final double factor;

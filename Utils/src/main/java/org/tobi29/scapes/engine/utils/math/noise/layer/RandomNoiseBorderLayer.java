@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.utils.math.noise.layer;
 
 import java.util.Random;
 
-public class RandomNoiseBorderLayer extends RandomNoiseLayer {
+public class RandomNoiseBorderLayer implements RandomNoiseLayer {
     private final RandomNoiseLayer parent;
     private final long seed;
     private final int outside, border, factor;

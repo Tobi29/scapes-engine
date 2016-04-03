@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer;
 
-public class RandomNoiseZoomLayer extends RandomNoiseLayer {
+public class RandomNoiseZoomLayer implements RandomNoiseLayer {
     private final RandomNoiseLayer parent;
     private final double zoomFactor;
 

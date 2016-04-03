@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer;
 
-public class RandomNoiseStaticLayer extends RandomNoiseLayer {
+public class RandomNoiseStaticLayer implements RandomNoiseLayer {
     private final int i;
 
     public RandomNoiseStaticLayer(int i) {

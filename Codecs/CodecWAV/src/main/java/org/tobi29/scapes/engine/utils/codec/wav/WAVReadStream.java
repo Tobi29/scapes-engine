@@ -209,7 +209,7 @@ public class WAVReadStream implements ReadableAudioStream {
         buffer.flip();
     }
 
-    private static class Chunk {
+    private static final class Chunk {
         private final int id, size, bytes;
 
         private Chunk(int id, int size, int bytes) {
@@ -219,7 +219,7 @@ public class WAVReadStream implements ReadableAudioStream {
         }
     }
 
-    private static class Format {
+    private static final class Format {
         private final int channels, rate, bits, align;
 
         private Format(int channels, int rate, int bits, int align) {

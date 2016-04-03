@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer;
 
-public class RandomNoiseSplitLayer extends RandomNoiseLayer {
+public class RandomNoiseSplitLayer implements RandomNoiseLayer {
     private final RandomNoiseLayer[] filter;
     private final RandomNoiseLayer parent;
 

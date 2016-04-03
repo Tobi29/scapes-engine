@@ -19,7 +19,7 @@ import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
-public class Intersection {
+public final class Intersection {
     private final Vector3 intersection;
 
     private Intersection(Vector3 intersection) {

@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer;
 
-public class RandomNoisePickLayer extends RandomNoiseLayer {
+public class RandomNoisePickLayer implements RandomNoiseLayer {
     private final RandomNoiseLayer parent;
     private final int[] pick;
     private final int[] drop;

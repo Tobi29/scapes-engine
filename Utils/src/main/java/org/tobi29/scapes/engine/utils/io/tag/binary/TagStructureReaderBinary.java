@@ -57,6 +57,7 @@ public class TagStructureReaderBinary extends TagStructureBinary
         byte compression = stream.get();
         if (compression >= 0) {
             int len = stream.getInt();
+            compressionStream.buffer().clear();
             CompressionUtil.decompress(new LimitedBufferStream(stream, len),
                     compressionStream);
             compressionStream.buffer().flip();
@@ -69,7 +70,6 @@ public class TagStructureReaderBinary extends TagStructureBinary
 
     @Override
     public void end() throws IOException {
-        compressionStream.buffer().clear();
     }
 
     @Override

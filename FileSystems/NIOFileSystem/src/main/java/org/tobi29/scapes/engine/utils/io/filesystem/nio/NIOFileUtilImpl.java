@@ -368,7 +368,7 @@ public class NIOFileUtilImpl implements FileUtilImpl {
         }
     }
 
-    private static class FilePathImpl implements FilePath {
+    private static final class FilePathImpl implements FilePath {
         private final Path path;
 
         private FilePathImpl(Path path) {
