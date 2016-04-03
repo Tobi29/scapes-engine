@@ -136,7 +136,7 @@ public final class SSLUtil {
     public static KeyStore keyStore(InputStream streamIn, String password)
             throws IOException {
         try {
-            KeyStore keyStore = KeyStore.getInstance("JKS");
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
             keyStore.load(streamIn, password.toCharArray());
             return keyStore;
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
