@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math;
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
@@ -184,7 +183,7 @@ public final class FastMath {
     }
 
     public static double asin(double a) {
-        return StrictMath.asin(a);
+        return Math.asin(a);
     }
 
     public static double asinTable(double a) {
@@ -196,43 +195,47 @@ public final class FastMath {
     }
 
     public static double acos(double a) {
-        return StrictMath.acos(a);
+        return Math.acos(a);
     }
 
     public static double atan(double a) {
-        return StrictMath.atan(a);
+        return Math.atan(a);
     }
 
     public static double atan2(double y, double x) {
-        return StrictMath.atan2(y, x);
+        return Math.atan2(y, x);
+    }
+
+    public static float atan2Fast(float y, float x) {
+        return FastAtan2.atan2(y, x);
     }
 
     public static double ceil(double a) {
-        return StrictMath.ceil(a);
+        return Math.ceil(a);
     }
 
     public static double cos(double a) {
-        return StrictMath.cos(a);
+        return Math.cos(a);
     }
 
     public static double cosh(double x) {
-        return StrictMath.cosh(x);
+        return Math.cosh(x);
     }
 
     public static double sin(double a) {
-        return StrictMath.sin(a);
+        return Math.sin(a);
     }
 
     public static double sinh(double x) {
-        return StrictMath.sinh(x);
+        return Math.sinh(x);
     }
 
     public static double tan(double a) {
-        return StrictMath.tan(a);
+        return Math.tan(a);
     }
 
     public static double tanh(double x) {
-        return StrictMath.tanh(x);
+        return Math.tanh(x);
     }
 
     public static double sinTable(double a) {
@@ -276,15 +279,15 @@ public final class FastMath {
     }
 
     public static double exp(double a) {
-        return StrictMath.exp(a);
+        return Math.exp(a);
     }
 
     public static double log(double a) {
-        return StrictMath.log(a);
+        return Math.log(a);
     }
 
     public static double log10(double a) {
-        return StrictMath.log10(a);
+        return Math.log10(a);
     }
 
     public static double sqr(double a) {
@@ -296,15 +299,15 @@ public final class FastMath {
     }
 
     public static double sqrt(double a) {
-        return StrictMath.sqrt(a);
+        return Math.sqrt(a);
     }
 
     public static double cbrt(double a) {
-        return StrictMath.cbrt(a);
+        return Math.cbrt(a);
     }
 
     public static double pow(double a, double b) {
-        return StrictMath.pow(a, b);
+        return Math.pow(a, b);
     }
 
     public static short convertFloatToHalf(float a) {
