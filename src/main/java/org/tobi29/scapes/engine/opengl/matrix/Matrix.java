@@ -19,13 +19,13 @@ import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f;
 
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
 public class Matrix {
     private final Matrix4f modelViewMatrix;
     private final Matrix3f normalMatrix;
 
-    public Matrix(IntFunction<FloatBuffer> buffer) {
+    public Matrix(IntFunction<ByteBuffer> buffer) {
         modelViewMatrix = new Matrix4f(buffer);
         normalMatrix = new Matrix3f(buffer);
     }

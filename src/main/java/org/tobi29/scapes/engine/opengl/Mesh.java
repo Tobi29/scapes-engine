@@ -149,14 +149,20 @@ public class Mesh {
 
     public VAO finish() {
         changeArraySize(pos);
-        int[] indexArray;
         if (triangles) {
-            indexArray = new int[pos];
-            for (int i = 0; i < indexArray.length; i++) {
-                indexArray[i] = i;
+            VAO vao;
+            if (color) {
+                vao = VAOUtility
+                        .createVCTN(vertexArray, colorArray, textureArray,
+                                normalArray, RenderType.TRIANGLES);
+            } else {
+                vao = VAOUtility
+                        .createVTN(vertexArray, textureArray, normalArray,
+                                RenderType.TRIANGLES);
             }
+            return vao;
         } else {
-            indexArray = new int[(int) (pos * 1.5)];
+            int[] indexArray = new int[(int) (pos * 1.5)];
             int i = 0, p = 0;
             while (i < indexArray.length) {
                 indexArray[i++] = p;
@@ -167,15 +173,17 @@ public class Mesh {
                 indexArray[i++] = p + 3;
                 p += 4;
             }
+            VAO vao;
+            if (color) {
+                vao = VAOUtility
+                        .createVCTNI(vertexArray, colorArray, textureArray,
+                                normalArray, indexArray, RenderType.TRIANGLES);
+            } else {
+                vao = VAOUtility
+                        .createVTNI(vertexArray, textureArray, normalArray,
+                                indexArray, RenderType.TRIANGLES);
+            }
+            return vao;
         }
-        VAO vao;
-        if (color) {
-            vao = VAOUtility.createVCTNI(vertexArray, colorArray, textureArray,
-                    normalArray, indexArray, RenderType.TRIANGLES);
-        } else {
-            vao = VAOUtility.createVTNI(vertexArray, textureArray, normalArray,
-                    indexArray, RenderType.TRIANGLES);
-        }
-        return vao;
     }
 }

@@ -224,6 +224,39 @@ public interface OpenGL {
     void setAttribute4f(int id, float v0, float v1, float v2, float v3);
 
     @OpenGLFunction
+    void setAttribute2f(int uniform, FloatBuffer values);
+
+    @OpenGLFunction
+    void setAttribute3f(int uniform, FloatBuffer values);
+
+    @OpenGLFunction
+    void setAttribute4f(int uniform, FloatBuffer values);
+
+    @OpenGLFunction
+    default void setAttributeMatrix2f(int uniform, FloatBuffer matrices) {
+        for (int i = 0; i < 2; i++) {
+            matrices.position(i << 1);
+            setAttribute4f(uniform + i, matrices);
+        }
+    }
+
+    @OpenGLFunction
+    default void setAttributeMatrix3f(int uniform, FloatBuffer matrices) {
+        for (int i = 0; i < 3; i++) {
+            matrices.position(i * 3);
+            setAttribute4f(uniform + i, matrices);
+        }
+    }
+
+    @OpenGLFunction
+    default void setAttributeMatrix4f(int uniform, FloatBuffer matrices) {
+        for (int i = 0; i < 4; i++) {
+            matrices.position(i << 2);
+            setAttribute4f(uniform + i, matrices);
+        }
+    }
+
+    @OpenGLFunction
     void bindTexture(int id);
 
     @OpenGLFunction
@@ -278,7 +311,7 @@ public interface OpenGL {
 
     @OpenGLFunction
     void setAttribute(int id, int size, VertexType vertexType,
-            boolean normalized, int stride, int offset);
+            boolean normalized, int divisor, int stride, int offset);
 
     @OpenGLFunction
     void bindVBOArray(int id);
@@ -293,14 +326,20 @@ public interface OpenGL {
     void bufferVBODataElement(ByteBuffer buffer);
 
     @OpenGLFunction
+    void replaceVBODataArray(ByteBuffer buffer);
+
+    @OpenGLFunction
     int createVBO();
 
     @OpenGLFunction
     void deleteVBO(int id);
 
     @OpenGLFunction
-    void drawTriangles(int length, long offset);
+    void drawArray(int length, RenderType renderType);
 
     @OpenGLFunction
-    void drawLines(int length, long offset);
+    void drawElements(int length, int offset, RenderType renderType);
+
+    @OpenGLFunction
+    void drawArrayInstanced(int length, int count, RenderType renderType);
 }

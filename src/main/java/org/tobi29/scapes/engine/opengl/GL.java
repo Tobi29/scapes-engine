@@ -40,8 +40,8 @@ public abstract class GL implements OpenGL {
     protected GL(ScapesEngine engine, Container container) {
         this.engine = engine;
         matrixStack = new MatrixStack(64);
-        projectionMatrix = new Matrix4f(BufferCreatorNative::floatsD);
-        modelViewProjectionMatrix = new Matrix4f(BufferCreatorNative::floatsD);
+        projectionMatrix = new Matrix4f(BufferCreatorNative::bytesD);
+        modelViewProjectionMatrix = new Matrix4f(BufferCreatorNative::bytesD);
         textureManager = new TextureManager(engine);
         shaderManager = new ShaderManager(engine);
         resolutionMultiplier = engine.config().resolutionMultiplier();
@@ -138,7 +138,7 @@ public abstract class GL implements OpenGL {
     @OpenGLFunction
     public void dispose() {
         Texture.disposeAll(this);
-        VAO.disposeAll(this);
+        VAOStatic.disposeAll(this);
         FBO.disposeAll(this);
         shaderManager.resetAll();
     }
@@ -146,7 +146,7 @@ public abstract class GL implements OpenGL {
     @OpenGLFunction
     public void reset() {
         Texture.resetAll();
-        VAO.resetAll();
+        VAOStatic.resetAll();
         FBO.resetAll();
         shaderManager.resetAll();
     }

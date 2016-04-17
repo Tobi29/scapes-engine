@@ -57,7 +57,8 @@ public class GuiComponentIcon extends GuiComponent {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
+    public void renderComponent(GL gl, Shader shader, double width,
+            double height) {
         Optional<Texture> texture = this.texture;
         if (texture.isPresent()) {
             texture.get().bind(gl);

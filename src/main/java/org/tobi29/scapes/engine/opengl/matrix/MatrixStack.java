@@ -24,7 +24,7 @@ public class MatrixStack {
     public MatrixStack(int matrices) {
         stack = new Matrix[matrices];
         for (int i = 0; i < stack.length; i++) {
-            stack[i] = new Matrix(BufferCreatorNative::floatsD);
+            stack[i] = new Matrix(BufferCreatorNative::bytesD);
         }
         stack[0].identity();
     }

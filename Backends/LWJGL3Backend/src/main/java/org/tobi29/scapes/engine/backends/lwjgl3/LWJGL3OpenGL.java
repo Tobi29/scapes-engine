@@ -33,7 +33,10 @@ import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream;
 import org.tobi29.scapes.engine.utils.io.ProcessStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 import org.tobi29.scapes.engine.utils.math.FastMath;
-import org.tobi29.scapes.engine.utils.shader.*;
+import org.tobi29.scapes.engine.utils.shader.CompiledShader;
+import org.tobi29.scapes.engine.utils.shader.ShaderCompileException;
+import org.tobi29.scapes.engine.utils.shader.ShaderCompiler;
+import org.tobi29.scapes.engine.utils.shader.ShaderGenerateException;
 import org.tobi29.scapes.engine.utils.shader.expression.Uniform;
 import org.tobi29.scapes.engine.utils.shader.glsl.GLSLGenerator;
 
@@ -62,7 +65,6 @@ public class LWJGL3OpenGL extends GL {
     public LWJGL3OpenGL(ScapesEngine engine, Container container) {
         super(engine, container);
     }
-    // Basic
 
     @Override
     public void checkError(String message) {
@@ -190,7 +192,6 @@ public class LWJGL3OpenGL extends GL {
                 break;
         }
     }
-    // FBO
 
     @Override
     public void viewport(int x, int y, int width, int height) {
@@ -225,7 +226,6 @@ public class LWJGL3OpenGL extends GL {
     public void bindFBO(int id) {
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, id);
     }
-    // Screenshot
 
     @Override
     public void attachColor(int texture, int i) {
@@ -255,8 +255,6 @@ public class LWJGL3OpenGL extends GL {
                 return FBOStatus.UNKNOWN;
         }
     }
-
-    // Shader
 
     @Override
     public Image screenShot(int x, int y, int width, int height) {
@@ -469,6 +467,21 @@ public class LWJGL3OpenGL extends GL {
     }
 
     @Override
+    public void setAttribute2f(int uniform, FloatBuffer values) {
+        GL20.glVertexAttrib2fv(uniform, values);
+    }
+
+    @Override
+    public void setAttribute3f(int uniform, FloatBuffer values) {
+        GL20.glVertexAttrib3fv(uniform, values);
+    }
+
+    @Override
+    public void setAttribute4f(int uniform, FloatBuffer values) {
+        GL20.glVertexAttrib4fv(uniform, values);
+    }
+
+    @Override
     public void bindTexture(int id) {
         if (id != lastTextureBind[activeTexture]) {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
@@ -585,7 +598,6 @@ public class LWJGL3OpenGL extends GL {
         GL11.glTexSubImage2D(GL11.GL_TEXTURE_2D, 0, x, y, width, height,
                 GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, direct(buffer));
     }
-    // Texture
 
     @Override
     public void replaceTextureMipMap(int x, int y, int width, int height,
@@ -662,7 +674,7 @@ public class LWJGL3OpenGL extends GL {
 
     @Override
     public void setAttribute(int id, int size, VertexType vertexType,
-            boolean normalized, int stride, int offset) {
+            boolean normalized, int divisor, int stride, int offset) {
         GL20.glEnableVertexAttribArray(id);
         switch (vertexType) {
             case FLOAT:
@@ -692,6 +704,7 @@ public class LWJGL3OpenGL extends GL {
             default:
                 throw new IllegalArgumentException("Unknown vertex type!");
         }
+        GL33.glVertexAttribDivisor(id, divisor);
     }
 
     @Override
@@ -717,6 +730,14 @@ public class LWJGL3OpenGL extends GL {
     }
 
     @Override
+    public void replaceVBODataArray(ByteBuffer buffer) {
+        // TODO: Optimize, optimize, optimize
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer.capacity(), null,
+                GL15.GL_STREAM_DRAW);
+        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, direct(buffer));
+    }
+
+    @Override
     public int createVBO() {
         return GL15.glGenBuffers();
     }
@@ -725,21 +746,35 @@ public class LWJGL3OpenGL extends GL {
     public void deleteVBO(int id) {
         GL15.glDeleteBuffers(id);
     }
-    // VAO
 
     @Override
-    public void drawTriangles(int length, long offset) {
-        GL11.glDrawElements(GL11.GL_TRIANGLES, length, GL11.GL_UNSIGNED_SHORT,
-                offset);
+    public void drawArray(int length, RenderType renderType) {
+        GL11.glDrawArrays(renderType(renderType), 0, length);
     }
 
     @Override
-    public void drawLines(int length, long offset) {
-        GL11.glDrawElements(GL11.GL_LINES, length, GL11.GL_UNSIGNED_SHORT,
-                offset);
+    public void drawElements(int length, int offset, RenderType renderType) {
+        GL11.glDrawElements(renderType(renderType), length,
+                GL11.GL_UNSIGNED_SHORT, offset);
     }
 
-    // VBO
+    @Override
+    public void drawArrayInstanced(int length, int count,
+            RenderType renderType) {
+        GL31.glDrawArraysInstanced(renderType(renderType), 0, length, count);
+    }
+
+    private int renderType(RenderType renderType) {
+        switch (renderType) {
+            case TRIANGLES:
+                return GL11.GL_TRIANGLES;
+            case LINES:
+                return GL11.GL_LINES;
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown render type: " + renderType);
+        }
+    }
 
     public boolean checkLinkStatus(int id) {
         return GL20.glGetProgrami(id, GL20.GL_LINK_STATUS) == GL11.GL_TRUE;

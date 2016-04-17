@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class Matrix4f {
@@ -46,15 +47,22 @@ public class Matrix4f {
         V33 = i++;
     }
 
+    private final ByteBuffer buffer;
     private final FloatBuffer b;
 
-    public Matrix4f(IntFunction<FloatBuffer> buffer) {
-        b = buffer.apply(16);
+    public Matrix4f(IntFunction<ByteBuffer> buffer) {
+        this.buffer = buffer.apply(16 << 2);
+        b = this.buffer.asFloatBuffer();
     }
 
     public FloatBuffer getBuffer() {
         b.rewind();
         return b;
+    }
+
+    public ByteBuffer getByteBuffer() {
+        buffer.rewind();
+        return buffer;
     }
 
     public void copy(Matrix4f matrix) {
@@ -123,8 +131,12 @@ public class Matrix4f {
     }
 
     public void rotate(float angle, float x, float y, float z) {
-        float cos = (float) FastMath.cos(angle * FastMath.DEG_2_RAD);
-        float sin = (float) FastMath.sin(angle * FastMath.DEG_2_RAD);
+        rotateRad(angle * (float) FastMath.DEG_2_RAD, x, y, z);
+    }
+
+    public void rotateRad(float angle, float x, float y, float z) {
+        float cos = (float) FastMath.cosTable(angle);
+        float sin = (float) FastMath.sinTable(angle);
         float oneMinusCos = 1.0f - cos;
         float xy = x * y;
         float yz = y * z;
