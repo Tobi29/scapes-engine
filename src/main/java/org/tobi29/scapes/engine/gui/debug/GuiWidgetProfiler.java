@@ -97,12 +97,12 @@ public class GuiWidgetProfiler extends GuiComponentWidget {
         nodes();
     }
 
-    private final class Element extends GuiComponentSlab {
+    private class Element extends GuiComponentSlab {
         private final Profiler.Node node;
         private final GuiComponentTextButton key;
         private final GuiComponentText value;
 
-        private Element(GuiLayoutData parent, Profiler.Node node,
+        protected Element(GuiLayoutData parent, Profiler.Node node,
                 Optional<Profiler.Node> go) {
             super(parent);
             this.node = node;

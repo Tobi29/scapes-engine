@@ -199,12 +199,12 @@ public class TaskExecutor {
         }
     }
 
-    private final class ThreadWrapper implements Runnable {
+    private class ThreadWrapper implements Runnable {
         private final ASyncTask task;
         private final String name;
         private final Joiner.Joinable joinable;
 
-        private ThreadWrapper(ASyncTask task, String name) {
+        protected ThreadWrapper(ASyncTask task, String name) {
             this.task = task;
             this.name = name;
             joinable = new Joiner.Joinable();
@@ -225,12 +225,12 @@ public class TaskExecutor {
         }
     }
 
-    private final class PriorityThreadFactory implements ThreadFactory {
+    private class PriorityThreadFactory implements ThreadFactory {
         private final AtomicInteger id = new AtomicInteger(1);
         private final int priority;
         private final ThreadGroup group;
 
-        private PriorityThreadFactory(int priority) {
+        protected PriorityThreadFactory(int priority) {
             this.priority = priority;
             group = Thread.currentThread().getThreadGroup();
         }
