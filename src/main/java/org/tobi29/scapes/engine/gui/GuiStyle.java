@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
@@ -7,6 +8,8 @@ import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public interface GuiStyle {
+    ScapesEngine engine();
+
     FontRenderer font();
 
     Pair<VAO, Texture> pane(Vector2 size);

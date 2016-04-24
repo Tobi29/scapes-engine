@@ -2,12 +2,12 @@ package org.tobi29.scapes.engine.sound.openal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.sound.AudioFormat;
 import org.tobi29.scapes.engine.sound.PCMUtil;
+import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.codec.AudioStream;
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
-import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
@@ -19,6 +19,7 @@ import java.nio.FloatBuffer;
 public class OpenALStreamAudio implements OpenALAudio {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OpenALStreamAudio.class);
+    private final ScapesEngine engine;
     private final ReadSource asset;
     private final String channel;
     private final ByteBuffer pcmBuffer;
@@ -31,9 +32,10 @@ public class OpenALStreamAudio implements OpenALAudio {
     private ReadableAudioStream stream;
     private float gainAL;
 
-    public OpenALStreamAudio(ReadSource asset, String channel, Vector3 pos,
-            Vector3 velocity, float pitch, float gain, boolean state,
-            boolean hasPosition) {
+    public OpenALStreamAudio(ScapesEngine engine, ReadSource asset,
+            String channel, Vector3 pos, Vector3 velocity, float pitch,
+            float gain, boolean state, boolean hasPosition) {
+        this.engine = engine;
         this.asset = asset;
         this.channel = channel;
         this.pos = pos;
@@ -43,7 +45,7 @@ public class OpenALStreamAudio implements OpenALAudio {
         this.state = state;
         this.hasPosition = hasPosition;
         readBuffer = BufferCreator.floats(4096 << 2);
-        pcmBuffer = BufferCreatorNative.bytes(readBuffer.capacity() << 1);
+        pcmBuffer = engine.allocate(readBuffer.capacity() << 1);
     }
 
     @Override

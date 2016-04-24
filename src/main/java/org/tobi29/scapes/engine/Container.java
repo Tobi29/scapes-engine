@@ -31,6 +31,7 @@ import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 
 public interface Container {
@@ -67,6 +68,8 @@ public interface Container {
     Optional<String> loadFont(String asset);
 
     GlyphRenderer createGlyphRenderer(String fontName, int size);
+
+    ByteBuffer allocate(int capacity);
 
     void run() throws DesktopException;
 

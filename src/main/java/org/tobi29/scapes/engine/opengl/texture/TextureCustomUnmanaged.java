@@ -15,42 +15,44 @@
  */
 package org.tobi29.scapes.engine.opengl.texture;
 
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
+import org.tobi29.scapes.engine.ScapesEngine;
 
 import java.nio.ByteBuffer;
 
 public class TextureCustomUnmanaged extends Texture {
-    public TextureCustomUnmanaged(int width, int height) {
-        this(width, height, BufferCreatorNative.bytes(width * height * 4), 0);
+    public TextureCustomUnmanaged(ScapesEngine engine, int width, int height) {
+        this(engine, width, height, engine.allocate(width * height * 4), 0);
     }
 
-    public TextureCustomUnmanaged(int width, int height, ByteBuffer buffer,
-            int mipmaps) {
-        this(width, height, buffer, mipmaps, TextureFilter.NEAREST,
+    public TextureCustomUnmanaged(ScapesEngine engine, int width, int height,
+            ByteBuffer buffer, int mipmaps) {
+        this(engine, width, height, buffer, mipmaps, TextureFilter.NEAREST,
                 TextureFilter.NEAREST, TextureWrap.REPEAT, TextureWrap.REPEAT);
     }
 
-    public TextureCustomUnmanaged(int width, int height, ByteBuffer buffer,
-            int mipmaps, TextureFilter minFilter, TextureFilter magFilter,
-            TextureWrap wrapS, TextureWrap wrapT) {
-        super(width, height, buffer, mipmaps, minFilter, magFilter, wrapS,
-                wrapT);
+    public TextureCustomUnmanaged(ScapesEngine engine, int width, int height,
+            ByteBuffer buffer, int mipmaps, TextureFilter minFilter,
+            TextureFilter magFilter, TextureWrap wrapS, TextureWrap wrapT) {
+        super(engine, width, height, buffer, mipmaps, minFilter, magFilter,
+                wrapS, wrapT);
     }
 
-    public TextureCustomUnmanaged(int width, int height, int mipmaps) {
-        this(width, height, BufferCreatorNative.bytes(width * height * 4),
+    public TextureCustomUnmanaged(ScapesEngine engine, int width, int height,
+            int mipmaps) {
+        this(engine, width, height, engine.allocate(width * height * 4),
                 mipmaps);
     }
 
-    public TextureCustomUnmanaged(int width, int height, int mipmaps,
-            TextureFilter minFilter, TextureFilter magFilter, TextureWrap wrapS,
-            TextureWrap wrapT) {
-        this(width, height, BufferCreatorNative.bytes(width * height * 4),
+    public TextureCustomUnmanaged(ScapesEngine engine, int width, int height,
+            int mipmaps, TextureFilter minFilter, TextureFilter magFilter,
+            TextureWrap wrapS, TextureWrap wrapT) {
+        this(engine, width, height, engine.allocate(width * height * 4),
                 mipmaps, minFilter, magFilter, wrapS, wrapT);
     }
 
-    public TextureCustomUnmanaged(int width, int height, ByteBuffer buffer) {
-        this(width, height, buffer, 4);
+    public TextureCustomUnmanaged(ScapesEngine engine, int width, int height,
+            ByteBuffer buffer) {
+        this(engine, width, height, buffer, 4);
     }
 
     @Override

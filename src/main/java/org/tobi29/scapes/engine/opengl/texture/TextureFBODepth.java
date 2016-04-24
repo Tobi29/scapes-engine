@@ -15,15 +15,18 @@
  */
 package org.tobi29.scapes.engine.opengl.texture;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 
 public class TextureFBODepth extends Texture {
     private boolean attached = true;
 
-    public TextureFBODepth(int width, int height, TextureFilter minFilter,
-            TextureFilter magFilter, TextureWrap wrapS, TextureWrap wrapT) {
-        super(width, height, null, 0, minFilter, magFilter, wrapS, wrapT);
+    public TextureFBODepth(ScapesEngine engine, int width, int height,
+            TextureFilter minFilter, TextureFilter magFilter, TextureWrap wrapS,
+            TextureWrap wrapT) {
+        super(engine, width, height, null, 0, minFilter, magFilter, wrapS,
+                wrapT);
     }
 
     public void resize(int width, int height, GL gl) {

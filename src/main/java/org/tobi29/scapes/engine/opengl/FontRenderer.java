@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.opengl;
 import java8.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
@@ -35,10 +36,12 @@ public class FontRenderer {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(FontRenderer.class);
     private static final GlyphPage[] EMPTY_GLYPH_PAGE = new GlyphPage[0];
+    private final ScapesEngine engine;
     private final GlyphRenderer glyphRenderer;
     private GlyphPage[] pages = EMPTY_GLYPH_PAGE;
 
-    public FontRenderer(GlyphRenderer glyphRenderer) {
+    public FontRenderer(ScapesEngine engine, GlyphRenderer glyphRenderer) {
+        this.engine = engine;
         this.glyphRenderer = glyphRenderer;
         for (int i = 0; i < 4; i++) {
             initPage(i);
@@ -50,9 +53,10 @@ public class FontRenderer {
         GlyphRenderer.GlyphPage page = glyphRenderer.page(id);
         int imageSize = page.size();
         Texture texture =
-                new TextureCustomUnmanaged(imageSize, imageSize, page.buffer(),
-                        2, TextureFilter.LINEAR, TextureFilter.LINEAR,
-                        TextureWrap.CLAMP, TextureWrap.CLAMP);
+                new TextureCustomUnmanaged(engine, imageSize, imageSize,
+                        page.buffer(), 2, TextureFilter.LINEAR,
+                        TextureFilter.LINEAR, TextureWrap.CLAMP,
+                        TextureWrap.CLAMP);
         timestamp = System.currentTimeMillis() - timestamp;
         LOGGER.debug("Rendered font page in {} ms", timestamp);
         if (pages.length <= id) {
@@ -157,7 +161,7 @@ public class FontRenderer {
         TextVAO[] vaos = new TextVAO[meshes.size()];
         int i = 0;
         for (Map.Entry<Integer, Mesh> entry : meshes.entrySet()) {
-            vaos[i++] = new TextVAO(entry.getValue().finish(),
+            vaos[i++] = new TextVAO(entry.getValue().finish(engine),
                     pages[entry.getKey()].texture);
         }
         return new Text(vaos, text, textWidth, length);

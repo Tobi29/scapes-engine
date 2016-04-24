@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.opengl.texture;
 
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
@@ -26,13 +26,14 @@ import java.util.Properties;
 public class TextureAsset extends Texture {
     private boolean cached = true;
 
-    public TextureAsset(ReadableByteStream stream, Properties properties)
-            throws IOException {
-        this(PNG.decode(stream, BufferCreatorNative::bytes), properties);
+    public TextureAsset(ScapesEngine engine, ReadableByteStream stream,
+            Properties properties) throws IOException {
+        this(engine, PNG.decode(stream, engine::allocate), properties);
     }
 
-    public TextureAsset(Image image, Properties properties) {
-        super(image.width(), image.height(), image.buffer(),
+    public TextureAsset(ScapesEngine engine, Image image,
+            Properties properties) {
+        super(engine, image.width(), image.height(), image.buffer(),
                 Integer.valueOf(properties.getProperty("Mipmaps", "4")),
                 TextureFilter
                         .get(properties.getProperty("MinFilter", "Nearest")),

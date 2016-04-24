@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.ShaderManager;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.opengl.texture.TextureManager;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.graphics.Cam;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f;
@@ -39,9 +38,11 @@ public abstract class GL implements OpenGL {
 
     protected GL(ScapesEngine engine, Container container) {
         this.engine = engine;
-        matrixStack = new MatrixStack(64);
-        projectionMatrix = new Matrix4f(BufferCreatorNative::bytesD);
-        modelViewProjectionMatrix = new Matrix4f(BufferCreatorNative::bytesD);
+        // Use container instead of engine because engine does not have a
+        // reference to the container yet
+        matrixStack = new MatrixStack(64, container::allocate);
+        projectionMatrix = new Matrix4f(container::allocate);
+        modelViewProjectionMatrix = new Matrix4f(container::allocate);
         textureManager = new TextureManager(engine);
         shaderManager = new ShaderManager(engine);
         resolutionMultiplier = engine.config().resolutionMultiplier();

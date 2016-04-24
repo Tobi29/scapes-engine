@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.opengl;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class Mesh {
@@ -147,18 +148,16 @@ public class Mesh {
         normalArray = newNormalArray;
     }
 
-    public VAO finish() {
+    public VAO finish(ScapesEngine engine) {
         changeArraySize(pos);
         if (triangles) {
             VAO vao;
             if (color) {
-                vao = VAOUtility
-                        .createVCTN(vertexArray, colorArray, textureArray,
-                                normalArray, RenderType.TRIANGLES);
+                vao = VAOUtility.createVCTN(engine, vertexArray, colorArray,
+                        textureArray, normalArray, RenderType.TRIANGLES);
             } else {
-                vao = VAOUtility
-                        .createVTN(vertexArray, textureArray, normalArray,
-                                RenderType.TRIANGLES);
+                vao = VAOUtility.createVTN(engine, vertexArray, textureArray,
+                        normalArray, RenderType.TRIANGLES);
             }
             return vao;
         } else {
@@ -175,13 +174,12 @@ public class Mesh {
             }
             VAO vao;
             if (color) {
-                vao = VAOUtility
-                        .createVCTNI(vertexArray, colorArray, textureArray,
-                                normalArray, indexArray, RenderType.TRIANGLES);
+                vao = VAOUtility.createVCTNI(engine, vertexArray, colorArray,
+                        textureArray, normalArray, indexArray,
+                        RenderType.TRIANGLES);
             } else {
-                vao = VAOUtility
-                        .createVTNI(vertexArray, textureArray, normalArray,
-                                indexArray, RenderType.TRIANGLES);
+                vao = VAOUtility.createVTNI(engine, vertexArray, textureArray,
+                        normalArray, indexArray, RenderType.TRIANGLES);
             }
             return vao;
         }

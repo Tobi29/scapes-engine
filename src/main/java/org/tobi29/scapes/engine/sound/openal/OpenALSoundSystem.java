@@ -142,33 +142,35 @@ public class OpenALSoundSystem implements SoundSystem {
     @Override
     public void playMusic(ReadSource asset, String channel, float pitch,
             float gain, boolean state) {
-        queue(openAL -> audios
-                .add(new OpenALStreamAudio(asset, channel, Vector3d.ZERO,
-                        Vector3d.ZERO, pitch, gain, state, false)));
+        queue(openAL -> audios.add(new OpenALStreamAudio(engine, asset, channel,
+                Vector3d.ZERO, Vector3d.ZERO, pitch, gain, state, false)));
     }
 
     @Override
     public void playMusic(ReadSource asset, String channel, float pitch,
             float gain, Vector3 position, Vector3 velocity, boolean state) {
         queue(openAL -> audios
-                .add(new OpenALStreamAudio(asset, channel, position, velocity,
-                        pitch, gain, state, true)));
+                .add(new OpenALStreamAudio(engine, asset, channel, position,
+                        velocity, pitch, gain, state, true)));
     }
 
     @Override
     public void playSound(String asset, String channel, float pitch,
             float gain) {
-        queue(openAL -> audios
-                .add(new OpenALEffectAudio(asset, channel, Vector3d.ZERO,
-                        Vector3d.ZERO, pitch, gain, false)));
+        long time = System.nanoTime();
+        queue(openAL -> {
+            audios.add(new OpenALEffectAudio(asset, channel, Vector3d.ZERO,
+                    Vector3d.ZERO, pitch, gain, false,time));
+        });
     }
 
     @Override
     public void playSound(String asset, String channel, Vector3 position,
             Vector3 velocity, float pitch, float gain) {
+        long time = System.nanoTime();
         queue(openAL -> audios
                 .add(new OpenALEffectAudio(asset, channel, position, velocity,
-                        pitch, gain, true)));
+                        pitch, gain, true,time)));
     }
 
     @Override
@@ -240,7 +242,8 @@ public class OpenALSoundSystem implements SoundSystem {
             if (resource.exists()) {
                 try (ReadableAudioStream stream = AudioStream
                         .create(resource)) {
-                    cache.put(asset, new OpenALAudioData(stream, openAL));
+                    cache.put(asset,
+                            new OpenALAudioData(engine, stream, openAL));
                 } catch (IOException e) {
                     LOGGER.warn("Failed to get audio data", e);
                 }

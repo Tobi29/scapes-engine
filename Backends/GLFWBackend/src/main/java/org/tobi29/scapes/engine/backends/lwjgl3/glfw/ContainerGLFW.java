@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
 import java8.util.Optional;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
@@ -25,9 +26,7 @@ import org.tobi29.scapes.engine.ScapesEngineException;
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3;
 import org.tobi29.scapes.engine.backends.lwjgl3.GLFWControllers;
 import org.tobi29.scapes.engine.backends.lwjgl3.GLFWKeyMap;
-import org.tobi29.scapes.engine.backends.lwjgl3.STBGlyphRenderer;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.spi.GLFWDialogsProvider;
-import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.gui.GuiComponent;
 import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
@@ -36,7 +35,6 @@ import org.tobi29.scapes.engine.input.ControllerTouch;
 import org.tobi29.scapes.engine.input.FileType;
 import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
 import org.tobi29.scapes.engine.opengl.GraphicsException;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Sync;
@@ -227,16 +225,6 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     }
 
     @Override
-    public Optional<String> loadFont(String asset) {
-        return STBGlyphRenderer.loadFont(engine.files().get(asset + ".ttf"));
-    }
-
-    @Override
-    public GlyphRenderer createGlyphRenderer(String fontName, int size) {
-        return STBGlyphRenderer.fromFont(fontName, size);
-    }
-
-    @Override
     public void run() throws DesktopException {
         sync.init();
         while (running) {
@@ -357,8 +345,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         LOGGER.info("Creating GLFW window...");
         String title = engine.game().name();
         long monitor = GLFW.glfwGetPrimaryMonitor();
-        IntBuffer xBuffer = BufferCreatorNative.intsD(1);
-        IntBuffer yBuffer = BufferCreatorNative.intsD(1);
+        IntBuffer xBuffer = BufferUtils.createIntBuffer(1);
+        IntBuffer yBuffer = BufferUtils.createIntBuffer(1);
         GLFW.glfwGetMonitorPos(monitor, xBuffer, yBuffer);
         GLFWVidMode videoMode = GLFW.glfwGetVideoMode(monitor);
         int monitorX = xBuffer.get(0);
@@ -402,8 +390,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             GLFW.glfwSetWindowPos(window, monitorX + (monitorWidth - width) / 2,
                     monitorY + (monitorHeight - height) / 2);
         }
-        IntBuffer widthBuffer = BufferCreatorNative.intsD(1);
-        IntBuffer heightBuffer = BufferCreatorNative.intsD(1);
+        IntBuffer widthBuffer = BufferUtils.createIntBuffer(1);
+        IntBuffer heightBuffer = BufferUtils.createIntBuffer(1);
         GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer);
         containerWidth = widthBuffer.get(0);
         containerHeight = heightBuffer.get(0);

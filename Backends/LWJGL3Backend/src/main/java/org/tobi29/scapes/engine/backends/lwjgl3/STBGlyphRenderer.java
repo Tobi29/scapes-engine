@@ -16,10 +16,10 @@
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import java8.util.Optional;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.stb.STBTruetype;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.ProcessStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
@@ -34,17 +34,20 @@ import java.util.concurrent.ConcurrentHashMap;
 public class STBGlyphRenderer implements GlyphRenderer {
     private static final Map<String, Pair<ByteBuffer, STBTTFontinfo>> FONTS =
             new ConcurrentHashMap<>();
+    private final ContainerLWJGL3 container;
     private final STBTTFontinfo info;
     private final int tiles, pageTiles, pageTileBits, pageTileMask, glyphSize,
             imageSize;
     private final double tileSize, size, scale;
     private final ByteBuffer glyphBuffer;
-    private final IntBuffer intBuffer1 = BufferCreatorNative.intsD(1),
-            intBuffer2 = BufferCreatorNative.intsD(1), intBuffer3 =
-            BufferCreatorNative.intsD(1), intBuffer4 =
-            BufferCreatorNative.intsD(1);
+    private final IntBuffer intBuffer1 = BufferUtils.createIntBuffer(1),
+            intBuffer2 = BufferUtils.createIntBuffer(1), intBuffer3 =
+            BufferUtils.createIntBuffer(1), intBuffer4 =
+            BufferUtils.createIntBuffer(1);
 
-    public STBGlyphRenderer(STBTTFontinfo info, int size) {
+    public STBGlyphRenderer(ContainerLWJGL3 container, STBTTFontinfo info,
+            int size) {
+        this.container = container;
         this.info = info;
         this.size = size;
         int tileBits = 3;
@@ -56,7 +59,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
         glyphSize = size << 1;
         imageSize = glyphSize << tileBits;
         scale = STBTruetype.stbtt_ScaleForMappingEmToPixels(info, size * 1.38f);
-        glyphBuffer = BufferCreatorNative.bytesD(glyphSize * glyphSize);
+        glyphBuffer = BufferUtils.createByteBuffer(glyphSize * glyphSize);
     }
 
     public static Optional<String> loadFont(ReadSource font) {
@@ -64,7 +67,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
             ByteBuffer buffer = font.readReturn(stream -> ProcessStream
                     .process(stream, ProcessStream.asBuffer()));
             ByteBuffer fontBuffer =
-                    BufferCreatorNative.bytesD(buffer.remaining());
+                    BufferUtils.createByteBuffer(buffer.remaining());
             fontBuffer.put(buffer);
             fontBuffer.flip();
             STBTTFontinfo infoBuffer = STBTTFontinfo.malloc();
@@ -87,18 +90,18 @@ public class STBGlyphRenderer implements GlyphRenderer {
         return Optional.empty();
     }
 
-    public static GlyphRenderer fromFont(String name, int size) {
+    public static GlyphRenderer fromFont(ContainerLWJGL3 container, String name,
+            int size) {
         Pair<ByteBuffer, STBTTFontinfo> font = FONTS.get(name);
         if (font == null) {
             throw new IllegalArgumentException("Unknown font: " + name);
         }
-        return new STBGlyphRenderer(font.b, size);
+        return new STBGlyphRenderer(container, font.b, size);
     }
 
     @Override
     public synchronized GlyphPage page(int id) {
-        ByteBuffer buffer =
-                BufferCreatorNative.bytesD(imageSize * imageSize << 2);
+        ByteBuffer buffer = container.allocate(imageSize * imageSize << 2);
         double[] width = new double[pageTiles];
         int i = 0;
         int offset = id << pageTileBits;

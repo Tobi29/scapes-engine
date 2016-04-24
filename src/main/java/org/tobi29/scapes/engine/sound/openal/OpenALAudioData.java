@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.sound.openal;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.sound.AudioFormat;
 import org.tobi29.scapes.engine.sound.PCMUtil;
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 
@@ -27,26 +27,28 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class OpenALAudioData {
+    private final ScapesEngine engine;
     private final int buffer;
 
-    public OpenALAudioData(ReadableAudioStream stream, OpenAL openAL)
-            throws IOException {
-        this(read(stream), stream.rate(), stream.channels(), openAL);
+    public OpenALAudioData(ScapesEngine engine, ReadableAudioStream stream,
+            OpenAL openAL) throws IOException {
+        this(engine, read(engine, stream), stream.rate(), stream.channels(),
+                openAL);
     }
 
-    public OpenALAudioData(ByteBuffer data, int rate, int channels,
-            OpenAL openAL) {
+    public OpenALAudioData(ScapesEngine engine, ByteBuffer data, int rate,
+            int channels, OpenAL openAL) {
+        this.engine = engine;
         buffer = openAL.createBuffer();
         openAL.storeBuffer(buffer,
                 channels > 1 ? AudioFormat.STEREO : AudioFormat.MONO, data,
                 rate);
     }
 
-    private static ByteBuffer read(ReadableAudioStream input)
-            throws IOException {
-        ByteBufferStream output =
-                new ByteBufferStream(BufferCreatorNative::bytes,
-                        length -> length + 409600);
+    private static ByteBuffer read(ScapesEngine engine,
+            ReadableAudioStream input) throws IOException {
+        ByteBufferStream output = new ByteBufferStream(engine::allocate,
+                length -> length + 409600);
         FloatBuffer buffer = BufferCreator.floats(409600);
         boolean valid = true;
         while (valid) {

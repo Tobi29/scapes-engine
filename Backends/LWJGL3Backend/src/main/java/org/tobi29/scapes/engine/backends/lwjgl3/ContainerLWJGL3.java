@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import java8.util.Optional;
 import java8.util.function.Supplier;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLCapabilities;
@@ -25,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
 import org.tobi29.scapes.engine.opengl.GL;
@@ -37,6 +39,7 @@ import org.tobi29.scapes.engine.utils.io.IOSupplier;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -156,6 +159,27 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     @Override
     public boolean joysticksChanged() {
         return joysticksChanged.get();
+    }
+
+    @Override
+    public Optional<String> loadFont(String asset) {
+        return STBGlyphRenderer.loadFont(engine.files().get(asset + ".ttf"));
+    }
+
+    @Override
+    public GlyphRenderer createGlyphRenderer(String fontName, int size) {
+        return STBGlyphRenderer.fromFont(this, fontName, size);
+    }
+
+    @Override
+    public ByteBuffer allocate(int capacity) {
+        // TODO: Do more testing if the direct buffer leak is actually gone
+        return BufferUtils.createByteBuffer(capacity);
+        // Late 2015 OpenJDK 8 (did not test this on other JVMs) deleted direct
+        // buffers would not get freed properly causing massive leaks pushing
+        // up memory usage to 5+ GB, backend currently can transparently take
+        // heap buffers for LWJGL calls (by copying into a shared direct one)
+        // return ByteBuffer.allocate(capacity).order(ByteOrder.nativeOrder());
     }
 
     protected Optional<String> initContext() {

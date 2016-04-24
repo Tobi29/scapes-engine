@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.opengl.texture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.utils.graphics.MipMapGenerator;
@@ -29,6 +30,7 @@ public abstract class Texture {
     protected static final List<Texture> TEXTURES = new ArrayList<>();
     private static final Logger LOGGER = LoggerFactory.getLogger(Texture.class);
     private static int disposeOffset;
+    protected final ScapesEngine engine;
     protected final int mipmaps;
     protected boolean dirtyFilter = true;
     protected int textureID, width = -1, height = -1;
@@ -40,9 +42,10 @@ public abstract class Texture {
     protected long used;
     private ByteBuffer[] buffers;
 
-    protected Texture(int width, int height, ByteBuffer buffer, int mipmaps,
-            TextureFilter minFilter, TextureFilter magFilter, TextureWrap wrapS,
-            TextureWrap wrapT) {
+    protected Texture(ScapesEngine engine, int width, int height,
+            ByteBuffer buffer, int mipmaps, TextureFilter minFilter,
+            TextureFilter magFilter, TextureWrap wrapS, TextureWrap wrapT) {
+        this.engine = engine;
         this.width = width;
         this.height = height;
         this.mipmaps = mipmaps;
@@ -170,7 +173,7 @@ public abstract class Texture {
 
     public void setBuffer(ByteBuffer buffer) {
         buffers = MipMapGenerator
-                .generateMipMaps(buffer, width, height, mipmaps,
-                        minFilter == TextureFilter.LINEAR);
+                .generateMipMaps(buffer, engine::allocate, width, height,
+                        mipmaps, minFilter == TextureFilter.LINEAR);
     }
 }

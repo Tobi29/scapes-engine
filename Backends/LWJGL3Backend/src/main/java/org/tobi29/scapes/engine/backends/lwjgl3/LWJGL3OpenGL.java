@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,6 @@ import org.tobi29.scapes.engine.opengl.shader.ShaderPreprocessor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream;
@@ -42,6 +42,7 @@ import org.tobi29.scapes.engine.utils.shader.glsl.GLSLGenerator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Map;
@@ -52,18 +53,21 @@ public class LWJGL3OpenGL extends GL {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(LWJGL3OpenGL.class);
     private final int[] lastTextureBind = new int[32];
-    private final IntBuffer intBuffer = BufferCreatorNative.intsD(4);
-    private final IntBuffer attachBuffer = BufferCreatorNative.intsD(16);
+    private final IntBuffer intBuffer = BufferUtils.createIntBuffer(4);
+    private final IntBuffer attachBuffer = BufferUtils.createIntBuffer(16);
     private final ShaderCompiler shaderCompiler = new ShaderCompiler();
     private final GLSLGenerator shaderGenerator =
             new GLSLGenerator("#version 330");
     private final Map<String, CompiledShader> shaderCache =
             new ConcurrentHashMap<>();
-    private ByteBuffer directBuffer = BufferCreatorNative.bytesD(4 << 10 << 10);
+    private ByteBuffer directBuffer;
+    private FloatBuffer directFloatBuffer;
+    private IntBuffer directIntBuffer;
     private int activeTexture, activeShader;
 
     public LWJGL3OpenGL(ScapesEngine engine, Container container) {
         super(engine, container);
+        directBuffer(4 << 10 << 10);
     }
 
     @Override
@@ -261,6 +265,7 @@ public class LWJGL3OpenGL extends GL {
         GL11.glReadBuffer(GL11.GL_FRONT);
         int capacity = width * height << 2;
         direct(capacity);
+        directBuffer.clear().limit(capacity);
         GL11.glReadPixels(x, y, width, height, GL11.GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE, directBuffer);
         ByteBuffer buffer = BufferCreator.bytes(capacity);
@@ -272,6 +277,7 @@ public class LWJGL3OpenGL extends GL {
     public Image screenShotFBO(FBO fbo) {
         int capacity = fbo.width() * fbo.height() << 2;
         direct(capacity);
+        directBuffer.clear().limit(capacity);
         GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE, directBuffer);
         ByteBuffer buffer = BufferCreator.bytes(capacity);
@@ -390,60 +396,60 @@ public class LWJGL3OpenGL extends GL {
 
     @Override
     public void setUniform1(int uniform, FloatBuffer values) {
-        GL20.glUniform1fv(uniform, values);
+        GL20.glUniform1fv(uniform, direct(values));
     }
 
     @Override
     public void setUniform2(int uniform, FloatBuffer values) {
-        GL20.glUniform2fv(uniform, values);
+        GL20.glUniform2fv(uniform, direct(values));
     }
 
     @Override
     public void setUniform3(int uniform, FloatBuffer values) {
-        GL20.glUniform3fv(uniform, values);
+        GL20.glUniform3fv(uniform, direct(values));
     }
 
     @Override
     public void setUniform4(int uniform, FloatBuffer values) {
-        GL20.glUniform4fv(uniform, values);
+        GL20.glUniform4fv(uniform, direct(values));
     }
 
     @Override
     public void setUniform1(int uniform, IntBuffer values) {
-        GL20.glUniform1iv(uniform, values);
+        GL20.glUniform1iv(uniform, direct(values));
     }
 
     @Override
     public void setUniform2(int uniform, IntBuffer values) {
-        GL20.glUniform2iv(uniform, values);
+        GL20.glUniform2iv(uniform, direct(values));
     }
 
     @Override
     public void setUniform3(int uniform, IntBuffer values) {
-        GL20.glUniform3iv(uniform, values);
+        GL20.glUniform3iv(uniform, direct(values));
     }
 
     @Override
     public void setUniform4(int uniform, IntBuffer values) {
-        GL20.glUniform4iv(uniform, values);
+        GL20.glUniform4iv(uniform, direct(values));
     }
 
     @Override
     public void setUniformMatrix2(int uniform, boolean transpose,
             FloatBuffer matrices) {
-        GL20.glUniformMatrix2fv(uniform, transpose, matrices);
+        GL20.glUniformMatrix2fv(uniform, transpose, direct(matrices));
     }
 
     @Override
     public void setUniformMatrix3(int uniform, boolean transpose,
             FloatBuffer matrices) {
-        GL20.glUniformMatrix3fv(uniform, transpose, matrices);
+        GL20.glUniformMatrix3fv(uniform, transpose, direct(matrices));
     }
 
     @Override
     public void setUniformMatrix4(int uniform, boolean transpose,
             FloatBuffer matrices) {
-        GL20.glUniformMatrix4fv(uniform, transpose, matrices);
+        GL20.glUniformMatrix4fv(uniform, transpose, direct(matrices));
     }
 
     @Override
@@ -468,17 +474,17 @@ public class LWJGL3OpenGL extends GL {
 
     @Override
     public void setAttribute2f(int uniform, FloatBuffer values) {
-        GL20.glVertexAttrib2fv(uniform, values);
+        GL20.glVertexAttrib2fv(uniform, direct(values));
     }
 
     @Override
     public void setAttribute3f(int uniform, FloatBuffer values) {
-        GL20.glVertexAttrib3fv(uniform, values);
+        GL20.glVertexAttrib3fv(uniform, direct(values));
     }
 
     @Override
     public void setAttribute4f(int uniform, FloatBuffer values) {
-        GL20.glVertexAttrib4fv(uniform, values);
+        GL20.glVertexAttrib4fv(uniform, direct(values));
     }
 
     @Override
@@ -784,10 +790,11 @@ public class LWJGL3OpenGL extends GL {
         int length = GL20.glGetShaderi(id, GL20.GL_INFO_LOG_LENGTH);
         if (length > 1) {
             intBuffer.put(0, length);
-            ByteBuffer log = direct(length);
-            GL20.glGetShaderInfoLog(id, intBuffer, log);
+            direct(length);
+            directBuffer.clear();
+            GL20.glGetShaderInfoLog(id, intBuffer, directBuffer);
             byte[] infoBytes = new byte[length];
-            log.get(infoBytes);
+            directBuffer.get(infoBytes);
             String out = new String(infoBytes);
             LOGGER.info("Shader log: {}", out);
         }
@@ -797,10 +804,11 @@ public class LWJGL3OpenGL extends GL {
         int length = GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH);
         if (length > 1) {
             intBuffer.put(0, length);
-            ByteBuffer log = direct(length);
-            GL20.glGetProgramInfoLog(id, intBuffer, log);
+            direct(length);
+            directBuffer.clear();
+            GL20.glGetProgramInfoLog(id, intBuffer, directBuffer);
             byte[] infoBytes = new byte[length];
-            log.get(infoBytes);
+            directBuffer.get(infoBytes);
             String out = new String(infoBytes);
             LOGGER.info("Program log: {}", out);
         }
@@ -808,7 +816,7 @@ public class LWJGL3OpenGL extends GL {
 
     public Pair<Integer, int[]> programGLSL(String vertexSource,
             String fragmentSource, Properties properties,
-            ShaderPreprocessor processor) throws IOException {
+            ShaderPreprocessor processor) {
         int vertex = createShader(processor.processVertexSource(vertexSource),
                 createVertexObject());
         int fragment =
@@ -907,28 +915,76 @@ public class LWJGL3OpenGL extends GL {
     }
 
     @SuppressWarnings("ReturnOfNull")
+    private FloatBuffer direct(FloatBuffer buffer) {
+        if (buffer == null) {
+            return null;
+        }
+        if (buffer.order() != ByteOrder.nativeOrder()) {
+            throw new IllegalArgumentException(
+                    "Buffer does not use native byte order");
+        }
+        if (buffer.isDirect()) {
+            return buffer;
+        }
+        direct(buffer.remaining() << 2);
+        directFloatBuffer.clear();
+        directFloatBuffer.put(buffer);
+        buffer.flip();
+        directFloatBuffer.flip();
+        return directFloatBuffer;
+    }
+
+    @SuppressWarnings("ReturnOfNull")
+    private IntBuffer direct(IntBuffer buffer) {
+        if (buffer == null) {
+            return null;
+        }
+        if (buffer.order() != ByteOrder.nativeOrder()) {
+            throw new IllegalArgumentException(
+                    "Buffer does not use native byte order");
+        }
+        if (buffer.isDirect()) {
+            return buffer;
+        }
+        direct(buffer.remaining() << 2);
+        directIntBuffer.clear();
+        directIntBuffer.put(buffer);
+        buffer.flip();
+        directIntBuffer.flip();
+        return directIntBuffer;
+    }
+
+    @SuppressWarnings("ReturnOfNull")
     private ByteBuffer direct(ByteBuffer buffer) {
         if (buffer == null) {
             return null;
+        }
+        if (buffer.order() != ByteOrder.nativeOrder()) {
+            throw new IllegalArgumentException(
+                    "Buffer does not use native byte order");
         }
         if (buffer.isDirect()) {
             return buffer;
         }
         direct(buffer.remaining());
+        directBuffer.clear();
         directBuffer.put(buffer);
         buffer.flip();
         directBuffer.flip();
         return directBuffer;
     }
 
-    private ByteBuffer direct(int size) {
-        directBuffer.clear();
-        if (directBuffer.remaining() < size) {
+    private void direct(int size) {
+        if (directBuffer.capacity() < size) {
             int capacity = (size >> 10) + 1 << 10;
             LOGGER.debug("Resizing direct buffer: {} ({})", capacity, size);
-            directBuffer = BufferCreatorNative.bytesD(capacity);
+            directBuffer(capacity);
         }
-        directBuffer.limit(size);
-        return directBuffer;
+    }
+
+    private void directBuffer(int capacity) {
+        directBuffer = BufferUtils.createByteBuffer(capacity);
+        directFloatBuffer = directBuffer.asFloatBuffer();
+        directIntBuffer = directBuffer.asIntBuffer();
     }
 }

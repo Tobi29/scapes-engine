@@ -16,10 +16,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
 
 public class GuiStack {
-    protected static final VAO CURSOR;
+    protected final VAO cursor;
+    private final Map<String, Gui> guis = new ConcurrentSkipListMap<>();
 
-    static {
-        CURSOR = VAOUtility.createVCTI(
+    public GuiStack(ScapesEngine engine) {
+        cursor = VAOUtility.createVCTI(engine,
                 new float[]{-16.0f, -16.0f, 0.0f, 16.0f, -16.0f, 0.0f, -16.0f,
                         16.0f, 0.0f, 16.0f, 16.0f, 0.0f},
                 new float[]{1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
@@ -27,8 +28,6 @@ public class GuiStack {
                 new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f},
                 new int[]{0, 1, 2, 1, 2, 3}, RenderType.TRIANGLES);
     }
-
-    private final Map<String, Gui> guis = new ConcurrentSkipListMap<>();
 
     public void add(String id, Gui add) {
         guis.put(id, add);
@@ -93,7 +92,7 @@ public class GuiStack {
                         Matrix matrix = matrixStack.push();
                         matrix.translate((float) cursor.x(), (float) cursor.y(),
                                 0.0f);
-                        CURSOR.render(gl, shader);
+                        this.cursor.render(gl, shader);
                         matrixStack.pop();
                     });
         }

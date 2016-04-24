@@ -15,16 +15,18 @@
  */
 package org.tobi29.scapes.engine.opengl.matrix;
 
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
+import java8.util.function.IntFunction;
+
+import java.nio.ByteBuffer;
 
 public class MatrixStack {
     private final Matrix[] stack;
     private int i;
 
-    public MatrixStack(int matrices) {
+    public MatrixStack(int matrices, IntFunction<ByteBuffer> supplier) {
         stack = new Matrix[matrices];
         for (int i = 0; i < stack.length; i++) {
-            stack[i] = new Matrix(BufferCreatorNative::bytesD);
+            stack[i] = new Matrix(supplier);
         }
         stack[0].identity();
     }

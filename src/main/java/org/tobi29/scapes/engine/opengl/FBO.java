@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.opengl;
 
 import java8.util.stream.Stream;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBODepth;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
@@ -36,22 +37,20 @@ public class FBO {
     private int height, currentHeight;
     private int lastFBO;
 
-    public FBO(int width, int height, int colorAttachments, boolean depth,
-            boolean hdr, boolean alpha) {
+    public FBO(ScapesEngine engine, int width, int height, int colorAttachments,
+            boolean depth, boolean hdr, boolean alpha) {
         this.width = FastMath.max(width, 1);
         this.height = FastMath.max(height, 1);
         texturesColor = new TextureFBOColor[colorAttachments];
         for (int i = 0; i < texturesColor.length; i++) {
-            texturesColor[i] =
-                    new TextureFBOColor(width, height, TextureFilter.LINEAR,
-                            TextureFilter.LINEAR, TextureWrap.CLAMP,
-                            TextureWrap.CLAMP, alpha, hdr);
+            texturesColor[i] = new TextureFBOColor(engine, width, height,
+                    TextureFilter.LINEAR, TextureFilter.LINEAR,
+                    TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr);
         }
         if (depth) {
-            textureDepth =
-                    new TextureFBODepth(width, height, TextureFilter.LINEAR,
-                            TextureFilter.LINEAR, TextureWrap.CLAMP,
-                            TextureWrap.CLAMP);
+            textureDepth = new TextureFBODepth(engine, width, height,
+                    TextureFilter.LINEAR, TextureFilter.LINEAR,
+                    TextureWrap.CLAMP, TextureWrap.CLAMP);
         } else {
             textureDepth = null;
         }

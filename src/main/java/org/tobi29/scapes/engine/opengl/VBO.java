@@ -1,23 +1,24 @@
 package org.tobi29.scapes.engine.opengl;
 
 import java8.util.Optional;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
 public class VBO {
+    protected final ScapesEngine engine;
     protected final int length, stride;
     protected final List<VBOAttributeData> attributes = new ArrayList<>();
     protected Optional<ByteBuffer> data;
     protected int vertexID;
     protected boolean stored;
 
-    public VBO(List<VBOAttribute> attributes, int length) {
+    public VBO(ScapesEngine engine, List<VBOAttribute> attributes, int length) {
+        this.engine = engine;
         this.length = length;
         int stride = 0;
         for (VBOAttribute attribute : attributes) {
@@ -31,8 +32,7 @@ public class VBO {
             stride += (size - 1 | 0x03) + 1;
         }
         this.stride = stride;
-        ByteBuffer vertexBuffer = BufferCreatorNative.bytes(length * stride)
-                .order(ByteOrder.nativeOrder());
+        ByteBuffer vertexBuffer = engine.allocate(length * stride);
         Streams.of(attributes).forEach(
                 attribute -> addToBuffer(attribute, length, vertexBuffer));
         data = Optional.of(vertexBuffer);

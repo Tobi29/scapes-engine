@@ -71,7 +71,7 @@ public class GuiComponentIcon extends GuiComponent {
 
     @Override
     protected void updateMesh(Vector2 size) {
-        vao = VAOUtility.createVTI(
+        vao = VAOUtility.createVTI(gui.style().engine(),
                 new float[]{0.0f, size.floatY(), 0.0f, size.floatX(),
                         size.floatY(), 0.0f, 0.0f, 0.0f, 0.0f, size.floatX(),
                         0.0f, 0.0f},

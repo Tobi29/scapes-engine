@@ -30,6 +30,8 @@ public abstract class Game {
 
     public abstract void init();
 
+    public abstract void initLate();
+
     public abstract void step();
 
     public abstract void dispose();

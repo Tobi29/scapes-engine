@@ -17,10 +17,8 @@ package org.tobi29.scapes.engine.opengl;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class VAOStatic extends VAO {
     private final RenderType renderType;
@@ -43,8 +41,7 @@ public class VAOStatic extends VAO {
         }
         this.renderType = renderType;
         this.length = length;
-        ByteBuffer indexBuffer = BufferCreatorNative.bytes(length << 1)
-                .order(ByteOrder.nativeOrder());
+        ByteBuffer indexBuffer = vbo.engine.allocate(length << 1);
         for (int i = 0; i < length; i++) {
             indexBuffer.putShort((short) index[i]);
         }

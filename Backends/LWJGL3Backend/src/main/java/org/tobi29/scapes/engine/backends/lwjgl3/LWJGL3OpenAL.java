@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.openal.AL11;
@@ -25,20 +25,24 @@ import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.sound.AudioFormat;
 import org.tobi29.scapes.engine.sound.SoundException;
 import org.tobi29.scapes.engine.sound.openal.OpenAL;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class LWJGL3OpenAL implements OpenAL {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(LWJGL3OpenAL.class);
     private final FloatBuffer listenerOrientation =
-            BufferCreatorNative.floatsD(6);
-    private ByteBuffer directBuffer = BufferCreatorNative.bytesD(4 << 10 << 10);
+            BufferUtils.createFloatBuffer(6);
+    private ByteBuffer directBuffer;
     private ALContext context;
+
+    public LWJGL3OpenAL() {
+        directBuffer(4 << 10 << 10);
+    }
 
     @Override
     public void checkError(String message) {
@@ -223,24 +227,30 @@ public class LWJGL3OpenAL implements OpenAL {
         if (buffer == null) {
             return null;
         }
+        if (buffer.order() != ByteOrder.nativeOrder()) {
+            throw new IllegalArgumentException(
+                    "Buffer does not use native byte order");
+        }
         if (buffer.isDirect()) {
             return buffer;
         }
         direct(buffer.remaining());
+        directBuffer.clear();
         directBuffer.put(buffer);
         buffer.flip();
         directBuffer.flip();
         return directBuffer;
     }
 
-    private ByteBuffer direct(int size) {
-        directBuffer.clear();
+    private void direct(int size) {
         if (directBuffer.remaining() < size) {
             int capacity = (size >> 10) + 1 << 10;
             LOGGER.debug("Resizing direct buffer: {} ({})", capacity, size);
-            directBuffer = BufferCreatorNative.bytesD(capacity);
+            directBuffer(capacity);
         }
-        directBuffer.limit(size);
-        return directBuffer;
+    }
+
+    private void directBuffer(int capacity) {
+        directBuffer = BufferUtils.createByteBuffer(capacity);
     }
 }

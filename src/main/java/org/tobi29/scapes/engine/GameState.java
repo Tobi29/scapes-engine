@@ -34,7 +34,7 @@ public abstract class GameState {
         this.engine = engine;
         this.scene = scene;
         newScene.set(scene);
-        vao = VAOUtility.createVTI(
+        vao = VAOUtility.createVTI(engine,
                 new float[]{0.0f, 540.0f, 0.0f, 960.0f, 540.0f, 0.0f, 0.0f,
                         0.0f, 0.0f, 960.0f, 0.0f, 0.0f},
                 new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f},
@@ -85,9 +85,8 @@ public abstract class GameState {
         int sceneWidth = scene.width(gl.sceneWidth());
         int sceneHeight = scene.height(gl.sceneHeight());
         if (fboScene == null) {
-            fboScene =
-                    new FBO(sceneWidth, sceneHeight, scene.colorAttachments(),
-                            true, true, false);
+            fboScene = new FBO(engine, sceneWidth, sceneHeight,
+                    scene.colorAttachments(), true, true, false);
             scene.initFBO(0, fboScene);
         }
         if (updateSize) {
@@ -118,7 +117,7 @@ public abstract class GameState {
             renderPostProcess(gl, fboScene, fboScene, renderPasses);
         } else if (renderPasses == 1) {
             if (fboFront == null) {
-                fboFront = new FBO(sceneWidth, sceneHeight,
+                fboFront = new FBO(engine, sceneWidth, sceneHeight,
                         scene.colorAttachments(), false, true, false);
                 scene.initFBO(1, fboFront);
             }
@@ -129,12 +128,12 @@ public abstract class GameState {
             renderPostProcess(gl, fboFront, fboScene, renderPasses);
         } else {
             if (fboFront == null) {
-                fboFront = new FBO(sceneWidth, sceneHeight,
+                fboFront = new FBO(engine, sceneWidth, sceneHeight,
                         scene.colorAttachments(), false, true, false);
                 scene.initFBO(1, fboFront);
             }
             if (fboBack == null) {
-                fboBack = new FBO(sceneWidth, sceneHeight,
+                fboBack = new FBO(engine, sceneWidth, sceneHeight,
                         scene.colorAttachments(), false, true, false);
                 scene.initFBO(2, fboBack);
             }

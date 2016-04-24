@@ -24,10 +24,11 @@ public class OpenALEffectAudio implements OpenALAudio {
     private final Vector3 pos, velocity;
     private final float pitch, gain;
     private final boolean hasPosition;
-    private double time;
+    private final long time;
 
     public OpenALEffectAudio(String asset, String channel, Vector3 pos,
-            Vector3 velocity, float pitch, float gain, boolean hasPosition) {
+            Vector3 velocity, float pitch, float gain, boolean hasPosition,
+            long time) {
         this.asset = asset;
         this.channel = channel;
         this.pos = pos;
@@ -35,6 +36,7 @@ public class OpenALEffectAudio implements OpenALAudio {
         this.pitch = pitch;
         this.gain = gain;
         this.hasPosition = hasPosition;
+        this.time = time;
     }
 
     @Override
@@ -42,9 +44,11 @@ public class OpenALEffectAudio implements OpenALAudio {
             Vector3 listenerPosition, double delta) {
         boolean flag;
         if (hasPosition) {
-            time += delta;
-            flag = time >=
-                    FastMath.pointDistance(listenerPosition, pos) / 343.3;
+            double diff = (System.nanoTime() - time) / 1000000000.0;
+            double delay =
+                    FastMath.pointDistance(listenerPosition, pos) / 343.3 -
+                            delta * 0.5;
+            flag = diff >= delay;
         } else {
             flag = true;
         }

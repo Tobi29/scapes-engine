@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.Mesh;
 import org.tobi29.scapes.engine.opengl.VAO;
@@ -9,12 +10,20 @@ import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiBasicStyle implements GuiStyle {
+    private final ScapesEngine engine;
     private final FontRenderer font;
     private final TextureManager textures;
 
-    public GuiBasicStyle(FontRenderer font, TextureManager textures) {
+    public GuiBasicStyle(ScapesEngine engine, FontRenderer font,
+            TextureManager textures) {
+        this.engine = engine;
         this.font = font;
         this.textures = textures;
+    }
+
+    @Override
+    public ScapesEngine engine() {
+        return engine;
     }
 
     @Override
@@ -30,7 +39,7 @@ public class GuiBasicStyle implements GuiStyle {
         mesh.addRectangle(0.0f, 0.0f, size.floatX(), size.floatY(), 0.0f, 0.0f,
                 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.3f);
         Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(), texture);
+        return new Pair<>(mesh.finish(engine), texture);
     }
 
     @Override
@@ -47,7 +56,7 @@ public class GuiBasicStyle implements GuiStyle {
         mesh.addRectangle(0.0f, 0.0f, size.floatX(), size.floatY(), 0.0f, 0.0f,
                 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, (float) a);
         Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(), texture);
+        return new Pair<>(mesh.finish(engine), texture);
     }
 
     @Override
@@ -56,7 +65,7 @@ public class GuiBasicStyle implements GuiStyle {
         GuiUtils.renderShadow(mesh, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.2f);
         Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(), texture);
+        return new Pair<>(mesh.finish(engine), texture);
     }
 
     @Override
@@ -85,7 +94,7 @@ public class GuiBasicStyle implements GuiStyle {
                     0.0f, 0.0f, 0.0f, (float) a);
         }
         Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(), texture);
+        return new Pair<>(mesh.finish(engine), texture);
     }
 
     @Override
@@ -99,7 +108,7 @@ public class GuiBasicStyle implements GuiStyle {
         mesh.addRectangle(0.0f, halfHeight, size.floatX(), size.floatY(), 0.0f,
                 0.0f, 0.5f, 1.0f, 1.0f, 0.2f, 0.2f, 0.2f, 0.3f);
         Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(), texture);
+        return new Pair<>(mesh.finish(engine), texture);
     }
 
     @Override

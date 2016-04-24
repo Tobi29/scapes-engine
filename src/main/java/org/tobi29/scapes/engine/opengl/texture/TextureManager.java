@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileSystemContainer;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
 
@@ -40,13 +39,18 @@ public class TextureManager {
 
     public TextureManager(ScapesEngine engine) {
         this.engine = engine;
-        ByteBuffer buffer = BufferCreatorNative.bytes(4);
+        empty = new TextureCustom(engine, 1, 1, null, 0);
+    }
+
+    public void init() {
+        // Init empty texture when container is available in engine
+        ByteBuffer buffer = engine.allocate(4);
         buffer.put((byte) -1);
         buffer.put((byte) -1);
         buffer.put((byte) -1);
         buffer.put((byte) -1);
         buffer.rewind();
-        empty = new TextureCustom(1, 1, buffer, 0);
+        empty.setBuffer(buffer);
     }
 
     public void bind(String asset, GL gl) {
@@ -90,8 +94,8 @@ public class TextureManager {
                     properties.load(streamIn);
                 }
             }
-            TextureAsset texture = imageResource
-                    .readReturn(stream -> new TextureAsset(stream, properties));
+            TextureAsset texture = imageResource.readReturn(
+                    stream -> new TextureAsset(engine, stream, properties));
             cache.put(asset, texture);
             return texture;
         } catch (IOException e) {

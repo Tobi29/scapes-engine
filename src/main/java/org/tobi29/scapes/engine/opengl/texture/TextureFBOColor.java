@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.opengl.texture;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 
@@ -22,10 +23,11 @@ public class TextureFBOColor extends Texture {
     private final boolean alpha, hdr;
     private boolean attached = true;
 
-    public TextureFBOColor(int width, int height, TextureFilter minFilter,
-            TextureFilter magFilter, TextureWrap wrapS, TextureWrap wrapT,
-            boolean alpha, boolean hdr) {
-        super(width, height, null, 0, minFilter, magFilter, wrapS, wrapT);
+    public TextureFBOColor(ScapesEngine engine, int width, int height,
+            TextureFilter minFilter, TextureFilter magFilter, TextureWrap wrapS,
+            TextureWrap wrapT, boolean alpha, boolean hdr) {
+        super(engine, width, height, null, 0, minFilter, magFilter, wrapS,
+                wrapT);
         this.alpha = alpha;
         this.hdr = hdr;
     }

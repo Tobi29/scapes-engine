@@ -38,6 +38,7 @@ import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -53,7 +54,7 @@ public class ScapesEngine implements Crashable {
     private final SoundSystem sounds;
     private final Game game;
     private final GuiStyle guiStyle;
-    private final GuiStack guiStack = new GuiStack();
+    private final GuiStack guiStack;
     private final Runtime runtime;
     private final TagStructure tagStructure;
     private final ScapesEngineConfig config;
@@ -144,10 +145,11 @@ public class ScapesEngine implements Crashable {
         LOGGER.info("Loading default font");
         String fontName = container.loadFont("Engine:font/QuicksandPro-Regular")
                 .orElse("Quicksand Pro");
-        FontRenderer font =
-                new FontRenderer(container.createGlyphRenderer(fontName, 64));
+        FontRenderer font = new FontRenderer(this,
+                container.createGlyphRenderer(fontName, 64));
         LOGGER.info("Setting up GUI");
-        guiStyle = new GuiBasicStyle(font, container.gl().textures());
+        guiStack = new GuiStack(this);
+        guiStyle = new GuiBasicStyle(this, font, container.gl().textures());
         notifications = new GuiNotifications(guiStyle);
         guiStack.add("90-Notifications", notifications);
         Gui debugGui = new Gui(guiStyle) {
@@ -168,6 +170,7 @@ public class ScapesEngine implements Crashable {
         LOGGER.info("Creating sound system");
         sounds = container.sound();
         guiController = new GuiControllerDummy();
+        game.init();
     }
 
     private static ScapesEngineBackendProvider loadBackend() {
@@ -281,6 +284,10 @@ public class ScapesEngine implements Crashable {
         newState.set(state);
     }
 
+    public ByteBuffer allocate(int capacity) {
+        return container.allocate(capacity);
+    }
+
     @SuppressWarnings({"OverlyBroadCatchBlock", "CallToSystemExit"})
     public int run() {
         start();
@@ -312,7 +319,7 @@ public class ScapesEngine implements Crashable {
             try {
                 Sync sync = new Sync(config.fps(), 5000000000L, true,
                         "Engine-Update");
-                game.init();
+                game.initLate();
                 sync.init();
                 step(sync.delta());
                 wait.join();

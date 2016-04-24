@@ -46,6 +46,8 @@ public class GraphicsSystem {
     public GraphicsSystem(ScapesEngine engine, GL gl) {
         this.engine = engine;
         this.gl = gl;
+        // Init empty texture as engine can access container now
+        gl.textures().init();
         resolutionMultiplier = engine.config().resolutionMultiplier();
         GuiWidgetDebugValues debugValues = engine.debugValues();
         fpsDebug = debugValues.get("Graphics-Fps");

@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.utils.graphics;
 
-import org.tobi29.scapes.engine.utils.BufferCreatorNative;
+import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.nio.ByteBuffer;
@@ -31,27 +31,28 @@ public final class MipMapGenerator {
      * Creates an array of {@link ByteBuffer} containing mipmap
      * textures from the given source texture
      *
-     * @param buffer  {@link ByteBuffer} containing texture data in RGBA
-     *                format
-     * @param width   Width of source texture in pixels
-     * @param height  Height of source texture in pixels
-     * @param mipmaps Amount of mipmap levels, resulting array will be n + 1 in size
-     * @param alpha   Whether or not to allow transparent borders or harsh ones
+     * @param buffer   {@link ByteBuffer} containing texture data in RGBA
+     *                 format
+     * @param supplier Supplier for {@link ByteBuffer} instances
+     * @param width    Width of source texture in pixels
+     * @param height   Height of source texture in pixels
+     * @param mipmaps  Amount of mipmap levels, resulting array will be n + 1 in size
+     * @param alpha    Whether or not to allow transparent borders or harsh ones
      * @return An array of {@link ByteBuffer} containing the mipmap
      * textures
      */
-    public static ByteBuffer[] generateMipMaps(ByteBuffer buffer, int width,
-            int height, int mipmaps, boolean alpha) {
+    public static ByteBuffer[] generateMipMaps(ByteBuffer buffer,
+            IntFunction<ByteBuffer> supplier, int width, int height,
+            int mipmaps, boolean alpha) {
         ByteBuffer[] buffers = new ByteBuffer[mipmaps + 1];
         if (buffer == null) {
             return buffers;
         }
         buffers[mipmaps] =
-                generateMipMap(buffer, width, height, mipmaps, alpha);
+                generateMipMap(buffer, supplier, width, height, mipmaps, alpha);
         for (int i = mipmaps - 1; i >= 0; i--) {
-            buffers[i] =
-                    generateMipMap(buffer, width, height, i, buffers[i + 1], 1,
-                            alpha);
+            buffers[i] = generateMipMap(buffer, supplier, width, height, i,
+                    buffers[i + 1], 1, alpha);
         }
         return buffers;
     }
@@ -61,15 +62,18 @@ public final class MipMapGenerator {
      *
      * @param buffer    {@link ByteBuffer} containing texture data in RGBA
      *                  format
+     * @param supplier  Supplier for {@link ByteBuffer} instances
      * @param width     Width of source texture in pixels
      * @param height    Height of source texture in pixels
      * @param scaleBits Scale for the mipmap texture given as bit-shift value
      * @param alpha     Whether or not to allow transparent borders or harsh ones
      * @return A {@link ByteBuffer} containing the mipmap texture
      */
-    public static ByteBuffer generateMipMap(ByteBuffer buffer, int width,
-            int height, int scaleBits, boolean alpha) {
-        return generateMipMap(buffer, width, height, scaleBits, null, 0, alpha);
+    public static ByteBuffer generateMipMap(ByteBuffer buffer,
+            IntFunction<ByteBuffer> supplier, int width, int height,
+            int scaleBits, boolean alpha) {
+        return generateMipMap(buffer, supplier, width, height, scaleBits, null,
+                0, alpha);
     }
 
     /**
@@ -77,6 +81,7 @@ public final class MipMapGenerator {
      *
      * @param buffer         {@link ByteBuffer} containing texture data in RGBA
      *                       format
+     * @param supplier       Supplier for {@link ByteBuffer} instances
      * @param width          Width of source texture in pixels
      * @param height         Height of source texture in pixels
      * @param scaleBits      Scale for the mipmap texture given as bit-shift value
@@ -87,8 +92,9 @@ public final class MipMapGenerator {
      * @param alpha          Whether or not to allow transparent borders or harsh ones
      * @return A {@link ByteBuffer} containing the mipmap texture
      */
-    public static ByteBuffer generateMipMap(ByteBuffer buffer, int width,
-            int height, int scaleBits, ByteBuffer lower, int lowerScaleBits,
+    public static ByteBuffer generateMipMap(ByteBuffer buffer,
+            IntFunction<ByteBuffer> supplier, int width, int height,
+            int scaleBits, ByteBuffer lower, int lowerScaleBits,
             boolean alpha) {
         int offset = buffer.position();
         int offsetLower;
@@ -100,9 +106,9 @@ public final class MipMapGenerator {
         int scale = 1 << scaleBits;
         int widthScaled = width >> scaleBits;
         int heightScaled = height >> scaleBits;
-        ByteBuffer mipmap = BufferCreatorNative
-                .bytes(FastMath.max(widthScaled, 1) *
-                        FastMath.max(heightScaled, 1) << 2);
+        ByteBuffer mipmap = supplier.apply(
+                FastMath.max(widthScaled, 1) * FastMath.max(heightScaled, 1) <<
+                        2);
         int samples = 1 << (scaleBits << 1);
         int minVisible = samples >> 1;
         int lowerWidth = widthScaled >> lowerScaleBits;
