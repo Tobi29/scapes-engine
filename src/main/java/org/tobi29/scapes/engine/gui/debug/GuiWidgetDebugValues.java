@@ -59,7 +59,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         return elements.entrySet();
     }
 
-    public static final class Element extends GuiComponentSlab {
+    public static final class Element extends GuiComponentGroupSlab {
         private final GuiComponentText value;
         private final AtomicReference<String> text = new AtomicReference<>();
 
@@ -106,7 +106,8 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         }
 
         @Override
-        public void updateComponent(ScapesEngine engine, double delta, Vector2 size) {
+        public void updateComponent(ScapesEngine engine, double delta,
+                Vector2 size) {
             String newText = text.getAndSet(null);
             if (newText != null) {
                 value.setText(newText);

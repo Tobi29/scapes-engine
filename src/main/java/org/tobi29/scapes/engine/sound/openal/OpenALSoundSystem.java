@@ -158,10 +158,9 @@ public class OpenALSoundSystem implements SoundSystem {
     public void playSound(String asset, String channel, float pitch,
             float gain) {
         long time = System.nanoTime();
-        queue(openAL -> {
-            audios.add(new OpenALEffectAudio(asset, channel, Vector3d.ZERO,
-                    Vector3d.ZERO, pitch, gain, false,time));
-        });
+        queue(openAL -> audios
+                .add(new OpenALEffectAudio(asset, channel, Vector3d.ZERO,
+                        Vector3d.ZERO, pitch, gain, false, time)));
     }
 
     @Override
@@ -170,7 +169,7 @@ public class OpenALSoundSystem implements SoundSystem {
         long time = System.nanoTime();
         queue(openAL -> audios
                 .add(new OpenALEffectAudio(asset, channel, position, velocity,
-                        pitch, gain, true,time)));
+                        pitch, gain, true, time)));
     }
 
     @Override

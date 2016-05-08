@@ -16,8 +16,6 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentFlowText extends GuiComponent {
@@ -25,7 +23,6 @@ public class GuiComponentFlowText extends GuiComponent {
     protected final float r, g, b, a;
     protected String text;
     protected TextFilter textFilter = str -> str;
-    protected FontRenderer.Text vaoText;
 
     public GuiComponentFlowText(GuiLayoutData parent, String text) {
         this(parent, Integer.MAX_VALUE, text);
@@ -50,10 +47,10 @@ public class GuiComponentFlowText extends GuiComponent {
         this.b = b;
         this.a = a;
         FontRenderer font = gui.style().font();
-        FontRenderer.Text vaoText =
-                font.render(textFilter.filter(text), 0.0, 0.0, parent.height(),
-                        textWidth, r, g, b, a);
-        parent.setWidth(vaoText.width());
+        FontRenderer.TextInfo textInfo =
+                font.render(FontRenderer.to(), textFilter.filter(text),
+                        (float) parent.height(), textWidth);
+        parent.setWidth(textInfo.width());
     }
 
     public String text() {
@@ -63,26 +60,22 @@ public class GuiComponentFlowText extends GuiComponent {
     public void setText(String text) {
         if (!this.text.equals(text)) {
             this.text = text;
-            dirty.set(true);
+            dirty();
         }
     }
 
     public void setTextFilter(TextFilter textFilter) {
         this.textFilter = textFilter;
-        dirty.set(true);
+        dirty();
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
-        vaoText.render(gl, shader);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
         FontRenderer font = gui.style().font();
-        vaoText = font.render(textFilter.filter(text), 0.0, 0.0, size.doubleY(),
-                textWidth, r, g, b, a);
-        parent.setWidth(vaoText.width());
+        FontRenderer.TextInfo textInfo =
+                font.render(FontRenderer.to(renderer, r, g, b, a),
+                        textFilter.filter(text), size.floatY(), textWidth);
+        parent.setWidth(textInfo.width());
     }
 
     public interface TextFilter {

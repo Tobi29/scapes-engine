@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class Gui extends GuiComponentSlab {
+public abstract class Gui extends GuiComponentSlabHeavy {
     protected final GuiStyle style;
     private GuiComponent lastClicked;
 
@@ -50,10 +50,9 @@ public abstract class Gui extends GuiComponentSlab {
             for (Triple<GuiComponent, Vector2, Vector2> component : layout
                     .layout()) {
                 if (!component.a.parent.blocksEvents()) {
-                    Optional<GuiComponent> sink = component.a.fireEvent(
-                            new GuiComponentEvent(event, component.b.doubleX(),
-                                    component.b.doubleY(), component.c),
-                            listener, engine);
+                    Optional<GuiComponent> sink = component.a
+                            .fireEvent(applyTransform(event, component),
+                                    listener, engine);
                     if (sink.isPresent()) {
                         return sink;
                     }
@@ -77,10 +76,9 @@ public abstract class Gui extends GuiComponentSlab {
             layoutStream(baseSize(engine))
                     .filter(component -> !component.a.parent.blocksEvents())
                     .forEach(component -> sinks.addAll(component.a
-                            .fireRecursiveEvent(new GuiComponentEvent(event1,
-                                            component.b.doubleX(),
-                                            component.b.doubleY(), component.c),
-                                    listener, engine)));
+                            .fireRecursiveEvent(
+                                    applyTransform(event1, component), listener,
+                                    engine)));
             return sinks;
         }
         return Collections.emptySet();
@@ -100,10 +98,9 @@ public abstract class Gui extends GuiComponentSlab {
             for (Triple<GuiComponent, Vector2, Vector2> component : layout
                     .layout()) {
                 if (!component.a.parent.blocksEvents()) {
-                    boolean success = component.a.sendEvent(
-                            new GuiComponentEvent(event, component.b.doubleX(),
-                                    component.b.doubleY(), component.c),
-                            destination, listener, engine);
+                    boolean success = component.a
+                            .sendEvent(applyTransform(event, component),
+                                    destination, listener, engine);
                     if (success) {
                         return true;
                     }

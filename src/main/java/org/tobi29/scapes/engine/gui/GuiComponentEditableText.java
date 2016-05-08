@@ -4,16 +4,24 @@ import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.BlendingMode;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
 import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.utils.Pair;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentEditableText extends GuiComponentText {
+import java.util.List;
+
+public class GuiComponentEditableText extends GuiComponentHeavy {
     protected final GuiController.TextFieldData data =
             new GuiController.TextFieldData();
     protected final int maxLength;
+    protected final float r, g, b, a;
     protected boolean active, focused;
-    protected FontRenderer.Text vaoCursor, vaoSelection;
+    protected List<Pair<VAO, Texture>> vaoCursor, vaoSelection;
+    protected GuiComponentText.TextFilter textFilter = str -> str;
 
     public GuiComponentEditableText(GuiLayoutData parent, String text) {
         this(parent, text, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -31,11 +39,15 @@ public class GuiComponentEditableText extends GuiComponentText {
 
     public GuiComponentEditableText(GuiLayoutData parent, String text,
             int maxLength, float r, float g, float b, float a) {
-        super(parent, text, r, g, b, a);
+        super(parent);
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
         data.text.append(text);
         this.maxLength = maxLength;
         data.cursor = data.text.length();
-        dirty.set(true);
+        dirty();
     }
 
     public GuiController.TextFieldData data() {
@@ -50,8 +62,55 @@ public class GuiComponentEditableText extends GuiComponentText {
         this.active = active;
     }
 
+    public String text() {
+        return data.text.toString();
+    }
+
+    public void setText(String text) {
+        if (!data.text.toString().equals(text)) {
+            data.text.setLength(0);
+            data.text.append(text);
+            dirty();
+        }
+    }
+
+    public void setTextFilter(GuiComponentText.TextFilter textFilter) {
+        this.textFilter = textFilter;
+        dirty();
+    }
+
     @Override
-    protected void updateComponent(ScapesEngine engine, double delta, Vector2 size) {
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        if (data == null) {
+            return;
+        }
+        FontRenderer font = gui.style().font();
+        String text = data.text.toString();
+        font.render(FontRenderer.to(renderer, r, g, b, a),
+                textFilter.filter(text), size.floatY(), size.floatX());
+        int cursor = data.cursor;
+        int selectionStart = data.selectionStart;
+        int selectionEnd = data.selectionEnd;
+        cursor = FastMath.clamp(cursor, 0, text.length());
+        selectionStart = FastMath.clamp(selectionStart, 0, text.length());
+        selectionEnd = FastMath.clamp(selectionEnd, 0, text.length());
+        GuiRenderBatch batch = new GuiRenderBatch();
+        font.render(FontRenderer.to(batch, 0.0f - size.floatY() * 0.1f,
+                0.0f - size.floatY() * 0.1f, 1.0f, 1.0f, 1.0f, 1.0f),
+                text.substring(0, cursor) + '|', size.floatY(),
+                size.floatY() * 1.2f, size.floatY(), Float.MAX_VALUE, cursor,
+                cursor + 1);
+        vaoCursor = batch.finish();
+        font.render(FontRenderer
+                        .to(batch, 0.0f, 0.0f, true, 1.0f, 1.0f, 1.0f, 1.0f), text,
+                size.floatY(), size.floatY(), size.floatY(), size.floatX(),
+                selectionStart, selectionEnd);
+        vaoSelection = batch.finish();
+    }
+
+    @Override
+    protected void updateComponent(ScapesEngine engine, double delta,
+            Vector2 size) {
         if (active) {
             if (!focused) {
                 engine.guiController().focusTextField(data, false);
@@ -63,18 +122,16 @@ public class GuiComponentEditableText extends GuiComponentText {
                     data.cursor = FastMath.min(data.cursor, maxLength);
                 }
                 FontRenderer font = gui.style().font();
-                FontRenderer.Text width =
-                        font.render(textFilter.filter(data.text.toString()),
-                                0.0, 0.0, size.doubleY(), size.doubleX(), r, g,
-                                b, a);
-                int maxLengthFont = width.length();
+                FontRenderer.TextInfo textInfo = font.render(FontRenderer.to(),
+                        textFilter.filter(data.text.toString()), size.floatY(),
+                        size.floatX());
+                int maxLengthFont = textInfo.length();
                 if (data.text.length() > maxLengthFont) {
                     data.text =
                             data.text.delete(maxLengthFont, data.text.length());
                     data.cursor = FastMath.min(data.cursor, maxLengthFont);
                 }
-                super.setText(data.text.toString());
-                dirty.set(true);
+                dirty();
             }
         } else {
             data.selectionStart = -1;
@@ -84,47 +141,20 @@ public class GuiComponentEditableText extends GuiComponentText {
     }
 
     @Override
-    public void setText(String text) {
-        data.text.setLength(0);
-        data.text.append(text);
-        super.setText(text);
-    }
-
-    @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
+    public void renderComponent(GL gl, Shader shader, double width,
+            double height) {
         super.renderComponent(gl, shader, width, height);
         if (active) {
             if (System.currentTimeMillis() / 600 % 2 == 0) {
-                vaoCursor.render(gl, shader);
+                Streams.of(vaoCursor).forEach(mesh -> {
+                    mesh.b.bind(gl);
+                    mesh.a.render(gl, shader);
+                });
             }
         }
         gl.textures().unbind(gl);
         gl.setBlending(BlendingMode.INVERT);
-        vaoSelection.render(gl, shader, false);
+        Streams.of(vaoSelection).forEach(mesh -> mesh.a.render(gl, shader));
         gl.setBlending(BlendingMode.NORMAL);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
-        super.updateMesh(size);
-        if (data == null) {
-            return;
-        }
-        FontRenderer font = gui.style().font();
-        String text = this.text;
-        int cursor = data.cursor;
-        int selectionStart = data.selectionStart;
-        int selectionEnd = data.selectionEnd;
-        cursor = FastMath.clamp(cursor, 0, text.length());
-        selectionStart = FastMath.clamp(selectionStart, 0, text.length());
-        selectionEnd = FastMath.clamp(selectionEnd, 0, text.length());
-        vaoCursor = font.render(text.substring(0, cursor) + '|',
-                0.0 - size.doubleY() * 0.1, 0.0 - size.doubleY() * 0.1,
-                size.doubleY(), size.doubleY() * 1.2, size.doubleY(),
-                Float.MAX_VALUE, 1.0, 1.0, 1.0, 1.0, cursor, cursor + 1, false);
-        vaoSelection =
-                font.render(text, 0.0, 0.0, size.doubleY(), size.doubleY(),
-                        size.doubleY(), size.doubleX() - 0.0, 1.0, 1.0, 1.0,
-                        1.0, selectionStart, selectionEnd, true);
     }
 }

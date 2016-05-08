@@ -16,15 +16,10 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
-import org.tobi29.scapes.engine.opengl.*;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentIcon extends GuiComponent {
-    private VAO vao;
-    private Pair<VAO, Texture> vaoBorder;
     private float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
     private Optional<Texture> texture;
 
@@ -43,10 +38,12 @@ public class GuiComponentIcon extends GuiComponent {
 
     public void setIcon(Texture texture) {
         this.texture = Optional.of(texture);
+        dirty();
     }
 
     public void unsetIcon() {
         texture = Optional.empty();
+        dirty();
     }
 
     public void setColor(float r, float g, float b, float a) {
@@ -54,29 +51,17 @@ public class GuiComponentIcon extends GuiComponent {
         this.g = g;
         this.b = b;
         this.a = a;
+        dirty();
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width,
-            double height) {
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().border(renderer, size);
         Optional<Texture> texture = this.texture;
         if (texture.isPresent()) {
-            texture.get().bind(gl);
-            gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, r, g, b, a);
-            vao.render(gl, shader);
-            vaoBorder.b.bind(gl);
-            vaoBorder.a.render(gl, shader);
+            renderer.texture(texture.get());
+            GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
+                    size.floatY(), r, g, b, a);
         }
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
-        vao = VAOUtility.createVTI(gui.style().engine(),
-                new float[]{0.0f, size.floatY(), 0.0f, size.floatX(),
-                        size.floatY(), 0.0f, 0.0f, 0.0f, 0.0f, size.floatX(),
-                        0.0f, 0.0f},
-                new float[]{0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f},
-                new int[]{0, 1, 2, 3, 2, 1}, RenderType.TRIANGLES);
-        vaoBorder = gui.style().border(size);
     }
 }

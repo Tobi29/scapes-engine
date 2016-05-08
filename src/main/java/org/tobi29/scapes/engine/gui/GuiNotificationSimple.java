@@ -8,7 +8,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
-public class GuiNotificationSimple extends GuiComponentVisibleSlab {
+public class GuiNotificationSimple extends GuiComponentVisibleSlabHeavy {
     private final double speed;
     private double progress;
 

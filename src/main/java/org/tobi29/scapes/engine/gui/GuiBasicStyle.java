@@ -2,11 +2,7 @@ package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.Mesh;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.opengl.texture.TextureManager;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiBasicStyle implements GuiStyle {
@@ -32,50 +28,44 @@ public class GuiBasicStyle implements GuiStyle {
     }
 
     @Override
-    public Pair<VAO, Texture> pane(Vector2 size) {
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.2f);
-        mesh.addRectangle(0.0f, 0.0f, size.floatX(), size.floatY(), 0.0f, 0.0f,
-                0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.3f);
-        Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(engine), texture);
+    public void pane(GuiRenderer renderer, Vector2 size) {
+        renderer.texture(textures.empty());
+        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.2f);
+        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.3f);
     }
 
     @Override
-    public Pair<VAO, Texture> button(Vector2 size, boolean hover) {
+    public void button(GuiRenderer renderer, Vector2 size, boolean hover) {
+        renderer.texture(textures.empty());
         double a;
         if (hover) {
             a = 0.8f;
         } else {
             a = 0.6f;
         }
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.2f);
-        mesh.addRectangle(0.0f, 0.0f, size.floatX(), size.floatY(), 0.0f, 0.0f,
-                0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, (float) a);
-        Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(engine), texture);
+        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.2f);
+        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, (float) a);
     }
 
     @Override
-    public Pair<VAO, Texture> border(Vector2 size) {
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.2f);
-        Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(engine), texture);
+    public void border(GuiRenderer renderer, Vector2 size) {
+        renderer.texture(textures.empty());
+        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.2f);
     }
 
     @Override
-    public Pair<VAO, Texture> slider(Vector2 size, boolean horizontal,
+    public void slider(GuiRenderer renderer, Vector2 size, boolean horizontal,
             double value, double sliderSize, boolean hover) {
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.2f);
-        mesh.addRectangle(0.0f, 0.0f, size.floatX(), size.floatY(), 0.0f, 0.0f,
-                0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.2f);
+        renderer.texture(textures.empty());
+        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.2f);
+        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.2f);
         double a;
         if (hover) {
             a = 0.8f;
@@ -84,40 +74,34 @@ public class GuiBasicStyle implements GuiStyle {
         }
         if (horizontal) {
             value = value * (size.doubleX() - sliderSize);
-            mesh.addRectangle((float) value, 0.0f, (float) (value + sliderSize),
-                    size.floatY(), 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+            GuiUtils.rectangle(renderer, (float) value, 0.0f,
+                    (float) (value + sliderSize), size.floatY(), 0.0f, 0.0f,
                     0.0f, (float) a);
         } else {
             value = value * (size.doubleY() - sliderSize);
-            mesh.addRectangle(0.0f, (float) value, size.floatX(),
-                    (float) (value + sliderSize), 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-                    0.0f, 0.0f, 0.0f, (float) a);
+            GuiUtils.rectangle(renderer, 0.0f, (float) value, size.floatX(),
+                    (float) (value + sliderSize), 0.0f, 0.0f, 0.0f, (float) a);
         }
-        Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(engine), texture);
     }
 
     @Override
-    public Pair<VAO, Texture> separator(Vector2 size) {
-        float halfHeight = (float) (size.doubleY() * 0.5);
-        Mesh mesh = new Mesh(true);
-        GuiUtils.renderShadow(mesh, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.1f);
-        mesh.addRectangle(0.0f, 0.0f, size.floatX(), halfHeight, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f);
-        mesh.addRectangle(0.0f, halfHeight, size.floatX(), size.floatY(), 0.0f,
-                0.0f, 0.5f, 1.0f, 1.0f, 0.2f, 0.2f, 0.2f, 0.3f);
-        Texture texture = textures.empty();
-        return new Pair<>(mesh.finish(engine), texture);
+    public void separator(GuiRenderer renderer, Vector2 size) {
+        renderer.texture(textures.empty());
+        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, 0.2f);
+        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
+                size.floatY() * 0.5f, 0.0f, 0.0f, 0.0f, 0.3f);
+        GuiUtils.rectangle(renderer, 0.0f, size.floatY() * 0.5f, size.floatX(),
+                size.floatY(), 0.2f, 0.2f, 0.2f, 0.3f);
     }
 
     @Override
-    public Pair<VAO, Texture> widget(Vector2 size) {
-        return pane(size);
+    public void widget(GuiRenderer renderer, Vector2 size) {
+        pane(renderer, size);
     }
 
     @Override
-    public Pair<VAO, Texture> widgetTitle(Vector2 size) {
-        return pane(size);
+    public void widgetTitle(GuiRenderer renderer, Vector2 size) {
+        pane(renderer, size);
     }
 }

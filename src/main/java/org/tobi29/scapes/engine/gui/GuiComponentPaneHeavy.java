@@ -19,8 +19,9 @@ import java8.util.function.Function;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
-public class GuiComponentPane extends GuiComponent implements GuiContainerRow {
-    public GuiComponentPane(GuiLayoutData parent) {
+public class GuiComponentPaneHeavy extends GuiComponentHeavy
+        implements GuiContainerRow {
+    public GuiComponentPaneHeavy(GuiLayoutData parent) {
         super(parent);
     }
 

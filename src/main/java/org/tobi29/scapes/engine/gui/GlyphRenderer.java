@@ -26,12 +26,12 @@ public interface GlyphRenderer {
 
     class GlyphPage {
         private final ByteBuffer buffer;
-        private final double[] width;
+        private final float[] width;
         private final int size, tiles;
-        private final double tileSize;
+        private final float tileSize;
 
-        public GlyphPage(ByteBuffer buffer, double[] width, int size, int tiles,
-                double tileSize) {
+        public GlyphPage(ByteBuffer buffer, float[] width, int size, int tiles,
+                float tileSize) {
             this.buffer = buffer;
             this.width = width;
             this.size = size;
@@ -44,7 +44,7 @@ public interface GlyphRenderer {
         }
 
         @SuppressWarnings("ReturnOfCollectionOrArrayField")
-        public double[] width() {
+        public float[] width() {
             return width;
         }
 
@@ -56,7 +56,7 @@ public interface GlyphRenderer {
             return tiles;
         }
 
-        public double tileSize() {
+        public float tileSize() {
             return tileSize;
         }
     }

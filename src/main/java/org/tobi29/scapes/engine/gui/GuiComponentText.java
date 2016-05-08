@@ -16,15 +16,12 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentText extends GuiComponent {
     protected final float r, g, b, a;
     protected String text;
     protected TextFilter textFilter = str -> str;
-    protected FontRenderer.Text vaoText;
 
     public GuiComponentText(GuiLayoutData parent, String text) {
         this(parent, text, 1.0f, 1.0f, 1.0f, 1.0f);
@@ -47,25 +44,20 @@ public class GuiComponentText extends GuiComponent {
     public void setText(String text) {
         if (!this.text.equals(text)) {
             this.text = text;
-            dirty.set(true);
+            dirty();
         }
     }
 
     public void setTextFilter(TextFilter textFilter) {
         this.textFilter = textFilter;
-        dirty.set(true);
+        dirty();
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
-        vaoText.render(gl, shader);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
         FontRenderer font = gui.style().font();
-        vaoText = font.render(textFilter.filter(text), 0.0, 0.0, size.doubleY(),
-                size.doubleX(), r, g, b, a);
+        font.render(FontRenderer.to(renderer, r, g, b, a),
+                textFilter.filter(text), size.floatY(), size.floatX());
     }
 
     public interface TextFilter {

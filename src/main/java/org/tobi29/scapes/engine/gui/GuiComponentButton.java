@@ -15,16 +15,10 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentButton extends GuiComponentSlab {
     private boolean hover;
-    private Pair<VAO, Texture> vao;
 
     public GuiComponentButton(GuiLayoutData parent) {
         super(parent);
@@ -34,25 +28,18 @@ public class GuiComponentButton extends GuiComponentSlab {
             switch (event.state()) {
                 case ENTER:
                     hover = true;
-                    dirty.set(true);
+                    dirty();
                     break;
                 case LEAVE:
                     hover = false;
-                    dirty.set(true);
+                    dirty();
                     break;
             }
         });
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width,
-            double height) {
-        vao.b.bind(gl);
-        vao.a.render(gl, shader);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
-        vao = gui.style().button(size, hover);
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().button(renderer, size, hover);
     }
 }

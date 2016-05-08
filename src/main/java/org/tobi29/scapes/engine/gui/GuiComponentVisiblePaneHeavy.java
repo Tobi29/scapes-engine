@@ -17,13 +17,13 @@ package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentSeparator extends GuiComponent {
-    public GuiComponentSeparator(GuiLayoutData parent) {
+public class GuiComponentVisiblePaneHeavy extends GuiComponentPaneHeavy {
+    public GuiComponentVisiblePaneHeavy(GuiLayoutData parent) {
         super(parent);
     }
 
     @Override
     protected void updateMesh(GuiRenderer renderer, Vector2 size) {
-        gui.style().separator(renderer, size);
+        gui.style().pane(renderer, size);
     }
 }

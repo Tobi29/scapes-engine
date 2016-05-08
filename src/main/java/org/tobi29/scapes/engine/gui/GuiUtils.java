@@ -13,71 +13,138 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.opengl.Mesh;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 
-public class GuiUtils {
-    public static void renderShadow(Mesh mesh, float x1, float y1, float x2,
-            float y2, float a) {
-        renderShadow(mesh, x1, y1, x2, y2, 0, 0, 0, a);
+public final class GuiUtils {
+    private GuiUtils() {
     }
 
-    public static void renderShadow(Mesh mesh, float x1, float y1, float x2,
-            float y2, float r, float g, float b, float a) {
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x1, y1 - 8, 0.0f);
-        mesh.vertex(x1 - 8, y1, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x1, y1, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x1 - 8, y2, 0.0f);
-        mesh.vertex(x1, y2 + 8, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x1, y2, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x2 + 8, y1, 0.0f);
-        mesh.vertex(x2, y1 - 8, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x2, y1, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x2, y2 + 8, 0.0f);
-        mesh.vertex(x2 + 8, y2, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x2, y2, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x2, y1 - 8, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x1, y1, 0.0f);
-        mesh.vertex(x2, y1, 0.0f);
-        mesh.vertex(x1, y1, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x2, y1 - 8, 0.0f);
-        mesh.vertex(x1, y1 - 8, 0.0f);
-        mesh.vertex(x1, y2 + 8, 0.0f);
-        mesh.vertex(x2, y2 + 8, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x1, y2, 0.0f);
-        mesh.vertex(x2, y2, 0.0f);
-        mesh.vertex(x1, y2, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x2, y2 + 8, 0.0f);
-        mesh.vertex(x1 - 8, y1, 0.0f);
-        mesh.vertex(x1 - 8, y2, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x1, y1, 0.0f);
-        mesh.vertex(x1, y2, 0.0f);
-        mesh.vertex(x1, y1, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x1 - 8, y2, 0.0f);
-        mesh.vertex(x2 + 8, y2, 0.0f);
-        mesh.color(r, g, b, a);
-        mesh.vertex(x2, y1, 0.0f);
-        mesh.vertex(x2, y2, 0.0f);
-        mesh.vertex(x2, y1, 0.0f);
-        mesh.color(r, g, b, 0);
-        mesh.vertex(x2 + 8, y2, 0.0f);
-        mesh.vertex(x2 + 8, y1, 0.0f);
+    public static void rectangle(GuiRenderBatch renderer, float minX,
+            float minY, float maxX, float maxY, float r, float g, float b,
+            float a) {
+        rectangle(renderer, minX, minY, maxX, maxY, 0.0f, 0.0f, 1.0f, 1.0f, r,
+                g, b, a);
+    }
+
+    public static void rectangle(GuiRenderBatch renderer, float minX,
+            float minY, float maxX, float maxY, float minTX, float minTY,
+            float maxTX, float maxTY, float r, float g, float b, float a) {
+        Mesh mesh = renderer.mesh();
+        Vector3 tl = renderer.vector(minX, minY);
+        Vector3 tr = renderer.vector(maxX, minY);
+        Vector3 bl = renderer.vector(minX, maxY);
+        Vector3 br = renderer.vector(maxX, maxY);
+        mesh.addVertex(tl.floatX(), tl.floatY(), 0.0f, r, g, b, a, minTX,
+                minTY);
+        mesh.addVertex(tr.floatX(), tr.floatY(), 0.0f, r, g, b, a, maxTX,
+                minTY);
+        mesh.addVertex(bl.floatX(), bl.floatY(), 0.0f, r, g, b, a, minTX,
+                maxTY);
+        mesh.addVertex(bl.floatX(), bl.floatY(), 0.0f, r, g, b, a, minTX,
+                maxTY);
+        mesh.addVertex(tr.floatX(), tr.floatY(), 0.0f, r, g, b, a, maxTX,
+                minTY);
+        mesh.addVertex(br.floatX(), br.floatY(), 0.0f, r, g, b, a, maxTX,
+                maxTY);
+    }
+
+    public static void shadow(GuiRenderBatch renderer, float minX, float minY,
+            float maxX, float maxY, float r, float g, float b, float a) {
+        Mesh mesh = renderer.mesh();
+        Vector3 tli = renderer.vector(minX, minY);
+        Vector3 tri = renderer.vector(maxX, minY);
+        Vector3 bli = renderer.vector(minX, maxY);
+        Vector3 bri = renderer.vector(maxX, maxY);
+        Vector3 tlt = renderer.vector(minX, minY - 8.0f);
+        Vector3 trt = renderer.vector(maxX, minY - 8.0f);
+        Vector3 blb = renderer.vector(minX, maxY + 8.0f);
+        Vector3 brb = renderer.vector(maxX, maxY + 8.0f);
+        Vector3 tll = renderer.vector(minX - 8.0f, minY);
+        Vector3 trr = renderer.vector(maxX + 8.0f, minY);
+        Vector3 bll = renderer.vector(minX - 8.0f, maxY);
+        Vector3 brr = renderer.vector(maxX + 8.0f, maxY);
+        // Top
+        mesh.addVertex(tlt.floatX(), tlt.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(trt.floatX(), trt.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(tli.floatX(), tli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(tli.floatX(), tli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(trt.floatX(), trt.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(tri.floatX(), tri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        // Bottom
+        mesh.addVertex(bli.floatX(), bli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(bri.floatX(), bri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(blb.floatX(), blb.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(blb.floatX(), blb.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(bri.floatX(), bri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(brb.floatX(), brb.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        // Left
+        mesh.addVertex(tll.floatX(), tll.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(tli.floatX(), tli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(bll.floatX(), bll.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(bll.floatX(), bll.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(tli.floatX(), tli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(bli.floatX(), bli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        // Right
+        mesh.addVertex(tri.floatX(), tri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(trr.floatX(), trr.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(bri.floatX(), bri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(bri.floatX(), bri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(trr.floatX(), trr.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(brr.floatX(), brr.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        // Top-left
+        mesh.addVertex(tli.floatX(), tli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(tll.floatX(), tll.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(tlt.floatX(), tlt.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        // Top-right
+        mesh.addVertex(tri.floatX(), tri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(trt.floatX(), trt.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(trr.floatX(), trr.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        // Bottom-left
+        mesh.addVertex(bli.floatX(), bli.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(blb.floatX(), blb.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(bll.floatX(), bll.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        // Bottom-right
+        mesh.addVertex(bri.floatX(), bri.floatY(), 0.0f, r, g, b, a, 0.0f,
+                0.0f);
+        mesh.addVertex(brr.floatX(), brr.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
+        mesh.addVertex(brb.floatX(), brb.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
+                0.0f);
     }
 }

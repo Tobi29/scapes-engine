@@ -59,6 +59,10 @@ public abstract class GL implements OpenGL {
         shaderManager.disposeAll(this);
     }
 
+    public ScapesEngine engine() {
+        return engine;
+    }
+
     public TextureManager textures() {
         return textureManager;
     }

@@ -2,9 +2,6 @@ package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public interface GuiStyle {
@@ -12,18 +9,18 @@ public interface GuiStyle {
 
     FontRenderer font();
 
-    Pair<VAO, Texture> pane(Vector2 size);
+    void pane(GuiRenderer renderer, Vector2 size);
 
-    Pair<VAO, Texture> button(Vector2 size, boolean hover);
+    void button(GuiRenderer renderer, Vector2 size, boolean hover);
 
-    Pair<VAO, Texture> border(Vector2 size);
+    void border(GuiRenderer renderer, Vector2 size);
 
-    Pair<VAO, Texture> slider(Vector2 size, boolean horizontal, double value,
-            double sliderSize, boolean hover);
+    void slider(GuiRenderer renderer, Vector2 size, boolean horizontal,
+            double value, double sliderSize, boolean hover);
 
-    Pair<VAO, Texture> separator(Vector2 size);
+    void separator(GuiRenderer renderer, Vector2 size);
 
-    Pair<VAO, Texture> widget(Vector2 size);
+    void widget(GuiRenderer renderer, Vector2 size);
 
-    Pair<VAO, Texture> widgetTitle(Vector2 size);
+    void widgetTitle(GuiRenderer renderer, Vector2 size);
 }

@@ -15,18 +15,12 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentSliderVert extends GuiComponent {
     private double value, sliderHeight;
     private boolean hover;
-    private Pair<VAO, Texture> vao;
 
     public GuiComponentSliderVert(GuiLayoutData parent, double value) {
         this(parent, 16, value);
@@ -40,7 +34,7 @@ public class GuiComponentSliderVert extends GuiComponent {
         onDragLeft(event -> {
             this.value = FastMath.clamp((event.y() - this.sliderHeight * 0.5) /
                     (event.size().doubleY() - this.sliderHeight), 0, 1);
-            dirty.set(true);
+            dirty();
         });
         onClick((event, engine) -> engine.sounds()
                 .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
@@ -48,26 +42,20 @@ public class GuiComponentSliderVert extends GuiComponent {
             switch (event.state()) {
                 case ENTER:
                     hover = true;
-                    dirty.set(true);
+                    dirty();
                     break;
                 case LEAVE:
                     hover = false;
-                    dirty.set(true);
+                    dirty();
                     break;
             }
         });
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
-        vao.b.bind(gl);
-        vao.a.render(gl, shader);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
-        vao = gui.style()
-                .slider(size, false, (float) value, sliderHeight, hover);
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().slider(renderer, size, false, (float) value, sliderHeight,
+                hover);
     }
 
     public double value() {
@@ -76,11 +64,11 @@ public class GuiComponentSliderVert extends GuiComponent {
 
     public void setValue(double value) {
         this.value = value;
-        dirty.set(true);
+        dirty();
     }
 
     public void setSliderHeight(double value) {
         sliderHeight = value;
-        dirty.set(true);
+        dirty();
     }
 }

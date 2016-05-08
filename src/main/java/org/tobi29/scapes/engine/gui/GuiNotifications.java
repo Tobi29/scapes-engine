@@ -14,9 +14,10 @@ public class GuiNotifications extends Gui {
         pane = addHori(0, 0, 310, -1, GuiComponentGroup::new);
     }
 
-    public <T extends GuiComponent> T add(Function<GuiLayoutData, T> child) {
-        return pane.addVert(10, 10, 10, 10, -1, 60, id.getAndIncrement(),
-                child::apply);
+    public <T extends GuiComponent> T add(
+            Function<GuiLayoutDataVertical, T> child) {
+        return pane
+                .addVert(10, 10, 10, 10, -1, 60, id.getAndIncrement(), child);
     }
 
     @Override

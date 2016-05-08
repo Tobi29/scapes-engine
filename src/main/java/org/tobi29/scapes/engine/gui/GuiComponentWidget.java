@@ -15,17 +15,10 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentWidget extends GuiComponentPane {
-    private Pair<VAO, Texture> vao;
-
+public class GuiComponentWidget extends GuiComponentPaneHeavy {
     public GuiComponentWidget(GuiLayoutData parent, String name) {
         super(parent);
         GuiComponentWidgetTitle titleBar = addVert(0, 0, -1, 16,
@@ -40,13 +33,7 @@ public class GuiComponentWidget extends GuiComponentPane {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
-        vao.b.bind(gl);
-        vao.a.render(gl, shader);
-    }
-
-    @Override
-    public void updateMesh(Vector2 size) {
-        vao = gui.style().widget(size);
+    public void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().widget(renderer, size);
     }
 }

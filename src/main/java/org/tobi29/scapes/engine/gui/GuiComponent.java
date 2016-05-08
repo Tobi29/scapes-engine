@@ -26,24 +26,22 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3;
+import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class GuiComponent implements Comparable<GuiComponent> {
-    /*private static final VAO FRAME = VAOUtility.createVI(
-            new float[]{0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-                    0.0f, 1.0f, 0.0f}, new int[]{0, 1, 1, 2, 2, 3, 3, 0},
-            RenderType.LINES);*/
     private static final AtomicLong UID_COUNTER =
             new AtomicLong(Long.MIN_VALUE);
     protected final Set<BiConsumer<GuiComponentEvent, ScapesEngine>> clickLeft =
@@ -70,10 +68,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     protected final Gui gui;
     protected final Set<GuiComponent> components =
             new ConcurrentSkipListSet<>();
-    protected final AtomicBoolean dirty = new AtomicBoolean(true);
     private final long uid = UID_COUNTER.getAndIncrement();
     protected boolean visible = true, hover, hovering, removing;
-    private Vector2 lastSize = Vector2d.ZERO;
 
     protected GuiComponent(GuiLayoutData parent) {
         this.parent = parent;
@@ -319,36 +315,18 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
             transform(matrix, size);
-            if (dirty.getAndSet(false) || !lastSize.equals(size)) {
-                updateMesh(size);
-                lastSize = size;
-            }
-            renderComponent(gl, shader, size.doubleX(), size.doubleY());
-            /*{
-                gl.textures().unbind(gl);
-                if (ignoresEvents()) {
-                    gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 0.0f, 0.0f, 1.0f,
-                            1.0f);
-                } else {
-                    gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 1.0f, 0.0f, 0.0f,
-                            1.0f);
-                }
-                matrix = matrixStack.push();
-                matrix.scale(size.floatX(), size.floatY(), 1.0f);
-                FRAME.render(gl, shader);
-                matrixStack.pop();
-            }*/
-            MatrixStack matrixStack1 = gl.matrixStack();
             layoutStream(size).forEach(component -> {
-                if (component.b.doubleX() >= -component.c.doubleX() &&
-                        component.b.doubleY() >= -component.c.doubleY() &&
-                        component.b.doubleX() <= size.doubleX() &&
-                        component.b.doubleY() <= size.doubleY()) {
-                    Matrix childMatrix = matrixStack1.push();
+                Vector3 pos = applyTransform(-component.b.doubleX(),
+                        -component.b.doubleY(), size);
+                if (-pos.doubleX() >= -component.c.doubleX() &&
+                        -pos.doubleY() >= -component.c.doubleY() &&
+                        -pos.doubleX() <= size.doubleX() &&
+                        -pos.doubleY() <= size.doubleY()) {
+                    Matrix childMatrix = matrixStack.push();
                     childMatrix.translate(component.b.floatX(),
                             component.b.floatY(), 0.0f);
                     component.a.render(gl, shader, component.c);
-                    matrixStack1.pop();
+                    matrixStack.pop();
                 }
             });
             matrixStack.pop();
@@ -359,15 +337,34 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         if (visible) {
             Streams.of(components)
                     .forEach(component -> component.renderOverlays(gl, shader));
-            renderOverlay(gl, shader);
         }
     }
 
-    protected void renderComponent(GL gl, Shader shader, double width,
-            double height) {
+    protected boolean renderLightweight(GuiRenderer renderer, Vector2 size) {
+        return render(renderer, size);
     }
 
-    protected void renderOverlay(GL gl, Shader shader) {
+    protected boolean render(GuiRenderer renderer, Vector2 size) {
+        boolean hasHeavy = false;
+        if (visible) {
+            MatrixStack matrixStack = renderer.matrixStack();
+            Matrix matrix = matrixStack.push();
+            transform(matrix, size);
+            updateMesh(renderer, size);
+            GuiLayoutManager layout = layoutManager(size);
+            for (Triple<GuiComponent, Vector2, Vector2> component : layout
+                    .layout()) {
+                Matrix childMatrix = matrixStack.push();
+                childMatrix
+                        .translate(component.b.floatX(), component.b.floatY(),
+                                0.0f);
+                hasHeavy |=
+                        component.a.renderLightweight(renderer, component.c);
+                matrixStack.pop();
+            }
+            matrixStack.pop();
+        }
+        return hasHeavy;
     }
 
     public boolean isVisible() {
@@ -397,7 +394,11 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         }
     }
 
-    protected void updateMesh(Vector2 size) {
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+    }
+
+    protected void dirty() {
+        parent.parent().ifPresent(GuiComponent::dirty);
     }
 
     protected Optional<GuiComponent> fireEvent(GuiComponentEvent event,
@@ -409,11 +410,9 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                 for (Triple<GuiComponent, Vector2, Vector2> component : layout
                         .layout()) {
                     if (!component.a.parent.blocksEvents()) {
-                        Optional<GuiComponent> sink = component.a.fireEvent(
-                                new GuiComponentEvent(event,
-                                        component.b.doubleX(),
-                                        component.b.doubleY(), component.c),
-                                listener, engine);
+                        Optional<GuiComponent> sink = component.a
+                                .fireEvent(applyTransform(event, component),
+                                        listener, engine);
                         if (sink.isPresent()) {
                             return sink;
                         }
@@ -437,9 +436,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                 layoutStream(event.size())
                         .filter(component -> !component.a.parent.blocksEvents())
                         .forEach(component -> sinks.addAll(component.a
-                                .fireRecursiveEvent(new GuiComponentEvent(event,
-                                                component.b.doubleX(),
-                                                component.b.doubleY(), component.c),
+                                .fireRecursiveEvent(
+                                        applyTransform(event, component),
                                         listener, engine)));
                 if (!ignoresEvents()) {
                     if (listener.accept(this, event, engine)) {
@@ -460,10 +458,9 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             for (Triple<GuiComponent, Vector2, Vector2> component : layout
                     .layout()) {
                 if (!component.a.parent.blocksEvents()) {
-                    boolean success = component.a.sendEvent(
-                            new GuiComponentEvent(event, component.b.doubleX(),
-                                    component.b.doubleY(), component.c),
-                            destination, listener, engine);
+                    boolean success = component.a
+                            .sendEvent(applyTransform(event, component),
+                                    destination, listener, engine);
                     if (success) {
                         return true;
                     }
@@ -479,6 +476,25 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     protected void updateComponent(ScapesEngine engine, double delta,
             Vector2 size) {
+    }
+
+    protected GuiComponentEvent applyTransform(GuiComponentEvent event,
+            Triple<GuiComponent, Vector2, Vector2> component) {
+        Vector3 pos = applyTransform(event.x() - component.b.doubleX(),
+                event.y() - component.b.doubleY(), component.c);
+        return new GuiComponentEvent(event, pos.doubleX(), pos.doubleY(),
+                component.c);
+    }
+
+    protected Vector3 applyTransform(double x, double y, Vector2 size) {
+        return applyTransform(new Vector3d(x, y, 0.0), size);
+    }
+
+    protected Vector3 applyTransform(Vector3 pos, Vector2 size) {
+        Matrix matrix = new Matrix(BufferCreator::bytes);
+        matrix.identity();
+        transform(matrix, size);
+        return matrix.modelView().multiply(pos.multiply(-1.0)).multiply(-1.0);
     }
 
     protected void transform(Matrix matrix, Vector2 size) {
@@ -515,8 +531,9 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         removing = true;
     }
 
-    public void remove(GuiComponent remove) {
-        components.remove(remove);
+    public void remove(GuiComponent component) {
+        components.remove(component);
+        dirty();
     }
 
     public void removeAll() {
@@ -527,7 +544,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             Vector2 size) {
         layoutStream(size).forEach(component -> {
             if (component.a.removing) {
-                drop(component.a);
+                remove(component.a);
             } else {
                 component.a.update(engine, delta, component.c);
             }
@@ -555,10 +572,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     protected void append(GuiComponent component) {
         components.add(component);
-    }
-
-    protected void drop(GuiComponent component) {
-        components.remove(component);
+        dirty();
     }
 
     protected Vector2 baseSize(ScapesEngine engine) {

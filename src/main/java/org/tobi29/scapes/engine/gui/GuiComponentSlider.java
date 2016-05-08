@@ -16,11 +16,6 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.function.Function;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
@@ -29,7 +24,6 @@ public class GuiComponentSlider extends GuiComponentSlab {
     private final Function<Double, String> textFilter;
     private double value;
     private boolean hover;
-    private Pair<VAO, Texture> vao;
 
     public GuiComponentSlider(GuiLayoutData parent, int textSize, String text,
             double value) {
@@ -55,25 +49,19 @@ public class GuiComponentSlider extends GuiComponentSlab {
             switch (event.state()) {
                 case ENTER:
                     hover = true;
-                    dirty.set(true);
+                    dirty();
                     break;
                 case LEAVE:
                     hover = false;
-                    dirty.set(true);
+                    dirty();
                     break;
             }
         });
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width, double height) {
-        vao.b.bind(gl);
-        vao.a.render(gl, shader);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
-        vao = gui.style().slider(size, true, (float) value, 16.0f, hover);
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().slider(renderer, size, true, (float) value, 16.0f, hover);
     }
 
     public double value() {
@@ -82,7 +70,7 @@ public class GuiComponentSlider extends GuiComponentSlab {
 
     public void setValue(double value) {
         this.value = value;
-        dirty.set(true);
+        dirty();
         text.setText(textFilter.apply(value));
     }
 

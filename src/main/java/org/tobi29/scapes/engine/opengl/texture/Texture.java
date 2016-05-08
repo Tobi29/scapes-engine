@@ -87,6 +87,10 @@ public abstract class Texture {
         return TEXTURES.size();
     }
 
+    public ScapesEngine engine() {
+        return engine;
+    }
+
     @OpenGLFunction
     public void bind(GL gl) {
         ensureStored(gl);

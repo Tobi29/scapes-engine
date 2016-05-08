@@ -15,28 +15,15 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.VAO;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
-import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentVisibleSlab extends GuiComponentSlab {
-    private Pair<VAO, Texture> vao;
-
     public GuiComponentVisibleSlab(GuiLayoutData parent) {
         super(parent);
     }
 
     @Override
-    protected void renderComponent(GL gl, Shader shader, double width, double height) {
-        vao.b.bind(gl);
-        vao.a.render(gl, shader);
-    }
-
-    @Override
-    protected void updateMesh(Vector2 size) {
-        vao = gui.style().pane(size);
+    protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().pane(renderer, size);
     }
 }

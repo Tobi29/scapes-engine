@@ -24,11 +24,10 @@ import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
-public class GuiComponentScrollPaneViewport extends GuiComponentPane {
+public class GuiComponentScrollPaneViewport extends GuiComponentPaneHeavy {
     protected Optional<GuiComponentSliderVert> sliderX = Optional.empty(),
             sliderY = Optional.empty();
     protected double maxX, maxY, scrollX, scrollY;
@@ -73,11 +72,10 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     public void render(GL gl, Shader shader, Vector2 size) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
-            Matrix matrix = matrixStack.push();
+            Matrix matrix = matrixStack.current();
             Vector3 start = matrix.modelView().multiply(Vector3d.ZERO);
             Vector3 end = matrix.modelView().multiply(
                     new Vector3d(size.doubleX(), size.doubleY(), 0.0));
-            matrixStack.pop();
             gl.enableScissor(start.intX(), start.intY(),
                     end.intX() - start.intX(), end.intY() - start.intY());
             super.render(gl, shader, size);
@@ -86,12 +84,17 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
     }
 
     @Override
+    protected void transform(Matrix matrix, Vector2 size) {
+        matrix.translate((float) -scrollX, (float) -scrollY, 0.0f);
+    }
+
+    @Override
     public void updateChildren(ScapesEngine engine, double delta,
             Vector2 size) {
         GuiLayoutManager layout = layoutManager(size);
         Streams.of(layout.layout()).forEach(component -> {
             if (component.a.removing) {
-                drop(component.a);
+                remove(component.a);
             } else {
                 component.a.update(engine, delta, component.c);
             }
@@ -99,15 +102,13 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPane {
         setMax(layout.size(), size);
     }
 
-    @Override
-    protected GuiLayoutManager newLayoutManager(Vector2 size) {
-        return new GuiLayoutManagerVertical(new Vector2d(-scrollX, -scrollY),
-                size, components);
-    }
-
     private void setMax(Vector2 max, Vector2 size) {
         maxX = max.doubleX();
         maxY = max.doubleY();
+        scrollX =
+                FastMath.clamp(scrollX, 0, Math.max(0, maxX - size.doubleX()));
+        scrollY =
+                FastMath.clamp(scrollY, 0, Math.max(0, maxY - size.doubleY()));
         Optional<GuiComponentSliderVert> slider = sliderX;
         if (slider.isPresent()) {
             if (maxY <= 0) {
