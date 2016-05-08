@@ -32,41 +32,39 @@ public class NIOFileUtilImpl implements FileUtilImpl {
         return Paths.get(path.toUri());
     }
 
-    private static void read(Path path,
-            IOConsumer<BufferedReadChannelStream> read) throws IOException {
+    private static void read(Path path, IOConsumer<ReadableByteStream> read)
+            throws IOException {
         read(path, read, StandardOpenOption.READ);
     }
 
-    private static void read(Path path,
-            IOConsumer<BufferedReadChannelStream> read, OpenOption... options)
-            throws IOException {
+    private static void read(Path path, IOConsumer<ReadableByteStream> read,
+            OpenOption... options) throws IOException {
         try (FileChannel channel = FileChannel.open(path, options)) {
             read.accept(new BufferedReadChannelStream(channel));
         }
     }
 
     private static <R> R readReturn(Path path,
-            IOFunction<BufferedReadChannelStream, R> read) throws IOException {
+            IOFunction<ReadableByteStream, R> read) throws IOException {
         return readReturn(path, read, StandardOpenOption.READ);
     }
 
     private static <R> R readReturn(Path path,
-            IOFunction<BufferedReadChannelStream, R> read,
-            OpenOption... options) throws IOException {
+            IOFunction<ReadableByteStream, R> read, OpenOption... options)
+            throws IOException {
         try (FileChannel channel = FileChannel.open(path, options)) {
             return read.apply(new BufferedReadChannelStream(channel));
         }
     }
 
-    private static void write(Path path,
-            IOConsumer<BufferedWriteChannelStream> write) throws IOException {
+    private static void write(Path path, IOConsumer<WritableByteStream> write)
+            throws IOException {
         write(path, write, StandardOpenOption.WRITE, StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }
 
-    private static void write(Path path,
-            IOConsumer<BufferedWriteChannelStream> write, OpenOption... options)
-            throws IOException {
+    private static void write(Path path, IOConsumer<WritableByteStream> write,
+            OpenOption... options) throws IOException {
         try (FileChannel channel = FileChannel.open(path, options)) {
             BufferedWriteChannelStream stream =
                     new BufferedWriteChannelStream(channel);
@@ -76,16 +74,15 @@ public class NIOFileUtilImpl implements FileUtilImpl {
     }
 
     private static <R> R writeReturn(Path path,
-            IOFunction<BufferedWriteChannelStream, R> write)
-            throws IOException {
+            IOFunction<WritableByteStream, R> write) throws IOException {
         return writeReturn(path, write, StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE,
                 StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     private static <R> R writeReturn(Path path,
-            IOFunction<BufferedWriteChannelStream, R> write,
-            OpenOption... options) throws IOException {
+            IOFunction<WritableByteStream, R> write, OpenOption... options)
+            throws IOException {
         try (FileChannel channel = FileChannel.open(path, options)) {
             BufferedWriteChannelStream stream =
                     new BufferedWriteChannelStream(channel);
@@ -114,7 +111,7 @@ public class NIOFileUtilImpl implements FileUtilImpl {
             @Override
             public void read(IOConsumer<ReadableByteStream> reader)
                     throws IOException {
-                NIOFileUtilImpl.read(path, reader::accept);
+                NIOFileUtilImpl.read(path, reader);
             }
 
             @Override
@@ -125,7 +122,7 @@ public class NIOFileUtilImpl implements FileUtilImpl {
             @Override
             public <R> R readReturn(IOFunction<ReadableByteStream, R> reader)
                     throws IOException {
-                return NIOFileUtilImpl.readReturn(path, reader::apply);
+                return NIOFileUtilImpl.readReturn(path, reader);
             }
 
             @Override
@@ -166,27 +163,26 @@ public class NIOFileUtilImpl implements FileUtilImpl {
     }
 
     @Override
-    public void read(FilePath path, IOConsumer<BufferedReadChannelStream> read)
+    public void read(FilePath path, IOConsumer<ReadableByteStream> read)
             throws IOException {
         read(toPath(path), read);
     }
 
     @Override
     public <R> R readReturn(FilePath path,
-            IOFunction<BufferedReadChannelStream, R> read) throws IOException {
+            IOFunction<ReadableByteStream, R> read) throws IOException {
         return readReturn(toPath(path), read);
     }
 
     @Override
-    public void write(FilePath path,
-            IOConsumer<BufferedWriteChannelStream> write) throws IOException {
+    public void write(FilePath path, IOConsumer<WritableByteStream> write)
+            throws IOException {
         write(toPath(path), write);
     }
 
     @Override
     public <R> R writeReturn(FilePath path,
-            IOFunction<BufferedWriteChannelStream, R> write)
-            throws IOException {
+            IOFunction<WritableByteStream, R> write) throws IOException {
         return writeReturn(toPath(path), write);
     }
 

@@ -26,22 +26,22 @@ public class IOFileUtilImpl implements FileUtilImpl {
         return new File(path.toUri());
     }
 
-    private static void read(File file,
-            IOConsumer<BufferedReadChannelStream> read) throws IOException {
+    private static void read(File file, IOConsumer<ReadableByteStream> read)
+            throws IOException {
         try (FileChannel channel = channelR(file)) {
             read.accept(new BufferedReadChannelStream(channel));
         }
     }
 
     private static <R> R readReturn(File file,
-            IOFunction<BufferedReadChannelStream, R> read) throws IOException {
+            IOFunction<ReadableByteStream, R> read) throws IOException {
         try (FileChannel channel = channelR(file)) {
             return read.apply(new BufferedReadChannelStream(channel));
         }
     }
 
-    private static void write(File file,
-            IOConsumer<BufferedWriteChannelStream> write) throws IOException {
+    private static void write(File file, IOConsumer<WritableByteStream> write)
+            throws IOException {
         try (FileChannel channel = channelDRW(file)) {
             BufferedWriteChannelStream stream =
                     new BufferedWriteChannelStream(channel);
@@ -51,8 +51,7 @@ public class IOFileUtilImpl implements FileUtilImpl {
     }
 
     private static <R> R writeReturn(File file,
-            IOFunction<BufferedWriteChannelStream, R> write)
-            throws IOException {
+            IOFunction<WritableByteStream, R> write) throws IOException {
         try (FileChannel channel = channelDRW(file)) {
             BufferedWriteChannelStream stream =
                     new BufferedWriteChannelStream(channel);
@@ -81,7 +80,7 @@ public class IOFileUtilImpl implements FileUtilImpl {
             @Override
             public void read(IOConsumer<ReadableByteStream> reader)
                     throws IOException {
-                IOFileUtilImpl.read(file, reader::accept);
+                IOFileUtilImpl.read(file, reader);
             }
 
             @Override
@@ -92,7 +91,7 @@ public class IOFileUtilImpl implements FileUtilImpl {
             @Override
             public <R> R readReturn(IOFunction<ReadableByteStream, R> reader)
                     throws IOException {
-                return IOFileUtilImpl.readReturn(file, reader::apply);
+                return IOFileUtilImpl.readReturn(file, reader);
             }
 
             @Override
@@ -127,7 +126,8 @@ public class IOFileUtilImpl implements FileUtilImpl {
         return new RandomAccessFile(file, "rw").getChannel();
     }
 
-    private static FileChannel channelDRW(File file) throws IOException {file.delete();
+    private static FileChannel channelDRW(File file) throws IOException {
+        file.delete();
         return new RandomAccessFile(file, "rw").getChannel();
     }
 
@@ -178,27 +178,26 @@ public class IOFileUtilImpl implements FileUtilImpl {
     }
 
     @Override
-    public void read(FilePath path, IOConsumer<BufferedReadChannelStream> read)
+    public void read(FilePath path, IOConsumer<ReadableByteStream> read)
             throws IOException {
         read(toFile(path), read);
     }
 
     @Override
     public <R> R readReturn(FilePath path,
-            IOFunction<BufferedReadChannelStream, R> read) throws IOException {
+            IOFunction<ReadableByteStream, R> read) throws IOException {
         return readReturn(toFile(path), read);
     }
 
     @Override
-    public void write(FilePath path,
-            IOConsumer<BufferedWriteChannelStream> write) throws IOException {
+    public void write(FilePath path, IOConsumer<WritableByteStream> write)
+            throws IOException {
         write(toFile(path), write);
     }
 
     @Override
     public <R> R writeReturn(FilePath path,
-            IOFunction<BufferedWriteChannelStream, R> write)
-            throws IOException {
+            IOFunction<WritableByteStream, R> write) throws IOException {
         return writeReturn(toFile(path), write);
     }
 

@@ -19,10 +19,10 @@ import java8.util.function.Predicate;
 import java8.util.stream.Stream;
 import org.threeten.bp.Instant;
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException;
-import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream;
-import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream;
 import org.tobi29.scapes.engine.utils.io.IOConsumer;
 import org.tobi29.scapes.engine.utils.io.IOFunction;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider;
 
 import java.io.IOException;
@@ -61,24 +61,23 @@ public final class FileUtil {
         return IMPL.read(path);
     }
 
-    public static void read(FilePath path,
-            IOConsumer<BufferedReadChannelStream> read) throws IOException {
+    public static void read(FilePath path, IOConsumer<ReadableByteStream> read)
+            throws IOException {
         IMPL.read(path, read);
     }
 
     public static <R> R readReturn(FilePath path,
-            IOFunction<BufferedReadChannelStream, R> read) throws IOException {
+            IOFunction<ReadableByteStream, R> read) throws IOException {
         return IMPL.readReturn(path, read);
     }
 
     public static void write(FilePath path,
-            IOConsumer<BufferedWriteChannelStream> write) throws IOException {
+            IOConsumer<WritableByteStream> write) throws IOException {
         IMPL.write(path, write);
     }
 
     public static <R> R writeReturn(FilePath path,
-            IOFunction<BufferedWriteChannelStream, R> write)
-            throws IOException {
+            IOFunction<WritableByteStream, R> write) throws IOException {
         return IMPL.writeReturn(path, write);
     }
 

@@ -3,10 +3,10 @@ package org.tobi29.scapes.engine.utils.io.filesystem;
 import java8.util.function.Predicate;
 import java8.util.stream.Stream;
 import org.threeten.bp.Instant;
-import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream;
-import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream;
 import org.tobi29.scapes.engine.utils.io.IOConsumer;
 import org.tobi29.scapes.engine.utils.io.IOFunction;
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -18,17 +18,17 @@ public interface FileUtilImpl {
 
     ReadSource read(FilePath path);
 
-    void read(FilePath path, IOConsumer<BufferedReadChannelStream> read)
+    void read(FilePath path, IOConsumer<ReadableByteStream> read)
             throws IOException;
 
-    <R> R readReturn(FilePath path,
-            IOFunction<BufferedReadChannelStream, R> read) throws IOException;
-
-    void write(FilePath path, IOConsumer<BufferedWriteChannelStream> write)
+    <R> R readReturn(FilePath path, IOFunction<ReadableByteStream, R> read)
             throws IOException;
 
-    <R> R writeReturn(FilePath path,
-            IOFunction<BufferedWriteChannelStream, R> write) throws IOException;
+    void write(FilePath path, IOConsumer<WritableByteStream> write)
+            throws IOException;
+
+    <R> R writeReturn(FilePath path, IOFunction<WritableByteStream, R> write)
+            throws IOException;
 
     FilePath createDirectories(FilePath path) throws IOException;
 
