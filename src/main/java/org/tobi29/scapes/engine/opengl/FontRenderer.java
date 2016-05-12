@@ -28,9 +28,12 @@ import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 public class FontRenderer {
-    public static final TextInfo EMPTY_TEXT_INFO = new TextInfo("", 0.0, 0);
+    public static final TextInfo EMPTY_TEXT_INFO =
+            new TextInfo("", Vector2d.ZERO, 0);
     private static final Logger LOGGER =
             LoggerFactory.getLogger(FontRenderer.class);
     private static final GlyphPage[] EMPTY_GLYPH_PAGE = new GlyphPage[0];
@@ -208,7 +211,7 @@ public class FontRenderer {
                 length++;
             }
         }
-        return new TextInfo(text, textWidth, length);
+        return new TextInfo(text, new Vector2d(textWidth, yy + height), length);
     }
 
     public void dispose() {
@@ -224,11 +227,13 @@ public class FontRenderer {
     public static final class TextInfo {
         private final String text;
         private final double width;
+        private final Vector2 size;
         private final int length;
 
-        private TextInfo(String text, double width, int length) {
+        private TextInfo(String text, Vector2 size, int length) {
             this.text = text;
-            this.width = width;
+            this.size = size;
+            width = size.doubleX();
             this.length = length;
         }
 
@@ -238,6 +243,10 @@ public class FontRenderer {
 
         public double width() {
             return width;
+        }
+
+        public Vector2 size() {
+            return size;
         }
 
         public int length() {

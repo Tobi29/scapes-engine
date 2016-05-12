@@ -46,11 +46,7 @@ public class GuiComponentFlowText extends GuiComponent {
         this.g = g;
         this.b = b;
         this.a = a;
-        FontRenderer font = gui.style().font();
-        FontRenderer.TextInfo textInfo =
-                font.render(FontRenderer.to(), textFilter.filter(text),
-                        (float) parent.height(), textWidth);
-        parent.setWidth(textInfo.width());
+        updateSize();
     }
 
     public String text() {
@@ -60,22 +56,30 @@ public class GuiComponentFlowText extends GuiComponent {
     public void setText(String text) {
         if (!this.text.equals(text)) {
             this.text = text;
+            updateSize();
             dirty();
         }
     }
 
     public void setTextFilter(TextFilter textFilter) {
         this.textFilter = textFilter;
+        updateSize();
         dirty();
+    }
+
+    private void updateSize() {
+        FontRenderer font = gui.style().font();
+        FontRenderer.TextInfo textInfo =
+                font.render(FontRenderer.to(), textFilter.filter(text),
+                        (float) parent.height(), textWidth);
+        parent.setSize(textInfo.size());
     }
 
     @Override
     protected void updateMesh(GuiRenderer renderer, Vector2 size) {
         FontRenderer font = gui.style().font();
-        FontRenderer.TextInfo textInfo =
-                font.render(FontRenderer.to(renderer, r, g, b, a),
-                        textFilter.filter(text), size.floatY(), textWidth);
-        parent.setWidth(textInfo.width());
+        font.render(FontRenderer.to(renderer, r, g, b, a),
+                textFilter.filter(text), size.floatY(), textWidth);
     }
 
     public interface TextFilter {
