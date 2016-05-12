@@ -303,7 +303,7 @@ public class ScapesEngine implements Crashable {
             writeCrash(e);
             try {
                 container.message(Container.MessageType.ERROR, game.name(),
-                        game.name() + " crashed\n:" + toString());
+                        game.name() + " crashed:\n" + e);
             } catch (Exception e2) {
                 LOGGER.error("Failed to show crash message", e2);
             }
