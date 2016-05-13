@@ -11,6 +11,7 @@ import org.tobi29.scapes.engine.swt.util.platform.*;
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.SleepUtil;
+import org.tobi29.scapes.engine.utils.VersionUtil;
 import org.tobi29.scapes.engine.utils.io.filesystem.CrashReportFile;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
@@ -46,11 +47,19 @@ public abstract class Application implements Runnable, Crashable {
     protected final Display display;
     protected final TaskExecutor taskExecutor;
 
-    protected Application(String name, String id, String version) {
+    protected Application(String name, String id, VersionUtil.Version version) {
         Display.setAppName(name);
-        Display.setAppVersion(version);
+        Display.setAppVersion(version.toString());
         display = Display.getDefault();
         taskExecutor = new TaskExecutor(this, id);
+    }
+
+    protected Application(String name, String id, VersionUtil.Version version,
+            TaskExecutor taskExecutor) {
+        Display.setAppName(name);
+        Display.setAppVersion(version.toString());
+        display = Display.getDefault();
+        this.taskExecutor = new TaskExecutor(taskExecutor, id);
     }
 
     public static Platform platform() {
@@ -97,7 +106,7 @@ public abstract class Application implements Runnable, Crashable {
     public void run() {
         try {
             init();
-            while (display.getShells().length > 0) {
+            while (!done()) {
                 if (!display.readAndDispatch()) {
                     display.sleep();
                 }
@@ -108,6 +117,19 @@ public abstract class Application implements Runnable, Crashable {
             crash(e);
         }
         display.dispose();
+    }
+
+    public boolean done() {
+        return display.getShells().length == 0;
+    }
+
+    public void initApplication() {
+        init();
+    }
+
+    public void disposeApplication() {
+        dispose();
+        taskExecutor.shutdown();
     }
 
     @SuppressWarnings("CallToSystemExit")

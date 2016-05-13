@@ -8,19 +8,28 @@ import org.eclipse.swt.widgets.*;
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs;
 import org.tobi29.scapes.engine.swt.util.widgets.OptionalWidget;
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar;
+import org.tobi29.scapes.engine.utils.VersionUtil;
+import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public abstract class MultiDocumentApplication extends Application {
     private final Map<Document, DocumentShell.DocumentComposite> composites =
             new HashMap<>();
 
-    protected MultiDocumentApplication(String name, String id, String version) {
+    protected MultiDocumentApplication(String name, String id,
+            VersionUtil.Version version) {
         super(name, id, version);
+    }
+
+    protected MultiDocumentApplication(String name, String id,
+            VersionUtil.Version version, TaskExecutor taskExecutor) {
+        super(name, id, version, taskExecutor);
     }
 
     protected abstract void populate(Composite composite, SmartMenuBar menu);
@@ -68,27 +77,25 @@ public abstract class MultiDocumentApplication extends Application {
         return Dialogs.openMessage(source.getShell(), style, title, message);
     }
 
-    public void access(Document document,
-            Consumer<Optional<Composite>> consumer) {
-        display.syncExec(() -> accessDocument(document, consumer));
+    public boolean access(Document document, Consumer<Composite> consumer) {
+        AtomicBoolean output = new AtomicBoolean();
+        display.syncExec(() -> output.set(accessDocument(document, consumer)));
+        return output.get();
     }
 
-    public void accessAsync(Document document,
-            Consumer<Optional<Composite>> consumer) {
+    public void accessAsync(Document document, Consumer<Composite> consumer) {
         display.asyncExec(() -> accessDocument(document, consumer));
     }
 
-    private void accessDocument(Document document,
-            Consumer<Optional<Composite>> consumer) {
+    private boolean accessDocument(Document document,
+            Consumer<Composite> consumer) {
         DocumentShell.DocumentComposite composite = composites.get(document);
-        Optional<Composite> optional;
         if (composite == null) {
-            optional = Optional.empty();
-        } else {
-            assert composite.document == document;
-            optional = Optional.of(composite);
+            return false;
         }
-        consumer.accept(optional);
+        assert composite.document == document;
+        consumer.accept(composite);
+        return true;
     }
 
     private void open(DocumentShell.DocumentComposite tab) {
@@ -199,7 +206,11 @@ public abstract class MultiDocumentApplication extends Application {
             setText(composite.document.title());
             composite.tabItem.ifPresent(tabItem -> tabItem
                     .setText(composite.document.shortTitle()));
-            setMenuBar(composite.menu);
+            if (composite.menu.getItemCount() == 0) {
+                setMenuBar(null);
+            } else {
+                setMenuBar(composite.menu);
+            }
         }
 
         private DocumentComposite item(Document document) {
