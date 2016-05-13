@@ -226,8 +226,9 @@ public abstract class MultiDocumentApplication extends Application {
                 DocumentComposite composite =
                         new DocumentComposite(this, SWT.NONE, document);
                 directComposite = Optional.of(composite);
+                DocumentComposite documentComposite = populate(composite);
                 updateTab();
-                return populate(composite);
+                return documentComposite;
             }
             DocumentComposite composite = tabItem(document);
             layout();
