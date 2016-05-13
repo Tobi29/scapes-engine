@@ -20,8 +20,6 @@ import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 public abstract class Gui extends GuiComponentSlabHeavy {
@@ -39,75 +37,22 @@ public abstract class Gui extends GuiComponentSlabHeavy {
 
     public Optional<GuiComponent> fireNewEvent(GuiComponentEvent event,
             EventSink listener, ScapesEngine engine) {
-        if (visible) {
-            if (event.screen()) {
-                event = new GuiComponentEvent(event.x(), event.relativeX(),
-                        event);
-            } else {
-                event = new GuiComponentEvent(event.x(), event);
-            }
-            GuiLayoutManager layout = layoutManager(baseSize(engine));
-            for (Triple<GuiComponent, Vector2, Vector2> component : layout
-                    .layout()) {
-                if (!component.a.parent.blocksEvents()) {
-                    Optional<GuiComponent> sink = component.a
-                            .fireEvent(applyTransform(event, component),
-                                    listener, engine);
-                    if (sink.isPresent()) {
-                        return sink;
-                    }
-                }
-            }
-        }
-        return Optional.empty();
+        return fireEvent(new GuiComponentEvent(event, baseSize(engine)),
+                listener, engine);
     }
 
     public Set<GuiComponent> fireNewRecursiveEvent(GuiComponentEvent event,
             EventSink listener, ScapesEngine engine) {
-        if (visible) {
-            GuiComponentEvent event1;
-            if (event.screen()) {
-                event1 = new GuiComponentEvent(event.x(), event.relativeX(),
-                        event);
-            } else {
-                event1 = new GuiComponentEvent(event.x(), event);
-            }
-            Set<GuiComponent> sinks = new HashSet<>();
-            layoutStream(baseSize(engine))
-                    .filter(component -> !component.a.parent.blocksEvents())
-                    .forEach(component -> sinks.addAll(component.a
-                            .fireRecursiveEvent(
-                                    applyTransform(event1, component), listener,
-                                    engine)));
-            return sinks;
-        }
-        return Collections.emptySet();
+        return fireRecursiveEvent(
+                new GuiComponentEvent(event, baseSize(engine)), listener,
+                engine);
     }
 
     public boolean sendNewEvent(GuiComponentEvent event,
             GuiComponent destination, EventDestination listener,
             ScapesEngine engine) {
-        if (visible) {
-            if (event.screen()) {
-                event = new GuiComponentEvent(event.x(), event.relativeX(),
-                        event);
-            } else {
-                event = new GuiComponentEvent(event.x(), event);
-            }
-            GuiLayoutManager layout = layoutManager(baseSize(engine));
-            for (Triple<GuiComponent, Vector2, Vector2> component : layout
-                    .layout()) {
-                if (!component.a.parent.blocksEvents()) {
-                    boolean success = component.a
-                            .sendEvent(applyTransform(event, component),
-                                    destination, listener, engine);
-                    if (success) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
+        return sendEvent(new GuiComponentEvent(event, baseSize(engine)),
+                destination, listener, engine);
     }
 
     public abstract boolean valid();
@@ -122,5 +67,10 @@ public abstract class Gui extends GuiComponentSlabHeavy {
 
     protected void setLastClicked(GuiComponent component) {
         lastClicked = component;
+    }
+
+    @Override
+    public boolean ignoresEvents() {
+        return true;
     }
 }

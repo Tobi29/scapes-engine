@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.gui.debug;
 
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.*;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -106,8 +105,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         }
 
         @Override
-        public void updateComponent(ScapesEngine engine, double delta,
-                Vector2 size) {
+        public void updateComponent(ScapesEngine engine, double delta) {
             String newText = text.getAndSet(null);
             if (newText != null) {
                 value.setText(newText);

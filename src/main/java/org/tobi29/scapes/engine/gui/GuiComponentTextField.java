@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 import java.util.Arrays;
 
@@ -75,7 +74,7 @@ public class GuiComponentTextField extends GuiComponentButton {
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine, double delta, Vector2 size) {
+    protected void updateComponent(ScapesEngine engine, double delta) {
         GuiComponent current = gui.lastClicked();
         if (current == this || current == text || major) {
             text.setActive(true);

@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
@@ -84,22 +83,17 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPaneHeavy {
     }
 
     @Override
-    protected void transform(Matrix matrix, Vector2 size) {
-        matrix.translate((float) -scrollX, (float) -scrollY, 0.0f);
+    public void updateComponent(ScapesEngine engine, double delta) {
+        size(engine).ifPresent(size -> {
+            GuiLayoutManager layout = layoutManager(size);
+            layout.layout();
+            setMax(layout.size(), size);
+        });
     }
 
     @Override
-    public void updateChildren(ScapesEngine engine, double delta,
-            Vector2 size) {
-        GuiLayoutManager layout = layoutManager(size);
-        Streams.of(layout.layout()).forEach(component -> {
-            if (component.a.removing) {
-                remove(component.a);
-            } else {
-                component.a.update(engine, delta, component.c);
-            }
-        });
-        setMax(layout.size(), size);
+    protected void transform(Matrix matrix, Vector2 size) {
+        matrix.translate((float) -scrollX, (float) -scrollY, 0.0f);
     }
 
     private void setMax(Vector2 max, Vector2 size) {

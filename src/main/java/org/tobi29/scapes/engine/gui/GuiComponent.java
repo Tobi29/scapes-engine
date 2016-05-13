@@ -375,22 +375,26 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         this.visible = visible;
     }
 
-    protected void update(ScapesEngine engine, double delta, Vector2 size) {
+    protected void update(ScapesEngine engine, double delta) {
         if (visible) {
-            updateComponent(engine, delta, size);
+            updateComponent(engine, delta);
             if (hovering && !hover) {
                 hovering = false;
                 for (BiConsumer<GuiComponentHoverEvent, ScapesEngine> listener : hovers) {
-                    GuiComponentHoverEvent event =
-                            new GuiComponentHoverEvent(Double.NaN, Double.NaN,
-                                    GuiComponentHoverEvent.State.LEAVE, size);
-                    listener.accept(event, engine);
+                    size(engine).ifPresent(size -> {
+                        GuiComponentHoverEvent event =
+                                new GuiComponentHoverEvent(Double.NaN,
+                                        Double.NaN,
+                                        GuiComponentHoverEvent.State.LEAVE,
+                                        size);
+                        listener.accept(event, engine);
+                    });
                 }
             }
             if (hover) {
                 hover = false;
             }
-            updateChildren(engine, delta, size);
+            updateChildren(engine, delta);
         }
     }
 
@@ -474,8 +478,32 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return false;
     }
 
-    protected void updateComponent(ScapesEngine engine, double delta,
-            Vector2 size) {
+    protected Optional<Vector2> calculateSize(Vector2 size,
+            GuiComponent destination) {
+        if (visible) {
+            GuiLayoutManager layout = layoutManager(size);
+            for (Triple<GuiComponent, Vector2, Vector2> component : layout
+                    .layout()) {
+                if (!component.a.parent.blocksEvents()) {
+                    Optional<Vector2> success =
+                            component.a.calculateSize(component.c, destination);
+                    if (success.isPresent()) {
+                        return success;
+                    }
+                }
+            }
+            if (destination == this) {
+                return Optional.of(size);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Vector2> size(ScapesEngine engine) {
+        return gui.calculateSize(gui.baseSize(engine), this);
+    }
+
+    protected void updateComponent(ScapesEngine engine, double delta) {
     }
 
     protected GuiComponentEvent applyTransform(GuiComponentEvent event,
@@ -540,13 +568,12 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         Streams.of(components).forEach(this::remove);
     }
 
-    protected void updateChildren(ScapesEngine engine, double delta,
-            Vector2 size) {
-        layoutStream(size).forEach(component -> {
-            if (component.a.removing) {
-                remove(component.a);
+    protected void updateChildren(ScapesEngine engine, double delta) {
+        Streams.of(components).forEach(component -> {
+            if (component.removing) {
+                remove(component);
             } else {
-                component.a.update(engine, delta, component.c);
+                component.update(engine, delta);
             }
         });
     }

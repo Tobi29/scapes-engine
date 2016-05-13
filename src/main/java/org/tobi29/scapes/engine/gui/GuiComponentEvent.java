@@ -57,19 +57,14 @@ public class GuiComponentEvent {
         this.size = size;
     }
 
+    public GuiComponentEvent(GuiComponentEvent parent, Vector2 size) {
+        this(parent.x, parent.y, parent.relativeX, parent.relativeY,
+                parent.screen, size);
+    }
+
     public GuiComponentEvent(GuiComponentEvent parent, double x, double y,
             Vector2 size) {
         this(x, y, parent.relativeX, parent.relativeY, parent.screen, size);
-    }
-
-    public GuiComponentEvent(double x, GuiComponentEvent parent) {
-        this(x, parent.relativeX, parent);
-    }
-
-    public GuiComponentEvent(double x, double relativeX,
-            GuiComponentEvent parent) {
-        this(x, parent.y, relativeX, parent.relativeY, parent.screen,
-                parent.size);
     }
 
     public double x() {

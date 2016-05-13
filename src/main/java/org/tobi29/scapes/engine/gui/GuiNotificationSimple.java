@@ -26,8 +26,7 @@ public class GuiNotificationSimple extends GuiComponentVisibleSlabHeavy {
     }
 
     @Override
-    public void updateComponent(ScapesEngine engine, double delta,
-            Vector2 size) {
+    public void updateComponent(ScapesEngine engine, double delta) {
         progress += speed * delta;
         if (progress > 1.1) {
             progress = 1.1;

@@ -109,30 +109,32 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
     }
 
     @Override
-    protected void updateComponent(ScapesEngine engine, double delta,
-            Vector2 size) {
+    protected void updateComponent(ScapesEngine engine, double delta) {
         if (active) {
             if (!focused) {
                 engine.guiController().focusTextField(data, false);
                 focused = true;
             }
-            if (engine.guiController().processTextField(data, false)) {
-                if (data.text.length() > maxLength) {
-                    data.text.delete(maxLength, data.text.length());
-                    data.cursor = FastMath.min(data.cursor, maxLength);
+            size(engine).ifPresent(size -> {
+                if (engine.guiController().processTextField(data, false)) {
+                    if (data.text.length() > maxLength) {
+                        data.text.delete(maxLength, data.text.length());
+                        data.cursor = FastMath.min(data.cursor, maxLength);
+                    }
+                    FontRenderer font = gui.style().font();
+                    FontRenderer.TextInfo textInfo =
+                            font.render(FontRenderer.to(),
+                                    textFilter.filter(data.text.toString()),
+                                    size.floatY(), size.floatX());
+                    int maxLengthFont = textInfo.length();
+                    if (data.text.length() > maxLengthFont) {
+                        data.text = data.text
+                                .delete(maxLengthFont, data.text.length());
+                        data.cursor = FastMath.min(data.cursor, maxLengthFont);
+                    }
+                    dirty();
                 }
-                FontRenderer font = gui.style().font();
-                FontRenderer.TextInfo textInfo = font.render(FontRenderer.to(),
-                        textFilter.filter(data.text.toString()), size.floatY(),
-                        size.floatX());
-                int maxLengthFont = textInfo.length();
-                if (data.text.length() > maxLengthFont) {
-                    data.text =
-                            data.text.delete(maxLengthFont, data.text.length());
-                    data.cursor = FastMath.min(data.cursor, maxLengthFont);
-                }
-                dirty();
-            }
+            });
         } else {
             data.selectionStart = -1;
             data.cursor = data.text.length();

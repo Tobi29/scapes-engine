@@ -15,13 +15,13 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
-import org.tobi29.scapes.engine.Container;
-import org.tobi29.scapes.engine.utils.MutableSingle;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 public abstract class GuiControllerDefault implements GuiController {
@@ -41,7 +41,7 @@ public abstract class GuiControllerDefault implements GuiController {
 
     @Override
     public boolean processTextField(TextFieldData data, boolean multiline) {
-        MutableSingle<Boolean> changed = new MutableSingle<>(false);
+        AtomicBoolean changed = new AtomicBoolean();
         boolean shift = controller.isDown(ControllerKey.KEY_LEFT_SHIFT) ||
                 controller.isDown(ControllerKey.KEY_RIGHT_SHIFT);
         if (controller.isModifierDown()) {
@@ -68,14 +68,14 @@ public abstract class GuiControllerDefault implements GuiController {
                         }
                         break;
                 }
-                changed.a = true;
+                changed.set(true);
             });
         } else {
             controller.typeEvents().forEach(event -> {
                 char character = event.character();
                 if (!Character.isISOControl(character)) {
                     data.insert(character);
-                    changed.a = true;
+                    changed.set(true);
                 }
             });
             controller.pressEvents().filter(event -> event.state() !=
@@ -112,10 +112,10 @@ public abstract class GuiControllerDefault implements GuiController {
                         }
                         break;
                 }
-                changed.a = true;
+                changed.set(true);
             });
         }
-        if (changed.a) {
+        if (changed.get()) {
             if (data.selectionStart == data.selectionEnd) {
                 data.selectionStart = -1;
             }

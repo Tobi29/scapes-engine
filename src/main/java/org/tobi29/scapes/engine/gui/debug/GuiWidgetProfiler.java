@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.gui.debug;
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.*;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.profiler.Profiler;
 
 public class GuiWidgetProfiler extends GuiComponentWidget {
@@ -115,8 +114,7 @@ public class GuiWidgetProfiler extends GuiComponentWidget {
         }
 
         @Override
-        public void updateComponent(ScapesEngine engine, double delta,
-                Vector2 size) {
+        public void updateComponent(ScapesEngine engine, double delta) {
             value.setText(String.valueOf(node.time()));
         }
     }
