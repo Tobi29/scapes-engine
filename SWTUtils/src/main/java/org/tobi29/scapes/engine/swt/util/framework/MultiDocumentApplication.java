@@ -3,10 +3,11 @@ package org.tobi29.scapes.engine.swt.util.framework;
 import java8.util.Optional;
 import java8.util.function.Consumer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs;
-import org.tobi29.scapes.engine.swt.util.widgets.OptionalWidget;
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar;
 import org.tobi29.scapes.engine.utils.VersionUtil;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
@@ -158,7 +159,7 @@ public abstract class MultiDocumentApplication extends Application {
         return source.item(document);
     }
 
-    private Optional<DocumentShell.DocumentComposite> tab(TabItem tabItem) {
+    private Optional<DocumentShell.DocumentComposite> tab(CTabItem tabItem) {
         Control control = tabItem.getControl();
         if (control instanceof DocumentShell.DocumentComposite) {
             return Optional.of((DocumentShell.DocumentComposite) control);
@@ -168,7 +169,7 @@ public abstract class MultiDocumentApplication extends Application {
 
     private class DocumentShell extends Shell {
         public Optional<DocumentComposite> directComposite = Optional.empty();
-        public Optional<TabFolder> tabFolder = Optional.empty();
+        public Optional<CTabFolder> tabFolder = Optional.empty();
 
         public DocumentShell(Display display, int style) {
             super(display, style);
@@ -188,13 +189,10 @@ public abstract class MultiDocumentApplication extends Application {
         private void updateTab() {
             Optional<DocumentComposite> currentComposite = Optional.empty();
             if (tabFolder.isPresent()) {
-                TabItem[] tabItems = tabFolder.get().getSelection();
-                for (TabItem tabItem : tabItems) {
-                    Control control = tabItem.getControl();
-                    if (control instanceof DocumentComposite) {
-                        currentComposite =
-                                Optional.of((DocumentComposite) control);
-                    }
+                CTabItem tabItem = tabFolder.get().getSelection();
+                Control control = tabItem.getControl();
+                if (control instanceof DocumentComposite) {
+                    currentComposite = Optional.of((DocumentComposite) control);
                 }
             } else if (directComposite.isPresent()) {
                 currentComposite = Optional.of(directComposite.get());
@@ -218,7 +216,7 @@ public abstract class MultiDocumentApplication extends Application {
                 DocumentComposite directComposite = this.directComposite.get();
                 this.directComposite = Optional.empty();
                 directComposite.dispose();
-                TabFolder tabFolder = new TabFolder(this, SWT.NONE);
+                CTabFolder tabFolder = new CTabFolder(this, SWT.NONE);
                 tabFolder.addListener(SWT.Selection, e -> updateTab());
                 this.tabFolder = Optional.of(tabFolder);
                 tabItem(directComposite.document);
@@ -239,7 +237,7 @@ public abstract class MultiDocumentApplication extends Application {
         private void remove(DocumentComposite composite) {
             if (tabFolder.isPresent()) {
                 composite.dispose();
-                TabFolder tabFolder = this.tabFolder.get();
+                CTabFolder tabFolder = this.tabFolder.get();
                 List<DocumentComposite> composites =
                         Arrays.stream(tabFolder.getItems())
                                 .map(MultiDocumentApplication.this::tab)
@@ -267,13 +265,14 @@ public abstract class MultiDocumentApplication extends Application {
         }
 
         private DocumentComposite tabItem(Document document) {
-            TabFolder tabFolder = this.tabFolder.get();
-            TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+            CTabFolder tabFolder = this.tabFolder.get();
+            CTabItem tabItem = new CTabItem(tabFolder, SWT.NONE);
             DocumentComposite composite =
                     new DocumentComposite(tabFolder, SWT.NONE, document);
             tabItem.setControl(composite);
             tabItem.setText(composite.document.shortTitle());
             composite.tabItem = Optional.of(tabItem);
+            tabFolder.setSelection(tabItem);
             return populate(composite);
         }
 
@@ -284,7 +283,7 @@ public abstract class MultiDocumentApplication extends Application {
         private class DocumentComposite extends Composite {
             public final DocumentShell shell;
             public final SmartMenuBar menu;
-            public Optional<TabItem> tabItem = Optional.empty();
+            public Optional<CTabItem> tabItem = Optional.empty();
             public Document document;
             private long updateStamp;
 
@@ -298,9 +297,7 @@ public abstract class MultiDocumentApplication extends Application {
                 addDisposeListener(e -> {
                     composites.remove(this.document);
                     tabItem.ifPresent(Widget::dispose);
-                    // Changing menu bar now causes Win32 port to crash
-                    display.timerExec(0, () -> OptionalWidget
-                            .ifPresent(menu, SmartMenuBar::dispose));
+                    menu.dispose();
                 });
                 int updateTime = document.updateTime();
                 if (updateTime >= 0) {
