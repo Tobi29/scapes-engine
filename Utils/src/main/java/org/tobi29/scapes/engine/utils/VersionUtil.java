@@ -42,6 +42,14 @@ public final class VersionUtil {
         return Comparison.EQUAL;
     }
 
+    public static Version of(String str) {
+        try {
+            return get(str);
+        } catch (VersionException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     public static Version get(String str) throws VersionException {
         String[] split = DOT.split(str);
         if (split.length > 3) {
