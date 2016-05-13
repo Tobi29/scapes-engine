@@ -33,7 +33,6 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.sound.openal.OpenALSoundSystem;
 import org.tobi29.scapes.engine.utils.MutablePair;
-import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.io.IORunnable;
 import org.tobi29.scapes.engine.utils.io.IOSupplier;
 import org.tobi29.scapes.engine.utils.task.Joiner;
@@ -43,6 +42,7 @@ import java.nio.ByteBuffer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class ContainerLWJGL3 extends ControllerDefault
         implements Container {
@@ -69,7 +69,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         superModifier = Platform.get() == Platform.MACOSX;
     }
 
-    private static Optional<String> checkContext() {
+    public static Optional<String> checkContext() {
         LOGGER.info("OpenGL: {} (Vendor: {}, Renderer: {})",
                 GL11.glGetString(GL11.GL_VERSION),
                 GL11.glGetString(GL11.GL_VENDOR),
@@ -182,11 +182,6 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         // return ByteBuffer.allocate(capacity).order(ByteOrder.nativeOrder());
     }
 
-    protected Optional<String> initContext() {
-        org.lwjgl.opengl.GL.createCapabilities();
-        return checkContext();
-    }
-
     @Override
     public boolean isModifierDown() {
         if (superModifier) {
@@ -219,18 +214,19 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
             return;
         }
         Joiner.Joinable joinable = new Joiner.Joinable();
-        MutableSingle<IOException> output = new MutableSingle<>();
+        AtomicReference<IOException> output = new AtomicReference<>();
         tasks.add(() -> {
             try {
                 runnable.run();
             } catch (IOException e) {
-                output.a = e;
+                output.set(e);
             }
             joinable.join();
         });
         joinable.joiner().join();
-        if (output.a != null) {
-            throw new IOException(output.a);
+        IOException e = output.get();
+        if (e != null) {
+            throw new IOException(e);
         }
     }
 
@@ -240,13 +236,13 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
             return runnable.get();
         }
         Joiner.Joinable joinable = new Joiner.Joinable();
-        MutableSingle<R> output = new MutableSingle<>();
+        AtomicReference<R> output = new AtomicReference<>();
         tasks.add(() -> {
-            output.a = runnable.get();
+            output.set(runnable.get());
             joinable.join();
         });
         joinable.joiner().join();
-        return output.a;
+        return output.get();
     }
 
     protected <R> R execIO(IOSupplier<R> runnable) throws IOException {
