@@ -9,7 +9,6 @@ import org.tobi29.scapes.engine.sql.SQLColumn;
 import org.tobi29.scapes.engine.sql.SQLDatabase;
 import org.tobi29.scapes.engine.sql.SQLQuery;
 import org.tobi29.scapes.engine.sql.SQLType;
-import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.task.Joiner;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class SQLiteDatabase implements SQLDatabase, AutoCloseable {
     private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
@@ -84,10 +84,10 @@ public class SQLiteDatabase implements SQLDatabase, AutoCloseable {
 
     private <R> R access(SQLiteSupplier<R> connection) throws IOException {
         Joiner.Joinable joinable = new Joiner.Joinable();
-        MutableSingle<R> output = new MutableSingle<>();
+        AtomicReference<R> output = new AtomicReference<>();
         queue.add(() -> {
             try {
-                output.a = connection.get();
+                output.set(connection.get());
             } catch (IOException | SQLiteException e) {
                 if (!exception.isPresent()) {
                     exception = Optional.of(e);
@@ -101,7 +101,7 @@ public class SQLiteDatabase implements SQLDatabase, AutoCloseable {
         if (exception.isPresent()) {
             throw new IOException(exception.get());
         }
-        return output.a;
+        return output.get();
     }
 
     @Override

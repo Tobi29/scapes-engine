@@ -25,7 +25,6 @@ import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.PlatformDialogs;
 import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.swt.util.widgets.InputDialog;
-import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.io.IOBiConsumer;
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
@@ -33,6 +32,8 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath;
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtil;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PlatformDialogsSWT implements PlatformDialogs {
     private final String name;
@@ -53,9 +54,9 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             filterExtensions[i] = extension.a;
             filterNames[i] = extension.b;
         }
-        MutableSingle<Boolean> successful = new MutableSingle<>();
-        MutableSingle<String> filterPath = new MutableSingle<>();
-        MutableSingle<String[]> fileNames = new MutableSingle<>();
+        AtomicBoolean successful = new AtomicBoolean();
+        AtomicReference<String> filterPath = new AtomicReference<>();
+        AtomicReference<String[]> fileNames = new AtomicReference<>();
         shell(window, shell -> {
             int style = SWT.OPEN | SWT.APPLICATION_MODAL;
             if (multiple) {
@@ -65,17 +66,18 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             fileDialog.setText(title);
             fileDialog.setFilterExtensions(filterExtensions);
             fileDialog.setFilterNames(filterNames);
-            successful.a = fileDialog.open() != null;
-            if (successful.a) {
-                filterPath.a = fileDialog.getFilterPath();
-                fileNames.a = fileDialog.getFileNames();
+            String str = fileDialog.open();
+            if (str != null) {
+                successful.set(true);
+                filterPath.set(fileDialog.getFilterPath());
+                fileNames.set(fileDialog.getFileNames());
             }
         });
-        if (!successful.a) {
+        if (!successful.get()) {
             return;
         }
-        for (String fileName : fileNames.a) {
-            FilePath path = FileUtil.path(filterPath.a).resolve(fileName)
+        for (String fileName : fileNames.get()) {
+            FilePath path = FileUtil.path(filterPath.get()).resolve(fileName)
                     .toAbsolutePath();
             FileUtil.read(path, stream -> result
                     .accept(path.getFileName().toString(), stream));
@@ -92,26 +94,28 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             filterExtensions[i] = extension.a;
             filterNames[i] = extension.b;
         }
-        MutableSingle<Boolean> successful = new MutableSingle<>();
-        MutableSingle<String> filterPath = new MutableSingle<>();
-        MutableSingle<String> fileName = new MutableSingle<>();
+        AtomicBoolean successful = new AtomicBoolean();
+        AtomicReference<String> filterPath = new AtomicReference<>();
+        AtomicReference<String> fileName = new AtomicReference<>();
         shell(window, shell -> {
             FileDialog fileDialog =
                     new FileDialog(shell, SWT.SAVE | SWT.APPLICATION_MODAL);
             fileDialog.setText(title);
             fileDialog.setFilterExtensions(filterExtensions);
             fileDialog.setFilterNames(filterNames);
-            successful.a = fileDialog.open() != null;
-            if (successful.a) {
-                filterPath.a = fileDialog.getFilterPath();
-                fileName.a = fileDialog.getFileName();
+            String str = fileDialog.open();
+            if (str != null) {
+                successful.set(true);
+                filterPath.set(fileDialog.getFilterPath());
+                fileName.set(fileDialog.getFileName());
             }
         });
-        if (!successful.a) {
+        if (!successful.get()) {
             return Optional.empty();
         }
-        return Optional.of(FileUtil.path(filterPath.a).resolve(fileName.a)
-                .toAbsolutePath());
+        return Optional
+                .of(FileUtil.path(filterPath.get()).resolve(fileName.get())
+                        .toAbsolutePath());
     }
 
     @Override
