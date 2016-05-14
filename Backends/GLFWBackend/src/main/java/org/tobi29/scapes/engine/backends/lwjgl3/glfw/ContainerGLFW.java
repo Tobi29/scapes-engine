@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 import java8.util.Optional;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -238,7 +239,8 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 }
                 initWindow(engine.config().isFullscreen(),
                         engine.config().vSync());
-                Optional<String> check = initContext();
+                GL.createCapabilities();
+                Optional<String> check = checkContext();
                 if (check.isPresent()) {
                     throw new GraphicsCheckException(check.get());
                 }
