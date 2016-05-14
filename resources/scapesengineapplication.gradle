@@ -125,6 +125,9 @@ class ScapesEngineApplication implements Plugin<Project> {
         if (target.rootProject.hasProperty("jvmArgs")) {
             runTask.jvmArgs Eval.me(target.rootProject.jvmArgs)
         }
+        if (target.rootProject.hasProperty("runEnv")) {
+            runTask.environment.putAll Eval.me(target.rootProject.runEnv)
+        }
         if (System.properties["os.name"].toLowerCase().contains("mac")) {
             runTask.jvmArgs "-XstartOnFirstThread"
         }
