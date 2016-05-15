@@ -19,7 +19,6 @@ import java8.util.Optional;
 import java8.util.function.BiConsumer;
 import java8.util.function.Consumer;
 import java8.util.function.Function;
-import java8.util.stream.Stream;
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
@@ -315,7 +314,9 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
             transform(matrix, size);
-            layoutStream(size).forEach(component -> {
+            GuiLayoutManager layout = layoutManager(size);
+            for (Triple<GuiComponent, Vector2, Vector2> component : layout
+                    .layout()) {
                 Vector3 pos = applyTransform(-component.b.doubleX(),
                         -component.b.doubleY(), size);
                 if (-pos.doubleX() >= -component.c.doubleX() &&
@@ -328,15 +329,15 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                     component.a.render(gl, shader, component.c);
                     matrixStack.pop();
                 }
-            });
+            }
             matrixStack.pop();
         }
     }
 
     protected void renderOverlays(GL gl, Shader shader) {
         if (visible) {
-            Streams.of(components)
-                    .forEach(component -> component.renderOverlays(gl, shader));
+            Streams.forEach(components,
+                    component -> component.renderOverlays(gl, shader));
         }
     }
 
@@ -401,7 +402,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     protected void updateMesh(GuiRenderer renderer, Vector2 size) {
     }
 
-    protected void dirty() {
+    public void dirty() {
         parent.parent().ifPresent(GuiComponent::dirty);
     }
 
@@ -431,18 +432,22 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return Optional.empty();
     }
 
+    @SuppressWarnings("Convert2streamapi")
     protected Set<GuiComponent> fireRecursiveEvent(GuiComponentEvent event,
             EventSink listener, ScapesEngine engine) {
         if (visible) {
             boolean inside = checkInside(event.x(), event.y(), event.size());
             if (inside) {
                 Set<GuiComponent> sinks = new HashSet<>();
-                layoutStream(event.size())
-                        .filter(component -> !component.a.parent.blocksEvents())
-                        .forEach(component -> sinks.addAll(component.a
-                                .fireRecursiveEvent(
-                                        applyTransform(event, component),
-                                        listener, engine)));
+                GuiLayoutManager layout = layoutManager(event.size());
+                for (Triple<GuiComponent, Vector2, Vector2> component : layout
+                        .layout()) {
+                    if (!component.a.parent.blocksEvents()) {
+                        sinks.addAll(component.a.fireRecursiveEvent(
+                                applyTransform(event, component), listener,
+                                engine));
+                    }
+                }
                 if (!ignoresEvents()) {
                     if (listener.accept(this, event, engine)) {
                         sinks.add(this);
@@ -565,25 +570,17 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     }
 
     public void removeAll() {
-        Streams.of(components).forEach(this::remove);
+        Streams.forEach(components, this::remove);
     }
 
     protected void updateChildren(ScapesEngine engine, double delta) {
-        Streams.of(components).forEach(component -> {
+        Streams.forEach(components, component -> {
             if (component.removing) {
                 remove(component);
             } else {
                 component.update(engine, delta);
             }
         });
-    }
-
-    protected Stream<Triple<GuiComponent, Vector2, Vector2>> layoutStream(
-            Vector2 size) {
-        if (components.isEmpty()) {
-            return Streams.of();
-        }
-        return Streams.of(newLayoutManager(size).layout());
     }
 
     protected GuiLayoutManager layoutManager(Vector2 size) {

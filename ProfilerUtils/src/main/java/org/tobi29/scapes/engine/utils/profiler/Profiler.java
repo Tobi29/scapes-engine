@@ -50,7 +50,7 @@ public final class Profiler {
     }
 
     public static void reset() {
-        Streams.of(PROFILERS.values()).forEach(Profiler::resetNodes);
+        Streams.forEach(PROFILERS.values(), Profiler::resetNodes);
     }
 
     private C enterTryNode(String name) {

@@ -33,7 +33,7 @@ public class VBO {
         }
         this.stride = stride;
         ByteBuffer vertexBuffer = engine.allocate(length * stride);
-        Streams.of(attributes).forEach(
+        Streams.forEach(attributes,
                 attribute -> addToBuffer(attribute, length, vertexBuffer));
         data = Optional.of(vertexBuffer);
     }
@@ -235,6 +235,10 @@ public class VBO {
     protected void dispose(GL gl) {
         assert stored;
         gl.deleteVBO(vertexID);
+        stored = false;
+    }
+
+    protected void reset() {
         stored = false;
     }
 

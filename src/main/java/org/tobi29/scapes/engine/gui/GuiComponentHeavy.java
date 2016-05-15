@@ -42,13 +42,15 @@ public abstract class GuiComponentHeavy extends GuiComponent {
                 meshes = renderer.finish();
                 lastSize = size;
             }
-            Streams.of(meshes).forEach(mesh -> {
+            Streams.forEach(meshes, mesh -> {
                 mesh.b.bind(gl);
                 mesh.a.render(gl, shader);
             });
             renderComponent(gl, shader, size.doubleX(), size.doubleY());
             if (hasHeavyChild) {
-                layoutStream(size).forEach(component -> {
+                GuiLayoutManager layout = layoutManager(size);
+                for (Triple<GuiComponent, Vector2, Vector2> component : layout
+                        .layout()) {
                     Vector3 pos = applyTransform(-component.b.doubleX(),
                             -component.b.doubleY(), size);
                     if (-pos.doubleX() >= -component.c.doubleX() &&
@@ -61,7 +63,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
                         component.a.render(gl, shader, component.c);
                         matrixStack.pop();
                     }
-                });
+                }
             }
             matrixStack.pop();
         }
@@ -98,7 +100,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     }
 
     @Override
-    protected void dirty() {
+    public void dirty() {
         dirty.set(true);
     }
 

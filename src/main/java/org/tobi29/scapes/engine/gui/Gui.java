@@ -17,8 +17,6 @@ package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.utils.Triple;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 import java.util.Set;
 

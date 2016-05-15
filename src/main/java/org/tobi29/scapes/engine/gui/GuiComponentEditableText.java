@@ -148,7 +148,7 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
         super.renderComponent(gl, shader, width, height);
         if (active) {
             if (System.currentTimeMillis() / 600 % 2 == 0) {
-                Streams.of(vaoCursor).forEach(mesh -> {
+                Streams.forEach(vaoCursor, mesh -> {
                     mesh.b.bind(gl);
                     mesh.a.render(gl, shader);
                 });
@@ -156,7 +156,7 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
         }
         gl.textures().unbind(gl);
         gl.setBlending(BlendingMode.INVERT);
-        Streams.of(vaoSelection).forEach(mesh -> mesh.a.render(gl, shader));
+        Streams.forEach(vaoSelection, mesh -> mesh.a.render(gl, shader));
         gl.setBlending(BlendingMode.NORMAL);
     }
 }

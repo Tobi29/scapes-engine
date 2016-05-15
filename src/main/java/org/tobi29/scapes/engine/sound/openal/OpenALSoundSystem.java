@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.sound.openal;
 
 import java8.util.Optional;
 import java8.util.function.Consumer;
-import java8.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
@@ -73,9 +72,9 @@ public class OpenALSoundSystem implements SoundSystem {
                     while (!queue.isEmpty()) {
                         queue.poll().accept(openAL);
                     }
-                    Streams.of(audios).filter(audio -> audio
-                            .poll(this, openAL, listenerPosition, delta))
-                            .forEach(audios::remove);
+                    Streams.forEach(audios, audio -> audio
+                                    .poll(this, openAL, listenerPosition, delta),
+                            audios::remove);
                     openAL.checkError("Sound-Effects");
                     openAL.setListener(listenerPosition.minus(origin),
                             listenerOrientation, listenerVelocity);
@@ -92,7 +91,7 @@ public class OpenALSoundSystem implements SoundSystem {
                 sync.cap(joiner);
             }
             try {
-                Streams.of(audios).forEach(audio -> audio.stop(this, openAL));
+                Streams.forEach(audios, audio -> audio.stop(this, openAL));
                 audios.clear();
                 for (int i = 0; i < sources.length; i++) {
                     int source = sources[i];
@@ -185,9 +184,8 @@ public class OpenALSoundSystem implements SoundSystem {
     public void stop(String channel) {
         queue(openAL -> {
             Collection<OpenALAudio> stopped =
-                    Streams.of(audios).filter(audio -> audio.isPlaying(channel))
-                            .collect(Collectors.toList());
-            Streams.of(stopped).forEach(audio -> audio.stop(this, openAL));
+                    Streams.collect(audios, audio -> audio.isPlaying(channel));
+            Streams.forEach(stopped, audio -> audio.stop(this, openAL));
             audios.removeAll(stopped);
         });
     }

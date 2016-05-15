@@ -95,6 +95,13 @@ public class VAOHybrid extends VAO {
         reset();
     }
 
+    @Override
+    protected void reset() {
+        super.reset();
+        vbo1.reset();
+        vbo2.reset();
+    }
+
     public void setWeak(boolean value) {
         weak = value;
     }

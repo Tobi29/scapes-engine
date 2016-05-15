@@ -113,6 +113,12 @@ public class VAOStatic extends VAO {
         reset();
     }
 
+    @Override
+    protected void reset() {
+        super.reset();
+        vbo.reset();
+    }
+
     public void setWeak(boolean value) {
         weak = value;
     }

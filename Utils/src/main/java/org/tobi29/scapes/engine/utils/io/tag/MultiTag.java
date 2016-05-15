@@ -59,7 +59,7 @@ public class MultiTag {
      */
     public static TagStructure writeProperties(Properties properties) {
         TagStructure tagStructure = new TagStructure();
-        Streams.of(properties.entrySet()).forEach(entry -> tagStructure
+        Streams.forEach(properties.entrySet(), entry -> tagStructure
                 .setString(String.valueOf(entry.getKey()),
                         String.valueOf(entry.getValue())));
         return tagStructure;
@@ -86,7 +86,7 @@ public class MultiTag {
      */
     public static void readProperties(TagStructure tagStructure,
             Properties properties) {
-        Streams.of(tagStructure.getTagEntrySet()).forEach(entry -> properties
+        Streams.forEach(tagStructure.getTagEntrySet(), entry -> properties
                 .setProperty(String.valueOf(entry.getKey()),
                         String.valueOf(entry.getValue())));
     }

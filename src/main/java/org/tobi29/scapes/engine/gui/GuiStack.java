@@ -37,7 +37,7 @@ public class GuiStack {
     }
 
     public void step(ScapesEngine engine, double delta) {
-        Streams.of(guis.values()).forEach(gui -> {
+        Streams.forEach(guis.values(), gui -> {
             if (gui.valid()) {
                 gui.update(engine, delta);
             } else {

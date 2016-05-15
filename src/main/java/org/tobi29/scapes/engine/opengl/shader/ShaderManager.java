@@ -61,7 +61,7 @@ public class ShaderManager {
     }
 
     public void disposeAll(GL gl) {
-        Streams.of(cache.values()).forEach(shader -> shader.dispose(gl));
+        Streams.forEach(cache.values(), shader -> shader.dispose(gl));
         resetAll();
     }
 

@@ -30,7 +30,7 @@ public interface SQLDatabase {
             List<Pair<String, Object>> matches) throws IOException {
         List<String> matchesList = new ArrayList<>(matches.size());
         List<Object> values = new ArrayList<>(matches.size());
-        Streams.of(matches).forEach(pair -> {
+        Streams.forEach(matches, pair -> {
             matchesList.add(pair.a);
             values.add(pair.b);
         });

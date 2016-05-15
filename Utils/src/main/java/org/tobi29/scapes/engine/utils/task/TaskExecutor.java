@@ -48,8 +48,8 @@ public class TaskExecutor {
         this.name = name + '-';
         root = true;
         threadPools = new EnumMap<>(Priority.class);
-        Streams.of(Priority.values()).forEach(priority -> threadPools
-                .put(priority, new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L,
+        Streams.forEach(Priority.values(), priority -> threadPools.put(priority,
+                new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L,
                         TimeUnit.SECONDS, new SynchronousQueue<>(),
                         new PriorityThreadFactory(priority.priority))));
     }
@@ -156,7 +156,7 @@ public class TaskExecutor {
         if (root) {
             Streams.of(threadPools.values())
                     .forEach(ThreadPoolExecutor::shutdown);
-            Streams.of(threadPools.values()).forEach(threadPool -> {
+            Streams.forEach(threadPools.values(), threadPool -> {
                 try {
                     if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
                         Streams.of(Thread.getAllStackTraces().keySet())

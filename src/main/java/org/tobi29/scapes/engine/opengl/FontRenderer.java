@@ -215,8 +215,8 @@ public class FontRenderer {
     }
 
     public void dispose() {
-        Streams.of(pages).filter(Objects::nonNull)
-                .forEach(page -> page.texture.markDisposed());
+        Streams.forEach(pages, Objects::nonNull,
+                page -> page.texture.markDisposed());
     }
 
     public interface MeshOutput {
