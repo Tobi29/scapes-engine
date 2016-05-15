@@ -21,6 +21,8 @@ public abstract class Document {
 
     public abstract void forceClose();
 
+    public abstract void destroy();
+
     protected abstract String title();
 
     protected String shortTitle() {
