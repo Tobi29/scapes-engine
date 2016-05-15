@@ -489,12 +489,10 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             GuiLayoutManager layout = layoutManager(size);
             for (Triple<GuiComponent, Vector2, Vector2> component : layout
                     .layout()) {
-                if (!component.a.parent.blocksEvents()) {
-                    Optional<Vector2> success =
-                            component.a.calculateSize(component.c, destination);
-                    if (success.isPresent()) {
-                        return success;
-                    }
+                Optional<Vector2> success =
+                        component.a.calculateSize(component.c, destination);
+                if (success.isPresent()) {
+                    return success;
                 }
             }
             if (destination == this) {
