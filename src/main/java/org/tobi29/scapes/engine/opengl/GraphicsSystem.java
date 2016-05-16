@@ -80,6 +80,7 @@ public class GraphicsSystem {
 
     @SuppressWarnings("CallToNativeMethodWhileLocked")
     public synchronized void render(double delta) {
+        engine.unlockUpdate();
         try {
             gl.checkError("Pre-Render");
             Container container = engine.container();

@@ -43,12 +43,14 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class ScapesEngine implements Crashable {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ScapesEngine.class);
     private static ScapesEngine instance;
+    private final AtomicBoolean sync = new AtomicBoolean(true);
     private final Container container;
     private final GraphicsSystem graphics;
     private final SoundSystem sounds;
@@ -288,6 +290,13 @@ public class ScapesEngine implements Crashable {
         return container.allocate(capacity);
     }
 
+    public void unlockUpdate() {
+        synchronized (sync) {
+            sync.set(true);
+            sync.notifyAll();
+        }
+    }
+
     @SuppressWarnings({"OverlyBroadCatchBlock", "CallToSystemExit"})
     public int run() {
         start();
@@ -297,7 +306,7 @@ public class ScapesEngine implements Crashable {
             LOGGER.error("Failed to initialize graphics:", e);
             container.message(Container.MessageType.ERROR, game.name(),
                     "Unable to initialize graphics:\n" + e.getMessage());
-            joiner.join();
+            halt();
             return 1;
         } catch (Throwable e) {
             writeCrash(e);
@@ -317,16 +326,28 @@ public class ScapesEngine implements Crashable {
         Joiner.Joinable wait = new Joiner.Joinable();
         joiner = taskExecutor.runTask(joiner -> {
             try {
-                Sync sync = new Sync(config.fps(), 5000000000L, true,
-                        "Engine-Update");
+                Sync sync = new Sync(config.fps(), 0L, false, "Engine-Update");
                 game.initLate();
                 sync.init();
                 step(sync.delta());
                 wait.join();
                 sync.cap();
+                int maxWait = sync.maxDiff() / 750000;
                 while (!joiner.marked()) {
                     step(sync.delta());
-                    sync.cap();
+                    if (this.sync.getAndSet(false)) {
+                        synchronized (this.sync) {
+                            if (!joiner.marked()) {
+                                try {
+                                    this.sync.wait(maxWait);
+                                } catch (InterruptedException e) {
+                                }
+                            }
+                        }
+                        sync.tick();
+                    } else {
+                        sync.cap();
+                    }
                 }
             } catch (Throwable e) {
                 crash(e);
@@ -336,6 +357,10 @@ public class ScapesEngine implements Crashable {
     }
 
     public void halt() {
+        synchronized (sync) {
+            sync.set(false);
+            sync.notifyAll();
+        }
         joiner.join();
     }
 
