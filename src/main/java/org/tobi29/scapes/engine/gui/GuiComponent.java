@@ -283,10 +283,10 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         GuiComponentHoverEvent hoverEvent;
         if (hovering) {
             hoverEvent = new GuiComponentHoverEvent(event,
-                    GuiComponentHoverEvent.State.ENTER);
+                    GuiComponentHoverEvent.State.HOVER);
         } else {
             hoverEvent = new GuiComponentHoverEvent(event,
-                    GuiComponentHoverEvent.State.HOVER);
+                    GuiComponentHoverEvent.State.ENTER);
             hovering = true;
         }
         hover = true;
