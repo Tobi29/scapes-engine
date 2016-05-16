@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-public class GuiComponentScrollPane extends GuiComponentVisibleSlab {
+public class GuiComponentScrollPane extends GuiComponentVisibleSlabHeavy {
     protected final GuiComponentScrollPaneViewport viewport;
 
     public GuiComponentScrollPane(GuiLayoutData parent, int scrollStep) {

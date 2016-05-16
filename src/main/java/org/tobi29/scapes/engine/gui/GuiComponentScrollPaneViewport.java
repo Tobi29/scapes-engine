@@ -97,30 +97,32 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPaneHeavy {
     }
 
     private void setMax(Vector2 max, Vector2 size) {
-        maxX = max.doubleX();
-        maxY = max.doubleY();
-        scrollX =
-                FastMath.clamp(scrollX, 0, Math.max(0, maxX - size.doubleX()));
-        scrollY =
-                FastMath.clamp(scrollY, 0, Math.max(0, maxY - size.doubleY()));
-        Optional<GuiComponentSliderVert> slider = sliderX;
-        if (slider.isPresent()) {
-            if (maxY <= 0) {
-                slider.get().setSliderHeight(size.doubleX());
-            } else {
-                slider.get().setSliderHeight((int) FastMath
-                        .min(FastMath.sqr(size.doubleX()) / maxY,
-                                size.doubleX()));
+        if (maxX != max.doubleX() || maxY != max.doubleY()) {
+            maxX = max.doubleX();
+            maxY = max.doubleY();
+            scrollX = FastMath.clamp(scrollX, 0,
+                    Math.max(0, maxX - size.doubleX()));
+            scrollY = FastMath.clamp(scrollY, 0,
+                    Math.max(0, maxY - size.doubleY()));
+            Optional<GuiComponentSliderVert> slider = sliderX;
+            if (slider.isPresent()) {
+                if (maxY <= 0) {
+                    slider.get().setSliderHeight(size.doubleX());
+                } else {
+                    slider.get().setSliderHeight((int) FastMath
+                            .min(FastMath.sqr(size.doubleX()) / maxY,
+                                    size.doubleX()));
+                }
             }
-        }
-        slider = sliderY;
-        if (slider.isPresent()) {
-            if (maxY <= 0) {
-                slider.get().setSliderHeight(size.doubleY());
-            } else {
-                slider.get().setSliderHeight((int) FastMath
-                        .min(FastMath.sqr(size.doubleY()) / maxY,
-                                size.doubleY()));
+            slider = sliderY;
+            if (slider.isPresent()) {
+                if (maxY <= 0) {
+                    slider.get().setSliderHeight(size.doubleY());
+                } else {
+                    slider.get().setSliderHeight((int) FastMath
+                            .min(FastMath.sqr(size.doubleY()) / maxY,
+                                    size.doubleY()));
+                }
             }
         }
     }
