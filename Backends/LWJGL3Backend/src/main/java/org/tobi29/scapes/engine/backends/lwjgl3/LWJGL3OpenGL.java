@@ -436,19 +436,19 @@ public class LWJGL3OpenGL extends GL {
 
     @Override
     public void setUniformMatrix2(int uniform, boolean transpose,
-            FloatBuffer matrices) {
+            float[] matrices) {
         GL20.glUniformMatrix2fv(uniform, transpose, direct(matrices));
     }
 
     @Override
     public void setUniformMatrix3(int uniform, boolean transpose,
-            FloatBuffer matrices) {
+            float[] matrices) {
         GL20.glUniformMatrix3fv(uniform, transpose, direct(matrices));
     }
 
     @Override
     public void setUniformMatrix4(int uniform, boolean transpose,
-            FloatBuffer matrices) {
+            float[] matrices) {
         GL20.glUniformMatrix4fv(uniform, transpose, direct(matrices));
     }
 
@@ -915,6 +915,18 @@ public class LWJGL3OpenGL extends GL {
     }
 
     @SuppressWarnings("ReturnOfNull")
+    private FloatBuffer direct(float[] array) {
+        if (array == null) {
+            return null;
+        }
+        direct(array.length << 2);
+        directFloatBuffer.clear();
+        directFloatBuffer.put(array);
+        directFloatBuffer.flip();
+        return directFloatBuffer;
+    }
+
+    @SuppressWarnings("ReturnOfNull")
     private FloatBuffer direct(FloatBuffer buffer) {
         if (buffer == null) {
             return null;
@@ -935,6 +947,18 @@ public class LWJGL3OpenGL extends GL {
     }
 
     @SuppressWarnings("ReturnOfNull")
+    private IntBuffer direct(int[] array) {
+        if (array == null) {
+            return null;
+        }
+        direct(array.length << 2);
+        directIntBuffer.clear();
+        directIntBuffer.put(array);
+        directIntBuffer.flip();
+        return directIntBuffer;
+    }
+
+    @SuppressWarnings("ReturnOfNull")
     private IntBuffer direct(IntBuffer buffer) {
         if (buffer == null) {
             return null;
@@ -952,6 +976,18 @@ public class LWJGL3OpenGL extends GL {
         buffer.flip();
         directIntBuffer.flip();
         return directIntBuffer;
+    }
+
+    @SuppressWarnings("ReturnOfNull")
+    private ByteBuffer direct(byte[] array) {
+        if (array == null) {
+            return null;
+        }
+        direct(array.length);
+        directBuffer.clear();
+        directBuffer.put(array);
+        directBuffer.flip();
+        return directBuffer;
     }
 
     @SuppressWarnings("ReturnOfNull")

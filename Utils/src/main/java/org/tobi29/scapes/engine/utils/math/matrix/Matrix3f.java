@@ -15,13 +15,11 @@
  */
 package org.tobi29.scapes.engine.utils.math.matrix;
 
-import java8.util.function.IntFunction;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 public class Matrix3f {
     private static final int V00, V01, V02, V10, V11, V12, V20, V21, V22;
@@ -39,72 +37,43 @@ public class Matrix3f {
         V22 = i++;
     }
 
-    private final ByteBuffer buffer;
-    private final FloatBuffer b;
+    private final float[] values = new float[9];
 
-    public Matrix3f(IntFunction<ByteBuffer> buffer) {
-        this.buffer = buffer.apply(9 << 2);
-        b = this.buffer.asFloatBuffer();
+    public float[] values() {
+        return values;
     }
 
-    public FloatBuffer getBuffer() {
-        b.rewind();
-        return b;
-    }
-
-    public ByteBuffer getByteBuffer() {
-        buffer.rewind();
-        return buffer;
+    public void putInto(ByteBuffer buffer) {
+        for (float value : values) {
+            buffer.putFloat(value);
+        }
     }
 
     public void copy(Matrix3f matrix) {
-        b.rewind();
-        matrix.b.rewind();
-        b.put(matrix.b);
-    }
-
-    private float g() {
-        return b.get();
-    }
-
-    private float gc() {
-        return g(b.position());
-    }
-
-    private float g(int i) {
-        return b.get(i);
-    }
-
-    private void s(float value) {
-        b.put(value);
-    }
-
-    private void s(int i, float value) {
-        b.put(i, value);
+        System.arraycopy(matrix.values, 0, values, 0, values.length);
     }
 
     public void identity() {
-        s(V00, 1.0f);
-        s(V01, 0.0f);
-        s(V02, 0.0f);
-        s(V10, 0.0f);
-        s(V11, 1.0f);
-        s(V12, 0.0f);
-        s(V20, 0.0f);
-        s(V21, 0.0f);
-        s(V22, 1.0f);
+        values[V00] = 1.0f;
+        values[V01] = 0.0f;
+        values[V02] = 0.0f;
+        values[V10] = 0.0f;
+        values[V11] = 1.0f;
+        values[V12] = 0.0f;
+        values[V20] = 0.0f;
+        values[V21] = 0.0f;
+        values[V22] = 1.0f;
     }
 
     public void scale(float x, float y, float z) {
-        b.rewind();
-        for (int i = 0; i < 4; i++) {
-            s(gc() * x);
+        for (int i = 0; i < 3; i++) {
+            values[i] = values[i] * x;
         }
-        for (int i = 0; i < 4; i++) {
-            s(gc() * y);
+        for (int i = 3; i < 6; i++) {
+            values[i] = values[i] * y;
         }
-        for (int i = 0; i < 4; i++) {
-            s(gc() * z);
+        for (int i = 6; i < 9; i++) {
+            values[i] = values[i] * z;
         }
     }
 
@@ -131,60 +100,60 @@ public class Matrix3f {
         float f20 = xz * oneMinusCos + ySin;
         float f21 = yz * oneMinusCos - xSin;
         float f22 = z * z * oneMinusCos + cos;
-        float v00 = g(V00);
-        float v01 = g(V01);
-        float v02 = g(V02);
-        float v10 = g(V10);
-        float v11 = g(V11);
-        float v12 = g(V12);
-        float v20 = g(V20);
-        float v21 = g(V21);
-        float v22 = g(V22);
+        float v00 = values[V00];
+        float v01 = values[V01];
+        float v02 = values[V02];
+        float v10 = values[V10];
+        float v11 = values[V11];
+        float v12 = values[V12];
+        float v20 = values[V20];
+        float v21 = values[V21];
+        float v22 = values[V22];
         float t00 = v00 * f00 + v10 * f01 + v20 * f02;
         float t01 = v01 * f00 + v11 * f01 + v21 * f02;
         float t02 = v02 * f00 + v12 * f01 + v22 * f02;
         float t10 = v00 * f10 + v10 * f11 + v20 * f12;
         float t11 = v01 * f10 + v11 * f11 + v21 * f12;
         float t12 = v02 * f10 + v12 * f11 + v22 * f12;
-        s(V20, v00 * f20 + v10 * f21 + v20 * f22);
-        s(V21, v01 * f20 + v11 * f21 + v21 * f22);
-        s(V22, v02 * f20 + v12 * f21 + v22 * f22);
-        s(V00, t00);
-        s(V01, t01);
-        s(V02, t02);
-        s(V10, t10);
-        s(V11, t11);
-        s(V12, t12);
+        values[V20] = v00 * f20 + v10 * f21 + v20 * f22;
+        values[V21] = v01 * f20 + v11 * f21 + v21 * f22;
+        values[V22] = v02 * f20 + v12 * f21 + v22 * f22;
+        values[V00] = t00;
+        values[V01] = t01;
+        values[V02] = t02;
+        values[V10] = t10;
+        values[V11] = t11;
+        values[V12] = t12;
     }
 
     public void multiply(Matrix3f o, Matrix3f d) {
-        float v00 = g(V00);
-        float v01 = g(V01);
-        float v02 = g(V02);
-        float v10 = g(V10);
-        float v11 = g(V11);
-        float v12 = g(V12);
-        float v20 = g(V20);
-        float v21 = g(V21);
-        float v22 = g(V22);
-        float o00 = o.g(V00);
-        float o01 = o.g(V01);
-        float o02 = o.g(V02);
-        float o10 = o.g(V10);
-        float o11 = o.g(V11);
-        float o12 = o.g(V12);
-        float o20 = o.g(V20);
-        float o21 = o.g(V21);
-        float o22 = o.g(V22);
-        d.s(V00, v00 * o00 + v10 * o01 + v20 * o02);
-        d.s(V01, v01 * o00 + v11 * o01 + v21 * o02);
-        d.s(V02, v02 * o00 + v12 * o01 + v22 * o02);
-        d.s(V10, v00 * o10 + v10 * o11 + v20 * o12);
-        d.s(V11, v01 * o10 + v11 * o11 + v21 * o12);
-        d.s(V12, v02 * o10 + v12 * o11 + v22 * o12);
-        d.s(V20, v00 * o20 + v10 * o21 + v20 * o22);
-        d.s(V21, v01 * o20 + v11 * o21 + v21 * o22);
-        d.s(V22, v02 * o20 + v12 * o21 + v22 * o22);
+        float v00 = values[V00];
+        float v01 = values[V01];
+        float v02 = values[V02];
+        float v10 = values[V10];
+        float v11 = values[V11];
+        float v12 = values[V12];
+        float v20 = values[V20];
+        float v21 = values[V21];
+        float v22 = values[V22];
+        float o00 = o.values[V00];
+        float o01 = o.values[V01];
+        float o02 = o.values[V02];
+        float o10 = o.values[V10];
+        float o11 = o.values[V11];
+        float o12 = o.values[V12];
+        float o20 = o.values[V20];
+        float o21 = o.values[V21];
+        float o22 = o.values[V22];
+        d.values[V00] = v00 * o00 + v10 * o01 + v20 * o02;
+        d.values[V01] = v01 * o00 + v11 * o01 + v21 * o02;
+        d.values[V02] = v02 * o00 + v12 * o01 + v22 * o02;
+        d.values[V10] = v00 * o10 + v10 * o11 + v20 * o12;
+        d.values[V11] = v01 * o10 + v11 * o11 + v21 * o12;
+        d.values[V12] = v02 * o10 + v12 * o11 + v22 * o12;
+        d.values[V20] = v00 * o20 + v10 * o21 + v20 * o22;
+        d.values[V21] = v01 * o20 + v11 * o21 + v21 * o22;
+        d.values[V22] = v02 * o20 + v12 * o21 + v22 * o22;
     }
 
     public Vector3 multiply(Vector3 v) {
@@ -192,9 +161,9 @@ public class Matrix3f {
         double y = v.doubleY();
         double z = v.doubleZ();
         double w = 1.0;
-        double v1 = g(V00) * x + g(V10) * y + g(V20) * z;
-        double v2 = g(V01) * x + g(V11) * y + g(V21) * z;
-        double v3 = g(V02) * x + g(V12) * y + g(V22) * z;
+        double v1 = values[V00] * x + values[V10] * y + values[V20] * z;
+        double v2 = values[V01] * x + values[V11] * y + values[V21] * z;
+        double v3 = values[V02] * x + values[V12] * y + values[V22] * z;
         return new Vector3d(v1, v2, v3);
     }
 }

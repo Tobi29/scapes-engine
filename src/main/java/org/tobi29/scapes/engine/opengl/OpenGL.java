@@ -200,16 +200,13 @@ public interface OpenGL {
     void setUniform4(int uniform, IntBuffer values);
 
     @OpenGLFunction
-    void setUniformMatrix2(int uniform, boolean transpose,
-            FloatBuffer matrices);
+    void setUniformMatrix2(int uniform, boolean transpose, float[] matrices);
 
     @OpenGLFunction
-    void setUniformMatrix3(int uniform, boolean transpose,
-            FloatBuffer matrices);
+    void setUniformMatrix3(int uniform, boolean transpose, float[] matrices);
 
     @OpenGLFunction
-    void setUniformMatrix4(int uniform, boolean transpose,
-            FloatBuffer matrices);
+    void setUniformMatrix4(int uniform, boolean transpose, float[] matrices);
 
     @OpenGLFunction
     void setAttribute1f(int id, float v0);

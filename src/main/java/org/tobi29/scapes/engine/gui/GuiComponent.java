@@ -522,7 +522,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     }
 
     protected Vector3 applyTransform(Vector3 pos, Vector2 size) {
-        Matrix matrix = new Matrix(BufferCreator::bytes);
+        Matrix matrix = new Matrix();
         matrix.identity();
         transform(matrix, size);
         return matrix.modelView().multiply(pos.multiply(-1.0)).multiply(-1.0);

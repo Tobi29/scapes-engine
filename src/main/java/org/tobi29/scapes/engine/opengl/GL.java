@@ -31,18 +31,15 @@ public abstract class GL implements OpenGL {
     private final TextureManager textureManager;
     private final ShaderManager shaderManager;
     private final MatrixStack matrixStack;
-    private final Matrix4f projectionMatrix, modelViewProjectionMatrix;
+    private final Matrix4f projectionMatrix = new Matrix4f(),
+            modelViewProjectionMatrix = new Matrix4f();
     private double resolutionMultiplier = 1.0;
     private int containerWidth = 1, containerHeight = 1, contentWidth = 1,
             contentHeight = 1;
 
     protected GL(ScapesEngine engine, Container container) {
         this.engine = engine;
-        // Use container instead of engine because engine does not have a
-        // reference to the container yet
-        matrixStack = new MatrixStack(64, container::allocate);
-        projectionMatrix = new Matrix4f(container::allocate);
-        modelViewProjectionMatrix = new Matrix4f(container::allocate);
+        matrixStack = new MatrixStack(64);
         textureManager = new TextureManager(engine);
         shaderManager = new ShaderManager(engine);
         resolutionMultiplier = engine.config().resolutionMultiplier();

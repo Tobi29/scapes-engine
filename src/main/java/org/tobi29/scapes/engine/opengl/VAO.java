@@ -103,17 +103,17 @@ public abstract class VAO {
         int uniformLocation = shader.uniformLocation(0);
         if (uniformLocation != -1) {
             gl.setUniformMatrix4(uniformLocation, false,
-                    matrix.modelView().getBuffer());
+                    matrix.modelView().values());
         }
         uniformLocation = shader.uniformLocation(1);
         if (uniformLocation != -1) {
             gl.setUniformMatrix4(uniformLocation, false,
-                    gl.modelViewProjectionMatrix().getBuffer());
+                    gl.modelViewProjectionMatrix().values());
         }
         uniformLocation = shader.uniformLocation(2);
         if (uniformLocation != -1) {
             gl.setUniformMatrix3(uniformLocation, false,
-                    matrix.normal().getBuffer());
+                    matrix.normal().values());
         }
     }
 

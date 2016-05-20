@@ -34,8 +34,7 @@ public class Shader {
     @OpenGLFunction
     public Shader(String source, ShaderPreprocessor processor, GL gl)
             throws IOException {
-        Pair<Integer, int[]> program =
-                gl.createProgram(source, processor);
+        Pair<Integer, int[]> program = gl.createProgram(source, processor);
         this.program = program.a;
         uniformLocations = program.b;
     }
@@ -189,7 +188,7 @@ public class Shader {
     }
 
     public void setUniformMatrix2(int uniform, boolean transpose,
-            FloatBuffer matrices) {
+            float[] matrices) {
         int uniformLocation = uniformLocations[uniform];
         if (uniformLocation != -1) {
             uniforms.add(shaderGL -> shaderGL
@@ -198,7 +197,7 @@ public class Shader {
     }
 
     public void setUniformMatrix3(int uniform, boolean transpose,
-            FloatBuffer matrices) {
+            float[] matrices) {
         int uniformLocation = uniformLocations[uniform];
         if (uniformLocation != -1) {
             uniforms.add(shaderGL -> shaderGL
@@ -207,7 +206,7 @@ public class Shader {
     }
 
     public void setUniformMatrix4(int uniform, boolean transpose,
-            FloatBuffer matrices) {
+            float[] matrices) {
         int uniformLocation = uniformLocations[uniform];
         if (uniformLocation != -1) {
             uniforms.add(shaderGL -> shaderGL
