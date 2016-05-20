@@ -31,7 +31,7 @@ public class ShaderCompileInformation {
             preCompileListeners = new ConcurrentHashMap<>();
     private final Map<String, Consumer<Shader>> postCompileListeners =
             new ConcurrentHashMap<>();
-    
+
     public void supplyPreCompile(Consumer<ShaderPreprocessor> listener) {
         preCompileListeners.put("Oi", listener);
     }
@@ -71,13 +71,13 @@ public class ShaderCompileInformation {
 
     public ShaderPreprocessor preCompile() {
         ShaderPreprocessor processor = new ShaderPreprocessor();
-        Streams.of(preCompileListeners.values())
-                .forEach(listener -> listener.accept(processor));
+        Streams.forEach(preCompileListeners.values(),
+                listener -> listener.accept(processor));
         return processor;
     }
 
     public void postCompile(Shader shader) {
-        Streams.of(postCompileListeners.values())
-                .forEach(listener -> listener.accept(shader));
+        Streams.forEach(postCompileListeners.values(),
+                listener -> listener.accept(shader));
     }
 }

@@ -208,6 +208,7 @@ public class TagStructure {
      * @return The value mapped to the key or an empty {@code List} if no valid
      * value was found
      */
+    @SuppressWarnings("OverlyStrongTypeCast")
     public List<TagStructure> getList(String key) {
         Object tag = tags.get(key);
         return tag instanceof StructureList ? (StructureList) tag :

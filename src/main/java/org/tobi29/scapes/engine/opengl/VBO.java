@@ -224,8 +224,7 @@ public class VBO {
         vertexID = gl.createVBO();
         gl.bindVBOArray(vertexID);
         gl.bufferVBODataArray(data);
-        Streams.of(attributes)
-                .forEach(attribute -> storeAttribute(gl, attribute));
+        Streams.forEach(attributes, attribute -> storeAttribute(gl, attribute));
         if (weak) {
             this.data = Optional.empty();
         }

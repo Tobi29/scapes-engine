@@ -154,13 +154,12 @@ public class TaskExecutor {
 
     public void shutdown() {
         if (root) {
-            Streams.of(threadPools.values())
-                    .forEach(ThreadPoolExecutor::shutdown);
+            Streams.forEach(threadPools.values(), ThreadPoolExecutor::shutdown);
             Streams.forEach(threadPools.values(), threadPool -> {
                 try {
                     if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
-                        Streams.of(Thread.getAllStackTraces().keySet())
-                                .forEach(System.out::println);
+                        Streams.forEach(Thread.getAllStackTraces().keySet(),
+                                System.out::println);
                     }
                 } catch (InterruptedException e) {
                 }

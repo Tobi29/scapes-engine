@@ -75,10 +75,9 @@ public class GuiStack {
     }
 
     public void render(GL gl, Shader shader, ScapesEngine engine) {
-        Streams.of(guis.values())
-                .forEach(gui -> gui.render(gl, shader, gui.baseSize(gl)));
-        Streams.of(guis.values())
-                .forEach(gui -> gui.renderOverlays(gl, shader));
+        Streams.forEach(guis.values(),
+                gui -> gui.render(gl, shader, gui.baseSize(gl)));
+        Streams.forEach(guis.values(), gui -> gui.renderOverlays(gl, shader));
         MatrixStack matrixStack = gl.matrixStack();
         GuiController guiController = engine.guiController();
         if (!engine.state().isMouseGrabbed()) {

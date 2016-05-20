@@ -167,6 +167,7 @@ public class TagStructureBinary {
             }
         }
 
+        @SuppressWarnings("OverlyStrongTypeCast")
         private static void analyze(TagStructure tagStructure,
                 Map<String, KeyOccurrence> keys) {
             for (Map.Entry<String, Object> entry : tagStructure
@@ -182,8 +183,8 @@ public class TagStructureBinary {
                 if (value instanceof TagStructure) {
                     analyze((TagStructure) value, keys);
                 } else if (value instanceof TagStructure.StructureList) {
-                    Streams.of((TagStructure.StructureList) value)
-                            .forEach(child -> analyze(child, keys));
+                    Streams.forEach((TagStructure.StructureList) value,
+                            child -> analyze(child, keys));
                 }
             }
         }
