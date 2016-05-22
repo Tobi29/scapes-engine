@@ -25,7 +25,6 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
@@ -350,6 +349,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         if (visible) {
             MatrixStack matrixStack = renderer.matrixStack();
             Matrix matrix = matrixStack.push();
+            renderer.offset(0x10000);
             transform(matrix, size);
             updateMesh(renderer, size);
             GuiLayoutManager layout = layoutManager(size);
@@ -364,6 +364,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                 matrixStack.pop();
             }
             matrixStack.pop();
+            renderer.offset(-0x10000);
         }
         return hasHeavy;
     }

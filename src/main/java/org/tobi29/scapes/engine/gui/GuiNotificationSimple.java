@@ -20,7 +20,7 @@ public class GuiNotificationSimple extends GuiComponentVisibleSlabHeavy {
     public GuiNotificationSimple(GuiLayoutData parent, Texture icon,
             String text, double time) {
         super(parent);
-        addHori(10, 10, 40, 40, p -> new GuiComponentIcon(p, icon));
+        addHori(10, 10, 40, 40, p -> new GuiComponentImage(p, icon));
         addHori(10, 23, -1, -1, p -> new GuiComponentText(p, text));
         speed = 1.0 / time;
     }

@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine;
 
-import org.tobi29.scapes.engine.gui.GuiComponentIcon;
+import org.tobi29.scapes.engine.gui.GuiComponentImage;
 import org.tobi29.scapes.engine.gui.GuiState;
 import org.tobi29.scapes.engine.gui.GuiStyle;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
@@ -26,7 +26,7 @@ public class GameStateStartup extends GameState {
     private final GameState nextState;
     private final String image;
     private final double scale;
-    private GuiComponentIcon icon;
+    private GuiComponentImage icon;
     private double time;
     private int warmUp;
 
@@ -79,7 +79,7 @@ public class GameStateStartup extends GameState {
             int h = (int) (540 * scale);
             spacer();
             icon = addHori((960 - w) / 2, (540 - h) / 2, w, h,
-                    p -> new GuiComponentIcon(p, texture));
+                    p -> new GuiComponentImage(p, texture));
             spacer();
         }
     }

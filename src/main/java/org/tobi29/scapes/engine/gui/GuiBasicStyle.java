@@ -29,7 +29,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void pane(GuiRenderer renderer, Vector2 size) {
-        renderer.texture(textures.empty());
+        renderer.texture(textures.empty(), 0);
         GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.0f, 0.0f, 0.0f, 0.2f);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
@@ -38,7 +38,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void button(GuiRenderer renderer, Vector2 size, boolean hover) {
-        renderer.texture(textures.empty());
+        renderer.texture(textures.empty(), 0);
         double a;
         if (hover) {
             a = 0.8f;
@@ -53,7 +53,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void border(GuiRenderer renderer, Vector2 size) {
-        renderer.texture(textures.empty());
+        renderer.texture(textures.empty(), 0);
         GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.0f, 0.0f, 0.0f, 0.2f);
     }
@@ -61,7 +61,7 @@ public class GuiBasicStyle implements GuiStyle {
     @Override
     public void slider(GuiRenderer renderer, Vector2 size, boolean horizontal,
             double value, double sliderSize, boolean hover) {
-        renderer.texture(textures.empty());
+        renderer.texture(textures.empty(), 0);
         GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.0f, 0.0f, 0.0f, 0.2f);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
@@ -86,7 +86,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void separator(GuiRenderer renderer, Vector2 size) {
-        renderer.texture(textures.empty());
+        renderer.texture(textures.empty(), 0);
         GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.0f, 0.0f, 0.0f, 0.2f);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),

@@ -71,7 +71,7 @@ public class FontRenderer {
                         0.125f) * page.tileSize;
                 float tw = page.tileSize * letterWidth * 0.75f;
                 float th = page.tileSize * 0.75f;
-                renderer.texture(page.texture);
+                renderer.texture(page.texture, 0);
                 GuiUtils.rectangle(renderer, xxx, yyy, xxx + w, yyy + height,
                         tx, ty, tx + tw, ty + th, r, g, b, a);
             };
@@ -86,7 +86,7 @@ public class FontRenderer {
                         page.tileSize;
                 float tw = page.tileSize;
                 float th = page.tileSize;
-                renderer.texture(page.texture);
+                renderer.texture(page.texture, 0);
                 GuiUtils.rectangle(renderer, xxx, yyy, xxx + w, yyy + h, tx, ty,
                         tx + tw, ty + th, r, g, b, a);
             };

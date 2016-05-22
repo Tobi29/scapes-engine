@@ -19,25 +19,25 @@ import java8.util.Optional;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
-public class GuiComponentIcon extends GuiComponent {
+public class GuiComponentImage extends GuiComponent {
     private float r = 1.0f, g = 1.0f, b = 1.0f, a = 1.0f;
     private Optional<Texture> texture;
 
-    public GuiComponentIcon(GuiLayoutData parent) {
+    public GuiComponentImage(GuiLayoutData parent) {
         this(parent, Optional.empty());
     }
 
-    public GuiComponentIcon(GuiLayoutData parent, String asset) {
+    public GuiComponentImage(GuiLayoutData parent, String asset) {
         this(parent);
         texture = Optional.of(
                 gui.style().engine().graphics().textures().get(asset));
     }
 
-    public GuiComponentIcon(GuiLayoutData parent, Texture texture) {
+    public GuiComponentImage(GuiLayoutData parent, Texture texture) {
         this(parent, Optional.of(texture));
     }
 
-    public GuiComponentIcon(GuiLayoutData parent, Optional<Texture> texture) {
+    public GuiComponentImage(GuiLayoutData parent, Optional<Texture> texture) {
         super(parent);
         this.texture = texture;
     }
@@ -62,6 +62,7 @@ public class GuiComponentIcon extends GuiComponent {
 
     @Override
     protected void updateMesh(GuiRenderer renderer, Vector2 size) {
+        gui.style().border(renderer, size);
         Optional<Texture> texture = this.texture;
         if (texture.isPresent()) {
             renderer.texture(texture.get(), 0);
