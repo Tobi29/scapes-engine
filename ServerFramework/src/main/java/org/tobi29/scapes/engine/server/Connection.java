@@ -26,5 +26,7 @@ public interface Connection {
 
     boolean isClosed();
 
+    void requestClose();
+
     void close() throws IOException;
 }

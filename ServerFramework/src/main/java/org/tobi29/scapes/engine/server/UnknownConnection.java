@@ -92,6 +92,10 @@ public class UnknownConnection implements Connection {
     }
 
     @Override
+    public void requestClose() {
+    }
+
+    @Override
     public void close() throws IOException {
         if (state != State.CONNECTED) {
             channel.close();

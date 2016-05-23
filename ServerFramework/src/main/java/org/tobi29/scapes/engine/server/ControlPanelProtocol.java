@@ -152,15 +152,16 @@ public class ControlPanelProtocol implements Connection {
     }
 
     @Override
+    public void requestClose() {
+        channel.requestClose();
+    }
+
+    @Override
     public void close() throws IOException {
         while (!closeHooks.isEmpty()) {
             closeHooks.poll().run();
         }
         channel.close();
-    }
-
-    public void requestClose() {
-        channel.requestClose();
     }
 
     public boolean tick() throws IOException {

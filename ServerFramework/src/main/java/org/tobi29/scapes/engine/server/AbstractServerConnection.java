@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.server;
 import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
@@ -40,7 +41,8 @@ public abstract class AbstractServerConnection {
     private final List<NetWorkerThread> workers = new ArrayList<>();
     private final byte[] connectionHeader;
     private final SSLHandle ssl;
-    private final List<Joiner> joiners = new ArrayList<>();
+    private final List<Joiner> workerJoiners = new ArrayList<>();
+    private Joiner connectJoiner;
 
     protected AbstractServerConnection(TaskExecutor taskExecutor,
             byte[] connectionHeader, SSLHandle ssl) {
@@ -53,7 +55,8 @@ public abstract class AbstractServerConnection {
         LOGGER.info("Starting worker {} threads...", workerCount);
         for (int i = 0; i < workerCount; i++) {
             NetWorkerThread worker = new NetWorkerThread();
-            joiners.add(taskExecutor.runTask(worker, "Connection-Worker-" + i));
+            workerJoiners.add(taskExecutor
+                    .runTask(worker, "Connection-Worker-" + i));
             workers.add(worker);
         }
     }
@@ -70,7 +73,7 @@ public abstract class AbstractServerConnection {
         ServerSocketChannel channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
         channel.socket().bind(address);
-        joiners.add(taskExecutor.runTask(joiner -> {
+        connectJoiner = taskExecutor.runTask(joiner -> {
             try {
                 while (!joiner.marked()) {
                     SocketChannel client = channel.accept();
@@ -103,7 +106,7 @@ public abstract class AbstractServerConnection {
             } finally {
                 channel.close();
             }
-        }, "Socket"));
+        }, "Socket");
         return (InetSocketAddress) channel.socket().getLocalSocketAddress();
     }
 
@@ -125,7 +128,10 @@ public abstract class AbstractServerConnection {
     }
 
     public void stop() {
-        new Joiner(joiners).join();
+        if (connectJoiner != null) {
+            connectJoiner.join();
+        }
+        new Joiner(workerJoiners).join();
     }
 
     protected abstract Optional<Connection> newConnection(
@@ -150,7 +156,7 @@ public abstract class AbstractServerConnection {
         @Override
         public void run(Joiner.Joinable joiner) {
             try {
-                while (!joiner.marked() || !connections.isEmpty()) {
+                while (!joiner.marked()) {
                     while (!connectionQueue.isEmpty()) {
                         Connection connection = connectionQueue.poll();
                         connections.add(connection);
@@ -165,10 +171,24 @@ public abstract class AbstractServerConnection {
                         }
                     }
                 }
+                Streams.forEach(connections, Connection::requestClose);
                 long stopTimeout = System.nanoTime();
                 while (!connections.isEmpty() &&
                         System.nanoTime() - stopTimeout < 10000000000L) {
-                    process();
+                    while (!connectionQueue.isEmpty()) {
+                        Connection connection = connectionQueue.poll();
+                        connections.add(connection);
+                        connection.requestClose();
+                    }
+                    if (!process() && !connections.isEmpty()) {
+                        try {
+                            selector.select(10);
+                            selector.selectedKeys().clear();
+                        } catch (IOException e) {
+                            LOGGER.warn("Error when waiting for events: {}",
+                                    e.toString());
+                        }
+                    }
                 }
             } finally {
                 for (Connection connection : connections) {

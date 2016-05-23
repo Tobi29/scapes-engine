@@ -64,6 +64,10 @@ public class GetInfoConnection implements Connection {
     }
 
     @Override
+    public void requestClose() {
+    }
+
+    @Override
     public void close() throws IOException {
         channel.close();
     }
