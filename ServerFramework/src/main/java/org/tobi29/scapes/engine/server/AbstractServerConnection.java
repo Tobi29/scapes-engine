@@ -81,6 +81,12 @@ public abstract class AbstractServerConnection {
                         joiner.sleep(100);
                     } else {
                         client.configureBlocking(false);
+                        Optional<String> result = accept(client);
+                        if (result.isPresent()) {
+                            // Logged as trace to avoid spam
+                            LOGGER.trace("Denied connection: {}", result.get());
+                            continue;
+                        }
                         int load = Integer.MAX_VALUE;
                         NetWorkerThread bestWorker = null;
                         for (NetWorkerThread worker : workers) {
@@ -133,6 +139,8 @@ public abstract class AbstractServerConnection {
         }
         new Joiner(workerJoiners).join();
     }
+
+    protected abstract Optional<String> accept(SocketChannel channel);
 
     protected abstract Optional<Connection> newConnection(
             PacketBundleChannel channel, byte id) throws IOException;
