@@ -16,22 +16,24 @@
 package org.tobi29.scapes.engine.utils.task;
 
 import java8.util.function.LongSupplier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.utils.Crashable;
 import org.tobi29.scapes.engine.utils.Streams;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskExecutor {
+    private final Logger LOGGER = LoggerFactory.getLogger(TaskExecutor.class);
     private final List<TaskWorker> tasks = new ArrayList<>();
-    private final Map<Priority, ThreadPoolExecutor> threadPools;
+    private final AtomicInteger threadCount = new AtomicInteger();
+    private final ThreadPoolExecutor taskPool;
     private final Crashable crashHandler;
     private final String name;
     private final boolean root;
@@ -40,18 +42,17 @@ public class TaskExecutor {
         crashHandler = parent.crashHandler;
         this.name = parent.name + name + '-';
         root = false;
-        threadPools = parent.threadPools;
+        taskPool = parent.taskPool;
     }
 
     public TaskExecutor(Crashable crashHandler, String name) {
         this.crashHandler = crashHandler;
         this.name = name + '-';
         root = true;
-        threadPools = new EnumMap<>(Priority.class);
-        Streams.forEach(Priority.values(), priority -> threadPools.put(priority,
-                new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L,
-                        TimeUnit.SECONDS, new SynchronousQueue<>(),
-                        new PriorityThreadFactory(priority.priority))));
+        int taskPoolSize = Runtime.getRuntime().availableProcessors();
+        taskPool = new ThreadPoolExecutor(taskPoolSize, taskPoolSize, 60L,
+                TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+                new PriorityThreadFactory(Thread.MIN_PRIORITY));
     }
 
     public void tick() {
@@ -104,20 +105,24 @@ public class TaskExecutor {
     }
 
     public Joiner runTask(ASyncTask task, String name, Priority priority) {
-        ThreadWrapper thread = new ThreadWrapper(task, this.name + name);
-        threadPools.get(priority).execute(thread);
-        return thread.joinable.joiner();
+        threadCount.incrementAndGet();
+        ThreadWrapper wrapper = new ThreadWrapper(task);
+        Thread thread = new Thread(wrapper);
+        thread.setName(this.name + name);
+        thread.setPriority(priority.priority);
+        thread.start();
+        return wrapper.joinable.joiner();
     }
 
     public void runTask(Runnable task, String name) {
-        runTask(task, name, Priority.LOW);
-    }
-
-    public void runTask(Runnable task, String name, Priority priority) {
-        threadPools.get(priority).execute(() -> {
-            Thread thread = Thread.currentThread();
-            thread.setName(name);
+        taskPool.execute(() -> {
+            long time = System.nanoTime();
             task.run();
+            time = System.nanoTime() - time;
+            if (time > 10000000000L) {
+                LOGGER.warn("Task took {} seconds to complete: {}",
+                        time / 1000000000, name);
+            }
         });
     }
 
@@ -154,16 +159,22 @@ public class TaskExecutor {
 
     public void shutdown() {
         if (root) {
-            Streams.forEach(threadPools.values(), ThreadPoolExecutor::shutdown);
-            Streams.forEach(threadPools.values(), threadPool -> {
-                try {
-                    if (!threadPool.awaitTermination(10, TimeUnit.SECONDS)) {
-                        Streams.forEach(Thread.getAllStackTraces().keySet(),
-                                System.out::println);
-                    }
-                } catch (InterruptedException e) {
+            taskPool.shutdown();
+            try {
+                if (!taskPool.awaitTermination(10, TimeUnit.SECONDS)) {
+                    Streams.forEach(Thread.getAllStackTraces().keySet(),
+                            System.out::println);
                 }
-            });
+            } catch (InterruptedException e) {
+            }
+            synchronized (threadCount) {
+                while (threadCount.get() > 0) {
+                    try {
+                        threadCount.wait();
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
         }
     }
 
@@ -200,12 +211,10 @@ public class TaskExecutor {
 
     private class ThreadWrapper implements Runnable {
         private final ASyncTask task;
-        private final String name;
         private final Joiner.Joinable joinable;
 
-        protected ThreadWrapper(ASyncTask task, String name) {
+        protected ThreadWrapper(ASyncTask task) {
             this.task = task;
-            this.name = name;
             joinable = new Joiner.Joinable();
         }
 
@@ -213,13 +222,15 @@ public class TaskExecutor {
         @Override
         public void run() {
             try {
-                Thread thread = Thread.currentThread();
-                thread.setName(name);
                 task.run(joinable);
             } catch (Throwable e) { // Yes this catches ThreadDeath, so don't use it
                 crashHandler.crash(e);
             } finally {
                 joinable.join();
+                synchronized (threadCount) {
+                    threadCount.decrementAndGet();
+                    threadCount.notifyAll();
+                }
             }
         }
     }
