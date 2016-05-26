@@ -117,7 +117,7 @@ class ScapesEngineApplication implements Plugin<Project> {
         target.afterEvaluate {
             runTask.classpath = target.sourceSets.main.runtimeClasspath
         }
-        runTask.jvmArgs "-Xms2048M", "-Xmx2048M", "-XX:+UseG1GC",
+        runTask.jvmArgs "-Xms64M", "-Xmx2048M", "-XX:+UseG1GC",
                 "-XX:MaxGCPauseMillis=1"
         if (target.rootProject.hasProperty("runArgs")) {
             runTask.args Eval.me(target.rootProject.runArgs)
@@ -316,7 +316,7 @@ class ScapesEngineApplication implements Plugin<Project> {
         programTask.launch4j = target.rootProject.
                 file("ScapesEngine/resources/Launch4j/launch4j.jar")
         programTask.icon = target.file("project/Icon.ico")
-        programTask.exeMemoryMin = 1024
+        programTask.exeMemoryMin = 64
         programTask.exeMemoryMax = 2048
         programTask.exeType = "gui"
         programTask.runInAppData = true
@@ -336,7 +336,7 @@ class ScapesEngineApplication implements Plugin<Project> {
         programCmdTask.launch4j = target.rootProject.
                 file("ScapesEngine/resources/Launch4j/launch4j.jar")
         programCmdTask.icon = target.file("project/Icon.ico")
-        programCmdTask.exeMemoryMin = 1024
+        programCmdTask.exeMemoryMin = 64
         programCmdTask.exeMemoryMax = 2048
         programCmdTask.exeType = "console"
         programCmdTask.runInAppData = false
@@ -666,7 +666,7 @@ class AppBundlerTask extends DefaultTask {
             arch(name: "x86_64")
             runtime(dir: jre.absolutePath + "/Contents/Home")
             option(value: "-XstartOnFirstThread")
-            option(value: "-Xms1024M")
+            option(value: "-Xms64M")
             option(value: "-Xmx2048M")
             option(value: "-XX:+UseG1GC")
             option(value: "-XX:MaxGCPauseMillis=1")
