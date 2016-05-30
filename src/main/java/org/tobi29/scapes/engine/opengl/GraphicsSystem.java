@@ -130,7 +130,7 @@ public class GraphicsSystem {
                     FilePath path = engine.home().resolve("screenshots/" +
                             System.currentTimeMillis() +
                             ".png");
-                    engine.taskExecutor().runTask(joiner -> {
+                    engine.taskExecutor().runTask(() -> {
                         try {
                             FileUtil.write(path, stream -> PNG
                                     .encode(image, stream, 9, false));
@@ -138,7 +138,7 @@ public class GraphicsSystem {
                             LOGGER.error("Error saving screenshot: {}",
                                     e.toString());
                         }
-                    }, "Screenshot-Writer");
+                    }, "Write-Screenshot");
                 }
             }
             try (Profiler.C ignored = Profiler.section("Cleanup")) {
