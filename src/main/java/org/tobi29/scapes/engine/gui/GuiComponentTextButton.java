@@ -15,9 +15,6 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.utils.math.vector.Vector2;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
-
 public class GuiComponentTextButton extends GuiComponentButton {
     protected final GuiComponentText text;
 
@@ -43,11 +40,6 @@ public class GuiComponentTextButton extends GuiComponentButton {
 
     public void setTextFilter(TextFilter textFilter) {
         text.setTextFilter(textFilter::filter);
-    }
-
-    @Override
-    protected GuiLayoutManager newLayoutManager(Vector2 size) {
-        return new GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components);
     }
 
     public interface TextFilter {

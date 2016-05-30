@@ -156,7 +156,7 @@ public abstract class GameState {
                 (float) engine.container().containerWidth() /
                         engine.container().containerHeight() * 540.0f, 540.0f);
         Shader shader = gl.shaders().get("Engine:shader/Gui", gl);
-        engine.guiStack().render(gl, shader, engine);
+        engine.guiStack().render(gl, shader, engine, delta);
         gl.checkError("Gui-Rendering");
         scene.postRender(gl, delta);
         gl.checkError("Post-Render");

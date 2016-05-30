@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.gui;
 
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.VAO;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
@@ -31,7 +32,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     }
 
     @Override
-    protected void render(GL gl, Shader shader, Vector2 size) {
+    protected void render(GL gl, Shader shader, Vector2 size, double delta) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
@@ -46,7 +47,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
                 mesh.b.bind(gl);
                 mesh.a.render(gl, shader);
             });
-            renderComponent(gl, shader, size.doubleX(), size.doubleY());
+            renderComponent(gl, shader, size, delta);
             if (hasHeavyChild) {
                 GuiLayoutManager layout = layoutManager(size);
                 for (Triple<GuiComponent, Vector2, Vector2> component : layout
@@ -60,7 +61,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
                         Matrix childMatrix = matrixStack.push();
                         childMatrix.translate(component.b.floatX(),
                                 component.b.floatY(), 0.0f);
-                        component.a.render(gl, shader, component.c);
+                        component.a.render(gl, shader, component.c, delta);
                         matrixStack.pop();
                     }
                 }
@@ -100,12 +101,24 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     }
 
     @Override
+    protected void update(ScapesEngine engine, double delta) {
+        super.update(engine, delta);
+        if (visible) {
+            updateComponent(engine, delta);
+        }
+        parent.parent().ifPresent(GuiComponent::activeUpdate);
+    }
+
+    @Override
     public void dirty() {
         dirty.set(true);
     }
 
-    protected void renderComponent(GL gl, Shader shader, double width,
-            double height) {
+    protected void updateComponent(ScapesEngine engine, double delta) {
+    }
+
+    protected void renderComponent(GL gl, Shader shader, Vector2 size,
+            double delta) {
     }
 
     protected void renderOverlay(GL gl, Shader shader) {

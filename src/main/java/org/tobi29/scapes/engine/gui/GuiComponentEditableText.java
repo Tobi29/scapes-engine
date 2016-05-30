@@ -143,9 +143,9 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
     }
 
     @Override
-    public void renderComponent(GL gl, Shader shader, double width,
-            double height) {
-        super.renderComponent(gl, shader, width, height);
+    public void renderComponent(GL gl, Shader shader, Vector2 size,
+            double delta) {
+        super.renderComponent(gl, shader, size, delta);
         if (active) {
             if (System.currentTimeMillis() / 600 % 2 == 0) {
                 Streams.forEach(vaoCursor, mesh -> {

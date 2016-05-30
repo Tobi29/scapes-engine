@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class GuiComponent implements Comparable<GuiComponent> {
@@ -67,6 +68,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     protected final Set<GuiComponent> components =
             new ConcurrentSkipListSet<>();
     private final long uid = UID_COUNTER.getAndIncrement();
+    private final AtomicBoolean hasActiveChild = new AtomicBoolean(true);
     protected boolean visible = true, hover, hovering, removing;
 
     protected GuiComponent(GuiLayoutData parent) {
@@ -293,6 +295,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
             listener.accept(hoverEvent, engine);
             success = true;
         }
+        parent.parent().ifPresent(GuiComponent::activeUpdate);
         return success;
     }
 
@@ -308,7 +311,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return false;
     }
 
-    protected void render(GL gl, Shader shader, Vector2 size) {
+    protected void render(GL gl, Shader shader, Vector2 size, double delta) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
@@ -325,7 +328,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                     Matrix childMatrix = matrixStack.push();
                     childMatrix.translate(component.b.floatX(),
                             component.b.floatY(), 0.0f);
-                    component.a.render(gl, shader, component.c);
+                    component.a.render(gl, shader, component.c, delta);
                     matrixStack.pop();
                 }
             }
@@ -379,7 +382,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     protected void update(ScapesEngine engine, double delta) {
         if (visible) {
-            updateComponent(engine, delta);
             if (hovering && !hover) {
                 hovering = false;
                 for (BiConsumer<GuiComponentHoverEvent, ScapesEngine> listener : hovers) {
@@ -394,9 +396,18 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                 }
             }
             if (hover) {
+                parent.parent().ifPresent(GuiComponent::activeUpdate);
                 hover = false;
             }
-            updateChildren(engine, delta);
+            if (hasActiveChild.getAndSet(false)) {
+                Streams.forEach(components, component -> {
+                    if (component.removing) {
+                        remove(component);
+                    } else {
+                        component.update(engine, delta);
+                    }
+                });
+            }
         }
     }
 
@@ -405,6 +416,11 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     public void dirty() {
         parent.parent().ifPresent(GuiComponent::dirty);
+    }
+
+    protected void activeUpdate() {
+        hasActiveChild.set(true);
+        parent.parent().ifPresent(GuiComponent::activeUpdate);
     }
 
     protected Optional<GuiComponent> fireEvent(GuiComponentEvent event,
@@ -507,9 +523,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return gui.calculateSize(gui.baseSize(engine), this);
     }
 
-    protected void updateComponent(ScapesEngine engine, double delta) {
-    }
-
     protected GuiComponentEvent applyTransform(GuiComponentEvent event,
             Triple<GuiComponent, Vector2, Vector2> component) {
         Vector3 pos = applyTransform(event.x() - component.b.doubleX(),
@@ -572,16 +585,6 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         Streams.forEach(components, this::remove);
     }
 
-    protected void updateChildren(ScapesEngine engine, double delta) {
-        Streams.forEach(components, component -> {
-            if (component.removing) {
-                remove(component);
-            } else {
-                component.update(engine, delta);
-            }
-        });
-    }
-
     protected GuiLayoutManager layoutManager(Vector2 size) {
         if (components.isEmpty()) {
             return GuiLayoutManagerEmpty.INSTANCE;
@@ -595,6 +598,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
 
     protected void append(GuiComponent component) {
         components.add(component);
+        activeUpdate();
         dirty();
     }
 

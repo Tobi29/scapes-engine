@@ -1,7 +1,8 @@
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
+import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
@@ -26,7 +27,8 @@ public class GuiNotificationSimple extends GuiComponentVisibleSlabHeavy {
     }
 
     @Override
-    public void updateComponent(ScapesEngine engine, double delta) {
+    public void renderComponent(GL gl, Shader shader, Vector2 size,
+            double delta) {
         progress += speed * delta;
         if (progress > 1.1) {
             progress = 1.1;

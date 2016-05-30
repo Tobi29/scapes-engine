@@ -58,7 +58,7 @@ public class GuiWidgetDebugValues extends GuiComponentWidget {
         return elements.entrySet();
     }
 
-    public static final class Element extends GuiComponentGroupSlab {
+    public static final class Element extends GuiComponentGroupSlabHeavy {
         private final GuiComponentText value;
         private final AtomicReference<String> text = new AtomicReference<>();
 

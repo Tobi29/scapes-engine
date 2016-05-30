@@ -52,6 +52,10 @@ public class GuiComponentIcon extends GuiComponent {
         dirty();
     }
 
+    public Optional<Texture> texture() {
+        return texture;
+    }
+
     public void setColor(float r, float g, float b, float a) {
         this.r = r;
         this.g = g;

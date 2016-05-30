@@ -74,9 +74,10 @@ public class GuiStack {
         return Collections.emptySet();
     }
 
-    public void render(GL gl, Shader shader, ScapesEngine engine) {
+    public void render(GL gl, Shader shader, ScapesEngine engine,
+            double delta) {
         Streams.forEach(guis.values(),
-                gui -> gui.render(gl, shader, gui.baseSize(gl)));
+                gui -> gui.render(gl, shader, gui.baseSize(gl), delta));
         Streams.forEach(guis.values(), gui -> gui.renderOverlays(gl, shader));
         MatrixStack matrixStack = gl.matrixStack();
         GuiController guiController = engine.guiController();

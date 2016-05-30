@@ -19,7 +19,7 @@ import org.tobi29.scapes.engine.ScapesEngine;
 
 import java.util.Arrays;
 
-public class GuiComponentTextField extends GuiComponentButton {
+public class GuiComponentTextField extends GuiComponentButtonHeavy {
     protected final GuiComponentEditableText text;
     protected final boolean major;
 
