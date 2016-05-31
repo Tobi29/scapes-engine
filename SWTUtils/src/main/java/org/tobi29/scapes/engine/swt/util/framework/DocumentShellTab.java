@@ -70,12 +70,10 @@ class DocumentShellTab extends DocumentShell {
             if (composites.isEmpty()) {
                 dispose();
             } else if (composites.size() == 1 && hideSingleTab) {
-                DocumentComposite directComposite =
-                        new DocumentComposite(this, SWT.NONE, this);
-                directComposite.setDocument(composites.get(0).document);
-                this.directComposite = Optional.of(directComposite);
+                Document document = composites.get(0).removeDocument();
                 tabFolder.dispose();
                 this.tabFolder = Optional.empty();
+                item(document);
                 layout();
                 updateTab();
             }

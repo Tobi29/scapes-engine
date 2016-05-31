@@ -18,13 +18,13 @@ class DocumentShellCTab extends DocumentShell {
         super(display, style, application, hideSingleTab);
     }
 
-    private static Optional<DocumentCompositeCTab> tab(CTabItem tabItem) {
+    private static DocumentCompositeCTab tab(CTabItem tabItem) {
         Control control = tabItem.getControl();
         if (!(control instanceof DocumentCompositeCTab)) {
             throw new IllegalStateException(
                     "Non document composite in tab folder");
         }
-        return Optional.of((DocumentCompositeCTab) control);
+        return (DocumentCompositeCTab) control;
     }
 
     @Override
@@ -62,17 +62,14 @@ class DocumentShellCTab extends DocumentShell {
             List<DocumentCompositeCTab> composites =
                     Arrays.stream(tabFolder.getItems())
                             .map(DocumentShellCTab::tab)
-                            .filter(Optional::isPresent).map(Optional::get)
                             .collect(Collectors.toList());
             if (composites.isEmpty()) {
                 dispose();
             } else if (composites.size() == 1 && hideSingleTab) {
-                DocumentComposite directComposite =
-                        new DocumentComposite(this, SWT.NONE, this);
-                directComposite.setDocument(composites.get(0).document);
-                this.directComposite = Optional.of(directComposite);
+                Document document = composites.get(0).removeDocument();
                 tabFolder.dispose();
                 this.tabFolder = Optional.empty();
+                item(document);
                 layout();
                 updateTab();
             }

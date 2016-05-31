@@ -31,22 +31,24 @@ class DocumentComposite extends Composite {
     }
 
     void setDocument(Document document) {
-        if (document == null) {
-            throw new IllegalStateException("Document removed");
+        if (this.document != null) {
+            removeDocument();
         }
-        removeDocument();
         this.document = document;
         populate();
         shell.application.composites.put(document, this);
     }
 
-    void removeDocument() {
+    Document removeDocument() {
         if (document == null) {
-            return;
+            throw new IllegalStateException("Document removed");
         }
         document.destroy();
         shell.application.composites.remove(document);
-        document = null;
+        Document document = this.document;
+        this.document = null;
+        updateStamp++;
+        return document;
     }
 
     protected void populate() {
@@ -71,6 +73,9 @@ class DocumentComposite extends Composite {
             return;
         }
         document.update(this, menu, shell.application);
+        if (updateStamp < this.updateStamp || isDisposed()) {
+            return;
+        }
         int updateTime = document.updateTime();
         if (updateTime >= 0 && !isDisposed()) {
             long nextStamp = ++this.updateStamp;
