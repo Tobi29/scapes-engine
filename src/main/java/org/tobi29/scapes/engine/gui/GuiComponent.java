@@ -311,7 +311,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
         return false;
     }
 
-    protected void render(GL gl, Shader shader, Vector2 size, double delta) {
+    protected void render(GL gl, Shader shader, Vector2 size, Vector2 pixelSize,
+            double delta) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
@@ -328,7 +329,7 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                     Matrix childMatrix = matrixStack.push();
                     childMatrix.translate(component.b.floatX(),
                             component.b.floatY(), 0.0f);
-                    component.a.render(gl, shader, component.c, delta);
+                    component.a.render(gl, shader, component.c, pixelSize, delta);
                     matrixStack.pop();
                 }
             }

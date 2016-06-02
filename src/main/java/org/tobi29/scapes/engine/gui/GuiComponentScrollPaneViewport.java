@@ -68,7 +68,8 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPaneHeavy {
     }
 
     @Override
-    public void render(GL gl, Shader shader, Vector2 size, double delta) {
+    public void render(GL gl, Shader shader, Vector2 size, Vector2 pixelSize,
+            double delta) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.current();
@@ -77,7 +78,7 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPaneHeavy {
                     new Vector3d(size.doubleX(), size.doubleY(), 0.0));
             gl.enableScissor(start.intX(), start.intY(),
                     end.intX() - start.intX(), end.intY() - start.intY());
-            super.render(gl, shader, size, delta);
+            super.render(gl, shader, size, pixelSize, delta);
             gl.disableScissor();
         }
     }

@@ -10,6 +10,8 @@ import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.utils.Streams;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -76,8 +78,10 @@ public class GuiStack {
 
     public void render(GL gl, Shader shader, ScapesEngine engine,
             double delta) {
-        Streams.forEach(guis.values(),
-                gui -> gui.render(gl, shader, gui.baseSize(gl), delta));
+        Vector2 pixelSize = new Vector2d(540.0 / gl.contentWidth(),
+                540.0 / gl.contentHeight());
+        Streams.forEach(guis.values(), gui -> gui
+                .render(gl, shader, gui.baseSize(gl), pixelSize, delta));
         Streams.forEach(guis.values(), gui -> gui.renderOverlays(gl, shader));
         MatrixStack matrixStack = gl.matrixStack();
         GuiController guiController = engine.guiController();

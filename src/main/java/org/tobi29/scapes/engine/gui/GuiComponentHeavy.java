@@ -24,7 +24,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
             ThreadLocalUtil.of(GuiRenderer::new);
     private final AtomicBoolean dirty = new AtomicBoolean(true);
     protected List<Pair<VAO, Texture>> meshes = Collections.emptyList();
-    private Vector2 lastSize = Vector2d.ZERO;
+    private Vector2 lastSize = Vector2d.ZERO, lastPixelSize = Vector2d.ZERO;
     private boolean hasHeavyChild;
 
     protected GuiComponentHeavy(GuiLayoutData parent) {
@@ -32,13 +32,17 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     }
 
     @Override
-    protected void render(GL gl, Shader shader, Vector2 size, double delta) {
+    protected void render(GL gl, Shader shader, Vector2 size, Vector2 pixelSize,
+            double delta) {
         if (visible) {
             MatrixStack matrixStack = gl.matrixStack();
             Matrix matrix = matrixStack.push();
             transform(matrix, size);
-            if (dirty.getAndSet(false) || !lastSize.equals(size)) {
+            if (dirty.getAndSet(false) || !lastSize.equals(size) ||
+                    !lastPixelSize.equals(pixelSize)) {
+                lastPixelSize = pixelSize;
                 GuiRenderer renderer = RENDERER.get();
+                renderer.setPixelSize(pixelSize);
                 hasHeavyChild = render(renderer, size);
                 meshes = renderer.finish();
                 lastSize = size;
@@ -61,7 +65,8 @@ public abstract class GuiComponentHeavy extends GuiComponent {
                         Matrix childMatrix = matrixStack.push();
                         childMatrix.translate(component.b.floatX(),
                                 component.b.floatY(), 0.0f);
-                        component.a.render(gl, shader, component.c, delta);
+                        component.a.render(gl, shader, component.c, pixelSize,
+                                delta);
                         matrixStack.pop();
                     }
                 }
