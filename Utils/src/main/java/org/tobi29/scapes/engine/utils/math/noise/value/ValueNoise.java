@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.noise.value;
 
-public abstract class ValueNoise {
-    public double noiseOctave(double x, double y, int octaves, double frequency,
-            double amplitude) {
+public interface ValueNoise {
+    default double noiseOctave(double x, double y, int octaves,
+            double frequency, double amplitude) {
         double out = 0, cFrequency = 1, cAmplitude = 1, normal = 0;
         for (int i = 0; i < octaves;
                 i++, cFrequency *= frequency, cAmplitude *= amplitude) {
@@ -28,9 +27,9 @@ public abstract class ValueNoise {
         return out / normal;
     }
 
-    public abstract double noise(double x, double y);
+    double noise(double x, double y);
 
-    public double noiseOctave(double x, double y, double z, int octaves,
+    default double noiseOctave(double x, double y, double z, int octaves,
             double frequency, double amplitude) {
         double out = 0, cFrequency = 1, cAmplitude = 1, normal = 0;
         for (int i = 0; i < octaves;
@@ -42,5 +41,5 @@ public abstract class ValueNoise {
         return out / normal;
     }
 
-    public abstract double noise(double x, double y, double z);
+    double noise(double x, double y, double z);
 }

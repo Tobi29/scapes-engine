@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.noise.value;
 
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.util.Random;
 
-public class PerlinNoise extends ValueNoise {
+public class PerlinNoise implements ValueNoise {
     private static final int[][] GRAD_3 =
             {{1, 1, 0}, {-1, 1, 0}, {1, -1, 0}, {-1, -1, 0}, {1, 0, 1},
                     {-1, 0, 1}, {1, 0, -1}, {-1, 0, -1}, {0, 1, 1}, {0, -1, 1},

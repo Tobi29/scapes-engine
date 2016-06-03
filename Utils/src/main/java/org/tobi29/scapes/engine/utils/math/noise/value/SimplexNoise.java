@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.math.noise.value;
 
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.util.Random;
 
-public class SimplexNoise extends ValueNoise {
+public class SimplexNoise implements ValueNoise {
     private static final double F2 = 0.5 * (1.7320508075688772 - 1.0);
     private static final double G2 = (3.0 - 1.7320508075688772) / 6.0;
     private static final double G22 = (3.0 - 1.7320508075688772) / 3.0;
