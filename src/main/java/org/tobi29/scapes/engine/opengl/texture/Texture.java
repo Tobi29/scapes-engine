@@ -15,21 +15,14 @@
  */
 package org.tobi29.scapes.engine.opengl.texture;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.utils.graphics.MipMapGenerator;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class Texture {
-    protected static final List<Texture> TEXTURES = new ArrayList<>();
-    private static final Logger LOGGER = LoggerFactory.getLogger(Texture.class);
-    private static int disposeOffset;
     protected final ScapesEngine engine;
     protected final int mipmaps;
     protected boolean dirtyFilter = true;
@@ -38,8 +31,9 @@ public abstract class Texture {
             TextureFilter.NEAREST;
     protected TextureWrap wrapS = TextureWrap.REPEAT, wrapT =
             TextureWrap.REPEAT;
-    protected boolean markAsDisposed;
+    protected boolean stored,markAsDisposed;
     protected long used;
+    protected Runnable detach;
     private ByteBuffer[] buffers;
 
     protected Texture(ScapesEngine engine, int width, int height,
@@ -54,37 +48,6 @@ public abstract class Texture {
         this.wrapS = wrapS;
         this.wrapT = wrapT;
         setBuffer(buffer);
-    }
-
-    @OpenGLFunction
-    public static void disposeUnused(GL gl) {
-        long time = System.currentTimeMillis();
-        for (int i = disposeOffset; i < TEXTURES.size(); i += 16) {
-            Texture texture = TEXTURES.get(i);
-            assert texture.textureID != 0;
-            if (texture.markAsDisposed || !texture.used(time)) {
-                texture.dispose(gl);
-            }
-        }
-        disposeOffset++;
-        disposeOffset &= 15;
-    }
-
-    @OpenGLFunction
-    public static void disposeAll(GL gl) {
-        while (!TEXTURES.isEmpty()) {
-            TEXTURES.get(0).dispose(gl);
-        }
-    }
-
-    public static void resetAll() {
-        while (!TEXTURES.isEmpty()) {
-            TEXTURES.get(0).reset();
-        }
-    }
-
-    public static int textureCount() {
-        return TEXTURES.size();
     }
 
     public ScapesEngine engine() {
@@ -106,7 +69,7 @@ public abstract class Texture {
 
     @OpenGLFunction
     public void ensureStored(GL gl) {
-        if (textureID == 0) {
+        if (!stored) {
             store(gl);
         }
         used = System.currentTimeMillis();
@@ -114,12 +77,13 @@ public abstract class Texture {
 
     @OpenGLFunction
     public void ensureDisposed(GL gl) {
-        if (textureID != 0) {
+        if (stored) {
             dispose(gl);
         }
     }
 
     protected void store(GL gl) {
+        assert !stored;
         textureID = gl.createTexture();
         gl.bindTexture(textureID);
         if (buffers.length > 1) {
@@ -128,7 +92,8 @@ public abstract class Texture {
             gl.bufferTexture(width, height, true, buffers[0]);
         }
         dirtyFilter = true;
-        TEXTURES.add(this);
+        detach = gl.textureTracker().attach(this);
+        stored = true;
     }
 
     protected boolean used(long time) {
@@ -137,13 +102,16 @@ public abstract class Texture {
 
     @OpenGLFunction
     protected void dispose(GL gl) {
+        assert stored;
         gl.deleteTexture(textureID);
         reset();
     }
 
     protected void reset() {
-        TEXTURES.remove(this);
-        textureID = 0;
+        assert detach != null;
+        detach.run();
+        detach = null;
+        stored = false;
         markAsDisposed = false;
     }
 

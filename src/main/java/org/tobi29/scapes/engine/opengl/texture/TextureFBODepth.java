@@ -30,7 +30,9 @@ public class TextureFBODepth extends Texture {
     }
 
     public void resize(int width, int height, GL gl) {
-        dispose(gl);
+        if (stored) {
+            dispose(gl);
+        }
         this.width = width;
         this.height = height;
         store(gl);
@@ -48,11 +50,13 @@ public class TextureFBODepth extends Texture {
 
     @Override
     protected void store(GL gl) {
+        assert !stored;
         textureID = gl.createTexture();
         gl.bindTexture(textureID);
         gl.bufferTextureDepth(width, height, null);
         dirtyFilter = true;
-        TEXTURES.add(this);
+        detach = gl.textureTracker().attach(this);
+        stored = true;
     }
 
     @Override

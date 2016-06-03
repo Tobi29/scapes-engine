@@ -1,8 +1,8 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.concurrent.ConcurrentMaps;
-import org.tobi29.scapes.engine.opengl.Mesh;
-import org.tobi29.scapes.engine.opengl.VAO;
+import org.tobi29.scapes.engine.opengl.vao.Mesh;
+import org.tobi29.scapes.engine.opengl.vao.VAO;
 import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;

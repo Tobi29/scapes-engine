@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.fbo;
 
 import java8.util.stream.Stream;
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBODepth;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
@@ -24,14 +26,10 @@ import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class FBO {
-    private static final List<FBO> FBOS = new ArrayList<>();
-    private static int currentFBO;
     private final TextureFBOColor[] texturesColor;
     private final TextureFBODepth textureDepth;
+    private Runnable detach;
     private int framebufferID;
     private int width, currentWidth;
     private int height, currentHeight;
@@ -57,24 +55,9 @@ public class FBO {
     }
 
     @OpenGLFunction
-    public static void disposeAll(GL gl) {
-        while (!FBOS.isEmpty()) {
-            FBOS.get(0).dispose(gl);
-        }
-        currentFBO = 0;
-    }
-
-    public static void resetAll() {
-        while (!FBOS.isEmpty()) {
-            FBOS.get(0).reset();
-        }
-        currentFBO = 0;
-    }
-
-    @OpenGLFunction
     public void deactivate(GL gl) {
         gl.bindFBO(lastFBO);
-        currentFBO = lastFBO;
+        gl.fboTracker().currentFBO = lastFBO;
         lastFBO = 0;
     }
 
@@ -123,11 +106,11 @@ public class FBO {
         }
         gl.clear(0.0f, 0.0f, 0.0f, 0.0f);
         deactivate(gl);
-        FBOS.add(this);
+        detach = gl.fboTracker().attach(this);
     }
 
     @OpenGLFunction
-    private void dispose(GL gl) {
+    protected void dispose(GL gl) {
         gl.deleteFBO(framebufferID);
         for (TextureFBOColor textureColor : texturesColor) {
             textureColor.markDisposed();
@@ -138,10 +121,12 @@ public class FBO {
         reset();
     }
 
-    private void reset() {
+    protected void reset() {
+        assert detach != null;
+        detach.run();
+        detach = null;
         framebufferID = 0;
         lastFBO = 0;
-        FBOS.remove(this);
     }
 
     public void setSize(int width, int height) {
@@ -173,8 +158,9 @@ public class FBO {
     }
 
     private void bind(GL gl) {
-        lastFBO = currentFBO;
-        currentFBO = framebufferID;
+        FBOTracker fboTracker = gl.fboTracker();
+        lastFBO = fboTracker.currentFBO;
+        fboTracker.currentFBO = framebufferID;
         gl.bindFBO(framebufferID);
     }
 

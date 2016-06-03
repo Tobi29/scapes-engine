@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.vao;
 
 import java8.util.Optional;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 
 import java.nio.ByteBuffer;
@@ -33,6 +35,7 @@ public class VAOStatic extends VAO {
     }
 
     public VAOStatic(VBO vbo, int[] index, int length, RenderType renderType) {
+        super(vbo.engine);
         this.vbo = vbo;
         if (renderType == RenderType.TRIANGLES && length % 3 != 0) {
             throw new IllegalArgumentException("Length not multiply of 3");
@@ -41,7 +44,7 @@ public class VAOStatic extends VAO {
         }
         this.renderType = renderType;
         this.length = length;
-        ByteBuffer indexBuffer = vbo.engine.allocate(length << 1);
+        ByteBuffer indexBuffer = engine.allocate(length << 1);
         for (int i = 0; i < length; i++) {
             indexBuffer.putShort((short) index[i]);
         }
@@ -96,7 +99,7 @@ public class VAOStatic extends VAO {
         indexID = gl.createVBO();
         gl.bindVBOElement(indexID);
         gl.bufferVBODataElement(data);
-        VAOS.add(this);
+        detach = gl.vaoTracker().attach(this);
         stored = true;
         if (weak) {
             this.data = Optional.empty();

@@ -33,7 +33,7 @@ public class TextureFBOColor extends Texture {
     }
 
     public void resize(int width, int height, GL gl) {
-        dispose(gl);
+        ensureDisposed(gl);
         this.width = width;
         this.height = height;
         store(gl);
@@ -51,6 +51,7 @@ public class TextureFBOColor extends Texture {
 
     @Override
     protected void store(GL gl) {
+        assert !stored;
         textureID = gl.createTexture();
         gl.bindTexture(textureID);
         if (hdr) {
@@ -59,7 +60,8 @@ public class TextureFBOColor extends Texture {
             gl.bufferTexture(width, height, alpha, null);
         }
         dirtyFilter = true;
-        TEXTURES.add(this);
+        detach = gl.textureTracker().attach(this);
+        stored = true;
     }
 
     @Override

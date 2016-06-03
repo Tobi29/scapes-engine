@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.vao;
 
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.opengl.OpenGL;
 
 import java.util.ArrayList;
 import java.util.List;

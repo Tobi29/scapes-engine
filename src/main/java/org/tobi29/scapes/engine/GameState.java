@@ -16,9 +16,13 @@
 package org.tobi29.scapes.engine;
 
 import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.fbo.FBO;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
+import org.tobi29.scapes.engine.opengl.vao.RenderType;
+import org.tobi29.scapes.engine.opengl.vao.VAO;
+import org.tobi29.scapes.engine.opengl.vao.VAOUtility;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;

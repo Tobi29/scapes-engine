@@ -13,27 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.vao;
 
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 
-public class VAOHybrid extends VAO {
+public class VAOFast extends VAO {
     private final RenderType renderType;
-    private final VBO vbo1, vbo2;
+    private final int length;
+    private final VBO vbo;
     protected boolean weak;
     private int arrayID;
 
-    public VAOHybrid(VBO vbo1, VBO vbo2, RenderType renderType) {
-        this.vbo1 = vbo1;
-        this.vbo2 = vbo2;
+    public VAOFast(VBO vbo, RenderType renderType) {
+        this(vbo, vbo.length, renderType);
+    }
+
+    public VAOFast(VBO vbo, int length, RenderType renderType) {
+        super(vbo.engine);
+        this.vbo = vbo;
+        if (renderType == RenderType.TRIANGLES && length % 3 != 0) {
+            throw new IllegalArgumentException("Length not multiply of 3");
+        } else if (renderType == RenderType.LINES && length % 2 != 0) {
+            throw new IllegalArgumentException("Length not multiply of 2");
+        }
         this.renderType = renderType;
+        this.length = length;
     }
 
     @Override
     @OpenGLFunction
     public boolean render(GL gl, Shader shader) {
-        throw new UnsupportedOperationException(
-                "Cannot render hybrid VAO without length parameter");
+        return render(gl, shader, length);
     }
 
     @Override
@@ -49,14 +61,11 @@ public class VAOHybrid extends VAO {
     }
 
     @Override
-    @OpenGLFunction
     public boolean renderInstanced(GL gl, Shader shader, int count) {
-        throw new UnsupportedOperationException(
-                "Cannot render hybrid VAO without length parameter");
+        return renderInstanced(gl, shader, length, count);
     }
 
     @Override
-    @OpenGLFunction
     public boolean renderInstanced(GL gl, Shader shader, int length,
             int count) {
         if (!ensureStored(gl)) {
@@ -71,17 +80,13 @@ public class VAOHybrid extends VAO {
     @Override
     protected boolean store(GL gl) {
         assert !stored;
-        if (!vbo1.canStore()) {
-            return false;
-        }
-        if (!vbo2.canStore()) {
+        if (!vbo.canStore()) {
             return false;
         }
         arrayID = gl.createVAO();
         gl.bindVAO(arrayID);
-        vbo1.store(gl, weak);
-        vbo2.store(gl, weak);
-        VAOS.add(this);
+        vbo.store(gl, weak);
+        detach = gl.vaoTracker().attach(this);
         stored = true;
         return true;
     }
@@ -89,8 +94,7 @@ public class VAOHybrid extends VAO {
     @Override
     protected void dispose(GL gl) {
         assert stored;
-        vbo1.dispose(gl);
-        vbo2.dispose(gl);
+        vbo.dispose(gl);
         gl.deleteVAO(arrayID);
         reset();
     }
@@ -98,8 +102,7 @@ public class VAOHybrid extends VAO {
     @Override
     protected void reset() {
         super.reset();
-        vbo1.reset();
-        vbo2.reset();
+        vbo.reset();
     }
 
     public void setWeak(boolean value) {

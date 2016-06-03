@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.GameState;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.opengl.shader.ShaderManager;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.opengl.texture.TextureManager;
 import org.tobi29.scapes.engine.utils.graphics.Image;
 import org.tobi29.scapes.engine.utils.graphics.PNG;
@@ -109,7 +108,7 @@ public class GraphicsSystem {
                 try (Profiler.C ignored = Profiler.section("SwitchState")) {
                     if (renderState != null) {
                         renderState.disposeState(gl);
-                        FBO.disposeAll(gl);
+                        gl.fboTracker().disposeAll(gl);
                         gl.shaders().disposeAll(gl);
                         gl.textures().clearCache();
                     }
@@ -120,8 +119,8 @@ public class GraphicsSystem {
                 state.render(gl, delta, fboSizeDirty);
             }
             fpsDebug.setValue(1.0 / delta);
-            textureDebug.setValue(Texture.textureCount());
-            vaoDebug.setValue(VAO.vaos());
+            vaoDebug.setValue(gl.vaoTracker().vaoCount());
+            textureDebug.setValue(gl.textureTracker().textureCount());
             if (triggerScreenshot) {
                 try (Profiler.C ignored = Profiler.section("Screenshot")) {
                     triggerScreenshot = false;
@@ -142,8 +141,8 @@ public class GraphicsSystem {
                 }
             }
             try (Profiler.C ignored = Profiler.section("Cleanup")) {
-                VAO.disposeUnused(gl);
-                Texture.disposeUnused(gl);
+                gl.vaoTracker().disposeUnused(gl);
+                gl.textureTracker().disposeUnused(gl);
             }
         } catch (GraphicsException e) {
             LOGGER.warn("Graphics error during rendering: {}", e.toString());

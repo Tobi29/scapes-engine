@@ -15,9 +15,13 @@
  */
 package org.tobi29.scapes.engine.opengl;
 
+import org.tobi29.scapes.engine.opengl.fbo.FBO;
+import org.tobi29.scapes.engine.opengl.fbo.FBOStatus;
 import org.tobi29.scapes.engine.opengl.shader.ShaderPreprocessor;
 import org.tobi29.scapes.engine.opengl.texture.TextureFilter;
 import org.tobi29.scapes.engine.opengl.texture.TextureWrap;
+import org.tobi29.scapes.engine.opengl.vao.RenderType;
+import org.tobi29.scapes.engine.opengl.vao.VertexType;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.graphics.Image;
 

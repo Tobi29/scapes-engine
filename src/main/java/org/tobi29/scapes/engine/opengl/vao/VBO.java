@@ -1,7 +1,9 @@
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.vao;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 

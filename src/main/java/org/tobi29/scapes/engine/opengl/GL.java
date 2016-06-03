@@ -17,11 +17,13 @@ package org.tobi29.scapes.engine.opengl;
 
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.opengl.fbo.FBOTracker;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.ShaderManager;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
 import org.tobi29.scapes.engine.opengl.texture.TextureManager;
+import org.tobi29.scapes.engine.opengl.texture.TextureTracker;
+import org.tobi29.scapes.engine.opengl.vao.VAOTracker;
 import org.tobi29.scapes.engine.utils.graphics.Cam;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f;
@@ -33,6 +35,9 @@ public abstract class GL implements OpenGL {
     private final MatrixStack matrixStack;
     private final Matrix4f projectionMatrix = new Matrix4f(),
             modelViewProjectionMatrix = new Matrix4f();
+    private final VAOTracker vaoTracker;
+    private final TextureTracker textureTracker;
+    private final FBOTracker fboTracker;
     private double resolutionMultiplier = 1.0;
     private int containerWidth = 1, containerHeight = 1, contentWidth = 1,
             contentHeight = 1;
@@ -42,6 +47,9 @@ public abstract class GL implements OpenGL {
         matrixStack = new MatrixStack(64);
         textureManager = new TextureManager(engine);
         shaderManager = new ShaderManager(engine);
+        vaoTracker = new VAOTracker();
+        textureTracker = new TextureTracker();
+        fboTracker = new FBOTracker();
         resolutionMultiplier = engine.config().resolutionMultiplier();
         container.loadFont("Engine:font/QuicksandPro-Regular");
     }
@@ -137,19 +145,31 @@ public abstract class GL implements OpenGL {
         return containerHeight;
     }
 
+    public VAOTracker vaoTracker() {
+        return vaoTracker;
+    }
+
+    public TextureTracker textureTracker() {
+        return textureTracker;
+    }
+
+    public FBOTracker fboTracker() {
+        return fboTracker;
+    }
+
     @OpenGLFunction
     public void dispose() {
-        Texture.disposeAll(this);
-        VAOStatic.disposeAll(this);
-        FBO.disposeAll(this);
+        vaoTracker.disposeAll(this);
+        textureTracker.disposeAll(this);
+        fboTracker.disposeAll(this);
         shaderManager.resetAll();
     }
 
     @OpenGLFunction
     public void reset() {
-        Texture.resetAll();
-        VAOStatic.resetAll();
-        FBO.resetAll();
+        vaoTracker.resetAll();
+        textureTracker.resetAll();
+        fboTracker.resetAll();
         shaderManager.resetAll();
     }
 }

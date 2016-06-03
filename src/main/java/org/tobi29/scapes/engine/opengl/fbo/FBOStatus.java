@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.fbo;
 
 public enum FBOStatus {
     COMPLETE,

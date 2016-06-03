@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.opengl.scenes;
 
 import org.tobi29.scapes.engine.GameState;
-import org.tobi29.scapes.engine.opengl.FBO;
+import org.tobi29.scapes.engine.opengl.fbo.FBO;
 import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 

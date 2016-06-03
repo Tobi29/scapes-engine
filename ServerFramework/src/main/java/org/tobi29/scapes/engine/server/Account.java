@@ -44,7 +44,15 @@ public class Account {
         this.nickname = nickname;
     }
 
-    public static Account read(FilePath path) throws IOException {
+    public static Account get(FilePath path) throws IOException {
+        Optional<Account> account = read(path);
+        if (!account.isPresent()) {
+            throw new IOException("No valid account in: " + path);
+        }
+        return account.get();
+    }
+
+    public static Optional<Account> read(FilePath path) throws IOException {
         String key = null, nickname = "";
         if (FileUtil.exists(path)) {
             Properties properties = new Properties();
@@ -55,9 +63,13 @@ public class Account {
         }
         Optional<KeyPair> keyPair = key(key);
         if (keyPair.isPresent()) {
-            return new Account(keyPair.get(), nickname);
+            return Optional.of(new Account(keyPair.get(), nickname));
         }
-        Account account = new Account(genKey(), nickname);
+        return Optional.empty();
+    }
+
+    public static Account generate(FilePath path) throws IOException {
+        Account account = new Account(genKey(), "");
         account.write(path);
         return account;
     }

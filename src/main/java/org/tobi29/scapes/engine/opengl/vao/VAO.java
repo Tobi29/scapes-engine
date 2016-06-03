@@ -13,48 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.opengl;
+package org.tobi29.scapes.engine.opengl.vao;
 
+import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGLFunction;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class VAO {
-    protected static final List<VAO> VAOS = new ArrayList<>();
-    protected static int disposeOffset;
+    protected final ScapesEngine engine;
     protected boolean stored, used, markAsDisposed;
+    protected Runnable detach;
 
-    @OpenGLFunction
-    public static void disposeUnused(GL gl) {
-        for (int i = disposeOffset; i < VAOS.size(); i += 16) {
-            VAO vao = VAOS.get(i);
-            assert vao.stored;
-            if (vao.markAsDisposed || !vao.used) {
-                vao.dispose(gl);
-            }
-            vao.used = false;
-        }
-        disposeOffset++;
-        disposeOffset &= 15;
-    }
-
-    @OpenGLFunction
-    public static void disposeAll(GL gl) {
-        while (!VAOS.isEmpty()) {
-            VAOS.get(0).dispose(gl);
-        }
-    }
-
-    public static void resetAll() {
-        while (!VAOS.isEmpty()) {
-            VAOS.get(0).reset();
-        }
-    }
-
-    public static int vaos() {
-        return VAOS.size();
+    protected VAO(ScapesEngine engine) {
+        this.engine = engine;
     }
 
     public void markAsDisposed() {
@@ -118,7 +91,9 @@ public abstract class VAO {
     }
 
     protected void reset() {
-        VAOS.remove(this);
+        assert detach != null;
+        detach.run();
+        detach = null;
         stored = false;
         markAsDisposed = false;
     }
