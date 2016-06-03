@@ -37,7 +37,7 @@ class DocumentShellCTab extends DocumentShell {
                 throw new IllegalStateException(
                         "Non document composite in tab folder");
             }
-            currentComposite = Optional.of((DocumentCompositeCTab) control);
+            currentComposite = Optional.of((DocumentComposite) control);
         } else if (directComposite.isPresent()) {
             currentComposite = Optional.of(directComposite.get());
         }
@@ -118,7 +118,7 @@ class DocumentShellCTab extends DocumentShell {
                         throw new IllegalStateException(
                                 "Non document composite in tab folder");
                     }
-                    application.closeTabItem((DocumentCompositeCTab) control);
+                    application.closeTabItem((DocumentComposite) control);
                 }
             });
             this.tabFolder = Optional.of(tabFolder);

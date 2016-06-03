@@ -39,7 +39,7 @@ class DocumentShellTab extends DocumentShell {
                     throw new IllegalStateException(
                             "Non document composite in tab folder");
                 }
-                currentComposite = Optional.of((DocumentCompositeTab) control);
+                currentComposite = Optional.of((DocumentComposite) control);
             }
         } else if (directComposite.isPresent()) {
             currentComposite = Optional.of(directComposite.get());
