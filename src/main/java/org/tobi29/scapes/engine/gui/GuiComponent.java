@@ -329,7 +329,8 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
                     Matrix childMatrix = matrixStack.push();
                     childMatrix.translate(component.b.floatX(),
                             component.b.floatY(), 0.0f);
-                    component.a.render(gl, shader, component.c, pixelSize, delta);
+                    component.a
+                            .render(gl, shader, component.c, pixelSize, delta);
                     matrixStack.pop();
                 }
             }
@@ -608,13 +609,13 @@ public abstract class GuiComponent implements Comparable<GuiComponent> {
     }
 
     protected Vector2 baseSize(Container container) {
-        return new Vector2d((double) container.contentWidth() /
+        return new Vector2d((double) container.containerWidth() /
                 container.containerHeight() * 540.0, 540.0);
     }
 
     protected Vector2 baseSize(GL gl) {
         return new Vector2d(
-                (double) gl.contentWidth() / gl.containerHeight() * 540.0,
+                (double) gl.containerWidth() / gl.containerHeight() * 540.0,
                 540.0);
     }
 

@@ -3,12 +3,12 @@ package org.tobi29.scapes.engine.gui;
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.vao.RenderType;
-import org.tobi29.scapes.engine.opengl.vao.VAO;
-import org.tobi29.scapes.engine.opengl.vao.VAOUtility;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.opengl.vao.RenderType;
+import org.tobi29.scapes.engine.opengl.vao.VAO;
+import org.tobi29.scapes.engine.opengl.vao.VAOUtility;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
@@ -86,7 +86,7 @@ public class GuiStack {
         MatrixStack matrixStack = gl.matrixStack();
         GuiController guiController = engine.guiController();
         if (!engine.state().isMouseGrabbed()) {
-            gl.setProjectionOrthogonal(0.0f, 0.0f, gl.contentWidth(),
+            gl.setProjectionOrthogonal(0.0f, 0.0f, gl.containerWidth(),
                     gl.containerHeight());
             gl.textures().bind("Engine:image/Cursor", gl);
             guiController.cursors().filter(GuiCursor::software)
