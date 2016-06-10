@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class Mesh {
     private static final float[] EMPTY_FLOAT = new float[0];
-    private static final int BATCH_SIZE = 12;
+    private static final int START_SIZE = 6 * 20;
     private final boolean triangles, color;
     private int pos, remaining;
     private float[] vertexArray = EMPTY_FLOAT;
@@ -102,8 +102,14 @@ public class Mesh {
     public void addVertex(float x, float y, float z, float r, float g, float b,
             float a, float tx, float ty, float nx, float ny, float nz) {
         if (remaining <= 0) {
-            changeArraySize(pos + BATCH_SIZE);
-            remaining += BATCH_SIZE;
+            int growth;
+            if (pos == 0) {
+                growth = START_SIZE;
+            } else {
+                growth = pos;
+            }
+            changeArraySize(pos + growth);
+            remaining += growth;
         }
         int i = pos * 3;
         vertexArray[i++] = x;
