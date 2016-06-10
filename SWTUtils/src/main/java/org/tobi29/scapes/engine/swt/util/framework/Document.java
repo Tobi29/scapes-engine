@@ -3,42 +3,38 @@ package org.tobi29.scapes.engine.swt.util.framework;
 import org.eclipse.swt.widgets.Composite;
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar;
 
-public abstract class Document {
-    private boolean modified;
-
-    public boolean modified() {
-        return modified;
+public interface Document {
+    default boolean modified() {
+        return false;
     }
 
-    public void modify() {
-        modified = true;
-    }
-
-    public boolean close() {
+    default boolean close() {
         forceClose();
         return true;
     }
 
-    public abstract void forceClose();
+    void forceClose();
 
-    public abstract void destroy();
+    void destroy();
 
-    protected abstract String title();
+    String title();
 
-    protected String shortTitle() {
+    default String shortTitle() {
         return title();
     }
 
-    protected abstract boolean empty();
+    default boolean empty() {
+        return false;
+    }
 
-    protected abstract void populate(Composite composite, SmartMenuBar menu,
+    void populate(Composite composite, SmartMenuBar menu,
             MultiDocumentApplication application);
 
-    protected int updateTime() {
+    default int updateTime() {
         return -1;
     }
 
-    protected void update(Composite composite, SmartMenuBar menu,
+    default void update(Composite composite, SmartMenuBar menu,
             MultiDocumentApplication application) {
     }
 }
