@@ -80,7 +80,7 @@ public class PlatformDialogsSWT implements PlatformDialogs {
             FilePath path = FileUtil.path(filterPath.get()).resolve(fileName)
                     .toAbsolutePath();
             FileUtil.read(path, stream -> result
-                    .accept(path.getFileName().toString(), stream));
+                    .accept(String.valueOf(path.getFileName()), stream));
         }
     }
 
