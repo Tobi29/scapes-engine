@@ -17,9 +17,9 @@
 
 dependencies {
     compile project(":ScapesEngine:Backends:GLFWBackend")
-    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-linux"
-    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-linux"
-    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-osx"
-    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-windows"
-    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-windows"
+    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.0:natives-linux"
+    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.0:natives-linux"
+    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.0:natives-osx"
+    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.0:natives-windows"
+    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.0:natives-windows"
 }
