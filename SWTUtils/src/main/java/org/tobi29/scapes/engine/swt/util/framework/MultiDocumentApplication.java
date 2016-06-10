@@ -74,7 +74,12 @@ public abstract class MultiDocumentApplication extends Application {
 
     public int message(Composite source, int style, String title,
             String message) {
-        return Dialogs.openMessage(source.getShell(), style, title, message);
+        return message(source.getShell(), style, title, message);
+    }
+
+    public int message(Shell source, int style, String title, String message) {
+        source.open();
+        return Dialogs.openMessage(source, style, title, message);
     }
 
     public boolean access(Document document, Consumer<Composite> consumer) {
