@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.tobi29.scapes.engine.backends.lwjgl3.glfw;
 
+import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.backends.lwjgl3.glfw.spi.GLFWDialogsProvider;
 
-dependencies {
-    compile project(":ScapesEngine:Backends:GLFWBackend")
-    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-linux"
-    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-linux"
-    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-osx"
-    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-windows"
-    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.1-SNAPSHOT:natives-windows"
+public class NFDDialogsProvider implements GLFWDialogsProvider {
+    @Override
+    public boolean available() {
+        return true;
+    }
+
+    @Override
+    public PlatformDialogs createDialogs(ScapesEngine engine) {
+        return new PlatformDialogsNFD();
+    }
 }

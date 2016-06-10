@@ -79,7 +79,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         dialogs = DIALOGS_PROVIDER.createDialogs(engine);
         errorFun = GLFWErrorCallback.createPrint();
         GLFW.glfwSetErrorCallback(errorFun);
-        if (GLFW.glfwInit() != GL11.GL_TRUE) {
+        if (!GLFW.glfwInit()) {
             throw new GraphicsException("Unable to initialize GLFW");
         }
         LOGGER.info("GLFW version: {}", GLFW.glfwGetVersionString());
@@ -94,7 +94,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         windowCloseFun =
                 GLFWWindowCloseCallback.create(window -> engine.stop());
         windowFocusFun = GLFWWindowFocusCallback
-                .create((window, focused) -> focus = focused == GL11.GL_TRUE);
+                .create((window, focused) -> focus = focused);
         frameBufferSizeFun =
                 GLFWFramebufferSizeCallback.create((window, width, height) -> {
                     contentWidth = width;
@@ -201,13 +201,16 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         if (isPressed(ControllerKey.KEY_F2)) {
             engine.graphics().triggerScreenshot();
         }
-        if (engine.debug() && isPressed(ControllerKey.KEY_F3)) {
-            GuiComponent debugValues = engine.debugValues();
-            debugValues.setVisible(!debugValues.isVisible());
-        }
-        if (engine.debug() && isPressed(ControllerKey.KEY_F4)) {
-            GuiComponent profiler = engine.profiler();
-            profiler.setVisible(!profiler.isVisible());
+        if (isPressed(ControllerKey.KEY_F3)) {
+            if (isDown(ControllerKey.KEY_LEFT_CONTROL)) {
+                engine.writeCrash(new Throwable("Debug report"));
+            } else if (engine.debug() && isDown(ControllerKey.KEY_LEFT_SHIFT)) {
+                GuiComponent profiler = engine.profiler();
+                profiler.setVisible(!profiler.isVisible());
+            } else if (engine.debug()) {
+                GuiComponent debugValues = engine.debugValues();
+                debugValues.setVisible(!debugValues.isVisible());
+            }
         }
     }
 
@@ -285,15 +288,15 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         engine.dispose();
         GLFW.glfwDestroyWindow(window);
         GLFW.glfwTerminate();
-        windowSizeFun.release();
-        windowCloseFun.release();
-        windowFocusFun.release();
-        frameBufferSizeFun.release();
-        keyFun.release();
-        charFun.release();
-        mouseButtonFun.release();
-        cursorPosFun.release();
-        scrollFun.release();
+        windowSizeFun.close();
+        windowCloseFun.close();
+        windowFocusFun.close();
+        frameBufferSizeFun.close();
+        keyFun.close();
+        charFun.close();
+        mouseButtonFun.close();
+        cursorPosFun.close();
+        scrollFun.close();
     }
 
     @Override

@@ -742,7 +742,7 @@ public class LWJGL3OpenGL extends GL {
     @Override
     public void replaceVBODataArray(ByteBuffer buffer) {
         // TODO: Optimize, optimize, optimize
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer.capacity(), null,
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer.capacity(),
                 GL15.GL_STREAM_DRAW);
         GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, direct(buffer));
     }

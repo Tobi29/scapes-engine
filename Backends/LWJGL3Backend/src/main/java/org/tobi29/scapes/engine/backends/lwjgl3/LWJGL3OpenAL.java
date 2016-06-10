@@ -16,10 +16,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.openal.AL;
-import org.lwjgl.openal.AL10;
-import org.lwjgl.openal.AL11;
-import org.lwjgl.openal.ALContext;
+import org.lwjgl.openal.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.sound.AudioFormat;
@@ -31,6 +28,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public class LWJGL3OpenAL implements OpenAL {
     private static final Logger LOGGER =
@@ -38,7 +36,7 @@ public class LWJGL3OpenAL implements OpenAL {
     private final FloatBuffer listenerOrientation =
             BufferUtils.createFloatBuffer(6);
     private ByteBuffer directBuffer;
-    private ALContext context;
+    private long device, context;
 
     public LWJGL3OpenAL() {
         directBuffer(4 << 10 << 10);
@@ -55,7 +53,19 @@ public class LWJGL3OpenAL implements OpenAL {
 
     @Override
     public void create() {
-        context = ALContext.create();
+        device = ALC10.alcOpenDevice((ByteBuffer) null);
+        if (device == 0) {
+            throw new IllegalStateException(
+                    "Failed to open the default device.");
+        }
+        ALCCapabilities deviceCaps = ALC.createCapabilities(device);
+        context = ALC10.alcCreateContext(device, (IntBuffer) null);
+        if (context == 0) {
+            throw new IllegalStateException(
+                    "Failed to create an OpenAL context.");
+        }
+        ALC10.alcMakeContextCurrent(context);
+        AL.createCapabilities(deviceCaps);
         LOGGER.info("OpenAL: {} (Vendor: {}, Renderer: {})",
                 AL10.alGetString(AL10.AL_VERSION),
                 AL10.alGetString(AL10.AL_VENDOR),
@@ -72,7 +82,14 @@ public class LWJGL3OpenAL implements OpenAL {
 
     @Override
     public void destroy() {
-        AL.destroy(context);
+        if (context != 0) {
+            ALC10.alcDestroyContext(context);
+            context = 0;
+        }
+        if (device != 0) {
+            ALC10.alcCloseDevice(device);
+            device = 0;
+        }
     }
 
     @Override

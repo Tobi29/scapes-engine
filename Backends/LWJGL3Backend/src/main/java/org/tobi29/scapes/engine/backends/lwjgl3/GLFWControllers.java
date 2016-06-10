@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3;
 
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerKey;
@@ -51,7 +49,7 @@ public class GLFWControllers {
         boolean joysticksChanged = false;
         for (int joystick = GLFW.GLFW_JOYSTICK_1;
                 joystick <= GLFW.GLFW_JOYSTICK_LAST; joystick++) {
-            if (GLFW.glfwJoystickPresent(joystick) == GL11.GL_TRUE) {
+            if (GLFW.glfwJoystickPresent(joystick)) {
                 String name = GLFW.glfwGetJoystickName(joystick);
                 FloatBuffer axes = GLFW.glfwGetJoystickAxes(joystick);
                 ByteBuffer buttons = GLFW.glfwGetJoystickButtons(joystick);

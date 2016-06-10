@@ -23,7 +23,7 @@ dependencies {
     compile project(":ScapesEngine")
     compile project(":ScapesEngine:Utils")
     compile "org.slf4j:slf4j-api:1.7.13"
-    compile "org.lwjgl:lwjgl:3.0.0b"
+    compile "org.lwjgl:lwjgl:3.0.0"
 
     testCompile "junit:junit:4.12"
 }
