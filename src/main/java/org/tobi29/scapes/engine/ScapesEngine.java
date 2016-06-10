@@ -309,6 +309,7 @@ public class ScapesEngine implements Crashable {
             halt();
             return 1;
         } catch (Throwable e) {
+            LOGGER.error("Scapes engine shutting down because of crash", e);
             writeCrash(e);
             try {
                 container.message(Container.MessageType.ERROR, game.name(),
@@ -389,12 +390,12 @@ public class ScapesEngine implements Crashable {
     @Override
     @SuppressWarnings("CallToSystemExit")
     public void crash(Throwable e) {
+        LOGGER.error("Scapes engine shutting down because of crash", e);
         writeCrash(e);
         System.exit(1);
     }
 
-    private void writeCrash(Throwable e) {
-        LOGGER.error("Scapes engine shutting down because of crash", e);
+    public void writeCrash(Throwable e) {
         Map<String, String> debugValues = new ConcurrentHashMap<>();
         for (Map.Entry<String, GuiWidgetDebugValues.Element> entry : this.debugValues
                 .elements()) {
