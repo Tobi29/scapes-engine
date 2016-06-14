@@ -350,12 +350,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         LOGGER.info("Creating GLFW window...");
         String title = engine.game().name();
         long monitor = GLFW.glfwGetPrimaryMonitor();
-        IntBuffer xBuffer = BufferUtils.createIntBuffer(1);
-        IntBuffer yBuffer = BufferUtils.createIntBuffer(1);
-        GLFW.glfwGetMonitorPos(monitor, xBuffer, yBuffer);
         GLFWVidMode videoMode = GLFW.glfwGetVideoMode(monitor);
-        int monitorX = xBuffer.get(0);
-        int monitorY = yBuffer.get(0);
         int monitorWidth = videoMode.width();
         int monitorHeight = videoMode.height();
         GLFW.glfwDefaultWindowHints();
@@ -392,8 +387,6 @@ public class ContainerGLFW extends ContainerLWJGL3 {
             if (window == 0) {
                 throw new GraphicsCheckException("Failed to create window");
             }
-            GLFW.glfwSetWindowPos(window, monitorX + (monitorWidth - width) / 2,
-                    monitorY + (monitorHeight - height) / 2);
         }
         IntBuffer widthBuffer = BufferUtils.createIntBuffer(1);
         IntBuffer heightBuffer = BufferUtils.createIntBuffer(1);
