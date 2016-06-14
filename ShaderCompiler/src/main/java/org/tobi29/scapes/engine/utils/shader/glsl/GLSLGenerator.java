@@ -10,14 +10,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GLSLGenerator {
-    private final String header;
+    private final Version version;
     private final StringBuilder output = new StringBuilder(1024);
     private final Map<String, Expression> variables = new ConcurrentHashMap<>();
     private Map<String, String> properties;
     private List<Function> functions;
 
-    public GLSLGenerator(String header) {
-        this.header = header;
+    public GLSLGenerator(Version version) {
+        this.version = version;
         variables.put("out_Position", new GLSLExpression("gl_Position"));
         variables.put("varying_Fragment", new GLSLExpression("gl_FragCoord"));
     }
@@ -552,6 +552,11 @@ public class GLSLGenerator {
         if (type.constant) {
             str.append("const ");
         }
+        switch (version) {
+            case GLES_300:
+                str.append(precision(type.precision)).append(' ');
+                break;
+        }
         str.append(type(type.type));
         str.append(' ');
         str.append(identifier);
@@ -567,6 +572,11 @@ public class GLSLGenerator {
         StringBuilder qualifiers = new StringBuilder(24);
         if (type.constant) {
             qualifiers.append("const ");
+        }
+        switch (version) {
+            case GLES_300:
+                qualifiers.append(precision(type.precision)).append(' ');
+                break;
         }
         return qualifiers + type(type.type);
     }
@@ -609,6 +619,21 @@ public class GLSLGenerator {
                 return "sampler2D";
             default:
                 throw new ShaderGenerateException("Unexpected type: " + type);
+        }
+    }
+
+    private String precision(Precision precision)
+            throws ShaderGenerateException {
+        switch (precision) {
+            case lowp:
+                return "lowp";
+            case mediump:
+                return "mediump";
+            case highp:
+                return "highp";
+            default:
+                throw new ShaderGenerateException(
+                        "Unexpected precision: " + precision);
         }
     }
 
@@ -692,13 +717,20 @@ public class GLSLGenerator {
 
     private void header(Uniform[] uniforms, ShaderSignature input)
             throws ShaderGenerateException {
-        println(0, header);
+        switch (version) {
+            case GL_330:
+                println(0, "#version 330");
+                break;
+            case GLES_300:
+                println(0, "#version 300 es");
+                break;
+        }
         println();
         for (Uniform uniform : uniforms) {
             if (uniform != null) {
-                println(0,
-                        "uniform " + type(uniform.type) + ' ' + uniform.name +
-                                ';');
+                println(0, "uniform " + type(uniform.type) + ' ' +
+                        identifier(uniform.type, uniform.name) +
+                        ';');
             }
         }
         println();
@@ -750,6 +782,7 @@ public class GLSLGenerator {
     private String signature(FunctionSignature signature)
             throws ShaderGenerateException {
         StringBuilder str = new StringBuilder(24);
+        str.append(precision(signature.returnedPrecision)).append(' ');
         str.append(type(signature.returned)).append(' ');
         str.append(signature.name).append('(');
         if (signature.parameters.length > 0) {
@@ -815,5 +848,10 @@ public class GLSLGenerator {
             level--;
         }
         output.append(str).append('\n');
+    }
+
+    public enum Version {
+        GL_330,
+        GLES_300
     }
 }

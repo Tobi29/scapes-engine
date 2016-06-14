@@ -6,22 +6,22 @@ public class Type {
     public final Types type;
     public final Optional<Expression> array;
     public final boolean constant;
+    public final Precision precision;
 
-    public Type(Types type) {
-        this(type, false);
+    public Type(Types type, boolean constant, Precision precision) {
+        this(type, Optional.empty(), constant, precision);
     }
 
-    public Type(Types type, boolean constant) {
-        this(type, Optional.empty(), constant);
+    public Type(Types type, Expression array, boolean constant,
+            Precision precision) {
+        this(type, Optional.of(array), constant, precision);
     }
 
-    public Type(Types type, Expression array, boolean constant) {
-        this(type, Optional.of(array), constant);
-    }
-
-    public Type(Types type, Optional<Expression> array, boolean constant) {
+    public Type(Types type, Optional<Expression> array, boolean constant,
+            Precision precision) {
         this.type = type;
         this.array = array;
         this.constant = constant;
+        this.precision = precision;
     }
 }

@@ -189,21 +189,27 @@ typeSpecifier
     |   'Texture2'
     ;
 
+precisionSpecifier
+    :   'lowp'
+    |   'mediump'
+    |   'highp'
+    ;
+
 declarator
     :   declaratorField
     |   declaratorArray
     ;
 
 declaratorField
-    :   'const'? typeSpecifier
+    :   'const'? precisionSpecifier? typeSpecifier
     ;
 
 declaratorArray
-    :   'const'? typeSpecifier '[' integerConstant ']'
+    :   'const'? precisionSpecifier? typeSpecifier '[' integerConstant ']'
     ;
 
 declaratorArrayUnsized
-    :   'const'? typeSpecifier '[]'
+    :   'const'? precisionSpecifier? typeSpecifier '[]'
     ;
 
 parameterList
@@ -314,7 +320,7 @@ functionDefinition
     ;
 
 functionSignature
-    :   typeSpecifier Identifier '(' parameterList? ')'
+    :   typeSpecifier precisionSpecifier? Identifier '(' parameterList? ')'
     ;
 
 Identifier

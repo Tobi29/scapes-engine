@@ -21,8 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.BlendingMode;
 import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.GraphicsException;
 import org.tobi29.scapes.engine.opengl.fbo.FBO;
 import org.tobi29.scapes.engine.opengl.fbo.FBOStatus;
 import org.tobi29.scapes.engine.opengl.shader.ShaderPreprocessor;
@@ -61,7 +62,7 @@ public class LWJGL3OpenGL extends GL {
     private final IntBuffer attachBuffer = BufferUtils.createIntBuffer(16);
     private final ShaderCompiler shaderCompiler = new ShaderCompiler();
     private final GLSLGenerator shaderGenerator =
-            new GLSLGenerator("#version 330");
+            new GLSLGenerator(GLSLGenerator.Version.GL_330);
     private final Map<String, CompiledShader> shaderCache =
             new ConcurrentHashMap<>();
     private ByteBuffer directBuffer;
@@ -527,7 +528,7 @@ public class LWJGL3OpenGL extends GL {
             ByteBuffer buffer) {
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
                 alpha ? GL30.GL_RGBA16F : GL30.GL_RGB16F, width, height, 0,
-                alpha ? GL11.GL_RGBA : GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE,
+                alpha ? GL11.GL_RGBA : GL11.GL_RGB, GL30.GL_HALF_FLOAT,
                 direct(buffer));
     }
 

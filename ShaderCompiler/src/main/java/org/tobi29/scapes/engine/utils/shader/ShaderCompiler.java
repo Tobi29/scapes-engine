@@ -94,7 +94,15 @@ public class ShaderCompiler {
                 }
             }
         }
-        return new Type(type(context.typeSpecifier()), constant);
+        ScapesShaderParser.PrecisionSpecifierContext precisionSpecifier =
+                context.precisionSpecifier();
+        Precision precision;
+        if (precisionSpecifier == null) {
+            precision = Precision.mediump;
+        } else {
+            precision = precision(precisionSpecifier);
+        }
+        return new Type(type(context.typeSpecifier()), constant, precision);
     }
 
     private static Type type(ScapesShaderParser.DeclaratorArrayContext context)
@@ -109,8 +117,16 @@ public class ShaderCompiler {
                 }
             }
         }
+        ScapesShaderParser.PrecisionSpecifierContext precisionSpecifier =
+                context.precisionSpecifier();
+        Precision precision;
+        if (precisionSpecifier == null) {
+            precision = Precision.mediump;
+        } else {
+            precision = precision(precisionSpecifier);
+        }
         return new Type(type(context.typeSpecifier()),
-                integer(context.integerConstant()), constant);
+                integer(context.integerConstant()), constant, precision);
     }
 
     private static Type type(
@@ -126,7 +142,15 @@ public class ShaderCompiler {
                 }
             }
         }
-        return new Type(type(context.typeSpecifier()), constant);
+        ScapesShaderParser.PrecisionSpecifierContext precisionSpecifier =
+                context.precisionSpecifier();
+        Precision precision;
+        if (precisionSpecifier == null) {
+            precision = Precision.mediump;
+        } else {
+            precision = precision(precisionSpecifier);
+        }
+        return new Type(type(context.typeSpecifier()), constant, precision);
     }
 
     private static Types type(ScapesShaderParser.TypeSpecifierContext context)
@@ -273,6 +297,16 @@ public class ShaderCompiler {
             context = context.initializerArrayList();
         }
         return new ArrayLiteralExpression(expressions);
+    }
+
+    public static Precision precision(
+            ScapesShaderParser.PrecisionSpecifierContext context)
+            throws ShaderCompileException {
+        try {
+            return Precision.valueOf(context.getText());
+        } catch (IllegalArgumentException e) {
+            throw new ShaderCompileException(e, context);
+        }
     }
 
     public static Expression expression(
@@ -855,7 +889,7 @@ public class ShaderCompiler {
                             uniforms.length);
                     uniforms = newUniforms;
                 }
-                uniforms[id] = new Uniform(type(field.typeSpecifier()), id,
+                uniforms[id] = new Uniform(type(field), id,
                         uniform.Identifier().getText());
             }
             ScapesShaderParser.DeclaratorArrayContext array =
@@ -917,9 +951,18 @@ public class ShaderCompiler {
             List<Parameter> parameters = new ArrayList<>();
             parameters(signature.parameterList(), parameters);
             Types returned = type(signature.typeSpecifier());
+            ScapesShaderParser.PrecisionSpecifierContext returnedPrecisionSpec =
+                    signature.precisionSpecifier();
+            Precision returnedPrecision;
+            if (returnedPrecisionSpec == null) {
+                returnedPrecision = Precision.mediump;
+            } else {
+                returnedPrecision = precision(returnedPrecisionSpec);
+            }
             FunctionSignature functionSignature =
-                    new FunctionSignature(name, returned, parameters
-                            .toArray(new Parameter[parameters.size()]));
+                    new FunctionSignature(name, returned, returnedPrecision,
+                            parameters
+                                    .toArray(new Parameter[parameters.size()]));
             CompoundStatement compound =
                     compound(function.compoundStatement().blockItemList());
             functions.add(new Function(functionSignature, compound));
