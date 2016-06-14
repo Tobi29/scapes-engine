@@ -21,6 +21,9 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.opengles.GLES;
+import org.lwjgl.opengles.GLES20;
+import org.lwjgl.opengles.GLESCapabilities;
 import org.lwjgl.system.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,25 +54,34 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     protected final Queue<Runnable> tasks = new ConcurrentLinkedQueue<>();
     protected final ScapesEngine engine;
     protected final Thread mainThread;
-    protected final LWJGL3OpenGL openGL;
+    protected final GL openGL;
     protected final SoundSystem soundSystem;
-    protected final boolean superModifier;
+    protected final boolean superModifier, useGLES;
     protected final AtomicBoolean joysticksChanged = new AtomicBoolean(false);
     protected boolean focus = true, valid, visible, containerResized = true;
     protected int containerWidth, containerHeight, contentWidth, contentHeight;
     protected double mouseX, mouseY;
 
     protected ContainerLWJGL3(ScapesEngine engine) {
+        this(engine, false);
+    }
+
+    protected ContainerLWJGL3(ScapesEngine engine, boolean useGLES) {
         this.engine = engine;
+        this.useGLES = useGLES;
         mainThread = Thread.currentThread();
         LOGGER.info("LWJGL version: {}", Version.getVersion());
-        openGL = new LWJGL3OpenGL(engine, this);
+        if (useGLES) {
+            openGL = new LWJGL3OpenGLES(engine, this);
+        } else {
+            openGL = new LWJGL3OpenGL(engine, this);
+        }
         soundSystem =
                 new OpenALSoundSystem(engine, new LWJGL3OpenAL(), 64, 5.0);
         superModifier = Platform.get() == Platform.MACOSX;
     }
 
-    public static Optional<String> checkContext() {
+    public static Optional<String> checkContextGL() {
         LOGGER.info("OpenGL: {} (Vendor: {}, Renderer: {})",
                 GL11.glGetString(GL11.GL_VERSION),
                 GL11.glGetString(GL11.GL_VENDOR),
@@ -109,6 +121,31 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
             return Optional.of("Your graphics card has no OpenGL 3.3 support!");
         }
         return Optional.empty();
+    }
+
+    public static Optional<String> checkContextGLES() {
+        LOGGER.info("OpenGL: {} (Vendor: {}, Renderer: {})",
+                GLES20.glGetString(GLES20.GL_VERSION),
+                GLES20.glGetString(GLES20.GL_VENDOR),
+                GLES20.glGetString(GLES20.GL_RENDERER));
+        GLESCapabilities capabilities = GLES.getCapabilities();
+        if (!capabilities.GLES20) {
+            return Optional
+                    .of("Your graphics card has no OpenGL ES 2.0 support!");
+        }
+        if (!capabilities.GLES30) {
+            return Optional
+                    .of("Your graphics card has no OpenGL ES 3.0 support!");
+        }
+        return Optional.empty();
+    }
+
+    public Optional<String> checkContext() {
+        if (useGLES) {
+            return checkContextGLES();
+        } else {
+            return checkContextGL();
+        }
     }
 
     @Override
