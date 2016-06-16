@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TaskExecutor {
     private final Logger LOGGER = LoggerFactory.getLogger(TaskExecutor.class);
     private final List<TaskWorker> tasks = new ArrayList<>();
-    private final AtomicInteger threadCount = new AtomicInteger();
+    private final TaskLock taskLock = new TaskLock();
     private final ThreadPoolExecutor taskPool;
     private final Crashable crashHandler;
     private final String name;
@@ -105,7 +105,6 @@ public class TaskExecutor {
     }
 
     public Joiner runTask(ASyncTask task, String name, Priority priority) {
-        threadCount.incrementAndGet();
         ThreadWrapper wrapper = new ThreadWrapper(task);
         Thread thread = new Thread(wrapper);
         thread.setName(this.name + name);
@@ -117,11 +116,31 @@ public class TaskExecutor {
     public void runTask(Runnable task, String name) {
         taskPool.execute(() -> {
             long time = System.nanoTime();
-            task.run();
-            time = System.nanoTime() - time;
-            if (time > 10000000000L) {
-                LOGGER.warn("Task took {} seconds to complete: {}",
-                        time / 1000000000, name);
+            try {
+                task.run();
+            } finally {
+                time = System.nanoTime() - time;
+                if (time > 10000000000L) {
+                    LOGGER.warn("Task took {} seconds to complete: {}",
+                            time / 1000000000, name);
+                }
+            }
+        });
+    }
+
+    public void runTask(Runnable task, TaskLock taskLock, String name) {
+        taskLock.increment();
+        taskPool.execute(() -> {
+            long time = System.nanoTime();
+            try {
+                task.run();
+            } finally {
+                time = System.nanoTime() - time;
+                if (time > 10000000000L) {
+                    LOGGER.warn("Task took {} seconds to complete: {}",
+                            time / 1000000000, name);
+                }
+                taskLock.decrement();
             }
         });
     }
@@ -167,14 +186,7 @@ public class TaskExecutor {
                 }
             } catch (InterruptedException e) {
             }
-            synchronized (threadCount) {
-                while (threadCount.get() > 0) {
-                    try {
-                        threadCount.wait();
-                    } catch (InterruptedException e) {
-                    }
-                }
-            }
+            taskLock.lock();
         }
     }
 
@@ -216,6 +228,7 @@ public class TaskExecutor {
         protected ThreadWrapper(ASyncTask task) {
             this.task = task;
             joinable = new Joiner.Joinable();
+            taskLock.increment();
         }
 
         @SuppressWarnings("OverlyBroadCatchBlock")
@@ -227,10 +240,7 @@ public class TaskExecutor {
                 crashHandler.crash(e);
             } finally {
                 joinable.join();
-                synchronized (threadCount) {
-                    threadCount.decrementAndGet();
-                    threadCount.notifyAll();
-                }
+                taskLock.decrement();
             }
         }
     }
