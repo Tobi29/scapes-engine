@@ -23,11 +23,9 @@ import org.lwjgl.opengl.GL11;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.ScapesEngineException;
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3;
 import org.tobi29.scapes.engine.backends.lwjgl3.GLFWControllers;
 import org.tobi29.scapes.engine.backends.lwjgl3.GLFWKeyMap;
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.spi.GLFWDialogsProvider;
 import org.tobi29.scapes.engine.gui.GuiComponent;
 import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
@@ -47,14 +45,14 @@ import org.tobi29.scapes.engine.utils.profiler.Profiler;
 
 import java.io.IOException;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ContainerGLFW extends ContainerLWJGL3 {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ContainerGLFW.class);
-    private static final GLFWDialogsProvider DIALOGS_PROVIDER = loadDialogs();
-    private final PlatformDialogs dialogs;
     private final Sync sync;
     private final GLFWControllers controllers;
     private final Map<Integer, ControllerJoystick> virtualJoysticks =
@@ -71,12 +69,10 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     private final GLFWCursorPosCallback cursorPosFun;
     private final GLFWScrollCallback scrollFun;
     private long window;
-    private boolean running = true, skipMouseCallback, mouseGrabbed,
-            mouseGrabbedCurrent;
+    private boolean running = true, mouseGrabbed, mouseGrabbedCurrent;
 
     public ContainerGLFW(ScapesEngine engine) {
         super(engine);
-        dialogs = DIALOGS_PROVIDER.createDialogs(engine);
         errorFun = GLFWErrorCallback.createPrint();
         GLFW.glfwSetErrorCallback(errorFun);
         if (!GLFW.glfwInit()) {
@@ -139,27 +135,13 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                     }
                 });
         cursorPosFun = GLFWCursorPosCallback.create((window, xpos, ypos) -> {
-            if (skipMouseCallback) {
-                skipMouseCallback = false;
-                if (mouseGrabbed) {
-                    GLFW.glfwSetCursorPos(window, 0.0, 0.0);
-                }
-            } else {
-                double dx, dy;
-                if (mouseGrabbed) {
-                    dx = xpos;
-                    dy = ypos;
-                    GLFW.glfwSetCursorPos(window, 0.0, 0.0);
-                } else {
-                    dx = xpos - mouseX;
-                    dy = ypos - mouseY;
-                    mouseX = (int) xpos;
-                    mouseY = (int) ypos;
-                }
-                if (dx != 0.0 || dy != 0.0) {
-                    set(xpos, ypos);
-                    addDelta(dx, dy);
-                }
+            double dx = xpos - mouseX;
+            double dy = ypos - mouseY;
+            if (dx != 0.0 || dy != 0.0) {
+                mouseX = xpos;
+                mouseY = ypos;
+                set(mouseX, mouseY);
+                addDelta(dx, dy);
             }
         });
         scrollFun = GLFWScrollCallback.create((window, xoffset, yoffset) -> {
@@ -167,23 +149,6 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 addScroll(xoffset, yoffset);
             }
         });
-    }
-
-    private static GLFWDialogsProvider loadDialogs() {
-        for (GLFWDialogsProvider dialogs : ServiceLoader
-                .load(GLFWDialogsProvider.class)) {
-            try {
-                if (dialogs.available()) {
-                    LOGGER.debug("Loaded dialogs: {}",
-                            dialogs.getClass().getName());
-                    return dialogs;
-                }
-            } catch (ServiceConfigurationError e) {
-                LOGGER.warn("Unable to load dialogs provider: {}",
-                        e.toString());
-            }
-        }
-        throw new ScapesEngineException("No dialogs found!");
     }
 
     @Override
@@ -256,16 +221,13 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 if (mouseGrabbed) {
                     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
                             GLFW.GLFW_CURSOR_DISABLED);
-                    GLFW.glfwSetCursorPos(window, 0.0, 0.0);
-                    mouseX = 0.0;
-                    mouseY = 0.0;
-                    skipMouseCallback = true;
                 } else {
                     mouseX = containerWidth * 0.5;
                     mouseY = containerHeight * 0.5;
                     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
                             GLFW.GLFW_CURSOR_NORMAL);
                     GLFW.glfwSetCursorPos(window, mouseX, mouseY);
+                    set(mouseX, mouseY);
                 }
             }
             GLFW.glfwPollEvents();
@@ -318,31 +280,30 @@ public class ContainerGLFW extends ContainerLWJGL3 {
     public void openFileDialog(FileType type, String title, boolean multiple,
             IOBiConsumer<String, ReadableByteStream> result)
             throws IOException {
-        execIO(() -> dialogs
-                .openFileDialog(window, type.extensions(), title, multiple,
-                        result));
+        execIO(() -> PlatformDialogs
+                .openFileDialog(window, type.extensions(), multiple, result));
     }
 
     @Override
     public Optional<FilePath> saveFileDialog(Pair<String, String>[] extensions,
             String title) {
-        return exec(() -> dialogs.saveFileDialog(window, extensions, title));
+        return exec(() -> PlatformDialogs.saveFileDialog(window, extensions));
     }
 
     @Override
     public void message(MessageType messageType, String title, String message) {
-        exec(() -> dialogs.message(window, messageType, title, message));
+        // FIXME: No implementation
     }
 
     @Override
     public void dialog(String title, GuiController.TextFieldData text,
             boolean multiline) {
-        exec(() -> dialogs.dialog(window, title, text, multiline));
+        // FIXME: No implementation
     }
 
     @Override
     public void openFile(FilePath path) {
-        exec(() -> dialogs.openFile(window, path));
+        PlatformDialogs.openFile(path);
     }
 
     protected void initWindow(boolean fullscreen, boolean vSync)
