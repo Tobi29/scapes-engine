@@ -27,18 +27,15 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 public class OpenALAudioData {
-    private final ScapesEngine engine;
     private final int buffer;
 
     public OpenALAudioData(ScapesEngine engine, ReadableAudioStream stream,
             OpenAL openAL) throws IOException {
-        this(engine, read(engine, stream), stream.rate(), stream.channels(),
-                openAL);
+        this(read(engine, stream), stream.rate(), stream.channels(), openAL);
     }
 
-    public OpenALAudioData(ScapesEngine engine, ByteBuffer data, int rate,
-            int channels, OpenAL openAL) {
-        this.engine = engine;
+    public OpenALAudioData(ByteBuffer data, int rate, int channels,
+            OpenAL openAL) {
         buffer = openAL.createBuffer();
         openAL.storeBuffer(buffer,
                 channels > 1 ? AudioFormat.STEREO : AudioFormat.MONO, data,

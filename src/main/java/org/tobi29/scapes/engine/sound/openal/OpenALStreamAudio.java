@@ -19,7 +19,6 @@ import java.nio.FloatBuffer;
 public class OpenALStreamAudio implements OpenALAudio {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OpenALStreamAudio.class);
-    private final ScapesEngine engine;
     private final ReadSource asset;
     private final String channel;
     private final ByteBuffer pcmBuffer;
@@ -35,7 +34,6 @@ public class OpenALStreamAudio implements OpenALAudio {
     public OpenALStreamAudio(ScapesEngine engine, ReadSource asset,
             String channel, Vector3 pos, Vector3 velocity, float pitch,
             float gain, boolean state, boolean hasPosition) {
-        this.engine = engine;
         this.asset = asset;
         this.channel = channel;
         this.pos = pos;

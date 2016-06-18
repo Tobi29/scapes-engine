@@ -871,6 +871,7 @@ public class ShaderCompiler {
                 shaderFragment, outputs, uniforms);
     }
 
+    @SuppressWarnings("UnnecessaryReturnStatement")
     private void externalDeclaration(
             ScapesShaderParser.ExternalDeclarationContext context)
             throws ShaderCompileException {
@@ -951,13 +952,13 @@ public class ShaderCompiler {
             List<Parameter> parameters = new ArrayList<>();
             parameters(signature.parameterList(), parameters);
             Types returned = type(signature.typeSpecifier());
-            ScapesShaderParser.PrecisionSpecifierContext returnedPrecisionSpec =
+            ScapesShaderParser.PrecisionSpecifierContext precisionSpecifier =
                     signature.precisionSpecifier();
             Precision returnedPrecision;
-            if (returnedPrecisionSpec == null) {
+            if (precisionSpecifier == null) {
                 returnedPrecision = Precision.mediump;
             } else {
-                returnedPrecision = precision(returnedPrecisionSpec);
+                returnedPrecision = precision(precisionSpecifier);
             }
             FunctionSignature functionSignature =
                     new FunctionSignature(name, returned, returnedPrecision,
