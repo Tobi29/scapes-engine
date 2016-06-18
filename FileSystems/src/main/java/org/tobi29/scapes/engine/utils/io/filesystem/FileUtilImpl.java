@@ -52,6 +52,8 @@ public interface FileUtilImpl {
 
     FilePath copy(FilePath source, FilePath target) throws IOException;
 
+    FilePath move(FilePath source, FilePath target) throws IOException;
+
     void stream(FilePath path, IOConsumer<Stream<FilePath>> consumer)
             throws IOException;
 

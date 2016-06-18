@@ -127,6 +127,11 @@ public final class FileUtil {
         return IMPL.copy(source, target);
     }
 
+    public static FilePath move(FilePath source, FilePath target)
+            throws IOException {
+        return IMPL.move(source, target);
+    }
+
     public static void stream(FilePath path,
             IOConsumer<Stream<FilePath>> consumer) throws IOException {
         IMPL.stream(path, consumer);

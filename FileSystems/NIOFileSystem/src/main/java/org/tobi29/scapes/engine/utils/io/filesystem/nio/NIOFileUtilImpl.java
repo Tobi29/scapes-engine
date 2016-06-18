@@ -247,6 +247,11 @@ public class NIOFileUtilImpl implements FileUtilImpl {
     }
 
     @Override
+    public FilePath move(FilePath source, FilePath target) throws IOException {
+        return path(Files.move(toPath(source), toPath(target)));
+    }
+
+    @Override
     public void stream(FilePath path, IOConsumer<Stream<FilePath>> consumer)
             throws IOException {
         try (DirectoryStream<Path> stream = Files

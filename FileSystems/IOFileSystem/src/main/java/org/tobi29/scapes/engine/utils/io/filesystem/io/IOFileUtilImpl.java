@@ -268,6 +268,12 @@ public class IOFileUtilImpl implements FileUtilImpl {
     }
 
     @Override
+    public FilePath move(FilePath source, FilePath target) throws IOException {
+        toFile(source).renameTo(toFile(target));
+        return target;
+    }
+
+    @Override
     public void stream(FilePath path, IOConsumer<Stream<FilePath>> consumer)
             throws IOException {
         consumer.accept(Streams.of(list(path)));
