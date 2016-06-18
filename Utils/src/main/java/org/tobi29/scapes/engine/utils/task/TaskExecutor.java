@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class TaskExecutor {
-    private final Logger LOGGER = LoggerFactory.getLogger(TaskExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskExecutor.class);
     private final List<TaskWorker> tasks = new ArrayList<>();
     private final TaskLock taskLock = new TaskLock();
     private final ThreadPoolExecutor taskPool;
