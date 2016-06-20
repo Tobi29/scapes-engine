@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.utils.io.tag.json;
+package org.tobi29.scapes.engine.utils.io.tag.json.tests;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure;
+import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON;
 
 import java.io.IOException;
 import java.util.ArrayList;
