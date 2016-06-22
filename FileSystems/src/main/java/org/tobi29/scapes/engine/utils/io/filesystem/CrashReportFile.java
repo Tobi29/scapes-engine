@@ -67,10 +67,11 @@ public final class CrashReportFile {
     /**
      * Writes a crash report
      *
-     * @param e           The {@code Throwable} that supplies te stacktrace
-     * @param path        The {@code File} that the report is written to
+     * @param e           The {@link Throwable} that supplies te stacktrace
+     * @param path        The {@link FilePath} that the report is written to
      * @param name        Name of the program used in the report
-     * @param debugValues A {@code Map} that supplies extra information
+     * @param debugValues A {@link Map} that supplies extra information
+     * @throws IOException When an IO error occurs
      */
     public static void writeCrashReport(Throwable e, FilePath path, String name,
             Map<String, String> debugValues) throws IOException {
@@ -80,11 +81,12 @@ public final class CrashReportFile {
     /**
      * Writes a crash report
      *
-     * @param e           The {@code Throwable} that supplies te stacktrace
-     * @param path        The {@code File} that the report is written to
+     * @param e           The {@link Throwable} that supplies te stacktrace
+     * @param path        The {@link FilePath} that the report is written to
      * @param name        Name of the program used in the report
-     * @param debugValues A {@code Map} that supplies extra information
+     * @param debugValues A {@link Map} that supplies extra information
      * @param time        Time when crash occurred
+     * @throws IOException When an IO error occurs
      */
     public static void writeCrashReport(Throwable e, FilePath path, String name,
             Map<String, String> debugValues, OffsetDateTime time)

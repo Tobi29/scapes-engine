@@ -21,15 +21,15 @@ import java.util.Properties;
 import java.util.UUID;
 
 /**
- * Interface to make types usable as {@code MultiTag}s
+ * Utility class for easier usage of complex data structures in tags
  */
 public class MultiTag {
     /**
-     * Utility method to write a {@code UUID} into a {@code TagStructure}
+     * Utility method to write a {@link UUID} into a {@link TagStructure}
      *
-     * @param uuid The {@code UUID} that will be written
-     * @return A newly created {@code TagStructure} containing the data from the
-     * {@code UUID}
+     * @param uuid The {@link UUID} that will be written
+     * @return A newly created {@link TagStructure} containing the data from the
+     * {@link UUID}
      */
     public static TagStructure writeUUID(UUID uuid) {
         TagStructure tagStructure = new TagStructure();
@@ -39,10 +39,10 @@ public class MultiTag {
     }
 
     /**
-     * Utility method to write a {@code TagStructure} into a {@code UUID}
+     * Utility method to write a {@link TagStructure} into a {@link UUID}
      *
-     * @param tagStructure The {@code TagStructure} that will be written
-     * @return A newly created {@code UUID} containing the data from the {@code
+     * @param tagStructure The {@link TagStructure} that will be written
+     * @return A newly created {@link UUID} containing the data from the {@link
      * TagStructure}
      */
     public static UUID readUUID(TagStructure tagStructure) {
@@ -51,11 +51,11 @@ public class MultiTag {
     }
 
     /**
-     * Utility method to write {@code Properties} into a {@code TagStructure}
+     * Utility method to write {@link Properties} into a {@link TagStructure}
      *
-     * @param properties The {@code Properties} that will be written
-     * @return A newly created {@code TagStructure} containing the data from the
-     * {@code Properties}
+     * @param properties The {@link Properties} that will be written
+     * @return A newly created {@link TagStructure} containing the data from the
+     * {@link Properties}
      */
     public static TagStructure writeProperties(Properties properties) {
         TagStructure tagStructure = new TagStructure();
@@ -66,11 +66,11 @@ public class MultiTag {
     }
 
     /**
-     * Utility method to write a {@code TagStructure} into {@code Properties}
+     * Utility method to write a {@link TagStructure} into {@link Properties}
      *
-     * @param tagStructure The {@code TagStructure} that will be written
-     * @return Newly created {@code Properties} containing the data from the
-     * {@code TagStructure}
+     * @param tagStructure The {@link TagStructure} that will be written
+     * @return Newly created {@link Properties} containing the data from the
+     * {@link TagStructure}
      */
     public static Properties readProperties(TagStructure tagStructure) {
         Properties properties = new Properties();
@@ -79,10 +79,10 @@ public class MultiTag {
     }
 
     /**
-     * Utility method to write a {@code TagStructure} into {@code Properties}
+     * Utility method to write a {@link TagStructure} into {@link Properties}
      *
-     * @param tagStructure The {@code TagStructure} that will be written
-     * @param properties   Existing {@code Properties} object to write to
+     * @param tagStructure The {@link TagStructure} that will be written
+     * @param properties   Existing {@link Properties} object to write to
      */
     public static void readProperties(TagStructure tagStructure,
             Properties properties) {
@@ -91,14 +91,23 @@ public class MultiTag {
                         String.valueOf(entry.getValue())));
     }
 
+    /**
+     * Allows returning object state out of a {@link TagStructure}
+     */
     public interface Readable {
         void read(TagStructure tagStructure);
     }
 
+    /**
+     * Allows writing object state into a {@link TagStructure}
+     */
     public interface Writeable {
         TagStructure write();
     }
 
+    /**
+     * Shorthand for read and write multi-tags
+     */
     public interface ReadAndWrite extends Readable, Writeable {
     }
 }

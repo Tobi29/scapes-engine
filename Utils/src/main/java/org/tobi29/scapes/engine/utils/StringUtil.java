@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * Utility class for {@code String}s
+ * Utility class for {@link String}s
  */
 public final class StringUtil {
     private static final Pattern REPLACE_Q = Pattern.compile("\\?");
@@ -32,7 +32,7 @@ public final class StringUtil {
     }
 
     /**
-     * Creates a hash from the given {@code String}
+     * Creates a hash from the given {@link String}
      *
      * @param value String to create the hash from
      * @return A 64-bit hash
@@ -42,7 +42,7 @@ public final class StringUtil {
     }
 
     /**
-     * Creates a hash from the given {@code String}
+     * Creates a hash from the given {@link String}
      *
      * @param value String to create the hash from
      * @param h     Base value for creating the hash
@@ -56,6 +56,12 @@ public final class StringUtil {
         return h;
     }
 
+    /**
+     * Converts a wildcard expression into a {@link Pattern}
+     *
+     * @param exp {@link String} containing wildcard expression
+     * @return A {@link Pattern} matching like the wildcard expression
+     */
     public static Pattern wildcard(String exp) {
         // Replace "?" with ".?" and "*" with ".*"
         String regex =
@@ -67,8 +73,8 @@ public final class StringUtil {
     /**
      * Assembles a list of replace operations
      *
-     * @param array Matcher and replacement strings
-     *              Requires 2 arguments per pattern
+     * @param array Matcher and replacement strings Requires 2 arguments per
+     *              pattern
      * @return A {@link Function} that runs the replaces on a string
      */
     public static Function<String, String> replace(String... array) {

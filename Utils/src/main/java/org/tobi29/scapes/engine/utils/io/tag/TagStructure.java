@@ -26,21 +26,15 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Utility class for storing tree data structures in streams
  * <p>
- * Each {@code TagStructure} contains a {@code Map} which is indirectly accessed
+ * Each {@link TagStructure} contains a {@link Map} which is indirectly accessed
  * with setters and getters to prevent unsupported types in the map
- * <p>
- * The read and write function allow all contents to be written into any kind of
- * {@code OutputStream} and recreated at a later point
- * <p>
- * The binary format used for storing data allows compression which does not close the
- * {@code OutputStream} to make it usable in networking code
  */
 public class TagStructure {
     private static final byte[] EMPTY_BYTE = new byte[0];
     private Map<String, Object> tags = new ConcurrentHashMap<>();
 
     /**
-     * Returns the {@code boolean} that is mapped to that key
+     * Returns the boolean that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>false</tt>
@@ -55,7 +49,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code byte} that is mapped to that key
+     * Returns the byte that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>0</tt>
@@ -70,14 +64,14 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code byte[]} that is mapped to that key
+     * Returns the byte array that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns an empty
-     * {@code byte[]}
+     * byte array
      *
      * @param key The key whose value will be returned
-     * @return The value mapped to the key or an empty {@code byte[]} if no
-     * valid value was found
+     * @return The value mapped to the key or an empty byte array if no valid
+     * value was found
      */
     public byte[] getByteArray(String key) {
         Object tag = tags.get(key);
@@ -85,7 +79,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code short} that is mapped to that key
+     * Returns the short that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>0</tt>
@@ -100,7 +94,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code int} that is mapped to that key
+     * Returns the integer that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>0</tt>
@@ -115,7 +109,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code float} that is mapped to that key
+     * Returns the float that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>0</tt>
@@ -130,7 +124,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code long} that is mapped to that key
+     * Returns the long that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>0</tt>
@@ -145,7 +139,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code double} that is mapped to that key
+     * Returns the double that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns
      * <tt>0</tt>
@@ -160,13 +154,13 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code String} that is mapped to that key
+     * Returns the {@link String} that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns an empty
-     * {@code String}
+     * {@link String}
      *
      * @param key The key whose value will be returned
-     * @return The value mapped to the key or an empty {@code String} if no
+     * @return The value mapped to the key or an empty {@link String} if no
      * valid value was found
      */
     public String getString(String key) {
@@ -175,13 +169,13 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code TagStructure} that is mapped to that key
+     * Returns the {@link TagStructure} that is mapped to that key
      * <p>
      * If no value is found or the value has the wrong type, it returns an empty
-     * {@code TagStructure} and maps it to the specified key
+     * {@link TagStructure} and maps it to the specified key
      *
      * @param key The key whose value will be returned
-     * @return The value mapped to the key or an empty {@code TagStructure} if
+     * @return The value mapped to the key or an empty {@link TagStructure} if
      * no valid value was found
      */
     public TagStructure getStructure(String key) {
@@ -197,15 +191,15 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code List} that is mapped to that key
+     * Returns the {@link List} that is mapped to that key
      * <p>
-     * This {@code List} only contains {@code TagStructure} elements
+     * This {@link List} only contains {@link TagStructure} elements
      * <p>
      * If no value is found or the value has the wrong type, it returns an empty
-     * {@code List}
+     * {@link List}
      *
      * @param key The key whose value will be returned
-     * @return The value mapped to the key or an empty {@code List} if no valid
+     * @return The value mapped to the key or an empty {@link List} if no valid
      * value was found
      */
     @SuppressWarnings("OverlyStrongTypeCast")
@@ -216,12 +210,13 @@ public class TagStructure {
     }
 
     /**
-     * Reads the given {@code MultiTag} from the {@code TagStructure} mapped to
+     * Reads the given {@link MultiTag} from the {@link TagStructure} mapped to
      * the given key
      *
      * @param key   The key whose value will be read
-     * @param value The {@code MultiTag} object that reads from the mapped
-     *              {@code TagStructure}
+     * @param value The {@link MultiTag} object that reads from the mapped
+     *              {@link TagStructure}
+     * @param <E>   Multi-tag type
      * @return The given value
      */
     public <E extends MultiTag.Readable> E getMultiTag(String key, E value) {
@@ -230,8 +225,8 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code UUID} mapped to the given key, internally using a
-     * {@code MultiTag} to read the value
+     * Returns the {@link UUID} mapped to the given key, internally using a
+     * {@link MultiTag} to read the value
      *
      * @param key The key whose value will be returned
      * @return The value mapped to the key
@@ -241,8 +236,8 @@ public class TagStructure {
     }
 
     /**
-     * Returns the {@code Properties} mapped to the given key, internally using
-     * a {@code MultiTag} to read the value
+     * Returns the {@link Properties} mapped to the given key, internally using
+     * a {@link MultiTag} to read the value
      *
      * @param key The key whose value will be returned
      * @return The value mapped to the key
@@ -252,13 +247,13 @@ public class TagStructure {
     }
 
     /**
-     * Returns an {@code Set} of all {@code Object} entries in this {@code
+     * Returns an {@link Set} of all {@link Object} entries in this {@link
      * TagStructure}
      * <p>
-     * Note: It is not recommended to attempt to change the contents this {@code
+     * Note: It is not recommended to attempt to change the contents this {@link
      * Set}
      *
-     * @return {@code Set} of all {@code Object} entries in this {@code
+     * @return {@link Set} of all {@link Object} entries in this {@link
      * TagStructure}
      */
     public Set<Map.Entry<String, Object>> getTagEntrySet() {
@@ -266,13 +261,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code boolean} to the key
+     * Maps the given boolean to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code boolean} that was mapped
+     * @return The boolean that was mapped
      */
     public boolean setBoolean(String key, boolean value) {
         tags.put(key, value);
@@ -280,13 +275,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code byte} to the key
+     * Maps the given byte to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code byte} that was mapped
+     * @return The byte that was mapped
      */
     public byte setByte(String key, byte value) {
         tags.put(key, value);
@@ -294,13 +289,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code byte[]} to the key
+     * Maps the given byte array to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code byte[]} that was mapped
+     * @return The byte array that was mapped
      */
     public byte[] setByteArray(String key, byte... value) {
         Objects.requireNonNull(value);
@@ -309,13 +304,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code short} to the key
+     * Maps the given short to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code short} that was mapped
+     * @return The short that was mapped
      */
     public short setShort(String key, short value) {
         tags.put(key, value);
@@ -323,13 +318,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code int} to the key
+     * Maps the given integer to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code int} that was mapped
+     * @return The integer that was mapped
      */
     public int setInteger(String key, int value) {
         tags.put(key, value);
@@ -337,13 +332,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code float} to the key
+     * Maps the given float to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code float} that was mapped
+     * @return The float that was mapped
      */
     public float setFloat(String key, float value) {
         tags.put(key, value);
@@ -351,13 +346,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code long} to the key
+     * Maps the given long to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code long} that was mapped
+     * @return The long that was mapped
      */
     public long setLong(String key, long value) {
         tags.put(key, value);
@@ -365,13 +360,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code double} to the key
+     * Maps the given double to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code double} that was mapped
+     * @return The double that was mapped
      */
     public double setDouble(String key, double value) {
         tags.put(key, value);
@@ -379,13 +374,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code String} to the key
+     * Maps the given {@link String} to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code String} that was mapped
+     * @return The {@link String} that was mapped
      */
     public String setString(String key, String value) {
         Objects.requireNonNull(value);
@@ -394,13 +389,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code TagStructure} to the key
+     * Maps the given {@link TagStructure} to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code TagStructure} that was mapped
+     * @return The {@link TagStructure} that was mapped
      */
     public TagStructure setStructure(String key, TagStructure value) {
         tags.put(key, value);
@@ -408,13 +403,13 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code List} to the key
+     * Maps the given {@link List} to the key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code List} that was mapped
+     * @return The {@link List} that was mapped
      */
     public List<TagStructure> setList(String key, List<TagStructure> value) {
         StructureList list = new StructureList(value.size());
@@ -424,14 +419,15 @@ public class TagStructure {
     }
 
     /**
-     * Writes the given {@code MultiTag} into a {@code TagStructure} and maps it
+     * Writes the given {@link MultiTag} into a {@link TagStructure} and maps it
      * to the given key
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
-     * @param key   The key that the {@code TagStructure} will be mapped to
-     * @param value The {@code MultiTag} that will be written
-     * @return The {@code MultiTag} that was written
+     * @param key   The key that the {@link TagStructure} will be mapped to
+     * @param value The {@link MultiTag} that will be written
+     * @param <E>   Multi-tag type
+     * @return The {@link MultiTag} that was written
      */
     public <E extends MultiTag.Writeable> E setMultiTag(String key, E value) {
         setStructure(key, value.write());
@@ -439,14 +435,14 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code UUID} to the key, internally using a {@code
+     * Maps the given {@link UUID} to the key, internally using a {@link
      * MultiTag} to write the value
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code UUID} that was mapped
+     * @return The {@link UUID} that was mapped
      */
     public UUID setUUID(String key, UUID value) {
         setStructure(key, MultiTag.writeUUID(value));
@@ -454,14 +450,14 @@ public class TagStructure {
     }
 
     /**
-     * Maps the given {@code Properties} to the key, internally using a {@code
+     * Maps the given {@link Properties} to the key, internally using a {@link
      * MultiTag} to write the value
      * <p>
      * If a value was already mapped to the key, it will be overridden
      *
      * @param key   The key that the value will be mapped to
      * @param value The value that will be mapped
-     * @return The {@code Properties} that was mapped
+     * @return The {@link Properties} that was mapped
      */
     public Properties setProperties(String key, Properties value) {
         setStructure(key, MultiTag.writeProperties(value));
@@ -493,7 +489,7 @@ public class TagStructure {
     }
 
     /**
-     * Returns whether or not the {@code TagStructure} contains this key
+     * Returns whether or not the {@link TagStructure} contains this key
      *
      * @param key The key that will be checked
      * @return <tt>true</tt> if the key was found
@@ -503,12 +499,12 @@ public class TagStructure {
     }
 
     /**
-     * Copies all contents of the {@code TagStructure}
+     * Copies all contents of the {@link TagStructure}
      * <p>
-     * Note: {@code TagStructure}, {@code List} and {@code byte[]} objects will
-     * be copied as well, so modifying them does not affect the original
+     * Note: {@link TagStructure}, {@link List} and byte array objects will be
+     * copied as well, so modifying them does not affect the original
      *
-     * @return A copy of this {@code TagStructure}
+     * @return A copy of this {@link TagStructure}
      */
     public TagStructure copy() {
         TagStructure tag = new TagStructure();
@@ -534,9 +530,9 @@ public class TagStructure {
     }
 
     /**
-     * Writes this {@code TagStructure}
+     * Writes this {@link TagStructure}
      *
-     * @param writer The {@code TagStructureWriter} used to write the data
+     * @param writer The {@link TagStructureWriter} used to write the data
      * @throws IOException Thrown when an I/O exception occurred
      */
     public void write(TagStructureWriter writer) throws IOException {
@@ -546,9 +542,9 @@ public class TagStructure {
     }
 
     /**
-     * Reads this {@code TagStructure}
+     * Reads this {@link TagStructure}
      *
-     * @param reader The {@code TagStructureReader} used to read the data
+     * @param reader The {@link TagStructureReader} used to read the data
      * @throws IOException Thrown when an I/O exception occurred
      */
     public void read(TagStructureReader reader) throws IOException {

@@ -50,13 +50,14 @@ public final class ChecksumUtil {
     public static Checksum checksum(byte[] array, Algorithm algorithm) {
         MessageDigest digest = algorithm.digest();
         digest.update(array);
-        return new Checksum(digest.digest());
+        return new Checksum(algorithm, digest.digest());
     }
 
     /**
      * Creates a checksum from the given {@link ByteBuffer}
      *
-     * @param buffer {@link ByteBuffer} that will be used to create the checksum
+     * @param buffer {@link ByteBuffer} that will be used to create the
+     *               checksum
      * @return A {@link Checksum} containing the checksum
      */
     public static Checksum checksum(ByteBuffer buffer) {
@@ -66,21 +67,24 @@ public final class ChecksumUtil {
     /**
      * Creates a checksum from the given {@link ByteBuffer}
      *
-     * @param buffer    {@link ByteBuffer} that will be used to create the checksum
+     * @param buffer    {@link ByteBuffer} that will be used to create the
+     *                  checksum
      * @param algorithm The algorithm that will be used to create the checksum
      * @return A {@link Checksum} containing the checksum
      */
     public static Checksum checksum(ByteBuffer buffer, Algorithm algorithm) {
         MessageDigest digest = algorithm.digest();
         digest.update(buffer);
-        return new Checksum(digest.digest());
+        return new Checksum(algorithm, digest.digest());
     }
 
     /**
      * Creates a checksum from the given {@link ReadableByteStream}
      *
-     * @param input {@link ReadableByteStream} that will be used to create the checksum
+     * @param input {@link ReadableByteStream} that will be used to create the
+     *              checksum
      * @return A {@link Checksum} containing the checksum
+     * @throws IOException When an IO error occurs
      */
     public static Checksum checksum(ReadableByteStream input)
             throws IOException {
@@ -90,21 +94,24 @@ public final class ChecksumUtil {
     /**
      * Creates a checksum from the given {@link ReadableByteStream}
      *
-     * @param input     {@link ReadableByteStream} that will be used to create the checksum
+     * @param input     {@link ReadableByteStream} that will be used to create
+     *                  the checksum
      * @param algorithm The algorithm that will be used to create the checksum
      * @return A {@link Checksum} containing the checksum
+     * @throws IOException When an IO error occurs
      */
     public static Checksum checksum(ReadableByteStream input,
             Algorithm algorithm) throws IOException {
         MessageDigest digest = algorithm.digest();
         ProcessStream.process(input, digest::update);
-        return new Checksum(digest.digest());
+        return new Checksum(algorithm, digest.digest());
     }
 
     /**
      * Enum containing available checksum algorithms
      */
     public enum Algorithm {
+        UNKNOWN("UNKNOWN", 0),
         SHA256("SHA-256", 32),
         SHA1("SHA1", 20),
         @Deprecated MD5("MD5", 16);
@@ -117,11 +124,15 @@ public final class ChecksumUtil {
         }
 
         /**
-         * Creates a new {@code MessageDigest}
+         * Creates a new {@link MessageDigest}
          *
-         * @return {@code MessageDigest} using the specified algorithm
+         * @return {@link MessageDigest} using the specified algorithm
          */
         public MessageDigest digest() {
+            if (this == UNKNOWN) {
+                throw new IllegalStateException(
+                        "Trying to create digest from unknown algorithm");
+            }
             try {
                 return MessageDigest.getInstance(name);
             } catch (NoSuchAlgorithmException e) {

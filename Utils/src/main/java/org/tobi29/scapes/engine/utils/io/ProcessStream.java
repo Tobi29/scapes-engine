@@ -97,19 +97,21 @@ public final class ProcessStream {
     }
 
     /**
-     * A default {@code StreamProcessor} that encoded the input into a {@code String}
+     * A default {@link StreamProcessor} that encoded the input into a {@link
+     * String}
      *
-     * @return UTF8 encoded {@code String}
+     * @return UTF8 encoded {@link String}
      */
     public static StreamProcessor<String> asString() {
         return asString(StandardCharsets.UTF_8);
     }
 
     /**
-     * A default {@code StreamProcessor} that encoded the input into a {@code String}
+     * A default {@link StreamProcessor} that encoded the input into a {@link
+     * String}
      *
      * @param charset Encoding charset for data
-     * @return Encoded {@code String}
+     * @return Encoded {@link String}
      */
     public static StreamProcessor<String> asString(Charset charset) {
         return new StreamProcessor<String>() {

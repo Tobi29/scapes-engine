@@ -23,7 +23,7 @@ public interface Crashable {
     /**
      * Called when an unexpected error happened in execution
      *
-     * @param e The {@code Throwable} that was caught
+     * @param e The {@link Throwable} that was caught
      */
     void crash(Throwable e);
 }

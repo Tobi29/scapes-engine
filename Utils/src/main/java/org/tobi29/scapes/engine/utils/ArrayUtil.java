@@ -285,8 +285,7 @@ public final class ArrayUtil {
     }
 
     /**
-     * Converts a hexadecimal string to a byte array
-     * Silently discards spaces
+     * Converts a hexadecimal string to a byte array Silently discards spaces
      *
      * @param text String to convert
      * @return A byte array containing the data
@@ -328,6 +327,7 @@ public final class ArrayUtil {
      *
      * @param text Base64 String to convert
      * @return Byte array containing the data
+     * @throws IOException When an invalid base64 was given
      */
     public static byte[] fromBase64(String text) throws IOException {
         try {
@@ -378,6 +378,7 @@ public final class ArrayUtil {
      *
      * @param array    Array to fill
      * @param supplier Supplier called for each value written to the array
+     * @param <E> Element type
      */
     public static <E> void fill(E[] array, Supplier<E> supplier) {
         for (int i = 0; i < array.length; i++) {

@@ -25,70 +25,71 @@ public final class BufferCreator {
     }
 
     /**
-     * Creates a {@code ByteBuffer} with big-endian byte-order
+     * Creates a {@link ByteBuffer} with big-endian byte-order
      *
      * @param size Capacity of the buffer
-     * @return A {@code ByteBuffer} with big-endian byte-order
+     * @return A {@link ByteBuffer} with big-endian byte-order
      */
     public static ByteBuffer bytes(int size) {
         return ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN);
     }
 
     /**
-     * Creates a {@code ShortBuffer} with big-endian byte-order
+     * Creates a {@link ShortBuffer} with big-endian byte-order
      *
      * @param size Capacity of the buffer
-     * @return A {@code ShortBuffer} with big-endian byte-order
+     * @return A {@link ShortBuffer} with big-endian byte-order
      */
     public static ShortBuffer shorts(int size) {
         return bytes(size << 1).asShortBuffer();
     }
 
     /**
-     * Creates a {@code IntBuffer} with big-endian byte-order
+     * Creates a {@link IntBuffer} with big-endian byte-order
      *
      * @param size Capacity of the buffer
-     * @return A {@code IntBuffer} with big-endian byte-order
+     * @return A {@link IntBuffer} with big-endian byte-order
      */
     public static IntBuffer ints(int size) {
         return bytes(size << 2).asIntBuffer();
     }
 
     /**
-     * Creates a {@code LongBuffer} with big-endian byte-order
+     * Creates a {@link LongBuffer} with big-endian byte-order
      *
      * @param size Capacity of the buffer
-     * @return A {@code LongBuffer} with big-endian byte-order
+     * @return A {@link LongBuffer} with big-endian byte-order
      */
     public static LongBuffer longs(int size) {
         return bytes(size << 3).asLongBuffer();
     }
 
     /**
-     * Creates a {@code FloatBuffer} with big-endian byte-order
+     * Creates a {@link FloatBuffer} with big-endian byte-order
      *
      * @param size Capacity of the buffer
-     * @return A {@code FloatBuffer} with big-endian byte-order
+     * @return A {@link FloatBuffer} with big-endian byte-order
      */
     public static FloatBuffer floats(int size) {
         return bytes(size << 2).asFloatBuffer();
     }
 
     /**
-     * Creates a {@code DoubleBuffer} with big-endian byte-order
+     * Creates a {@link DoubleBuffer} with big-endian byte-order
      *
      * @param size Capacity of the buffer
-     * @return A {@code DoubleBuffer} with big-endian byte-order
+     * @return A {@link DoubleBuffer} with big-endian byte-order
      */
     public static DoubleBuffer doubles(int size) {
         return bytes(size << 3).asDoubleBuffer();
     }
 
     /**
-     * Creates a {@code ByteBuffer} and copies the array into it
+     * Creates a {@link ByteBuffer} and copies the array into it
      *
      * @param array Array to write
-     * @return A {@code ByteBuffer}, with position at 0 and limit at length of array
+     * @return A {@link ByteBuffer}, with position at 0 and limit at length of
+     * array
      */
     public static ByteBuffer wrap(byte... array) {
         ByteBuffer buffer = bytes(array.length);
@@ -98,10 +99,11 @@ public final class BufferCreator {
     }
 
     /**
-     * Creates a {@code ShortBuffer} and copies the array into it
+     * Creates a {@link ShortBuffer} and copies the array into it
      *
      * @param array Array to write
-     * @return A {@code ShortBuffer}, with position at 0 and limit at length of array
+     * @return A {@link ShortBuffer}, with position at 0 and limit at length of
+     * array
      */
     public static ShortBuffer wrap(short... array) {
         ShortBuffer buffer = shorts(array.length);
@@ -111,10 +113,11 @@ public final class BufferCreator {
     }
 
     /**
-     * Creates a {@code IntBuffer} and copies the array into it
+     * Creates a {@link IntBuffer} and copies the array into it
      *
      * @param array Array to write
-     * @return A {@code IntBuffer}, with position at 0 and limit at length of array
+     * @return A {@link IntBuffer}, with position at 0 and limit at length of
+     * array
      */
     public static IntBuffer wrap(int... array) {
         IntBuffer buffer = ints(array.length);
@@ -124,10 +127,11 @@ public final class BufferCreator {
     }
 
     /**
-     * Creates a {@code LongBuffer} and copies the array into it
+     * Creates a {@link LongBuffer} and copies the array into it
      *
      * @param array Array to write
-     * @return A {@code LongBuffer}, with position at 0 and limit at length of array
+     * @return A {@link LongBuffer}, with position at 0 and limit at length of
+     * array
      */
     public static LongBuffer wrap(long... array) {
         LongBuffer buffer = longs(array.length);
@@ -137,10 +141,11 @@ public final class BufferCreator {
     }
 
     /**
-     * Creates a {@code FloatBuffer} and copies the array into it
+     * Creates a {@link FloatBuffer} and copies the array into it
      *
      * @param array Array to write
-     * @return A {@code FloatBuffer}, with position at 0 and limit at length of array
+     * @return A {@link FloatBuffer}, with position at 0 and limit at length of
+     * array
      */
     public static FloatBuffer wrap(float... array) {
         FloatBuffer buffer = floats(array.length);
@@ -150,10 +155,11 @@ public final class BufferCreator {
     }
 
     /**
-     * Creates a {@code DoubleBuffer} and copies the array into it
+     * Creates a {@link DoubleBuffer} and copies the array into it
      *
      * @param array Array to write
-     * @return A {@code DoubleBuffer}, with position at 0 and limit at length of array
+     * @return A {@link DoubleBuffer}, with position at 0 and limit at length of
+     * array
      */
     public static DoubleBuffer wrap(double... array) {
         DoubleBuffer buffer = doubles(array.length);

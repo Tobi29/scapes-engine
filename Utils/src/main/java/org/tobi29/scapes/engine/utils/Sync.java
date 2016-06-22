@@ -34,10 +34,11 @@ public class Sync {
     private long lastSync, sync, diff, tickDiff;
 
     /**
-     * Constructs a new {@code Sync} instance
+     * Constructs a new {@link Sync} instance
      *
      * @param tps          Target TPS
-     * @param minSkipDelay Minimum delay to start skipping frames in nanoseconds
+     * @param minSkipDelay Minimum delay to start skipping frames in
+     *                     nanoseconds
      * @param logSkip      Whether or not to log skips
      * @param name         Name used by to log skips
      */
@@ -134,7 +135,8 @@ public class Sync {
      * <p>
      * Non capping counterpart:
      *
-     * @param joiner Joiner that the {@link Joiner.Joinable#sleep} method is called on
+     * @param joiner Joiner that the {@link Joiner.Joinable#sleep} method is
+     *               called on
      * @see #tick()
      */
     public void cap(Joiner.Joinable joiner) {
@@ -150,7 +152,7 @@ public class Sync {
     /**
      * Execute cap and calculate TPS
      * <p>
-     * Non capping counterpart:
+     * Non capping counterpart: {@link #tick()}
      *
      * @param park Callback for executing the sleep
      * @see #tick()
@@ -184,7 +186,7 @@ public class Sync {
     /**
      * Calculate TPS without capping
      * <p>
-     * Capping counterpart:
+     * Capping counterpart: {@link #cap()}
      *
      * @see #cap()
      */

@@ -36,19 +36,22 @@ public class FileCache {
     private final Duration time;
 
     /**
-     * Creates a new {@code FileCache}
+     * Creates a new {@link FileCache}
      *
-     * @param root The root directory that the cache will be saved into, will be created if it doesn't exist
+     * @param root The root directory that the cache will be saved into, will be
+     *             created if it doesn't exist
      */
     public FileCache(FilePath root) throws IOException {
         this(root, Duration.ofDays(16));
     }
 
     /**
-     * Creates a new {@code FileCache}
+     * Creates a new {@link FileCache}
      *
-     * @param root The root directory that the cache will be saved into, will be created if it doesn't exist
-     * @param time Time in milliseconds until a file will be treated as old and is deleted on {@linkplain #check()}
+     * @param root The root directory that the cache will be saved into, will be
+     *             created if it doesn't exist
+     * @param time Time in milliseconds until a file will be treated as old and
+     *             is deleted on {@linkplain #check()}
      */
     public FileCache(FilePath root, Duration time) throws IOException {
         FileUtil.createDirectories(root);
@@ -57,11 +60,15 @@ public class FileCache {
     }
 
     /**
-     * Take a {@link ReadableByteStream} from the resource, reads it and write its data into a file in the cache
+     * Take a {@link ReadableByteStream} from the resource, reads it and write
+     * its data into a file in the cache
      *
-     * @param resource {@code InputStream} that will be read until it ends and will be closed
-     * @param type     The type of data that will be stored, to organize the cache
-     * @return A {@code FileCacheLocation} to later access the stored data, containing the checksum of the written file
+     * @param resource {@link ReadSource} that will be read until it ends and
+     *                 will be closed
+     * @param type     The type of data that will be stored, to organize the
+     *                 cache
+     * @return A {@link Location} to later access the stored data,
+     * containing the checksum of the written file
      * @throws IOException If an I/O error occurred
      */
     public synchronized Location store(ReadSource resource, String type)
@@ -70,11 +77,14 @@ public class FileCache {
     }
 
     /**
-     * Reads the given {@link ReadableByteStream} and write its data into a file in the cache
+     * Reads the given {@link ReadableByteStream} and write its data into a file
+     * in the cache
      *
-     * @param stream {@link ReadableByteStream} that will be read until it ends and will be closed
+     * @param stream {@link ReadableByteStream} that will be read until it ends
+     *               and will be closed
      * @param type   The type of data that will be stored, to organize the cache
-     * @return A {@code FileCacheLocation} to later access the stored data, containing the checksum of the written file
+     * @return A {@link Location} to later access the stored data, containing
+     * the checksum of the written file
      * @throws IOException If an I/O error occurred
      */
     public synchronized Location store(ReadableByteStream stream, String type)
@@ -104,10 +114,11 @@ public class FileCache {
     }
 
     /**
-     * Gives the {@code File} from the {@code FileCacheLocation} in this cache
+     * Gives the {@link FilePath} from the {@link Location} in this cache
      *
      * @param location The location that will be looked up
-     * @return A {@code File} pointing at the file in cache or null if the cache doesn't contain a matching file
+     * @return A {@link FilePath} pointing at the file in cache or empty if the
+     * cache does not contain a matching file
      */
     public synchronized Optional<FilePath> retrieve(Location location)
             throws IOException {
