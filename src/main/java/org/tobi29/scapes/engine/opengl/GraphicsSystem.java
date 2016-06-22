@@ -36,7 +36,7 @@ public class GraphicsSystem {
             LoggerFactory.getLogger(GraphicsSystem.class);
     private final ScapesEngine engine;
     private final GuiWidgetDebugValues.Element fpsDebug, widthDebug,
-            heightDebug, textureDebug, vaoDebug;
+            heightDebug, textureDebug, vaoDebug, fboDebug;
     private final GL gl;
     private boolean triggerScreenshot;
     private double resolutionMultiplier = 1.0;
@@ -54,6 +54,7 @@ public class GraphicsSystem {
         heightDebug = debugValues.get("Graphics-Height");
         textureDebug = debugValues.get("Graphics-Textures");
         vaoDebug = debugValues.get("Graphics-VAOs");
+        fboDebug = debugValues.get("Graphics-FBOs");
     }
 
     public void dispose() {
@@ -119,8 +120,9 @@ public class GraphicsSystem {
                 state.render(gl, delta, fboSizeDirty);
             }
             fpsDebug.setValue(1.0 / delta);
-            vaoDebug.setValue(gl.vaoTracker().vaoCount());
             textureDebug.setValue(gl.textureTracker().textureCount());
+            vaoDebug.setValue(gl.vaoTracker().vaoCount());
+            fboDebug.setValue(gl.fboTracker().fboCount());
             if (triggerScreenshot) {
                 try (Profiler.C ignored = Profiler.section("Screenshot")) {
                     triggerScreenshot = false;

@@ -25,6 +25,10 @@ public class FBOTracker {
         currentFBO = 0;
     }
 
+    public int fboCount() {
+        return fbos.size();
+    }
+
     protected Runnable attach(FBO fbo) {
         fbos.add(fbo);
         return () -> fbos.remove(fbo);

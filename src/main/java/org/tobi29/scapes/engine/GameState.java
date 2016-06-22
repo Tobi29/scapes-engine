@@ -15,7 +15,8 @@
  */
 package org.tobi29.scapes.engine;
 
-import org.tobi29.scapes.engine.opengl.*;
+import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.opengl.OpenGL;
 import org.tobi29.scapes.engine.opengl.fbo.FBO;
 import org.tobi29.scapes.engine.opengl.scenes.Scene;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
@@ -32,7 +33,7 @@ public abstract class GameState {
     protected final ScapesEngine engine;
     protected final AtomicReference<Scene> newScene = new AtomicReference<>();
     protected Scene scene;
-    protected FBO fboScene, fboFront, fboBack;
+    protected FBO[] fbos;
 
     protected GameState(ScapesEngine engine, Scene scene) {
         this.engine = engine;
@@ -82,79 +83,37 @@ public abstract class GameState {
                 scene.dispose(gl);
                 scene.dispose();
             }
+            fbos = null;
             newScene.setState(this);
             newScene.init(gl);
             scene = newScene;
         }
         int sceneWidth = scene.width(gl.sceneWidth());
         int sceneHeight = scene.height(gl.sceneHeight());
-        if (fboScene == null) {
-            fboScene = new FBO(engine, sceneWidth, sceneHeight,
-                    scene.colorAttachments(), true, true, false);
-            scene.initFBO(0, fboScene);
-        }
-        if (updateSize) {
-            if (fboScene != null) {
-                fboScene.setSize(sceneWidth, sceneHeight);
-                scene.initFBO(0, fboScene);
-            }
-            if (fboFront != null) {
-                fboFront.setSize(sceneWidth, sceneHeight);
-                scene.initFBO(1, fboFront);
-            }
-            if (fboBack != null) {
-                fboBack.setSize(sceneWidth, sceneHeight);
-                scene.initFBO(2, fboBack);
+        if (fbos == null || updateSize) {
+            fbos = new FBO[scene.renderPasses()];
+            for (int i = 0; i < fbos.length; i++) {
+                fbos[i] = new FBO(engine, sceneWidth, sceneHeight,
+                        scene.colorAttachments(), true, true, false);
+                scene.initFBO(i, fbos[i]);
             }
         }
         gl.checkError("Initializing-Scene-Rendering");
-        fboScene.activate(gl);
+        fbos[0].activate(gl);
         gl.viewport(0, 0, sceneWidth, sceneHeight);
         gl.clearDepth();
         scene.renderScene(gl);
-        fboScene.deactivate(gl);
+        fbos[0].deactivate(gl);
         gl.checkError("Scene-Rendering");
         gl.setProjectionOrthogonal(0.0f, 0.0f, 960.0f, 540.0f);
-        int renderPasses = scene.renderPasses() - 1;
-        if (renderPasses == 0) {
-            gl.viewport(0, 0, gl.contentWidth(), gl.contentHeight());
-            renderPostProcess(gl, fboScene, fboScene, renderPasses);
-        } else if (renderPasses == 1) {
-            if (fboFront == null) {
-                fboFront = new FBO(engine, sceneWidth, sceneHeight,
-                        scene.colorAttachments(), false, true, false);
-                scene.initFBO(1, fboFront);
-            }
-            fboFront.activate(gl);
-            renderPostProcess(gl, fboScene, fboScene, 0);
-            fboFront.deactivate(gl);
-            gl.viewport(0, 0, gl.contentWidth(), gl.contentHeight());
-            renderPostProcess(gl, fboFront, fboScene, renderPasses);
-        } else {
-            if (fboFront == null) {
-                fboFront = new FBO(engine, sceneWidth, sceneHeight,
-                        scene.colorAttachments(), false, true, false);
-                scene.initFBO(1, fboFront);
-            }
-            if (fboBack == null) {
-                fboBack = new FBO(engine, sceneWidth, sceneHeight,
-                        scene.colorAttachments(), false, true, false);
-                scene.initFBO(2, fboBack);
-            }
-            fboFront.activate(gl);
-            renderPostProcess(gl, fboScene, fboScene, 0);
-            fboFront.deactivate(gl);
-            for (int i = 1; i < renderPasses; i++) {
-                fboBack.activate(gl);
-                renderPostProcess(gl, fboFront, fboScene, i);
-                fboBack.deactivate(gl);
-                FBO fboSwap = fboFront;
-                fboFront = fboBack;
-                fboBack = fboSwap;
-            }
-            gl.viewport(0, 0, gl.contentWidth(), gl.contentHeight());
-            renderPostProcess(gl, fboFront, fboScene, renderPasses);
+        for (int i = 0; i < fbos.length - 1; i++) {
+            fbos[i + 1].activate(gl);
+            //gl.viewport(0, 0, gl.sceneWidth(), gl.sceneHeight());
+            renderPostProcess(gl, fbos[i], fbos[i], i);
+            fbos[i + 1].deactivate(gl);
         }
+        gl.viewport(0, 0, gl.contentWidth(), gl.contentHeight());
+        renderPostProcess(gl, fbos[fbos.length - 1], fbos[0], fbos.length - 1);
         gl.checkError("Post-Processing");
         gl.setProjectionOrthogonal(0.0f, 0.0f,
                 (float) engine.container().containerWidth() /
@@ -184,7 +143,7 @@ public abstract class GameState {
         vao.render(gl, scene.postProcessing(gl, i));
     }
 
-    public FBO fboScene() {
-        return fboScene;
+    public FBO fbo(int i) {
+        return fbos[i];
     }
 }
