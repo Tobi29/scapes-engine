@@ -196,6 +196,20 @@ public final class Streams {
     }
 
     /**
+     * Inserts the item into an {@link ArrayList}
+     * <p>
+     * <b>Note:</b> This is a more concise version of {@link
+     * #collectObject(Object)}
+     *
+     * @param item The only element to be in the {@link ArrayList}
+     * @param <T>  Element type
+     * @return An {@link ArrayList} containing the element
+     */
+    public static <T> List<T> collect(T item) {
+        return collectObject(item);
+    }
+
+    /**
      * Inserts the array into an {@link ArrayList}
      * <p>
      * <b>Note:</b> This is a more concise version of {@link
@@ -205,7 +219,8 @@ public final class Streams {
      * @param <T>   Element type
      * @return An {@link ArrayList} containing the elements of the array
      */
-    public static <T> List<T> collect(T[] array) {
+    @SafeVarargs
+    public static <T> List<T> collect(T... array) {
         return collectArray(array);
     }
 
@@ -407,13 +422,27 @@ public final class Streams {
     }
 
     /**
+     * Inserts the item into an {@link ArrayList}
+     *
+     * @param item The only element to be in the {@link ArrayList}
+     * @param <T>  Element type
+     * @return An {@link ArrayList} containing the element
+     */
+    public static <T> List<T> collectObject(T item) {
+        List<T> list = new ArrayList<>(1);
+        list.add(item);
+        return list;
+    }
+
+    /**
      * Inserts the array into an {@link ArrayList}
      *
      * @param array The array to construct a for-each loop from
      * @param <T>   Element type
      * @return An {@link ArrayList} containing the elements of the array
      */
-    public static <T> List<T> collectArray(T[] array) {
+    @SafeVarargs
+    public static <T> List<T> collectArray(T... array) {
         List<T> list = new ArrayList<>(array.length);
         Collections.addAll(list, array);
         return list;
@@ -437,6 +466,25 @@ public final class Streams {
                 list.add(entry);
             }
         }
+        return list;
+    }
+
+    /**
+     * Inserts the item into an {@link ArrayList} if the filter succeeds
+     *
+     * @param item   The only element to be in the {@link ArrayList}
+     * @param filter The {@link Predicate} to filter the element element with
+     * @param <T>    Element type
+     * @return An {@link ArrayList} maybe containing the element
+     */
+    // There is no overloaded version of this as it conflicts with the probably
+    // more useful iterable version
+    public static <T> List<T> collectObject(T item, Predicate<T> filter) {
+        if (!filter.test(item)) {
+            return new ArrayList<>(0);
+        }
+        List<T> list = new ArrayList<>(1);
+        list.add(item);
         return list;
     }
 
