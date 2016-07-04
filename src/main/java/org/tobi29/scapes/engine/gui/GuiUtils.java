@@ -53,19 +53,25 @@ public final class GuiUtils {
 
     public static void shadow(GuiRenderBatch renderer, float minX, float minY,
             float maxX, float maxY, float r, float g, float b, float a) {
+        shadow(renderer, minX, minY, maxX, maxY, 8.0f, r, g, b, a);
+    }
+
+    public static void shadow(GuiRenderBatch renderer, float minX, float minY,
+            float maxX, float maxY, float radius, float r, float g, float b,
+            float a) {
         Mesh mesh = renderer.mesh();
         Vector3 tli = renderer.vector(minX, minY);
         Vector3 tri = renderer.vector(maxX, minY);
         Vector3 bli = renderer.vector(minX, maxY);
         Vector3 bri = renderer.vector(maxX, maxY);
-        Vector3 tlt = renderer.vector(minX, minY - 8.0f);
-        Vector3 trt = renderer.vector(maxX, minY - 8.0f);
-        Vector3 blb = renderer.vector(minX, maxY + 8.0f);
-        Vector3 brb = renderer.vector(maxX, maxY + 8.0f);
-        Vector3 tll = renderer.vector(minX - 8.0f, minY);
-        Vector3 trr = renderer.vector(maxX + 8.0f, minY);
-        Vector3 bll = renderer.vector(minX - 8.0f, maxY);
-        Vector3 brr = renderer.vector(maxX + 8.0f, maxY);
+        Vector3 tlt = renderer.vector(minX, minY - radius);
+        Vector3 trt = renderer.vector(maxX, minY - radius);
+        Vector3 blb = renderer.vector(minX, maxY + radius);
+        Vector3 brb = renderer.vector(maxX, maxY + radius);
+        Vector3 tll = renderer.vector(minX - radius, minY);
+        Vector3 trr = renderer.vector(maxX + radius, minY);
+        Vector3 bll = renderer.vector(minX - radius, maxY);
+        Vector3 brr = renderer.vector(maxX + radius, maxY);
         // Top
         mesh.addVertex(tlt.floatX(), tlt.floatY(), 0.0f, r, g, b, 0.0f, 0.0f,
                 0.0f);

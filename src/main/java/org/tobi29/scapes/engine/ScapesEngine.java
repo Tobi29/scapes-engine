@@ -75,13 +75,9 @@ public class ScapesEngine implements Crashable {
     private boolean mouseGrabbed;
     private GameState state;
 
-    public ScapesEngine(Game game, FilePath home, boolean debug) {
-        this(game, loadBackend(), home, home.resolve("cache"), debug);
-    }
-
-    public ScapesEngine(Game game, ScapesEngineBackendProvider backend,
-            FilePath home, FilePath cache, boolean debug) {
-        this(game, backend::createContainer, home, cache, debug);
+    public ScapesEngine(Game game, Function<ScapesEngine, Container> backend,
+            FilePath home, boolean debug) {
+        this(game, backend, home, home.resolve("cache"), debug);
     }
 
     public ScapesEngine(Game game, Function<ScapesEngine, Container> backend,
@@ -153,7 +149,7 @@ public class ScapesEngine implements Crashable {
         guiStack = new GuiStack(this);
         guiStyle = new GuiBasicStyle(this, font, container.gl().textures());
         notifications = new GuiNotifications(guiStyle);
-        guiStack.add("90-Notifications", notifications);
+        guiStack.addUnfocused("90-Notifications", notifications);
         Gui debugGui = new Gui(guiStyle) {
             @Override
             public boolean valid() {
@@ -164,30 +160,35 @@ public class ScapesEngine implements Crashable {
         debugValues.setVisible(false);
         profiler = debugGui.add(32, 32, 360, 256, GuiWidgetProfiler::new);
         profiler.setVisible(false);
-        guiStack.add("99-Debug", debugGui);
+        guiStack.addUnfocused("99-Debug", debugGui);
         usedMemoryDebug = debugValues.get("Runtime-Memory-Used");
         maxMemoryDebug = debugValues.get("Runtime-Memory-Max");
         LOGGER.info("Creating graphics system");
         graphics = new GraphicsSystem(this, container.gl());
         LOGGER.info("Creating sound system");
         sounds = container.sound();
-        guiController = new GuiControllerDummy();
+        guiController = new GuiControllerDummy(this);
         game.init();
     }
 
-    private static ScapesEngineBackendProvider loadBackend() {
+    public static Function<ScapesEngine, Container> loadBackend() {
         for (ScapesEngineBackendProvider backend : ServiceLoader
                 .load(ScapesEngineBackendProvider.class)) {
             try {
                 LOGGER.debug("Loaded backend: {}",
                         backend.getClass().getName());
-                return backend;
+                return backend::createContainer;
             } catch (ServiceConfigurationError e) {
                 LOGGER.warn("Unable to load backend provider: {}",
                         e.toString());
             }
         }
         throw new ScapesEngineException("No backend found!");
+    }
+
+    public static Function<ScapesEngine, Container> emulateTouch(
+            Function<ScapesEngine, Container> backend) {
+        return engine -> new ContainerEmulateTouch(backend.apply(engine));
     }
 
     private void checkSystem() {

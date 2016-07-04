@@ -31,24 +31,24 @@ public class GuiComponentSliderVert extends GuiComponent {
         super(parent);
         this.sliderHeight = sliderHeight;
         this.value = value;
-        onDragLeft(event -> {
-            this.value = FastMath.clamp((event.y() - this.sliderHeight * 0.5) /
-                    (event.size().doubleY() - this.sliderHeight), 0, 1);
+        on(GuiEvent.DRAG_LEFT, event -> setValue(
+                (event.y() - this.sliderHeight * 0.5) /
+                        (event.size().doubleY() - this.sliderHeight)));
+        on(GuiEvent.SCROLL, event -> {
+            if (!event.screen()) {
+                double delta = event.relativeY() * 0.05;
+                setValue(this.value - delta);
+            }
+        });
+        on(GuiEvent.CLICK_LEFT, (event, engine) -> engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
+        on(GuiEvent.HOVER_ENTER, event -> {
+            hover = true;
             dirty();
         });
-        onClick((event, engine) -> engine.sounds()
-                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
-        onHover(event -> {
-            switch (event.state()) {
-                case ENTER:
-                    hover = true;
-                    dirty();
-                    break;
-                case LEAVE:
-                    hover = false;
-                    dirty();
-                    break;
-            }
+        on(GuiEvent.HOVER_LEAVE, event -> {
+            hover = false;
+            dirty();
         });
     }
 
@@ -63,8 +63,10 @@ public class GuiComponentSliderVert extends GuiComponent {
     }
 
     public void setValue(double value) {
-        this.value = value;
+        this.value = FastMath.clamp(value, 0.0, 1.0);
         dirty();
+        gui.sendNewEvent(GuiEvent.CHANGE, new GuiComponentEvent(), this,
+                gui.style().engine());
     }
 
     public void setSliderHeight(double value) {

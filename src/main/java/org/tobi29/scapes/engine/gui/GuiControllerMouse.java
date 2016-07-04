@@ -43,9 +43,9 @@ public class GuiControllerMouse extends GuiControllerDefault {
             double relativeY = cursor.guiY() - dragLeftY;
             dragLeftX = cursor.guiX();
             dragLeftY = cursor.guiY();
-            component.gui().sendNewEvent(
+            component.gui().sendNewEvent(GuiEvent.DRAG_LEFT,
                     new GuiComponentEvent(guiCursorX, guiCursorY, relativeX,
-                            relativeY), component, component::dragLeft, engine);
+                            relativeY), component, engine);
         }
         if (draggingRight.isPresent()) {
             GuiComponent component = draggingRight.get();
@@ -53,17 +53,16 @@ public class GuiControllerMouse extends GuiControllerDefault {
             double relativeY = cursor.guiY() - dragRightY;
             dragRightX = cursor.guiX();
             dragRightY = cursor.guiY();
-            component.gui().sendNewEvent(
+            component.gui().sendNewEvent(GuiEvent.DRAG_RIGHT,
                     new GuiComponentEvent(guiCursorX, guiCursorY, relativeX,
-                            relativeY), component, component::dragRight,
-                    engine);
+                            relativeY), component, engine);
         }
         double scrollX = controller.scrollX() * scrollSensitivity;
         double scrollY = controller.scrollY() * scrollSensitivity;
         if (scrollX != 0.0 || scrollY != 0.0) {
-            engine.guiStack().fireRecursiveEvent(
+            engine.guiStack().fireRecursiveEvent(GuiEvent.SCROLL,
                     new GuiComponentEvent(guiCursorX, guiCursorY, scrollX,
-                            scrollY, false), GuiComponent::scroll, engine);
+                            scrollY, false), engine);
         }
         GuiComponentEvent componentEvent =
                 new GuiComponentEvent(guiCursorX, guiCursorY);
@@ -72,6 +71,7 @@ public class GuiControllerMouse extends GuiControllerDefault {
         controller.pressEvents().forEach(event -> {
             switch (event.state()) {
                 case PRESS:
+                case REPEAT:
                     handlePress(event.key(), componentEvent);
                     break;
                 case RELEASE:
@@ -95,21 +95,58 @@ public class GuiControllerMouse extends GuiControllerDefault {
         switch (key) {
             case BUTTON_0:
                 draggingLeft = engine.guiStack()
-                        .fireEvent(event, GuiComponent::pressLeft, engine);
+                        .fireEvent(GuiEvent.PRESS_LEFT, event, engine);
                 dragLeftX = cursor.guiX();
                 dragLeftY = cursor.guiY();
-                engine.guiStack()
-                        .fireEvent(event, GuiComponent::clickLeft, engine);
+                if (engine.guiStack()
+                        .fireEvent(GuiEvent.CLICK_LEFT, event, engine)
+                        .isPresent()) {
+                    return;
+                }
                 break;
             case BUTTON_1:
-                draggingLeft = engine.guiStack()
-                        .fireEvent(event, GuiComponent::pressRight, engine);
+                draggingRight = engine.guiStack()
+                        .fireEvent(GuiEvent.PRESS_RIGHT, event, engine);
                 dragRightX = cursor.guiX();
                 dragRightY = cursor.guiY();
-                engine.guiStack()
-                        .fireEvent(event, GuiComponent::clickRight, engine);
+                if (engine.guiStack()
+                        .fireEvent(GuiEvent.CLICK_RIGHT, event, engine)
+                        .isPresent()) {
+                    return;
+                }
+                break;
+            case KEY_ESCAPE:
+                if (engine.guiStack().fireAction(GuiAction.BACK, engine)) {
+                    return;
+                }
+                break;
+            case KEY_ENTER:
+                if (engine.guiStack().fireAction(GuiAction.ACTIVATE, engine)) {
+                    return;
+                }
+                break;
+            case KEY_UP:
+                if (engine.guiStack().fireAction(GuiAction.UP, engine)) {
+                    return;
+                }
+                break;
+            case KEY_DOWN:
+                if (engine.guiStack().fireAction(GuiAction.DOWN, engine)) {
+                    return;
+                }
+                break;
+            case KEY_LEFT:
+                if (engine.guiStack().fireAction(GuiAction.LEFT, engine)) {
+                    return;
+                }
+                break;
+            case KEY_RIGHT:
+                if (engine.guiStack().fireAction(GuiAction.RIGHT, engine)) {
+                    return;
+                }
                 break;
         }
+        firePress(key);
     }
 
     private void handleRelease(ControllerKey key, GuiComponentEvent event) {
@@ -118,7 +155,7 @@ public class GuiControllerMouse extends GuiControllerDefault {
                 if (draggingLeft.isPresent()) {
                     GuiComponent component = draggingLeft.get();
                     component.gui()
-                            .sendNewEvent(event, component, component::dropLeft,
+                            .sendNewEvent(GuiEvent.DROP_LEFT, event, component,
                                     engine);
                     draggingLeft = Optional.empty();
                 }
@@ -126,8 +163,9 @@ public class GuiControllerMouse extends GuiControllerDefault {
             case BUTTON_1:
                 if (draggingRight.isPresent()) {
                     GuiComponent component = draggingRight.get();
-                    component.gui().sendNewEvent(event, component,
-                            component::dropRight, engine);
+                    component.gui()
+                            .sendNewEvent(GuiEvent.DROP_RIGHT, event, component,
+                                    engine);
                     draggingRight = Optional.empty();
                 }
                 break;

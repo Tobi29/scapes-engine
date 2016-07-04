@@ -24,10 +24,10 @@ public class GuiComponentScrollPane extends GuiComponentVisibleSlabHeavy {
                 p -> new GuiComponentScrollPaneViewport(p, scrollStep));
         GuiComponentSliderVert slider =
                 addHori(0, 0, 10, -1, p -> new GuiComponentSliderVert(p, 0));
-        slider.onDragLeft(event -> {
-            viewport.setScrollY(slider.value() *
-                    Math.max(0, viewport.maxY() - event.size().doubleY()));
-        });
+        slider.on(GuiEvent.CHANGE, event -> viewport.setScrollY(slider.value() *
+                Math.max(0, viewport.maxY() - event.size().doubleY())));
+        slider.on(GuiEvent.SCROLL, event -> viewport.setScrollY(slider.value() *
+                Math.max(0, viewport.maxY() - event.size().doubleY())));
         viewport.setSliderY(slider);
     }
 

@@ -39,23 +39,23 @@ public class GuiComponentSlider extends GuiComponentSlab {
         this.textFilter = v -> textFilter.filter(text, v);
         this.text = addSubHori(4, 0, -1, textSize,
                 p -> new GuiComponentText(p, this.textFilter.apply(value)));
-        onDragLeft(event -> {
-            setValue(FastMath.clamp(
-                    (event.x() - 8) / (event.size().doubleX() - 16.0), 0, 1));
-        });
-        onClick((event, engine) -> engine.sounds()
-                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
-        onHover(event -> {
-            switch (event.state()) {
-                case ENTER:
-                    hover = true;
-                    dirty();
-                    break;
-                case LEAVE:
-                    hover = false;
-                    dirty();
-                    break;
+        on(GuiEvent.DRAG_LEFT, event -> setValue(
+                (event.x() - 8) / (event.size().doubleX() - 16.0)));
+        on(GuiEvent.SCROLL, event -> {
+            if (!event.screen()) {
+                double delta = event.relativeX() * 0.05;
+                setValue(this.value - delta);
             }
+        });
+        on(GuiEvent.CLICK_LEFT, (event, engine) -> engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
+        on(GuiEvent.HOVER_ENTER, event -> {
+            hover = true;
+            dirty();
+        });
+        on(GuiEvent.HOVER_LEAVE, event -> {
+            hover = false;
+            dirty();
         });
     }
 
@@ -69,9 +69,11 @@ public class GuiComponentSlider extends GuiComponentSlab {
     }
 
     public void setValue(double value) {
-        this.value = value;
+        this.value = FastMath.clamp(value, 0.0, 1.0);
         dirty();
-        text.setText(textFilter.apply(value));
+        text.setText(textFilter.apply(this.value));
+        gui.sendNewEvent(GuiEvent.CHANGE, new GuiComponentEvent(), this,
+                gui.style().engine());
     }
 
     public interface TextFilter {

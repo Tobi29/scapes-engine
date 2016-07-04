@@ -41,7 +41,7 @@ public class GameStateStartup extends GameState {
 
     @Override
     public void init() {
-        engine.guiStack().add("20-Image",
+        engine.guiStack().addUnfocused("20-Image",
                 new GuiImage(engine.graphics().textures().get(image),
                         engine.guiStyle()));
     }

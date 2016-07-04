@@ -16,11 +16,16 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.stream.Stream;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;
 
-public class GuiControllerDummy implements GuiController {
+public class GuiControllerDummy extends GuiController {
+    public GuiControllerDummy(ScapesEngine engine) {
+        super(engine);
+    }
+
     @Override
     public void update(double delta) {
     }

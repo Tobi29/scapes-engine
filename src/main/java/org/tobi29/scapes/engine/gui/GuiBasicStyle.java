@@ -39,16 +39,14 @@ public class GuiBasicStyle implements GuiStyle {
     @Override
     public void button(GuiRenderer renderer, Vector2 size, boolean hover) {
         renderer.texture(textures.empty(), 0);
-        double a;
+        float a;
         if (hover) {
-            a = 0.8f;
+            a = 1.0f;
         } else {
-            a = 0.6f;
+            a = 0.5f;
         }
-        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.2f);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, (float) a);
+                0.0f, 0.0f, 0.0f, a);
     }
 
     @Override
@@ -62,33 +60,39 @@ public class GuiBasicStyle implements GuiStyle {
     public void slider(GuiRenderer renderer, Vector2 size, boolean horizontal,
             double value, double sliderSize, boolean hover) {
         renderer.texture(textures.empty(), 0);
-        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.2f);
-        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.2f);
-        double a;
+        float v, a, ab;
         if (hover) {
-            a = 0.8f;
+            a = 1.0f;
+            if (horizontal) {
+                v = 0.3f;
+                a = 1.0f;
+                ab = 1.0f;
+            } else {
+                v = 0.0f;
+                a = 1.0f;
+                ab = 0.3f;
+            }
         } else {
-            a = 0.6f;
+            v = 0.0f;
+            a = 0.5f;
+            ab = 0.3f;
         }
+        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
+                0.0f, 0.0f, 0.0f, ab);
         if (horizontal) {
             value = value * (size.doubleX() - sliderSize);
             GuiUtils.rectangle(renderer, (float) value, 0.0f,
-                    (float) (value + sliderSize), size.floatY(), 0.0f, 0.0f,
-                    0.0f, (float) a);
+                    (float) (value + sliderSize), size.floatY(), v, v, v, a);
         } else {
             value = value * (size.doubleY() - sliderSize);
             GuiUtils.rectangle(renderer, 0.0f, (float) value, size.floatX(),
-                    (float) (value + sliderSize), 0.0f, 0.0f, 0.0f, (float) a);
+                    (float) (value + sliderSize), v, v, v, a);
         }
     }
 
     @Override
     public void separator(GuiRenderer renderer, Vector2 size) {
         renderer.texture(textures.empty(), 0);
-        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.2f);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
                 size.floatY() * 0.5f, 0.0f, 0.0f, 0.0f, 0.3f);
         GuiUtils.rectangle(renderer, 0.0f, size.floatY() * 0.5f, size.floatX(),

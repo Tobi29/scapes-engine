@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.input;
 
 import java.util.ArrayList;
@@ -240,11 +239,27 @@ public enum ControllerKey {
     AXIS_12("Axis 12"),
     AXIS_13("Axis 13"),
     AXIS_14("Axis 14"),
-    AXIS_15("Axis 15");
+    AXIS_15("Axis 15"),
+    AXIS_NEG_0("Axis Negative 0"),
+    AXIS_NEG_1("Axis Negative 1"),
+    AXIS_NEG_2("Axis Negative 2"),
+    AXIS_NEG_3("Axis Negative 3"),
+    AXIS_NEG_4("Axis Negative 4"),
+    AXIS_NEG_5("Axis Negative 5"),
+    AXIS_NEG_6("Axis Negative 6"),
+    AXIS_NEG_7("Axis Negative 7"),
+    AXIS_NEG_8("Axis Negative 8"),
+    AXIS_NEG_9("Axis Negative 9"),
+    AXIS_NEG_10("Axis Negative 10"),
+    AXIS_NEG_11("Axis Negative 11"),
+    AXIS_NEG_12("Axis Negative 12"),
+    AXIS_NEG_13("Axis Negative 13"),
+    AXIS_NEG_14("Axis Negative 14"),
+    AXIS_NEG_15("Axis Negative 15");
     public static final ControllerKey BUTTON_LEFT = BUTTON_0;
     public static final ControllerKey BUTTON_RIGHT = BUTTON_1;
     private static final List<ControllerKey> BUTTONS = new ArrayList<>(), AXES =
-            new ArrayList<>();
+            new ArrayList<>(), AXES_NEG = new ArrayList<>();
 
     static {
         int id = 0;
@@ -256,6 +271,7 @@ public enum ControllerKey {
         }
         for (int i = 0; i < 16; i++) {
             AXES.add(valueOf("AXIS_" + i));
+            AXES_NEG.add(valueOf("AXIS_NEG_" + i));
         }
     }
 
@@ -278,6 +294,13 @@ public enum ControllerKey {
             return UNKNOWN;
         }
         return AXES.get(i);
+    }
+
+    public static ControllerKey axisNegative(int i) {
+        if (i < 0 || i >= AXES_NEG.size()) {
+            return UNKNOWN;
+        }
+        return AXES_NEG.get(i);
     }
 
     public String humanName() {

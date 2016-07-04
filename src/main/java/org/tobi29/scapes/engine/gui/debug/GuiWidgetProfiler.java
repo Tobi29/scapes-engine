@@ -30,7 +30,15 @@ public class GuiWidgetProfiler extends GuiComponentWidget {
                 addVert(2, 2, -1, 20, GuiComponentGroupSlab::new);
         GuiComponentTextButton toggle = slab.addHori(2, 2, -1, -1,
                 p -> new GuiComponentTextButton(p, 12, "Enable"));
-        toggle.onClickLeft(event -> {
+        GuiComponentTextButton refresh = slab.addHori(2, 2, -1, -1,
+                p -> new GuiComponentTextButton(p, 12, "Refresh"));
+        GuiComponentTextButton reset = slab.addHori(2, 2, -1, -1,
+                p -> new GuiComponentTextButton(p, 12, "Reset"));
+        scrollPane =
+                addVert(10, 10, -1, -1, p -> new GuiComponentScrollPane(p, 20))
+                        .viewport();
+
+        toggle.on(GuiEvent.CLICK_LEFT, event -> {
             if (Profiler.enabled()) {
                 toggle.setText("Enable");
                 Profiler.disable();
@@ -40,20 +48,11 @@ public class GuiWidgetProfiler extends GuiComponentWidget {
             }
             nodes();
         });
-        GuiComponentTextButton refresh = slab.addHori(2, 2, -1, -1,
-                p -> new GuiComponentTextButton(p, 12, "Refresh"));
-        refresh.onClickLeft(event -> {
-            nodes();
-        });
-        GuiComponentTextButton reset = slab.addHori(2, 2, -1, -1,
-                p -> new GuiComponentTextButton(p, 12, "Reset"));
-        reset.onClickLeft(event -> {
+        refresh.on(GuiEvent.CLICK_LEFT, event -> nodes());
+        reset.on(GuiEvent.CLICK_LEFT, event -> {
             Profiler.reset();
             threads();
         });
-        scrollPane =
-                addVert(10, 10, -1, -1, p -> new GuiComponentScrollPane(p, 20))
-                        .viewport();
         nodes();
     }
 
@@ -108,9 +107,7 @@ public class GuiWidgetProfiler extends GuiComponentWidget {
             key = addHori(2, 2, -1, -1,
                     p -> new GuiComponentTextButton(p, 12, node.name.get()));
             value = addHori(4, 4, -1, -1, p -> new GuiComponentText(p, ""));
-            key.onClickLeft(event -> {
-                nodes(go);
-            });
+            key.on(GuiEvent.CLICK_LEFT, event -> nodes(go));
         }
 
         @Override

@@ -15,6 +15,8 @@
  */
 package org.tobi29.scapes.engine.gui;
 
+import java8.util.function.BiConsumer;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentButtonHeavy extends GuiComponentSlabHeavy {
@@ -22,19 +24,16 @@ public class GuiComponentButtonHeavy extends GuiComponentSlabHeavy {
 
     public GuiComponentButtonHeavy(GuiLayoutData parent) {
         super(parent);
-        onClick((event, engine) -> engine.sounds()
-                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
-        onHover(event -> {
-            switch (event.state()) {
-                case ENTER:
-                    hover = true;
-                    dirty();
-                    break;
-                case LEAVE:
-                    hover = false;
-                    dirty();
-                    break;
-            }
+        BiConsumer<GuiComponentEvent,ScapesEngine> add = (event, engine) -> engine.sounds()
+                .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f);
+        on(GuiEvent.CLICK_LEFT, add);
+        on(GuiEvent.HOVER_ENTER, event -> {
+            hover = true;
+            dirty();
+        });
+        on(GuiEvent.HOVER_LEAVE, event -> {
+            hover = false;
+            dirty();
         });
     }
 

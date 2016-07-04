@@ -19,6 +19,8 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class GuiStack {
     protected final VAO cursor;
     private final Map<String, Gui> guis = new ConcurrentSkipListMap<>();
+    private final Map<Gui, String> keys = new HashMap<>();
+    private Optional<Gui> focus = Optional.empty();
 
     public GuiStack(ScapesEngine engine) {
         cursor = VAOUtility.createVCTI(engine,
@@ -30,12 +32,61 @@ public class GuiStack {
                 new int[]{0, 1, 2, 1, 2, 3}, RenderType.TRIANGLES);
     }
 
-    public void add(String id, Gui add) {
+    public synchronized void add(String id, Gui add) {
         guis.put(id, add);
+        keys.put(add, id);
+        focus = Optional.of(add);
     }
 
-    public void remove(Gui remove) {
+    public synchronized void addUnfocused(String id, Gui add) {
+        guis.put(id, add);
+        keys.put(add, id);
+    }
+
+    public Optional<Gui> get(String id) {
+        return Optional.ofNullable(guis.get(id));
+    }
+
+    public boolean has(String id) {
+        return guis.containsKey(id);
+    }
+
+    public synchronized Optional<Gui> remove(String id) {
+        Gui gui = guis.remove(id);
+        if (gui == null) {
+            return Optional.empty();
+        }
+        keys.remove(gui);
+        if (focus.isPresent() && focus.get() == gui) {
+            focus = Optional.empty();
+        }
+        return Optional.of(gui);
+    }
+
+    public synchronized boolean remove(Gui remove) {
+        if (!guis.values().remove(remove)) {
+            return false;
+        }
+        keys.remove(remove);
+        if (focus.isPresent() && focus.get() == remove) {
+            focus = Optional.empty();
+        }
+        return true;
+    }
+
+    public synchronized boolean swap(Gui remove, Gui add) {
+        String id = keys.get(remove);
+        if (id == null) {
+            return false;
+        }
         guis.values().remove(remove);
+        keys.remove(remove);
+        guis.put(id, add);
+        keys.put(add, id);
+        if (focus.isPresent() && focus.get() == remove) {
+            focus = Optional.of(add);
+        }
+        return true;
     }
 
     public void step(ScapesEngine engine, double delta) {
@@ -46,6 +97,11 @@ public class GuiStack {
                 remove(gui);
             }
         });
+    }
+
+    public Optional<GuiComponent> fireEvent(GuiEvent type,
+            GuiComponentEvent event, ScapesEngine engine) {
+        return fireEvent(event, GuiComponent.sink(type), engine);
     }
 
     public Optional<GuiComponent> fireEvent(GuiComponentEvent event,
@@ -62,6 +118,11 @@ public class GuiStack {
         return Optional.empty();
     }
 
+    public Set<GuiComponent> fireRecursiveEvent(GuiEvent type,
+            GuiComponentEvent event, ScapesEngine engine) {
+        return fireRecursiveEvent(event, GuiComponent.sink(type), engine);
+    }
+
     public Set<GuiComponent> fireRecursiveEvent(GuiComponentEvent event,
             GuiComponent.EventSink listener, ScapesEngine engine) {
         List<Gui> guis = new ArrayList<>(this.guis.size());
@@ -74,6 +135,11 @@ public class GuiStack {
             }
         }
         return Collections.emptySet();
+    }
+
+    public boolean fireAction(GuiAction action, ScapesEngine engine) {
+        Optional<Gui> focus = this.focus;
+        return focus.isPresent() && focus.get().fireAction(action, engine);
     }
 
     public void render(GL gl, Shader shader, ScapesEngine engine,

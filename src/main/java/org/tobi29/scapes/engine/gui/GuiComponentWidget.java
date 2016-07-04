@@ -27,9 +27,8 @@ public class GuiComponentWidget extends GuiComponentPaneHeavy {
             return;
         }
         MutableVector2 pos = ((GuiLayoutDataAbsolute) parent).posMutable();
-        titleBar.onDragLeft(event -> {
-            pos.plusX(event.relativeX()).plusY(event.relativeY());
-        });
+        titleBar.on(GuiEvent.DRAG_LEFT,
+                event -> pos.plusX(event.relativeX()).plusY(event.relativeY()));
     }
 
     @Override

@@ -22,19 +22,15 @@ public class GuiComponentButton extends GuiComponentSlab {
 
     public GuiComponentButton(GuiLayoutData parent) {
         super(parent);
-        onClick((event, engine) -> engine.sounds()
+        on(GuiEvent.CLICK_LEFT, (event, engine) -> engine.sounds()
                 .playSound("Engine:sound/Click.ogg", "sound.GUI", 1.0f, 1.0f));
-        onHover(event -> {
-            switch (event.state()) {
-                case ENTER:
-                    hover = true;
-                    dirty();
-                    break;
-                case LEAVE:
-                    hover = false;
-                    dirty();
-                    break;
-            }
+        on(GuiEvent.HOVER_ENTER, event -> {
+            hover = true;
+            dirty();
+        });
+        on(GuiEvent.HOVER_LEAVE, event -> {
+            hover = false;
+            dirty();
         });
     }
 

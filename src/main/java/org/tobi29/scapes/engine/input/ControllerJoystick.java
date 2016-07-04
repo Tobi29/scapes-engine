@@ -57,21 +57,6 @@ public class ControllerJoystick implements ControllerBasic {
     }
 
     @Override
-    public boolean isDown(ControllerKey key) {
-        return states[key.id()] >= 1;
-    }
-
-    @Override
-    public boolean isPressed(ControllerKey key) {
-        return states[key.id()] >= 2;
-    }
-
-    @Override
-    public Stream<PressEvent> pressEvents() {
-        return Streams.of(pressEvents);
-    }
-
-    @Override
     public synchronized void poll() {
         for (int i = 0; i < states.length; i++) {
             switch (states[i]) {
@@ -106,6 +91,21 @@ public class ControllerJoystick implements ControllerBasic {
     }
 
     @Override
+    public boolean isDown(ControllerKey key) {
+        return states[key.id()] >= 1;
+    }
+
+    @Override
+    public boolean isPressed(ControllerKey key) {
+        return states[key.id()] >= 2;
+    }
+
+    @Override
+    public Stream<PressEvent> pressEvents() {
+        return Streams.of(pressEvents);
+    }
+
+    @Override
     public void addPressEvent(ControllerKey key, PressState state) {
         pressEventQueue.add(new PressEvent(key, state));
     }
@@ -122,6 +122,11 @@ public class ControllerJoystick implements ControllerBasic {
             addPressEvent(ControllerKey.axis(axis), PressState.PRESS);
         } else if (axes[axis] >= 0.5 && value < 0.5) {
             addPressEvent(ControllerKey.axis(axis), PressState.RELEASE);
+        }
+        if (axes[axis] > -0.5 && value <= -0.5) {
+            addPressEvent(ControllerKey.axisNegative(axis), PressState.PRESS);
+        } else if (axes[axis] <= -0.5 && value > -0.5) {
+            addPressEvent(ControllerKey.axisNegative(axis), PressState.RELEASE);
         }
         axes[axis] = value;
     }

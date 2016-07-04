@@ -23,6 +23,10 @@ public class GuiComponentEvent {
     private final boolean screen;
     private final Vector2 size;
 
+    public GuiComponentEvent() {
+        this(Double.NaN, Double.NaN);
+    }
+
     public GuiComponentEvent(double x, double y) {
         this(x, y, Double.NaN, Double.NaN);
     }

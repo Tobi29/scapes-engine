@@ -16,24 +16,58 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
+import java8.util.function.Predicate;
 import java8.util.stream.Stream;
+import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.input.ControllerBasic;
+import org.tobi29.scapes.engine.input.ControllerKey;
 import org.tobi29.scapes.engine.utils.Pair;
 
-public interface GuiController {
-    void update(double delta);
+import java.util.Map;
+import java.util.WeakHashMap;
 
-    void focusTextField(TextFieldData data, boolean multiline);
+public abstract class GuiController {
+    protected final ScapesEngine engine;
+    protected final Map<ListenerOwner, Predicate<ControllerKey>>
+            pressListeners = new WeakHashMap<>();
 
-    boolean processTextField(TextFieldData data, boolean multiline);
+    protected GuiController(ScapesEngine engine) {
+        this.engine = engine;
+    }
 
-    Stream<GuiCursor> cursors();
+    public abstract void update(double delta);
 
-    Stream<Pair<GuiCursor, ControllerBasic.PressEvent>> clicks();
+    public abstract void focusTextField(TextFieldData data, boolean multiline);
 
-    boolean captureCursor();
+    public abstract boolean processTextField(TextFieldData data,
+            boolean multiline);
 
-    class TextFieldData {
+    public abstract Stream<GuiCursor> cursors();
+
+    public abstract Stream<Pair<GuiCursor, ControllerBasic.PressEvent>> clicks();
+
+    public abstract boolean captureCursor();
+
+    public void onPress(ListenerOwner owner,
+            Predicate<ControllerKey> listener) {
+        synchronized (pressListeners) {
+            pressListeners.put(owner, listener);
+        }
+    }
+
+    protected boolean firePress(ControllerKey key) {
+        synchronized (pressListeners) {
+            for (Map.Entry<ListenerOwner, Predicate<ControllerKey>> entry : pressListeners
+                    .entrySet()) {
+                if (entry.getKey().validOwner() && entry.getValue().test(key)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public static class TextFieldData {
         @SuppressWarnings("StringBufferField")
         public StringBuilder text = new StringBuilder(100);
         public int cursor, selectionStart = -1, selectionEnd;

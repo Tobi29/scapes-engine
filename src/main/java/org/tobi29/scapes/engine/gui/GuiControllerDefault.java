@@ -24,14 +24,13 @@ import org.tobi29.scapes.engine.input.ControllerKey;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-public abstract class GuiControllerDefault implements GuiController {
+public abstract class GuiControllerDefault extends GuiController {
     private static final Pattern REPLACE = Pattern.compile("\n");
-    protected final ScapesEngine engine;
     protected final ControllerDefault controller;
 
     protected GuiControllerDefault(ScapesEngine engine,
             ControllerDefault controller) {
-        this.engine = engine;
+        super(engine);
         this.controller = controller;
     }
 

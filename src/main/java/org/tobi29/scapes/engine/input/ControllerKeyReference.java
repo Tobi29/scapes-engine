@@ -1,8 +1,8 @@
 package org.tobi29.scapes.engine.input;
 
+import java8.util.Optional;
 import java8.util.function.Predicate;
 import java8.util.stream.Collectors;
-import java8.util.Optional;
 import org.tobi29.scapes.engine.utils.Streams;
 
 import java.util.ArrayList;
@@ -53,8 +53,8 @@ public class ControllerKeyReference {
                 modifiers);
     }
 
-    public static Optional<ControllerKeyReference> isDown(ControllerBasic controller,
-            ControllerKeyReference... references) {
+    public static Optional<ControllerKeyReference> isDown(
+            ControllerBasic controller, ControllerKeyReference... references) {
         return mostSpecific(reference -> reference.isDown(controller),
                 references);
     }
@@ -101,6 +101,14 @@ public class ControllerKeyReference {
             }
         }
         return true;
+    }
+
+    public boolean isPressed(ControllerKey event, ControllerBasic controller) {
+        return event == key && isPressed(controller);
+    }
+
+    public boolean isReleased(ControllerKey event) {
+        return event == key;
     }
 
     @Override

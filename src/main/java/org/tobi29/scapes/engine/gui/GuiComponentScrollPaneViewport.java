@@ -34,7 +34,7 @@ public class GuiComponentScrollPaneViewport extends GuiComponentPaneHeavy {
     public GuiComponentScrollPaneViewport(GuiLayoutData parent,
             int scrollStep) {
         super(parent);
-        onScroll(event -> {
+        on(GuiEvent.SCROLL, event -> {
             if (event.screen()) {
                 scrollX -= event.relativeX();
                 scrollY -= event.relativeY();
