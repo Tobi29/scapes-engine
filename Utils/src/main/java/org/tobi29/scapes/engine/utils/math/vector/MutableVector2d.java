@@ -304,12 +304,12 @@ public class MutableVector2d extends MutableVector2 {
 
     @Override
     public int intY() {
-        return FastMath.floor(x);
+        return FastMath.floor(y);
     }
 
     @Override
     public long longY() {
-        return FastMath.floor(x);
+        return FastMath.floor(y);
     }
 
     @Override
