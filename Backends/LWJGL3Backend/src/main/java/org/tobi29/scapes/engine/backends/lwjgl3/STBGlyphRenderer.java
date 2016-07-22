@@ -126,6 +126,7 @@ public class STBGlyphRenderer implements GlyphRenderer {
                     int sizeY = glyphSize - renderY - 1;
                     renderX += xx;
                     renderY += yy;
+                    BufferUtils.zeroBuffer(glyphBuffer);
                     STBTruetype.stbtt_MakeCodepointBitmap(info, glyphBuffer,
                             glyphSize, glyphSize, glyphSize, scale, scale, c);
                     for (int yyy = 0; yyy < sizeY; yyy++) {
