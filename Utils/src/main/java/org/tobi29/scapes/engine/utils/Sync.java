@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.utils;
 import java8.util.function.LongConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.task.Joiner;
 
 import java.util.concurrent.locks.LockSupport;
@@ -77,10 +78,22 @@ public class Sync {
     /**
      * Get the delta time in seconds
      *
-     * @return Current delta (1 / TPS)
+     * @return Current delta (1 / TPS), clamped between {@code 0.0001} and
+     * {@code 1.0}
      */
     public double delta() {
-        return delta;
+        return delta(0.0001, 1.0);
+    }
+
+    /**
+     * Get the delta time in seconds
+     *
+     * @param min Minimum value
+     * @param max Maximum value
+     * @return Current delta (1 / TPS), clamped between min and max
+     */
+    public double delta(double min, double max) {
+        return FastMath.clamp(delta, min, max);
     }
 
     /**
@@ -179,7 +192,12 @@ public class Sync {
         long newSync = System.nanoTime();
         tickDiff = newSync - lastSync;
         currentTPS = 1000000000.0 / tickDiff;
-        delta = tickDiff / 1000000000.0;
+        double delta = tickDiff / 1000000000.0;
+        if (Double.isNaN(delta)) {
+            this.delta = 0.0;
+        } else {
+            this.delta = delta;
+        }
         lastSync = newSync;
     }
 
@@ -195,7 +213,12 @@ public class Sync {
         diff = newSync - lastSync;
         tickDiff = diff;
         currentTPS = 1000000000.0 / tickDiff;
-        delta = tickDiff / 1000000000.0;
+        double delta = tickDiff / 1000000000.0;
+        if (Double.isNaN(delta)) {
+            this.delta = 0.0;
+        } else {
+            this.delta = delta;
+        }
         lastSync = newSync;
     }
 }
