@@ -21,15 +21,14 @@ import java8.util.stream.Stream;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.input.ControllerBasic;
 import org.tobi29.scapes.engine.input.ControllerKey;
+import org.tobi29.scapes.engine.utils.ListenerManager;
+import org.tobi29.scapes.engine.utils.ListenerOwner;
 import org.tobi29.scapes.engine.utils.Pair;
-
-import java.util.Map;
-import java.util.WeakHashMap;
 
 public abstract class GuiController {
     protected final ScapesEngine engine;
-    protected final Map<ListenerOwner, Predicate<ControllerKey>>
-            pressListeners = new WeakHashMap<>();
+    protected final ListenerManager<Predicate<ControllerKey>> pressListeners =
+            new ListenerManager<>();
 
     protected GuiController(ScapesEngine engine) {
         this.engine = engine;
@@ -50,21 +49,11 @@ public abstract class GuiController {
 
     public void onPress(ListenerOwner owner,
             Predicate<ControllerKey> listener) {
-        synchronized (pressListeners) {
-            pressListeners.put(owner, listener);
-        }
+        pressListeners.add(owner, listener);
     }
 
     protected boolean firePress(ControllerKey key) {
-        synchronized (pressListeners) {
-            for (Map.Entry<ListenerOwner, Predicate<ControllerKey>> entry : pressListeners
-                    .entrySet()) {
-                if (entry.getKey().validOwner() && entry.getValue().test(key)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return pressListeners.fireReturn(listener -> listener.test(key));
     }
 
     public static class TextFieldData {

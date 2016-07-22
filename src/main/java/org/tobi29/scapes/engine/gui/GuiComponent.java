@@ -26,6 +26,8 @@ import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.opengl.matrix.Matrix;
 import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
 import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.utils.ListenerOwner;
+import org.tobi29.scapes.engine.utils.ListenerOwnerHandle;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
@@ -52,6 +54,7 @@ public abstract class GuiComponent
             new ConcurrentSkipListSet<>();
     private final ConcurrentMap<GuiEvent, Set<BiConsumer<GuiComponentEvent, ScapesEngine>>>
             events = new ConcurrentHashMap<>();
+    private final ListenerOwnerHandle listenerOwner;
     private final long uid = UID_COUNTER.getAndIncrement();
     private final AtomicBoolean hasActiveChild = new AtomicBoolean(true);
     protected boolean visible = true, hover, hovering, removing, removed;
@@ -68,6 +71,7 @@ public abstract class GuiComponent
             other = other.parent.parent().get();
         }
         on(GuiEvent.CLICK_LEFT, event -> gui.setLastClicked(this));
+        listenerOwner = new ListenerOwnerHandle(() -> gui.valid() && !removed);
     }
 
     public static EventSink sink(GuiEvent type) {
@@ -376,8 +380,8 @@ public abstract class GuiComponent
     }
 
     @Override
-    public boolean validOwner() {
-        return gui.valid() && !removed;
+    public ListenerOwnerHandle owner() {
+        return listenerOwner;
     }
 
     @Override
