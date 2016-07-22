@@ -1,6 +1,7 @@
 package org.tobi29.scapes.engine.swt.util;
 
 import java8.util.Optional;
+import java8.util.function.BiConsumer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.LineStyleEvent;
 import org.eclipse.swt.custom.LineStyleListener;
@@ -21,7 +22,6 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiConsumer;
 
 public class HTMLLineStyler
         implements DisposeListener, LineStyleListener, VerifyListener {
