@@ -20,20 +20,21 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengles.GLES;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3;
 import org.tobi29.scapes.engine.backends.lwjgl3.GLFWControllers;
 import org.tobi29.scapes.engine.backends.lwjgl3.GLFWKeyMap;
+import org.tobi29.scapes.engine.graphics.GraphicsCheckException;
+import org.tobi29.scapes.engine.graphics.GraphicsException;
 import org.tobi29.scapes.engine.gui.GuiComponent;
 import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerKey;
 import org.tobi29.scapes.engine.input.ControllerTouch;
 import org.tobi29.scapes.engine.input.FileType;
-import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
-import org.tobi29.scapes.engine.opengl.GraphicsException;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Sync;
@@ -207,7 +208,11 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 }
                 initWindow(engine.config().isFullscreen(),
                         engine.config().vSync());
-                GL.createCapabilities();
+                if (useGLES) {
+                    GLES.createCapabilities();
+                } else {
+                    GL.createCapabilities();
+                }
                 Optional<String> check = checkContext();
                 if (check.isPresent()) {
                     throw new GraphicsCheckException(check.get());
@@ -319,7 +324,11 @@ public class ContainerGLFW extends ContainerLWJGL3 {
         // >:V Seriously, stop with this crap!
         GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GL11.GL_FALSE);
         TagStructure tagStructure = engine.tagStructure();
-        if (!tagStructure.has("Compatibility") ||
+        if (useGLES) {
+            GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0);
+        } else if (!tagStructure.has("Compatibility") ||
                 !engine.tagStructure().getStructure("Compatibility")
                         .getBoolean("ForceLegacyGL")) {
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3);
