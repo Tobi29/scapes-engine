@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.math.FastMath;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class LimitedBufferStream implements ReadableByteStream {
+public class LimitedBufferStream implements SizedReadableByteStream {
     private final ReadableByteStream stream;
     private int remaining;
 
@@ -30,8 +30,8 @@ public class LimitedBufferStream implements ReadableByteStream {
     }
 
     @Override
-    public int remaining() {
-        return remaining;
+    public int available() {
+        return FastMath.min(stream.available(), remaining);
     }
 
     @Override
@@ -95,5 +95,15 @@ public class LimitedBufferStream implements ReadableByteStream {
             throw new IOException("End of stream");
         }
         remaining -= len;
+    }
+
+    @Override
+    public int remaining() {
+        return remaining;
+    }
+
+    @Override
+    public boolean hasRemaining() {
+        return remaining > 0;
     }
 }

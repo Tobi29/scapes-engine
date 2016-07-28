@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.io;
 import java8.util.function.IntFunction;
 import java8.util.function.IntUnaryOperator;
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,8 +29,6 @@ import java.util.zip.Inflater;
  * Utility class for compressing and decompressing data
  */
 public final class CompressionUtil {
-    private static final byte[] EMPTY_BYTE = {};
-
     private CompressionUtil() {
     }
 
@@ -97,7 +94,7 @@ public final class CompressionUtil {
 
     public static void filter(ReadableByteStream input,
             WritableByteStream output, Filter filter) throws IOException {
-        while (input.hasRemaining()) {
+        while (input.hasAvailable()) {
             filter.input(input);
             while (!filter.needsInput()) {
                 int len = filter.output(output);
@@ -136,7 +133,7 @@ public final class CompressionUtil {
     public static class ZDeflater implements Filter {
         protected final Deflater deflater;
         protected final int buffer;
-        protected byte[] input = EMPTY_BYTE, output = EMPTY_BYTE;
+        protected ByteBuffer input, output;
 
         public ZDeflater(int level) {
             this(level, 8192);
@@ -145,23 +142,31 @@ public final class CompressionUtil {
         public ZDeflater(int level, int buffer) {
             deflater = new Deflater(level);
             this.buffer = buffer;
+            input = ByteBuffer.allocate(buffer);
+            output = ByteBuffer.allocate(buffer);
         }
 
         @Override
         public void input(ReadableByteStream buffer) throws IOException {
-            int len = FastMath.min(buffer.remaining(), this.buffer);
-            if (input.length < len) {
-                input = new byte[len];
-                output = new byte[len];
+            if (!input.hasRemaining()) {
+                ByteBuffer newInput =
+                        ByteBuffer.allocate(input.capacity() << 1);
+                input.flip();
+                newInput.put(input);
+                input = newInput;
             }
-            buffer.get(input, 0, len);
-            deflater.setInput(input, 0, len);
+            buffer.getSome(input);
+            input.flip();
+            deflater.setInput(input.array(), input.arrayOffset(),
+                    input.remaining());
         }
 
         @Override
         public int output(WritableByteStream buffer) throws IOException {
-            int len = deflater.deflate(output);
-            buffer.put(output, 0, len);
+            int len = deflater.deflate(output.array());
+            output.limit(len);
+            buffer.put(output);
+            output.clear();
             return len;
         }
 
@@ -194,7 +199,7 @@ public final class CompressionUtil {
     public static class ZInflater implements Filter {
         protected final Inflater inflater = new Inflater();
         protected final int buffer;
-        protected byte[] input = EMPTY_BYTE, output = EMPTY_BYTE;
+        protected ByteBuffer input, output;
 
         public ZInflater() {
             this(8192);
@@ -202,24 +207,32 @@ public final class CompressionUtil {
 
         public ZInflater(int buffer) {
             this.buffer = buffer;
+            input = ByteBuffer.allocate(buffer);
+            output = ByteBuffer.allocate(buffer);
         }
 
         @Override
         public void input(ReadableByteStream buffer) throws IOException {
-            int len = FastMath.min(buffer.remaining(), this.buffer);
-            if (input.length < len) {
-                input = new byte[len];
-                output = new byte[len];
+            if (!input.hasRemaining()) {
+                ByteBuffer newInput =
+                        ByteBuffer.allocate(input.capacity() << 1);
+                input.flip();
+                newInput.put(input);
+                input = newInput;
             }
-            buffer.get(input, 0, len);
-            inflater.setInput(input, 0, len);
+            buffer.getSome(input);
+            input.flip();
+            inflater.setInput(input.array(), input.arrayOffset(),
+                    input.remaining());
         }
 
         @Override
         public int output(WritableByteStream buffer) throws IOException {
             try {
-                int len = inflater.inflate(output);
-                buffer.put(output, 0, len);
+                int len = inflater.inflate(output.array());
+                output.limit(len);
+                buffer.put(output);
+                output.clear();
                 return len;
             } catch (DataFormatException e) {
                 return -1;

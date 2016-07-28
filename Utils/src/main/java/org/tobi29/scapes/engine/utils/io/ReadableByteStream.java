@@ -22,10 +22,10 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public interface ReadableByteStream {
-    int remaining();
+    int available();
 
-    default boolean hasRemaining() {
-        return remaining() > 0;
+    default boolean hasAvailable() {
+        return available() > 0;
     }
 
     default void skip(int len) throws IOException {

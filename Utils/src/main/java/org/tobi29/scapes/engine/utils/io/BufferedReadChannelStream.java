@@ -24,15 +24,21 @@ import java.nio.channels.ReadableByteChannel;
 
 public class BufferedReadChannelStream implements ReadableByteStream {
     private final ReadableByteChannel channel;
-    private final ByteBuffer buffer = BufferCreator.bytes(8192);
+    private final ByteBuffer buffer;
 
     public BufferedReadChannelStream(ReadableByteChannel channel) {
+        this(channel, BufferCreator.bytes(8192));
+    }
+
+    public BufferedReadChannelStream(ReadableByteChannel channel,
+            ByteBuffer buffer) {
         this.channel = channel;
+        this.buffer = buffer;
         buffer.limit(0);
     }
 
     @Override
-    public int remaining() {
+    public int available() {
         return buffer.remaining();
     }
 

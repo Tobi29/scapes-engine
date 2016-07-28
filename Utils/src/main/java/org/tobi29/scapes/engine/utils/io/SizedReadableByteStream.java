@@ -17,22 +17,16 @@ package org.tobi29.scapes.engine.utils.io;
 
 import java.io.IOException;
 
-public interface RandomReadableByteStream extends SizedReadableByteStream {
-    @Override
-    default int available() {
-        return remaining();
+public interface SizedReadableByteStream extends ReadableByteStream {
+    int remaining();
+
+    default boolean hasRemaining() {
+        return remaining() > 0;
     }
 
-    @Override
-    default void skip(int len) throws IOException {
-        position(position() + len);
+    default void consume() throws IOException {
+        while (hasRemaining()) {
+            skip(remaining());
+        }
     }
-
-    int position();
-
-    ReadableByteStream position(int pos);
-
-    int limit();
-
-    ReadableByteStream limit(int limit);
 }

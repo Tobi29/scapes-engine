@@ -54,6 +54,6 @@ public class ByteStreamInputStream extends InputStream {
 
     @Override
     public int available() throws IOException {
-        return stream.remaining();
+        return stream.available();
     }
 }
