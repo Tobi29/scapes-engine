@@ -1,7 +1,7 @@
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.matrix.Matrix;
-import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
+import org.tobi29.scapes.engine.graphics.Matrix;
+import org.tobi29.scapes.engine.graphics.MatrixStack;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3f;

@@ -29,12 +29,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.Container;
 import org.tobi29.scapes.engine.ScapesEngine;
+import org.tobi29.scapes.engine.backends.lwjgl3.openal.LWJGL3OpenAL;
+import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GLLWJGL3GL;
+import org.tobi29.scapes.engine.backends.lwjgl3.opengl.LWJGL3OpenGL;
+import org.tobi29.scapes.engine.backends.lwjgl3.opengles.LWJGL3OpenGLES;
+import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem;
+import org.tobi29.scapes.engine.backends.opengl.GLOpenGL;
+import org.tobi29.scapes.engine.graphics.GL;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerKey;
-import org.tobi29.scapes.engine.opengl.GL;
 import org.tobi29.scapes.engine.sound.SoundSystem;
-import org.tobi29.scapes.engine.sound.openal.OpenALSoundSystem;
 import org.tobi29.scapes.engine.utils.MutablePair;
 import org.tobi29.scapes.engine.utils.io.IORunnable;
 import org.tobi29.scapes.engine.utils.io.IOSupplier;
@@ -51,10 +56,11 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         implements Container {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ContainerLWJGL3.class);
+    private static final boolean USE_FAST_GL = true;
     protected final Queue<Runnable> tasks = new ConcurrentLinkedQueue<>();
     protected final ScapesEngine engine;
     protected final Thread mainThread;
-    protected final GL openGL;
+    protected final GL gl;
     protected final SoundSystem soundSystem;
     protected final boolean superModifier, useGLES;
     protected final AtomicBoolean joysticksChanged = new AtomicBoolean(false);
@@ -72,9 +78,13 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
         mainThread = Thread.currentThread();
         LOGGER.info("LWJGL version: {}", Version.getVersion());
         if (useGLES) {
-            openGL = new LWJGL3OpenGLES(engine, this);
+            gl = new GLOpenGL(engine, this, new LWJGL3OpenGLES());
         } else {
-            openGL = new LWJGL3OpenGL(engine, this);
+            if (USE_FAST_GL) {
+                gl = new GLLWJGL3GL(engine, this);
+            } else {
+                gl = new GLOpenGL(engine, this, new LWJGL3OpenGL());
+            }
         }
         soundSystem =
                 new OpenALSoundSystem(engine, new LWJGL3OpenAL(), 64, 5.0);
@@ -124,7 +134,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
     }
 
     public static Optional<String> checkContextGLES() {
-        LOGGER.info("OpenGL: {} (Vendor: {}, Renderer: {})",
+        LOGGER.info("OpenGL ES: {} (Vendor: {}, Renderer: {})",
                 GLES20.glGetString(GLES20.GL_VERSION),
                 GLES20.glGetString(GLES20.GL_VENDOR),
                 GLES20.glGetString(GLES20.GL_RENDERER));
@@ -180,7 +190,7 @@ public abstract class ContainerLWJGL3 extends ControllerDefault
 
     @Override
     public GL gl() {
-        return openGL;
+        return gl;
     }
 
     @Override

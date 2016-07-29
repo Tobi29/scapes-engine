@@ -1,12 +1,7 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.BlendingMode;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.vao.VAO;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.graphics.*;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.FastMath;
@@ -20,7 +15,7 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
     protected final int maxLength;
     protected final float r, g, b, a;
     protected boolean active, focused;
-    protected List<Pair<VAO, Texture>> vaoCursor, vaoSelection;
+    protected List<Pair<Model, Texture>> vaoCursor, vaoSelection;
     protected GuiComponentText.TextFilter textFilter = str -> str;
 
     public GuiComponentEditableText(GuiLayoutData parent, String text) {

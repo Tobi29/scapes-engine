@@ -19,13 +19,13 @@ import java8.util.Optional;
 import java8.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.graphics.FontRenderer;
+import org.tobi29.scapes.engine.graphics.GraphicsCheckException;
+import org.tobi29.scapes.engine.graphics.GraphicsSystem;
 import org.tobi29.scapes.engine.gui.*;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues;
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler;
 import org.tobi29.scapes.engine.input.ControllerDefault;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.GraphicsCheckException;
-import org.tobi29.scapes.engine.opengl.GraphicsSystem;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider;
 import org.tobi29.scapes.engine.utils.Crashable;
@@ -146,8 +146,8 @@ public class ScapesEngine implements Crashable {
         FontRenderer font = new FontRenderer(this,
                 container.createGlyphRenderer(fontName, 64));
         LOGGER.info("Setting up GUI");
-        guiStack = new GuiStack(this);
-        guiStyle = new GuiBasicStyle(this, font, container.gl().textures());
+        guiStack = new GuiStack();
+        guiStyle = new GuiBasicStyle(this, font);
         notifications = new GuiNotifications(guiStyle);
         guiStack.addUnfocused("90-Notifications", notifications);
         Gui debugGui = new Gui(guiStyle) {

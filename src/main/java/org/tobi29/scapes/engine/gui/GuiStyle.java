@@ -1,7 +1,7 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
+import org.tobi29.scapes.engine.graphics.FontRenderer;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public interface GuiStyle {

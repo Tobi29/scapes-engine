@@ -15,35 +15,31 @@
  */
 package org.tobi29.scapes.engine;
 
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.OpenGL;
-import org.tobi29.scapes.engine.opengl.fbo.FBO;
-import org.tobi29.scapes.engine.opengl.scenes.Scene;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.TextureFBOColor;
-import org.tobi29.scapes.engine.opengl.vao.RenderType;
-import org.tobi29.scapes.engine.opengl.vao.VAO;
-import org.tobi29.scapes.engine.opengl.vao.VAOUtility;
+import org.tobi29.scapes.engine.graphics.*;
 
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class GameState {
-    protected final VAO vao;
+    protected final Model model;
     protected final ScapesEngine engine;
     protected final AtomicReference<Scene> newScene = new AtomicReference<>();
+    private final Shader shaderTextured, shaderGui;
     protected Scene scene;
-    protected FBO[] fbos;
+    protected Framebuffer[] fbos;
 
     protected GameState(ScapesEngine engine, Scene scene) {
         this.engine = engine;
         this.scene = scene;
         newScene.set(scene);
-        vao = VAOUtility.createVTI(engine,
+        model = VAOUtility.createVTI(engine,
                 new float[]{0.0f, 540.0f, 0.0f, 960.0f, 540.0f, 0.0f, 0.0f,
                         0.0f, 0.0f, 960.0f, 0.0f, 0.0f},
                 new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f},
                 new int[]{0, 1, 2, 3, 2, 1}, RenderType.TRIANGLES);
+        GraphicsSystem graphics = engine.graphics();
+        shaderTextured = graphics.createShader("Engine:shader/Textured");
+        shaderGui = graphics.createShader("Engine:shader/Gui");
     }
 
     public ScapesEngine engine() {
@@ -91,10 +87,11 @@ public abstract class GameState {
         int sceneWidth = scene.width(gl.sceneWidth());
         int sceneHeight = scene.height(gl.sceneHeight());
         if (fbos == null || updateSize) {
-            fbos = new FBO[scene.renderPasses()];
+            fbos = new Framebuffer[scene.renderPasses()];
             for (int i = 0; i < fbos.length; i++) {
-                fbos[i] = new FBO(engine, sceneWidth, sceneHeight,
-                        scene.colorAttachments(), true, true, false);
+                fbos[i] = engine.graphics()
+                        .createFramebuffer(sceneWidth, sceneHeight,
+                                scene.colorAttachments(), true, true, false);
                 scene.initFBO(i, fbos[i]);
             }
         }
@@ -118,18 +115,17 @@ public abstract class GameState {
         gl.setProjectionOrthogonal(0.0f, 0.0f,
                 (float) engine.container().containerWidth() /
                         engine.container().containerHeight() * 540.0f, 540.0f);
-        Shader shader = gl.shaders().get("Engine:shader/Gui", gl);
-        engine.guiStack().render(gl, shader, engine, delta);
+        engine.guiStack().render(gl, shaderGui, delta);
         gl.checkError("Gui-Rendering");
         scene.postRender(gl, delta);
         gl.checkError("Post-Render");
     }
 
-    public void renderPostProcess(GL gl, FBO fbo, FBO depthFBO, int i) {
-        gl.setAttribute4f(OpenGL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f);
-        Iterator<TextureFBOColor> texturesColor =
-                fbo.texturesColor().iterator();
-        TextureFBOColor textureColor = texturesColor.next();
+    public void renderPostProcess(GL gl, Framebuffer fbo, Framebuffer depthFBO,
+            int i) {
+        gl.setAttribute4f(GL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f);
+        Iterator<Texture> texturesColor = fbo.texturesColor().iterator();
+        Texture textureColor = texturesColor.next();
         int j = 2;
         while (texturesColor.hasNext()) {
             gl.activeTexture(j);
@@ -140,10 +136,14 @@ public abstract class GameState {
         depthFBO.textureDepth().bind(gl);
         gl.activeTexture(0);
         textureColor.bind(gl);
-        vao.render(gl, scene.postProcessing(gl, i));
+        Shader shader = scene.postProcessing(gl, i);
+        if (shader == null) {
+            shader = shaderTextured;
+        }
+        model.render(gl, shader);
     }
 
-    public FBO fbo(int i) {
+    public Framebuffer fbo(int i) {
         return fbos[i];
     }
 }

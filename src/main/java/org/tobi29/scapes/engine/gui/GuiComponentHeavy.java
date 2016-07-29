@@ -1,12 +1,7 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.vao.VAO;
-import org.tobi29.scapes.engine.opengl.matrix.Matrix;
-import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.graphics.*;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
@@ -23,7 +18,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     private static final ThreadLocal<GuiRenderer> RENDERER =
             ThreadLocalUtil.of(GuiRenderer::new);
     private final AtomicBoolean dirty = new AtomicBoolean(true);
-    protected List<Pair<VAO, Texture>> meshes = Collections.emptyList();
+    protected List<Pair<Model, Texture>> meshes = Collections.emptyList();
     private Vector2 lastSize = Vector2d.ZERO, lastPixelSize = Vector2d.ZERO;
     private boolean hasHeavyChild;
 

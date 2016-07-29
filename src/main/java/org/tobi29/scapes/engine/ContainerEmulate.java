@@ -7,7 +7,7 @@ import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerTouch;
 import org.tobi29.scapes.engine.input.FileType;
-import org.tobi29.scapes.engine.opengl.GL;
+import org.tobi29.scapes.engine.graphics.GL;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;

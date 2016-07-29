@@ -17,10 +17,10 @@ package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.GL;
-import org.tobi29.scapes.engine.opengl.matrix.Matrix;
-import org.tobi29.scapes.engine.opengl.matrix.MatrixStack;
-import org.tobi29.scapes.engine.opengl.shader.Shader;
+import org.tobi29.scapes.engine.graphics.GL;
+import org.tobi29.scapes.engine.graphics.Matrix;
+import org.tobi29.scapes.engine.graphics.MatrixStack;
+import org.tobi29.scapes.engine.graphics.Shader;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;

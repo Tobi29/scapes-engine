@@ -1,20 +1,16 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.ScapesEngine;
-import org.tobi29.scapes.engine.opengl.FontRenderer;
-import org.tobi29.scapes.engine.opengl.texture.TextureManager;
+import org.tobi29.scapes.engine.graphics.FontRenderer;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiBasicStyle implements GuiStyle {
     private final ScapesEngine engine;
     private final FontRenderer font;
-    private final TextureManager textures;
 
-    public GuiBasicStyle(ScapesEngine engine, FontRenderer font,
-            TextureManager textures) {
+    public GuiBasicStyle(ScapesEngine engine, FontRenderer font) {
         this.engine = engine;
         this.font = font;
-        this.textures = textures;
     }
 
     @Override
@@ -29,7 +25,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void pane(GuiRenderer renderer, Vector2 size) {
-        renderer.texture(textures.empty(), 0);
+        renderer.texture(engine.graphics().textureEmpty(), 0);
         GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.0f, 0.0f, 0.0f, 0.2f);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
@@ -38,7 +34,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void button(GuiRenderer renderer, Vector2 size, boolean hover) {
-        renderer.texture(textures.empty(), 0);
+        renderer.texture(engine.graphics().textureEmpty(), 0);
         float a;
         if (hover) {
             a = 1.0f;
@@ -51,7 +47,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void border(GuiRenderer renderer, Vector2 size) {
-        renderer.texture(textures.empty(), 0);
+        renderer.texture(engine.graphics().textureEmpty(), 0);
         GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
                 0.0f, 0.0f, 0.0f, 0.2f);
     }
@@ -59,7 +55,7 @@ public class GuiBasicStyle implements GuiStyle {
     @Override
     public void slider(GuiRenderer renderer, Vector2 size, boolean horizontal,
             double value, double sliderSize, boolean hover) {
-        renderer.texture(textures.empty(), 0);
+        renderer.texture(engine.graphics().textureEmpty(), 0);
         float v, a, ab;
         if (hover) {
             a = 1.0f;
@@ -92,7 +88,7 @@ public class GuiBasicStyle implements GuiStyle {
 
     @Override
     public void separator(GuiRenderer renderer, Vector2 size) {
-        renderer.texture(textures.empty(), 0);
+        renderer.texture(engine.graphics().textureEmpty(), 0);
         GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
                 size.floatY() * 0.5f, 0.0f, 0.0f, 0.0f, 0.3f);
         GuiUtils.rectangle(renderer, 0.0f, size.floatY() * 0.5f, size.floatX(),

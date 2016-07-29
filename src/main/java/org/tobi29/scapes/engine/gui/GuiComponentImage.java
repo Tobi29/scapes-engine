@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.Optional;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.graphics.Texture;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 
 public class GuiComponentImage extends GuiComponent {
@@ -37,7 +37,8 @@ public class GuiComponentImage extends GuiComponent {
         this(parent, Optional.of(texture));
     }
 
-    public GuiComponentImage(GuiLayoutData parent, Optional<Texture> texture) {
+    public GuiComponentImage(GuiLayoutData parent,
+            Optional<Texture> texture) {
         super(parent);
         this.texture = texture;
     }

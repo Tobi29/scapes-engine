@@ -7,11 +7,6 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2;
 public class GuiCursor {
     private final MutableVector2 pos = new MutableVector2d(), guiPos =
             new MutableVector2d();
-    private final boolean software;
-
-    public GuiCursor(boolean software) {
-        this.software = software;
-    }
 
     public void set(Vector2 pos, Vector2 guiPos) {
         this.pos.set(pos);
@@ -40,9 +35,5 @@ public class GuiCursor {
 
     public double guiY() {
         return guiPos.doubleY();
-    }
-
-    public boolean software() {
-        return software;
     }
 }

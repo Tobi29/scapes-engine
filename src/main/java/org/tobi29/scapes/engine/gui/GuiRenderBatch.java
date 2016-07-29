@@ -1,9 +1,9 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.concurrent.ConcurrentMaps;
-import org.tobi29.scapes.engine.opengl.vao.Mesh;
-import org.tobi29.scapes.engine.opengl.vao.VAO;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.graphics.Model;
+import org.tobi29.scapes.engine.graphics.Texture;
+import org.tobi29.scapes.engine.graphics.Mesh;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
@@ -46,15 +46,15 @@ public class GuiRenderBatch {
         return currentMesh;
     }
 
-    public List<Pair<VAO, Texture>> finish() {
-        List<Pair<VAO, Texture>> meshes = new ArrayList<>(count);
-        Streams.forEach(this.meshes.values(), map -> {
-            Streams.forEach(map.entrySet(), entry -> {
-                Texture texture = entry.getKey();
-                meshes.add(new Pair<>(entry.getValue().finish(texture.engine()),
-                        texture));
-            });
-        });
+    public List<Pair<Model, Texture>> finish() {
+        List<Pair<Model, Texture>> meshes = new ArrayList<>(count);
+        Streams.forEach(this.meshes.values(),
+                map -> Streams.forEach(map.entrySet(), entry -> {
+                    Texture texture = entry.getKey();
+                    meshes.add(new Pair<>(
+                            entry.getValue().finish(texture.engine()),
+                            texture));
+                }));
         this.meshes.clear();
         count = 0;
         return meshes;

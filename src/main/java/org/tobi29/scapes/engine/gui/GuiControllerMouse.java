@@ -12,7 +12,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 public class GuiControllerMouse extends GuiControllerDefault {
     private final double scrollSensitivity;
-    private final GuiCursor cursor = new GuiCursor(false);
+    private final GuiCursor cursor = new GuiCursor();
     private Optional<GuiComponent> draggingLeft = Optional.empty(),
             draggingRight = Optional.empty();
     private double dragLeftX, dragLeftY, dragRightX, dragRightY;

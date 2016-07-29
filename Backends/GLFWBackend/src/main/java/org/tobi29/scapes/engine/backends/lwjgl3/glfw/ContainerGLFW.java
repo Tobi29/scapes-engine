@@ -217,6 +217,7 @@ public class ContainerGLFW extends ContainerLWJGL3 {
                 if (check.isPresent()) {
                     throw new GraphicsCheckException(check.get());
                 }
+                gl.init();
                 valid = true;
                 containerResized = true;
             }

@@ -15,11 +15,11 @@
  */
 package org.tobi29.scapes.engine;
 
+import org.tobi29.scapes.engine.graphics.Texture;
 import org.tobi29.scapes.engine.gui.GuiComponentImage;
 import org.tobi29.scapes.engine.gui.GuiState;
 import org.tobi29.scapes.engine.gui.GuiStyle;
-import org.tobi29.scapes.engine.opengl.scenes.Scene;
-import org.tobi29.scapes.engine.opengl.texture.Texture;
+import org.tobi29.scapes.engine.graphics.Scene;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class GameStateStartup extends GameState {

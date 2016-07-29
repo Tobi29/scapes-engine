@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui;
 
-import org.tobi29.scapes.engine.opengl.vao.Mesh;
+import org.tobi29.scapes.engine.graphics.Mesh;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 
 public final class GuiUtils {
