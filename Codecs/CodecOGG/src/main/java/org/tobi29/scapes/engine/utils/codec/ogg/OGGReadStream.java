@@ -45,6 +45,7 @@ public class OGGReadStream implements ReadableAudioStream {
     private final int channels, rate;
     private final int[] index;
     private final float[][][] pcm = new float[1][][];
+    private boolean eos;
 
     public OGGReadStream(ReadableByteChannel channel) throws IOException {
         this.channel = channel;
@@ -75,12 +76,13 @@ public class OGGReadStream implements ReadableAudioStream {
     public boolean getSome(FloatBuffer buffer, int len) throws IOException {
         int limit = buffer.limit();
         buffer.limit(buffer.position() + len);
-        boolean valid = true;
-        while (buffer.hasRemaining() && valid) {
-            valid = decodePacket(buffer);
+        while (buffer.hasRemaining() && !eos) {
+            if (!decodePacket(buffer)) {
+                break;
+            }
         }
         buffer.limit(limit);
-        return valid;
+        return !eos;
     }
 
     @Override
@@ -92,7 +94,8 @@ public class OGGReadStream implements ReadableAudioStream {
     }
 
     private void readHeader() throws IOException {
-        readPage();
+        while (!readPage()) {
+        }
         streamState.init(page.serialno());
         if (streamState.pagein(page) == -1) {
             throw new IOException("Error reading first header page");
@@ -104,11 +107,43 @@ public class OGGReadStream implements ReadableAudioStream {
             throw new IOException("Error interpreting first header packet");
         }
         for (int i = 0; i < 2; i++) {
-            readPacket();
+            while (!readPacket()) {
+            }
             info.synthesis_headerin(comment, packet);
         }
         dspState.synthesis_init(info);
         block.init(dspState);
+    }
+
+    private boolean decodePacket(FloatBuffer buffer) throws IOException {
+        while (true) {
+            int samples = dspState.synthesis_pcmout(pcm, index);
+            if (samples == 0) {
+                if (!readPacket()) {
+                    return false;
+                }
+                if (block.synthesis(packet) != 0) {
+                    return true;
+                }
+                dspState.synthesis_blockin(block);
+                continue;
+            }
+            float[][] pcmSamples = pcm[0];
+            int length = FastMath.min(samples, buffer.remaining() / channels);
+            int offset = buffer.position();
+            for (int i = 0; i < channels; i++) {
+                float[] channel = pcmSamples[i];
+                int location = index[i];
+                int position = offset + i;
+                for (int j = 0; j < length; j++) {
+                    buffer.put(position, channel[location + j]);
+                    position += channels;
+                }
+            }
+            buffer.position(offset + length * channels);
+            dspState.synthesis_read(length);
+            return true;
+        }
     }
 
     private boolean readPacket() throws IOException {
@@ -124,34 +159,6 @@ public class OGGReadStream implements ReadableAudioStream {
             }
             streamState.pagein(page);
         }
-    }
-
-    private boolean decodePacket(FloatBuffer buffer) throws IOException {
-        if (!readPacket()) {
-            return false;
-        }
-        if (block.synthesis(packet) == 0) {
-            dspState.synthesis_blockin(block);
-            int samples = dspState.synthesis_pcmout(pcm, index);
-            if (samples > 0) {
-                float[][] pcmSamples = pcm[0];
-                int length =
-                        FastMath.min(samples, buffer.remaining() / channels);
-                int offset = buffer.position();
-                for (int i = 0; i < channels; i++) {
-                    float[] channel = pcmSamples[i];
-                    int location = index[i];
-                    int position = offset + i;
-                    for (int j = 0; j < length; j++) {
-                        buffer.put(position, channel[location + j]);
-                        position += channels;
-                    }
-                }
-                buffer.position(offset + length * channels);
-                dspState.synthesis_read(length);
-            }
-        }
-        return true;
     }
 
     private boolean readPage() throws IOException {
@@ -173,6 +180,9 @@ public class OGGReadStream implements ReadableAudioStream {
         int read = channel.read(
                 ByteBuffer.wrap(syncState.data, offset, BUFFER_SIZE));
         if (read == -1) {
+            eos = true;
+        }
+        if (read <= 0) {
             return false;
         }
         syncState.wrote(read);
