@@ -66,7 +66,6 @@ public abstract class AbstractServerConnection {
         return address.getPort();
     }
 
-    @SuppressWarnings("ThrowFromFinallyBlock")
     public InetSocketAddress start(InetSocketAddress address)
             throws IOException {
         LOGGER.info("Starting socket thread...");

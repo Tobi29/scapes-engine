@@ -133,7 +133,8 @@ public final class CompressionUtil {
     public static class ZDeflater implements Filter {
         protected final Deflater deflater;
         protected final int buffer;
-        protected ByteBuffer input, output;
+        protected final ByteBuffer output;
+        protected ByteBuffer input;
 
         public ZDeflater(int level) {
             this(level, 8192);
@@ -199,7 +200,8 @@ public final class CompressionUtil {
     public static class ZInflater implements Filter {
         protected final Inflater inflater = new Inflater();
         protected final int buffer;
-        protected ByteBuffer input, output;
+        protected final ByteBuffer output;
+        protected ByteBuffer input;
 
         public ZInflater() {
             this(8192);

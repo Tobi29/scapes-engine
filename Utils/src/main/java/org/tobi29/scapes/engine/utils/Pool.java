@@ -45,7 +45,7 @@ public class Pool<E> implements Iterable<E> {
     private int size;
 
     /**
-     * Creates a new instace using the given {@link Supplier}
+     * Creates a new instance using the given {@link Supplier}
      *
      * @param supplier Called to create new objects in case the pool ran out of
      *                 reusable ones

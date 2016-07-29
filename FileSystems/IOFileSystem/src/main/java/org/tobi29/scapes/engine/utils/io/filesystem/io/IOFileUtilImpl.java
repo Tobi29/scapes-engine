@@ -260,10 +260,8 @@ public class IOFileUtilImpl implements FileUtilImpl {
 
     @Override
     public FilePath copy(FilePath source, FilePath target) throws IOException {
-        read(toFile(source), input -> {
-            write(toFile(target),
-                    output -> ProcessStream.process(input, output::put));
-        });
+        read(toFile(source), input -> write(toFile(target),
+                output -> ProcessStream.process(input, output::put)));
         return target;
     }
 
