@@ -41,7 +41,7 @@ public final class BufferCreator {
      * @return A {@link ShortBuffer} with big-endian byte-order
      */
     public static ShortBuffer shorts(int size) {
-        return bytes(size << 1).asShortBuffer();
+        return ShortBuffer.allocate(size);
     }
 
     /**
@@ -51,7 +51,7 @@ public final class BufferCreator {
      * @return A {@link IntBuffer} with big-endian byte-order
      */
     public static IntBuffer ints(int size) {
-        return bytes(size << 2).asIntBuffer();
+        return IntBuffer.allocate(size);
     }
 
     /**
@@ -61,7 +61,7 @@ public final class BufferCreator {
      * @return A {@link LongBuffer} with big-endian byte-order
      */
     public static LongBuffer longs(int size) {
-        return bytes(size << 3).asLongBuffer();
+        return LongBuffer.allocate(size);
     }
 
     /**
@@ -71,7 +71,7 @@ public final class BufferCreator {
      * @return A {@link FloatBuffer} with big-endian byte-order
      */
     public static FloatBuffer floats(int size) {
-        return bytes(size << 2).asFloatBuffer();
+        return FloatBuffer.allocate(size);
     }
 
     /**
@@ -81,7 +81,7 @@ public final class BufferCreator {
      * @return A {@link DoubleBuffer} with big-endian byte-order
      */
     public static DoubleBuffer doubles(int size) {
-        return bytes(size << 3).asDoubleBuffer();
+        return DoubleBuffer.allocate(size);
     }
 
     /**

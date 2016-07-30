@@ -143,15 +143,15 @@ public final class CompressionUtil {
         public ZDeflater(int level, int buffer) {
             deflater = new Deflater(level);
             this.buffer = buffer;
-            input = ByteBuffer.allocate(buffer);
-            output = ByteBuffer.allocate(buffer);
+            input = BufferCreator.bytes(buffer);
+            output = BufferCreator.bytes(buffer);
         }
 
         @Override
         public void input(ReadableByteStream buffer) throws IOException {
             if (!input.hasRemaining()) {
                 ByteBuffer newInput =
-                        ByteBuffer.allocate(input.capacity() << 1);
+                        BufferCreator.bytes(input.capacity() << 1);
                 input.flip();
                 newInput.put(input);
                 input = newInput;
@@ -209,15 +209,15 @@ public final class CompressionUtil {
 
         public ZInflater(int buffer) {
             this.buffer = buffer;
-            input = ByteBuffer.allocate(buffer);
-            output = ByteBuffer.allocate(buffer);
+            input = BufferCreator.bytes(buffer);
+            output = BufferCreator.bytes(buffer);
         }
 
         @Override
         public void input(ReadableByteStream buffer) throws IOException {
             if (!input.hasRemaining()) {
                 ByteBuffer newInput =
-                        ByteBuffer.allocate(input.capacity() << 1);
+                        BufferCreator.bytes(input.capacity() << 1);
                 input.flip();
                 newInput.put(input);
                 input = newInput;
