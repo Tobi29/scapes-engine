@@ -16,8 +16,9 @@
 package org.tobi29.scapes.engine.utils.codec.mp3;
 
 import javazoom.jl.decoder.*;
-import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.BufferCreator;
+import org.tobi29.scapes.engine.utils.codec.AudioBuffer;
+import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
@@ -32,6 +33,7 @@ public class MP3ReadStream implements ReadableAudioStream {
     private final OutputBuffer output;
     private final int channels;
     private int rate, outputRate;
+    private boolean eos;
 
     public MP3ReadStream(ReadableByteChannel channel) throws IOException {
         this.channel = channel;
@@ -78,30 +80,16 @@ public class MP3ReadStream implements ReadableAudioStream {
     }
 
     @Override
-    public int channels() {
-        return channels;
-    }
-
-    @Override
-    public int rate() {
-        return rate;
-    }
-
-    @Override
-    public void frame() {
-        outputRate = rate;
-    }
-
-    @Override
-    public boolean getSome(FloatBuffer buffer, int len) throws IOException {
-        int limit = buffer.limit();
-        buffer.limit(buffer.position() + len);
-        boolean valid = true;
-        while (buffer.hasRemaining() && valid) {
-            valid = decodeFrame(buffer);
+    public boolean get(AudioBuffer buffer) throws IOException {
+        FloatBuffer pcmBuffer = buffer.buffer(channels, rate);
+        while (pcmBuffer.hasRemaining() && !eos) {
+            if (!decodeFrame(pcmBuffer)) {
+                break;
+            }
         }
-        buffer.limit(limit);
-        return valid;
+        buffer.done();
+        outputRate = rate;
+        return !eos;
     }
 
     @Override
@@ -115,7 +103,7 @@ public class MP3ReadStream implements ReadableAudioStream {
     private boolean decodeFrame(FloatBuffer buffer) throws IOException {
         if (outputRate != rate) {
             // TODO: Need to git an mp3 file that actually does this to test
-            return true;
+            return false;
         }
         if (!checkFrame()) {
             return false;
@@ -133,6 +121,7 @@ public class MP3ReadStream implements ReadableAudioStream {
         if (!output.buffer.hasRemaining()) {
             Header header = readFrame();
             if (header == null) {
+                eos = true;
                 return false;
             }
             decodeFrame(header);

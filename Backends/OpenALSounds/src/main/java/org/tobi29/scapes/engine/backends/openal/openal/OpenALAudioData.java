@@ -17,24 +17,17 @@ package org.tobi29.scapes.engine.backends.openal.openal;
 
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.sound.AudioFormat;
-import org.tobi29.scapes.engine.sound.PCMUtil;
-import org.tobi29.scapes.engine.utils.BufferCreator;
+import org.tobi29.scapes.engine.utils.codec.AudioBuffer;
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 public class OpenALAudioData {
     private final int buffer;
 
-    public OpenALAudioData(ScapesEngine engine, ReadableAudioStream stream,
-            OpenAL openAL) throws IOException {
-        this(read(engine, stream), stream.rate(), stream.channels(), openAL);
-    }
-
-    public OpenALAudioData(ByteBuffer data, int rate, int channels,
+    public OpenALAudioData(ByteBuffer data, int channels, int rate,
             OpenAL openAL) {
         buffer = openAL.createBuffer();
         openAL.storeBuffer(buffer,
@@ -42,22 +35,45 @@ public class OpenALAudioData {
                 rate);
     }
 
-    private static ByteBuffer read(ScapesEngine engine,
-            ReadableAudioStream input) throws IOException {
+    public static OpenALAudioData read(ScapesEngine engine,
+            ReadableAudioStream input, OpenAL openAL)
+            throws IOException {
         ByteBufferStream output = new ByteBufferStream(engine::allocate,
                 length -> length + 409600);
-        FloatBuffer buffer = BufferCreator.floats(409600);
+        AudioBuffer buffer = new AudioBuffer(4096, engine::allocate);
+        int channels = -1, rate = -1;
         boolean valid = true;
         while (valid) {
-            valid = input.getSome(buffer);
-            buffer.flip();
-            while (buffer.hasRemaining()) {
-                output.putShort(PCMUtil.toInt32(buffer.get()));
+            while (!buffer.isDone()) {
+                if (!input.get(buffer)) {
+                    valid = false;
+                    break;
+                }
             }
+            if (!buffer.isDone()) {
+                break;
+            }
+            if (channels == -1) {
+                channels = buffer.channels();
+            } else {
+                if (channels != buffer.channels()) {
+                    throw new IOException(
+                            "Number of channels changed in audio file, this is not supported for non-streams");
+                }
+            }
+            if (rate == -1) {
+                rate = buffer.rate();
+            } else {
+                if (rate != buffer.rate()) {
+                    throw new IOException(
+                            "Sample rate changed in audio file, this is not supported for non-streams");
+                }
+            }
+            buffer.toPCM16(output::putShort);
             buffer.clear();
         }
         output.buffer().flip();
-        return output.buffer();
+        return new OpenALAudioData(output.buffer(), channels, rate, openAL);
     }
 
     public void dispose(OpenALSoundSystem soundSystem, OpenAL openAL) {

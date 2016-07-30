@@ -240,7 +240,7 @@ public class OpenALSoundSystem implements SoundSystem {
                 try (ReadableAudioStream stream = AudioStream
                         .create(resource)) {
                     cache.put(asset,
-                            new OpenALAudioData(engine, stream, openAL));
+                            OpenALAudioData.read(engine, stream, openAL));
                 } catch (IOException e) {
                     LOGGER.warn("Failed to get audio data", e);
                 }
@@ -261,10 +261,6 @@ public class OpenALSoundSystem implements SoundSystem {
     protected void releaseSource(OpenAL openAL, int source) {
         openAL.stop(source);
         openAL.setBuffer(source, 0);
-        int queued = openAL.getBuffersQueued(source);
-        while (queued-- > 0) {
-            openAL.unqueue(source);
-        }
         for (int i = 0; i < sources.length; i++) {
             if (sources[i] == -1) {
                 sources[i] = source;

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils.codec.spi;
 
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
@@ -24,5 +23,6 @@ import java.nio.channels.ReadableByteChannel;
 public interface ReadableAudioStreamProvider {
     boolean accepts(String mime);
 
-    ReadableAudioStream get(ReadableByteChannel channel) throws IOException;
+    ReadableAudioStream get(ReadableByteChannel channel)
+            throws IOException;
 }

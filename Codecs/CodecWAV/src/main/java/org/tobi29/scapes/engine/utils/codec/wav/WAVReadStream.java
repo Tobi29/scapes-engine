@@ -16,11 +16,12 @@
 // Based on: http://www.labbookpages.co.uk/audio/wavFiles.html
 package org.tobi29.scapes.engine.utils.codec.wav;
 
-import java8.util.Optional;
-import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.BufferCreator;
-import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream;
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
+import org.tobi29.scapes.engine.utils.codec.AudioBuffer;
+import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
+import org.tobi29.scapes.engine.utils.io.ChannelUtil;
+import org.tobi29.scapes.engine.utils.io.IOBooleanSupplier;
+import org.tobi29.scapes.engine.utils.io.IOSupplier;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -35,125 +36,178 @@ public class WAVReadStream implements ReadableAudioStream {
     private static final int RIFF_CHUNK_ID = 0x46464952;
     private static final int RIFF_TYPE_ID = 0x45564157;
     private final ReadableByteChannel channel;
-    private final ReadableByteStream stream;
-    private final int channels, rate, bytes;
-    private final float offset, scale;
     private final ByteBuffer buffer =
             BufferCreator.bytes(BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN);
+    private int channels, rate, align, bits, bytes;
+    private float offset, scale;
+    private IOBooleanSupplier state;
+    private boolean eos;
 
-    public WAVReadStream(ReadableByteChannel channel) throws IOException {
+    public WAVReadStream(ReadableByteChannel channel) {
         this.channel = channel;
-        stream = new BufferedReadChannelStream(channel);
-        Chunk header = nextChunk();
-        buffer(4);
-        long riffTypeID = buffer.getInt();
-        if (header.id != RIFF_CHUNK_ID) {
-            throw new IOException(
-                    "Invalid Wav Header data, incorrect riff chunk ID");
+        buffer.clear().limit(12);
+        state = this::init1;
+    }
+
+    private static Chunk chunk(ByteBuffer buffer) {
+        int chunkID = buffer.getInt();
+        int chunkSize = buffer.getInt();
+        int numChunkBytes = chunkSize % 2 == 0 ? chunkSize : chunkSize + 1;
+        return new Chunk(chunkID, chunkSize, numChunkBytes);
+    }
+
+    private boolean skip(long skip, IOSupplier<IOBooleanSupplier> next)
+            throws IOException {
+        long newSkip = ChannelUtil.skip(channel, skip);
+        if (newSkip == 0) {
+            state = next.get();
+            return true;
         }
-        if (riffTypeID != RIFF_TYPE_ID) {
-            throw new IOException(
-                    "Invalid Wav Header data, incorrect riff type ID");
+        state = () -> skip(newSkip, next);
+        return false;
+    }
+
+    private boolean init1() throws IOException {
+        if (channel.read(buffer) == -1) {
+            throw new IOException("End of stream during header");
         }
-        Optional<Format> formatChunk = Optional.empty();
-        boolean needsData = true;
-        while (needsData) {
-            Chunk chunk = nextChunk();
+        if (!buffer.hasRemaining()) {
+            buffer.flip();
+            Chunk header = chunk(buffer);
+            long riffTypeID = buffer.getInt();
+            if (header.id != RIFF_CHUNK_ID) {
+                throw new IOException(
+                        "Invalid Wav Header data, incorrect riff chunk ID");
+            }
+            if (riffTypeID != RIFF_TYPE_ID) {
+                throw new IOException(
+                        "Invalid Wav Header data, incorrect riff type ID");
+            }
+            buffer.clear().limit(8);
+            state = this::init2;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean init2() throws IOException {
+        if (channel.read(buffer) == -1) {
+            throw new IOException("End of stream during header");
+        }
+        if (!buffer.hasRemaining()) {
+            buffer.flip();
+            Chunk chunk = chunk(buffer);
             switch (chunk.id) {
                 case FMT_CHUNK_ID:
-                    Format format = format(chunk);
-                    sanityCheck(format);
-                    formatChunk = Optional.of(format);
-                    break;
-                case DATA_CHUNK_ID:
-                    data(chunk, formatChunk);
-                    needsData = false;
-                    break;
+                    buffer.clear().limit(16);
+                    state = () -> init3(chunk);
+                    return true;
                 default:
-                    stream.skip(chunk.bytes);
-                    break;
+                    state = () -> skip(chunk.bytes, () -> {
+                        buffer.clear().limit(8);
+                        return this::init2;
+                    });
+                    return true;
             }
         }
-        Format format = formatChunk.get();
-        rate = format.rate;
-        channels = format.channels;
-        bytes = format.bits + 7 >> 3;
-        if (format.bits > 8) {
-            offset = 0.0f;
-            scale = 1 << format.bits - 1;
-        } else {
-            offset = -1.0f;
-            scale = 0.5f * ((1 << format.bits) - 1);
-        }
+        return false;
     }
 
-    private Format format(Chunk chunk) throws IOException {
-        buffer(16);
-        int compressionCode = buffer.getShort();
-        if (compressionCode != 1) {
-            throw new IOException("Compression Code " + compressionCode +
-                    " not supported");
+    private boolean init3(Chunk chunk) throws IOException {
+        if (channel.read(buffer) == -1) {
+            throw new IOException("End of stream during header");
         }
-        int channels = buffer.getShort();
-        int rate = buffer.getInt();
-        buffer.position(12);
-        int align = buffer.getShort();
-        int bits = buffer.getShort();
-        int bytes = bits + 7 >> 3;
-        if (bytes * channels != align) {
-            throw new IOException(
-                    "Block Align does not agree with bytes required for validBits and number of channels");
+        if (!buffer.hasRemaining()) {
+            buffer.flip();
+            int compressionCode = buffer.getShort();
+            if (compressionCode != 1) {
+                throw new IOException("Compression Code " + compressionCode +
+                        " not supported");
+            }
+            channels = buffer.getShort();
+            rate = buffer.getInt();
+            buffer.position(12);
+            align = buffer.getShort();
+            bits = buffer.getShort();
+            int bytes = bits + 7 >> 3;
+            if (bytes * channels != align) {
+                throw new IOException(
+                        "Block Align does not agree with bytes required for validBits and number of channels");
+            }
+            sanityCheck();
+            state = () -> skip(chunk.bytes - 16, () -> {
+                buffer.clear().limit(8);
+                return this::init4;
+            });
+            return true;
         }
-        long remaining = chunk.bytes - 16;
-        if (remaining > 0) {
-            stream.skip(remaining);
+        return false;
+    }
+
+    private boolean init4() throws IOException {
+        if (channel.read(buffer) == -1) {
+            throw new IOException("End of stream during header");
         }
-        return new Format(channels, rate, bits, align);
+        if (!buffer.hasRemaining()) {
+            buffer.flip();
+            Chunk chunk = chunk(buffer);
+            switch (chunk.id) {
+                case DATA_CHUNK_ID:
+                    data(chunk);
+                    bytes = bits + 7 >> 3;
+                    if (bits > 8) {
+                        offset = 0.0f;
+                        scale = 1 << bits - 1;
+                    } else {
+                        offset = -1.0f;
+                        scale = 0.5f * ((1 << bits) - 1);
+                    }
+                    state = null;
+                    return false;
+                default:
+                    state = () -> skip(chunk.bytes, () -> {
+                        buffer.clear().limit(8);
+                        return this::init4;
+                    });
+                    return true;
+            }
+        }
+        return false;
     }
 
     @Override
-    public int channels() {
-        return channels;
-    }
-
-    @Override
-    public int rate() {
-        return rate;
-    }
-
-    @Override
-    public void frame() {
-    }
-
-    @Override
-    public boolean getSome(FloatBuffer buffer, int len) throws IOException {
-        int limit = buffer.limit();
-        buffer.limit(buffer.position() + len);
-        boolean valid = true;
-        while (buffer.hasRemaining() && valid) {
+    public boolean get(AudioBuffer buffer) throws IOException {
+        if (state != null) {
+            while (state.get()) {
+            }
+            if (state != null) {
+                return !eos;
+            }
+        }
+        FloatBuffer pcmBuffer = buffer.buffer(channels, rate);
+        while (pcmBuffer.hasRemaining() && !eos) {
             long value = 0;
             for (int b = 0; b < bytes; b++) {
                 if (!this.buffer.hasRemaining()) {
                     this.buffer.clear();
-                    if (!stream.getSome(this.buffer)) {
-                        valid = false;
+                    if (channel.read(this.buffer) == -1) {
+                        eos = true;
                         break;
                     }
                     this.buffer.flip();
                 }
-
                 int v = this.buffer.get();
                 if (b < bytes - 1 || bytes == 1) {
                     v &= 0xFF;
                 }
                 value += v << (b << 3);
             }
-            if (valid) {
-                buffer.put(offset + value / scale);
+            if (!eos) {
+                pcmBuffer.put(offset + value / scale);
             }
         }
-        buffer.limit(limit);
-        return valid;
+        buffer.done();
+        return !eos;
     }
 
     @Override
@@ -164,49 +218,30 @@ public class WAVReadStream implements ReadableAudioStream {
         }
     }
 
-    private Chunk nextChunk() throws IOException {
-        buffer(8);
-        int chunkID = buffer.getInt();
-        int chunkSize = buffer.getInt();
-        int numChunkBytes = chunkSize % 2 == 0 ? chunkSize : chunkSize + 1;
-        return new Chunk(chunkID, chunkSize, numChunkBytes);
-    }
-
-    private void data(Chunk chunk, Optional<Format> formatChunk)
-            throws IOException {
-        if (!formatChunk.isPresent()) {
-            throw new IOException("Data Chunk before Format Chunk");
-        }
-        Format format = formatChunk.get();
-        if (chunk.size % format.align != 0) {
+    private void data(Chunk chunk) throws IOException {
+        if (chunk.size % align != 0) {
             throw new IOException(
                     "Data Chunk size is not multiple of Block Align");
         }
     }
 
-    private void sanityCheck(Format format) throws IOException {
-        if (format.channels <= 0) {
+    private void sanityCheck() throws IOException {
+        if (channels <= 0) {
             throw new IOException(
                     "Number of channels specified in header is equal to zero");
         }
-        if (format.align == 0) {
+        if (align == 0) {
             throw new IOException(
                     "Block Align specified in header is equal to zero");
         }
-        if (format.bits < 2) {
+        if (bits < 2) {
             throw new IOException(
                     "Valid Bits specified in header is less than 2");
         }
-        if (format.bits > 64) {
+        if (bits > 64) {
             throw new IOException(
                     "Valid Bits specified in header is greater than 64, this is greater than a long can hold");
         }
-    }
-
-    private void buffer(int length) throws IOException {
-        buffer.clear().limit(length);
-        stream.get(buffer);
-        buffer.flip();
     }
 
     private static final class Chunk {
@@ -216,17 +251,6 @@ public class WAVReadStream implements ReadableAudioStream {
             this.id = id;
             this.size = size;
             this.bytes = bytes;
-        }
-    }
-
-    private static final class Format {
-        private final int channels, rate, bits, align;
-
-        private Format(int channels, int rate, int bits, int align) {
-            this.channels = channels;
-            this.rate = rate;
-            this.bits = bits;
-            this.align = align;
         }
     }
 }

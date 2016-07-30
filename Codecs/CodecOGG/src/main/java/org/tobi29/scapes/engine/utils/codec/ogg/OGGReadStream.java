@@ -23,7 +23,9 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
+import org.tobi29.scapes.engine.utils.codec.AudioBuffer;
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
+import org.tobi29.scapes.engine.utils.io.IOBooleanSupplier;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 import java.io.IOException;
@@ -42,46 +44,76 @@ public class OGGReadStream implements ReadableAudioStream {
     private final Block block = new Block(dspState);
     private final Comment comment = new Comment();
     private final Info info = new Info();
-    private final int channels, rate;
-    private final int[] index;
     private final float[][][] pcm = new float[1][][];
+    private IOBooleanSupplier state;
+    private int channels, rate;
+    private int[] index;
     private boolean eos;
 
-    public OGGReadStream(ReadableByteChannel channel) throws IOException {
+    public OGGReadStream(ReadableByteChannel channel) {
         this.channel = channel;
         syncState.init();
         info.init();
         comment.init();
-        readHeader();
-        channels = info.channels;
-        rate = info.rate;
-        index = new int[channels];
+        state = this::init1;
+    }
+
+    private boolean init1() throws IOException {
+        if (readPage()) {
+            streamState.init(page.serialno());
+            if (streamState.pagein(page) == -1) {
+                throw new IOException("Error reading first header page");
+            }
+            if (streamState.packetout(packet) != 1) {
+                throw new IOException("Error reading first header packet");
+            }
+            if (info.synthesis_headerin(comment, packet) < 0) {
+                throw new IOException("Error interpreting first header packet");
+            }
+            state = this::init2;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean init2() throws IOException {
+        if (readPacket()) {
+            info.synthesis_headerin(comment, packet);
+            state = this::init3;
+            return true;
+        }
+        return false;
+    }
+
+    private boolean init3() throws IOException {
+        if (readPacket()) {
+            info.synthesis_headerin(comment, packet);
+            dspState.synthesis_init(info);
+            block.init(dspState);
+            channels = info.channels;
+            rate = info.rate;
+            index = new int[info.channels];
+            state = null;
+        }
+        return false;
     }
 
     @Override
-    public int channels() {
-        return channels;
-    }
-
-    @Override
-    public int rate() {
-        return rate;
-    }
-
-    @Override
-    public void frame() {
-    }
-
-    @Override
-    public boolean getSome(FloatBuffer buffer, int len) throws IOException {
-        int limit = buffer.limit();
-        buffer.limit(buffer.position() + len);
-        while (buffer.hasRemaining() && !eos) {
-            if (!decodePacket(buffer)) {
+    public boolean get(AudioBuffer buffer) throws IOException {
+        if (state != null) {
+            while (state.get()) {
+            }
+            if (state != null) {
+                return !eos;
+            }
+        }
+        FloatBuffer pcmBuffer = buffer.buffer(channels, rate);
+        while (pcmBuffer.hasRemaining() && !eos) {
+            if (!decodePacket(pcmBuffer)) {
                 break;
             }
         }
-        buffer.limit(limit);
+        buffer.done();
         return !eos;
     }
 
@@ -91,28 +123,6 @@ public class OGGReadStream implements ReadableAudioStream {
             channel.close();
         } catch (IOException e) {
         }
-    }
-
-    private void readHeader() throws IOException {
-        while (!readPage()) {
-        }
-        streamState.init(page.serialno());
-        if (streamState.pagein(page) == -1) {
-            throw new IOException("Error reading first header page");
-        }
-        if (streamState.packetout(packet) != 1) {
-            throw new IOException("Error reading first header packet");
-        }
-        if (info.synthesis_headerin(comment, packet) < 0) {
-            throw new IOException("Error interpreting first header packet");
-        }
-        for (int i = 0; i < 2; i++) {
-            while (!readPacket()) {
-            }
-            info.synthesis_headerin(comment, packet);
-        }
-        dspState.synthesis_init(info);
-        block.init(dspState);
     }
 
     private boolean decodePacket(FloatBuffer buffer) throws IOException {

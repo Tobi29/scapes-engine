@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.sound;
+package org.tobi29.scapes.engine.utils.codec;
 
 import org.tobi29.scapes.engine.utils.math.FastMath;
 
 public class PCMUtil {
-    public static short toInt32(float sample) {
+    public static short toInt16(float sample) {
         int pcm = (int) (sample * Short.MAX_VALUE);
         return (short) FastMath.clamp(pcm, Short.MIN_VALUE, Short.MAX_VALUE);
     }

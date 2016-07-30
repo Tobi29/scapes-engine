@@ -4,8 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tobi29.scapes.engine.ScapesEngine;
 import org.tobi29.scapes.engine.sound.AudioFormat;
-import org.tobi29.scapes.engine.sound.PCMUtil;
-import org.tobi29.scapes.engine.utils.BufferCreator;
+import org.tobi29.scapes.engine.utils.codec.AudioBuffer;
 import org.tobi29.scapes.engine.utils.codec.AudioStream;
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream;
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource;
@@ -13,21 +12,17 @@ import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 public class OpenALStreamAudio implements OpenALAudio {
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OpenALStreamAudio.class);
     private final ReadSource asset;
     private final String channel;
-    private final ByteBuffer pcmBuffer;
-    private final FloatBuffer readBuffer;
+    private final AudioBuffer readBuffer;
     private final Vector3 pos, velocity;
     private final float pitch, gain;
     private final boolean state, hasPosition;
-    private final int[] queuedBuffers = new int[15];
-    private int source = -1;
+    private int source = -1, queued;
     private ReadableAudioStream stream;
     private float gainAL;
 
@@ -42,8 +37,7 @@ public class OpenALStreamAudio implements OpenALAudio {
         this.gain = gain;
         this.state = state;
         this.hasPosition = hasPosition;
-        readBuffer = BufferCreator.floats(128 << 2);
-        pcmBuffer = engine.allocate(readBuffer.capacity() << 1);
+        readBuffer = new AudioBuffer(4096, engine::allocate);
     }
 
     @Override
@@ -54,22 +48,14 @@ public class OpenALStreamAudio implements OpenALAudio {
             if (source == -1) {
                 return true;
             }
-            for (int i = 0; i < queuedBuffers.length; i++) {
-                queuedBuffers[i] = openAL.createBuffer();
-            }
+            openAL.setPitch(source, pitch);
+            gainAL = gain * sounds.volume(channel);
+            openAL.setGain(source, gainAL);
+            openAL.setLooping(source, false);
+            sounds.position(openAL, source, pos, hasPosition);
+            openAL.setVelocity(source, velocity);
             try {
                 stream = AudioStream.create(asset);
-                for (int queue : queuedBuffers) {
-                    stream(openAL, queue);
-                    openAL.queue(source, queue);
-                }
-                openAL.setPitch(source, pitch);
-                gainAL = gain * sounds.volume(channel);
-                openAL.setGain(source, gainAL);
-                openAL.setLooping(source, false);
-                sounds.position(openAL, source, pos, hasPosition);
-                openAL.setVelocity(source, velocity);
-                openAL.play(source);
             } catch (IOException e) {
                 LOGGER.warn("Failed to play music: {}", e.toString());
                 stop(sounds, openAL);
@@ -82,17 +68,24 @@ public class OpenALStreamAudio implements OpenALAudio {
                     openAL.setGain(source, gainAL);
                     this.gainAL = gainAL;
                 }
+                while (queued < 3) {
+                    stream();
+                    if (!readBuffer.isDone()) {
+                        break;
+                    }
+                    int buffer = openAL.createBuffer();
+                    store(openAL, buffer);
+                    openAL.queue(source, buffer);
+                    queued++;
+                }
                 int finished = openAL.getBuffersProcessed(source);
                 while (finished-- > 0) {
-                    int unqueued = openAL.unqueue(source);
-                    if (!stream(openAL, unqueued)) {
-                        stream.close();
-                        if (state) {
-                            stream = AudioStream.create(asset);
-                        } else {
-                            stream = null;
-                        }
+                    stream();
+                    if (!readBuffer.isDone()) {
+                        break;
                     }
+                    int unqueued = openAL.unqueue(source);
+                    store(openAL, unqueued);
                     openAL.queue(source, unqueued);
                 }
                 if (!openAL.isPlaying(source)) {
@@ -118,38 +111,44 @@ public class OpenALStreamAudio implements OpenALAudio {
     @Override
     public void stop(OpenALSoundSystem sounds, OpenAL openAL) {
         if (source != -1) {
-            sounds.releaseSource(openAL, source);
-            for (int buffer : queuedBuffers) {
-                openAL.deleteBuffer(buffer);
+            openAL.stop(source);
+            int queued = openAL.getBuffersQueued(source);
+            while (queued-- > 0) {
+                openAL.deleteBuffer(openAL.unqueue(source));
+                this.queued--;
             }
+            sounds.releaseSource(openAL, source);
             source = -1;
+            assert this.queued == 0;
         }
         if (stream != null) {
-            stream.close();
+            try {
+                stream.close();
+            } catch (IOException e) {
+                LOGGER.warn("Failed to stop music stream: {}", e.toString());
+            }
             stream = null;
         }
     }
 
-    private boolean stream(OpenAL openAL, int buffer) throws IOException {
-        boolean valid = true;
-        while (readBuffer.hasRemaining() && valid) {
-            valid = stream.getSome(readBuffer);
+    private void stream() throws IOException {
+        if (stream == null) {
+            return;
         }
-        readBuffer.flip();
-        store(openAL, buffer);
-        stream.frame();
-        return valid;
+        if (!stream.get(readBuffer)) {
+            stream.close();
+            stream = null;
+            if (state) {
+                stream = AudioStream.create(asset);
+            }
+        }
     }
 
     private void store(OpenAL openAL, int buffer) {
-        pcmBuffer.clear();
-        while (readBuffer.hasRemaining()) {
-            pcmBuffer.putShort(PCMUtil.toInt32(readBuffer.get()));
-        }
-        readBuffer.clear();
-        pcmBuffer.flip();
         openAL.storeBuffer(buffer,
-                stream.channels() > 1 ? AudioFormat.STEREO : AudioFormat.MONO,
-                pcmBuffer, stream.rate());
+                readBuffer.channels() > 1 ? AudioFormat.STEREO :
+                        AudioFormat.MONO, readBuffer.toPCM16(),
+                readBuffer.rate());
+        readBuffer.clear();
     }
 }

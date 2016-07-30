@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.tobi29.scapes.engine.utils.io;
 
-package org.tobi29.scapes.engine.opengl.fbo;
+import java.io.IOException;
 
-public enum FBOStatus {
-    COMPLETE,
-    UNSUPPORTED,
-    UNKNOWN
+public interface IOBooleanSupplier {
+    boolean get() throws IOException;
 }
