@@ -2,11 +2,16 @@ package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.graphics.Matrix;
 import org.tobi29.scapes.engine.graphics.MatrixStack;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3f;
 
 public class GuiRenderer extends GuiRenderBatch {
     private final MatrixStack matrixStack = new MatrixStack(64);
+
+    public GuiRenderer() {
+        super(new Vector2d(1.0, 1.0));
+    }
 
     public MatrixStack matrixStack() {
         return matrixStack;

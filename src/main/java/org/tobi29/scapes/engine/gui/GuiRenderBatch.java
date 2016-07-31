@@ -7,7 +7,6 @@ import org.tobi29.scapes.engine.graphics.Texture;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3f;
 
@@ -25,11 +24,8 @@ public class GuiRenderBatch {
     protected int offset, count;
     protected Vector2 pixelSize;
 
-    public GuiRenderBatch() {
-    }
-
     public GuiRenderBatch(Vector2 pixelSize) {
-        setPixelSize(pixelSize);
+        this.pixelSize = pixelSize;
     }
 
     public Vector3 vector(float x, float y) {
@@ -57,10 +53,6 @@ public class GuiRenderBatch {
     }
 
     public Vector2 pixelSize() {
-        if (pixelSize == null) {
-            Thread.dumpStack();
-            return new Vector2d(1.0, 1.0);
-        }
         return pixelSize;
     }
 
