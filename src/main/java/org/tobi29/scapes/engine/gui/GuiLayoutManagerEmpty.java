@@ -26,7 +26,7 @@ public class GuiLayoutManagerEmpty extends GuiLayoutManager {
                 GuiLayoutDataAbsolute dataAbsolute =
                         (GuiLayoutDataAbsolute) data;
                 size.set(data.width(), data.height());
-                size(size, maxSize);
+                size(size, maxSize, maxSize);
                 setSize(dataAbsolute.pos().plus(size.now()), outSize);
                 output.add(new Triple<>(component, dataAbsolute.pos(),
                         size.now()));

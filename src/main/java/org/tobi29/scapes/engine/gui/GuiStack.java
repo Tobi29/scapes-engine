@@ -139,6 +139,7 @@ public class GuiStack {
                 540.0 / gl.contentHeight());
         Streams.forEach(guis.values(), gui -> gui
                 .render(gl, shader, gui.baseSize(gl), pixelSize, delta));
-        Streams.forEach(guis.values(), gui -> gui.renderOverlays(gl, shader));
+        Streams.forEach(guis.values(),
+                gui -> gui.renderOverlays(gl, shader, pixelSize));
     }
 }

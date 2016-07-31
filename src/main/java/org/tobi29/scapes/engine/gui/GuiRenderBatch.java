@@ -1,11 +1,13 @@
 package org.tobi29.scapes.engine.gui;
 
 import java8.util.concurrent.ConcurrentMaps;
+import org.tobi29.scapes.engine.graphics.Mesh;
 import org.tobi29.scapes.engine.graphics.Model;
 import org.tobi29.scapes.engine.graphics.Texture;
-import org.tobi29.scapes.engine.graphics.Mesh;
 import org.tobi29.scapes.engine.utils.Pair;
 import org.tobi29.scapes.engine.utils.Streams;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2;
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3;
 import org.tobi29.scapes.engine.utils.math.vector.Vector3f;
 
@@ -21,6 +23,14 @@ public class GuiRenderBatch {
             new ConcurrentSkipListMap<>();
     protected Mesh currentMesh;
     protected int offset, count;
+    protected Vector2 pixelSize;
+
+    public GuiRenderBatch() {
+    }
+
+    public GuiRenderBatch(Vector2 pixelSize) {
+        setPixelSize(pixelSize);
+    }
 
     public Vector3 vector(float x, float y) {
         return new Vector3f(x, y, 0.0f);
@@ -40,6 +50,18 @@ public class GuiRenderBatch {
 
     public void offset(int offset) {
         this.offset += offset;
+    }
+
+    public void setPixelSize(Vector2 pixelSize) {
+        this.pixelSize = pixelSize;
+    }
+
+    public Vector2 pixelSize() {
+        if (pixelSize == null) {
+            Thread.dumpStack();
+            return new Vector2d(1.0, 1.0);
+        }
+        return pixelSize;
     }
 
     public Mesh mesh() {

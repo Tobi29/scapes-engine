@@ -144,7 +144,7 @@ public class ScapesEngine implements Crashable {
         String fontName = container.loadFont("Engine:font/QuicksandPro-Regular")
                 .orElse("Quicksand Pro");
         FontRenderer font = new FontRenderer(this,
-                container.createGlyphRenderer(fontName, 64));
+                container.createGlyphRenderer(fontName));
         LOGGER.info("Setting up GUI");
         guiStack = new GuiStack();
         guiStyle = new GuiBasicStyle(this, font);

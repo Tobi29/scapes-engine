@@ -46,7 +46,7 @@ public abstract class GuiComponentHeavy extends GuiComponent {
                 mesh.b.bind(gl);
                 mesh.a.render(gl, shader);
             });
-            renderComponent(gl, shader, size, delta);
+            renderComponent(gl, shader, size, pixelSize, delta);
             if (hasHeavyChild) {
                 GuiLayoutManager layout = layoutManager(size);
                 for (Triple<GuiComponent, Vector2, Vector2> component : layout
@@ -71,10 +71,10 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     }
 
     @Override
-    protected void renderOverlays(GL gl, Shader shader) {
-        super.renderOverlays(gl, shader);
+    protected void renderOverlays(GL gl, Shader shader, Vector2 pixelSize) {
+        super.renderOverlays(gl, shader, pixelSize);
         if (visible) {
-            renderOverlay(gl, shader);
+            renderOverlay(gl, shader, pixelSize);
         }
     }
 
@@ -118,9 +118,9 @@ public abstract class GuiComponentHeavy extends GuiComponent {
     }
 
     protected void renderComponent(GL gl, Shader shader, Vector2 size,
-            double delta) {
+            Vector2 pixelSize, double delta) {
     }
 
-    protected void renderOverlay(GL gl, Shader shader) {
+    protected void renderOverlay(GL gl, Shader shader, Vector2 pixelSize) {
     }
 }

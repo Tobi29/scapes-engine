@@ -89,7 +89,7 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
         cursor = FastMath.clamp(cursor, 0, text.length());
         selectionStart = FastMath.clamp(selectionStart, 0, text.length());
         selectionEnd = FastMath.clamp(selectionEnd, 0, text.length());
-        GuiRenderBatch batch = new GuiRenderBatch();
+        GuiRenderBatch batch = new GuiRenderBatch(renderer.pixelSize());
         font.render(FontRenderer.to(batch, 0.0f - size.floatY() * 0.1f,
                 0.0f - size.floatY() * 0.1f, 1.0f, 1.0f, 1.0f, 1.0f),
                 text.substring(0, cursor) + '|', size.floatY(),
@@ -139,8 +139,8 @@ public class GuiComponentEditableText extends GuiComponentHeavy {
 
     @Override
     public void renderComponent(GL gl, Shader shader, Vector2 size,
-            double delta) {
-        super.renderComponent(gl, shader, size, delta);
+            Vector2 pixelSize, double delta) {
+        super.renderComponent(gl, shader, size, pixelSize, delta);
         if (active) {
             if (System.currentTimeMillis() / 600 % 2 == 0) {
                 Streams.forEach(vaoCursor, mesh -> {

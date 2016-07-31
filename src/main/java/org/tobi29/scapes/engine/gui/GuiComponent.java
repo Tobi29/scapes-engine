@@ -177,10 +177,10 @@ public abstract class GuiComponent
         }
     }
 
-    protected void renderOverlays(GL gl, Shader shader) {
+    protected void renderOverlays(GL gl, Shader shader, Vector2 pixelSize) {
         if (visible) {
             Streams.forEach(components,
-                    component -> component.renderOverlays(gl, shader));
+                    component -> component.renderOverlays(gl, shader, pixelSize));
         }
     }
 

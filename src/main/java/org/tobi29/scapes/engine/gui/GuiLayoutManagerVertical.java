@@ -17,7 +17,7 @@ public class GuiLayoutManagerVertical extends GuiLayoutManager {
 
     @Override
     protected void layout(List<Triple<GuiComponent, Vector2, Vector2>> output) {
-        int unsized = 0;
+        double unsized = 0.0;
         double usedHeight = 0.0;
         for (GuiComponent component : components) {
             GuiLayoutData data = component.parent;
@@ -25,7 +25,7 @@ public class GuiLayoutManagerVertical extends GuiLayoutManager {
                 GuiLayoutDataVertical dataVertical =
                         (GuiLayoutDataVertical) data;
                 if (dataVertical.height() < 0.0) {
-                    unsized++;
+                    unsized -= dataVertical.height();
                 } else {
                     Vector2 marginStart = dataVertical.marginStart();
                     Vector2 marginEnd = dataVertical.marginEnd();
@@ -39,8 +39,8 @@ public class GuiLayoutManagerVertical extends GuiLayoutManager {
         MutableVector2 size = new MutableVector2d();
         MutableVector2 offset = new MutableVector2d(start);
         MutableVector2 outSize = new MutableVector2d();
-        Vector2 maxSize = new Vector2d(this.maxSize.doubleX(),
-                (this.maxSize.doubleY() - usedHeight) / unsized);
+        Vector2 preferredSize = new Vector2d(maxSize.doubleX(),
+                (maxSize.doubleY() - usedHeight) / unsized);
         for (GuiComponent component : components) {
             GuiLayoutData data = component.parent;
             pos.set(offset.now());
@@ -54,7 +54,8 @@ public class GuiLayoutManagerVertical extends GuiLayoutManager {
                     pos.plusX((maxSize.doubleX() - size.doubleX() -
                             marginStart.doubleX() - marginEnd.doubleX()) * 0.5);
                 }
-                size(size, maxSize.minus(marginStart).minus(marginEnd));
+                size(size, preferredSize.minus(marginStart).minus(marginEnd),
+                        maxSize.minus(marginStart).minus(marginEnd));
                 pos.plus(marginStart);
                 offset.plusY(size.doubleY() + marginStart.doubleY() +
                         marginEnd.doubleY());
@@ -63,7 +64,7 @@ public class GuiLayoutManagerVertical extends GuiLayoutManager {
                 GuiLayoutDataAbsolute dataAbsolute =
                         (GuiLayoutDataAbsolute) data;
                 pos.set(dataAbsolute.pos());
-                size(size, maxSize);
+                size(size, preferredSize, maxSize);
                 setSize(pos.now().plus(size.now()), outSize);
             } else {
                 throw new IllegalStateException(

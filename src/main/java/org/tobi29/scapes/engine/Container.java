@@ -16,13 +16,14 @@
 package org.tobi29.scapes.engine;
 
 import java8.util.Optional;
+import java8.util.function.IntFunction;
+import org.tobi29.scapes.engine.graphics.GL;
 import org.tobi29.scapes.engine.gui.GlyphRenderer;
 import org.tobi29.scapes.engine.gui.GuiController;
 import org.tobi29.scapes.engine.input.ControllerDefault;
 import org.tobi29.scapes.engine.input.ControllerJoystick;
 import org.tobi29.scapes.engine.input.ControllerTouch;
 import org.tobi29.scapes.engine.input.FileType;
-import org.tobi29.scapes.engine.graphics.GL;
 import org.tobi29.scapes.engine.sound.SoundSystem;
 import org.tobi29.scapes.engine.utils.DesktopException;
 import org.tobi29.scapes.engine.utils.Pair;
@@ -66,6 +67,10 @@ public interface Container {
     Optional<ControllerTouch> touch();
 
     Optional<String> loadFont(String asset);
+
+    default IntFunction<GlyphRenderer> createGlyphRenderer(String fontName) {
+        return size -> createGlyphRenderer(fontName, size);
+    }
 
     GlyphRenderer createGlyphRenderer(String fontName, int size);
 

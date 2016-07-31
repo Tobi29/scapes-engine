@@ -4,7 +4,6 @@ import org.tobi29.scapes.engine.utils.Triple;
 import org.tobi29.scapes.engine.utils.math.FastMath;
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2;
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,23 +32,16 @@ public abstract class GuiLayoutManager {
     protected abstract void layout(
             List<Triple<GuiComponent, Vector2, Vector2>> output);
 
-    protected Vector2 size(Vector2 size, Vector2 maxSize) {
+    protected void size(MutableVector2 size, Vector2 preferredSize,
+            Vector2 maxSize) {
         if (size.doubleX() < 0.0) {
-            size = new Vector2d(maxSize.doubleX(), size.doubleY());
+            size.setX(preferredSize.doubleX() * -size.doubleX());
         }
+        size.setX(FastMath.min(size.doubleX(), maxSize.doubleX()));
         if (size.doubleY() < 0.0) {
-            size = new Vector2d(size.doubleX(), maxSize.doubleY());
+            size.setY(preferredSize.doubleY() * -size.doubleY());
         }
-        return size;
-    }
-
-    protected void size(MutableVector2 size, Vector2 maxSize) {
-        if (size.doubleX() < 0.0) {
-            size.setX(maxSize.doubleX());
-        }
-        if (size.doubleY() < 0.0) {
-            size.setY(maxSize.doubleY());
-        }
+        size.setY(FastMath.min(size.doubleY(), maxSize.doubleY()));
     }
 
     protected void setSize(Vector2 size, MutableVector2 outSize) {
