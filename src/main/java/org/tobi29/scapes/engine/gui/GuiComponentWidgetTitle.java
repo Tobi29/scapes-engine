@@ -1,7 +1,6 @@
 package org.tobi29.scapes.engine.gui;
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2;
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d;
 
 public class GuiComponentWidgetTitle extends GuiComponentSlab {
     public GuiComponentWidgetTitle(GuiLayoutData parent, int textSize,
@@ -18,10 +17,5 @@ public class GuiComponentWidgetTitle extends GuiComponentSlab {
     @Override
     public void updateMesh(GuiRenderer renderer, Vector2 size) {
         gui.style().widgetTitle(renderer, size);
-    }
-
-    @Override
-    protected GuiLayoutManager newLayoutManager(Vector2 size) {
-        return new GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components);
     }
 }

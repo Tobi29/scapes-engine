@@ -695,6 +695,7 @@ public class TagStructure {
             super(size);
         }
 
+        @SuppressWarnings("RedundantMethodOverride")
         @Override
         public Object clone() {
             return super.clone();

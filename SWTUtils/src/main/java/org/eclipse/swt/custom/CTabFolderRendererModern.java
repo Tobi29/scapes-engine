@@ -1,4 +1,5 @@
-/*******************************************************************************
+/*
+******************************************************************************
  * Copyright (c) 2000, 2015 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
@@ -258,8 +259,8 @@ public class CTabFolderRendererModern extends CTabFolderRenderer {
                 int[] shape = null;
                 if (parent.onBottom) {
                     int x2 = size.x - border;
-                    int y2 = size.y - borderBottom - tabHeight -
-                            highlightHeader;
+                    int y2 =
+                            size.y - borderBottom - tabHeight - highlightHeader;
                     shape = new int[]{border, borderTop, x2, borderTop, x2, y2,
                             x2 - highlightMargin, y2, x2 - highlightMargin,
                             borderTop + highlightMargin,
@@ -299,8 +300,7 @@ public class CTabFolderRendererModern extends CTabFolderRenderer {
                 gc.setBackground(parent.getBackground());
                 int marginWidth = parent.marginWidth;
                 int marginHeight = parent.marginHeight;
-                int xClient = border + marginWidth + highlightMargin,
-                        yClient;
+                int xClient = border + marginWidth + highlightMargin, yClient;
                 if (parent.onBottom) {
                     yClient = borderTop + highlightMargin + marginHeight;
                 } else {
@@ -805,9 +805,9 @@ public class CTabFolderRendererModern extends CTabFolderRenderer {
         if ((state & SWT.BACKGROUND) != 0) {
             int highlightHeader = (parent.getStyle() & SWT.FLAT) != 0 ? 1 : 3;
             int xx = border;
-            int yy =
-                    parent.onBottom ? size.y - borderBottom - parent.tabHeight -
-                            highlightHeader : borderTop + parent.tabHeight + 1;
+            int yy = parent.onBottom ?
+                    size.y - borderBottom - parent.tabHeight - highlightHeader :
+                    borderTop + parent.tabHeight + 1;
             int w = size.x - border - border;
             int h = highlightHeader - 1;
             int[] shape = {xx, yy, xx + w, yy, xx + w, yy + h, xx, yy + h};
