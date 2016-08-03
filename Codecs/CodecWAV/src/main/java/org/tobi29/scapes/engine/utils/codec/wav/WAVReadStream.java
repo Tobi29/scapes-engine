@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2015 Tobi29
+ * Copyright 2012-2016 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 // Based on: http://www.labbookpages.co.uk/audio/wavFiles.html
 package org.tobi29.scapes.engine.utils.codec.wav;
 
