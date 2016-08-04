@@ -21,22 +21,22 @@ public class ModelAttribute {
     private final int id, length, size, divisor;
     private final boolean normalized;
     private final float[] floatArray;
-    private final byte[] byteArray;
+    private final int[] byteArray;
     private int offset;
 
-    public ModelAttribute(int id, int size, byte[] array, int divisor,
+    public ModelAttribute(int id, int size, int[] array, int divisor,
             VertexType vertexType) {
         this(id, size, array, array.length, divisor, vertexType);
     }
 
-    public ModelAttribute(int id, int size, byte[] array, int length,
+    public ModelAttribute(int id, int size, int[] array, int length,
             int divisor, VertexType vertexType) {
         this.id = id;
-        this.length = length / vertexType.bytes();
+        this.length = length;
         this.size = size;
         this.divisor = divisor;
         this.vertexType = vertexType;
-        normalized = false;
+        normalized = true;
         byteArray = array;
         floatArray = null;
     }
@@ -86,7 +86,7 @@ public class ModelAttribute {
         return floatArray;
     }
 
-    public byte[] byteArray() {
+    public int[] intArray() {
         return byteArray;
     }
 

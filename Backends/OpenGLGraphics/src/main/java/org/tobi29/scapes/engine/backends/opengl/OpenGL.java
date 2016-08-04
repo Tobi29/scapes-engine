@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.opengl;
 
 import org.tobi29.scapes.engine.graphics.*;
@@ -179,6 +178,9 @@ public interface OpenGL {
 
     void setAttribute(int id, int size, VertexType vertexType,
             boolean normalized, int divisor, int stride, int offset);
+
+    void setAttributeInteger(int id, int size, VertexType vertexType,
+            int divisor, int stride, int offset);
 
     void bindVBOArray(int id);
 

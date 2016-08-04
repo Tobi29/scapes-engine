@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.ARBImaging;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.opengles.GLES;
 import org.lwjgl.opengles.GLES20;
 import org.lwjgl.opengles.GLES30;
@@ -600,6 +601,41 @@ public final class LWJGL3OpenGLES implements OpenGL {
             case UNSIGNED_SHORT:
                 GLES20.glVertexAttribPointer(id, size, GLES20.GL_UNSIGNED_SHORT,
                         normalized, stride, offset);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown vertex type!");
+        }
+        GLES30.glVertexAttribDivisor(id, divisor);
+    }
+
+    @Override
+    public void setAttributeInteger(int id, int size, VertexType vertexType,
+            int divisor, int stride, int offset) {
+        GLES20.glEnableVertexAttribArray(id);
+        switch (vertexType) {
+            case FLOAT:
+                GLES30.glVertexAttribIPointer(id, size, GL11.GL_FLOAT, stride,
+                        offset);
+                break;
+            case HALF_FLOAT:
+                GLES30.glVertexAttribIPointer(id, size, GL30.GL_HALF_FLOAT,
+                        stride, offset);
+                break;
+            case BYTE:
+                GLES30.glVertexAttribIPointer(id, size, GL11.GL_BYTE, stride,
+                        offset);
+                break;
+            case UNSIGNED_BYTE:
+                GLES30.glVertexAttribIPointer(id, size, GL11.GL_UNSIGNED_BYTE,
+                        stride, offset);
+                break;
+            case SHORT:
+                GLES30.glVertexAttribIPointer(id, size, GL11.GL_SHORT, stride,
+                        offset);
+                break;
+            case UNSIGNED_SHORT:
+                GLES30.glVertexAttribIPointer(id, size, GL11.GL_UNSIGNED_SHORT,
+                        stride, offset);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown vertex type!");

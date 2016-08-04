@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl;
 
 import org.lwjgl.BufferUtils;
@@ -595,6 +594,41 @@ public final class LWJGL3OpenGL implements OpenGL {
             case UNSIGNED_SHORT:
                 GL20.glVertexAttribPointer(id, size, GL11.GL_UNSIGNED_SHORT,
                         normalized, stride, offset);
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown vertex type!");
+        }
+        GL33.glVertexAttribDivisor(id, divisor);
+    }
+
+    @Override
+    public void setAttributeInteger(int id, int size, VertexType vertexType,
+            int divisor, int stride, int offset) {
+        GL20.glEnableVertexAttribArray(id);
+        switch (vertexType) {
+            case FLOAT:
+                GL30.glVertexAttribIPointer(id, size, GL11.GL_FLOAT, stride,
+                        offset);
+                break;
+            case HALF_FLOAT:
+                GL30.glVertexAttribIPointer(id, size, GL30.GL_HALF_FLOAT,
+                        stride, offset);
+                break;
+            case BYTE:
+                GL30.glVertexAttribIPointer(id, size, GL11.GL_BYTE, stride,
+                        offset);
+                break;
+            case UNSIGNED_BYTE:
+                GL30.glVertexAttribIPointer(id, size, GL11.GL_UNSIGNED_BYTE,
+                        stride, offset);
+                break;
+            case SHORT:
+                GL30.glVertexAttribIPointer(id, size, GL11.GL_SHORT, stride,
+                        offset);
+                break;
+            case UNSIGNED_SHORT:
+                GL30.glVertexAttribIPointer(id, size, GL11.GL_UNSIGNED_SHORT,
+                        stride, offset);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown vertex type!");

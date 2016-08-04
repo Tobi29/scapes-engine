@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.opengl;
 
 import java8.util.Optional;
@@ -96,7 +95,7 @@ final class VBO {
                         buffer.position(attribute.offset() + i * stride);
                         for (int j = 0; j < attribute.size(); j++) {
                             int ij = is + j;
-                            buffer.put(attribute.byteArray()[ij]);
+                            buffer.put((byte) attribute.intArray()[ij]);
                         }
                     }
                     break;
@@ -106,10 +105,8 @@ final class VBO {
                         int is = i * attribute.size();
                         buffer.position(attribute.offset() + i * stride);
                         for (int j = 0; j < attribute.size(); j++) {
-                            int ij = is + j << 1;
-                            buffer.putShort((short) (
-                                    attribute.byteArray()[ij + 1] << 8 |
-                                            attribute.byteArray()[ij]));
+                            int ij = is + j;
+                            buffer.putShort((short) attribute.intArray()[ij]);
                         }
                     }
                     break;
@@ -276,7 +273,7 @@ final class VBO {
     private static final class ModelAttributeData {
         private final VertexType vertexType;
         private final int id, size, offset, divisor;
-        private final boolean normalized;
+        private final boolean normalized, integer;
 
         private ModelAttributeData(ModelAttribute attribute, int offset) {
             this.offset = offset;
@@ -285,6 +282,7 @@ final class VBO {
             size = attribute.size();
             normalized = attribute.normalized();
             divisor = attribute.divisor();
+            integer = attribute.intArray() != null;
         }
     }
 }
