@@ -13,37 +13,111 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+/**
+ * Class implementing a basic mutable reference to two objects
+ *
+ * @param <A> Type of the first reference
+ * @param <B> Type of the second reference
+ * @param <C> Type of the third reference
+ */
 public class MutableTriple<A, B, C> {
+    /**
+     * First object that this instance holds
+     */
     public A a;
+    /**
+     * Second object that this instance holds
+     */
     public B b;
+    /**
+     * Third object that this instance holds
+     */
     public C c;
 
+    /**
+     * Construct a new instance with {@code null}
+     */
     public MutableTriple() {
     }
 
+    /**
+     * Construct a new instance given objects
+     *
+     * @param a Object to assign to {@link #a}
+     * @param b Object to assign to {@link #b}
+     * @param c Object to assign to {@link #c}
+     */
     public MutableTriple(A a, B b, C c) {
         this.a = a;
         this.b = b;
         this.c = c;
     }
 
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param a Object to assign to {@link #a}
+     * @param b Object to assign to {@link #b}
+     * @param c Object to assign to {@link #c}
+     */
     public void set(A a, B b, C c) {
         this.a = a;
         this.b = b;
         this.c = c;
     }
 
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param a Object to assign to {@link #a}
+     */
+    public void setA(A a) {
+        this.a = a;
+    }
+
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param b Object to assign to {@link #b}
+     */
+    public void setB(B b) {
+        this.b = b;
+    }
+
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param c Object to assign to {@link #c}
+     */
+    public void setC(C c) {
+        this.c = c;
+    }
+
+    /**
+     * Returns an object of this instance
+     *
+     * @return {@link #a}
+     */
     public A a() {
         return a;
     }
 
+    /**
+     * Returns an object of this instance
+     *
+     * @return {@link #b}
+     */
     public B b() {
         return b;
     }
 
+    /**
+     * Returns an object of this instance
+     *
+     * @return {@link #c}
+     */
     public C c() {
         return c;
     }

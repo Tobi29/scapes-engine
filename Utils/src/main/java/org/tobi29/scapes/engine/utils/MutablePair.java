@@ -13,30 +13,84 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+/**
+ * Class implementing a basic mutable reference to two objects
+ *
+ * @param <A> Type of the first reference
+ * @param <B> Type of the second reference
+ */
 public class MutablePair<A, B> {
+    /**
+     * First object that this instance holds
+     */
     public A a;
+    /**
+     * Second object that this instance holds
+     */
     public B b;
 
+    /**
+     * Construct a new instance with {@code null}
+     */
     public MutablePair() {
     }
 
+    /**
+     * Construct a new instance given objects
+     *
+     * @param a Object to assign to {@link #a}
+     * @param b Object to assign to {@link #b}
+     */
     public MutablePair(A a, B b) {
         this.a = a;
         this.b = b;
     }
 
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param a Object to assign to {@link #a}
+     * @param b Object to assign to {@link #b}
+     */
     public void set(A a, B b) {
         this.a = a;
         this.b = b;
     }
 
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param a Object to assign to {@link #a}
+     */
+    public void setA(A a) {
+        this.a = a;
+    }
+
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param b Object to assign to {@link #b}
+     */
+    public void setB(B b) {
+        this.b = b;
+    }
+
+    /**
+     * Returns an object of this instance
+     *
+     * @return {@link #a}
+     */
     public A a() {
         return a;
     }
 
+    /**
+     * Returns an object of this instance
+     *
+     * @return {@link #b}
+     */
     public B b() {
         return b;
     }

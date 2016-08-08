@@ -13,23 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
+/**
+ * Class implementing a basic mutable reference to an object
+ *
+ * @param <A> Type of the reference
+ */
 public class MutableSingle<A> {
+    /**
+     * Object that this instance holds
+     */
     public A a;
 
+    /**
+     * Construct a new instance with {@code null}
+     */
     public MutableSingle() {
     }
 
+    /**
+     * Construct a new instance given object
+     *
+     * @param a Object to assign to {@link #a}
+     */
     public MutableSingle(A a) {
         this.a = a;
     }
 
+    /**
+     * Setter for changing object, useful for method references
+     *
+     * @param a Object to assign to {@link #a}
+     */
     public void set(A a) {
         this.a = a;
     }
 
+    /**
+     * Returns object of this instance
+     *
+     * @return {@link #a}
+     */
     public A a() {
         return a;
     }
