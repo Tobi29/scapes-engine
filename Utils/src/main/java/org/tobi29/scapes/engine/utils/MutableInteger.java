@@ -59,7 +59,7 @@ public class MutableInteger {
 
     @Override
     public int hashCode() {
-        return Integer.hashCode(a);
+        return a;
     }
 
     @Override

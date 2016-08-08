@@ -59,7 +59,8 @@ public class MutableDouble {
 
     @Override
     public int hashCode() {
-        return Double.hashCode(a);
+        long bits = Double.doubleToLongBits(a);
+        return (int) (bits ^ bits >>> 32);
     }
 
     @Override
