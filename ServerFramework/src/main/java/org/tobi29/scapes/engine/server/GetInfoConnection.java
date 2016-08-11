@@ -45,7 +45,7 @@ public class GetInfoConnection implements Connection {
     }
 
     @Override
-    public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
+    public void tick(AbstractServerConnection.NetWorkerThread worker) {
         try {
             if (channel.process(bundle -> true)) {
                 state = State.CLOSED;
@@ -54,7 +54,6 @@ public class GetInfoConnection implements Connection {
             LOGGER.info("Error in info connection: {}", e.toString());
             state = State.CLOSED;
         }
-        return false;
     }
 
     @Override

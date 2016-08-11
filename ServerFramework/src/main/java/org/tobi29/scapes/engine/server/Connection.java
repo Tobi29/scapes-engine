@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
 import java.io.IOException;
@@ -22,7 +21,7 @@ import java.nio.channels.Selector;
 public interface Connection {
     void register(Selector selector, int opt) throws IOException;
 
-    boolean tick(AbstractServerConnection.NetWorkerThread worker);
+    void tick(AbstractServerConnection.NetWorkerThread worker);
 
     boolean isClosed();
 

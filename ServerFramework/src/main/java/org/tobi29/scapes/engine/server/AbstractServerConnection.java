@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
 import java8.util.Optional;
@@ -169,7 +168,8 @@ public abstract class AbstractServerConnection {
                         Connection connection = connectionQueue.poll();
                         connections.add(connection);
                     }
-                    if (!process() && !joiner.marked()) {
+                    process();
+                    if (!joiner.marked()) {
                         try {
                             selector.select(10);
                             selector.selectedKeys().clear();
@@ -188,7 +188,8 @@ public abstract class AbstractServerConnection {
                         connections.add(connection);
                         connection.requestClose();
                     }
-                    if (!process() && !connections.isEmpty()) {
+                    process();
+                    if (!connections.isEmpty()) {
                         try {
                             selector.select(10);
                             selector.selectedKeys().clear();
@@ -215,8 +216,7 @@ public abstract class AbstractServerConnection {
             }
         }
 
-        private boolean process() {
-            boolean processing = false;
+        private void process() {
             Iterator<Connection> iterator = connections.iterator();
             while (iterator.hasNext()) {
                 Connection connection = iterator.next();
@@ -228,11 +228,10 @@ public abstract class AbstractServerConnection {
                                 e.toString());
                     }
                     iterator.remove();
-                } else if (connection.tick(this)) {
-                    processing = true;
+                } else {
+                    connection.tick(this);
                 }
             }
-            return processing;
         }
     }
 }

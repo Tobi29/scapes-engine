@@ -55,7 +55,7 @@ public class UnknownConnection implements Connection {
     }
 
     @Override
-    public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
+    public void tick(AbstractServerConnection.NetWorkerThread worker) {
         try {
             if (channel.process(bundle -> {
                 if (state == State.CONNECTED) {
@@ -84,7 +84,6 @@ public class UnknownConnection implements Connection {
             LOGGER.info("Error in new connection: {}", e.toString());
             state = State.CLOSED;
         }
-        return true;
     }
 
     @Override

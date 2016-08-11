@@ -15,10 +15,11 @@
  */
 package org.tobi29.scapes.engine.server;
 
+import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.io.IOConsumer;
+import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 
 import javax.crypto.*;
@@ -49,7 +50,9 @@ public class ControlPanelProtocol implements Connection {
     private final Map<String, IOConsumer<String[]>> commands =
             new ConcurrentHashMap<>();
     private final String password;
-    private State state;
+    private State state = State.LOGIN;
+    private Optional<IOConsumer<RandomReadableByteStream>> loginState =
+            Optional.empty();
     private byte[] challenge, salt = new byte[SALT_LENGTH];
 
     public ControlPanelProtocol(PacketBundleChannel channel, boolean client,
@@ -64,7 +67,7 @@ public class ControlPanelProtocol implements Connection {
             send("Core:CommandsSend", set.toArray(new String[set.size()]));
         });
         if (client) {
-            state = State.CLIENT_LOGIN;
+            loginState = Optional.of(this::loginClient);
         } else {
             challenge = new byte[CHALLENGE_LENGTH];
             new SecureRandom().nextBytes(challenge);
@@ -79,7 +82,7 @@ public class ControlPanelProtocol implements Connection {
                 throw new IOException(e);
             }
             this.channel.queueBundle();
-            state = State.SERVER_LOGIN;
+            loginState = Optional.of(this::loginServer);
         }
     }
 
@@ -131,9 +134,9 @@ public class ControlPanelProtocol implements Connection {
 
     @SuppressWarnings("UnnecessaryToStringCall")
     @Override
-    public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
+    public void tick(AbstractServerConnection.NetWorkerThread worker) {
         try {
-            return tick();
+            tick();
         } catch (ConnectionCloseException | InvalidPacketDataException e) {
             LOGGER.info("Disconnecting control panel: {}", e.toString());
             state = State.CLOSING;
@@ -141,7 +144,6 @@ public class ControlPanelProtocol implements Connection {
             LOGGER.info("Control panel disconnected: {}", e.toString());
             state = State.CLOSED;
         }
-        return true;
     }
 
     @Override
@@ -163,70 +165,86 @@ public class ControlPanelProtocol implements Connection {
     }
 
     public boolean tick() throws IOException {
-        if (state == State.CLOSED) {
-            return false;
-        }
-        MutableSingle<Boolean> processing = new MutableSingle<>(false);
         switch (state) {
+            case LOGIN:
+                channel.process(() -> loginState, IOConsumer::accept);
+                break;
             case OPEN:
-                while (!queue.isEmpty()) {
-                    String[] command = queue.poll();
+                try {
                     WritableByteStream output = channel.getOutputStream();
-                    output.putInt(command.length);
-                    for (String str : command) {
-                        output.putString(str);
+                    while (!queue.isEmpty()) {
+                        String[] command = queue.poll();
+                        output.putInt(command.length);
+                        for (String str : command) {
+                            output.putString(str);
+                        }
                     }
-                    channel.queueBundle();
-                    processing.a = true;
+                    if (channel.bundleSize() > 0) {
+                        channel.queueBundle();
+                    }
+                    if (channel.process(bundle -> {
+                        while (bundle.hasRemaining()) {
+                            int length = bundle.getInt();
+                            String[] command = new String[length];
+                            for (int i = 0; i < length; i++) {
+                                command[i] = bundle.getString();
+                            }
+                            processCommand(command);
+                        }
+                        return true;
+                    })) {
+                        state = State.CLOSED;
+                        return false;
+                    }
+                    return false;
+                } catch (ConnectionCloseException e) {
+                    if (channel.bundleSize() > 0) {
+                        channel.queueBundle();
+                    }
                 }
                 break;
+            case CLOSING:
+                if (channel.process(bundle -> true)) {
+                    state = State.CLOSED;
+                    return false;
+                }
+                break;
+            default:
+                throw new IllegalStateException("Unknown state: " + state);
         }
-        if (channel.process(bundle -> {
-            WritableByteStream output = channel.getOutputStream();
-            switch (state) {
-                case CLIENT_LOGIN:
-                    byte[] challenge = new byte[CHALLENGE_CIPHER_LENGTH];
-                    byte[] salt = new byte[SALT_LENGTH];
-                    bundle.get(challenge);
-                    bundle.get(salt);
-                    try {
-                        Cipher cipher = cipher(Cipher.DECRYPT_MODE, salt);
-                        output.put(cipher.doFinal(challenge));
-                    } catch (IllegalBlockSizeException | BadPaddingException e) {
-                        throw new IOException(e);
-                    }
-                    channel.queueBundle();
-                    state = State.OPEN;
-                    break;
-                case SERVER_LOGIN:
-                    byte[] check = new byte[CHALLENGE_LENGTH];
-                    bundle.get(check);
-                    if (!Arrays.equals(check, this.challenge)) {
-                        throw new ConnectionCloseException(
-                                "Failed password authentication");
-                    }
-                    this.challenge = null;
-                    this.salt = null;
-                    state = State.OPEN;
-                    break;
-                case OPEN:
-                    int length = bundle.getInt();
-                    String[] command = new String[length];
-                    for (int i = 0; i < length; i++) {
-                        command[i] = bundle.getString();
-                    }
-                    processCommand(command);
-                    processing.a = true;
-                    break;
-            }
-            return true;
-        })) {
-            state = State.CLOSED;
+        return false;
+    }
+
+    private void loginClient(RandomReadableByteStream input)
+            throws IOException {
+        WritableByteStream output = channel.getOutputStream();
+        byte[] challenge = new byte[CHALLENGE_CIPHER_LENGTH];
+        byte[] salt = new byte[SALT_LENGTH];
+        input.get(challenge);
+        input.get(salt);
+        try {
+            Cipher cipher = cipher(Cipher.DECRYPT_MODE, salt);
+            output.put(cipher.doFinal(challenge));
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            throw new IOException(e);
         }
-        if (state == State.CLOSING) {
-            state = State.CLOSED;
+        channel.queueBundle();
+        state = State.OPEN;
+        loginState = Optional.empty();
+    }
+
+    private void loginServer(RandomReadableByteStream input)
+            throws IOException {
+        byte[] check = new byte[CHALLENGE_LENGTH];
+        input.get(check);
+        if (!Arrays.equals(check, challenge)) {
+            throw new ConnectionCloseException(
+                    "Failed password authentication");
         }
-        return processing.a;
+        challenge = null;
+        salt = null;
+        state = State.OPEN;
+        loginState = Optional.empty();
     }
 
     @Override
@@ -235,8 +253,7 @@ public class ControlPanelProtocol implements Connection {
     }
 
     enum State {
-        CLIENT_LOGIN,
-        SERVER_LOGIN,
+        LOGIN,
         OPEN,
         CLOSING,
         CLOSED
