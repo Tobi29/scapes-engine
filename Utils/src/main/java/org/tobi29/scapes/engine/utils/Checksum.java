@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.utils;
 
 import org.tobi29.scapes.engine.utils.io.ChecksumUtil;
@@ -99,6 +98,9 @@ public class Checksum implements MultiTag.Writeable {
 
     @Override
     public TagStructure write() {
-        return null;
+        TagStructure tagStructure = new TagStructure();
+        tagStructure.setString("Algorithm", algorithm.toString());
+        tagStructure.setByteArray("Array", array);
+        return tagStructure;
     }
 }
