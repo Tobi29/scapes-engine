@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
 import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 
 import java.io.IOException;
 import java.nio.channels.Selector;
@@ -60,23 +57,27 @@ public class UnknownConnection implements Connection {
     @Override
     public boolean tick(AbstractServerConnection.NetWorkerThread worker) {
         try {
-            if (channel.process()) {
-                state = State.CLOSED;
-            }
-            Optional<RandomReadableByteStream> bundle = channel.fetch();
-            if (bundle.isPresent()) {
-                ReadableByteStream stream = bundle.get();
+            if (channel.process(bundle -> {
+                if (state == State.CONNECTED) {
+                    return false;
+                }
+                if (state == State.CLOSED) {
+                    return true;
+                }
                 byte[] header = new byte[connectionHeader.length];
-                stream.get(header);
+                bundle.get(header);
                 if (Arrays.equals(header, connectionHeader)) {
                     Optional<Connection> newConnection =
-                            connection.newConnection(channel, stream.get());
+                            connection.newConnection(channel, bundle.get());
                     if (newConnection.isPresent()) {
                         worker.addConnection(newConnection.get());
                         state = State.CONNECTED;
                         return true;
                     }
                 }
+                state = State.CLOSED;
+                return true;
+            }, 1)) {
                 state = State.CLOSED;
             }
         } catch (IOException e) {

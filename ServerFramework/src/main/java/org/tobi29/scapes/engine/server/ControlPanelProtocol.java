@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
-import java8.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.tobi29.scapes.engine.utils.MutableSingle;
 import org.tobi29.scapes.engine.utils.io.IOConsumer;
-import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream;
 import org.tobi29.scapes.engine.utils.io.WritableByteStream;
 
 import javax.crypto.*;
@@ -169,17 +166,29 @@ public class ControlPanelProtocol implements Connection {
         if (state == State.CLOSED) {
             return false;
         }
-        boolean processing = false;
-        Optional<RandomReadableByteStream> bundle = channel.fetch();
-        if (bundle.isPresent()) {
-            ReadableByteStream input = bundle.get();
+        MutableSingle<Boolean> processing = new MutableSingle<>(false);
+        switch (state) {
+            case OPEN:
+                while (!queue.isEmpty()) {
+                    String[] command = queue.poll();
+                    WritableByteStream output = channel.getOutputStream();
+                    output.putInt(command.length);
+                    for (String str : command) {
+                        output.putString(str);
+                    }
+                    channel.queueBundle();
+                    processing.a = true;
+                }
+                break;
+        }
+        if (channel.process(bundle -> {
             WritableByteStream output = channel.getOutputStream();
             switch (state) {
                 case CLIENT_LOGIN:
                     byte[] challenge = new byte[CHALLENGE_CIPHER_LENGTH];
                     byte[] salt = new byte[SALT_LENGTH];
-                    input.get(challenge);
-                    input.get(salt);
+                    bundle.get(challenge);
+                    bundle.get(salt);
                     try {
                         Cipher cipher = cipher(Cipher.DECRYPT_MODE, salt);
                         output.put(cipher.doFinal(challenge));
@@ -191,7 +200,7 @@ public class ControlPanelProtocol implements Connection {
                     break;
                 case SERVER_LOGIN:
                     byte[] check = new byte[CHALLENGE_LENGTH];
-                    input.get(check);
+                    bundle.get(check);
                     if (!Arrays.equals(check, this.challenge)) {
                         throw new ConnectionCloseException(
                                 "Failed password authentication");
@@ -201,37 +210,23 @@ public class ControlPanelProtocol implements Connection {
                     state = State.OPEN;
                     break;
                 case OPEN:
-                    int length = input.getInt();
+                    int length = bundle.getInt();
                     String[] command = new String[length];
                     for (int i = 0; i < length; i++) {
-                        command[i] = input.getString();
+                        command[i] = bundle.getString();
                     }
                     processCommand(command);
-                    processing = true;
+                    processing.a = true;
                     break;
             }
-        }
-        switch (state) {
-            case OPEN:
-                while (!queue.isEmpty()) {
-                    String[] command = queue.poll();
-                    WritableByteStream output = channel.getOutputStream();
-                    output.putInt(command.length);
-                    for (String str : command) {
-                        output.putString(str);
-                    }
-                    channel.queueBundle();
-                    processing = true;
-                }
-                break;
-        }
-        if (channel.process()) {
+            return true;
+        })) {
             state = State.CLOSED;
         }
         if (state == State.CLOSING) {
             state = State.CLOSED;
         }
-        return processing;
+        return processing.a;
     }
 
     @Override

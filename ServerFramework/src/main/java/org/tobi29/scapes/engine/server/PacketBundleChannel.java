@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.server;
 
 import java8.util.Optional;
+import java8.util.function.Supplier;
 import org.tobi29.scapes.engine.utils.BufferCreator;
 import org.tobi29.scapes.engine.utils.Streams;
 import org.tobi29.scapes.engine.utils.ThreadLocalUtil;
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream;
-import org.tobi29.scapes.engine.utils.io.CompressionUtil;
-import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream;
-import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream;
+import org.tobi29.scapes.engine.utils.io.*;
 import org.tobi29.scapes.engine.utils.task.TaskExecutor;
 
 import javax.net.ssl.SSLEngine;
@@ -81,7 +78,7 @@ public class PacketBundleChannel {
     private Optional<ByteBuffer> spill = Optional.empty();
     private Optional<Selector> selector = Optional.empty();
     private Optional<IOException> verifyException = Optional.empty();
-    private boolean hasInput, close;
+    private boolean hasInput, hasBundle, close;
     private State state = State.HANDSHAKE;
 
     public PacketBundleChannel(RemoteAddress address, SocketChannel channel,
@@ -126,7 +123,124 @@ public class PacketBundleChannel {
         selector.ifPresent(Selector::wakeup);
     }
 
-    public boolean process() throws IOException {
+    public boolean process(
+            Supplier<Optional<IOConsumer<RandomReadableByteStream>>> state)
+            throws IOException {
+        return process(state, Integer.MAX_VALUE);
+    }
+
+    public boolean process(
+            Supplier<Optional<IOConsumer<RandomReadableByteStream>>> state,
+            int max) throws IOException {
+        return process(state, IOConsumer::accept, max);
+    }
+
+    public <S> boolean process(Supplier<Optional<S>> state,
+            IOBiConsumer<S, RandomReadableByteStream> consumer)
+            throws IOException {
+        return process(state, consumer, Integer.MAX_VALUE);
+    }
+
+    public <S> boolean process(Supplier<Optional<S>> state,
+            IOBiConsumer<S, RandomReadableByteStream> consumer, int max)
+            throws IOException {
+        return process(bundle -> {
+            Optional<S> currentState = state.get();
+            if (currentState.isPresent()) {
+                consumer.accept(currentState.get(), bundle);
+                return true;
+            }
+            return false;
+        }, max);
+    }
+
+    public boolean process(IOPredicate<RandomReadableByteStream> consumer)
+            throws IOException {
+        return process(consumer, Integer.MAX_VALUE);
+    }
+
+    public boolean process(IOPredicate<RandomReadableByteStream> consumer,
+            int max) throws IOException {
+        int timeout = 0, received = 0;
+        while (timeout < 2 && received < max) {
+            if (hasBundle) {
+                if (!consumer.test(byteBufferStreamOut)) {
+                    return false;
+                }
+                received++;
+                hasBundle = false;
+            } else {
+                timeout++;
+            }
+            fetch();
+            if (process()) {
+                return true;
+            }
+            if (hasBundle) {
+                timeout = 0;
+            }
+        }
+        return false;
+    }
+
+    private void fetch() throws IOException {
+        if (state != State.OPEN) {
+            return;
+        }
+        assert !hasBundle;
+        ByteBuffer buffer;
+        if (spill.isPresent()) {
+            buffer = spill.get();
+            spill = Optional.empty();
+        } else {
+            Optional<ByteBuffer> fetch = readSSL();
+            if (!fetch.isPresent()) {
+                return;
+            }
+            buffer = fetch.get();
+        }
+        if (buffer.remaining() > input.remaining()) {
+            int limit = buffer.limit();
+            buffer.limit(buffer.position() + input.remaining());
+            input.put(buffer);
+            buffer.limit(limit);
+            spill = Optional.of(buffer);
+        } else {
+            input.put(buffer);
+        }
+        if (input.hasRemaining()) {
+            return;
+        }
+        input.flip();
+        if (!hasInput) {
+            if (input.remaining() != BUNDLE_HEADER_SIZE) {
+                throw new IOException(
+                        "Invalid bundle header size: " + input.remaining());
+            }
+            int limit = input.getInt();
+            if (limit > BUNDLE_MAX_SIZE) {
+                throw new IOException("Bundle size too large: " + limit);
+            }
+            if (input.capacity() < limit) {
+                BUFFER_CACHE.get().add(new WeakReference<>(input));
+                input = buffer(limit);
+            } else {
+                input.clear();
+            }
+            input.limit(limit);
+            hasInput = true;
+            return;
+        }
+        byteBufferStreamOut.buffer().clear();
+        CompressionUtil.filter(new ByteBufferStream(input), byteBufferStreamOut,
+                inflater);
+        byteBufferStreamOut.buffer().flip();
+        hasInput = false;
+        input.clear().limit(BUNDLE_HEADER_SIZE);
+        hasBundle = true;
+    }
+
+    private boolean process() throws IOException {
         while (true) {
             // Glorious design on Java's part:
             // The SSLEngine locks whilst delegated task runs
@@ -144,33 +258,7 @@ public class PacketBundleChannel {
                 if (handshake()) {
                     if (ssl.requiresVerification()) {
                         state = State.VERIFY;
-                        taskExecutor.runTask(() -> {
-                            try {
-                                Certificate[] certificates = engine.getSession()
-                                        .getPeerCertificates();
-                                X509Certificate[] x509Certificates =
-                                        Streams.of(certificates)
-                                                .filter(certificate -> certificate instanceof X509Certificate)
-                                                .map(certificate -> (X509Certificate) certificate)
-                                                .toArray(
-                                                        X509Certificate[]::new);
-                                try {
-                                    ssl.verifySession(address, engine,
-                                            x509Certificates);
-                                    verified.set(true);
-                                } catch (IOException e) {
-                                    if (x509Certificates.length == 0 ||
-                                            !ssl.certificateFeedback(
-                                                    x509Certificates)) {
-                                        verifyException = Optional.of(e);
-                                    } else {
-                                        verified.set(true);
-                                    }
-                                }
-                            } catch (SSLPeerUnverifiedException e) {
-                                verifyException = Optional.of(e);
-                            }
-                        }, "SSL-Verify");
+                        taskExecutor.runTask(this::verifySSL, "SSL-Verify");
                     } else {
                         state = State.OPEN;
                     }
@@ -209,62 +297,6 @@ public class PacketBundleChannel {
                 }
             }
         }
-    }
-
-    public Optional<RandomReadableByteStream> fetch() throws IOException {
-        if (state != State.OPEN) {
-            return Optional.empty();
-        }
-        ByteBuffer buffer;
-        if (spill.isPresent()) {
-            buffer = spill.get();
-            spill = Optional.empty();
-        } else {
-            Optional<ByteBuffer> fetch = readSSL();
-            if (!fetch.isPresent()) {
-                return Optional.empty();
-            }
-            buffer = fetch.get();
-        }
-        if (buffer.remaining() > input.remaining()) {
-            int limit = buffer.limit();
-            buffer.limit(buffer.position() + input.remaining());
-            input.put(buffer);
-            buffer.limit(limit);
-            spill = Optional.of(buffer);
-        } else {
-            input.put(buffer);
-        }
-        if (input.hasRemaining()) {
-            return Optional.empty();
-        }
-        input.flip();
-        if (!hasInput) {
-            if (input.remaining() != BUNDLE_HEADER_SIZE) {
-                throw new IOException(
-                        "Invalid bundle header size: " + input.remaining());
-            }
-            int limit = input.getInt();
-            if (limit > BUNDLE_MAX_SIZE) {
-                throw new IOException("Bundle size too large: " + limit);
-            }
-            if (input.capacity() < limit) {
-                BUFFER_CACHE.get().add(new WeakReference<>(input));
-                input = buffer(limit);
-            } else {
-                input.clear();
-            }
-            input.limit(limit);
-            hasInput = true;
-            return Optional.empty();
-        }
-        byteBufferStreamOut.buffer().clear();
-        CompressionUtil.filter(new ByteBufferStream(input), byteBufferStreamOut,
-                inflater);
-        byteBufferStreamOut.buffer().flip();
-        hasInput = false;
-        input.clear().limit(BUNDLE_HEADER_SIZE);
-        return Optional.of(byteBufferStreamOut);
     }
 
     public void register(Selector selector, int opt) throws IOException {
@@ -412,6 +444,30 @@ public class PacketBundleChannel {
                         "Invalid SSL status: " + engine.getHandshakeStatus());
         }
         return false;
+    }
+
+    private void verifySSL() {
+        try {
+            Certificate[] certificates =
+                    engine.getSession().getPeerCertificates();
+            X509Certificate[] x509Certificates = Streams.of(certificates)
+                    .filter(certificate -> certificate instanceof X509Certificate)
+                    .map(certificate -> (X509Certificate) certificate)
+                    .toArray(X509Certificate[]::new);
+            try {
+                ssl.verifySession(address, engine, x509Certificates);
+                verified.set(true);
+            } catch (IOException e) {
+                if (x509Certificates.length == 0 ||
+                        !ssl.certificateFeedback(x509Certificates)) {
+                    verifyException = Optional.of(e);
+                } else {
+                    verified.set(true);
+                }
+            }
+        } catch (SSLPeerUnverifiedException e) {
+            verifyException = Optional.of(e);
+        }
     }
 
     private void fill() throws IOException {
