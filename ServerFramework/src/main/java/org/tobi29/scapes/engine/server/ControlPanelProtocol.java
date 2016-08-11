@@ -164,7 +164,7 @@ public class ControlPanelProtocol implements Connection {
         channel.close();
     }
 
-    public boolean tick() throws IOException {
+    public void tick() throws IOException {
         switch (state) {
             case LOGIN:
                 channel.process(() -> loginState, IOConsumer::accept);
@@ -194,9 +194,7 @@ public class ControlPanelProtocol implements Connection {
                         return true;
                     })) {
                         state = State.CLOSED;
-                        return false;
                     }
-                    return false;
                 } catch (ConnectionCloseException e) {
                     if (channel.bundleSize() > 0) {
                         channel.queueBundle();
@@ -206,13 +204,11 @@ public class ControlPanelProtocol implements Connection {
             case CLOSING:
                 if (channel.process(bundle -> true)) {
                     state = State.CLOSED;
-                    return false;
                 }
                 break;
             default:
                 throw new IllegalStateException("Unknown state: " + state);
         }
-        return false;
     }
 
     private void loginClient(RandomReadableByteStream input)
