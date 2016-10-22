@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0_1"
 
 dependencies {
     compile project(":ScapesEngine:Utils")
-    compile "org.glassfish:javax.json:1.0.4"
+    compile("org.glassfish:javax.json:1.0.4") { transitive = false }
 
     testCompile "junit:junit:4.12"
 }

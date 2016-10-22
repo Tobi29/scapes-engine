@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
-apply plugin: 'antlr'
-apply plugin: "idea"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0_1"
 
 dependencies {
     compile project(":ScapesEngine:Utils")
-    // Full library included by antlr plugin
-    // compile "org.antlr:antlr4-runtime:4.5.1-1"
-
-    antlr "org.antlr:antlr4:4.5.1-1"
+    compile project(":ScapesEngine:ShaderCompiler:ShaderParser")
 
     testCompile "junit:junit:4.12"
-}
-
-idea {
-    module {
-        excludeDirs -= file("$buildDir")
-    }
 }

@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0_1"
 
 dependencies {
-    compile project(":ScapesEngine")
-    compile project(":ScapesEngine:Utils")
-    compile "org.slf4j:slf4j-api:1.7.13"
+    compile project(":ScapesEngine:FileSystems")
 
     testCompile "junit:junit:4.12"
 }

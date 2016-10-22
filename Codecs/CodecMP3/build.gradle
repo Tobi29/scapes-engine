@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0_1"
 
 dependencies {
-    compile project(":ScapesEngine")
-    compile "javazoom:jlayer:1.0.1"
+    compile project(":ScapesEngine:Codecs")
+    compile("javazoom:jlayer:1.0.1") { transitive = false }
 
     testCompile "junit:junit:4.12"
 }

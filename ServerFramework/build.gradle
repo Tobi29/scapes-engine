@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0_1"
 
 dependencies {
-    compile project(":ScapesEngine:GraphicsUtils")
     compile project(":ScapesEngine:FileSystems")
+    compile(project(":ScapesEngine:Utils:TagStructureBinary")) {
+        transitive = false
+    }
 
     testCompile "junit:junit:4.12"
 }

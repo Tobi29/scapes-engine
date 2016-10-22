@@ -1,0 +1,314 @@
+/*
+ * Copyright 2012-2016 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.tobi29.scapes.engine.graphics
+
+import java8.util.Maps
+import mu.KLogging
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.gui.GlyphRenderer
+import org.tobi29.scapes.engine.gui.GuiRenderBatch
+import org.tobi29.scapes.engine.gui.GuiUtils
+import org.tobi29.scapes.engine.utils.math.floor
+import org.tobi29.scapes.engine.utils.math.max
+import org.tobi29.scapes.engine.utils.math.round
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import java.util.*
+
+class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
+    private val pageCache = HashMap<Int, GlyphPages>()
+
+    fun render(output: MeshOutput,
+               text: String?,
+               size: Float): TextInfo {
+        if (text == null) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, size, 0, text.length)
+    }
+
+    fun render(output: MeshOutput,
+               text: String?,
+               size: Float,
+               start: Int,
+               end: Int): TextInfo {
+        if (text == null) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, size, Float.MAX_VALUE, start, end)
+    }
+
+    fun render(output: MeshOutput,
+               text: String?,
+               size: Float,
+               limit: Float): TextInfo {
+        if (text == null) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, size, limit, 0, text.length)
+    }
+
+    fun render(output: MeshOutput,
+               text: String?,
+               size: Float,
+               limit: Float,
+               start: Int,
+               end: Int): TextInfo {
+        if (text == null || start == -1) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, size, size, limit, start, end)
+    }
+
+    fun render(output: MeshOutput,
+               text: String?,
+               width: Float,
+               height: Float,
+               limit: Float): TextInfo {
+        if (text == null) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, width, height, limit, 0, text.length)
+    }
+
+    fun render(output: MeshOutput,
+               text: String?,
+               width: Float,
+               height: Float,
+               limit: Float,
+               start: Int,
+               end: Int): TextInfo {
+        if (text == null || start == -1) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, width, height, height, limit, start, end)
+    }
+
+    fun render(output: MeshOutput,
+               text: String?,
+               width: Float,
+               height: Float,
+               line: Float,
+               limit: Float): TextInfo {
+        if (text == null) {
+            return EMPTY_TEXT_INFO
+        }
+        return render(output, text, width, height, line, limit, 0,
+                text.length)
+    }
+
+    @SuppressWarnings("AccessToStaticFieldLockedOnInstance")
+    @Synchronized fun render(output: MeshOutput,
+                             text: String?,
+                             width: Float,
+                             height: Float,
+                             line: Float,
+                             limit: Float,
+                             start: Int,
+                             end: Int): TextInfo {
+        if (text == null || start == -1) {
+            return EMPTY_TEXT_INFO
+        }
+        val size = output.size(height)
+        if (size <= 0) {
+            return EMPTY_TEXT_INFO
+        }
+        val pages = Maps.computeIfAbsent(pageCache, size
+        ) { key -> GlyphPages(font.createGlyphRenderer(size)) }
+        var textWidth = 0.0f
+        var length = 0
+        var xx = 0.0f
+        var yy = 0.0f
+        for (i in 0..text.length - 1) {
+            val letter = text[i]
+            if (letter == '\n') {
+                xx = 0f
+                yy += line
+                length++
+            } else {
+                val id = pages.renderer.pageID(letter)
+                val pageLetter = pages.renderer.pageCode(letter)
+                val page = pages[id]
+                val letterWidth = page.width[pageLetter]
+                val actualWidth = letterWidth * width
+                if (xx + actualWidth > limit) {
+                    break
+                }
+                if (i >= start && i < end) {
+                    output.rectangle(xx, yy, width, height, letterWidth, page,
+                            pageLetter)
+                }
+                xx += actualWidth
+                textWidth = max(textWidth, xx)
+                length++
+            }
+        }
+        return TextInfo(text,
+                Vector2d(textWidth.toDouble(), (yy + height).toDouble()),
+                length)
+    }
+
+    interface MeshOutput {
+        fun size(height: Float): Int
+
+        fun rectangle(xx: Float,
+                      yy: Float,
+                      width: Float,
+                      height: Float,
+                      letterWidth: Float,
+                      page: GlyphPage,
+                      pageLetter: Int)
+    }
+
+    class TextInfo(val text: String, val size: Vector2d, val length: Int)
+
+    class GlyphPage(val texture: Texture, val width: FloatArray, val tiles: Int,
+                    val tileSize: Float)
+
+    private inner class GlyphPages(val renderer: GlyphRenderer) {
+        private var pages = EMPTY_GLYPH_PAGE
+
+        operator fun get(id: Int): GlyphPage {
+            if (id < pages.size) {
+                pages[id]?.let { return it }
+            }
+            var timestamp = System.currentTimeMillis()
+            val page = renderer.page(id, { engine.allocate(it) })
+            val imageSize = page.size
+            val texture = engine.graphics.createTexture(imageSize, imageSize,
+                    page.buffer, 0,
+                    TextureFilter.LINEAR, TextureFilter.LINEAR,
+                    TextureWrap.CLAMP, TextureWrap.CLAMP)
+            timestamp = System.currentTimeMillis() - timestamp
+            logger.debug { "Rendered font page in ${timestamp}ms" }
+            if (pages.size <= id) {
+                val newPages = arrayOfNulls<GlyphPage>(id + 1)
+                System.arraycopy(pages, 0, newPages, 0, pages.size)
+                pages = newPages
+            }
+            val glyphPage = GlyphPage(texture, page.width, page.tiles,
+                    page.tileSize)
+            pages[id] = glyphPage
+            return glyphPage
+        }
+    }
+
+    companion object : KLogging() {
+        val EMPTY_TEXT_INFO = TextInfo("", Vector2d.ZERO, 0)
+        private val EMPTY_GLYPH_PAGE = arrayOfNulls<GlyphPage>(0)
+
+        fun to(renderer: GuiRenderBatch,
+               r: Float,
+               g: Float,
+               b: Float,
+               a: Float): MeshOutput {
+            return to(renderer, 0.0f, 0.0f, r, g, b, a)
+        }
+
+        fun to(renderer: GuiRenderBatch,
+               x: Float,
+               y: Float,
+               r: Float,
+               g: Float,
+               b: Float,
+               a: Float): MeshOutput {
+            return to(renderer, x, y, false, r, g, b, a)
+        }
+
+        fun to(renderer: GuiRenderBatch,
+               x: Float,
+               y: Float,
+               cropped: Boolean,
+               r: Float,
+               g: Float,
+               b: Float,
+               a: Float): MeshOutput {
+            val pixelSize = renderer.pixelSize.floatY()
+            if (cropped) {
+                return object : MeshOutput {
+                    override fun size(height: Float): Int {
+                        return round(height / pixelSize)
+                    }
+
+                    override fun rectangle(xx: Float,
+                                           yy: Float,
+                                           width: Float,
+                                           height: Float,
+                                           letterWidth: Float,
+                                           page: GlyphPage,
+                                           pageLetter: Int) {
+                        val xxx = x + xx
+                        val yyy = y + yy
+                        val w = width * letterWidth
+                        val tx = (pageLetter % page.tiles + 0.125f) * page.tileSize
+                        val ty = (floor(
+                                pageLetter.toFloat() / page.tiles) + 0.125f) * page.tileSize
+                        val tw = page.tileSize * letterWidth * 0.75f
+                        val th = page.tileSize * 0.75f
+                        renderer.texture(page.texture, 0)
+                        GuiUtils.rectangle(renderer, xxx, yyy, xxx + w,
+                                yyy + height, tx, ty, tx + tw, ty + th, r, g, b,
+                                a)
+                    }
+                }
+            } else {
+                return object : MeshOutput {
+                    override fun size(height: Float): Int {
+                        return round(height / pixelSize)
+                    }
+
+                    override fun rectangle(xx: Float,
+                                           yy: Float,
+                                           width: Float,
+                                           height: Float,
+                                           letterWidth: Float,
+                                           page: GlyphPage,
+                                           pageLetter: Int) {
+                        val xxx = x + xx - width * 0.25f
+                        val yyy = y + yy - height * 0.25f
+                        val w = width * 1.5f
+                        val h = height * 1.5f
+                        val tx = pageLetter % page.tiles * page.tileSize
+                        val ty = floor(
+                                pageLetter.toFloat() / page.tiles) * page.tileSize
+                        val tw = page.tileSize
+                        val th = page.tileSize
+                        renderer.texture(page.texture, 0)
+                        GuiUtils.rectangle(renderer, xxx, yyy, xxx + w, yyy + h,
+                                tx,
+                                ty, tx + tw, ty + th, r, g, b, a)
+                    }
+                }
+            }
+        }
+
+        fun to(): MeshOutput {
+            return object : MeshOutput {
+                override fun size(height: Float): Int {
+                    return 16
+                }
+
+                override fun rectangle(xx: Float,
+                                       yy: Float,
+                                       width: Float,
+                                       height: Float,
+                                       letterWidth: Float,
+                                       page: GlyphPage,
+                                       pageLetter: Int) {
+                }
+            }
+        }
+    }
+}

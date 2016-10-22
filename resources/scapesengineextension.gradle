@@ -16,7 +16,7 @@
 
 import java.util.stream.Collectors
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 apply plugin: "idea"
 
 configurations {
@@ -114,7 +114,7 @@ class ScapesEngineApplication implements Plugin<Project> {
         task.from({ ->
             (target.configurations.runtime + runtime +
                     target.files(target.jar)) -
-                    target.extension.parent.configurations.runtime -
+                    target.files(target.extension.parent.tasks.jar) -
                     target.extension.parent.configurations.runtime
         }, { into "$libPath/${-> target.extension.parent.name.toLowerCase()}" })
         task.from({ ->

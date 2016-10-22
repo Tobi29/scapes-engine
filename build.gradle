@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 apply plugin: "idea"
 
 version = "0.0.0_1"
@@ -24,8 +23,8 @@ dependencies {
     compile project(":ScapesEngine:Codecs")
     compile project(":ScapesEngine:FileSystems")
     compile project(":ScapesEngine:GraphicsUtils")
-    compile project(":ScapesEngine:ProfilerUtils")
     compile project(":ScapesEngine:ShaderCompiler")
+    compile project(":ScapesEngine:Utils:TagStructureBinary")
     compile project(":ScapesEngine:Utils:TagStructureJSON")
 
     testCompile "junit:junit:4.12"

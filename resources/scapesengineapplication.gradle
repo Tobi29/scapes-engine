@@ -16,7 +16,7 @@
 
 import java.util.stream.Collectors
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodule.gradle"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 apply plugin: "idea"
 
 configurations {
