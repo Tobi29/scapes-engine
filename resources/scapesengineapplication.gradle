@@ -170,7 +170,7 @@ class ScapesEngineApplication implements Plugin<Project> {
 
     private Task addDeployLinuxTask(Project target, String arch,
             Configuration runtime, Configuration natives) {
-        def name = "${-> target.project.name.toLowerCase()}"
+        def name = "${-> target.application.name.toLowerCase()}"
         def libPath = "/usr/share/java"
         if (target.rootProject.hasProperty("libPath")) {
             libPath = target.rootProject.libPath
@@ -183,10 +183,10 @@ class ScapesEngineApplication implements Plugin<Project> {
         // Script task
         def scriptTask = target.tasks.
                 create("scriptLinux$arch", StartupScriptTask)
-        scriptTask.execName = "$name"
+        scriptTask.execName = name
         scriptTask.libPath = "$libPath/$name"
         scriptTask.mainClass = "${-> target.application.mainClass}"
-        scriptTask.output = new File(scriptTask.temporaryDir, name)
+        scriptTask.output = { new File(scriptTask.temporaryDir, name) }
 
         // Main task
         def task = target.tasks.create("deployLinux$arch", Tar)
@@ -195,9 +195,11 @@ class ScapesEngineApplication implements Plugin<Project> {
                 "Contains tarball that can be extracted into root for easier package creation"
         task.group = "Deployment"
         task.dependsOn target.jar
-        task.baseName = "${-> target.project.name}-Linux$arch"
+        target.afterEvaluate {
+            task.baseName = "${-> target.application.name}-Linux$arch"
+        }
         task.compression = Compression.GZIP
-        task.from(scriptTask.output, { into "$binPath" })
+        task.from({ -> scriptTask.output }, { into "$binPath" })
         task.from(target.configurations.runtime + runtime +
                 target.files(target.jar),
                 { into "$libPath/$name" })
@@ -244,8 +246,10 @@ class ScapesEngineApplication implements Plugin<Project> {
         bundleTask.icon = target.file("project/Icon.icns")
         bundleTask.classpath = target.configurations.runtime +
                 target.configurations.runtimeMacOSX + target.files(target.jar)
-        bundleTask.output =
-                "${-> bundleTask.temporaryDir}/${-> target.project.name}.app"
+        bundleTask.output = {
+            new File(bundleTask.temporaryDir,
+                    "${-> target.application.fullName}.app")
+        }
 
         // Natives task
         def nativesTask = target.tasks.create("nativesMacOSX", Copy)
@@ -276,7 +280,9 @@ class ScapesEngineApplication implements Plugin<Project> {
                 "Mac OS X Application containing necessary files to run the game"
         task.group = "Deployment"
         task.dependsOn nativesTask
-        task.baseName = "${target.project.name}-MacOSX"
+        target.afterEvaluate {
+            task.baseName = "${target.application.name}-MacOSX"
+        }
         task.compression = Compression.GZIP
         task.from bundleTask.output.parentFile
         return task
@@ -322,8 +328,10 @@ class ScapesEngineApplication implements Plugin<Project> {
         programTask.runInAppData = true
         programTask.manifest = target.rootProject.
                 file("ScapesEngine/resources/Program.manifest")
-        programTask.output = new File(programTask.temporaryDir,
-                target.project.name + ".exe")
+        programTask.output = {
+            new File(programTask.temporaryDir,
+                    "${-> target.application.name}.exe")
+        }
 
         // Command task
         def programCmdTask = target.tasks.
@@ -342,8 +350,10 @@ class ScapesEngineApplication implements Plugin<Project> {
         programCmdTask.runInAppData = false
         programCmdTask.manifest = target.rootProject.
                 file("ScapesEngine/resources/Program.manifest")
-        programCmdTask.output = new File(programCmdTask.temporaryDir,
-                target.project.name + "Cmd.exe")
+        programCmdTask.output = {
+            new File(programCmdTask.temporaryDir,
+                    "${-> target.application.name}Cmd.exe")
+        }
 
         // Prepare Task
         def prepareTask = target.tasks.create("prepareWindows", Copy)
@@ -353,8 +363,8 @@ class ScapesEngineApplication implements Plugin<Project> {
         prepareTask.from target.rootProject.
                 file("ScapesEngine/resources/Setup.iss")
         prepareTask.from target.file("project/installer")
-        prepareTask.from(programTask.output, { into "install/common" })
-        prepareTask.from(programCmdTask.output, { into "install/common" })
+        prepareTask.from({ programTask.output }, { into "install/common" })
+        prepareTask.from({ programCmdTask.output }, { into "install/common" })
         prepareTask.from(target.files(target.jar),
                 { into "install/common/lib" })
         prepareTask.from(target.configurations.runtime,
@@ -414,7 +424,7 @@ class ScapesEngineApplication implements Plugin<Project> {
                 "/DApplicationCopyright=${-> escapeWindows(target.application.copyright)}",
                 "/DApplicationURL=${-> escapeWindows(target.application.url)}",
                 "/DApplicationUUID=${-> escapeWindows(target.application.uuid)}",
-                "/DApplicationName=${-> escapeWindows(target.name)}"]
+                "/DApplicationName=${-> escapeWindows(target.application.name)}"]
         def innoISS = new File(prepareTask.temporaryDir,
                 "Setup.iss").absolutePath
         if (System.properties["os.name"].toLowerCase().contains("win")) {
@@ -436,7 +446,7 @@ class ScapesEngineApplication implements Plugin<Project> {
         task.description = "Windows Installer with bundled JRE"
         task.from new File(prepareTask.temporaryDir, "output/setup.exe")
         task.rename({
-            "${-> target.project.name}-Setup-${-> target.project.version}.exe"
+            "${-> target.application.name}-Setup-${-> target.project.version}.exe"
         })
         task.into new File(target.buildDir, "distributions")
         return task
@@ -604,6 +614,7 @@ class ScapesEngineApplication implements Plugin<Project> {
 }
 
 class ScapesEngineApplicationExtension {
+    def String name
     def String fullName
     def String version
     def String company
@@ -614,14 +625,18 @@ class ScapesEngineApplicationExtension {
 }
 
 class StartupScriptTask extends DefaultTask {
+    def output
     @Input
     def execName, libPath, mainClass
+
     @OutputFile
-    def File output
+    File getOutput() {
+        project.file(output)
+    }
 
     @TaskAction
     void run() {
-        BufferedWriter writer = output.newWriter()
+        BufferedWriter writer = getOutput().newWriter()
         writer.write "#!/bin/bash\n"
         writer.write "export CLASSPATH=\"$libPath/*\"\n"
         writer.write "exec -a $execName java -Djava.library.path=$libPath $mainClass \$@\n"
@@ -630,7 +645,7 @@ class StartupScriptTask extends DefaultTask {
 }
 
 class AppBundlerTask extends DefaultTask {
-    def String output
+    def output
     @Input
     def fullName, version, company, copyright, mainClass
     @InputDirectory
@@ -677,7 +692,7 @@ class AppBundlerTask extends DefaultTask {
 }
 
 class Launch4jTask extends DefaultTask {
-    def File output
+    def output
     @Input
     def exeMemoryMin, exeMemoryMax, exeType, fullName, version, company, copyright, mainClass
     @Input
@@ -710,7 +725,7 @@ class Launch4jTask extends DefaultTask {
                 txtproductversion: version,
                 companyname: company,
                 internalname: fullName,
-                originalfilename: output.name]
+                originalfilename: getOutput().name]
         Map<String, String> classPathMap = [mainClass: mainClass,
                 cp: "%EXEDIR%\\lib\\*"];
         Map<String, String> jreMap = [initialheapsize: exeMemoryMin,

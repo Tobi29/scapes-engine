@@ -97,7 +97,7 @@ class ScapesEngineApplication implements Plugin<Project> {
 
     private Task addDeployLinuxTask(Project target, String arch,
             Configuration runtime, Configuration natives) {
-        def name = "${-> target.project.name.toLowerCase()}"
+        def name = "${-> target.extension.name.toLowerCase()}"
         def libPath = "/usr/share/java"
         if (target.rootProject.hasProperty("libPath")) {
             libPath = target.rootProject.libPath
@@ -109,7 +109,9 @@ class ScapesEngineApplication implements Plugin<Project> {
                 "Contains tarball that can be extracted into root for easier package creation"
         task.group = "Deployment"
         task.dependsOn target.jar
-        task.baseName = "${-> target.project.name}-Linux$arch"
+        target.afterEvaluate {
+            task.baseName = "${-> target.extension.name}-Linux$arch"
+        }
         task.compression = Compression.GZIP
         task.from({ ->
             (target.configurations.runtime + runtime +
@@ -140,5 +142,6 @@ class ScapesEngineApplication implements Plugin<Project> {
 }
 
 class ScapesEngineExtensionExtension {
+    def String name
     def Project parent
 }
