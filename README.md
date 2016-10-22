@@ -1,5 +1,5 @@
 # Scapes Engine
-General purpose game engine written in Java.
+General purpose game engine written in Kotlin.
 
 Its codebase was split off [Scapes](https://github.com/Tobi29/Scapes) to make it
 reusable for other projects.
@@ -21,19 +21,20 @@ see [Scapes](https://github.com/Tobi29/Scapes)
 ## Dependencies
 ### General
   * Java 8
+  * [Kotlin](https://kotlinlang.org)
+  * [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging)
   * [SLF4J](http://www.slf4j.org)
   * [PNGJ](https://github.com/leonbloy/pngj)
   * [JSON Processing](https://jsonp.java.net)
   * [Apache Tika](https://tika.apache.org)
   * [JUnit](http://junit.org)
   * [Gradle](https://gradle.org)
-  * OpenGL 3.2
+  * OpenGL 3.3
   * OpenAL 1.1
   * A binding for OpenGL, OpenAL, dialogs and font rendering
 
 ### Default Backend
   * [LWJGL](http://lwjgl.org)
-  * [SWT](https://www.eclipse.org/swt)
 
 ### Codecs
   * [JOrbis](http://www.jcraft.com/jorbis/)
