@@ -165,7 +165,7 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine, protected val
         if (exception != null) {
             throw IOException(exception)
         }
-        return output ?: throw IllegalStateException("Output not passed")
+        return output as R
     }
 
     companion object : KLogging() {
