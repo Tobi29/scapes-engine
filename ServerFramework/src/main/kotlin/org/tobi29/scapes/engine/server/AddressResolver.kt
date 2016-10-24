@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.server
 
+import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -38,15 +39,10 @@ object AddressResolver {
             }
             return address.address
         }
-        // Check outside of synchronized as well for better performance
-        if (!THREADS.containsKey(hostname)) {
-            synchronized(THREADS) {
-                if (!THREADS.containsKey(hostname)) {
-                    val resolver = Resolver(hostname)
-                    THREADS.put(hostname, resolver)
-                    taskExecutor.runTask(resolver, "Resolve-Address")
-                }
-            }
+        ConcurrentMaps.computeIfAbsent(THREADS, hostname) {
+            val resolver = Resolver(hostname)
+            taskExecutor.runTask(resolver, "Resolve-Address")
+            resolver
         }
         return null
     }

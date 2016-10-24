@@ -17,60 +17,52 @@
 package org.tobi29.scapes.engine.server
 
 import mu.KLogging
-import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 import java.util.*
 
 class NewOutConnection(address: RemoteAddress,
-                       private val connection: ConnectionWorker,
+                       private val worker: ConnectionWorker.NetWorkerThread,
                        private val fail: (Exception) -> Unit,
                        private val init: (SocketChannel) -> Unit) : Connection {
     private val startup: Long
-    private var state: (() -> Boolean)? = null
-    private var close: (() -> Unit)? = null
+    private var state: (() -> Boolean)? = { false }
     private var selector: ((SocketChannel) -> Unit)? = null
+    private var channel: SocketChannel? = null
 
     init {
         startup = System.nanoTime()
-        state = { step1(address) }
+        AddressResolverNew.resolve(address,
+                worker.connection.taskExecutor) { socketAddress ->
+            if (socketAddress == null) {
+                state = { throw UnresolvableAddressException(address.address) }
+                return@resolve
+            }
+            worker.joiner.wake()
+            state = { step1(socketAddress) }
+        }
     }
 
-    private fun step1(address: RemoteAddress): Boolean {
-        val socketAddress = try {
-            AddressResolver.resolve(address, connection.taskExecutor)
-        } catch (e: UnresolvableAddressException) {
-            throw IOException(e)
-        }
-        if (socketAddress != null) {
-            val channel = SocketChannel.open()
-            channel.configureBlocking(false)
-            channel.connect(socketAddress)
-            selector?.invoke(channel)
-            state = { step2(channel) }
-            close = { channel.close() }
-            return true
-        }
-        return false
+    private fun step1(socketAddress: InetSocketAddress): Boolean {
+        val channel = SocketChannel.open()
+        channel.connect(socketAddress)
+        channel.configureBlocking(false)
+        channel.register(worker.joiner.selector, SelectionKey.OP_CONNECT)
+        this.channel = channel
+        state = { step2(channel) }
+        return true
     }
 
     private fun step2(channel: SocketChannel): Boolean {
         if (channel.finishConnect()) {
             init(channel)
+            this.channel = null
             state = null
-            close = {}
             return true
         }
         return false
-    }
-
-    override fun register(joiner: Joiner.SelectorJoinable,
-                          opt: Int) {
-        this.selector = { channel ->
-            channel.register(joiner.selector, opt)
-            channel.register(joiner.selector, SelectionKey.OP_CONNECT)
-        }
     }
 
     override fun tick(worker: ConnectionWorker.NetWorkerThread) {
@@ -95,7 +87,7 @@ class NewOutConnection(address: RemoteAddress,
 
     override fun close() {
         selector = null
-        close?.invoke()
+        channel?.close()
     }
 
     companion object : KLogging() {

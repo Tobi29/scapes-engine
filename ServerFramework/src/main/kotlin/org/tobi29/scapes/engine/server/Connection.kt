@@ -18,9 +18,6 @@ package org.tobi29.scapes.engine.server
 import org.tobi29.scapes.engine.utils.task.Joiner
 
 interface Connection {
-    fun register(joiner: Joiner.SelectorJoinable,
-                 opt: Int)
-
     fun tick(worker: ConnectionWorker.NetWorkerThread)
 
     val isClosed: Boolean

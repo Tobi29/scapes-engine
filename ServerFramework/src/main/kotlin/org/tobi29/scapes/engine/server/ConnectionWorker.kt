@@ -20,7 +20,6 @@ import mu.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
-import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -50,7 +49,7 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
         }
     }
 
-    fun addClient(client: Connection): Boolean {
+    fun addConnection(supplier: (NetWorkerThread) -> Connection): Boolean {
         var load = Int.MAX_VALUE
         var bestWorker: NetWorkerThread? = null
         for (worker in workers) {
@@ -61,10 +60,9 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
             }
         }
         if (bestWorker == null) {
-            client.close()
             return false
         }
-        bestWorker.addConnection(client)
+        bestWorker.addConnection(supplier)
         return true
     }
 
@@ -73,12 +71,13 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
         logger.info { "Closed connection workers" }
     }
 
-    inner class NetWorkerThread(private val joiner: Joiner.SelectorJoinable) {
-        val connectionQueue = ConcurrentLinkedQueue<Connection>()
-        val connections = ArrayList<Connection>()
+    inner class NetWorkerThread(val joiner: Joiner.SelectorJoinable) {
+        internal val connectionQueue = ConcurrentLinkedQueue<(NetWorkerThread) -> Connection>()
+        internal val connections = ArrayList<Connection>()
+        val connection = this@ConnectionWorker
 
-        fun addConnection(connection: Connection) {
-            connectionQueue.add(connection)
+        fun addConnection(supplier: (NetWorkerThread) -> Connection) {
+            connectionQueue.add(supplier)
             wake()
         }
 
@@ -92,8 +91,7 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
                     process()
                     if (!connectionQueue.isEmpty()) {
                         while (!connectionQueue.isEmpty()) {
-                            val connection = connectionQueue.poll()
-                            connection.register(joiner, SelectionKey.OP_READ)
+                            val connection = connectionQueue.poll()(this)
                             connections.add(connection)
                         }
                     } else if (!joiner.marked) {
@@ -105,16 +103,12 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
                 val stopTimeout = System.nanoTime()
                 while (!connections.isEmpty() && System.nanoTime() - stopTimeout < 10000000000L) {
                     process()
-                    if (!connectionQueue.isEmpty()) {
-                        while (!connectionQueue.isEmpty()) {
-                            val connection = connectionQueue.poll()
-                            connection.register(joiner, SelectionKey.OP_READ)
-                            connections.add(connection)
-                            connection.requestClose()
-                        }
-                    } else if (!joiner.marked) {
+                    if (!joiner.marked) {
                         joiner.sleep(10)
                     }
+                }
+                while (!connectionQueue.isEmpty()) {
+                    connectionQueue.poll()(this).close()
                 }
             } finally {
                 for (connection in connections) {

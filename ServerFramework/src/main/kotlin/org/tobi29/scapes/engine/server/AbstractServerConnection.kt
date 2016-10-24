@@ -55,14 +55,20 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
                             if (result != null) {
                                 // Logged as trace to avoid spam
                                 logger.trace { "Denied connection: $result" }
+                                client.close()
                                 continue
                             }
-                            val bundleChannel = PacketBundleChannel(
-                                    RemoteAddress(address), client,
-                                    taskExecutor,
-                                    ssl, false)
-                            addClient(UnknownConnection(bundleChannel, this,
-                                    connectionHeader))
+                            if (!addConnection { worker ->
+                                val bundleChannel = PacketBundleChannel(
+                                        RemoteAddress(address), client,
+                                        taskExecutor,
+                                        ssl, false)
+                                UnknownConnection(worker, bundleChannel, this,
+                                        connectionHeader)
+                            }) {
+                                logger.warn { "Failed to assign connection to worker" }
+                                client.close()
+                            }
                         }
                     }
                 } finally {
@@ -84,7 +90,8 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
 
     protected abstract fun accept(channel: SocketChannel): String?
 
-    abstract fun newConnection(channel: PacketBundleChannel,
+    abstract fun newConnection(worker: NetWorkerThread,
+                               channel: PacketBundleChannel,
                                id: Byte): Connection?
 
     companion object : KLogging()

@@ -27,8 +27,8 @@ import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
 import org.tobi29.scapes.engine.utils.io.tag.structure
 import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
+import java.nio.channels.SelectionKey
 import java.security.*
 import java.security.spec.InvalidKeySpecException
 import java.util.*
@@ -38,7 +38,8 @@ import javax.crypto.*
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
 
-open class ControlPanelProtocol private constructor(private val channel: PacketBundleChannel,
+open class ControlPanelProtocol private constructor(private val worker: ConnectionWorker.NetWorkerThread,
+                                                    private val channel: PacketBundleChannel,
                                                     events: EventDispatcher?) : Connection, ListenerOwner {
     val events = EventDispatcher(events)
     private var idStr: String? = null
@@ -48,10 +49,10 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
     private val disconnectHooks = ConcurrentLinkedQueue<(Exception) -> Unit>()
     private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagStructure) -> Unit>, Queue<(TagStructure) -> Unit>>>()
     private var state: ChannelState? = null
-    private var joiner: Joiner.Joinable? = null
     override val listenerOwner = ListenerOwnerHandle { !isClosed }
 
     init {
+        channel.register(worker.joiner, SelectionKey.OP_READ)
         addCommand("Commands-List") { payload ->
             val set = commands.keys
             send("Commands-Send", structure {
@@ -64,12 +65,12 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
         }
     }
 
-    constructor(channel: PacketBundleChannel,
+    constructor(worker: ConnectionWorker.NetWorkerThread,
+                channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 client: String,
                 authentication: (String, Int, ByteArray) -> Cipher) : this(
-            channel,
-            events) {
+            worker, channel, events) {
         idStr = client
         val output = channel.outputStream
         output.putString(client)
@@ -78,10 +79,11 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
                 { i, o -> loginClient(i, o, client, authentication) })
     }
 
-    constructor(channel: PacketBundleChannel,
+    constructor(worker: ConnectionWorker.NetWorkerThread,
+                channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 client: String,
-                authentication: (String, Int) -> Cipher) : this(channel,
+                authentication: (String, Int) -> Cipher) : this(worker, channel,
             events) {
         idStr = client
         val output = channel.outputStream
@@ -91,18 +93,20 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
                 { i, o -> loginClientAsym(i, o, client, authentication) })
     }
 
-    constructor(channel: PacketBundleChannel,
+    constructor(worker: ConnectionWorker.NetWorkerThread,
+                channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 authentication: (String, Int, ByteArray) -> Cipher?) : this(
-            channel, events) {
+            worker, channel, events) {
         state = ChannelState(
                 { i, o -> challengeServer(i, o, authentication) })
     }
 
-    constructor(channel: PacketBundleChannel,
+    constructor(worker: ConnectionWorker.NetWorkerThread,
+                channel: PacketBundleChannel,
                 events: EventDispatcher?,
-                authentication: (String, Int) -> Cipher?) : this(channel,
-            events) {
+                authentication: (String, Int) -> Cipher?) : this(worker,
+            channel, events) {
         state = ChannelState(
                 { i, o -> challengeServerAsym(i, o, authentication) })
     }
@@ -119,7 +123,7 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
         tagStructure.setString("Command", command)
         tagStructure.setStructure("Payload", payload)
         queue.add(tagStructure)
-        joiner?.wake()
+        worker.joiner.wake()
     }
 
     private fun processCommand(command: String,
@@ -163,12 +167,6 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
         list.second.add(runnable)
     }
 
-    override fun register(joiner: Joiner.SelectorJoinable,
-                          opt: Int) {
-        channel.register(joiner, opt)
-        this.joiner = joiner
-    }
-
     override fun tick(worker: ConnectionWorker.NetWorkerThread) {
         try {
             tick()
@@ -199,7 +197,6 @@ open class ControlPanelProtocol private constructor(private val channel: PacketB
             closeHooks.poll()()
         }
         channel.close()
-        joiner = null
     }
 
     fun tick() {

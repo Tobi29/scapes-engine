@@ -16,23 +16,20 @@
 package org.tobi29.scapes.engine.server
 
 import mu.KLogging
-import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
+import java.nio.channels.SelectionKey
 import java.util.*
 
-class UnknownConnection(private val channel: PacketBundleChannel,
+class UnknownConnection(worker: ConnectionWorker.NetWorkerThread,
+                        private val channel: PacketBundleChannel,
                         private val connection: AbstractServerConnection,
                         private val connectionHeader: ByteArray) : Connection {
     private val startup: Long
     private var state = State.OPEN
 
     init {
+        channel.register(worker.joiner, SelectionKey.OP_READ)
         startup = System.nanoTime()
-    }
-
-    override fun register(joiner: Joiner.SelectorJoinable,
-                          opt: Int) {
-        channel.register(joiner, opt)
     }
 
     override fun tick(worker: ConnectionWorker.NetWorkerThread) {
@@ -47,10 +44,10 @@ class UnknownConnection(private val channel: PacketBundleChannel,
                 val header = ByteArray(connectionHeader.size)
                 bundle[header]
                 if (Arrays.equals(header, connectionHeader)) {
-                    val newConnection = connection.newConnection(channel,
-                            bundle.get())
+                    val newConnection = connection.newConnection(worker,
+                            channel, bundle.get())
                     if (newConnection != null) {
-                        worker.addConnection(newConnection)
+                        worker.addConnection { newConnection }
                         state = State.CONNECTED
                         return@process true
                     }
