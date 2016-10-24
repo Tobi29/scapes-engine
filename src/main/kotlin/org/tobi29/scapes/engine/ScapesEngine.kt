@@ -57,7 +57,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
     val config: ScapesEngineConfig
     val files: FileSystemContainer
     val fileCache: FileCache
-    val taskExecutor: TaskExecutor
+    val taskExecutor = TaskExecutor(this, "Engine")
     val notifications: GuiNotifications
     val debugValues: GuiWidgetDebugValues
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
@@ -86,8 +86,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
         this.game = game(this)
         checkSystem()
         logger.info { "Starting Scapes-Engine: $this (Game: $game)" }
-        logger.info { "Creating task executor" }
-        taskExecutor = TaskExecutor(this, "Engine")
         logger.info { "Initializing asset system" }
         files = FileSystemContainer()
         files.registerFileSystem("Class",
