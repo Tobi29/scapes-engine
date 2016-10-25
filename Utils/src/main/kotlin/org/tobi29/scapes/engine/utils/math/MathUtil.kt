@@ -77,7 +77,7 @@ inline fun abs(value: Vector3d): Vector3d {
  * @return Absolute value of [value]
  */
 inline fun abs(value: Int): Int {
-    return if (value >= 0) value else -value
+    return Math.abs(value)
 }
 
 /**
@@ -86,7 +86,7 @@ inline fun abs(value: Int): Int {
  * @return Absolute value of [value]
  */
 inline fun abs(value: Long): Long {
-    return if (value >= 0) value else -value
+    return Math.abs(value)
 }
 
 /**
@@ -95,7 +95,7 @@ inline fun abs(value: Long): Long {
  * @return Absolute value of [value]
  */
 inline fun abs(value: Float): Float {
-    return if (value >= 0.0f) value else -value
+    return Math.abs(value)
 }
 
 /**
@@ -104,7 +104,7 @@ inline fun abs(value: Float): Float {
  * @return Absolute value of [value]
  */
 inline fun abs(value: Double): Double {
-    return if (value >= 0.0) value else -value
+    return Math.abs(value)
 }
 
 /**
