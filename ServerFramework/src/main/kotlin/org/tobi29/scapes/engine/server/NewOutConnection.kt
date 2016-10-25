@@ -29,7 +29,6 @@ class NewOutConnection(private val worker: ConnectionWorker,
                        private val init: (SocketChannel) -> Unit) : Connection {
     private val startup: Long
     private var state: (() -> Boolean)? = { false }
-    private var selector: ((SocketChannel) -> Unit)? = null
     private var channel: SocketChannel? = null
 
     init {
@@ -86,7 +85,6 @@ class NewOutConnection(private val worker: ConnectionWorker,
     }
 
     override fun close() {
-        selector = null
         channel?.close()
     }
 
