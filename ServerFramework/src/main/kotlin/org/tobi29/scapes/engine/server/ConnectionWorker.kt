@@ -21,6 +21,7 @@ import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
 import java.nio.channels.Selector
+import java.nio.channels.SocketChannel
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -33,7 +34,7 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
         logger.info { "Starting worker $workerCount threads..." }
         for (i in 0..workerCount - 1) {
             val joiner = Joiner.SelectorJoinable(Selector.open())
-            val worker = NetWorkerThread(joiner)
+            val worker = NetWorkerThread(this, joiner, maxWorkerSleep)
             workerJoiners.add(taskExecutor.runThread({ joiner ->
                 try {
                     worker.run()
@@ -71,10 +72,11 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
         logger.info { "Closed connection workers" }
     }
 
-    inner class NetWorkerThread(val joiner: Joiner.SelectorJoinable) {
+    class NetWorkerThread(val connection: ConnectionWorker,
+                          val joiner: Joiner.SelectorJoinable,
+                          private val maxWorkerSleep: Long) {
         internal val connectionQueue = ConcurrentLinkedQueue<(NetWorkerThread) -> Connection>()
         internal val connections = ArrayList<Connection>()
-        val connection = this@ConnectionWorker
 
         fun addConnection(supplier: (NetWorkerThread) -> Connection) {
             connectionQueue.add(supplier)
@@ -141,4 +143,14 @@ open class ConnectionWorker(val taskExecutor: TaskExecutor,
     }
 
     companion object : KLogging()
+}
+
+inline fun ConnectionWorker.addOutConnection(address: RemoteAddress,
+                                             noinline error: (Exception) -> Unit,
+                                             crossinline init: (ConnectionWorker.NetWorkerThread, SocketChannel) -> Unit) {
+    addConnection { worker ->
+        NewOutConnection(worker, address, error) { channel ->
+            init(worker, channel)
+        }
+    }
 }

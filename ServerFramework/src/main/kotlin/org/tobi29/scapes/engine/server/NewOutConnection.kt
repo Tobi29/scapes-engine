@@ -23,8 +23,8 @@ import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 import java.util.*
 
-class NewOutConnection(address: RemoteAddress,
-                       private val worker: ConnectionWorker.NetWorkerThread,
+class NewOutConnection(private val worker: ConnectionWorker.NetWorkerThread,
+                       address: RemoteAddress,
                        private val fail: (Exception) -> Unit,
                        private val init: (SocketChannel) -> Unit) : Connection {
     private val startup: Long
