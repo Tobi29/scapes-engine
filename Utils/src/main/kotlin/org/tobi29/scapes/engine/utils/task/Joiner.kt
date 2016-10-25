@@ -30,6 +30,9 @@ class Joiner {
         joinables = arrayOf(thread)
     }
 
+    constructor(joiners: Queue<Joiner>) : this(collectQueue(joiners)) {
+    }
+
     constructor(joiners: Collection<Joiner>) : this(*joiners.toTypedArray()) {
     }
 
@@ -196,6 +199,16 @@ class Joiner {
         }
 
         companion object : KLogging()
+    }
+
+    companion object : KLogging() {
+        private fun <E> collectQueue(queue: Queue<E>): ArrayList<E> {
+            val list = ArrayList<E>()
+            while (queue.isNotEmpty()) {
+                list.add(queue.poll())
+            }
+            return list
+        }
     }
 }
 
