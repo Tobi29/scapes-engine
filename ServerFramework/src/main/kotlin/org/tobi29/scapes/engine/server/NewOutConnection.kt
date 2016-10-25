@@ -24,15 +24,16 @@ import java.nio.channels.SocketChannel
 import java.util.*
 
 class NewOutConnection(private val worker: ConnectionWorker,
-                       address: RemoteAddress,
                        private val fail: (Exception) -> Unit,
                        private val init: (SocketChannel) -> Unit) : Connection {
-    private val startup: Long
+    private val startup = System.nanoTime()
     private var state: (() -> Boolean)? = { false }
     private var channel: SocketChannel? = null
 
-    init {
-        startup = System.nanoTime()
+    constructor(worker: ConnectionWorker,
+                address: RemoteAddress,
+                fail: (Exception) -> Unit,
+                init: (SocketChannel) -> Unit) : this(worker, fail, init) {
         AddressResolver.resolve(address,
                 worker.connection.taskExecutor) { socketAddress ->
             if (socketAddress == null) {
@@ -42,6 +43,13 @@ class NewOutConnection(private val worker: ConnectionWorker,
             worker.joiner.wake()
             state = { step1(socketAddress) }
         }
+    }
+
+    constructor(worker: ConnectionWorker,
+                socketAddress: InetSocketAddress,
+                fail: (Exception) -> Unit,
+                init: (SocketChannel) -> Unit) : this(worker, fail, init) {
+        state = { step1(socketAddress) }
     }
 
     private fun step1(socketAddress: InetSocketAddress): Boolean {

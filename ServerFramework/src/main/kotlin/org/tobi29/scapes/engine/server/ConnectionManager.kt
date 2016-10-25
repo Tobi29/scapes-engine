@@ -20,6 +20,7 @@ import mu.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.nio.channels.Selector
 import java.nio.channels.SocketChannel
 import java.util.*
@@ -75,6 +76,16 @@ open class ConnectionManager(val taskExecutor: TaskExecutor,
 }
 
 inline fun ConnectionManager.addOutConnection(address: RemoteAddress,
+                                              noinline error: (Exception) -> Unit,
+                                              crossinline init: (ConnectionWorker, SocketChannel) -> Unit) {
+    addConnection { worker ->
+        NewOutConnection(worker, address, error) { channel ->
+            init(worker, channel)
+        }
+    }
+}
+
+inline fun ConnectionManager.addOutConnection(address: InetSocketAddress,
                                               noinline error: (Exception) -> Unit,
                                               crossinline init: (ConnectionWorker, SocketChannel) -> Unit) {
     addConnection { worker ->
