@@ -27,10 +27,8 @@ import java.nio.channels.SocketChannel
 abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
                                         private val connectionHeader: ByteArray,
                                         private val ssl: SSLHandle,
-                                        maxWorkerSleep: Long = 1000) : ConnectionWorker(
+                                        maxWorkerSleep: Long = 1000) : ConnectionManager(
         taskExecutor, maxWorkerSleep) {
-    private var connectJoiner: Joiner? = null
-
     fun start(port: Int): Int {
         val address = start(InetSocketAddress(port))
         return address.port
@@ -41,7 +39,7 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
         val channel = ServerSocketChannel.open()
         channel.configureBlocking(false)
         channel.socket().bind(address)
-        connectJoiner = taskExecutor.runThread({ joiner ->
+        joiners.add(taskExecutor.runThread({ joiner ->
             try {
                 channel.register(joiner.selector, SelectionKey.OP_ACCEPT)
                 try {
@@ -79,18 +77,13 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
             }
             logger.info { "Stopped socket thread..." }
         }, "Socket", TaskExecutor.Priority.MEDIUM,
-                Joiner.SelectorJoinable(Selector.open()))
+                Joiner.SelectorJoinable(Selector.open())))
         return channel.socket().localSocketAddress as InetSocketAddress
-    }
-
-    override fun stop() {
-        connectJoiner?.join()
-        super.stop()
     }
 
     protected abstract fun accept(channel: SocketChannel): String?
 
-    abstract fun newConnection(worker: NetWorkerThread,
+    abstract fun newConnection(worker: ConnectionWorker,
                                channel: PacketBundleChannel,
                                id: Byte): Connection?
 

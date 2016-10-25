@@ -20,7 +20,7 @@ import java.io.IOException
 import java.nio.channels.SelectionKey
 import java.util.*
 
-class UnknownConnection(worker: ConnectionWorker.NetWorkerThread,
+class UnknownConnection(worker: ConnectionWorker,
                         private val channel: PacketBundleChannel,
                         private val connection: AbstractServerConnection,
                         private val connectionHeader: ByteArray) : Connection {
@@ -32,7 +32,7 @@ class UnknownConnection(worker: ConnectionWorker.NetWorkerThread,
         startup = System.nanoTime()
     }
 
-    override fun tick(worker: ConnectionWorker.NetWorkerThread) {
+    override fun tick(worker: ConnectionWorker) {
         try {
             if (channel.process({ bundle ->
                 if (state == State.CONNECTED) {

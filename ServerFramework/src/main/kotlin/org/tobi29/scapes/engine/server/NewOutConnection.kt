@@ -23,7 +23,7 @@ import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 import java.util.*
 
-class NewOutConnection(private val worker: ConnectionWorker.NetWorkerThread,
+class NewOutConnection(private val worker: ConnectionWorker,
                        address: RemoteAddress,
                        private val fail: (Exception) -> Unit,
                        private val init: (SocketChannel) -> Unit) : Connection {
@@ -65,7 +65,7 @@ class NewOutConnection(private val worker: ConnectionWorker.NetWorkerThread,
         return false
     }
 
-    override fun tick(worker: ConnectionWorker.NetWorkerThread) {
+    override fun tick(worker: ConnectionWorker) {
         try {
             while (state?.invoke() ?: false) {
             }

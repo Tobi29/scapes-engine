@@ -38,7 +38,7 @@ import javax.crypto.*
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
 
-open class ControlPanelProtocol private constructor(private val worker: ConnectionWorker.NetWorkerThread,
+open class ControlPanelProtocol private constructor(private val worker: ConnectionWorker,
                                                     private val channel: PacketBundleChannel,
                                                     events: EventDispatcher?) : Connection, ListenerOwner {
     val events = EventDispatcher(events)
@@ -65,7 +65,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         }
     }
 
-    constructor(worker: ConnectionWorker.NetWorkerThread,
+    constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 client: String,
@@ -79,7 +79,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> loginClient(i, o, client, authentication) })
     }
 
-    constructor(worker: ConnectionWorker.NetWorkerThread,
+    constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 client: String,
@@ -93,7 +93,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> loginClientAsym(i, o, client, authentication) })
     }
 
-    constructor(worker: ConnectionWorker.NetWorkerThread,
+    constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 authentication: (String, Int, ByteArray) -> Cipher?) : this(
@@ -102,7 +102,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> challengeServer(i, o, authentication) })
     }
 
-    constructor(worker: ConnectionWorker.NetWorkerThread,
+    constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
                 authentication: (String, Int) -> Cipher?) : this(worker,
@@ -167,7 +167,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         list.second.add(runnable)
     }
 
-    override fun tick(worker: ConnectionWorker.NetWorkerThread) {
+    override fun tick(worker: ConnectionWorker) {
         try {
             tick()
         } catch (e: ConnectionCloseException) {
