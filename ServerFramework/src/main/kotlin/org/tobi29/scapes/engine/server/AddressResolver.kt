@@ -16,65 +16,42 @@
 
 package org.tobi29.scapes.engine.server
 
-import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.UnknownHostException
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 object AddressResolver {
-    private val CACHE_TIMEOUT = 10000000000L
-    private val THREADS = ConcurrentHashMap<String, Resolver>()
-    private val ADDRESSES = WeakHashMap<String, ResolvedAddress>()
-
-    @Throws(UnresolvableAddressException::class)
     fun resolve(hostname: String,
-                taskExecutor: TaskExecutor): InetAddress? {
-        val address = ADDRESSES[hostname]
-        if (address != null && System.nanoTime() - address.resolvedTime <= CACHE_TIMEOUT) {
-            if (address.address == null) {
-                throw UnresolvableAddressException(hostname)
-            }
-            return address.address
-        }
-        ConcurrentMaps.computeIfAbsent(THREADS, hostname) {
-            val resolver = Resolver(hostname)
-            taskExecutor.runTask(resolver, "Resolve-Address")
-            resolver
-        }
-        return null
-    }
-
-    @Throws(UnresolvableAddressException::class)
-    fun resolve(hostname: String,
-                port: Int,
-                taskExecutor: TaskExecutor): InetSocketAddress? {
-        val address = resolve(hostname, taskExecutor) ?: return null
-        return InetSocketAddress(address, port)
-    }
-
-    @Throws(UnresolvableAddressException::class)
-    fun resolve(address: RemoteAddress,
-                taskExecutor: TaskExecutor): InetSocketAddress? {
-        return resolve(address.address, address.port, taskExecutor)
-    }
-
-    private class Resolver(val hostname: String) : () -> Unit {
-        override fun invoke() {
+                taskExecutor: TaskExecutor,
+                callback: (InetAddress?) -> Unit) {
+        taskExecutor.runTask({
             try {
                 val address = InetAddress.getByName(hostname)
-                ADDRESSES.put(hostname,
-                        ResolvedAddress(address, System.nanoTime()))
+                callback(address)
             } catch (e: UnknownHostException) {
-                ADDRESSES.put(hostname,
-                        ResolvedAddress(null, System.nanoTime()))
-            } finally {
-                THREADS.remove(hostname)
+                callback(null)
             }
+        }, "Resolve-Address")
+    }
+
+    inline fun resolve(hostname: String,
+                       port: Int,
+                       taskExecutor: TaskExecutor,
+                       crossinline callback: (InetSocketAddress?) -> Unit) {
+        resolve(hostname, taskExecutor) { address ->
+            val socketAddress = if (address != null) {
+                InetSocketAddress(address, port)
+            } else {
+                null
+            }
+            callback(socketAddress)
         }
     }
 
-    private class ResolvedAddress(val address: InetAddress?, val resolvedTime: Long)
+    inline fun resolve(address: RemoteAddress,
+                       taskExecutor: TaskExecutor,
+                       crossinline callback: (InetSocketAddress?) -> Unit) {
+        return resolve(address.address, address.port, taskExecutor, callback)
+    }
 }

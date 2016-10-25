@@ -33,7 +33,7 @@ class NewOutConnection(private val worker: ConnectionWorker,
 
     init {
         startup = System.nanoTime()
-        AddressResolverNew.resolve(address,
+        AddressResolver.resolve(address,
                 worker.connection.taskExecutor) { socketAddress ->
             if (socketAddress == null) {
                 state = { throw UnresolvableAddressException(address.address) }
