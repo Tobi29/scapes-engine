@@ -276,8 +276,9 @@ inline fun <T, R> Array<T>.collect(filter: (T) -> Boolean,
  * @receiver The stream to filter
  * @return The filtered stream
  */
+@Suppress("UNCHECKED_CAST")
 inline fun <T> Stream<T?>.notNull(): Stream<T> {
-    return filter { it != null }.map { it!! }
+    return filter { it != null } as Stream<T>
 }
 
 /**
