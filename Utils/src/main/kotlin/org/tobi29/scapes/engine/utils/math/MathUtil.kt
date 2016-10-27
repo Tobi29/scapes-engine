@@ -553,7 +553,8 @@ inline fun cbrt(value: Double): Double {
  * @return Next integer below [value]
  */
 inline fun floor(value: Float): Int {
-    return floor(value.toDouble())
+    val int = value.toInt()
+    return if (value >= 0.0f || int.toFloat() == value) int else int - 1
 }
 
 /**
@@ -589,7 +590,8 @@ inline fun round(value: Double): Int {
  * @return Next integer above [value]
  */
 inline fun ceil(value: Float): Int {
-    return ceil(value.toDouble())
+    val int = value.toInt()
+    return if (value <= 0.0f || int.toFloat() == value) int else int + 1
 }
 
 /**

@@ -16,11 +16,6 @@
 package org.tobi29.scapes.engine.utils.math
 
 object FastMath {
-    val E = 2.7182818284590452354
-    val HALF_PI = 1.57079632679489661923
-    val PI = 3.14159265358979323846
-    val TWO_PI = 6.28318530717958647692
-
     fun convertFloatToHalf(a: Float): Short {
         val bits = java.lang.Float.floatToIntBits(a)
         val sign = bits.ushr(16) and 0x8000

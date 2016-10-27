@@ -19,7 +19,7 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.utils.math.FastMath
+import org.tobi29.scapes.engine.utils.math.PI
 import org.tobi29.scapes.engine.utils.math.sin
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
@@ -50,7 +50,7 @@ class GuiNotificationSimple constructor(parent: GuiLayoutData, icon: Texture,
 
     override fun transform(matrix: Matrix,
                            size: Vector2d) {
-        val sin = sin(progress * FastMath.PI).toFloat() - 1.0f
+        val sin = sin(progress * PI).toFloat() - 1.0f
         var sqr = sin * sin
         sqr *= sqr
         val start = matrix.modelView().multiply(Vector3d.ZERO)

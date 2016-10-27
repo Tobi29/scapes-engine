@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.gui.GuiComponentImage
 import org.tobi29.scapes.engine.gui.GuiState
 import org.tobi29.scapes.engine.gui.GuiStyle
-import org.tobi29.scapes.engine.utils.math.FastMath
+import org.tobi29.scapes.engine.utils.math.PI
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.sin
 
@@ -49,7 +49,7 @@ class GameStateStartup(private val nextState: GameState, private val image: Stri
         icon?.let { icon ->
             if (warmUp > 20) {
                 time += delta / 5.0
-                var a = sin(time * FastMath.PI).toFloat()
+                var a = sin(time * PI).toFloat()
                 a = min(a * 1.4f, 1.0f)
                 icon.setColor(1.0f, 1.0f, 1.0f, a)
                 if (time > 1.0) {

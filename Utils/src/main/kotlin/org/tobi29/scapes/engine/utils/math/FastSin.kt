@@ -28,10 +28,10 @@ object FastSin {
     init {
         MASK = (-1 shl BITS).inv()
         val count = MASK + 1
-        RAD_2_INDEX = count / FastMath.TWO_PI
+        RAD_2_INDEX = count / TWO_PI
         SIN = FloatArray(count)
         for (i in 0..count - 1) {
-            SIN[i] = Math.sin((i + 0.5f) / count * FastMath.TWO_PI).toFloat()
+            SIN[i] = Math.sin((i + 0.5f) / count * TWO_PI).toFloat()
         }
         // Set exact values
         SIN[0] = 0.0f
@@ -45,6 +45,6 @@ object FastSin {
     }
 
     fun cos(value: Double): Double {
-        return sin(value + FastMath.HALF_PI)
+        return sin(value + HALF_PI)
     }
 }

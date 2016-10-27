@@ -24,7 +24,7 @@ object FastAsin {
     init {
         MASK = (-1 shl BITS).inv()
         val count = MASK + 1
-        VALUE_2_INDEX = count * 0.5
+        VALUE_2_INDEX = (count - 1) * 0.5
         ASIN = FloatArray(count)
         for (i in 0..count - 1) {
             ASIN[i] = Math.asin(i / VALUE_2_INDEX - 1.0).toFloat()
@@ -40,6 +40,6 @@ object FastAsin {
     }
 
     fun acos(value: Double): Double {
-        return asin(value) - FastMath.HALF_PI
+        return HALF_PI - asin(value)
     }
 }
