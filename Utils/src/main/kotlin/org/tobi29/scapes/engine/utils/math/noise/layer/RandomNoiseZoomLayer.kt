@@ -16,16 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer
 
-class RandomNoiseZoomLayer(private val parent: RandomNoiseLayer, zoomFactor: Float) : RandomNoiseLayer {
-    private val zoomFactor: Double
+import org.tobi29.scapes.engine.utils.math.floor
 
-    init {
-        this.zoomFactor = zoomFactor.toDouble()
-    }
-
+class RandomNoiseZoomLayer(private val parent: RandomNoiseLayer,
+                           private val zoomFactor: Double) : RandomNoiseLayer {
     override fun getInt(x: Int,
                         y: Int): Int {
-        return parent.getInt(Math.floor(x / zoomFactor).toInt(),
-                Math.floor(y / zoomFactor).toInt())
+        return parent.getInt(floor(x / zoomFactor), floor(y / zoomFactor))
     }
 }
