@@ -42,11 +42,15 @@ primaryExpression
 
 postfixExpression
     :   primaryExpression
+    |   functionExpression
     |   postfixExpression '[' expression ']'
-    |   postfixExpression '(' argumentExpressionList? ')'
     |   postfixExpression '.' Identifier
     |   postfixExpression '++'
     |   postfixExpression '--'
+    ;
+
+functionExpression
+    :   Identifier '(' argumentExpressionList? ')'
     ;
 
 argumentExpressionList
@@ -171,6 +175,10 @@ initDeclaratorArrayList
 initDeclaratorField
     :   Identifier
     |   Identifier '=' initializerField
+    ;
+
+type
+    :   typeSpecifier '[]'
     ;
 
 typeSpecifier

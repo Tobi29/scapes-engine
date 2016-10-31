@@ -16,4 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-abstract class IdentifierExpression protected constructor(val name: String) : Expression()
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class IdentifierExpression(val identifier: Identifier) : Expression()

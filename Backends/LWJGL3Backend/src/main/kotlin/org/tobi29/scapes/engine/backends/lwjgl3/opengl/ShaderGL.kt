@@ -223,7 +223,7 @@ internal class ShaderGL(private val shader: CompiledShader,
             this.program = program.first
             uniformLocations = program.second
         } catch (e: IOException) {
-            logger.warn { "Failed to generate shader: ${e.message}" }
+            logger.error(e) { "Failed to generate shader" }
         }
 
         information.postCompile(gl, this)

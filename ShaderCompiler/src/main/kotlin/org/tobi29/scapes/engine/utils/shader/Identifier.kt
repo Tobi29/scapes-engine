@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader.expression
+package org.tobi29.scapes.engine.utils.shader
 
-class MemberExpression(val name: String,
-                       val member: Expression) : Expression()
+class Identifier(val name: String,
+                 val scope: Scope) {
+}

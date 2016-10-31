@@ -16,4 +16,5 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class VariableExpression(name: String) : IdentifierExpression(name)
+class TypeExported(val type: Types,
+                   val array: Boolean = false)

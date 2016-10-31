@@ -16,5 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class Declaration(val name: String,
-                  val initializer: Expression? = null)
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class Declaration(val identifier: Identifier,
+                  val initializer: Expression? = null) : Expression()

@@ -20,7 +20,7 @@ shader fragment(Vector4 varying_Color,
     Float fog = min(varying_Depth / uniform_FogEnd, 1.0);
     out_Color.a = color.a * varying_Color.a;
     if (out_Color.a <= 0.01) {
-        discard;
+        discard();
     }
     out_Color.rgb = mix(color.rgb * varying_Color.rgb, uniform_FogColor, fog);
 }

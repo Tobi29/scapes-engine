@@ -18,33 +18,31 @@ package org.tobi29.scapes.engine.utils.shader
 
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.shader.expression.*
 import org.tobi29.scapes.engine.utils.shader.expression.Function
-import java.math.BigDecimal
-import java.math.BigInteger
 import java.util.*
 
 class ShaderCompiler {
     private val declarations = ArrayList<Statement>()
     private val functions = ArrayList<Function>()
-    private var shaderVertex: ShaderFunction? = null
-    private var shaderFragment: ShaderFunction? = null
+    private val shaders = HashMap <String, Pair<Scope, (Scope) -> ShaderFunction>>()
     private var outputs: ShaderSignature? = null
     private var uniforms = arrayOfNulls<Uniform>(0)
 
-    @Throws(ShaderCompileException::class)
     fun compile(source: String): CompiledShader {
         declarations.clear()
         functions.clear()
-        shaderVertex = null
-        shaderFragment = null
         uniforms = arrayOfNulls<Uniform>(0)
+        val scope = Scope()
+        scope.add("out_Position")
+        scope.add("varying_Fragment")
         try {
             val parser = parser(source)
             var program: ScapesShaderParser.TranslationUnitContext? = parser.compilationUnit().translationUnit()
             while (program != null) {
-                externalDeclaration(program.externalDeclaration())
+                parser.tokenStream[program.sourceInterval.a]
+                externalDeclaration(program.externalDeclaration(), shaders,
+                        scope)
                 program = program.translationUnit()
             }
         } catch (e: ParseCancellationException) {
@@ -54,28 +52,40 @@ class ShaderCompiler {
         declarations.addAll(this.declarations)
         val functions = ArrayList<Function>(this.functions.size)
         functions.addAll(this.functions)
-        return CompiledShader(declarations, functions, shaderVertex,
-                shaderFragment, outputs, uniforms)
+        val shaderFragment = shaders["fragment"]?.let { shader ->
+            Pair(shader.first, shader.second(scope))
+        }
+        val shaderVertex = shaders["vertex"]?.let { shader ->
+            if (shaderFragment == null) {
+                throw ShaderCompileException(
+                        "Vertex shader requires fragment shader!")
+            }
+            Pair(shader.first, shader.second(shaderFragment.first))
+        }
+        return CompiledShader(declarations, functions, shaderVertex?.second,
+                shaderFragment?.second, outputs, scope, uniforms)
     }
 
-    @SuppressWarnings("UnnecessaryReturnStatement")
-    @Throws(ShaderCompileException::class)
     private fun externalDeclaration(
-            context: ScapesShaderParser.ExternalDeclarationContext) {
+            context: ScapesShaderParser.ExternalDeclarationContext,
+            shaders: MutableMap<String, Pair<Scope, (Scope) -> ShaderFunction>>,
+            scope: Scope) {
         val uniform = context.uniformDeclaration()
         if (uniform != null) {
             val declarator = uniform.declarator()
             val field = declarator.declaratorField()
             if (field != null) {
                 val id = uniform.IntegerLiteral().text.toInt()
+                val name = uniform.Identifier().text
                 if (uniforms.size <= id) {
                     val newUniforms = arrayOfNulls<Uniform>(id + 1)
                     System.arraycopy(uniforms, 0, newUniforms, 0,
                             uniforms.size)
                     uniforms = newUniforms
                 }
-                uniforms[id] = Uniform(type(field), id,
-                        uniform.Identifier().text)
+                val variable = scope.add(name) ?: throw ShaderCompileException(
+                        "Redeclaring variable: $name", uniform.Identifier())
+                uniforms[id] = Uniform(TypeCompiler.type(field), id, variable)
             }
             val array = declarator.declaratorArray()
             if (array != null) {
@@ -85,31 +95,33 @@ class ShaderCompiler {
         }
         val declaration = context.declaration()
         if (declaration != null) {
-            declarations.add(declaration(declaration))
+            declarations.add(declaration(declaration, scope))
         }
         val shader = context.shaderDefinition()
         if (shader != null) {
             val signature = shader.shaderSignature()
             val name = signature.Identifier().text
             val parameters = ArrayList<ShaderParameter>()
-            parameters(signature.shaderParameterList(), parameters)
+            val inputScope = Scope(scope)
+            signature.shaderParameterList()?.let {
+                ParameterCompiler.parameters(it, parameters, inputScope)
+            }
             val shaderSignature = ShaderSignature(name,
                     *parameters.toTypedArray())
-            val compound = compound(shader.compoundStatement().blockItemList())
-            val function = ShaderFunction(shaderSignature, compound)
-            when (function.signature.name) {
-                "vertex" -> shaderVertex = function
-                "fragment" -> shaderFragment = function
-                else -> throw ShaderCompileException(
-                        "Invalid shader name: ${function.signature.name}",
-                        shader)
-            }
+            shaders[name] = Pair(inputScope, { shaderScope ->
+                val compound = compound(
+                        shader.compoundStatement().blockItemList(),
+                        Scope(inputScope, shaderScope))
+                ShaderFunction(shaderSignature, compound)
+            })
             return
         }
         val outputs = context.outputsDefinition()
         if (outputs != null) {
             val parameters = ArrayList<ShaderParameter>()
-            parameters(outputs.shaderParameterList(), parameters)
+            outputs.shaderParameterList()?.let {
+                ParameterCompiler.parameters(it, parameters, scope)
+            }
             val outputsSignature = ShaderSignature("outputs",
                     *parameters.toTypedArray())
             this.outputs = outputsSignature
@@ -120,214 +132,90 @@ class ShaderCompiler {
             val signature = function.functionSignature()
             val name = signature.Identifier().text
             val parameters = ArrayList<Parameter>()
-            parameters(signature.parameterList(), parameters)
-            val returned = type(signature.typeSpecifier())
+            val functionScope = Scope(scope)
+            signature.parameterList()?.let {
+                ParameterCompiler.parameters(it, parameters, functionScope)
+            }
+            val returned = TypeCompiler.type(signature.typeSpecifier())
             val precisionSpecifier = signature.precisionSpecifier()
             val returnedPrecision: Precision
             if (precisionSpecifier == null) {
                 returnedPrecision = Precision.mediump
             } else {
-                returnedPrecision = precision(precisionSpecifier)
+                returnedPrecision = TypeCompiler.precision(precisionSpecifier)
             }
             val functionSignature = FunctionSignature(name, returned,
                     returnedPrecision,
                     *parameters.toTypedArray())
             val compound = compound(
-                    function.compoundStatement().blockItemList())
+                    function.compoundStatement().blockItemList(),
+                    Scope(functionScope))
             functions.add(Function(functionSignature, compound))
             return
         }
     }
 
     companion object {
-        @Throws(ShaderCompileException::class)
-        private fun parameters(
-                context: ScapesShaderParser.ParameterListContext?,
-                parameters: MutableList<Parameter>) {
-            var context = context
-            while (context != null) {
-                val parameter = parameter(context.parameterDeclaration())
-                parameters.add(parameter)
-                context = context.parameterList()
-            }
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun parameter(
-                context: ScapesShaderParser.ParameterDeclarationContext): Parameter {
-            val type = type(context.declarator())
-            val name = context.Identifier().text
-            return Parameter(type, name)
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun parameters(
-                context: ScapesShaderParser.ShaderParameterListContext?,
-                parameters: MutableList<ShaderParameter>) {
-            var context = context
-            while (context != null) {
-                val parameter = parameter(context.shaderParameterDeclaration())
-                parameters.add(parameter)
-                context = context.shaderParameterList()
-            }
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun parameter(
-                context: ScapesShaderParser.ShaderParameterDeclarationContext): ShaderParameter {
-            val type = type(context.declarator())
-            val idConstant = context.IntegerLiteral()
-            val id: Int
-            if (idConstant == null) {
-                id = -1
-            } else {
-                id = idConstant.text.toInt()
-            }
-            val name = context.Identifier().text
-            val property = context.property() ?: return ShaderParameter(type,
-                    id, name,
-                    BooleanExpression(true))
-            return ShaderParameter(type, id, name,
-                    PropertyExpression(property.Identifier().text))
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun type(context: ScapesShaderParser.DeclaratorContext): Type {
-            val field = context.declaratorField()
-            if (field != null) {
-                return type(field)
-            }
-            return type(context.declaratorArray())
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun type(context: ScapesShaderParser.DeclaratorFieldContext): Type {
-            var constant = false
-            for (child in context.children) {
-                if (child is TerminalNode) {
-                    when (child.getText()) {
-                        "const" -> constant = true
-                    }
-                }
-            }
-            val precisionSpecifier = context.precisionSpecifier()
-            val precision: Precision
-            if (precisionSpecifier == null) {
-                precision = Precision.mediump
-            } else {
-                precision = precision(precisionSpecifier)
-            }
-            return Type(type(context.typeSpecifier()), constant, precision)
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun type(context: ScapesShaderParser.DeclaratorArrayContext): Type {
-            var constant = false
-            for (child in context.children) {
-                if (child is TerminalNode) {
-                    when (child.getText()) {
-                        "const" -> constant = true
-                    }
-                }
-            }
-            val precisionSpecifier = context.precisionSpecifier()
-            val precision: Precision
-            if (precisionSpecifier == null) {
-                precision = Precision.mediump
-            } else {
-                precision = precision(precisionSpecifier)
-            }
-            return Type(type(context.typeSpecifier()),
-                    integer(context.integerConstant()), constant, precision)
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun type(
-                context: ScapesShaderParser.DeclaratorArrayUnsizedContext): Type {
-            var constant = false
-            for (child in context.children) {
-                if (child is TerminalNode) {
-                    when (child.getText()) {
-                        "const" -> constant = true
-                    }
-                }
-            }
-            val precisionSpecifier = context.precisionSpecifier()
-            val precision: Precision
-            if (precisionSpecifier == null) {
-                precision = Precision.mediump
-            } else {
-                precision = precision(precisionSpecifier)
-            }
-            return Type(type(context.typeSpecifier()), constant, precision)
-        }
-
-        @Throws(ShaderCompileException::class)
-        private fun type(context: ScapesShaderParser.TypeSpecifierContext): Types {
-            try {
-                return Types.valueOf(context.text)
-            } catch (e: IllegalArgumentException) {
-                throw ShaderCompileException(e, context)
-            }
-
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun statement(
-                context: ScapesShaderParser.StatementContext): Statement {
+        fun statement(context: ScapesShaderParser.StatementContext,
+                      scope: Scope): Statement {
             val expression = context.expressionStatement()
             if (expression != null) {
-                return ExpressionStatement(expression(expression))
+                return ExpressionStatement(
+                        ExpressionCompiler.expression(expression, scope))
             }
             val declaration = context.declaration()
             if (declaration != null) {
-                return declaration(declaration)
+                return declaration(declaration, scope)
             }
             val selection = context.selectionStatement()
             if (selection != null) {
                 val ifStatement = selection.ifStatement()
                 val elseStatement = selection.elseStatement() ?: return IfStatement(
-                        expression(ifStatement),
-                        statement(selection.statement()))
-                return IfStatement(expression(ifStatement),
-                        statement(selection.statement()),
-                        statement(elseStatement.statement()))
+                        ExpressionCompiler.expression(ifStatement, scope),
+                        statement(selection.statement(), scope))
+                return IfStatement(
+                        ExpressionCompiler.expression(ifStatement, scope),
+                        statement(selection.statement(), scope),
+                        statement(elseStatement.statement(), scope))
             }
             val rangeLoop = context.rangeLoopStatement()
             if (rangeLoop != null) {
                 val name = rangeLoop.Identifier().text
-                val start = integer(rangeLoop.integerConstant(0))
-                val end = integer(rangeLoop.integerConstant(1))
-                val statement = statement(rangeLoop.statement())
-                return LoopFixedStatement(name, start, end, statement)
+                val start = LiteralCompiler.integer(
+                        rangeLoop.integerConstant(0))
+                val end = LiteralCompiler.integer(rangeLoop.integerConstant(1))
+                val loopScope = Scope(scope)
+                val variable = loopScope.add(
+                        name) ?: throw ShaderCompileException(
+                        "Redeclaring variable: $name", rangeLoop.Identifier())
+                val statement = statement(rangeLoop.statement(), loopScope)
+                return LoopFixedStatement(variable, start, end, statement)
             }
-            return compound(context.compoundStatement().blockItemList())
+            return compound(context.compoundStatement().blockItemList(), scope)
         }
 
-        @Throws(ShaderCompileException::class)
-        fun declaration(
-                context: ScapesShaderParser.DeclarationContext): Statement {
+        fun declaration(context: ScapesShaderParser.DeclarationContext,
+                        scope: Scope): Statement {
             val field = context.declarationField()
             if (field != null) {
-                return declaration(field)
+                return declaration(field, scope)
             }
             val array = context.declarationArray()
             if (array != null) {
-                return declaration(array)
+                return declaration(array, scope)
             }
             throw ShaderCompileException("No declaration", context)
         }
 
-        @Throws(ShaderCompileException::class)
-        fun declaration(
-                context: ScapesShaderParser.DeclarationFieldContext): Statement {
-            val type = type(context.declaratorField())
-            return declaration(type, context.initDeclaratorFieldList())
+        fun declaration(context: ScapesShaderParser.DeclarationFieldContext,
+                        scope: Scope): Statement {
+            val type = TypeCompiler.type(context.declaratorField())
+            return declaration(type, context.initDeclaratorFieldList(), scope)
         }
 
-        @Throws(ShaderCompileException::class)
         fun declaration(type: Type,
-                        context: ScapesShaderParser.InitDeclaratorFieldListContext?): Statement {
+                        context: ScapesShaderParser.InitDeclaratorFieldListContext?,
+                        scope: Scope): Statement {
             var context = context
             val expressions = ArrayList<Declaration>()
             while (context != null) {
@@ -335,471 +223,94 @@ class ShaderCompiler {
                 val initializer = declarator.initializerField()
                 val name = declarator.Identifier().text
                 if (initializer == null) {
-                    expressions.add(Declaration(name))
+                    val variable = scope.add(
+                            name) ?: throw ShaderCompileException(
+                            "Redeclaring variable: $name", declarator)
+                    expressions.add(Declaration(variable))
                 } else {
-                    expressions.add(Declaration(name,
-                            expression(initializer.assignmentExpression())))
+                    val init = ExpressionCompiler.expression(
+                            initializer.assignmentExpression(), scope)
+                    val variable = scope.add(
+                            name) ?: throw ShaderCompileException(
+                            "Redeclaring variable: $name", declarator)
+                    expressions.add(Declaration(variable, init))
                 }
                 context = context.initDeclaratorFieldList()
             }
             return DeclarationStatement(type, expressions)
         }
 
-        @Throws(ShaderCompileException::class)
-        fun declaration(
-                context: ScapesShaderParser.DeclarationArrayContext): Statement {
+        fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
+                        scope: Scope): Statement {
             val list = context.initDeclaratorArrayList()
             if (list != null) {
                 val declarator = context.declaratorArray()
-                val type = type(declarator)
-                val length = integer(declarator.integerConstant())
-                return declaration(type, length, list)
+                val type = TypeCompiler.type(declarator)
+                val length = LiteralCompiler.integer(
+                        declarator.integerConstant())
+                return declaration(type, length, list, scope)
             }
-            val type = type(context.declaratorArrayUnsized())
+            val type = TypeCompiler.type(context.declaratorArrayUnsized())
             val initializer = context.initializerArray()
-            return ArrayUnsizedDeclarationStatement(type,
-                    context.Identifier().text, initializer(initializer))
+            val name = context.Identifier().text
+            val init = initializer(initializer, scope)
+            val variable = scope.add(name) ?: throw ShaderCompileException(
+                    "Redeclaring variable: $name", context)
+            return ArrayUnsizedDeclarationStatement(type, variable, init)
         }
 
         fun declaration(type: Type,
                         length: Expression,
-                        context: ScapesShaderParser.InitDeclaratorArrayListContext?): Statement {
+                        context: ScapesShaderParser.InitDeclaratorArrayListContext?,
+                        scope: Scope): Statement {
             var context = context
             val declarations = ArrayList<ArrayDeclaration>()
             while (context != null) {
                 val name = context.Identifier().text
-                declarations.add(ArrayDeclaration(name))
+                val variable = scope.add(name) ?: throw ShaderCompileException(
+                        "Redeclaring variable: $name", context)
+                declarations.add(ArrayDeclaration(variable))
                 context = context.initDeclaratorArrayList()
             }
             return ArrayDeclarationStatement(type, length, declarations)
         }
 
-        @Throws(ShaderCompileException::class)
-        fun initializer(
-                context: ScapesShaderParser.InitializerArrayContext): ArrayExpression {
+        fun initializer(context: ScapesShaderParser.InitializerArrayContext,
+                        scope: Scope): ArrayExpression {
             val list = context.initializerArrayList()
             if (list != null) {
-                return initializer(list)
+                return initializer(list, scope)
             }
             return PropertyArrayExpression(
                     context.property().Identifier().text)
         }
 
-        @Throws(ShaderCompileException::class)
-        fun initializer(
-                context: ScapesShaderParser.InitializerArrayListContext?): ArrayExpression {
+        fun initializer(context: ScapesShaderParser.InitializerArrayListContext?,
+                        scope: Scope): ArrayExpression {
             var context = context
             val expressions = ArrayList<Expression>()
             while (context != null) {
-                expressions.add(expression(context.assignmentExpression()))
+                expressions.add(ExpressionCompiler.expression(
+                        context.assignmentExpression(), scope))
                 context = context.initializerArrayList()
             }
             return ArrayLiteralExpression(expressions)
         }
 
-        @Throws(ShaderCompileException::class)
-        fun precision(
-                context: ScapesShaderParser.PrecisionSpecifierContext): Precision {
-            try {
-                return Precision.valueOf(context.text)
-            } catch (e: IllegalArgumentException) {
-                throw ShaderCompileException(e, context)
-            }
-
+        fun compound(context: ScapesShaderParser.BlockItemListContext,
+                     scope: Scope): CompoundStatement {
+            return CompoundStatement(block(context, Scope(scope)))
         }
 
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.IfStatementContext): Expression {
-            val expression = context.expression()
-            if (expression != null) {
-                return expression(expression)
-            }
-            throw ShaderCompileException("No expression found", context)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.ExpressionStatementContext): Expression {
-            val expression = context.expression() ?: return VoidExpression()
-            return expression(expression)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun compound(
-                context: ScapesShaderParser.BlockItemListContext): CompoundStatement {
-            return CompoundStatement(block(context))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun block(
-                context: ScapesShaderParser.BlockItemListContext?): StatementBlock {
+        fun block(context: ScapesShaderParser.BlockItemListContext?,
+                  scope: Scope): StatementBlock {
             var context = context
             val expressions = ArrayList<Statement>()
             while (context != null) {
-                expressions.add(statement(context.statement()))
+                expressions.add(statement(context.statement(), scope))
                 context = context.blockItemList()
             }
             return StatementBlock(expressions)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.AssignmentExpressionContext): Expression {
-            val condition = context.conditionalExpression()
-            if (condition == null) {
-                val type: AssignmentType
-                when (context.assignmentOperator().text) {
-                    "=" -> type = AssignmentType.ASSIGN
-                    "*=" -> type = AssignmentType.ASSIGN_MULTIPLY
-                    "/=" -> type = AssignmentType.ASSIGN_DIVIDE
-                    "%=" -> type = AssignmentType.ASSIGN_MODULUS
-                    "+=" -> type = AssignmentType.ASSIGN_PLUS
-                    "-=" -> type = AssignmentType.ASSIGN_MINUS
-                    "<<=" -> type = AssignmentType.ASSIGN_SHIFT_LEFT
-                    ">>=" -> type = AssignmentType.ASSIGN_SHIFT_RIGHT
-                    "&=" -> type = AssignmentType.ASSIGN_AND
-                    "|=" -> type = AssignmentType.ASSIGN_INCLUSIVE_OR
-                    "^=" -> type = AssignmentType.ASSIGN_EXCLUSIVE_OR
-                    else -> throw ShaderCompileException(
-                            "Invalid assignment operator" + context.assignmentOperator().text,
-                            context.assignmentOperator())
-                }
-                return AssignmentExpression(type,
-                        expression(context.unaryExpression()),
-                        expression(context.assignmentExpression()))
-            }
-            return expression(condition)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.ConditionalExpressionContext): Expression {
-            val condition = context.conditionalExpression() ?: return expression(
-                    context.logicalOrExpression())
-            return TernaryExpression(expression(context.logicalOrExpression()),
-                    expression(context.expression()),
-                    expression(context.conditionalExpression()))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.LogicalOrExpressionContext): Expression {
-            val expression = context.logicalAndExpression()
-            val next = context.logicalOrExpression() ?: return expression(
-                    expression)
-            return ConditionExpression(ConditionType.CONDITION_LOGICAL_OR,
-                    expression(next), expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.LogicalAndExpressionContext): Expression {
-            val expression = context.inclusiveOrExpression()
-            val next = context.logicalAndExpression() ?: return expression(
-                    expression)
-            return ConditionExpression(ConditionType.CONDITION_LOGICAL_AND,
-                    expression(next), expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.InclusiveOrExpressionContext): Expression {
-            val expression = context.exclusiveOrExpression()
-            val next = context.inclusiveOrExpression() ?: return expression(
-                    expression)
-            return ConditionExpression(ConditionType.CONDITION_INCLUSIVE_OR,
-                    expression(next), expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.ExclusiveOrExpressionContext): Expression {
-            val expression = context.andExpression()
-            val next = context.exclusiveOrExpression() ?: return expression(
-                    expression)
-            return ConditionExpression(ConditionType.CONDITION_EXCLUSIVE_OR,
-                    expression(next), expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.AndExpressionContext): Expression {
-            val expression = context.equalityExpression()
-            val next = context.andExpression() ?: return expression(expression)
-            return ConditionExpression(ConditionType.CONDITION_AND,
-                    expression(next), expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.EqualityExpressionContext): Expression {
-            val expression = context.relationalExpression()
-            val next = context.equalityExpression() ?: return expression(
-                    expression)
-            val type: ConditionType
-            when (context.children[1].text) {
-                "==" -> type = ConditionType.CONDITION_EQUALS
-                "!=" -> type = ConditionType.CONDITION_NOT_EQUALS
-                else -> throw ShaderCompileException(
-                        "Invalid conditional operator: " + context.children[1].text,
-                        context)
-            }
-            return ConditionExpression(type, expression(next),
-                    expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.RelationalExpressionContext): Expression {
-            val expression = context.shiftExpression()
-            val next = context.relationalExpression() ?: return expression(
-                    expression)
-            val type: ConditionType
-            when (context.children[1].text) {
-                "<" -> type = ConditionType.CONDITION_LESS
-                ">" -> type = ConditionType.CONDITION_GREATER
-                "<=" -> type = ConditionType.CONDITION_LESS_EQUAL
-                ">=" -> type = ConditionType.CONDITION_GREATER_EQUAL
-                else -> throw ShaderCompileException(
-                        "Invalid conditional operator: " + context.children[1].text,
-                        context)
-            }
-            return ConditionExpression(type, expression(next),
-                    expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.ShiftExpressionContext): Expression {
-            val expression = context.additiveExpression()
-            val next = context.shiftExpression() ?: return expression(
-                    expression)
-            val type: OperationType
-            when (context.children[1].text) {
-                "<<" -> type = OperationType.SHIFT_LEFT
-                ">>" -> type = OperationType.SHIFT_RIGHT
-                else -> throw ShaderCompileException(
-                        "Invalid operator: " + context.children[1].text,
-                        context)
-            }
-            return OperationExpression(type, expression(next),
-                    expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.AdditiveExpressionContext): Expression {
-            val expression = context.multiplicativeExpression()
-            val next = context.additiveExpression() ?: return expression(
-                    expression)
-            val type: OperationType
-            when (context.children[1].text) {
-                "+" -> type = OperationType.PLUS
-                "-" -> type = OperationType.MINUS
-                else -> throw ShaderCompileException(
-                        "Invalid operator: " + context.children[1].text,
-                        context)
-            }
-            return OperationExpression(type, expression(next),
-                    expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.MultiplicativeExpressionContext): Expression {
-            val expression = context.unaryExpression()
-            val next = context.multiplicativeExpression() ?: return expression(
-                    expression)
-            val type: OperationType
-            when (context.children[1].text) {
-                "*" -> type = OperationType.MULTIPLY
-                "/" -> type = OperationType.DIVIDE
-                "%" -> type = OperationType.MODULUS
-                else -> throw ShaderCompileException(
-                        "Invalid operator: " + context.children[1].text,
-                        context)
-            }
-            return OperationExpression(type, expression(next),
-                    expression(expression))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.UnaryExpressionContext): Expression {
-            val next = context.unaryExpression() ?: return expression(
-                    context.postfixExpression())
-            val unaryOperator = context.unaryOperator()
-            if (unaryOperator != null) {
-                val type: UnaryType
-                when (unaryOperator.text) {
-                    "+" -> type = UnaryType.POSITIVE
-                    "-" -> type = UnaryType.NEGATIVE
-                    "~" -> type = UnaryType.BIT_NOT
-                    "!" -> type = UnaryType.NOT
-                    else -> throw ShaderCompileException(
-                            "Invalid operator: " + context.children[0].text,
-                            context)
-                }
-                return UnaryExpression(type, expression(next))
-            }
-            val type: UnaryType
-            when (context.children[0].text) {
-                "++" -> type = UnaryType.INCREMENT_GET
-                "--" -> type = UnaryType.DECREMENT_GET
-                else -> throw ShaderCompileException(
-                        "Invalid operator: " + context.children[0].text,
-                        context)
-            }
-            return UnaryExpression(type, expression(next))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.PostfixExpressionContext): Expression {
-            val next = context.postfixExpression() ?: return expression(
-                    context.primaryExpression())
-            val array = context.expression()
-            if (array != null) {
-                return array(next, array)
-            }
-            val arguments = context.argumentExpressionList()
-            if (arguments != null) {
-                return function(next, arguments)
-            }
-            val field = context.Identifier()
-            if (field != null) {
-                return field(next, field)
-            }
-            val type: UnaryType
-            when (context.children[1].text) {
-                "++" -> type = UnaryType.GET_INCREMENT
-                "--" -> type = UnaryType.GET_DECREMENT
-                "(" -> return function(next, emptyList<Expression>())
-                else -> throw ShaderCompileException(
-                        "Invalid operator: " + context.children[1].text,
-                        context)
-            }
-            return UnaryExpression(type, expression(next))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun array(
-                array: ScapesShaderParser.PostfixExpressionContext,
-                index: ScapesShaderParser.ExpressionContext): Expression {
-            return ArrayAccessExpression(expression(array), expression(index))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun function(
-                function: ScapesShaderParser.PostfixExpressionContext,
-                arguments: ScapesShaderParser.ArgumentExpressionListContext?): Expression {
-            var arguments = arguments
-            val expressions = ArrayList<Expression>()
-            while (arguments != null) {
-                expressions.add(expression(arguments.assignmentExpression()))
-                arguments = arguments.argumentExpressionList()
-            }
-            return function(function, expressions)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun function(
-                function: ScapesShaderParser.PostfixExpressionContext,
-                arguments: List<Expression>): Expression {
-            val variable = expression(function)
-            if (variable !is VariableExpression) {
-                throw ShaderCompileException("Function call on member variable",
-                        function)
-            }
-            return FunctionExpression((variable as IdentifierExpression).name,
-                    arguments)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun field(
-                parent: ScapesShaderParser.PostfixExpressionContext,
-                name: TerminalNode): Expression {
-            return MemberExpression(name.text, expression(parent))
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.PrimaryExpressionContext): Expression {
-            val identifier = context.Identifier()
-            if (identifier != null) {
-                return VariableExpression(identifier.text)
-            }
-            val constant = context.constant()
-            if (constant != null) {
-                return constant(constant)
-            }
-            val property = context.property()
-            if (property != null) {
-                return PropertyExpression(property.Identifier().text)
-            }
-            return expression(context.expression())
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun expression(
-                context: ScapesShaderParser.ExpressionContext): Expression {
-            return expression(context.assignmentExpression())
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun integer(
-                context: ScapesShaderParser.IntegerConstantContext): IntegerExpression {
-            val literal = context.IntegerLiteral()
-            if (literal != null) {
-                return IntegerLiteralExpression(
-                        BigInteger(literal.text))
-            }
-            val property = context.property()
-            if (property != null) {
-                return IntegerPropertyExpression(
-                        property.Identifier().text)
-            }
-            throw ShaderCompileException("No constant found", context)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun floating(
-                context: ScapesShaderParser.FloatingConstantContext): Expression {
-            val literal = context.FloatingLiteral()
-            if (literal != null) {
-                return FloatingExpression(BigDecimal(literal.text))
-            }
-            val property = context.property()
-            if (property != null) {
-                return PropertyExpression(property.Identifier().text)
-            }
-            throw ShaderCompileException("No constant found", context)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun character(
-                context: ScapesShaderParser.CharacterConstantContext): Expression {
-            // TODO: Implement
-            throw ShaderCompileException("NYI", context)
-        }
-
-        @Throws(ShaderCompileException::class)
-        fun constant(
-                context: ScapesShaderParser.ConstantContext): Expression {
-            val integer = context.integerConstant()
-            if (integer != null) {
-                return integer(integer)
-            }
-            val floating = context.floatingConstant()
-            if (floating != null) {
-                return floating(floating)
-            }
-            val character = context.characterConstant()
-            if (character != null) {
-                return character(character)
-            }
-            throw ShaderCompileException("No constant found", context)
         }
 
         fun parser(source: String): ScapesShaderParser {

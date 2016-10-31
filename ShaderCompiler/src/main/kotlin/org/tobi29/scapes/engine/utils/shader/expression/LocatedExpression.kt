@@ -16,5 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class MemberExpression(val name: String,
-                       val member: Expression) : Expression()
+import org.antlr.v4.runtime.ParserRuleContext
+
+open class LocatedExpression(val line: Int,
+                             val column: Int) : Expression() {
+    constructor(context: ParserRuleContext) : this(context.start.line,
+            context.start.charPositionInLine)
+}

@@ -16,11 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class FunctionSignature(val name: String, val returned: Types,
-                        val returnedPrecision: Precision, vararg parameters: Parameter) {
-    val parameters: Array<out Parameter>
-
-    init {
-        this.parameters = parameters
-    }
-}
+class FunctionSignature(val name: String,
+                        val returned: Types,
+                        val returnedPrecision: Precision,
+                        vararg val parameters: Parameter)

@@ -16,22 +16,35 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
+import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.Token
+import org.antlr.v4.runtime.TokenStream
 import org.antlr.v4.runtime.tree.ParseTree
+import org.antlr.v4.runtime.tree.TerminalNode
 
 class ShaderCompileException : Exception {
-    constructor(message: String, context: ParseTree) : super(
-            message(message, context)) {
-    }
+    constructor(message: String, context: TerminalNode) : super(
+            message(message, context.symbol))
 
-    constructor(e: Exception, context: ParseTree) : super(
-            message(e.message ?: "", context), e) {
-    }
+    constructor(message: String, context: ParserRuleContext) : super(
+            message(message, context.start))
 
-    constructor(e: Exception) : super(e) {
-    }
+    constructor(message: String) : super(message)
+
+    constructor(e: Exception, context: ParserRuleContext) : super(
+            message(e.message ?: "", context.start), e)
+
+    constructor(e: Exception) : super(e)
 }
 
 private fun message(message: String,
-                    context: ParseTree): String {
-    return "${context.sourceInterval} -> $message"
+                    token: Token): String {
+    return "${token.line}:${token.charPositionInLine} -> $message"
+}
+
+private fun message(message: String,
+                    context: ParseTree,
+                    tokens: TokenStream): String {
+    val token = tokens[context.sourceInterval.a]
+    return message(message, token)
 }

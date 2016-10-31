@@ -16,18 +16,21 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-@SuppressWarnings("EnumeratedConstantNamingConvention")
 enum class Types {
     Void,
     Float,
+    Boolean,
     Int,
     Vector2,
+    Vector2b,
     Vector2i,
     Matrix2,
     Vector3,
+    Vector3b,
     Vector3i,
     Matrix3,
     Vector4,
+    Vector4b,
     Vector4i,
     Matrix4,
     Texture2

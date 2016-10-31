@@ -16,4 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class Uniform(val type: Type, val id: Int, val name: String)
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class Uniform(val type: Type,
+              val id: Int,
+              val identifier: Identifier)

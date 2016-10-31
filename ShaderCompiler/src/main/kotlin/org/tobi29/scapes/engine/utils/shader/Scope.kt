@@ -16,17 +16,26 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.shader.expression.Expression
+import java.util.*
 
-class ShaderGenerateException : Exception {
-    constructor(message: String, expression: Expression) : super(
-            message(message, expression))
+class Scope(vararg private val parents: Scope) {
+    private val map = HashMap<String, Identifier>()
 
-    constructor(e: Exception) : super(e)
-}
+    fun add(name: String): Identifier? {
+        if (map.containsKey(name)) {
+            return null
+        }
+        val variable = Identifier(name, this)
+        val old = map.put(name, variable)
+        assert(old == null)
+        return variable
+    }
 
-private fun message(message: String,
-                    expression: Expression): String {
-    val location = expression.location ?: return message
-    return "${location.x}:${location.y} -> $message"
+    operator fun get(name: String): Identifier? {
+        map[name]?.let { return it }
+        parents.forEach { parent ->
+            parent[name]?.let { return it }
+        }
+        return null
+    }
 }

@@ -16,4 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class ArrayDeclaration(val name: String)
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class ArrayDeclaration(val identifier: Identifier) : Expression()

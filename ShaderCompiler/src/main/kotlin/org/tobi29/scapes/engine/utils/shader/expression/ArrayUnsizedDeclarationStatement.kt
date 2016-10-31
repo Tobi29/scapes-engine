@@ -16,5 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class ArrayUnsizedDeclarationStatement(val type: Type, val name: String,
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class ArrayUnsizedDeclarationStatement(val type: Type,
+                                       val identifier: Identifier,
                                        val initializer: ArrayExpression) : Statement()

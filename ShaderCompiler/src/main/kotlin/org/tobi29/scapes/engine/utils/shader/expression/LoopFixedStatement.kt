@@ -16,5 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class LoopFixedStatement(val name: String, val start: IntegerExpression,
-                         val end: IntegerExpression, val statement: Statement) : Statement()
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class LoopFixedStatement(val index: Identifier,
+                         val start: IntegerExpression,
+                         val end: IntegerExpression,
+                         val statement: Statement) : Statement()

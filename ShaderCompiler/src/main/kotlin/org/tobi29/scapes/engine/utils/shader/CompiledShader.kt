@@ -25,6 +25,7 @@ class CompiledShader(declarations: List<Statement>,
                      val shaderVertex: ShaderFunction?,
                      val shaderFragment: ShaderFunction?,
                      val outputs: ShaderSignature?,
+                     val scope: Scope,
                      private val uniforms: Array<Uniform?>) {
     val declarations: List<Statement>
     val functions: List<Function>

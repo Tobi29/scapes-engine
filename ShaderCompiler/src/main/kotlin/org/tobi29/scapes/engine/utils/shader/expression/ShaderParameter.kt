@@ -16,5 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-class ShaderParameter(val type: Type, val id: Int, val name: String,
+import org.tobi29.scapes.engine.utils.shader.Identifier
+
+class ShaderParameter(val type: Type,
+                      val id: Int,
+                      val identifier: Identifier,
                       val available: Expression)

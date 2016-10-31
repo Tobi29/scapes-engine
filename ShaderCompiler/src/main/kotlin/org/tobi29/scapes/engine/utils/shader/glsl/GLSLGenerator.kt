@@ -18,142 +18,62 @@ package org.tobi29.scapes.engine.utils.shader.glsl
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.tobi29.scapes.engine.utils.join
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.ShaderCompileException
-import org.tobi29.scapes.engine.utils.shader.ShaderCompiler
-import org.tobi29.scapes.engine.utils.shader.ShaderGenerateException
+import org.tobi29.scapes.engine.utils.shader.*
 import org.tobi29.scapes.engine.utils.shader.expression.*
 import org.tobi29.scapes.engine.utils.shader.expression.Function
-import java.util.concurrent.ConcurrentHashMap
+import java.math.BigInteger
+import java.util.*
 
 class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private val output = StringBuilder(1024)
-    private val variables = ConcurrentHashMap<String, Expression>()
+    private val identifiers = HashMap<Identifier, Expression>()
     private var properties: Map<String, String>? = null
-    private var functions: List<Function>? = null
+    private var functionsSignatures = ArrayList<Pair<FunctionExportedSignature, String>>()
 
-    init {
-        variables.put("out_Position", GLSLExpression("gl_Position"))
-        variables.put("varying_Fragment", GLSLExpression("gl_FragCoord"))
-    }
-
-    private fun staticFunction(name: String,
-                               arguments: Array<String>): String {
-        val functions = functions ?: throw IllegalStateException(
-                "No shader program")
-        for (function in functions) {
-            if (function.signature.name != name) {
-                continue
-            }
-            if (function.signature.parameters.size != arguments.size) {
-                continue
-            }
-            return "${function.signature.name}(${join(*arguments)})"
+    private fun staticFunction(expression: FunctionExpression): String {
+        val name = expression.name
+        val args = Array(expression.args.size) {
+            expression(expression.args[it])
         }
-        when (arguments.size) {
-            0 -> return staticFunction(name)
-            1 -> return staticFunction(name, arguments[0])
-            2 -> return staticFunction(name, arguments[0], arguments[1])
-            3 -> return staticFunction(name, arguments[0], arguments[1],
-                    arguments[2])
-            4 -> return staticFunction(name, arguments[0], arguments[1],
-                    arguments[2], arguments[3])
+        for (function in functionsSignatures) {
+            if (function.first.name != name) {
+                continue
+            }
+            if (function.first.parameters.size != args.size) {
+                continue
+            }
+            return "${function.second}(${join(*args)})"
+        }
+        when (args.size) {
+            0 -> staticFunction(name)?.let { return it }
+            1 -> staticFunction(name, args[0])?.let { return it }
         }
         throw ShaderGenerateException(
-                "No functions for given arguments: " + name)
+                "No functions for given arguments: $name", expression)
     }
 
-    private fun staticFunction(name: String): String {
+    private fun staticFunction(name: String): String? {
         when (name) {
             "discard" -> return "discard"
         }
-        throw ShaderGenerateException("Unknown function: $name()")
+        return null
     }
 
     private fun staticFunction(name: String,
-                               argument0: String): String {
+                               argument0: String): String? {
         when (name) {
             "return" -> return "return " + argument0
-            "length" -> return "length($argument0)"
-            "floor" -> return "floor($argument0)"
-            "abs" -> return "abs($argument0)"
-            "sin" -> return "sin($argument0)"
-            "cos" -> return "cos($argument0)"
-            "float" -> return "float($argument0)"
-            "vector2" -> return "vec2($argument0)"
-            "vector3" -> return "vec3($argument0)"
-            "vector4" -> return "vec4($argument0)"
         }
-        throw ShaderGenerateException("Unknown function: $name(x)")
+        return null
     }
 
-    private fun staticFunction(name: String,
-                               argument0: String,
-                               argument1: String): String {
-        when (name) {
-            "texture" -> return "texture(" + argument0 + ", " +
-                    argument1 + ')'
-            "min" -> return "min(" + argument0 + ", " +
-                    argument1 + ')'
-            "max" -> return "max(" + argument0 + ", " +
-                    argument1 + ')'
-            "dot" -> return "dot(" + argument0 + ", " +
-                    argument1 + ')'
-            "mod" -> return "mod(" + argument0 + ", " +
-                    argument1 + ')'
-            "greaterThan" -> return "greaterThan(" + argument0 + ", " +
-                    argument1 + ')'
-            "greaterThanEqual" -> return "greaterThanEqual(" + argument0 + ", " +
-                    argument1 + ')'
-            "lessThan" -> return "lessThan(" + argument0 + ", " +
-                    argument1 + ')'
-            "lessThanEqual" -> return "lessThanEqual(" + argument0 + ", " +
-                    argument1 + ')'
-            "vector2" -> return "vec2(" + argument0 + ", " +
-                    argument1 + ')'
-            "vector3" -> return "vec3(" + argument0 + ", " +
-                    argument1 + ')'
-            "vector4" -> return "vec4(" + argument0 + ", " +
-                    argument1 + ')'
-        }
-        throw ShaderGenerateException(
-                "Unknown function: $name(x, y)")
-    }
-
-    private fun staticFunction(name: String,
-                               argument0: String,
-                               argument1: String,
-                               argument2: String): String {
-        when (name) {
-            "mix" -> return "mix(" + argument0 + ", " +
-                    argument1 + ", " + argument2 + ')'
-            "clamp" -> return "clamp(" + argument0 + ", " +
-                    argument1 + ", " + argument2 + ')'
-            "vector3" -> return "vec3(" + argument0 + ", " +
-                    argument1 + ", " + argument2 + ')'
-            "vector4" -> return "vec4(" + argument0 + ", " +
-                    argument1 + ", " + argument2 + ')'
-        }
-        throw ShaderGenerateException(
-                "Unknown function: $name(x, y, z)")
-    }
-
-    private fun staticFunction(name: String,
-                               argument0: String,
-                               argument1: String,
-                               argument2: String,
-                               argument3: String): String {
-        when (name) {
-            "vector4" -> return "vec4(" + argument0 + ", " +
-                    argument1 + ", " + argument2 + ", " + argument3 + ')'
-        }
-        throw ShaderGenerateException(
-                "Unknown function: $name(x, y, z, w)")
-    }
-
-    private fun variable(field: String): String {
-        val expression = variables[field] ?: return field
+    private fun variable(identifier: Identifier): String? {
+        val expression = identifiers[identifier] ?: return null
         return pack(expression)
+    }
+
+    private fun member(field: String): String {
+        return field
     }
 
     private fun expression(expression: Expression): String {
@@ -177,7 +97,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return integerExpression(expression)
         } else if (expression is FloatingExpression) {
             return floatingExpression(expression)
-        } else if (expression is VariableExpression) {
+        } else if (expression is IdentifierExpression) {
             return variableExpression(expression)
         } else if (expression is MemberExpression) {
             return memberExpression(expression)
@@ -188,8 +108,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         } else if (expression is VoidExpression) {
             return ""
         }
-        throw ShaderGenerateException(
-                "Unknown expression: " + expression.javaClass)
+        throw IllegalArgumentException(
+                "Unknown expression: ${expression.javaClass}")
     }
 
     private fun assignmentExpression(expression: AssignmentExpression): String {
@@ -210,8 +130,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             AssignmentType.ASSIGN_AND -> return "&="
             AssignmentType.ASSIGN_INCLUSIVE_OR -> return "|="
             AssignmentType.ASSIGN_EXCLUSIVE_OR -> return "^="
-            else -> throw ShaderGenerateException(
-                    "Unexpected expression type: " + type)
+            else -> throw IllegalArgumentException(
+                    "Unexpected expression type: $type")
         }
     }
 
@@ -233,8 +153,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             ConditionType.CONDITION_GREATER -> return ">"
             ConditionType.CONDITION_LESS_EQUAL -> return "<="
             ConditionType.CONDITION_GREATER_EQUAL -> return ">="
-            else -> throw ShaderGenerateException(
-                    "Unexpected expression type: " + type)
+            else -> throw IllegalArgumentException(
+                    "Unexpected expression type: $type")
         }
     }
 
@@ -252,8 +172,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             OperationType.MULTIPLY -> return "*"
             OperationType.DIVIDE -> return "/"
             OperationType.MODULUS -> return "%"
-            else -> throw ShaderGenerateException(
-                    "Unexpected expression type: " + type)
+            else -> throw IllegalArgumentException(
+                    "Unexpected expression type: $type")
         }
     }
 
@@ -268,8 +188,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             UnaryType.NEGATIVE -> return '-' + str
             UnaryType.BIT_NOT -> return '~' + str
             UnaryType.NOT -> return '!' + str
-            else -> throw ShaderGenerateException(
-                    "Unexpected expression type: " + expression.type)
+            else -> throw IllegalArgumentException(
+                    "Unexpected expression type: ${expression.type}")
         }
     }
 
@@ -280,10 +200,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun functionExpression(expression: FunctionExpression): String {
-        val args = Array(expression.args.size) {
-            expression(expression.args[it])
-        }
-        return staticFunction(expression.name, args)
+        return staticFunction(expression)
     }
 
     private fun arrayAccessExpression(expression: ArrayAccessExpression): String {
@@ -299,10 +216,11 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         if (expression is IntegerLiteralExpression) {
             return expression.value.toString()
         } else if (expression is IntegerPropertyExpression) {
-            return property(expression.key)
+            return property(expression.key) ?: throw ShaderGenerateException(
+                    "Unknown property: ${expression.key}", expression)
         }
-        throw ShaderGenerateException(
-                "Unknown integer: " + expression.javaClass)
+        throw IllegalArgumentException(
+                "Unknown integer: ${expression.javaClass}")
     }
 
     private fun floatingExpression(expression: FloatingExpression): String {
@@ -313,16 +231,18 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         return str
     }
 
-    private fun variableExpression(expression: VariableExpression): String {
-        return variable(expression.name)
+    private fun variableExpression(expression: IdentifierExpression): String {
+        return variable(expression.identifier) ?: throw ShaderGenerateException(
+                "Unknown identifier: ${expression.identifier.name}", expression)
     }
 
     private fun memberExpression(expression: MemberExpression): String {
-        return pack(expression.member) + '.' + variable(expression.name)
+        return pack(expression.member) + '.' + member(expression.name)
     }
 
     private fun propertyExpression(expression: PropertyExpression): String {
-        return property(expression.key)
+        return property(expression.key) ?: throw ShaderGenerateException(
+                "Unknown property: $expression.key", expression)
     }
 
     private fun glslExpression(expression: GLSLExpression): String {
@@ -351,17 +271,13 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun loopFixedStatement(expression: LoopFixedStatement,
                                    level: Int) {
-        val name = expression.name.toString()
         val start = integer(expression(expression.start))
         val end = integer(expression(expression.end))
-        if (variables.containsKey(name)) {
-            throw ShaderGenerateException("Duplicate field: " + name)
-        }
         for (i in start..end - 1) {
-            variables.put(name, GLSLExpression(i.toString()))
+            identifiers[expression.index] = IntegerLiteralExpression(
+                    BigInteger(i.toString()))
             statement(expression.statement, level)
         }
-        variables.remove(name)
     }
 
     private fun declarationStatement(expression: DeclarationStatement,
@@ -380,6 +296,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             } else {
                 str.append(", ")
             }
+            identifiers[declaration.identifier] = GLSLExpression(
+                    declaration.identifier.name)
             str.append(declaration(statement.type, declaration))
         }
         return str.toString()
@@ -387,7 +305,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun declaration(type: Type,
                             declaration: Declaration): String {
-        val str = identifier(type, declaration.name)
+        val str = identifier(type,
+                declaration.identifier) ?: throw ShaderGenerateException(
+                "Unknown identifier: ${declaration.identifier.name}",
+                declaration)
         if (declaration.initializer != null) {
             return str + " = " + expression(declaration.initializer)
         }
@@ -411,6 +332,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             } else {
                 str.append(", ")
             }
+            identifiers[declaration.identifier] = GLSLExpression(
+                    declaration.identifier.name)
             str.append(arrayDeclaration(statement.type, declaration))
         }
         return str.toString()
@@ -418,7 +341,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun arrayDeclaration(type: Type,
                                  declaration: ArrayDeclaration): String {
-        return identifier(type, declaration.name)
+        return identifier(type,
+                declaration.identifier) ?: throw ShaderGenerateException(
+                "Unknown identifier: ${declaration.identifier.name}",
+                declaration)
     }
 
     private fun arrayUnsizedDeclarationStatement(
@@ -430,10 +356,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         } else if (statement.initializer is ArrayLiteralExpression) {
             initializer = statement.initializer
         } else {
-            throw ShaderGenerateException(
-                    "Unknown array initializer: " + statement.javaClass)
+            throw IllegalArgumentException(
+                    "Unknown array initializer: ${statement.javaClass}")
         }
-        println(level, type(statement.type, statement.name) + '[' +
+        identifiers[statement.identifier] = GLSLExpression(
+                statement.identifier.name)
+        println(level, type(statement.type, statement.identifier) + '[' +
                 initializer.content.size + "] = " +
                 type(statement.type.type) + "[]" +
                 arrayExpression(initializer) + ';')
@@ -468,7 +396,13 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun pack(expression: Expression): String {
-        return '(' + expression(expression) + ')'
+        return "(${expression(expression)})"
+    }
+
+    private fun type(type: Type,
+                     identifier: Identifier): String? {
+        val expression = identifiers[identifier] ?: return null
+        return type(type, expression(expression))
     }
 
     private fun type(type: Type,
@@ -480,6 +414,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         when (version) {
             GLSLGenerator.Version.GLES_300 -> str.append(
                     precision(type.precision)).append(' ')
+            else -> Unit
         }
         str.append(type(type.type))
         str.append(' ')
@@ -500,14 +435,21 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         when (version) {
             GLSLGenerator.Version.GLES_300 -> qualifiers.append(
                     precision(type.precision)).append(' ')
+            else -> Unit
         }
         return qualifiers.toString() + type(type.type)
     }
 
     private fun identifier(type: Type,
+                           identifier: Identifier): String? {
+        val expression = identifiers[identifier] ?: return null
+        return identifier(type, expression(expression))
+    }
+
+    private fun identifier(type: Type,
                            identifier: String): String {
         if (type.array != null) {
-            return identifier + '[' + expression(type.array) + ']'
+            return "$identifier[${expression(type.array)}]"
         }
         return identifier
     }
@@ -516,18 +458,22 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         when (type) {
             Types.Void -> return "void"
             Types.Float -> return "float"
+            Types.Boolean -> return "bool"
             Types.Int -> return "int"
             Types.Vector2 -> return "vec2"
+            Types.Vector2b -> return "bvec2"
             Types.Vector2i -> return "ivec2"
             Types.Matrix2 -> return "mat2"
             Types.Vector3 -> return "vec3"
+            Types.Vector3b -> return "bvec3"
             Types.Vector3i -> return "ivec3"
             Types.Matrix3 -> return "mat3"
             Types.Vector4 -> return "vec4"
+            Types.Vector4b -> return "bvec4"
             Types.Vector4i -> return "ivec4"
             Types.Matrix4 -> return "mat4"
             Types.Texture2 -> return "sampler2D"
-            else -> throw ShaderGenerateException("Unexpected type: " + type)
+            else -> throw IllegalArgumentException("Unexpected type: $type")
         }
     }
 
@@ -536,22 +482,24 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             Precision.lowp -> return "lowp"
             Precision.mediump -> return "mediump"
             Precision.highp -> return "highp"
-            else -> throw ShaderGenerateException(
-                    "Unexpected precision: " + precision)
+            else -> throw IllegalArgumentException(
+                    "Unexpected precision: $precision")
         }
     }
 
     private fun property(expression: PropertyArrayExpression): ArrayLiteralExpression {
-        val source = property(expression.key)
+        val source = property(expression.key) ?: throw ShaderGenerateException(
+                "Unknown property: ${expression.key}", expression)
         try {
             val parser = ShaderCompiler.parser(source)
             val expression2 = ShaderCompiler.initializer(
-                    parser.initializerArrayList())
+                    parser.initializerArrayList(), Scope())
             if (expression2 is ArrayLiteralExpression) {
                 return expression2
             } else {
                 throw ShaderGenerateException(
-                        "Property has to be a static array expression")
+                        "Property has to be a static array expression",
+                        expression)
             }
         } catch (e: ParseCancellationException) {
             throw ShaderGenerateException(e)
@@ -561,12 +509,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     }
 
-    private fun property(name: String): String {
+    private fun property(name: String): String? {
         val properties = properties ?: throw IllegalStateException(
                 "No shader program")
-        val value = properties[name] ?: throw ShaderGenerateException(
-                "Unknown property: " + name)
-        return value
+        return properties[name]
     }
 
     private fun integer(value: String): Int {
@@ -575,56 +521,217 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         } catch (e: NumberFormatException) {
             throw ShaderGenerateException(e)
         }
-
     }
 
-    fun generateVertex(shader: CompiledShader,
+    private inline fun initBuiltIn(identifier: Identifier?,
+                                   init: (Identifier) -> Expression) {
+        identifier?.let { identifiers[it] = init(it) }
+    }
+
+    private fun init(scope: Scope) {
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("texture", Types.Vector4,
+                        TypeExported(Types.Int), TypeExported(Types.Vector2)),
+                        "texture"))
+        for ((type, typeBoolean) in arrayOf(
+                Pair(Types.Float, Types.Boolean),
+                Pair(Types.Vector2, Types.Vector2),
+                Pair(Types.Vector3, Types.Vector3),
+                Pair(Types.Vector4, Types.Vector4))) {
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("length", type,
+                            TypeExported(type)), "length"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("abs", type,
+                            TypeExported(type)), "abs"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("floor", type,
+                            TypeExported(type)), "floor"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("sin", type,
+                            TypeExported(type)), "sin"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("cos", type,
+                            TypeExported(type)), "cos"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("min", type,
+                            TypeExported(type),
+                            TypeExported(type)), "min"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("max", type,
+                            TypeExported(type),
+                            TypeExported(type)), "max"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("clamp", type,
+                            TypeExported(type),
+                            TypeExported(type),
+                            TypeExported(type)), "clamp"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("mix", type,
+                            TypeExported(type),
+                            TypeExported(type),
+                            TypeExported(type)), "mix"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("dot", type,
+                            TypeExported(type),
+                            TypeExported(type)), "dot"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("mod", type,
+                            TypeExported(type),
+                            TypeExported(type)), "mod"))
+        }
+
+        for ((type, typeBoolean) in arrayOf(
+                Pair(Types.Vector2, Types.Vector2),
+                Pair(Types.Vector3, Types.Vector3),
+                Pair(Types.Vector4, Types.Vector4))) {
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("greaterThan", typeBoolean,
+                            TypeExported(type),
+                            TypeExported(type)), "greaterThan"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("greaterThanEqual",
+                            typeBoolean,
+                            TypeExported(type),
+                            TypeExported(type)), "greaterThanEqual"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("lessThan", typeBoolean,
+                            TypeExported(type),
+                            TypeExported(type)), "lessThan"))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature("lessThanEqual", typeBoolean,
+                            TypeExported(type),
+                            TypeExported(type)), "lessThanEqual"))
+        }
+
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("float", Types.Float,
+                        TypeExported(Types.Float)), "float"))
+
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector2", Types.Vector2,
+                        TypeExported(Types.Float)), "vec2"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector2", Types.Vector2,
+                        TypeExported(Types.Vector2)), "vec2"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector2", Types.Vector2,
+                        TypeExported(Types.Float), TypeExported(Types.Float)),
+                        "vec2"))
+
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector3", Types.Vector3,
+                        TypeExported(Types.Float)), "vec3"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector3", Types.Vector3,
+                        TypeExported(Types.Float), TypeExported(Types.Float),
+                        TypeExported(Types.Float)), "vec3"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector3", Types.Vector3,
+                        TypeExported(Types.Float), TypeExported(Types.Vector2)),
+                        "vec3"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector3", Types.Vector3,
+                        TypeExported(Types.Vector2), TypeExported(Types.Float)),
+                        "vec3"))
+
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Float)), "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Float), TypeExported(Types.Float),
+                        TypeExported(Types.Float), TypeExported(Types.Float)),
+                        "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Float), TypeExported(Types.Float),
+                        TypeExported(Types.Vector2)), "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Float), TypeExported(Types.Vector2),
+                        TypeExported(Types.Float)), "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Float), TypeExported(Types.Vector3)),
+                        "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Vector2), TypeExported(Types.Float),
+                        TypeExported(Types.Float)), "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Vector2),
+                        TypeExported(Types.Vector2)), "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Vector3),
+                        TypeExported(Types.Float)), "vec4"))
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature("vector4", Types.Vector4,
+                        TypeExported(Types.Vector4)), "vec4"))
+
+        initBuiltIn(scope["discard"]) { GLSLExpression("discard") }
+        initBuiltIn(scope["return"]) { GLSLExpression("return") }
+        initBuiltIn(scope["out_Position"]) { GLSLExpression("gl_Position") }
+        initBuiltIn(scope["varying_Fragment"]) {
+            GLSLExpression("gl_FragCoord")
+        }
+    }
+
+    fun generateVertex(scope: Scope,
+                       shader: CompiledShader,
                        properties: Map<String, String>): String {
         if (output.length > 0) {
             output.delete(0, output.length - 1)
         }
+        init(scope)
         this.properties = properties
-        val functions = shader.functions
-        this.functions = functions
         val shaderVertex = shader.shaderVertex ?: throw IllegalStateException(
                 "No vertex shader")
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
                 "No fragment shader")
         val uniforms = shader.uniforms()
+        signatureIdentifiers(shaderVertex.signature)
+        signatureIdentifiers(shaderFragment.signature)
         header(uniforms, shaderVertex.signature)
         println()
         header(shaderFragment.signature)
         println()
         header(shader.declarations)
         println()
-        functions(functions)
+        functions(shader.functions)
         println()
         shader(shaderVertex)
+        identifiers.clear()
+        functionsSignatures.clear()
         return output.toString()
     }
 
-    fun generateFragment(shader: CompiledShader,
+    fun generateFragment(scope: Scope,
+                         shader: CompiledShader,
                          properties: Map<String, String>): String {
         if (output.length > 0) {
             output.delete(0, output.length - 1)
         }
+        init(scope)
         this.properties = properties
-        val functions = shader.functions
-        this.functions = functions
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
                 "No fragment shader")
         val outputs = shader.outputs ?: throw IllegalStateException(
                 "No outputs")
         val uniforms = shader.uniforms()
+        signatureIdentifiers(outputs)
         header(uniforms, shaderFragment.signature)
         println()
         header(outputs)
         println()
         header(shader.declarations)
         println()
-        functions(functions)
+        functions(shader.functions)
         println()
         shader(shaderFragment)
+        identifiers.clear()
         return output.toString()
     }
 
@@ -637,8 +744,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         println()
         for (uniform in uniforms) {
             if (uniform != null) {
+                identifiers[uniform.identifier] = GLSLExpression(
+                        uniform.identifier.name)
                 println(0, "uniform " + type(uniform.type) + ' ' +
-                        identifier(uniform.type, uniform.name) +
+                        identifier(uniform.type, uniform.identifier) +
                         ';')
             }
         }
@@ -647,13 +756,25 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             if (!expression(parameter.available).toBoolean()) {
                 continue
             }
+            identifiers[parameter.identifier] = GLSLExpression(
+                    parameter.identifier.name)
             if (parameter.id == -1) {
-                println(0, "in " + type(parameter.type, parameter.name) +
+                println(0, "in " + type(parameter.type, parameter.identifier) +
                         ';')
             } else {
                 println(0, "layout(location = " + parameter.id + ") in " +
-                        type(parameter.type, parameter.name) + ';')
+                        type(parameter.type, parameter.identifier) + ';')
             }
+        }
+    }
+
+    private fun signatureIdentifiers(output: ShaderSignature) {
+        for (parameter in output.parameters) {
+            if (!expression(parameter.available).toBoolean()) {
+                continue
+            }
+            identifiers[parameter.identifier] = GLSLExpression(
+                    parameter.identifier.name)
         }
     }
 
@@ -663,11 +784,11 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 continue
             }
             if (parameter.id == -1) {
-                println(0, "out " + type(parameter.type, parameter.name) +
+                println(0, "out " + type(parameter.type, parameter.identifier) +
                         ';')
             } else {
                 println(0, "layout(location = " + parameter.id + ") out " +
-                        type(parameter.type, parameter.name) + ';')
+                        type(parameter.type, parameter.identifier) + ';')
             }
         }
     }
@@ -681,22 +802,32 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun functions(functions: List<Function>) {
         for (function in functions) {
             val signature = function.signature
-            println(0, signature(signature))
+            functionsSignatures.add(Pair(FunctionExportedSignature(signature),
+                    signature.name))
+            println(0, signature(signature, signature.name))
             statement(function.compound, 0)
         }
     }
 
-    private fun signature(signature: FunctionSignature): String {
+    private fun signature(signature: FunctionSignature,
+                          name: String): String {
         val str = StringBuilder(24)
         str.append(precision(signature.returnedPrecision)).append(' ')
         str.append(type(signature.returned)).append(' ')
-        str.append(signature.name).append('(')
+        str.append(name).append('(')
         if (signature.parameters.size > 0) {
-            str.append(type(signature.parameters[0].type,
-                    signature.parameters[0].name))
-            for (i in 1..signature.parameters.size - 1) {
-                str.append(", ").append(type(signature.parameters[i].type,
-                        signature.parameters[i].name))
+            run {
+                val parameter = signature.parameters[0]
+                identifiers[parameter.identifier] = GLSLExpression(
+                        parameter.identifier.name)
+                str.append(type(parameter.type, parameter.identifier))
+            }
+            for (i in 1..signature.parameters.lastIndex) {
+                val parameter = signature.parameters[1]
+                identifiers[parameter.identifier] = GLSLExpression(
+                        parameter.identifier.name)
+                str.append(", ").append(
+                        type(parameter.type, parameter.identifier))
             }
         }
         str.append(')')
@@ -737,8 +868,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             println(level,
                     expression(statement.expression) + ';')
         } else {
-            throw ShaderGenerateException(
-                    "Unknown statement: " + statement.javaClass)
+            throw IllegalArgumentException(
+                    "Unknown statement: ${statement.javaClass}")
         }
     }
 

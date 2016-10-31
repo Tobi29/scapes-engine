@@ -107,10 +107,10 @@ internal object GLUtils : KLogging() {
                       properties: Map<String, String>): Pair<Int, IntArray> {
         try {
             val shaderGenerator = SHADER_GENERATOR.get()
-            val vertexSource = shaderGenerator.generateVertex(shader,
-                    properties)
-            val fragmentSource = shaderGenerator.generateFragment(shader,
-                    properties)
+            val fragmentSource = shaderGenerator.generateFragment(shader.scope,
+                    shader, properties)
+            val vertexSource = shaderGenerator.generateVertex(shader.scope,
+                    shader, properties)
             val vertex = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER)
             GLES20.glShaderSource(vertex, vertexSource)
             GLES20.glCompileShader(vertex)
@@ -136,7 +136,7 @@ internal object GLUtils : KLogging() {
                     uniformLocations[i] = -1
                 } else {
                     uniformLocations[i] = GLES20.glGetUniformLocation(program,
-                            uniform.name)
+                            uniform.identifier.name)
                 }
             }
             GLES20.glDetachShader(program, vertex)

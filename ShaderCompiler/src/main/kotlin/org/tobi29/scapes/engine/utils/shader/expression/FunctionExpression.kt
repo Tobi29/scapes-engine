@@ -16,13 +16,5 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-import java.util.Collections
-
-class FunctionExpression(name: String, args: List<Expression>) : IdentifierExpression(
-        name) {
-    val args: List<Expression>
-
-    init {
-        this.args = Collections.unmodifiableList(args)
-    }
-}
+class FunctionExpression(val name: String,
+                         val args: List<Expression>) : Expression()
