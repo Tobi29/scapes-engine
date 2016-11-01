@@ -38,7 +38,8 @@ import java.nio.ByteOrder
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class ContainerLWJGL3(protected val engine: ScapesEngine, protected val useGLES: Boolean = false) : ControllerDefault(), Container {
+abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
+                               protected val useGLES: Boolean = false) : ControllerDefault(), Container {
     protected val tasks = ConcurrentLinkedQueue<() -> Unit>()
     protected val mainThread: Thread
     protected val gl: GL

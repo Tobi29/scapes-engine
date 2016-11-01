@@ -25,7 +25,8 @@ import org.tobi29.scapes.engine.utils.io.process
 import java.io.IOException
 import java.nio.ByteBuffer
 
-class STBFont(internal val container: ContainerLWJGL3, internal val fontBuffer: ByteBuffer,
+class STBFont(internal val container: ContainerLWJGL3,
+              internal val fontBuffer: ByteBuffer,
               internal val info: STBTTFontinfo) : Font {
 
     override fun createGlyphRenderer(size: Int): GlyphRenderer {
@@ -41,7 +42,7 @@ class STBFont(internal val container: ContainerLWJGL3, internal val fontBuffer: 
                 fontBuffer.put(buffer)
                 fontBuffer.flip()
                 val infoBuffer = STBTTFontinfo.malloc()
-                if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer) != 0) {
+                if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer)) {
                     return STBFont(container, fontBuffer, infoBuffer)
                 }
             } catch (e: IOException) {
