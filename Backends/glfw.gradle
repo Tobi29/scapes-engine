@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-
 dependencies {
+    Closure natives = { module ->
+        nativesLinux32 "$module:natives-linux"
+        nativesLinux64 "$module:natives-linux"
+        nativesMacOSX "$module:natives-osx"
+        nativesWindows32 "$module:natives-windows"
+        nativesWindows64 "$module:natives-windows"
+    }
+
     compile project(":ScapesEngine:Backends:GLFWBackend")
-    nativesLinux32 "org.lwjgl:lwjgl-platform:3.0.0:natives-linux"
-    nativesLinux64 "org.lwjgl:lwjgl-platform:3.0.0:natives-linux"
-    nativesMacOSX "org.lwjgl:lwjgl-platform:3.0.0:natives-osx"
-    nativesWindows32 "org.lwjgl:lwjgl-platform:3.0.0:natives-windows"
-    nativesWindows64 "org.lwjgl:lwjgl-platform:3.0.0:natives-windows"
+    natives "org.lwjgl:lwjgl:3.1.0"
+    natives "org.lwjgl:lwjgl-nfd:3.1.0"
+    natives "org.lwjgl:lwjgl-openal:3.1.0"
+    natives "org.lwjgl:lwjgl-glfw:3.1.0"
+    natives "org.lwjgl:lwjgl-stb:3.1.0"
 }
