@@ -272,13 +272,17 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
     override fun message(messageType: Container.MessageType,
                          title: String,
                          message: String) {
-        // FIXME: No implementation
+        exec {
+            PlatformDialogs.message(window, messageType, title, message)
+        }
     }
 
     override fun dialog(title: String,
                         text: GuiController.TextFieldData,
                         multiline: Boolean) {
-        // FIXME: No implementation
+        exec {
+            PlatformDialogs.dialog(window, title, text, multiline)
+        }
     }
 
     override fun openFile(path: FilePath) {

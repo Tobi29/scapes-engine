@@ -17,116 +17,36 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
 import mu.KLogging
+import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.system.MemoryUtil
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
-import org.lwjgl.util.nfd.NFDPathSet
-import org.lwjgl.util.nfd.NativeFileDialog
+import org.lwjgl.util.tinyfd.TinyFileDialogs
+import org.tobi29.scapes.engine.Container
+import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.io.filesystem.read
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.mapNotNull
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
 import java.io.IOException
-import java.util.*
 import java.util.regex.Pattern
 
 object PlatformDialogs : KLogging() {
-    private val WILDCARD = Pattern.compile("\\*\\.(.*)")
+    private val SPLIT = Pattern.compile("\\|")
 
-    private fun filter(extensions: Array<Pair<String, String>>): String {
-        val filters = stream(*extensions).map { it.first }.map { filter ->
-            val matcher = WILDCARD.matcher(filter)
-            val builder = StringBuilder(filter.length)
-            while (matcher.find()) {
-                builder.append(matcher.group(1))
+    private inline fun <R> filter(extensions: Array<Pair<String, String>>,
+                                  block: (PointerBuffer) -> R): R {
+        MemoryStack.stackPush().use { stack ->
+            val buffer = stack.mallocPointer(extensions.size)
+            extensions.forEach { extension ->
+                val filter = extension.first
+                buffer.put(stack.UTF8(filter))
             }
-            builder.toString()
-        }.toTypedArray()
-        return filters.joinToString(",")
-    }
-
-    private fun single(filter: String): List<String> {
-        val buffer = MemoryUtil.memAllocPointer(1)
-        try {
-            val result = NativeFileDialog.NFD_OpenDialog(filter, null, buffer)
-            when (result) {
-                NativeFileDialog.NFD_OKAY -> {
-                    val path = listOf(buffer.getStringUTF8(0))
-                    NativeFileDialog.nNFDi_Free(buffer.get(0))
-                    return path
-                }
-                NativeFileDialog.NFD_CANCEL -> {
-                }
-                NativeFileDialog.NFD_ERROR -> logger.warn { "NFD Error: ${NativeFileDialog.NFD_GetError()}" }
-                else -> throw IllegalStateException(
-                        "Unknown dialog result: $result")
-            }
-        } finally {
-            MemoryUtil.memFree(buffer)
+            buffer.flip()
+            return block(buffer)
         }
-        return emptyList()
-    }
-
-    private fun multi(filter: String): List<String> {
-        NFDPathSet.calloc().use { pathSet ->
-            val result = NativeFileDialog.NFD_OpenDialogMultiple(filter, null,
-                    pathSet)
-            when (result) {
-                NativeFileDialog.NFD_OKAY -> {
-                    val count = NativeFileDialog.NFD_PathSet_GetCount(pathSet)
-                    try {
-                        // If someone manages this, I *think* we can consider
-                        // them to have their own problems besides this...
-                        // Also, this would probably run out of memory way
-                        // earlier.
-                        if (count > Int.MAX_VALUE) {
-                            throw IllegalStateException(
-                                    "User selected too many files: " + count)
-                        }
-                        val paths = ArrayList<String>(count.toInt())
-                        for (i in 0..count - 1) {
-                            paths.add(NativeFileDialog.NFD_PathSet_GetPath(
-                                    pathSet, i))
-                        }
-                        return paths
-                    } finally {
-                        NativeFileDialog.NFD_PathSet_Free(pathSet)
-                    }
-                }
-                NativeFileDialog.NFD_CANCEL -> {
-                }
-                NativeFileDialog.NFD_ERROR -> logger.warn { "NFD Error: ${NativeFileDialog.NFD_GetError()}" }
-                else -> throw IllegalStateException(
-                        "Unknown dialog result: $result")
-            }
-        }
-        return emptyList()
-    }
-
-    private fun save(filter: String): String? {
-        val savePath = MemoryUtil.memAllocPointer(1)
-        try {
-            val result = NativeFileDialog.NFD_SaveDialog(filter, null, savePath)
-            when (result) {
-                NativeFileDialog.NFD_OKAY -> {
-                    val path = savePath.getStringUTF8(0)
-                    NativeFileDialog.nNFDi_Free(savePath.get(0))
-                    return path
-                }
-                NativeFileDialog.NFD_CANCEL -> {
-                }
-                NativeFileDialog.NFD_ERROR -> logger.warn { "NFD Error: ${NativeFileDialog.NFD_GetError()}" }
-                else -> throw IllegalStateException(
-                        "Unknown dialog result: $result")
-            }
-        } finally {
-            MemoryUtil.memFree(savePath)
-        }
-        return null
     }
 
     fun openFileDialog(window: Long,
@@ -134,17 +54,15 @@ object PlatformDialogs : KLogging() {
                        multiple: Boolean,
                        result: (String, ReadableByteStream) -> Unit) {
         iconify(window) {
-            val filter = filter(extensions)
-            val paths: List<String>
-            if (multiple) {
-                paths = multi(filter)
-            } else {
-                paths = single(filter)
-            }
-            for (filePath in paths) {
-                val path = path(filePath).toAbsolutePath()
-                read(path) { stream ->
-                    result.invoke(path.fileName.toString(), stream)
+            filter(extensions) { filters ->
+                TinyFileDialogs.tinyfd_openFileDialog("Open File...", "",
+                        filters, null, multiple)?.mapNotNull {
+                    SPLIT.split(it)
+                }?.forEach { filePath ->
+                    val path = path(filePath).toAbsolutePath()
+                    read(path) { stream ->
+                        result(path.fileName.toString(), stream)
+                    }
                 }
             }
         }
@@ -153,8 +71,46 @@ object PlatformDialogs : KLogging() {
     fun saveFileDialog(window: Long,
                        extensions: Array<Pair<String, String>>): FilePath? {
         iconify(window) {
-            val filter = filter(extensions)
-            return save(filter)?.mapNotNull(::path)
+            filter(extensions) { filters ->
+                TinyFileDialogs.tinyfd_saveFileDialog("Save File...", "",
+                        filters, null)?.let { filePath ->
+                    return path(filePath).toAbsolutePath()
+                }
+            }
+        }
+        return null
+    }
+
+    fun message(window: Long,
+                messageType: Container.MessageType,
+                title: String,
+                message: String) {
+        iconify(window) {
+            val type = when (messageType) {
+                Container.MessageType.PLAIN -> "plain"
+                Container.MessageType.INFORMATION -> "plain"
+                Container.MessageType.WARNING -> "warning"
+                Container.MessageType.ERROR -> "error"
+                Container.MessageType.QUESTION -> "question"
+                else -> throw IllegalArgumentException(
+                        "Unknown message type: $messageType")
+            }
+            TinyFileDialogs.tinyfd_messageBox(title, message, "ok", type, true)
+        }
+    }
+
+    fun dialog(window: Long,
+               title: String,
+               text: GuiController.TextFieldData,
+               multiline: Boolean) {
+        iconify(window) {
+            TinyFileDialogs.tinyfd_inputBox(title, "",
+                    text.text)?.let { editText ->
+                if (text.text.length > 0) {
+                    text.text.delete(0, Int.MAX_VALUE)
+                }
+                text.text.append(editText)
+            }
         }
     }
 
