@@ -56,7 +56,7 @@ object PlatformDialogs : KLogging() {
             when (result) {
                 NativeFileDialog.NFD_OKAY -> {
                     val path = listOf(buffer.getStringUTF8(0))
-                    NativeFileDialog.nNFD_Free(buffer.get(0))
+                    NativeFileDialog.nNFDi_Free(buffer.get(0))
                     return path
                 }
                 NativeFileDialog.NFD_CANCEL -> {
@@ -114,7 +114,7 @@ object PlatformDialogs : KLogging() {
             when (result) {
                 NativeFileDialog.NFD_OKAY -> {
                     val path = savePath.getStringUTF8(0)
-                    NativeFileDialog.nNFD_Free(savePath.get(0))
+                    NativeFileDialog.nNFDi_Free(savePath.get(0))
                     return path
                 }
                 NativeFileDialog.NFD_CANCEL -> {
