@@ -129,6 +129,30 @@ inline fun <T> Spliterator<T>.stream(): Stream<T> {
 }
 
 /**
+ * Iterates through the given [Iterable], filters out null elements  and passes
+ * the remaining elements to the [consumer]
+ * @param consumer Consumer that the elements are passed to
+ * @param T Element type
+ */
+inline fun <T> Iterable<T?>.forEachNonNull(consumer: (T) -> Unit) {
+    for (entry in this) {
+        entry?.let { consumer(entry) }
+    }
+}
+
+/**
+ * Iterates through the given array, filters out null elements and passes the
+ * remaining elements to the [consumer]
+ * @param consumer Consumer that the elements are passed to
+ * @param T Element type
+ */
+inline fun <T> Array<T?>.forEachNonNull(consumer: (T) -> Unit) {
+    for (entry in this) {
+        entry?.let { consumer(entry) }
+    }
+}
+
+/**
  * Iterates through the given [Iterable], filters out elements using
  * the [filter] and passes the remaining elements to the [consumer]
  * @param filter The predicate to filter elements with
