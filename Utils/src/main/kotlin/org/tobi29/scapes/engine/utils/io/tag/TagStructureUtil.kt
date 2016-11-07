@@ -21,9 +21,15 @@ package org.tobi29.scapes.engine.utils.io.tag
 import java.util.*
 
 inline fun structure(block: TagStructure.() -> Unit): TagStructure {
-    val tagStructure = TagStructure()
-    block(tagStructure)
-    return tagStructure
+    val structure = TagStructure()
+    block(structure)
+    return structure
+}
+
+inline fun list(block: MutableList<Any>.() -> Unit): ArrayList<Any> {
+    val list = ArrayList<Any>()
+    block(list)
+    return list
 }
 
 inline fun TagStructure.setStructure(key: String) {
@@ -33,6 +39,112 @@ inline fun TagStructure.setStructure(key: String) {
 inline fun TagStructure.setStructure(key: String,
                                      block: TagStructure.() -> Unit) {
     setStructure(key, structure(block))
+}
+
+inline fun TagStructure.setList(key: String) {
+    setList(key, ArrayList<Any>())
+}
+
+inline fun TagStructure.setList(key: String,
+                                block: MutableList<Any>.() -> Unit) {
+    setList(key, list(block))
+}
+
+inline fun TagStructure.getList(key: String,
+                                block: (Any) -> Unit) {
+    getList(key)?.let { list ->
+        list.forEach { block(it) }
+    }
+}
+
+inline fun TagStructure.getListStructure(key: String,
+                                         block: (TagStructure) -> Unit) {
+    getList(key) { element ->
+        if (element is TagStructure) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListUnit(key: String,
+                                    block: (Unit) -> Unit) {
+    getList(key) { element ->
+        if (element is Unit) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListBoolean(key: String,
+                                       block: (Boolean) -> Unit) {
+    getList(key) { element ->
+        if (element is Boolean) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListByte(key: String,
+                                    block: (Byte) -> Unit) {
+    getList(key) { element ->
+        if (element is Byte) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListShort(key: String,
+                                     block: (Short) -> Unit) {
+    getList(key) { element ->
+        if (element is Short) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListInt(key: String,
+                                   block: (Int) -> Unit) {
+    getList(key) { element ->
+        if (element is Int) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListLong(key: String,
+                                    block: (Long) -> Unit) {
+    getList(key) { element ->
+        if (element is Long) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListFloat(key: String,
+                                     block: (Float) -> Unit) {
+    getList(key) { element ->
+        if (element is Float) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListDouble(key: String,
+                                      block: (Double) -> Unit) {
+    getList(key) { element ->
+        if (element is Double) {
+            block(element)
+        }
+    }
+}
+
+inline fun TagStructure.getListString(key: String,
+                                      block: (String) -> Unit) {
+    getList(key) { element ->
+        if (element is String) {
+            block(element)
+        }
+    }
 }
 
 inline fun TagStructure.getByte(key: String): Byte? {

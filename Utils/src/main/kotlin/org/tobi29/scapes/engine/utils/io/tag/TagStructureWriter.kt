@@ -44,15 +44,30 @@ interface TagStructureWriter {
     fun beginList(key: String)
 
     @Throws(IOException::class)
-    fun endListWidthTerminate()
+    fun beginList()
+
+    @Throws(IOException::class)
+    fun beginListStructure()
+
+    @Throws(IOException::class)
+    fun endListWithTerminate()
 
     @Throws(IOException::class)
     fun endListWithEmpty()
 
     @Throws(IOException::class)
+    fun endList()
+
+    @Throws(IOException::class)
     fun listEmpty(key: String)
 
     @Throws(IOException::class)
-    fun writeTag(key: String,
-                 tag: Any)
+    fun listEmpty()
+
+    @Throws(IOException::class)
+    fun writePrimitiveTag(key: String,
+                          tag: Any)
+
+    @Throws(IOException::class)
+    fun writePrimitiveTag(tag: Any)
 }

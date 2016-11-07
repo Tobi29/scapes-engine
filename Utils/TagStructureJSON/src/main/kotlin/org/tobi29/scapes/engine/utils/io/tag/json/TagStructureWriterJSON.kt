@@ -77,7 +77,15 @@ class TagStructureWriterJSON(streamOut: OutputStream, pretty: Boolean) : TagStru
         writer.writeStartArray(key)
     }
 
-    override fun endListWidthTerminate() {
+    override fun beginList() {
+        writer.writeStartArray()
+    }
+
+    override fun beginListStructure() {
+        writer.writeStartObject()
+    }
+
+    override fun endListWithTerminate() {
         writer.writeEnd()
         writer.writeEnd()
     }
@@ -88,20 +96,30 @@ class TagStructureWriterJSON(streamOut: OutputStream, pretty: Boolean) : TagStru
         writer.writeEnd()
     }
 
+    override fun endList() {
+        writer.writeEnd()
+    }
+
     override fun listEmpty(key: String) {
         writer.writeStartArray(key)
         writer.writeEnd()
     }
 
-    override fun writeTag(key: String,
-                          tag: Any) {
-        if (tag is Boolean) {
+    override fun listEmpty() {
+        writer.writeStartArray()
+        writer.writeEnd()
+    }
+
+    override fun writePrimitiveTag(key: String,
+                                   tag: Any) {
+        if (tag is Unit) {
+            writer.writeNull(key)
+        } else if (tag is Boolean) {
             writer.write(key, tag)
         } else if (tag is Byte) {
             writer.write(key, tag.toInt())
         } else if (tag is ByteArray) {
             writer.writeStartArray(key)
-            writer.write(8)
             for (value in tag) {
                 writer.write(value.toInt())
             }
@@ -121,6 +139,39 @@ class TagStructureWriterJSON(streamOut: OutputStream, pretty: Boolean) : TagStru
             writer.write(key, armor(tag.toDouble()))
         } else if (tag is String) {
             writer.write(key, tag)
+        } else {
+            throw IOException("Invalid type: " + tag.javaClass)
+        }
+    }
+
+    override fun writePrimitiveTag(tag: Any) {
+        if (tag is Unit) {
+            writer.writeNull()
+        } else if (tag is Boolean) {
+            writer.write(tag)
+        } else if (tag is Byte) {
+            writer.write(tag.toInt())
+        } else if (tag is ByteArray) {
+            writer.writeStartArray()
+            for (value in tag) {
+                writer.write(value.toInt())
+            }
+            writer.writeEnd()
+        } else if (tag is Short) {
+            writer.write(tag.toInt())
+        } else if (tag is Int) {
+            writer.write(tag)
+        } else if (tag is Long) {
+            writer.write(tag)
+        } else if (tag is Float) {
+            writer.write(armor(tag.toDouble()))
+        } else if (tag is Double) {
+            writer.write(armor(tag))
+        } else if (tag is Number) {
+            // TODO: Use BigDecimal instead?
+            writer.write(armor(tag.toDouble()))
+        } else if (tag is String) {
+            writer.write(tag)
         } else {
             throw IOException("Invalid type: " + tag.javaClass)
         }

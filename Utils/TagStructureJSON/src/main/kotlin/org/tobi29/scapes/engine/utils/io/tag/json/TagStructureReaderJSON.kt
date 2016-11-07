@@ -66,7 +66,7 @@ class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCl
                     tagStructure.setStructure(key, childStructure)
                 }
                 JsonParser.Event.START_ARRAY -> {
-                    readList(key, tagStructure)
+                    tagStructure.setList(key, readList())
                 }
                 JsonParser.Event.VALUE_NUMBER -> {
                     if (reader.isIntegralNumber) {
@@ -77,6 +77,9 @@ class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCl
                 }
                 JsonParser.Event.VALUE_STRING -> {
                     tagStructure.setString(key, reader.string)
+                }
+                JsonParser.Event.VALUE_NULL -> {
+                    tagStructure.setUnit(key)
                 }
                 JsonParser.Event.VALUE_FALSE -> {
                     tagStructure.setBoolean(key, false)
@@ -89,66 +92,42 @@ class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCl
         }
     }
 
-    fun readList(key: String,
-                 parentStructure: TagStructure) {
-        val next = reader.next()
-        when (next) {
-            JsonParser.Event.END_ARRAY -> {
-                parentStructure.setList(key, emptyList())
-            }
-            JsonParser.Event.START_OBJECT -> {
-                val list = ArrayList<TagStructure>()
-                readStructureList(list)
-                parentStructure.setList(key, list)
-            }
-            JsonParser.Event.VALUE_NUMBER -> {
-                val bits = reader.int
-                when (bits) {
-                    8 -> {
-                        parentStructure.setByteArray(key, *readByteArray())
-                    }
-                    else -> throw IOException(
-                            "Unknown array identifier: " + bits)
-                }
-            }
-            else -> throw IOException("Illegal contents of array: " + next)
-        }
-    }
-
-    fun readStructureList(list: MutableList<TagStructure>) {
+    fun readList(): List<Any> {
+        val list = ArrayList<Any>()
         while (true) {
-            val childStructure = TagStructure()
-            readStructure(childStructure)
-            list.add(childStructure)
             val event = reader.next()
-            if (event == JsonParser.Event.END_ARRAY) {
-                return
-            } else if (event != JsonParser.Event.START_OBJECT) {
-                throw IOException("Invalid event in list: $event")
-            }
-        }
-    }
-
-    fun readByteArray(): ByteArray {
-        var event = reader.next()
-        var array = ByteArray(1024)
-        var i = 0
-        while (event != JsonParser.Event.END_ARRAY) {
-            if (event == JsonParser.Event.VALUE_NUMBER) {
-                if (array.size == i) {
-                    val newArray = ByteArray(array.size shl 2)
-                    System.arraycopy(array, 0, newArray, 0, array.size)
-                    array = newArray
+            when (event) {
+                JsonParser.Event.START_OBJECT -> {
+                    val tagStructure = TagStructure()
+                    readStructure(tagStructure)
+                    list.add(tagStructure)
                 }
-                array[i++] = reader.int.toByte()
-            } else {
-                throw IOException("Illegal contents of byte array")
+                JsonParser.Event.START_ARRAY -> {
+                    list.add(readList())
+                }
+                JsonParser.Event.VALUE_NUMBER -> {
+                    if (reader.isIntegralNumber) {
+                        list.add(reader.long)
+                    } else {
+                        list.add(unarmor(reader.bigDecimal))
+                    }
+                }
+                JsonParser.Event.VALUE_STRING -> {
+                    list.add(reader.string)
+                }
+                JsonParser.Event.VALUE_NULL -> {
+                    list.add(Unit)
+                }
+                JsonParser.Event.VALUE_FALSE -> {
+                    list.add(false)
+                }
+                JsonParser.Event.VALUE_TRUE -> {
+                    list.add(true)
+                }
+                JsonParser.Event.END_ARRAY -> return list
+                else -> throw IOException("Unexpected event: $event")
             }
-            event = reader.next()
         }
-        val outArray = ByteArray(i)
-        System.arraycopy(array, 0, outArray, 0, outArray.size)
-        return outArray
     }
 
     private fun unarmor(value: BigDecimal): Double {

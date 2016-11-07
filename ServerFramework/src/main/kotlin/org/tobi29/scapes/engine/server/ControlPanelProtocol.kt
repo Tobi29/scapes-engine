@@ -25,6 +25,7 @@ import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream
 import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
+import org.tobi29.scapes.engine.utils.io.tag.getListStructure
 import org.tobi29.scapes.engine.utils.io.tag.structure
 import org.tobi29.scapes.engine.utils.stream
 import java.io.IOException
@@ -56,11 +57,8 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         addCommand("Commands-List") { payload ->
             val set = commands.keys
             send("Commands-Send", structure {
-                setList("Commands", set.stream().map { command ->
-                    structure {
-                        setString("Command", command)
-                    }
-                }.collect(Collectors.toList<TagStructure>()))
+                setList("Commands",
+                        set.stream().collect(Collectors.toList<String>()))
             })
         }
     }
@@ -313,15 +311,12 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
     private fun open(input: RandomReadableByteStream,
                      output: RandomWritableByteStream): Boolean {
         val tagStructure = TagStructureBinary.read(input)
-        tagStructure.getList("Commands")?.let { commands ->
-            for (commandStructure in commands) {
-                val command = commandStructure.getString(
-                        "Command") ?: throw IOException("Command without id")
-                val payload = commandStructure.getStructure(
-                        "Payload") ?: throw IOException(
-                        "Command without payload")
-                processCommand(command, payload)
-            }
+        tagStructure.getListStructure("Commands") { commandStructure ->
+            val command = commandStructure.getString(
+                    "Command") ?: throw IOException("Command without id")
+            val payload = commandStructure.getStructure(
+                    "Payload") ?: throw IOException("Command without payload")
+            processCommand(command, payload)
         }
         return false
     }

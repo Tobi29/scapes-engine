@@ -27,38 +27,63 @@ import java.util.*
 class TagStructureBinaryTest {
     private fun createTagStructure(): TagStructure {
         val random = Random()
-        val tagStructure = TagStructure()
-        // All primitive tags
-        tagStructure.setBoolean("Boolean", random.nextBoolean())
-        tagStructure.setByte("Byte", random.nextInt(0x100).toByte())
-        val array = ByteArray(1024)
-        random.nextBytes(array)
-        tagStructure.setByteArray("Byte[]", *array)
-        tagStructure.setShort("Short", random.nextInt(0x10000).toShort())
-        tagStructure.setInt("Integer", random.nextInt())
-        tagStructure.setLong("Long", random.nextLong())
-        tagStructure.setFloat("Float", random.nextFloat())
-        tagStructure.setDouble("Double", random.nextDouble())
-        tagStructure.setDouble("NaN", Double.NaN)
-        tagStructure.setDouble("PosInf", Double.POSITIVE_INFINITY)
-        tagStructure.setDouble("NegInf", Double.NEGATIVE_INFINITY)
-        tagStructure.setString("String", "◊Blah blah blah◊")
-        // Filled structure and list
-        val childStructure = tagStructure.structure("Structure")
-        for (i in 0..255) {
-            childStructure.setByte("Entry#" + i, i.toByte())
+        return structure {
+            // All primitive tags
+            setUnit("Unit")
+            setBoolean("Boolean", random.nextBoolean())
+            setByte("Byte", random.nextInt(0x100).toByte())
+            setShort("Short", random.nextInt(0x10000).toShort())
+            setInt("Integer", random.nextInt())
+            setLong("Long", random.nextLong())
+            setFloat("Float", random.nextFloat())
+            setDouble("Double", random.nextDouble())
+            setDouble("NaN", Double.NaN)
+            setDouble("PosInf", Double.POSITIVE_INFINITY)
+            setDouble("NegInf", Double.NEGATIVE_INFINITY)
+            val array = ByteArray(1024)
+            random.nextBytes(array)
+            setByteArray("Byte[]", *array)
+            setString("String", "◊Blah blah blah◊")
+            // Filled structure and list
+            setStructure("Structure") {
+                for (i in 0..255) {
+                    setByte("Entry#" + i, i.toByte())
+                }
+            }
+            setList("List") {
+                add(structure { setByte("Entry", 0) })
+                add(structure {})
+                add(list {
+                    add("Entry#1")
+                    add("Entry#2")
+                })
+                add(emptyList<Any>())
+                add(Unit)
+                add(0)
+                add("String")
+            }
+            setList("ListEndStructure") {
+                add(structure { setInt("Entry#1", 1) })
+                add(structure { setInt("Entry#2", 2) })
+            }
+            setList("ListEndList") {
+                add(list {
+                    add("Entry#1")
+                    add("Entry#2")
+                })
+                add(list {
+                    add("Entry#1")
+                    add("Entry#2")
+                })
+            }
+            setList("ListEndEmptyList") {
+                add(emptyList<Any>())
+                add(emptyList<Any>())
+            }
+            // Empty structure and list
+            structure("EmptyStructure")
+            setList("EmptyList")
         }
-        val childList = ArrayList<TagStructure>()
-        for (i in 0..255) {
-            val listEntry = TagStructure()
-            listEntry.setInt("Entry#" + i, i)
-            childList.add(listEntry)
-        }
-        tagStructure.setList("List", childList)
-        // Empty structure and list
-        tagStructure.structure("EmptyStructure")
-        tagStructure.setList("EmptyList", ArrayList<TagStructure>())
-        return tagStructure
     }
 
     @Test

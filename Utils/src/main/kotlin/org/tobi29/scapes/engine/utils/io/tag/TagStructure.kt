@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.utils.io.tag
 
 import java8.util.concurrent.ConcurrentMaps
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.forEachNonNull
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -59,7 +59,7 @@ class TagStructure {
         return getObject(key)
     }
 
-    fun getList(key: String): List<TagStructure>? {
+    fun getList(key: String): List<Any>? {
         return getObject(key)
     }
 
@@ -71,6 +71,10 @@ class TagStructure {
 
     val tagEntrySet: Set<Map.Entry<String, Any>>
         get() = Collections.unmodifiableSet(tags.entries)
+
+    fun setUnit(key: String) {
+        setObject(key, Unit)
+    }
 
     fun setBoolean(key: String,
                    value: Boolean): Boolean {
@@ -100,11 +104,9 @@ class TagStructure {
         return value
     }
 
-    fun setList(key: String,
-                value: List<TagStructure>): List<TagStructure> {
-        val list = StructureList(value.size)
-        list.addAll(value)
-        tags.put(key, list)
+    fun <T : Any> setList(key: String,
+                          value: List<T>): List<T> {
+        tags.put(key, Collections.unmodifiableList(value))
         return value
     }
 
@@ -139,30 +141,37 @@ class TagStructure {
     fun copy(): TagStructure {
         val tag = TagStructure()
         for ((key, value) in tags) {
-            if (value is TagStructure) {
-                tag.tags.put(key, value.copy())
-            } else if (value is StructureList) {
-                val list = StructureList(value.size)
-                for (child in value) {
-                    list.add(child.copy())
-                }
-                tag.tags.put(key, list)
-            } else if (value is ByteArray) {
-                val copy = ByteArray(value.size)
-                System.arraycopy(value, 0, copy, 0, value.size)
-                tag.tags.put(key, copy)
-            } else {
-                tag.tags.put(key, value)
-            }
+            tag.tags.put(key, copy(value))
         }
         return tag
     }
 
-    @Throws(IOException::class)
     fun write(writer: TagStructureWriter) {
         writer.begin(this)
         writeData(writer)
         writer.end()
+    }
+
+    override fun toString(): String {
+        val output = StringBuilder(tags.size * 64)
+        var first = true
+        output.append("{")
+        for ((key, value) in tags) {
+            if (first) {
+                first = false
+            } else {
+                output.append(", ")
+            }
+            output.append(key)
+            output.append(": ")
+            if (value is ByteArray) {
+                output.append(Arrays.toString(value))
+            } else {
+                output.append(value.toString())
+            }
+        }
+        output.append("}")
+        return output.toString()
     }
 
     override fun hashCode(): Int {
@@ -180,6 +189,11 @@ class TagStructure {
 
     override fun equals(other: Any?): Boolean {
         if (other is TagStructure) {
+            // This should check for tags missing in our structure that are in
+            // the other one
+            if (tags.size != other.tags.size) {
+                return false
+            }
             for ((key, value) in tags) {
                 if (value is ByteArray) {
                     val otherTag = other.tags[key]
@@ -201,7 +215,6 @@ class TagStructure {
         return false
     }
 
-    @Throws(IOException::class)
     private fun writeData(writer: TagStructureWriter) {
         for ((key, value) in tags) {
             if (value is TagStructure) {
@@ -212,44 +225,130 @@ class TagStructure {
                     value.writeData(writer)
                     writer.endStructure()
                 }
-            } else if (value is StructureList) {
-                var size = value.size
-                if (size > 0) {
-                    size--
-                    writer.beginList(key)
-                    for (i in 0..size - 1) {
-                        val structure = value[i]
-                        if (structure.tags.isEmpty()) {
-                            writer.structureEmpty()
-                        } else {
-                            writer.beginStructure()
-                            structure.writeData(writer)
-                            writer.endStructure()
-                        }
-                    }
-                    val structure = value[size]
-                    if (structure.tags.isEmpty()) {
-                        writer.endListWithEmpty()
-                    } else {
-                        writer.beginStructure()
-                        structure.writeData(writer)
-                        writer.endListWidthTerminate()
-                    }
-                } else {
-                    writer.listEmpty(key)
-                }
+            } else if (value is List<*>) {
+                @Suppress("UNCHECKED_CAST")
+                writeList(writer, key, value as List<Any>)
             } else {
-                writer.writeTag(key, value)
+                writer.writePrimitiveTag(key, value)
             }
         }
     }
 
-    class StructureList : ArrayList<TagStructure> {
-        internal constructor(size: Int = 10) : super(size) {
+    companion object {
+        fun <T : Any> copy(value: T): T {
+            if (value is TagStructure) {
+                @Suppress("UNCHECKED_CAST")
+                return value.copy() as T
+            } else if (value is List<*>) {
+                val list = ArrayList<Any>(value.size)
+                value.forEachNonNull { child ->
+                    if (child is TagStructure) {
+                        list.add(child.copy())
+                    } else {
+                        list.add(child)
+                    }
+                }
+                @Suppress("UNCHECKED_CAST")
+                return list as T
+            } else if (value is ByteArray) {
+                val copy = ByteArray(value.size)
+                System.arraycopy(value, 0, copy, 0, value.size)
+                @Suppress("UNCHECKED_CAST")
+                return copy as T
+            } else {
+                return value
+            }
         }
 
-        override fun clone(): Any {
-            return super.clone()
+        private fun writeList(writer: TagStructureWriter,
+                              key: String,
+                              list: List<Any>) {
+            var size = list.size
+            if (size > 0) {
+                size--
+                writer.beginList(key)
+                for (i in 0..size - 1) {
+                    val element = list[i]
+                    if (element is TagStructure) {
+                        if (element.tags.isEmpty()) {
+                            writer.structureEmpty()
+                        } else {
+                            writer.beginListStructure()
+                            element.writeData(writer)
+                            writer.endStructure()
+                        }
+                    } else if (element is List<*>) {
+                        @Suppress("UNCHECKED_CAST")
+                        writeList(writer, element as List<Any>)
+                    } else {
+                        writer.writePrimitiveTag(element)
+                    }
+                }
+                val element = list[size]
+                if (element is TagStructure) {
+                    if (element.tags.isEmpty()) {
+                        writer.endListWithEmpty()
+                    } else {
+                        writer.beginListStructure()
+                        element.writeData(writer)
+                        writer.endListWithTerminate()
+                    }
+                } else if (element is List<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    writeList(writer, element as List<Any>)
+                    writer.endList()
+                } else {
+                    writer.writePrimitiveTag(element)
+                    writer.endList()
+                }
+            } else {
+                writer.listEmpty(key)
+            }
+        }
+
+        private fun writeList(writer: TagStructureWriter,
+                              list: List<Any>) {
+            var size = list.size
+            if (size > 0) {
+                size--
+                writer.beginList()
+                for (i in 0..size - 1) {
+                    val element = list[i]
+                    if (element is TagStructure) {
+                        if (element.tags.isEmpty()) {
+                            writer.structureEmpty()
+                        } else {
+                            writer.beginListStructure()
+                            element.writeData(writer)
+                            writer.endStructure()
+                        }
+                    } else if (element is List<*>) {
+                        @Suppress("UNCHECKED_CAST")
+                        writeList(writer, element as List<Any>)
+                    } else {
+                        writer.writePrimitiveTag(element)
+                    }
+                }
+                val element = list[size]
+                if (element is TagStructure) {
+                    if (element.tags.isEmpty()) {
+                        writer.endListWithEmpty()
+                    } else {
+                        writer.beginListStructure()
+                        element.writeData(writer)
+                        writer.endListWithTerminate()
+                    }
+                } else if (element is List<*>) {
+                    @Suppress("UNCHECKED_CAST")
+                    writeList(writer, element as List<Any>)
+                    writer.endList()
+                } else {
+                    writer.writePrimitiveTag(element)
+                    writer.endList()
+                }
+            } else {
+                writer.listEmpty()
+            }
         }
     }
 }

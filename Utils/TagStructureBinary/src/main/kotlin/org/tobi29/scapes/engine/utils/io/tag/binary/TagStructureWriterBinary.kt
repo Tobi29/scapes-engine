@@ -85,7 +85,7 @@ class TagStructureWriterBinary(private val stream: WritableByteStream, private v
 
     @Throws(IOException::class)
     override fun structureEmpty() {
-        structureStream.put(TagStructureBinary.ID_STRUCTURE_TERMINATE.toInt())
+        structureStream.put(TagStructureBinary.ID_STRUCTURE_EMPTY.toInt())
     }
 
     @Throws(IOException::class)
@@ -101,12 +101,26 @@ class TagStructureWriterBinary(private val stream: WritableByteStream, private v
     }
 
     @Throws(IOException::class)
-    override fun endListWidthTerminate() {
+    override fun beginList() {
+        structureStream.put(TagStructureBinary.ID_LIST_BEGIN.toInt())
+    }
+
+    override fun beginListStructure() {
+        structureStream.put(TagStructureBinary.ID_STRUCTURE_BEGIN.toInt())
+    }
+
+    @Throws(IOException::class)
+    override fun endListWithTerminate() {
         structureStream.put(TagStructureBinary.ID_LIST_TERMINATE.toInt())
     }
 
     @Throws(IOException::class)
     override fun endListWithEmpty() {
+        structureStream.put(TagStructureBinary.ID_LIST_TERMINATE.toInt())
+    }
+
+    @Throws(IOException::class)
+    override fun endList() {
         structureStream.put(TagStructureBinary.ID_LIST_TERMINATE.toInt())
     }
 
@@ -117,9 +131,17 @@ class TagStructureWriterBinary(private val stream: WritableByteStream, private v
     }
 
     @Throws(IOException::class)
-    override fun writeTag(key: String,
-                          tag: Any) {
-        if (tag is Boolean) {
+    override fun listEmpty() {
+        structureStream.put(TagStructureBinary.ID_LIST_EMPTY.toInt())
+    }
+
+    @Throws(IOException::class)
+    override fun writePrimitiveTag(key: String,
+                                   tag: Any) {
+        if (tag is Unit) {
+            structureStream.put(TagStructureBinary.ID_TAG_UNIT.toInt())
+            TagStructureBinary.writeKey(key, structureStream, dictionary)
+        } else if (tag is Boolean) {
             structureStream.put(TagStructureBinary.ID_TAG_BOOLEAN.toInt())
             TagStructureBinary.writeKey(key, structureStream, dictionary)
             structureStream.put(if (tag) 1 else 0)
@@ -158,6 +180,44 @@ class TagStructureWriterBinary(private val stream: WritableByteStream, private v
         } else if (tag is String) {
             structureStream.put(TagStructureBinary.ID_TAG_STRING.toInt())
             TagStructureBinary.writeKey(key, structureStream, dictionary)
+            structureStream.putString(tag)
+        } else {
+            throw IOException("Invalid type: " + tag.javaClass)
+        }
+    }
+
+    override fun writePrimitiveTag(tag: Any) {
+        if (tag is Unit) {
+            structureStream.put(TagStructureBinary.ID_TAG_UNIT.toInt())
+        } else if (tag is Boolean) {
+            structureStream.put(TagStructureBinary.ID_TAG_BOOLEAN.toInt())
+            structureStream.put(if (tag) 1 else 0)
+        } else if (tag is Byte) {
+            structureStream.put(TagStructureBinary.ID_TAG_BYTE.toInt())
+            structureStream.put(tag.toInt())
+        } else if (tag is ByteArray) {
+            structureStream.put(TagStructureBinary.ID_TAG_BYTE_ARRAY.toInt())
+            structureStream.putByteArrayLong(tag)
+        } else if (tag is Short) {
+            structureStream.put(TagStructureBinary.ID_TAG_INT_16.toInt())
+            structureStream.putShort(tag.toInt())
+        } else if (tag is Int) {
+            structureStream.put(TagStructureBinary.ID_TAG_INT_32.toInt())
+            structureStream.putInt(tag)
+        } else if (tag is Long) {
+            structureStream.put(TagStructureBinary.ID_TAG_INT_64.toInt())
+            structureStream.putLong(tag)
+        } else if (tag is Float) {
+            structureStream.put(TagStructureBinary.ID_TAG_FLOAT_32.toInt())
+            structureStream.putFloat(tag)
+        } else if (tag is Double) {
+            structureStream.put(TagStructureBinary.ID_TAG_FLOAT_64.toInt())
+            structureStream.putDouble(tag)
+        } else if (tag is Number) {
+            structureStream.put(TagStructureBinary.ID_TAG_FLOAT_64.toInt())
+            structureStream.putDouble(tag.toDouble())
+        } else if (tag is String) {
+            structureStream.put(TagStructureBinary.ID_TAG_STRING.toInt())
             structureStream.putString(tag)
         } else {
             throw IOException("Invalid type: " + tag.javaClass)

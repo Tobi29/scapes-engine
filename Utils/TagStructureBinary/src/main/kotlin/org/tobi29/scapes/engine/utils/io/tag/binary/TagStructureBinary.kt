@@ -73,8 +73,12 @@ open class TagStructureBinary {
                 }
                 if (value is TagStructure) {
                     analyze(value, keys)
-                } else if (value is TagStructure.StructureList) {
-                    value.forEach { analyze(it, keys) }
+                } else if (value is List<*>) {
+                    value.forEach {
+                        if (it is TagStructure) {
+                            analyze(it, keys)
+                        }
+                    }
                 }
             }
         }
@@ -126,20 +130,22 @@ open class TagStructureBinary {
         internal val ID_LIST_TERMINATE: Byte = 0x21
         internal val ID_LIST_EMPTY: Byte = 0x22
         //  Tags
+        //   Unit
+        internal val ID_TAG_UNIT: Byte = 0x30
         //   Boolean
-        internal val ID_TAG_BOOLEAN: Byte = 0x30
-        //   Byte
-        internal val ID_TAG_BYTE: Byte = 0x40
-        internal val ID_TAG_BYTE_ARRAY: Byte = 0x41
+        internal val ID_TAG_BOOLEAN: Byte = 0x31
         //   Integer
-        internal val ID_TAG_INT_16: Byte = 0x50
-        internal val ID_TAG_INT_32: Byte = 0x51
-        internal val ID_TAG_INT_64: Byte = 0x52
+        internal val ID_TAG_BYTE: Byte = 0x40
+        internal val ID_TAG_INT_16: Byte = 0x41
+        internal val ID_TAG_INT_32: Byte = 0x42
+        internal val ID_TAG_INT_64: Byte = 0x43
         //   Float
-        internal val ID_TAG_FLOAT_32: Byte = 0x60
-        internal val ID_TAG_FLOAT_64: Byte = 0x61
+        internal val ID_TAG_FLOAT_32: Byte = 0x50
+        internal val ID_TAG_FLOAT_64: Byte = 0x51
+        //   Array
+        internal val ID_TAG_BYTE_ARRAY: Byte = 0x60
         //   String
-        internal val ID_TAG_STRING: Byte = 0x71
+        internal val ID_TAG_STRING: Byte = 0x70
         private val DATA_STREAM = ThreadLocal {
             ByteBufferStream(growth = { it + 1048576 })
         }
