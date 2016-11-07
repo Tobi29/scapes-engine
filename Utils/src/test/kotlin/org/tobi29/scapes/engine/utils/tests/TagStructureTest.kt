@@ -116,4 +116,29 @@ class TagStructureTest {
                 "Resulting structure after remapping test different from expected",
                 testStructure, tagStructure)
     }
+
+    @Test
+    fun testByteArrayConversion() {
+        val tagStructure = TagStructure()
+        tagStructure.setByteArray("Array", 0, 1, 2, 3, 4)
+        tagStructure.setList("List", listOf<Byte>(0, 1, 2, 3, 4))
+
+        Assert.assertEquals("Lists do not equal", listOf<Byte>(0, 1, 2, 3, 4),
+                tagStructure.getList("Array"))
+        Assert.assertArrayEquals("Arrays do not equal",
+                byteArrayOf(0, 1, 2, 3, 4), tagStructure.getByteArray("List"))
+    }
+
+    @Test
+    fun testByteArrayEquals() {
+        val tagStructure1 = TagStructure()
+        tagStructure1.setByteArray("Array", 0, 1, 2, 3, 4)
+        tagStructure1.setList("List", listOf<Byte>(0, 1, 2, 3, 4))
+        val tagStructure2 = TagStructure()
+        tagStructure2.setByteArray("List", 0, 1, 2, 3, 4)
+        tagStructure2.setList("Array", listOf<Byte>(0, 1, 2, 3, 4))
+
+        Assert.assertEquals("Structure do not equal", tagStructure1,
+                tagStructure2)
+    }
 }

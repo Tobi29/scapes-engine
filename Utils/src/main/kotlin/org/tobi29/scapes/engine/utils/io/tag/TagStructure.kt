@@ -33,7 +33,24 @@ class TagStructure {
     }
 
     fun getByteArray(key: String): ByteArray? {
-        return getObject(key)
+        val tag = tags[key]
+        if (tag is ByteArray) {
+            return tag
+        }
+        if (tag is List<*>) {
+            @Suppress("UNCHECKED_CAST")
+            val list = tag as List<Any>
+            val array = ByteArray(list.size)
+            var i = 0
+            list.forEach {
+                if (it !is Number) {
+                    return null
+                }
+                array[i++] = it.toByte()
+            }
+            return array
+        }
+        return null
     }
 
     fun getString(key: String): String? {
@@ -60,7 +77,17 @@ class TagStructure {
     }
 
     fun getList(key: String): List<Any>? {
-        return getObject(key)
+        val tag = tags[key]
+        if (tag is List<*>) {
+            @Suppress("UNCHECKED_CAST")
+            return tag as List<Any>
+        }
+        if (tag is ByteArray) {
+            val list = ArrayList<Byte>(tag.size)
+            tag.forEach { list.add(it) }
+            return Collections.unmodifiableList(list)
+        }
+        return null
     }
 
     fun <E : MultiTag.Readable> getMultiTag(key: String,
@@ -195,17 +222,41 @@ class TagStructure {
                 return false
             }
             for ((key, value) in tags) {
+                val otherTag = other.tags[key]
                 if (value is ByteArray) {
-                    val otherTag = other.tags[key]
                     if (otherTag is ByteArray) {
                         if (!Arrays.equals(value, otherTag)) {
                             return false
                         }
+                    } else if (otherTag is List<*>) {
+                        if (value.size != otherTag.size) {
+                            return false
+                        }
+                        val iterator = otherTag.iterator()
+                        for (element in value) {
+                            if (element != iterator.next()) {
+                                return false
+                            }
+                        }
                     } else {
                         return false
                     }
+                } else if (value is List<*>) {
+                    if (otherTag is ByteArray) {
+                        if (value.size != otherTag.size) {
+                            return false
+                        }
+                        val iterator = value.iterator()
+                        for (element in otherTag) {
+                            if (element != iterator.next()) {
+                                return false
+                            }
+                        }
+                    } else if (value != otherTag) {
+                        return false
+                    }
                 } else {
-                    if (value != other.tags[key]) {
+                    if (value != otherTag) {
                         return false
                     }
                 }
