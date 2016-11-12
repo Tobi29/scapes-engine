@@ -26,7 +26,7 @@ interface SQLDatabase {
     fun replace(table: String,
                 columns: Array<String>,
                 vararg rows: Array<Any>) {
-        replace(table, columns, Arrays.asList(*rows))
+        replace(table, columns, listOf(*rows))
     }
 
     fun insert(table: String,
@@ -36,7 +36,7 @@ interface SQLDatabase {
     fun insert(table: String,
                columns: Array<String>,
                vararg rows: Array<Any>) {
-        insert(table, columns, Arrays.asList(*rows))
+        insert(table, columns, listOf(*rows))
     }
 
     fun query(table: String,
@@ -54,7 +54,7 @@ interface SQLDatabase {
     fun query(table: String,
               columns: Array<String>,
               vararg matches: Pair<String, Any>): List<Array<Any?>> {
-        return query(table, columns, Arrays.asList(*matches))
+        return query(table, columns, listOf(*matches))
     }
 
     fun compileQuery(table: String,
@@ -64,7 +64,7 @@ interface SQLDatabase {
     fun compileQuery(table: String,
                      columns: Array<String>,
                      vararg matches: String): SQLQuery {
-        return compileQuery(table, columns, Arrays.asList(*matches))
+        return compileQuery(table, columns, listOf(*matches))
     }
 
     fun delete(table: String,
@@ -72,7 +72,7 @@ interface SQLDatabase {
 
     fun delete(table: String,
                vararg matches: Pair<String, Any>) {
-        delete(table, Arrays.asList(*matches))
+        delete(table, listOf(*matches))
     }
 
     fun createTable(name: String,
@@ -82,7 +82,7 @@ interface SQLDatabase {
     fun createTable(name: String,
                     primaryKey: String? = null,
                     vararg columns: SQLColumn) {
-        createTable(name, primaryKey, Arrays.asList(*columns))
+        createTable(name, primaryKey, listOf(*columns))
     }
 
     fun createTable(name: String,
@@ -99,7 +99,7 @@ interface SQLQuery {
     fun run(values: List<Any>): List<Array<Any?>>
 
     fun run(vararg values: Any): List<Array<Any?>> {
-        return run(Arrays.asList(*values))
+        return run(listOf(*values))
     }
 }
 
