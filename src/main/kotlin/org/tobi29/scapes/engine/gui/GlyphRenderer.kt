@@ -19,15 +19,16 @@ package org.tobi29.scapes.engine.gui
 import java.nio.ByteBuffer
 
 interface GlyphRenderer {
+    fun pageInfo(id: Int): GlyphRenderer.GlyphPage
+
     fun page(id: Int,
-             bufferSupplier: (Int) -> ByteBuffer): GlyphPage
+             bufferSupplier: (Int) -> ByteBuffer): ByteBuffer
 
     fun pageID(character: Char): Int
 
     fun pageCode(character: Char): Int
 
-    class GlyphPage(val buffer: ByteBuffer,
-                    val width: FloatArray,
+    class GlyphPage(val width: FloatArray,
                     val size: Int,
                     val tiles: Int,
                     val tileSize: Float)

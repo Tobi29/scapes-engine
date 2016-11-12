@@ -34,8 +34,7 @@ internal abstract class TextureFBO(engine: ScapesEngine, width: Int, height: Int
     fun resize(width: Int,
                height: Int,
                gl: GL) {
-        this.width = width
-        this.height = height
+        setBuffer(null, width, height)
         texture(gl)
     }
 

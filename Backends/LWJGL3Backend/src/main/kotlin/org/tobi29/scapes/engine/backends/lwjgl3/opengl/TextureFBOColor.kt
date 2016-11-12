@@ -38,8 +38,7 @@ internal class TextureFBOColor(engine: ScapesEngine, width: Int, height: Int,
         }
         store(gl)
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER,
-                GL30.GL_COLOR_ATTACHMENT0 + i, GL11.GL_TEXTURE_2D, textureID,
-                0)
+                GL30.GL_COLOR_ATTACHMENT0 + i, GL11.GL_TEXTURE_2D, textureID, 0)
     }
 
     override fun texture(gl: GL) {
@@ -48,17 +47,15 @@ internal class TextureFBOColor(engine: ScapesEngine, width: Int, height: Int,
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
         if (hdr) {
             GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
-                    if (alpha) GL30.GL_RGBA16F else GL30.GL_RGB16F, width,
-                    height, 0,
+                    if (alpha) GL30.GL_RGBA16F else GL30.GL_RGB16F,
+                    buffer.width, buffer.height, 0,
                     if (alpha) GL11.GL_RGBA else GL11.GL_RGB,
-                    GL30.GL_HALF_FLOAT,
-                    null as ByteBuffer?)
+                    GL30.GL_HALF_FLOAT, null as ByteBuffer?)
         } else {
             GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
-                    if (alpha) GL11.GL_RGBA else GL11.GL_RGB, width, height, 0,
-                    if (alpha) GL11.GL_RGBA else GL11.GL_RGB,
-                    GL11.GL_UNSIGNED_BYTE,
-                    null as ByteBuffer?)
+                    if (alpha) GL11.GL_RGBA else GL11.GL_RGB, buffer.width,
+                    buffer.height, 0, if (alpha) GL11.GL_RGBA else GL11.GL_RGB,
+                    GL11.GL_UNSIGNED_BYTE, null as ByteBuffer?)
         }
     }
 }

@@ -31,9 +31,8 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
                               buffer: ByteBuffer?, protected val mipmaps: Int, minFilter: TextureFilter,
                               magFilter: TextureFilter, wrapS: TextureWrap, wrapT: TextureWrap) : Texture {
     protected val dirtyFilter = AtomicBoolean(true)
+    protected val dirtyBuffer = AtomicBoolean(true)
     protected var textureID = 0
-    protected var width = -1
-    protected var height = -1
     protected var minFilter = TextureFilter.NEAREST
     protected var magFilter = TextureFilter.NEAREST
     protected var wrapS = TextureWrap.REPEAT
@@ -42,11 +41,9 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
     protected var markAsDisposed = false
     protected var used: Long = 0
     protected var detach: Function0<Unit>? = null
-    protected var buffers: Array<ByteBuffer?> = emptyArray()
+    protected var buffer = TextureBuffer(emptyArray(), width, height)
 
     init {
-        this.width = width
-        this.height = height
         this.minFilter = minFilter
         this.magFilter = magFilter
         this.wrapS = wrapS
@@ -115,11 +112,11 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
     }
 
     override fun width(): Int {
-        return width
+        return buffer.width
     }
 
     override fun height(): Int {
-        return height
+        return buffer.height
     }
 
     override fun setWrap(wrapS: TextureWrap,
@@ -137,15 +134,24 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
     }
 
     override fun buffer(i: Int): ByteBuffer? {
-        return buffers[i]
+        return buffer.buffers[i]
     }
 
     override fun setBuffer(buffer: ByteBuffer?) {
-        buffers = generateMipMaps(buffer, { engine.allocate(it) }, width,
-                height, mipmaps, minFilter === TextureFilter.LINEAR)
+        setBuffer(buffer, this.buffer.width, this.buffer.height)
+    }
+
+    override fun setBuffer(buffer: ByteBuffer?,
+                           width: Int,
+                           height: Int) {
+        this.buffer = buffer(buffer, width, height)
+        dirtyBuffer.set(true)
     }
 
     override fun ensureStored(gl: GL): Boolean {
+        if (dirtyBuffer.getAndSet(false) && isStored) {
+            texture(gl)
+        }
         if (!isStored) {
             store(gl)
         }
@@ -192,20 +198,35 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
         assert(isStored)
         gl.check()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
-        if (buffers.size > 1) {
+        if (buffer.buffers.size > 1) {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL,
-                    buffers.size - 1)
-            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width,
-                    height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffers[0])
-            for (i in 1..buffers.size - 1) {
+                    buffer.buffers.size - 1)
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, buffer.width,
+                    buffer.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+                    buffer.buffers[0])
+            for (i in 1..buffer.buffers.size - 1) {
                 GL11.glTexImage2D(GL11.GL_TEXTURE_2D, i, GL11.GL_RGBA,
-                        max(width shr i, 1),
-                        max(height shr i, 1), 0, GL11.GL_RGBA,
-                        GL11.GL_UNSIGNED_BYTE, buffers[i])
+                        max(buffer.width shr i, 1),
+                        max(buffer.height shr i, 1), 0, GL11.GL_RGBA,
+                        GL11.GL_UNSIGNED_BYTE, buffer.buffers[i])
             }
         } else {
-            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width,
-                    height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffers[0])
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, buffer.width,
+                    buffer.height, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+                    buffer.buffers[0])
         }
     }
+
+    private fun buffer(buffer: ByteBuffer?,
+                       width: Int,
+                       height: Int): TextureBuffer {
+        return TextureBuffer(
+                generateMipMaps(buffer, { engine.allocate(it) }, width,
+                        height, mipmaps, minFilter === TextureFilter.LINEAR),
+                width, height)
+    }
+
+    protected class TextureBuffer(val buffers: Array<ByteBuffer?>,
+                                  val width: Int,
+                                  val height: Int)
 }

@@ -109,7 +109,6 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
                 text.length)
     }
 
-    @SuppressWarnings("AccessToStaticFieldLockedOnInstance")
     @Synchronized fun render(output: MeshOutput,
                              text: String?,
                              width: Float,
@@ -125,8 +124,9 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
         if (size <= 0) {
             return EMPTY_TEXT_INFO
         }
-        val pages = Maps.computeIfAbsent(pageCache, size
-        ) { key -> GlyphPages(font.createGlyphRenderer(size)) }
+        val pages = Maps.computeIfAbsent(pageCache, size) {
+            GlyphPages(font.createGlyphRenderer(size))
+        }
         var textWidth = 0.0f
         var length = 0
         var xx = 0.0f
@@ -178,19 +178,23 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
                     val tileSize: Float)
 
     private inner class GlyphPages(val renderer: GlyphRenderer) {
-        private var pages = EMPTY_GLYPH_PAGE
+        private var pages = emptyArray<GlyphPage?>()
 
         operator fun get(id: Int): GlyphPage {
             if (id < pages.size) {
                 pages[id]?.let { return it }
             }
             var timestamp = System.currentTimeMillis()
-            val page = renderer.page(id, { engine.allocate(it) })
-            val imageSize = page.size
-            val texture = engine.graphics.createTexture(imageSize, imageSize,
-                    page.buffer, 0,
-                    TextureFilter.LINEAR, TextureFilter.LINEAR,
+            val pageInfo = renderer.pageInfo(id)
+            val imageSize = pageInfo.size
+            val texture = engine.graphics.createTexture(1, 1,
+                    engine.allocate(4), 0, TextureFilter.LINEAR,
+                    TextureFilter.LINEAR,
                     TextureWrap.CLAMP, TextureWrap.CLAMP)
+            engine.taskExecutor.runTask({
+                texture.setBuffer(renderer.page(id, { engine.allocate(it) }),
+                        imageSize, imageSize)
+            }, "Render-Glyph-Page")
             timestamp = System.currentTimeMillis() - timestamp
             logger.debug { "Rendered font page in ${timestamp}ms" }
             if (pages.size <= id) {
@@ -198,8 +202,8 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
                 System.arraycopy(pages, 0, newPages, 0, pages.size)
                 pages = newPages
             }
-            val glyphPage = GlyphPage(texture, page.width, page.tiles,
-                    page.tileSize)
+            val glyphPage = GlyphPage(texture, pageInfo.width, pageInfo.tiles,
+                    pageInfo.tileSize)
             pages[id] = glyphPage
             return glyphPage
         }
@@ -207,7 +211,6 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
 
     companion object : KLogging() {
         val EMPTY_TEXT_INFO = TextInfo("", Vector2d.ZERO, 0)
-        private val EMPTY_GLYPH_PAGE = arrayOfNulls<GlyphPage>(0)
 
         fun to(renderer: GuiRenderBatch,
                r: Float,

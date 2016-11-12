@@ -39,4 +39,8 @@ interface Texture : GraphicsObject {
     fun buffer(i: Int): ByteBuffer?
 
     fun setBuffer(buffer: ByteBuffer?)
+
+    fun setBuffer(buffer: ByteBuffer?,
+                  width: Int,
+                  height: Int)
 }

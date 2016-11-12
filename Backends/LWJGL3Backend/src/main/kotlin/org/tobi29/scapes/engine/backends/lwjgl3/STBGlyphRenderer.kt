@@ -24,7 +24,8 @@ import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.sqr
 import java.nio.ByteBuffer
 
-class STBGlyphRenderer(private val font: STBFont, size: Int) : GlyphRenderer {
+class STBGlyphRenderer(private val font: STBFont,
+                       size: Int) : GlyphRenderer {
     private val tiles: Int
     private val pageTiles: Int
     private val pageTileBits: Int
@@ -37,7 +38,17 @@ class STBGlyphRenderer(private val font: STBFont, size: Int) : GlyphRenderer {
 
     init {
         this.size = size.toFloat()
-        val tileBits = 3
+        val tileBits = if (size < 16) {
+            4
+        } else if (size < 32) {
+            3
+        } else if (size < 64) {
+            2
+        } else if (size < 128) {
+            1
+        } else {
+            0
+        }
         tiles = 1 shl tileBits
         pageTileBits = tileBits shl 1
         pageTileMask = (1 shl pageTileBits) - 1
@@ -49,13 +60,31 @@ class STBGlyphRenderer(private val font: STBFont, size: Int) : GlyphRenderer {
                 size * 1.38f)
     }
 
+    override fun pageInfo(id: Int): GlyphRenderer.GlyphPage {
+        val stack = MemoryStack.stackGet()
+        stack.push {
+            MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
+                val width = FloatArray(pageTiles)
+                val offset = id shl pageTileBits
+                val xb = stack.mallocInt(1)
+                val yb = stack.mallocInt(1)
+                for (i in 0..pageTiles - 1) {
+                    val c = i + offset
+                    STBTruetype.stbtt_GetCodepointHMetrics(font.info, c, xb, yb)
+                    width[i] = xb.get(0) * scale / size / 1.3f
+                }
+                return GlyphRenderer.GlyphPage(width, imageSize, tiles,
+                        tileSize)
+            }
+        }
+    }
+
     @Synchronized override fun page(id: Int,
-                                    bufferSupplier: (Int) -> ByteBuffer): GlyphRenderer.GlyphPage {
+                                    bufferSupplier: (Int) -> ByteBuffer): ByteBuffer {
         val stack = MemoryStack.stackGet()
         stack.push {
             MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
                 val buffer = bufferSupplier(imageSize * imageSize shl 2)
-                val width = FloatArray(pageTiles)
                 var i = 0
                 val offset = id shl pageTileBits
                 val xb = stack.mallocInt(1)
@@ -66,15 +95,12 @@ class STBGlyphRenderer(private val font: STBFont, size: Int) : GlyphRenderer {
                     val yy = y * glyphSize
                     for (x in 0..tiles - 1) {
                         val xx = x * glyphSize
-                        val c = (i + offset).toChar()
-                        STBTruetype.stbtt_GetCodepointHMetrics(font.info,
-                                c.toInt(),
-                                xb, yb)
-                        val widthX = xb.get(0) * scale
+                        val c = i + offset
+                        STBTruetype.stbtt_GetCodepointHMetrics(font.info, c, xb,
+                                yb)
                         if (!Character.isISOControl(c)) {
-                            STBTruetype.stbtt_GetCodepointBox(font.info,
-                                    c.toInt(),
-                                    xb, yb, wb, hb)
+                            STBTruetype.stbtt_GetCodepointBox(font.info, c, xb,
+                                    yb, wb, hb)
                             val offsetX = size * 0.25f + xb.get(0) * scale
                             val offsetY = size * 1.5f - hb.get(0) * scale
                             // Has to be floor to align glyphs properly
@@ -90,7 +116,7 @@ class STBGlyphRenderer(private val font: STBFont, size: Int) : GlyphRenderer {
                             STBTruetype.stbtt_MakeCodepointBitmap(font.info,
                                     glyphBuffer,
                                     glyphSize, glyphSize, glyphSize, scale,
-                                    scale, c.toInt())
+                                    scale, c)
                             for (yyy in 0..sizeY - 1) {
                                 buffer.position(
                                         (renderY + yyy) * imageSize + renderX shl 2)
@@ -105,12 +131,11 @@ class STBGlyphRenderer(private val font: STBFont, size: Int) : GlyphRenderer {
                             }
                             glyphBuffer.rewind()
                         }
-                        width[i++] = widthX / size / 1.3f
+                        i++
                     }
                 }
                 buffer.rewind()
-                return GlyphRenderer.GlyphPage(buffer, width, imageSize, tiles,
-                        tileSize)
+                return buffer
             }
         }
     }
