@@ -18,13 +18,11 @@ package org.tobi29.scapes.engine.utils.codec.ogg
 
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.utils.codec.spi.ReadableAudioStreamProvider
-
 import java.io.IOException
 import java.nio.channels.ReadableByteChannel
-import java.util.Arrays
 
 class OGGInputStreamProvider : ReadableAudioStreamProvider {
-    private val mimeTypes = Arrays.asList("audio/vorbis", "audio/x-vorbis+ogg")
+    private val mimeTypes = listOf("audio/vorbis", "audio/x-vorbis+ogg")
 
     override fun accepts(mime: String): Boolean {
         return mimeTypes.contains(mime)
