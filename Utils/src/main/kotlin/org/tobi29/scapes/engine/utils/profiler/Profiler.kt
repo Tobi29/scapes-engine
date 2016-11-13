@@ -18,7 +18,9 @@ package org.tobi29.scapes.engine.utils.profiler
 
 import java8.util.Maps
 import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.UnsupportedJVMException
 import org.tobi29.scapes.engine.utils.mapNotNull
+import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
 import java.util.*
 
 class Profiler private constructor(thread: Thread) {
@@ -37,6 +39,7 @@ class Profiler private constructor(thread: Thread) {
             Node({ it }, node)
         }
         node.lastEnter = System.nanoTime()
+        ProfilerDispatch.dispatchers.forEach { it.enterNode(name) }
     }
 
     fun exitNode(name: String) {
@@ -44,6 +47,7 @@ class Profiler private constructor(thread: Thread) {
                 "Profiler stack popped on root node")
         assert(name == node.name())
         node.time += System.nanoTime() - node.lastEnter
+        ProfilerDispatch.dispatchers.forEach { it.exitNode(name) }
         node = parentNode
     }
 
@@ -100,5 +104,22 @@ inline fun <R> profilerSection(name: String,
         return receiver()
     } finally {
         instance?.exitNode(name)
+    }
+}
+
+private object ProfilerDispatch {
+    val dispatchers = loadService()
+
+    private fun loadService(): List<ProfilerDispatcher> {
+        val dispatchers = ArrayList<ProfilerDispatcher>()
+        for (dispatcher in ServiceLoader.load(
+                ProfilerDispatcherProvider::class.java)) {
+            try {
+                dispatcher.dispatcher()?.let { dispatchers.add(it) }
+            } catch (e: ServiceConfigurationError) {
+            }
+        }
+        throw UnsupportedJVMException(
+                "No filesystem implementation available")
     }
 }
