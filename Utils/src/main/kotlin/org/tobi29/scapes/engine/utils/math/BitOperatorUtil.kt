@@ -39,3 +39,7 @@ infix fun Byte.shr(other: Byte): Byte {
 infix fun Byte.ushr(other: Byte): Byte {
     return (this.toInt() ushr other.toInt()).toByte()
 }
+
+fun Byte.inv(): Byte {
+    return (this.toInt().inv() and 0xFF).toByte()
+}
