@@ -26,31 +26,29 @@ import java.util.*
  * Using [.push] you can retrieve objects from this pool, modify them
  * and then later iterate through them
  *
- *
  * As this class is meant for optimization of allocation and deallocation of
  * objects, any data in the pool is kept until the instance is deleted by the GC
  * or you removed it using [.remove]
  *
- *
  * **Note:** This class is not thread-safe at all and should only be used by
  * one thread at a time
-
  * @param E of elements stored
  */
 class Pool<E>
 /**
  * Creates a new instance using the given [supplier]
-
- * @param supplier Called to create new objects in case the pool ran out of
- * *                 reusable ones
+ * @param supplier Called to create new objects in case the pool ran out of reusable ones
  */
 (private val supplier: () -> E) : Iterable<E> {
+    /**
+     * Returns the current size of this [Pool]
+     */
+    var size = 0
+        private set
     private val list = ArrayList<E>()
-    private var size: Int = 0
 
     /**
      * Resets the pool so it can be reused
-     *
      *
      * **Note:** The stored objects are **not** cleared!
      */
@@ -61,7 +59,6 @@ class Pool<E>
     /**
      * Returns the next object from the pool or creates a new ones if none was
      * available
-
      * @return A possibly reused object
      */
     fun push(): E {
@@ -78,14 +75,9 @@ class Pool<E>
 
     /**
      * Returns the object at the given index
-
-     * @param i Index to look at (Has to be in range `0` to `size -
-     * 1`)
-     * *
+     * @param i Index to look at (Has to be in range `0` to `size - 1`
      * @return Object at given index
-     * *
-     * @throws IndexOutOfBoundsException When index is equal or greater than
-     * *                                   size or less than 0
+     * @throws IndexOutOfBoundsException When index is equal or greater than size or less than 0
      */
     operator fun get(i: Int): E {
         if (i < 0 || i >= size) {
@@ -96,15 +88,18 @@ class Pool<E>
     }
 
     /**
-     * Returns the latest object in the pool returned from [.push]
-
-     * @return Last object in pool
+     * Discards the last element in the pool and returns the second to last one
+     * @return Last object in pool or null if it is now empty
+     * @throws NoSuchElementException When the pool is empty before invoking this method
      */
-    fun pop(): E {
+    fun pop(): E? {
         if (size == 0) {
             throw NoSuchElementException("Pool is empty")
         }
         size--
+        if (size == 0) {
+            return null
+        }
         return list[size]
     }
 
@@ -125,6 +120,32 @@ class Pool<E>
             return true
         }
         return false
+    }
+
+    /**
+     * Remove the element at the given index [i]
+     * @param i The index of the element to remove
+     * @returns The element previously at that index
+     * @throws IndexOutOfBoundsException If `i < 0` or `i >= size`
+     */
+    fun removeAt(i: Int): E {
+        if (i < 0 || i >= size) {
+            throw IndexOutOfBoundsException(
+                    "Index: $i Size: $size")
+        }
+        val element = list.removeAt(i)
+        size--
+        return element
+    }
+
+    /**
+     * Appends the element to the pool to be reused by [push]
+     *
+     * **Note**: This element may no longer be used outside
+     * **Node**: This element will only be used by the pool once [push] needed it
+     */
+    fun give(element: E) {
+        list.add(element)
     }
 
     /**
