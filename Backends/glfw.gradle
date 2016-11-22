@@ -23,7 +23,7 @@ dependencies {
         nativesWindows64 "$module:natives-windows"
     }
 
-    compile project(":ScapesEngine:Backends:GLFWBackend")
+    runtime project(":ScapesEngine:Backends:GLFWBackend")
     natives "org.lwjgl:lwjgl:3.1.0"
     natives "org.lwjgl:lwjgl-openal:3.1.0"
     natives "org.lwjgl:lwjgl-glfw:3.1.0"
