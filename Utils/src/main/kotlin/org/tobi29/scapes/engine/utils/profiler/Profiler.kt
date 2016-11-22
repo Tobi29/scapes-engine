@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.profiler
 
 import java8.util.Maps
 import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.utils.UnsupportedJVMException
 import org.tobi29.scapes.engine.utils.mapNotNull
 import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
 import java.util.*
@@ -119,7 +118,6 @@ private object ProfilerDispatch {
             } catch (e: ServiceConfigurationError) {
             }
         }
-        throw UnsupportedJVMException(
-                "No filesystem implementation available")
+        return dispatchers
     }
 }
