@@ -100,7 +100,7 @@ class Pool<E>
         if (size == 0) {
             return null
         }
-        return list[size]
+        return list[size - 1]
     }
 
     /**
