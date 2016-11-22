@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.plus
 
-class GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
+object GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
         emptySet<GuiComponent>()) {
 
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
@@ -40,9 +40,5 @@ class GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
             }
         }
         this.size = outSize.now()
-    }
-
-    companion object {
-        val INSTANCE: GuiLayoutManager = GuiLayoutManagerEmpty()
     }
 }

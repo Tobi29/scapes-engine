@@ -77,7 +77,7 @@ class PoolTest {
                 pool.pop()?.str)
         Assert.assertEquals("Popping returned wrong object", null,
                 pool.pop()?.str)
-        Assert.assertTrue("Pool is not empty", pool.isEmpty)
+        Assert.assertTrue("Pool is not empty", pool.isEmpty())
         try {
             pool.pop()
             Assert.fail("Pool did not throw when popping on empty")

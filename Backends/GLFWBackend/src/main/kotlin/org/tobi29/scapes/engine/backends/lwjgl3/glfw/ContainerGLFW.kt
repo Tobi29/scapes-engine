@@ -146,10 +146,10 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
                 engine.writeCrash(Throwable("Debug report"))
             } else if (engine.debug() && isDown(ControllerKey.KEY_LEFT_SHIFT)) {
                 val profiler = engine.profiler
-                profiler.isVisible = !profiler.isVisible
+                profiler.visible = !profiler.visible
             } else if (engine.debug()) {
                 val debugValues = engine.debugValues
-                debugValues.isVisible = !debugValues.isVisible
+                debugValues.visible = !debugValues.visible
             }
         }
     }

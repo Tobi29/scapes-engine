@@ -29,7 +29,7 @@ class GuiLayoutManagerHorizontal(start: Vector2d, maxSize: Vector2d,
         var unsized = 0.0
         var usedWidth = 0.0
         for (component in components) {
-            if (!component.isVisible) {
+            if (!component.visible) {
                 continue
             }
             val data = component.parent
@@ -51,7 +51,7 @@ class GuiLayoutManagerHorizontal(start: Vector2d, maxSize: Vector2d,
         val preferredSize = Vector2d((maxSize.x - usedWidth) / unsized,
                 maxSize.y)
         for (component in components) {
-            if (!component.isVisible) {
+            if (!component.visible) {
                 continue
             }
             val data = component.parent

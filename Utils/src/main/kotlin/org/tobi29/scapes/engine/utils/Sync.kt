@@ -105,7 +105,7 @@ class Sync(private var currentTPS: Double, minSkipDelay: Long, private val logSk
      * @see .tick
      */
     fun cap(joiner: Joiner.Joinable) {
-        cap() { sleep ->
+        cap { sleep ->
             // Using nanos is useless as the implementation on wait is bad
             if (sleep >= 1000000) {
                 joiner.sleep(sleep / 1000000)

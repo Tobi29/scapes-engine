@@ -37,7 +37,7 @@ class STBFont(internal val container: ContainerLWJGL3,
         fun fromFont(container: ContainerLWJGL3,
                      font: ReadSource): STBFont? {
             try {
-                val buffer = font.read() { process(it, asBuffer()) }
+                val buffer = font.read { process(it, asBuffer()) }
                 val fontBuffer = container.allocate(buffer.remaining())
                 fontBuffer.put(buffer)
                 fontBuffer.flip()

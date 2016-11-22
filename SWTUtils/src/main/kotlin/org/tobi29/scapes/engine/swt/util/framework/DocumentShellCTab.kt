@@ -32,12 +32,8 @@ internal class DocumentShellCTab(display: Display, style: Int,
     var tabFolder: CTabFolder? = null
 
     private fun tab(tabItem: CTabItem): DocumentCompositeCTab {
-        val control = tabItem.control
-        if (control !is DocumentCompositeCTab) {
-            throw IllegalStateException(
-                    "Non document composite in tab folder")
-        }
-        return control
+        return tabItem.control as? DocumentCompositeCTab ?: throw IllegalStateException(
+                "Non document composite in tab folder")
     }
 
     override fun updateTab() {
@@ -45,11 +41,8 @@ internal class DocumentShellCTab(display: Display, style: Int,
         val tabFolder = tabFolder
         if (tabFolder != null) {
             val tabItem = tabFolder.selection
-            val control = tabItem.control
-            if (control !is DocumentCompositeCTab) {
-                throw IllegalStateException(
-                        "Non document composite in tab folder")
-            }
+            val control = tabItem.control as? DocumentCompositeCTab ?: throw IllegalStateException(
+                    "Non document composite in tab folder")
             composite = control as DocumentComposite
         } else {
             composite = directComposite
@@ -109,11 +102,8 @@ internal class DocumentShellCTab(display: Display, style: Int,
             tabFolder.addCTabFolder2Listener(object : CTabFolder2Adapter() {
                 override fun close(event: CTabFolderEvent?) {
                     val tabItem = event?.item as CTabItem?
-                    val control = tabItem?.control
-                    if (control !is DocumentCompositeCTab) {
-                        throw IllegalStateException(
-                                "Non document composite in tab folder")
-                    }
+                    val control = tabItem?.control as? DocumentCompositeCTab ?: throw IllegalStateException(
+                            "Non document composite in tab folder")
                     application.closeTabItem(control)
                 }
             })

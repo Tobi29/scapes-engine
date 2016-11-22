@@ -147,9 +147,9 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
         }
         debugValues = debugGui.add(32.0, 32.0, 360.0, 256.0,
                 ::GuiWidgetDebugValues)
-        debugValues.isVisible = false
+        debugValues.visible = false
         profiler = debugGui.add(32.0, 32.0, 360.0, 256.0, ::GuiWidgetProfiler)
-        profiler.isVisible = false
+        profiler.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
         usedMemoryDebug = debugValues["Runtime-Memory-Used"]
         heapMemoryDebug = debugValues["Runtime-Memory-Heap"]

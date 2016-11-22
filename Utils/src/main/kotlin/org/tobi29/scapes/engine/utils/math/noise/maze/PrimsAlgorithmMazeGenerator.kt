@@ -54,7 +54,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
         }
         val directions = arrayOfNulls<Face>(4)
         while (true) {
-            val current = list.removeAt(random.nextInt(list.size()))
+            val current = list.removeAt(random.nextInt(list.size))
             val x = current.x
             val y = current.y
             list.give(current)
@@ -107,7 +107,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
             } else if (direction === Face.WEST) {
                 maze.changeAt(x, y) { it or Maze.MASK_WEST }
             }
-            if (list.isEmpty) {
+            if (list.isEmpty()) {
                 break
             }
         }

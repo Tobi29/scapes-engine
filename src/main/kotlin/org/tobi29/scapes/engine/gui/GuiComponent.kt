@@ -32,64 +32,27 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 
 abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent>, ListenerOwner {
-    val gui: Gui
-    val engine: ScapesEngine
-        get() = gui.style.engine
-    protected val components: MutableSet<GuiComponent> = ConcurrentSkipListSet()
-    private val events = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
-    override val listenerOwner: ListenerOwnerHandle
-    private val uid = UID_COUNTER.andIncrement
-    private val hasActiveChild = AtomicBoolean(true)
-    var isVisible = true
+    @Suppress("LeakingThis")
+    val gui = gui(parent) ?: this as Gui
+    var visible = true
         set(value) {
             field = value
             parent.parent?.dirty()
         }
+    val engine: ScapesEngine
+        get() = gui.style.engine
     protected var hover = false
     protected var hovering = false
     protected var removing = false
-    var removed = false
+    internal var removed = false
+    protected val components = ConcurrentSkipListSet<GuiComponent>()
+    private val events = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
+    private val uid = UID_COUNTER.andIncrement
+    private val hasActiveChild = AtomicBoolean(true)
+    override val listenerOwner = ListenerOwnerHandle { gui.isValid && !removed }
 
     init {
-        var other = this
-        while (true) {
-            if (other is Gui) {
-                gui = other
-                break
-            }
-            other = other.parent.parent ?: throw IllegalArgumentException(
-                    "Non-Gui component has no parent")
-        }
         on(GuiEvent.CLICK_LEFT, { gui.lastClicked = this })
-        listenerOwner = ListenerOwnerHandle { gui.isValid && !removed }
-    }
-
-    fun <T : GuiComponent> addSub(x: Double,
-                                  y: Double,
-                                  width: Double,
-                                  height: Double,
-                                  child: (GuiLayoutDataAbsolute) -> T): T {
-        return addSub(x, y, width, height, 0, child)
-    }
-
-    fun <T : GuiComponent> addSub(x: Double,
-                                  y: Double,
-                                  width: Double,
-                                  height: Double,
-                                  priority: Long,
-                                  child: (GuiLayoutDataAbsolute) -> T): T {
-        return addSub(Vector2d(x, y), Vector2d(width, height), priority,
-                child)
-    }
-
-    fun <T : GuiComponent> addSub(pos: Vector2d,
-                                  size: Vector2d,
-                                  priority: Long,
-                                  child: (GuiLayoutDataAbsolute) -> T): T {
-        val layoutData = GuiLayoutDataAbsolute(this, pos, size, priority, true)
-        val component = child(layoutData)
-        append(component)
-        return component
     }
 
     fun on(event: GuiEvent,
@@ -136,7 +99,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
                     size: Vector2d,
                     pixelSize: Vector2d,
                     delta: Double) {
-        if (isVisible) {
+        if (visible) {
             val matrixStack = gl.matrixStack()
             val matrix = matrixStack.push()
             transform(matrix, size)
@@ -164,7 +127,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     protected open fun renderOverlays(gl: GL,
                                       shader: Shader,
                                       pixelSize: Vector2d) {
-        if (isVisible) {
+        if (visible) {
             components.forEach { it.renderOverlays(gl, shader, pixelSize) }
         }
     }
@@ -177,7 +140,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     protected open fun render(renderer: GuiRenderer,
                               size: Vector2d): Boolean {
         var hasHeavy = false
-        if (isVisible) {
+        if (visible) {
             val matrixStack = renderer.matrixStack()
             val matrix = matrixStack.push()
             renderer.offset(0x10000)
@@ -201,7 +164,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     }
 
     protected open fun update(delta: Double) {
-        if (isVisible) {
+        if (visible) {
             if (hovering && !hover) {
                 hovering = false
                 size()?.let { size ->
@@ -241,7 +204,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
 
     protected fun fireEvent(event: GuiComponentEvent,
                             listener: (GuiComponent, GuiComponentEvent) -> Boolean): GuiComponent? {
-        if (isVisible) {
+        if (visible) {
             val inside = checkInside(event.x, event.y, event.size)
             if (inside) {
                 val layout = layoutManager(event.size)
@@ -266,7 +229,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
 
     protected fun fireRecursiveEvent(event: GuiComponentEvent,
                                      listener: (GuiComponent, GuiComponentEvent) -> Boolean): Set<GuiComponent> {
-        if (isVisible) {
+        if (visible) {
             val inside = checkInside(event.x, event.y, event.size)
             if (inside) {
                 val sinks = HashSet<GuiComponent>()
@@ -291,7 +254,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     protected fun sendEvent(event: GuiComponentEvent,
                             destination: GuiComponent,
                             listener: (GuiComponentEvent) -> Unit): Boolean {
-        if (isVisible) {
+        if (visible) {
             val layout = layoutManager(event.size)
             for (component in layout.layout()) {
                 if (!component.first.parent.blocksEvents) {
@@ -313,7 +276,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
 
     protected fun calculateSize(size: Vector2d,
                                 destination: GuiComponent): Vector2d? {
-        if (isVisible) {
+        if (visible) {
             val layout = layoutManager(size)
             for (component in layout.layout()) {
                 val success = component.first.calculateSize(component.third,
@@ -404,7 +367,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
 
     protected fun layoutManager(size: Vector2d): GuiLayoutManager {
         if (components.isEmpty()) {
-            return GuiLayoutManagerEmpty.INSTANCE
+            return GuiLayoutManagerEmpty
         }
         return newLayoutManager(size)
     }
@@ -430,6 +393,17 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
         fun sink(type: GuiEvent,
                  component: GuiComponent): (GuiComponentEvent) -> Unit {
             return { event -> component.fireEvent(type, event) }
+        }
+
+        fun gui(parent: GuiLayoutData): Gui? {
+            var other = parent.parent ?: return null
+            while (true) {
+                if (other is Gui) {
+                    return other
+                }
+                other = other.parent.parent ?: throw IllegalArgumentException(
+                        "Non-Gui component has no parent")
+            }
         }
     }
 }

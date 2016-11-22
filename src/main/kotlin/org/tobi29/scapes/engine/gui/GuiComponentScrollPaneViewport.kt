@@ -33,7 +33,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
         set(value) {
             value?.let {
                 if (autoHide) {
-                    it.isVisible = false
+                    it.visible = false
                 }
             }
             field = value
@@ -42,7 +42,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
         set(value) {
             value?.let {
                 if (autoHide) {
-                    it.isVisible = false
+                    it.visible = false
                 }
             }
             field = value
@@ -90,7 +90,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                         size: Vector2d,
                         pixelSize: Vector2d,
                         delta: Double) {
-        if (isVisible) {
+        if (visible) {
             val matrixStack = gl.matrixStack()
             val matrix = matrixStack.current()
             val start = matrix.modelView().multiply(Vector3d.ZERO) / pixelSize
@@ -131,7 +131,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                             min(sqr(size.x) / max.y, size.x))
                 }
                 if (autoHide) {
-                    slider.isVisible = max.y > size.y
+                    slider.visible = max.y > size.y
                 }
             }
             sliderY?.let { slider ->
@@ -142,7 +142,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                             min(sqr(size.y) / max.y, size.y))
                 }
                 if (autoHide) {
-                    slider.isVisible = max.y > size.y
+                    slider.visible = max.y > size.y
                 }
             }
         }

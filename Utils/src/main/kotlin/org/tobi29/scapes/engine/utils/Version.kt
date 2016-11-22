@@ -87,7 +87,7 @@ fun versionParse(str: kotlin.String): Version {
     if (split.size > 3) {
         throw VersionException("Too many delimiters: $str")
     }
-    if (split.size <= 0) {
+    if (split.isEmpty()) {
         throw VersionException("Weird string: $str")
     }
     val major: Int
@@ -113,7 +113,7 @@ fun versionParse(str: kotlin.String): Version {
                 throw VersionException(
                         "Too many delimiters: ${split[2]}")
             }
-            if (split2.size <= 0) {
+            if (split2.isEmpty()) {
                 throw VersionException("Weird string: ${split[2]}")
             }
             try {

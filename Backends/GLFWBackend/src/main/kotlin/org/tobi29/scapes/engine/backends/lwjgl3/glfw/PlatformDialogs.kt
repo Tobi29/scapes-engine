@@ -106,7 +106,7 @@ object PlatformDialogs : KLogging() {
         iconify(window) {
             TinyFileDialogs.tinyfd_inputBox(title, "",
                     text.text)?.let { editText ->
-                if (text.text.length > 0) {
+                if (text.text.isNotEmpty()) {
                     text.text.delete(0, Int.MAX_VALUE)
                 }
                 text.text.append(editText)

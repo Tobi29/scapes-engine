@@ -16,7 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer
 
-class RandomNoisePickLayer(private val parent: RandomNoiseLayer, private val pick: IntArray, private val drop: IntArray,
+class RandomNoisePickLayer(private val parent: RandomNoiseLayer,
+                           private val pick: IntArray,
+                           private val drop: IntArray,
                            private val stay: Int) : RandomNoiseLayer {
 
     init {
@@ -29,11 +31,8 @@ class RandomNoisePickLayer(private val parent: RandomNoiseLayer, private val pic
     override fun getInt(x: Int,
                         y: Int): Int {
         val value = parent.getInt(x, y)
-        for (i in pick.indices) {
-            if (value == pick[i]) {
-                return drop[i]
-            }
-        }
-        return stay
+        return pick.indices.firstOrNull { value == pick[it] }?.let {
+            drop[it]
+        } ?: stay
     }
 }

@@ -64,11 +64,7 @@ class TagStructure {
 
     fun structure(key: String): TagStructure {
         return ConcurrentMaps.compute(tags, key) { key, value ->
-            if (value is TagStructure) {
-                value
-            } else {
-                TagStructure()
-            }
+            value as? TagStructure ?: TagStructure()
         } as TagStructure
     }
 

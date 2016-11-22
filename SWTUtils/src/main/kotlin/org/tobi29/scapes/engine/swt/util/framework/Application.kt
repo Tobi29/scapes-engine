@@ -66,7 +66,7 @@ abstract class Application : Runnable, Crashable {
             val shell = display.activeShell
             if (shell == null) {
                 val shells = display.shells
-                if (shells.size == 0) {
+                if (shells.isEmpty()) {
                     return null
                 }
                 return shells[0]
@@ -102,7 +102,7 @@ abstract class Application : Runnable, Crashable {
     }
 
     fun done(): Boolean {
-        return display.shells.size == 0
+        return display.shells.isEmpty()
     }
 
     fun initApplication() {

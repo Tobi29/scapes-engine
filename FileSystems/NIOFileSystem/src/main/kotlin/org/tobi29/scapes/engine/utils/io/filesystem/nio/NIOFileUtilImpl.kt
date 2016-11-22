@@ -182,14 +182,7 @@ class NIOFileUtilImpl : FileUtilImpl {
                     override fun visitFile(file: Path,
                                            attrs: BasicFileAttributes): FileVisitResult {
                         val filePath = path(file)
-                        var valid = true
-                        for (filter in filters) {
-                            if (!filter(filePath)) {
-                                valid = false
-                                break
-                            }
-                        }
-                        if (valid) {
+                        if (filters.any { it(filePath) }) {
                             files.add(filePath)
                         }
                         return FileVisitResult.CONTINUE

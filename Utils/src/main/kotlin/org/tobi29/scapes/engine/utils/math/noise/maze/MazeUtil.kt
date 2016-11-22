@@ -88,7 +88,7 @@ private fun MutableMaze.findPath(from: Vector2i,
         val x = current.x
         val y = current.y
         if (x == tx && y == ty) {
-            return Array(path.size()) { path[it].now() }
+            return Array(path.size) { path[it].now() }
         }
         val dir = current.z
         if (dir < 4) {

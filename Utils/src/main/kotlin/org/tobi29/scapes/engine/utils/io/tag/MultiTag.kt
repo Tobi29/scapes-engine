@@ -78,7 +78,7 @@ object MultiTag {
     fun readProperties(tagStructure: TagStructure,
                        properties: Properties) {
         for ((key, value) in tagStructure.tagEntrySet) {
-            properties.setProperty(key.toString(),
+            properties.setProperty(key,
                     value.toString())
         }
     }

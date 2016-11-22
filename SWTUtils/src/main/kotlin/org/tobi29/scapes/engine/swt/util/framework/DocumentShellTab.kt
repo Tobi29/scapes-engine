@@ -29,12 +29,8 @@ internal class DocumentShellTab(display: Display, style: Int,
     var tabFolder: TabFolder? = null
 
     private fun tab(tabItem: TabItem): DocumentCompositeTab {
-        val control = tabItem.control
-        if (control !is DocumentCompositeTab) {
-            throw IllegalStateException(
-                    "Non document composite in tab folder")
-        }
-        return control
+        return tabItem.control as? DocumentCompositeTab ?: throw IllegalStateException(
+                "Non document composite in tab folder")
     }
 
     override fun updateTab() {
@@ -42,12 +38,9 @@ internal class DocumentShellTab(display: Display, style: Int,
         val tabFolder = tabFolder
         if (tabFolder != null) {
             val tabItems = tabFolder.selection
-            if (tabItems.size > 0) {
-                val control = tabItems[0].control
-                if (control !is DocumentCompositeTab) {
-                    throw IllegalStateException(
-                            "Non document composite in tab folder")
-                }
+            if (tabItems.isNotEmpty()) {
+                val control = tabItems[0].control as? DocumentCompositeTab ?: throw IllegalStateException(
+                        "Non document composite in tab folder")
                 composite = control as DocumentComposite
             }
         } else {

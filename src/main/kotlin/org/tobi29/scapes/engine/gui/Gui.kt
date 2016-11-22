@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.gui
 
 import java8.util.concurrent.ConcurrentMaps
-import org.tobi29.scapes.engine.utils.collect
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
@@ -98,7 +97,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
 
     protected fun selection(priority: Long,
                             component: GuiComponent) {
-        addSelection(priority, collect(component))
+        addSelection(priority, arrayListOf(component))
     }
 
     protected fun selection(vararg components: GuiComponent) {
@@ -113,7 +112,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
         if (components.isEmpty()) {
             return
         }
-        addSelection(priority, collect(*components))
+        addSelection(priority, arrayListOf(*components))
     }
 
     protected fun selection(components: List<GuiComponent>) {
@@ -207,7 +206,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
 
     public override fun update(delta: Double) {
         super.update(delta)
-        if (isVisible) {
+        if (visible) {
             synchronized(selections) {
                 val iterator = selections.iterator()
                 while (iterator.hasNext()) {

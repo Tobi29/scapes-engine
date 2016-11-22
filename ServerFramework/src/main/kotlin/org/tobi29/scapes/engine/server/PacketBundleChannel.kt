@@ -385,7 +385,7 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
                 ssl.verifySession(address, engine, x509Certificates)
                 verified.set(true)
             } catch (e: IOException) {
-                if (x509Certificates.size == 0 || !ssl.certificateFeedback(
+                if (x509Certificates.isEmpty() || !ssl.certificateFeedback(
                         x509Certificates)) {
                     verifyException = e
                 } else {

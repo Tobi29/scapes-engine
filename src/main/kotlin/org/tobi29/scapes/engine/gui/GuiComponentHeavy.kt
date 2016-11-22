@@ -36,7 +36,7 @@ abstract class GuiComponentHeavy(parent: GuiLayoutData) : GuiComponent(parent) {
                         size: Vector2d,
                         pixelSize: Vector2d,
                         delta: Double) {
-        if (isVisible) {
+        if (visible) {
             val matrixStack = gl.matrixStack()
             val matrix = matrixStack.push()
             transform(matrix, size)
@@ -80,7 +80,7 @@ abstract class GuiComponentHeavy(parent: GuiLayoutData) : GuiComponent(parent) {
                                        shader: Shader,
                                        pixelSize: Vector2d) {
         super.renderOverlays(gl, shader, pixelSize)
-        if (isVisible) {
+        if (visible) {
             renderOverlay(gl, shader, pixelSize)
         }
     }
@@ -109,7 +109,7 @@ abstract class GuiComponentHeavy(parent: GuiLayoutData) : GuiComponent(parent) {
 
     override fun update(delta: Double) {
         super.update(delta)
-        if (isVisible) {
+        if (visible) {
             updateComponent(delta)
         }
         parent.parent?.activeUpdate()

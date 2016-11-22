@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.codec.AudioStream
-import org.tobi29.scapes.engine.utils.collect
 import org.tobi29.scapes.engine.utils.forEach
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
@@ -204,7 +203,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
 
     override fun stop(channel: String) {
         queue({ openAL ->
-            val stopped = audios.collect { it.isPlaying(channel) }
+            val stopped = audios.filter { it.isPlaying(channel) }
             stopped.forEach { it.stop(this, openAL) }
             audios.removeAll(stopped)
         })
@@ -266,7 +265,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     }
 
     internal operator fun get(openAL: OpenAL,
-                     asset: String): OpenALAudioData? {
+                              asset: String): OpenALAudioData? {
         if (!cache.containsKey(asset)) {
             val resource = engine.files[asset]
             if (resource.exists()) {
@@ -293,7 +292,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     }
 
     internal fun releaseSource(openAL: OpenAL,
-                      source: Int) {
+                               source: Int) {
         openAL.stop(source)
         openAL.setBuffer(source, 0)
         for (i in sources.indices) {
@@ -306,7 +305,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     }
 
     internal fun removeBufferFromSources(openAL: OpenAL,
-                                buffer: Int) {
+                                         buffer: Int) {
         for (source in sources) {
             if (source != -1 && openAL.getBuffer(source) == buffer) {
                 openAL.stop(source)
@@ -352,12 +351,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     }
 
     private fun isSoundPlaying(openAL: OpenAL): Boolean {
-        for (source in sources) {
-            if (source == -1 || !openAL.isStopped(source)) {
-                return true
-            }
-        }
-        return false
+        return sources.any { it == -1 || !openAL.isStopped(it) }
     }
 
     companion object : KLogging()

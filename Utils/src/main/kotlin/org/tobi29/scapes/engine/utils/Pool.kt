@@ -39,11 +39,11 @@ class Pool<E>
  * Creates a new instance using the given [supplier]
  * @param supplier Called to create new objects in case the pool ran out of reusable ones
  */
-(private val supplier: () -> E) : Iterable<E> {
+(private val supplier: () -> E) : Collection<E> {
     /**
      * Returns the current size of this [Pool]
      */
-    var size = 0
+    override var size = 0
         private set
     private val list = ArrayList<E>()
 
@@ -207,7 +207,7 @@ class Pool<E>
      * *
      * @return `true` if the object was found
      */
-    operator fun contains(element: E?): Boolean {
+    override operator fun contains(element: E): Boolean {
         if (element == null) {
             for (i in 0..size - 1) {
                 if (list[i] == null) {
@@ -224,10 +224,11 @@ class Pool<E>
         return false
     }
 
-    val isEmpty: Boolean
-        get() = size == 0
+    override fun containsAll(elements: Collection<E>): Boolean {
+        return elements.all { contains(it) }
+    }
 
-    fun size(): Int {
-        return size
+    override fun isEmpty(): Boolean {
+        return size == 0
     }
 }

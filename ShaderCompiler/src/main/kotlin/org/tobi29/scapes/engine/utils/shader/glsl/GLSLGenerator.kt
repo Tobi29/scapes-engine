@@ -682,7 +682,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     fun generateVertex(scope: Scope,
                        shader: CompiledShader,
                        properties: Map<String, String>): String {
-        if (output.length > 0) {
+        if (output.isNotEmpty()) {
             output.delete(0, output.length - 1)
         }
         init(scope)
@@ -711,7 +711,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     fun generateFragment(scope: Scope,
                          shader: CompiledShader,
                          properties: Map<String, String>): String {
-        if (output.length > 0) {
+        if (output.isNotEmpty()) {
             output.delete(0, output.length - 1)
         }
         init(scope)
@@ -815,7 +815,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         str.append(precision(signature.returnedPrecision)).append(' ')
         str.append(type(signature.returned)).append(' ')
         str.append(name).append('(')
-        if (signature.parameters.size > 0) {
+        if (signature.parameters.isNotEmpty()) {
             run {
                 val parameter = signature.parameters[0]
                 identifiers[parameter.identifier] = GLSLExpression(
