@@ -23,14 +23,33 @@ import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.sqr
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.math.vector.div
 
 class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
-                                     scrollStep: Int) : GuiComponentPaneHeavy(
+                                     scrollStep: Int,
+                                     private val autoHide: Boolean = false) : GuiComponentPaneHeavy(
         parent) {
     internal var sliderX: GuiComponentSliderVert? = null
+        set(value) {
+            value?.let {
+                if (autoHide) {
+                    it.isVisible = false
+                }
+            }
+            field = value
+        }
     internal var sliderY: GuiComponentSliderVert? = null
-    private var maxX = 0.0
-    private var maxY = 0.0
+        set(value) {
+            value?.let {
+                if (autoHide) {
+                    it.isVisible = false
+                }
+            }
+            field = value
+        }
+    private var size = Vector2d.ZERO
+    internal var max = Vector2d.ZERO
+        private set
     var scrollX = 0.0
     var scrollY = 0.0
 
@@ -44,11 +63,11 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                 scrollY -= event.relativeY * scrollStep
             }
             scrollX = clamp(scrollX, 0.0,
-                    Math.max(0.0, maxX - event.size.x))
+                    Math.max(0.0, max.x - event.size.x))
             scrollY = clamp(scrollY, 0.0,
-                    Math.max(0.0, maxY - event.size.y))
+                    Math.max(0.0, max.y - event.size.y))
             sliderX?.let { slider ->
-                val limit = Math.max(0.0, maxX - event.size.y)
+                val limit = Math.max(0.0, max.x - event.size.y)
                 if (limit > 0.0) {
                     slider.setValue(scrollX / limit)
                 } else {
@@ -56,7 +75,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                 }
             }
             sliderY?.let { slider ->
-                val limit = Math.max(0.0, maxY - event.size.y)
+                val limit = Math.max(0.0, max.y - event.size.y)
                 if (limit > 0.0) {
                     slider.setValue(scrollY / limit)
                 } else {
@@ -74,9 +93,9 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
         if (isVisible) {
             val matrixStack = gl.matrixStack()
             val matrix = matrixStack.current()
-            val start = matrix.modelView().multiply(Vector3d.ZERO)
+            val start = matrix.modelView().multiply(Vector3d.ZERO) / pixelSize
             val end = matrix.modelView().multiply(
-                    Vector3d(size.x, size.y, 0.0))
+                    Vector3d(size.x, size.y, 0.0)) / pixelSize
             gl.enableScissor(start.intX(), start.intY(),
                     end.intX() - start.intX(), end.intY() - start.intY())
             super.render(gl, shader, size, pixelSize, delta)
@@ -99,35 +118,33 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
 
     private fun setMax(max: Vector2d,
                        size: Vector2d) {
-        if (maxX != max.x || maxY != max.y) {
-            maxX = max.x
-            maxY = max.y
-            scrollX = clamp(scrollX, 0.0, Math.max(0.0, maxX - size.x))
-            scrollY = clamp(scrollY, 0.0, Math.max(0.0, maxY - size.y))
+        if (this.size != size || this.max != max) {
+            this.size = size
+            this.max = max
+            scrollX = clamp(scrollX, 0.0, Math.max(0.0, max.x - size.x))
+            scrollY = clamp(scrollY, 0.0, Math.max(0.0, max.y - size.y))
             sliderX?.let { slider ->
-                if (maxY <= 0) {
+                if (max.y <= 0) {
                     slider.setSliderHeight(size.x)
                 } else {
                     slider.setSliderHeight(
-                            min(sqr(size.x) / maxY, size.x))
+                            min(sqr(size.x) / max.y, size.x))
+                }
+                if (autoHide) {
+                    slider.isVisible = max.y > size.y
                 }
             }
             sliderY?.let { slider ->
-                if (maxY <= 0) {
+                if (max.y <= 0) {
                     slider.setSliderHeight(size.y)
                 } else {
                     slider.setSliderHeight(
-                            min(sqr(size.y) / maxY, size.y))
+                            min(sqr(size.y) / max.y, size.y))
+                }
+                if (autoHide) {
+                    slider.isVisible = max.y > size.y
                 }
             }
         }
-    }
-
-    fun maxX(): Double {
-        return maxX
-    }
-
-    fun maxY(): Double {
-        return maxY
     }
 }

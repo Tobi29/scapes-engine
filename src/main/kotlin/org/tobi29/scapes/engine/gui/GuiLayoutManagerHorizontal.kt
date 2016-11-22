@@ -29,8 +29,11 @@ class GuiLayoutManagerHorizontal(start: Vector2d, maxSize: Vector2d,
         var unsized = 0.0
         var usedWidth = 0.0
         for (component in components) {
+            if (!component.isVisible) {
+                continue
+            }
             val data = component.parent
-            if (data is GuiLayoutDataHorizontal) {
+            if (data is GuiLayoutDataFlow) {
                 if (data.width() < 0.0) {
                     unsized -= data.width()
                 } else {
@@ -48,10 +51,13 @@ class GuiLayoutManagerHorizontal(start: Vector2d, maxSize: Vector2d,
         val preferredSize = Vector2d((maxSize.x - usedWidth) / unsized,
                 maxSize.y)
         for (component in components) {
+            if (!component.isVisible) {
+                continue
+            }
             val data = component.parent
             pos.set(offset.now())
             size.set(data.width(), data.height())
-            if (data is GuiLayoutDataHorizontal) {
+            if (data is GuiLayoutDataFlow) {
                 val marginStart = data.marginStart
                 val marginEnd = data.marginEnd
                 if (size.doubleY() >= 0.0) {
@@ -66,7 +72,7 @@ class GuiLayoutManagerHorizontal(start: Vector2d, maxSize: Vector2d,
                 setSize(pos.now().plus(size.now()).plus(marginEnd), outSize)
             } else if (data is GuiLayoutDataAbsolute) {
                 pos.set(data.pos())
-                size(size, preferredSize, maxSize)
+                size(size, maxSize, maxSize)
                 setSize(pos.now().plus(size.now()), outSize)
             } else {
                 throw IllegalStateException(

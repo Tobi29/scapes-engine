@@ -19,10 +19,12 @@ import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.utils.collect
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.math.vector.div
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlabHeavy(
+abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
         GuiLayoutDataRoot()) {
     private val selections = ArrayList<SelectionEntry>()
     private val actions = ConcurrentHashMap<GuiAction, MutableSet<() -> Unit>>()
@@ -100,7 +102,7 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
     }
 
     protected fun selection(vararg components: GuiComponent) {
-        if (components.size == 0) {
+        if (components.isEmpty()) {
             return
         }
         selection(components[0].parent.priority, *components)
@@ -108,7 +110,7 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
 
     protected fun selection(priority: Long,
                             vararg components: GuiComponent) {
-        if (components.size == 0) {
+        if (components.isEmpty()) {
             return
         }
         addSelection(priority, collect(*components))
@@ -159,8 +161,8 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
     }
 
     fun fireNewEvent(event: GuiComponentEvent,
-                     listener: Function2<GuiComponent, GuiComponentEvent, Boolean>): GuiComponent? {
-        return fireEvent(GuiComponentEvent(event, baseSize()), listener)
+                     listener: (GuiComponent, GuiComponentEvent) -> Boolean): GuiComponent? {
+        return fireEvent(scaleEvent(event), listener)
     }
 
     fun fireNewRecursiveEvent(type: GuiEvent,
@@ -169,9 +171,8 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
     }
 
     fun fireNewRecursiveEvent(event: GuiComponentEvent,
-                              listener: Function2<GuiComponent, GuiComponentEvent, Boolean>): Set<GuiComponent> {
-        return fireRecursiveEvent(GuiComponentEvent(event, baseSize()),
-                listener)
+                              listener: (GuiComponent, GuiComponentEvent) -> Boolean): Set<GuiComponent> {
+        return fireRecursiveEvent(scaleEvent(event), listener)
     }
 
     fun sendNewEvent(type: GuiEvent,
@@ -184,8 +185,7 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
     fun sendNewEvent(event: GuiComponentEvent,
                      destination: GuiComponent,
                      listener: (GuiComponentEvent) -> Unit): Boolean {
-        return sendEvent(GuiComponentEvent(event, baseSize()), destination,
-                listener)
+        return sendEvent(scaleEvent(event), destination, listener)
     }
 
     fun fireAction(action: GuiAction): Boolean {
@@ -195,6 +195,12 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
         }
         listeners.forEach { it() }
         return true
+    }
+
+    open fun baseSize(): Vector2d {
+        val container = engine.container
+        return Vector2d(container.containerWidth().toDouble(),
+                container.containerHeight().toDouble())
     }
 
     abstract val isValid: Boolean
@@ -232,6 +238,14 @@ abstract class Gui protected constructor(val style: GuiStyle) : GuiComponentSlab
 
     override fun ignoresEvents(): Boolean {
         return true
+    }
+
+    private fun scaleEvent(event: GuiComponentEvent): GuiComponentEvent {
+        val size = baseSize()
+        val container = engine.container
+        val containerSize = Vector2d(container.containerWidth().toDouble(),
+                container.containerHeight().toDouble())
+        return GuiComponentEvent(event, size, size / containerSize)
     }
 
     private class SelectionEntry(val priority: Long, val components: MutableList<GuiComponent>)

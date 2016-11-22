@@ -156,10 +156,8 @@ class GLLWJGL3GL(engine: ScapesEngine, container: Container) : GL(engine,
                                width: Int,
                                height: Int) {
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
-        val h = engine.container.contentHeight() / 540.0
-        GL11.glScissor((x * h).toInt(),
-                ((540.0 - y.toDouble() - height.toDouble()) * h).toInt(),
-                (width * h).toInt(), (height * h).toInt())
+        val h = engine.container.contentHeight()
+        GL11.glScissor(x, h - y - height, width, height)
     }
 
     override fun setBlending(mode: BlendingMode) {

@@ -37,7 +37,7 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
         scrollPane = addVert(10.0, 10.0, -1.0, -1.0) {
             GuiComponentScrollPane(it, 20)
-        }.viewport()
+        }.viewport
 
         toggle.on(GuiEvent.CLICK_LEFT, { event ->
             if (Profiler.enabled()) {

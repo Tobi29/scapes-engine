@@ -53,8 +53,8 @@ open class GuiComponentPaneHeavy(parent: GuiLayoutData) : GuiComponentHeavy(
                                             marginEnd: Vector2d,
                                             size: Vector2d,
                                             priority: Long,
-                                            child: (GuiLayoutDataVertical) -> T): T {
-        val layoutData = GuiLayoutDataVertical(this, marginStart, marginEnd,
+                                            child: (GuiLayoutDataFlow) -> T): T {
+        val layoutData = GuiLayoutDataFlow(this, marginStart, marginEnd,
                 size,
                 priority)
         val component = child(layoutData)
@@ -66,7 +66,7 @@ open class GuiComponentPaneHeavy(parent: GuiLayoutData) : GuiComponentHeavy(
                                                 marginY: Double,
                                                 width: Double,
                                                 height: Double,
-                                                child: (GuiLayoutDataVertical) -> T): T {
+                                                child: (GuiLayoutDataFlow) -> T): T {
         return addSubVert(marginX, marginY, marginX, marginY, width, height,
                 child)
     }
@@ -77,7 +77,7 @@ open class GuiComponentPaneHeavy(parent: GuiLayoutData) : GuiComponentHeavy(
                                       marginEndY: Double,
                                       width: Double,
                                       height: Double,
-                                      child: (GuiLayoutDataVertical) -> T): T {
+                                      child: (GuiLayoutDataFlow) -> T): T {
         return addSubVert(marginStartX, marginStartY, marginEndX, marginEndY,
                 width, height, 0, child)
     }
@@ -89,7 +89,7 @@ open class GuiComponentPaneHeavy(parent: GuiLayoutData) : GuiComponentHeavy(
                                       width: Double,
                                       height: Double,
                                       priority: Long,
-                                      child: (GuiLayoutDataVertical) -> T): T {
+                                      child: (GuiLayoutDataFlow) -> T): T {
         return addSubVert(Vector2d(marginStartX, marginStartY),
                 Vector2d(marginEndX, marginEndY),
                 Vector2d(width, height), priority, child)
@@ -99,8 +99,8 @@ open class GuiComponentPaneHeavy(parent: GuiLayoutData) : GuiComponentHeavy(
                                       marginEnd: Vector2d,
                                       size: Vector2d,
                                       priority: Long,
-                                      child: (GuiLayoutDataVertical) -> T): T {
-        val layoutData = GuiLayoutDataVertical(this, marginStart, marginEnd,
+                                      child: (GuiLayoutDataFlow) -> T): T {
+        val layoutData = GuiLayoutDataFlow(this, marginStart, marginEnd,
                 size,
                 priority, true)
         val component = child(layoutData)

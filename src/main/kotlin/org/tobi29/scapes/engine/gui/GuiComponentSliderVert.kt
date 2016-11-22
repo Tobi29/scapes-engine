@@ -56,8 +56,7 @@ class GuiComponentSliderVert(parent: GuiLayoutData, sliderHeight: Int,
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
         gui.style.slider(renderer, size, false, value.toFloat().toDouble(),
-                sliderHeight,
-                hovered)
+                sliderHeight, hovered)
     }
 
     fun value(): Double {

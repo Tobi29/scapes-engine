@@ -53,8 +53,8 @@ open class GuiComponentSlab(parent: GuiLayoutData) : GuiComponent(
                                             marginEnd: Vector2d,
                                             size: Vector2d,
                                             priority: Long,
-                                            child: (GuiLayoutDataHorizontal) -> T): T {
-        val layoutData = GuiLayoutDataHorizontal(this, marginStart, marginEnd,
+                                            child: (GuiLayoutDataFlow) -> T): T {
+        val layoutData = GuiLayoutDataFlow(this, marginStart, marginEnd,
                 size,
                 priority)
         val component = child(layoutData)
@@ -66,7 +66,7 @@ open class GuiComponentSlab(parent: GuiLayoutData) : GuiComponent(
                                                 marginY: Double,
                                                 width: Double,
                                                 height: Double,
-                                                child: (GuiLayoutDataHorizontal) -> T): T {
+                                                child: (GuiLayoutDataFlow) -> T): T {
         return addSubHori(marginX, marginY, marginX, marginY, width, height,
                 child)
     }
@@ -77,7 +77,7 @@ open class GuiComponentSlab(parent: GuiLayoutData) : GuiComponent(
                                       marginEndY: Double,
                                       width: Double,
                                       height: Double,
-                                      child: (GuiLayoutDataHorizontal) -> T): T {
+                                      child: (GuiLayoutDataFlow) -> T): T {
         return addSubHori(marginStartX, marginStartY, marginEndX, marginEndY,
                 width, height, 0, child)
     }
@@ -89,7 +89,7 @@ open class GuiComponentSlab(parent: GuiLayoutData) : GuiComponent(
                                       width: Double,
                                       height: Double,
                                       priority: Long,
-                                      child: (GuiLayoutDataHorizontal) -> T): T {
+                                      child: (GuiLayoutDataFlow) -> T): T {
         return addSubHori(Vector2d(marginStartX, marginStartY),
                 Vector2d(marginEndX, marginEndY),
                 Vector2d(width, height), priority, child)
@@ -99,8 +99,8 @@ open class GuiComponentSlab(parent: GuiLayoutData) : GuiComponent(
                                       marginEnd: Vector2d,
                                       size: Vector2d,
                                       priority: Long,
-                                      child: (GuiLayoutDataHorizontal) -> T): T {
-        val layoutData = GuiLayoutDataHorizontal(this, marginStart, marginEnd,
+                                      child: (GuiLayoutDataFlow) -> T): T {
+        val layoutData = GuiLayoutDataFlow(this, marginStart, marginEnd,
                 size,
                 priority, true)
         val component = child(layoutData)

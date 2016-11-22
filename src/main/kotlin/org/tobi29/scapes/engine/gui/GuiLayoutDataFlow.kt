@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
-class GuiLayoutDataHorizontal(parent: GuiComponent, val marginStart: Vector2d,
-                              val marginEnd: Vector2d, size: Vector2d, priority: Long,
-                              blocksEvents: Boolean = false) : GuiLayoutData(
+open class GuiLayoutDataFlow(parent: GuiComponent, val marginStart: Vector2d,
+                        val marginEnd: Vector2d, size: Vector2d, priority: Long,
+                        blocksEvents: Boolean = false) : GuiLayoutData(
         parent, size, priority, blocksEvents)

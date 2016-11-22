@@ -27,6 +27,14 @@ class ContainerEmulateTouch(private val container: Container,
                                     "Trying to create mouse to touch emulator without mouse input")) : Container by container, ControllerTouch {
     private var tracker: ControllerTouch.Tracker? = null
 
+    override fun containerWidth(): Int {
+        return container.containerWidth() / 3
+    }
+
+    override fun containerHeight(): Int {
+        return container.containerHeight() / 3
+    }
+
     override fun formFactor(): Container.FormFactor {
         return Container.FormFactor.PHONE
     }
@@ -55,13 +63,13 @@ class ContainerEmulateTouch(private val container: Container,
         val tracker = tracker
         if (tracker != null) {
             if (controller.isDown(ControllerKey.BUTTON_0)) {
-                tracker.pos.set(controller.x(), controller.y())
+                tracker.pos.set(controller.x() / 3.0, controller.y() / 3.0)
             } else {
                 this.tracker = null
             }
         } else if (controller.isPressed(ControllerKey.BUTTON_0)) {
             val newTracker = ControllerTouch.Tracker()
-            newTracker.pos.set(controller.x(), controller.y())
+            newTracker.pos.set(controller.x() / 3.0, controller.y() / 3.0)
             this.tracker = newTracker
         }
     }

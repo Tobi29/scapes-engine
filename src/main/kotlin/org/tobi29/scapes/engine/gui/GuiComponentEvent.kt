@@ -41,6 +41,11 @@ open class GuiComponentEvent(val x: Double = Double.NaN,
             parent.screen, size) {
     }
 
+    constructor(parent: GuiComponentEvent, size: Vector2d, scale: Vector2d) : this(
+            parent.x * scale.x, parent.y * scale.y, parent.relativeX * scale.x,
+            parent.relativeY * scale.y, parent.screen, size) {
+    }
+
     constructor(parent: GuiComponentEvent, x: Double, y: Double,
                 size: Vector2d) : this(x, y, parent.relativeX, parent.relativeY,
             parent.screen, size) {

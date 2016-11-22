@@ -23,7 +23,7 @@ interface GuiContainerRow {
                                    marginY: Double,
                                    width: Double,
                                    height: Double,
-                                   child: (GuiLayoutDataVertical) -> T): T {
+                                   child: (GuiLayoutDataFlow) -> T): T {
         return addVert(marginX, marginY, marginX, marginY, width, height,
                 child)
     }
@@ -34,7 +34,7 @@ interface GuiContainerRow {
                                    marginEndY: Double,
                                    width: Double,
                                    height: Double,
-                                   child: (GuiLayoutDataVertical) -> T): T {
+                                   child: (GuiLayoutDataFlow) -> T): T {
         return addVert(marginStartX, marginStartY, marginEndX, marginEndY,
                 width, height, 0, child)
     }
@@ -46,7 +46,7 @@ interface GuiContainerRow {
                                    width: Double,
                                    height: Double,
                                    priority: Long,
-                                   child: (GuiLayoutDataVertical) -> T): T {
+                                   child: (GuiLayoutDataFlow) -> T): T {
         return addVert(Vector2d(marginStartX, marginStartY),
                 Vector2d(marginEndX, marginEndY),
                 Vector2d(width, height), priority, child)
@@ -56,5 +56,5 @@ interface GuiContainerRow {
                                    marginEnd: Vector2d,
                                    size: Vector2d,
                                    priority: Long,
-                                   child: (GuiLayoutDataVertical) -> T): T
+                                   child: (GuiLayoutDataFlow) -> T): T
 }

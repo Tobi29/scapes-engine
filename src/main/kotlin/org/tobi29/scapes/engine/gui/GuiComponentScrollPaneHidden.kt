@@ -16,13 +16,13 @@
 
 package org.tobi29.scapes.engine.gui
 
-class GuiComponentScrollPane(parent: GuiLayoutData, scrollStep: Int) : GuiComponentVisibleSlabHeavy(
+class GuiComponentScrollPaneHidden(parent: GuiLayoutData, scrollStep: Int) : GuiComponentSlabHeavy(
         parent) {
     val viewport: GuiComponentScrollPaneViewport
 
     init {
         viewport = addHori(0.0, 0.0, -1.0, -1.0) {
-            GuiComponentScrollPaneViewport(it, scrollStep)
+            GuiComponentScrollPaneViewport(it, scrollStep, true)
         }
         val slider = addHori(0.0, 0.0, 10.0, -1.0) {
             GuiComponentSliderVert(it, 0.0)

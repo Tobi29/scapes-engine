@@ -27,7 +27,7 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
 
     init {
         scrollPane = addVert(10.0, 10.0, -1.0,
-                -1.0) {  GuiComponentScrollPane(it, 20) }.viewport()
+                -1.0) {  GuiComponentScrollPane(it, 20) }.viewport
     }
 
     @Synchronized operator fun get(key: String): Element {

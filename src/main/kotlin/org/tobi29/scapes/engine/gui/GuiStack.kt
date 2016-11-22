@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.math.vector.div
 import java.util.*
 import java.util.concurrent.ConcurrentSkipListMap
 
@@ -144,11 +145,19 @@ class GuiStack {
     fun render(gl: GL,
                shader: Shader,
                delta: Double) {
-        val pixelSize = Vector2d(540.0 / gl.contentWidth(),
-                540.0 / gl.contentHeight())
+        val container = gl.engine.container
+        val framebufferSize = Vector2d(container.contentWidth().toDouble(),
+                container.contentHeight().toDouble())
         guis.values.forEach {
-            it.render(gl, shader, it.baseSize(), pixelSize, delta)
+            val size = it.baseSize()
+            val pixelSize = size / framebufferSize
+            gl.setProjectionOrthogonal(0.0f, 0.0f, size.floatX(), size.floatY())
+            it.render(gl, shader, size, pixelSize, delta)
         }
-        guis.values.forEach { it.renderOverlays(gl, shader, pixelSize) }
+        guis.values.forEach {
+            val size = it.baseSize()
+            val pixelSize = size / framebufferSize
+            it.renderOverlays(gl, shader, pixelSize)
+        }
     }
 }

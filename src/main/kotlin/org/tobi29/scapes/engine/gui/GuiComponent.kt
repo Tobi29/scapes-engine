@@ -41,6 +41,10 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     private val uid = UID_COUNTER.andIncrement
     private val hasActiveChild = AtomicBoolean(true)
     var isVisible = true
+        set(value) {
+            field = value
+            dirty()
+        }
     protected var hover = false
     protected var hovering = false
     protected var removing = false
@@ -413,13 +417,6 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
         components.add(component)
         activeUpdate()
         dirty()
-    }
-
-    fun baseSize(): Vector2d {
-        val container = engine.container
-        return Vector2d(
-                container.containerWidth().toDouble() / container.containerHeight() * 540.0,
-                540.0)
     }
 
     companion object {

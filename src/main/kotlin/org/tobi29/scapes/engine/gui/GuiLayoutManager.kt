@@ -49,11 +49,11 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
         if (size.doubleX() < 0.0) {
             size.setX(preferredSize.x * -size.doubleX())
         }
-        size.setX(min(size.doubleX(), maxSize.x))
+        size.setX(max(min(size.doubleX(), maxSize.x), 0.0))
         if (size.doubleY() < 0.0) {
             size.setY(preferredSize.y * -size.doubleY())
         }
-        size.setY(min(size.doubleY(), maxSize.y))
+        size.setY(max(min(size.doubleY(), maxSize.y), 0.0))
     }
 
     protected fun setSize(size: Vector2d,

@@ -23,7 +23,7 @@ interface GuiContainerColumn {
                                    marginY: Double,
                                    width: Double,
                                    height: Double,
-                                   child: (GuiLayoutDataHorizontal) -> T): T {
+                                   child: (GuiLayoutDataFlow) -> T): T {
         return addHori(marginX, marginY, marginX, marginY, width, height,
                 child)
     }
@@ -34,7 +34,7 @@ interface GuiContainerColumn {
                                    marginEndY: Double,
                                    width: Double,
                                    height: Double,
-                                   child: (GuiLayoutDataHorizontal) -> T): T {
+                                   child: (GuiLayoutDataFlow) -> T): T {
         return addHori(marginStartX, marginStartY, marginEndX, marginEndY,
                 width, height, 0, child)
     }
@@ -46,7 +46,7 @@ interface GuiContainerColumn {
                                    width: Double,
                                    height: Double,
                                    priority: Long,
-                                   child: (GuiLayoutDataHorizontal) -> T): T {
+                                   child: (GuiLayoutDataFlow) -> T): T {
         return addHori(Vector2d(marginStartX, marginStartY),
                 Vector2d(marginEndX, marginEndY),
                 Vector2d(width, height), priority, child)
@@ -56,5 +56,5 @@ interface GuiContainerColumn {
                                    marginEnd: Vector2d,
                                    size: Vector2d,
                                    priority: Long,
-                                   child: (GuiLayoutDataHorizontal) -> T): T
+                                   child: (GuiLayoutDataFlow) -> T): T
 }

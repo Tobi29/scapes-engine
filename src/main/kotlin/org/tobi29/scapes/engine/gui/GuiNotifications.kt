@@ -27,7 +27,7 @@ class GuiNotifications(style: GuiStyle) : Gui(style) {
     }
 
     fun <T : GuiComponent> add(
-            child: (GuiLayoutDataVertical) -> T): T {
+            child: (GuiLayoutDataFlow) -> T): T {
         return pane.addVert(10.0, 10.0, 10.0, 10.0, -1.0, 60.0, id.andIncrement,
                 child)
     }

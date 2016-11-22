@@ -111,9 +111,6 @@ abstract class GameState(val engine: ScapesEngine, protected var scene: Scene) {
         renderPostProcess(gl, fbos[fbos.size - 1], fbos[0],
                 fbos.size - 1)
         gl.checkError("Post-Processing")
-        gl.setProjectionOrthogonal(0.0f, 0.0f,
-                engine.container.containerWidth().toFloat() / engine.container.containerHeight() * 540.0f,
-                540.0f)
         engine.guiStack.render(gl, shaderGui, delta)
         gl.checkError("Gui-Rendering")
         scene.postRender(gl, delta)

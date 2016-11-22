@@ -37,10 +37,7 @@ class GuiControllerMouse constructor(engine: ScapesEngine, controller: Controlle
     override fun update(delta: Double) {
         val cursorX = controller.x()
         val cursorY = controller.y()
-        val ratio = 540.0 / engine.container.containerHeight()
-        val guiCursorX = cursorX * ratio
-        val guiCursorY = cursorY * ratio
-        cursor.set(Vector2d(cursorX, cursorY), Vector2d(guiCursorX, guiCursorY))
+        cursor.set(Vector2d(cursorX, cursorY), Vector2d(cursorX, cursorY))
         draggingLeft?.let { component ->
             val guiPos = cursor.currentGuiPos()
             val relativeX = guiPos.x - dragLeftX
@@ -48,7 +45,7 @@ class GuiControllerMouse constructor(engine: ScapesEngine, controller: Controlle
             dragLeftX = guiPos.x
             dragLeftY = guiPos.y
             component.gui.sendNewEvent(GuiEvent.DRAG_LEFT,
-                    GuiComponentEvent(guiCursorX, guiCursorY, relativeX,
+                    GuiComponentEvent(cursorX, cursorY, relativeX,
                             relativeY), component)
         }
         draggingRight?.let { component ->
@@ -58,17 +55,17 @@ class GuiControllerMouse constructor(engine: ScapesEngine, controller: Controlle
             dragRightX = guiPos.x
             dragRightY = guiPos.y
             component.gui.sendNewEvent(GuiEvent.DRAG_RIGHT,
-                    GuiComponentEvent(guiCursorX, guiCursorY, relativeX,
+                    GuiComponentEvent(cursorX, cursorY, relativeX,
                             relativeY), component)
         }
         val scrollX = controller.scrollX() * scrollSensitivity
         val scrollY = controller.scrollY() * scrollSensitivity
         if (scrollX != 0.0 || scrollY != 0.0) {
             engine.guiStack.fireRecursiveEvent(GuiEvent.SCROLL,
-                    GuiComponentEvent(guiCursorX, guiCursorY, scrollX,
+                    GuiComponentEvent(cursorX, cursorY, scrollX,
                             scrollY, false))
         }
-        val componentEvent = GuiComponentEvent(guiCursorX, guiCursorY)
+        val componentEvent = GuiComponentEvent(cursorX, cursorY)
         engine.guiStack.fireEvent(componentEvent,
                 GuiComponent::hover)
         controller.pressEvents().forEach { event ->
