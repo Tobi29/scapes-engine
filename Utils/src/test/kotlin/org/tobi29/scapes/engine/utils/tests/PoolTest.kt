@@ -68,15 +68,15 @@ class PoolTest {
         pool.push().set("1")
         pool.push().set("2")
         pool.push().set("3")
-        Assert.assertEquals("Popping returned wrong object", pool.pop().str,
-                "3")
-        Assert.assertEquals("Popping returned wrong object", pool.pop().str,
-                "2")
+        Assert.assertEquals("Popping returned wrong object", "2",
+                pool.pop()?.str)
+        Assert.assertEquals("Popping returned wrong object", "1",
+                pool.pop()?.str)
         pool.push().set("4")
-        Assert.assertEquals("Popping returned wrong object", pool.pop().str,
-                "4")
-        Assert.assertEquals("Popping returned wrong object", pool.pop().str,
-                "1")
+        Assert.assertEquals("Popping returned wrong object", "1",
+                pool.pop()?.str)
+        Assert.assertEquals("Popping returned wrong object", null,
+                pool.pop()?.str)
         Assert.assertTrue("Pool is not empty", pool.isEmpty)
         try {
             pool.pop()
