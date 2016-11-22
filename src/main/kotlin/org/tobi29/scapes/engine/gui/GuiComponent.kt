@@ -43,7 +43,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     var isVisible = true
         set(value) {
             field = value
-            dirty()
+            parent.parent?.dirty()
         }
     protected var hover = false
     protected var hovering = false
