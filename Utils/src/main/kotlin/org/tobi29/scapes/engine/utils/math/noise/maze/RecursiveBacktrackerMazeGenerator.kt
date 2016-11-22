@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
-import mu.KLogging
 import org.tobi29.scapes.engine.utils.Pool
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.and
@@ -24,18 +23,16 @@ import org.tobi29.scapes.engine.utils.math.or
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
 import java.util.*
 
-class RecursiveBacktrackerMazeGenerator(private val width: Int, private val height: Int, private val startX: Int,
-                                        private val startY: Int) : MazeGenerator {
-    private var data: Array<ByteArray>? = null
-
-    constructor(width: Int, height: Int,
-                random: Random) : this(width, height, random.nextInt(width),
-            random.nextInt(height)) {
-    }
-
-    override fun generate(random: Random) {
-        val time = System.currentTimeMillis()
-        val data = Array(width) { ByteArray(height) }
+/**
+ * Maze generator using recursive backtracking
+ */
+object RecursiveBacktrackerMazeGenerator : MazeGenerator {
+    override fun generate(width: Int,
+                          height: Int,
+                          startX: Int,
+                          startY: Int,
+                          random: Random): Maze {
+        val maze = MutableMaze(width, height)
         val maxX = width - 1
         val maxY = height - 1
         val path = Pool { MutableVector2i() }
@@ -44,91 +41,46 @@ class RecursiveBacktrackerMazeGenerator(private val width: Int, private val heig
         while (current != null) {
             val x = current.x
             val y = current.y
-            data[x][y] = data[x][y] or MASK_VISITED
+            maze.changeAt(x, y) { it or MASK_VISITED }
             var validDirections = 0
             if (x < maxX) {
-                if (data[x + 1][y] and MASK_VISITED == 0.toByte()) {
+                if (maze.getAt(x + 1, y) and MASK_VISITED == 0.toByte()) {
                     directions[validDirections++] = Face.EAST
                 }
             }
             if (y < maxY) {
-                if (data[x][y + 1] and MASK_VISITED == 0.toByte()) {
+                if (maze.getAt(x, y + 1) and MASK_VISITED == 0.toByte()) {
                     directions[validDirections++] = Face.SOUTH
                 }
             }
             if (x > 0) {
-                if (data[x - 1][y] and MASK_VISITED == 0.toByte()) {
+                if (maze.getAt(x - 1, y) and MASK_VISITED == 0.toByte()) {
                     directions[validDirections++] = Face.WEST
                 }
             }
             if (y > 0) {
-                if (data[x][y - 1] and MASK_VISITED == 0.toByte()) {
+                if (maze.getAt(x, y - 1) and MASK_VISITED == 0.toByte()) {
                     directions[validDirections++] = Face.NORTH
                 }
             }
             if (validDirections > 0) {
                 val direction = directions[random.nextInt(validDirections)]
                 if (direction === Face.NORTH) {
-                    data[x][y] = data[x][y] or MASK_NORTH
+                    maze.changeAt(x, y) { it or Maze.MASK_NORTH }
                 } else if (direction === Face.EAST) {
-                    data[x + 1][y] = data[x + 1][y] or MASK_WEST
+                    maze.changeAt(x + 1, y) { it or Maze.MASK_WEST }
                 } else if (direction === Face.SOUTH) {
-                    data[x][y + 1] = data[x][y + 1] or MASK_NORTH
+                    maze.changeAt(x, y + 1) { it or Maze.MASK_NORTH }
                 } else if (direction === Face.WEST) {
-                    data[x][y] = data[x][y] or MASK_WEST
+                    maze.changeAt(x, y) { it or Maze.MASK_WEST }
                 }
-                current = path.push()
-                current.set(x + direction.x, y + direction.y)
+                current = path.push().set(x + direction.x, y + direction.y)
             } else {
-                if (!path.isEmpty) {
-                    current = path.pop()
-                } else {
-                    current = null
-                }
+                current = path.pop()
             }
         }
-        logger.debug { "Generated recursive-backtracker-maze in ${System.currentTimeMillis() - time} ms." }
-        this.data = data
+        return maze.toMaze()
     }
 
-    override fun createMap(roomSizeX: Int,
-                           roomSizeY: Int): Array<BooleanArray> {
-        val data = data ?: throw IllegalStateException("Maze not generated")
-        val cellSizeX = roomSizeX + 1
-        val cellSizeY = roomSizeY + 1
-        val blocks = Array(width * cellSizeX + 1) {
-            BooleanArray(height * cellSizeY + 1)
-        }
-        for (y in 0..height - 1) {
-            val yy = y * cellSizeY
-            for (x in 0..width - 1) {
-                val xx = x * cellSizeX
-                if (data[x][y] and MASK_NORTH == 0.toByte()) {
-                    for (wall in 0..cellSizeX) {
-                        blocks[xx + wall][yy] = true
-                    }
-                }
-                if (data[x][y] and MASK_WEST == 0.toByte()) {
-                    for (wall in 0..cellSizeY) {
-                        blocks[xx][yy + wall] = true
-                    }
-                }
-            }
-        }
-        var i = blocks.size - 1
-        for (y in 0..blocks[i].size - 1) {
-            blocks[i][y] = true
-        }
-        i = blocks[0].size - 1
-        for (x in blocks.indices) {
-            blocks[x][i] = true
-        }
-        return blocks
-    }
-
-    companion object : KLogging() {
-        private val MASK_NORTH: Byte = 0x1
-        private val MASK_WEST: Byte = 0x2
-        private val MASK_VISITED: Byte = 0x4
-    }
+    private val MASK_VISITED: Byte = 0x4
 }

@@ -18,9 +18,34 @@ package org.tobi29.scapes.engine.utils.math.noise.maze
 
 import java.util.*
 
+/**
+ * Generates random mazes
+ */
 interface MazeGenerator {
-    fun generate(random: Random)
+    /**
+     * Generates a new maze
+     * @param width width of the maze
+     * @param height height of the maze
+     * @param random rng instance
+     */
+    fun generate(width: Int,
+                 height: Int,
+                 random: Random): Maze {
+        return generate(width, height, random.nextInt(width),
+                random.nextInt(height), random)
+    }
 
-    fun createMap(roomSizeX: Int,
-                  roomSizeY: Int): Array<BooleanArray>
+    /**
+     * Generates a new maze
+     * @param width width of the maze
+     * @param height height of the maze
+     * @param startX starting x-position in the maze algorithm
+     * @param startY starting y-position in the maze algorithm
+     * @param random rng instance
+     */
+    fun generate(width: Int,
+                 height: Int,
+                 startX: Int,
+                 startY: Int,
+                 random: Random): Maze
 }
