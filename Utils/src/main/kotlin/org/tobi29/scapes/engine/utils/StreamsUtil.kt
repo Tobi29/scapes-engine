@@ -32,15 +32,6 @@ inline fun <T> Collection<T>.stream(): Stream<T> {
 }
 
 /**
- * Converts given [Pool] into a [Stream]
- * @param T Element type
- * @return [Stream] providing the elements
- */
-inline fun <T> Pool<T>.stream(): Stream<T> {
-    return spliterator8().stream()
-}
-
-/**
  * Returns an empty [Stream]
  * @param T Element type
  * @return An empty [Stream]
@@ -68,36 +59,42 @@ inline fun <T> stream(item: T?): Stream<T> {
  * @param T Element type
  * @return [Stream] providing the elements
  */
-inline fun <T> stream(vararg array: T): Stream<T> {
-    return RefStreams.of(*array)
-}
+inline fun <T> stream(vararg array: T): Stream<T> = RefStreams.of(*array)
 
 /**
  * Converts given [array] into an [IntStream]
  * @param array The array
  * @return [IntStream] providing the elements
  */
-inline fun stream(array: IntArray): IntStream {
-    return IntStreams.of(*array)
-}
+inline fun stream(array: IntArray): IntStream = IntStreams.of(*array)
 
 /**
  * Converts given [array] into a [LongStream]
  * @param array The array
  * @return [LongStream] providing the elements
  */
-inline fun stream(array: LongArray): LongStream {
-    return LongStreams.of(*array)
-}
+inline fun stream(array: LongArray): LongStream = LongStreams.of(*array)
 
 /**
  * Converts given [array] into a [DoubleStream]
  * @param array The array
  * @return [DoubleStream] providing the elements
  */
-inline fun stream(array: DoubleArray): DoubleStream {
-    return DoubleStreams.of(*array)
-}
+inline fun stream(array: DoubleArray): DoubleStream = DoubleStreams.of(*array)
+
+/**
+ * Converts given [IntRange] into a [IntStream]
+ * @receiver The given [IntRange]
+ * @return An [IntStream] containing the elements from [IntRange]
+ */
+inline fun IntRange.stream() = streamRange(start, endInclusive - 1)
+
+/**
+ * Converts given [LongRange] into a [LongStream]
+ * @receiver The given [LongRange]
+ * @return An [LongStream] containing the elements from [LongRange]
+ */
+inline fun LongRange.stream() = streamRange(start, endInclusive - 1L)
 
 /**
  * Returns an [IntStream] containing all values between [min] and [max]
@@ -105,9 +102,7 @@ inline fun stream(array: DoubleArray): DoubleStream {
  * @param max End of the stream, exclusive
  */
 inline fun streamRange(min: Int,
-                       max: Int): IntStream {
-    return IntStreams.range(min, max)
-}
+                       max: Int): IntStream = IntStreams.range(min, max)
 
 /**
  * Returns a [LongStream] containing all values between [min] and [max]
@@ -115,9 +110,7 @@ inline fun streamRange(min: Int,
  * @param max End of the stream, exclusive
  */
 inline fun streamRange(min: Long,
-                       max: Long): LongStream {
-    return LongStreams.range(min, max)
-}
+                       max: Long): LongStream = LongStreams.range(min, max)
 
 /**
  * Converts given [Spliterator] into a [Stream]
