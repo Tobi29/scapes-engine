@@ -40,7 +40,7 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }.viewport
 
         toggle.on(GuiEvent.CLICK_LEFT, { event ->
-            if (Profiler.enabled()) {
+            if (Profiler.enabled) {
                 toggle.setText("Enable")
                 Profiler.enabled = false
             } else {

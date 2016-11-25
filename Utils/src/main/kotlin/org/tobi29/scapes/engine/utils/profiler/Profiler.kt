@@ -67,18 +67,6 @@ class Profiler private constructor(thread: Thread) {
             return PROFILERS[thread]?.mapNotNull { it.rootNode }
         }
 
-        fun enable() {
-            enabled = true
-        }
-
-        fun disable() {
-            enabled = false
-        }
-
-        fun enabled(): Boolean {
-            return enabled
-        }
-
         fun reset() {
             PROFILERS.values.forEach { it.resetNodes() }
         }
