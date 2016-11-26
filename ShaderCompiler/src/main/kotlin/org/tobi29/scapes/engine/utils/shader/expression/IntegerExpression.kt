@@ -16,5 +16,4 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-@SuppressWarnings("EmptyClass")
 open class IntegerExpression : Expression()

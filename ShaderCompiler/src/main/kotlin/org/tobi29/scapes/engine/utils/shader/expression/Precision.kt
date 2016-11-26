@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader.expression
 
-@SuppressWarnings("EnumeratedConstantNamingConvention")
 enum class Precision {
     lowp,
     mediump,
