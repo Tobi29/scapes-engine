@@ -16,21 +16,14 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.shader.BooleanExpression
-import org.tobi29.scapes.engine.utils.shader.Parameter
-import org.tobi29.scapes.engine.utils.shader.PropertyExpression
-import org.tobi29.scapes.engine.utils.shader.ShaderParameter
-
 internal object ParameterCompiler {
-    tailrec fun parameters(context: ScapesShaderParser.ParameterListContext,
+    tailrec fun parameters(context: ScapesShaderParser.ParameterListContext?,
                            parameters: MutableList<Parameter>,
                            scope: Scope) {
+        context ?: return
         val parameter = parameter(context.parameterDeclaration(), scope)
         parameters.add(parameter)
-        val next = context.parameterList()
-        if (next != null) {
-            parameters(next, parameters, scope)
-        }
+        parameters(context.parameterList(), parameters, scope)
     }
 
     fun parameter(context: ScapesShaderParser.ParameterDeclarationContext,
@@ -44,15 +37,13 @@ internal object ParameterCompiler {
                 variable)
     }
 
-    tailrec fun parameters(context: ScapesShaderParser.ShaderParameterListContext,
+    tailrec fun parameters(context: ScapesShaderParser.ShaderParameterListContext?,
                            parameters: MutableList<ShaderParameter>,
                            scope: Scope) {
+        context ?: return
         val parameter = parameter(context.shaderParameterDeclaration(), scope)
         parameters.add(parameter)
-        val next = context.shaderParameterList()
-        if (next != null) {
-            parameters(next, parameters, scope)
-        }
+        parameters(context.shaderParameterList(), parameters, scope)
     }
 
     fun parameter(context: ScapesShaderParser.ShaderParameterDeclarationContext,
@@ -68,14 +59,9 @@ internal object ParameterCompiler {
         val name = context.Identifier().text
         val variable = scope.add(name) ?: throw ShaderCompileException(
                 "Redeclaring variable: $name", context.Identifier())
-        val property = context.property() ?: return ShaderParameter(
-                type,
-                id, variable,
-                BooleanExpression(
-                        true))
-        return ShaderParameter(
-                type, id, variable,
-                PropertyExpression(
-                        property.Identifier().text))
+        val property = context.property() ?: return ShaderParameter(type, id,
+                variable, BooleanExpression(true))
+        return ShaderParameter(type, id, variable,
+                PropertyExpression(property.Identifier().text))
     }
 }

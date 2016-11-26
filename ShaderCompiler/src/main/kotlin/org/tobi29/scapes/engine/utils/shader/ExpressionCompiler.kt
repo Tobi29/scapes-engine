@@ -57,7 +57,7 @@ internal object ExpressionCompiler {
         return TernaryExpression(
                 expression(context.logicalOrExpression(), scope),
                 expression(context.expression(), scope),
-                expression(context.conditionalExpression(), scope))
+                expression(condition, scope))
     }
 
     fun expression(context: ScapesShaderParser.LogicalOrExpressionContext,

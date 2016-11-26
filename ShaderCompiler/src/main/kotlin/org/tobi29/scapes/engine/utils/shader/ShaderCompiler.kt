@@ -102,9 +102,8 @@ class ShaderCompiler {
             val name = signature.Identifier().text
             val parameters = ArrayList<ShaderParameter>()
             val inputScope = Scope(scope)
-            signature.shaderParameterList()?.let {
-                ParameterCompiler.parameters(it, parameters, inputScope)
-            }
+            ParameterCompiler.parameters(signature.shaderParameterList(),
+                    parameters, inputScope)
             val shaderSignature = ShaderSignature(
                     name,
                     *parameters.toTypedArray())
@@ -120,9 +119,8 @@ class ShaderCompiler {
         val outputs = context.outputsDefinition()
         if (outputs != null) {
             val parameters = ArrayList<ShaderParameter>()
-            outputs.shaderParameterList()?.let {
-                ParameterCompiler.parameters(it, parameters, scope)
-            }
+            ParameterCompiler.parameters(outputs.shaderParameterList(),
+                    parameters, scope)
             val outputsSignature = ShaderSignature(
                     "outputs",
                     *parameters.toTypedArray())
@@ -135,9 +133,8 @@ class ShaderCompiler {
             val name = signature.Identifier().text
             val parameters = ArrayList<Parameter>()
             val functionScope = Scope(scope)
-            signature.parameterList()?.let {
-                ParameterCompiler.parameters(it, parameters, functionScope)
-            }
+            ParameterCompiler.parameters(signature.parameterList(), parameters,
+                    functionScope)
             val returned = TypeCompiler.type(signature.typeSpecifier())
             val precisionSpecifier = signature.precisionSpecifier()
             val returnedPrecision: Precision
