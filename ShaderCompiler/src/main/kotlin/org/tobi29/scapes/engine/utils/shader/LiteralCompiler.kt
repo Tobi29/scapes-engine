@@ -48,11 +48,6 @@ internal object LiteralCompiler {
         throw ShaderCompileException("No constant found", context)
     }
 
-    fun character(context: ScapesShaderParser.CharacterConstantContext): Expression {
-        // TODO: Implement
-        throw ShaderCompileException("NYI", context)
-    }
-
     fun constant(context: ScapesShaderParser.ConstantContext): Expression {
         val integer = context.integerConstant()
         if (integer != null) {
@@ -61,10 +56,6 @@ internal object LiteralCompiler {
         val floating = context.floatingConstant()
         if (floating != null) {
             return floating(floating)
-        }
-        val character = context.characterConstant()
-        if (character != null) {
-            return character(character)
         }
         throw ShaderCompileException("No constant found", context)
     }

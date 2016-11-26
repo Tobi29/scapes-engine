@@ -222,33 +222,30 @@ class ShaderCompiler {
         fun declaration(type: Type,
                         context: ScapesShaderParser.InitDeclaratorFieldListContext?,
                         scope: Scope): Statement {
-            var context = context
             val expressions = ArrayList<Declaration>()
-            while (context != null) {
-                val declarator = context.initDeclaratorField()
-                val initializer = declarator.initializerField()
-                val name = declarator.Identifier().text
-                if (initializer == null) {
-                    val variable = scope.add(
-                            name) ?: throw ShaderCompileException(
-                            "Redeclaring variable: $name", declarator)
-                    expressions.add(
-                            Declaration(
-                                    variable))
-                } else {
-                    val init = ExpressionCompiler.expression(
-                            initializer.assignmentExpression(), scope)
-                    val variable = scope.add(
-                            name) ?: throw ShaderCompileException(
-                            "Redeclaring variable: $name", declarator)
-                    expressions.add(
-                            Declaration(
-                                    variable, init))
-                }
-                context = context.initDeclaratorFieldList()
+            declaration(context, expressions, scope)
+            return DeclarationStatement(type, expressions)
+        }
+
+        private tailrec fun declaration(context: ScapesShaderParser.InitDeclaratorFieldListContext?,
+                                        expressions: MutableList<Declaration>,
+                                        scope: Scope) {
+            context ?: return
+            val declarator = context.initDeclaratorField()
+            val initializer = declarator.initializerField()
+            val name = declarator.Identifier().text
+            if (initializer == null) {
+                val variable = scope.add(name) ?: throw ShaderCompileException(
+                        "Redeclaring variable: $name", declarator)
+                expressions.add(Declaration(variable))
+            } else {
+                val init = ExpressionCompiler.expression(
+                        initializer.assignmentExpression(), scope)
+                val variable = scope.add(name) ?: throw ShaderCompileException(
+                        "Redeclaring variable: $name", declarator)
+                expressions.add(Declaration(variable, init))
             }
-            return DeclarationStatement(
-                    type, expressions)
+            declaration(context.initDeclaratorFieldList(), expressions, scope)
         }
 
         fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
@@ -275,19 +272,20 @@ class ShaderCompiler {
                         length: Expression,
                         context: ScapesShaderParser.InitDeclaratorArrayListContext?,
                         scope: Scope): Statement {
-            var context = context
             val declarations = ArrayList<ArrayDeclaration>()
-            while (context != null) {
-                val name = context.Identifier().text
-                val variable = scope.add(name) ?: throw ShaderCompileException(
-                        "Redeclaring variable: $name", context)
-                declarations.add(
-                        ArrayDeclaration(
-                                variable))
-                context = context.initDeclaratorArrayList()
-            }
-            return ArrayDeclarationStatement(
-                    type, length, declarations)
+            declaration(context, declarations, scope)
+            return ArrayDeclarationStatement(type, length, declarations)
+        }
+
+        private tailrec fun declaration(context: ScapesShaderParser.InitDeclaratorArrayListContext?,
+                                        declarations: MutableList<ArrayDeclaration>,
+                                        scope: Scope) {
+            context ?: return
+            val name = context.Identifier().text
+            val variable = scope.add(name) ?: throw ShaderCompileException(
+                    "Redeclaring variable: $name", context)
+            declarations.add(ArrayDeclaration(variable))
+            declaration(context.initDeclaratorArrayList(), declarations, scope)
         }
 
         fun initializer(context: ScapesShaderParser.InitializerArrayContext,
@@ -302,14 +300,18 @@ class ShaderCompiler {
 
         fun initializer(context: ScapesShaderParser.InitializerArrayListContext?,
                         scope: Scope): ArrayExpression {
-            var context = context
             val expressions = ArrayList<Expression>()
-            while (context != null) {
-                expressions.add(ExpressionCompiler.expression(
-                        context.assignmentExpression(), scope))
-                context = context.initializerArrayList()
-            }
+            initializer(context, expressions, scope)
             return ArrayExpression.Literal(expressions)
+        }
+
+        private tailrec fun initializer(context: ScapesShaderParser.InitializerArrayListContext?,
+                                        expressions: MutableList<Expression>,
+                                        scope: Scope) {
+            context ?: return
+            expressions.add(ExpressionCompiler.expression(
+                    context.assignmentExpression(), scope))
+            initializer(context.initializerArrayList(), expressions, scope)
         }
 
         fun compound(context: ScapesShaderParser.BlockItemListContext,
@@ -320,14 +322,17 @@ class ShaderCompiler {
 
         fun block(context: ScapesShaderParser.BlockItemListContext?,
                   scope: Scope): StatementBlock {
-            var context = context
             val expressions = ArrayList<Statement>()
-            while (context != null) {
-                expressions.add(statement(context.statement(), scope))
-                context = context.blockItemList()
-            }
-            return StatementBlock(
-                    expressions)
+            block(context, expressions, scope)
+            return StatementBlock(expressions)
+        }
+
+        private tailrec fun block(context: ScapesShaderParser.BlockItemListContext?,
+                                  expressions: MutableList<Statement>,
+                                  scope: Scope) {
+            context ?: return
+            expressions.add(statement(context.statement(), scope))
+            block(context.blockItemList(), expressions, scope)
         }
 
         fun parser(source: String): ScapesShaderParser {
@@ -343,8 +348,7 @@ class ShaderCompiler {
                                          msg: String?,
                                          e: RecognitionException?) {
                     throw ParseCancellationException(
-                            "line " + line + ':' + charPositionInLine + ' ' +
-                                    msg)
+                            "line $line:$charPositionInLine $msg")
                 }
             })
             return parser

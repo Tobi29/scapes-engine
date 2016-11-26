@@ -17,10 +17,7 @@
 package org.tobi29.scapes.engine.utils.shader
 
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.tobi29.scapes.engine.utils.shader.Precision
-import org.tobi29.scapes.engine.utils.shader.Type
-import org.tobi29.scapes.engine.utils.shader.TypeExported
-import org.tobi29.scapes.engine.utils.shader.Types
+import org.tobi29.scapes.engine.utils.forEach
 
 internal object TypeCompiler {
     fun type(context: ScapesShaderParser.DeclaratorContext): Type {
@@ -33,11 +30,9 @@ internal object TypeCompiler {
 
     fun type(context: ScapesShaderParser.DeclaratorFieldContext): Type {
         var constant = false
-        for (child in context.children) {
-            if (child is TerminalNode) {
-                when (child.getText()) {
-                    "const" -> constant = true
-                }
+        context.children.forEach({ it is TerminalNode }) { child ->
+            when (child.text) {
+                "const" -> constant = true
             }
         }
         val precisionSpecifier = context.precisionSpecifier()
@@ -53,11 +48,9 @@ internal object TypeCompiler {
 
     fun type(context: ScapesShaderParser.DeclaratorArrayContext): Type {
         var constant = false
-        for (child in context.children) {
-            if (child is TerminalNode) {
-                when (child.getText()) {
-                    "const" -> constant = true
-                }
+        context.children.forEach({ it is TerminalNode }) { child ->
+            when (child.text) {
+                "const" -> constant = true
             }
         }
         val precisionSpecifier = context.precisionSpecifier()
@@ -75,11 +68,9 @@ internal object TypeCompiler {
 
     fun type(context: ScapesShaderParser.DeclaratorArrayUnsizedContext): Type {
         var constant = false
-        for (child in context.children) {
-            if (child is TerminalNode) {
-                when (child.getText()) {
-                    "const" -> constant = true
-                }
+        context.children.forEach({ it is TerminalNode }) { child ->
+            when (child.text) {
+                "const" -> constant = true
             }
         }
         val precisionSpecifier = context.precisionSpecifier()

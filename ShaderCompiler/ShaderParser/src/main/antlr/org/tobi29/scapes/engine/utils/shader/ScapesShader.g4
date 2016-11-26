@@ -427,21 +427,6 @@ EscapeSequence
     :   '\\' ['"?abfnrtv\\]
     ;
 
-StringLiteral
-    :   '"' SCharSequence? '"'
-    ;
-
-fragment
-SCharSequence
-    :   SChar+
-    ;
-
-fragment
-SChar
-    :   ~["\\\r\n]
-    |   EscapeSequence
-    ;
-
 Whitespace
     :   [ \t]+
         -> skip
