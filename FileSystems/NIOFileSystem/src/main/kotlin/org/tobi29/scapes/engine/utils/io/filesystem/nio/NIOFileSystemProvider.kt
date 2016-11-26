@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.utils.io.filesystem.nio
 
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
+import org.tobi29.scapes.engine.utils.io.filesystem.nio.internal.NIOFileUtilImpl
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
 
 class NIOFileSystemProvider : FileSystemProvider {

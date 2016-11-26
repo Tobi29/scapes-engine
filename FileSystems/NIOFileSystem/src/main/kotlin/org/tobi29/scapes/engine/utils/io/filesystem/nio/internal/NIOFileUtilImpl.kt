@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.io.filesystem.nio
+package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import java8.util.Spliterators
 import java8.util.stream.Stream
@@ -36,7 +36,7 @@ import java.nio.file.attribute.FileTime
 import java.util.*
 import java.util.zip.ZipFile
 
-class NIOFileUtilImpl : FileUtilImpl {
+internal class NIOFileUtilImpl : FileUtilImpl {
     override fun path(path: String): FilePath {
         return path(Paths.get(path))
     }
@@ -326,7 +326,7 @@ class NIOFileUtilImpl : FileUtilImpl {
                 }
 
                 override fun <R> read(reader: (ReadableByteStream) -> R): R {
-                    return NIOFileUtilImpl.read(path, reader)
+                    return read(path, reader)
                 }
 
                 override fun mimeType(): String {
