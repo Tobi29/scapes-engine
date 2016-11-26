@@ -18,8 +18,6 @@ package org.tobi29.scapes.engine.utils.shader
 
 import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.tobi29.scapes.engine.utils.shader.expression.*
-import org.tobi29.scapes.engine.utils.shader.expression.Function
 import java.util.*
 
 class ShaderCompiler {
@@ -85,7 +83,8 @@ class ShaderCompiler {
                 }
                 val variable = scope.add(name) ?: throw ShaderCompileException(
                         "Redeclaring variable: $name", uniform.Identifier())
-                uniforms[id] = Uniform(TypeCompiler.type(field), id, variable)
+                uniforms[id] = Uniform(
+                        TypeCompiler.type(field), id, variable)
             }
             val array = declarator.declaratorArray()
             if (array != null) {
@@ -106,13 +105,15 @@ class ShaderCompiler {
             signature.shaderParameterList()?.let {
                 ParameterCompiler.parameters(it, parameters, inputScope)
             }
-            val shaderSignature = ShaderSignature(name,
+            val shaderSignature = ShaderSignature(
+                    name,
                     *parameters.toTypedArray())
             shaders[name] = Pair(inputScope, { shaderScope ->
                 val compound = compound(
                         shader.compoundStatement().blockItemList(),
                         Scope(inputScope, shaderScope))
-                ShaderFunction(shaderSignature, compound)
+                ShaderFunction(
+                        shaderSignature, compound)
             })
             return
         }
@@ -122,7 +123,8 @@ class ShaderCompiler {
             outputs.shaderParameterList()?.let {
                 ParameterCompiler.parameters(it, parameters, scope)
             }
-            val outputsSignature = ShaderSignature("outputs",
+            val outputsSignature = ShaderSignature(
+                    "outputs",
                     *parameters.toTypedArray())
             this.outputs = outputsSignature
             return
@@ -144,13 +146,16 @@ class ShaderCompiler {
             } else {
                 returnedPrecision = TypeCompiler.precision(precisionSpecifier)
             }
-            val functionSignature = FunctionSignature(name, returned,
+            val functionSignature = FunctionSignature(
+                    name, returned,
                     returnedPrecision,
                     *parameters.toTypedArray())
             val compound = compound(
                     function.compoundStatement().blockItemList(),
                     Scope(functionScope))
-            functions.add(Function(functionSignature, compound))
+            functions.add(
+                    Function(
+                            functionSignature, compound))
             return
         }
     }
@@ -189,7 +194,8 @@ class ShaderCompiler {
                         name) ?: throw ShaderCompileException(
                         "Redeclaring variable: $name", rangeLoop.Identifier())
                 val statement = statement(rangeLoop.statement(), loopScope)
-                return LoopFixedStatement(variable, start, end, statement)
+                return LoopFixedStatement(
+                        variable, start, end, statement)
             }
             return compound(context.compoundStatement().blockItemList(), scope)
         }
@@ -226,18 +232,23 @@ class ShaderCompiler {
                     val variable = scope.add(
                             name) ?: throw ShaderCompileException(
                             "Redeclaring variable: $name", declarator)
-                    expressions.add(Declaration(variable))
+                    expressions.add(
+                            Declaration(
+                                    variable))
                 } else {
                     val init = ExpressionCompiler.expression(
                             initializer.assignmentExpression(), scope)
                     val variable = scope.add(
                             name) ?: throw ShaderCompileException(
                             "Redeclaring variable: $name", declarator)
-                    expressions.add(Declaration(variable, init))
+                    expressions.add(
+                            Declaration(
+                                    variable, init))
                 }
                 context = context.initDeclaratorFieldList()
             }
-            return DeclarationStatement(type, expressions)
+            return DeclarationStatement(
+                    type, expressions)
         }
 
         fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
@@ -256,7 +267,8 @@ class ShaderCompiler {
             val init = initializer(initializer, scope)
             val variable = scope.add(name) ?: throw ShaderCompileException(
                     "Redeclaring variable: $name", context)
-            return ArrayUnsizedDeclarationStatement(type, variable, init)
+            return ArrayUnsizedDeclarationStatement(
+                    type, variable, init)
         }
 
         fun declaration(type: Type,
@@ -269,10 +281,13 @@ class ShaderCompiler {
                 val name = context.Identifier().text
                 val variable = scope.add(name) ?: throw ShaderCompileException(
                         "Redeclaring variable: $name", context)
-                declarations.add(ArrayDeclaration(variable))
+                declarations.add(
+                        ArrayDeclaration(
+                                variable))
                 context = context.initDeclaratorArrayList()
             }
-            return ArrayDeclarationStatement(type, length, declarations)
+            return ArrayDeclarationStatement(
+                    type, length, declarations)
         }
 
         fun initializer(context: ScapesShaderParser.InitializerArrayContext,
@@ -281,7 +296,7 @@ class ShaderCompiler {
             if (list != null) {
                 return initializer(list, scope)
             }
-            return PropertyArrayExpression(
+            return ArrayExpression.Property(
                     context.property().Identifier().text)
         }
 
@@ -294,12 +309,13 @@ class ShaderCompiler {
                         context.assignmentExpression(), scope))
                 context = context.initializerArrayList()
             }
-            return ArrayLiteralExpression(expressions)
+            return ArrayExpression.Literal(expressions)
         }
 
         fun compound(context: ScapesShaderParser.BlockItemListContext,
                      scope: Scope): CompoundStatement {
-            return CompoundStatement(block(context, Scope(scope)))
+            return CompoundStatement(
+                    block(context, Scope(scope)))
         }
 
         fun block(context: ScapesShaderParser.BlockItemListContext?,
@@ -310,7 +326,8 @@ class ShaderCompiler {
                 expressions.add(statement(context.statement(), scope))
                 context = context.blockItemList()
             }
-            return StatementBlock(expressions)
+            return StatementBlock(
+                    expressions)
         }
 
         fun parser(source: String): ScapesShaderParser {

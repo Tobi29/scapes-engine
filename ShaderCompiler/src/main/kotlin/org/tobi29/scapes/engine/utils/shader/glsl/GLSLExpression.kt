@@ -16,6 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader.glsl
 
-import org.tobi29.scapes.engine.utils.shader.expression.Expression
+import org.tobi29.scapes.engine.utils.shader.Expression
 
 class GLSLExpression(val code: String) : Expression()

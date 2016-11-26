@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.shader
 
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.tobi29.scapes.engine.utils.shader.expression.*
 import java.util.*
 
 internal object ExpressionCompiler {
@@ -43,7 +42,8 @@ internal object ExpressionCompiler {
                         "Invalid assignment operator" + context.assignmentOperator().text,
                         context.assignmentOperator())
             }
-            return AssignmentExpression(type,
+            return AssignmentExpression(
+                    type,
                     expression(context.unaryExpression(), scope),
                     expression(context.assignmentExpression(), scope))
         }
@@ -65,7 +65,8 @@ internal object ExpressionCompiler {
         val expression = context.logicalAndExpression()
         val next = context.logicalOrExpression() ?: return expression(
                 expression, scope)
-        return ConditionExpression(ConditionType.CONDITION_LOGICAL_OR,
+        return ConditionExpression(
+                ConditionType.CONDITION_LOGICAL_OR,
                 expression(next, scope), expression(expression, scope))
     }
 
@@ -74,7 +75,8 @@ internal object ExpressionCompiler {
         val expression = context.inclusiveOrExpression()
         val next = context.logicalAndExpression() ?: return expression(
                 expression, scope)
-        return ConditionExpression(ConditionType.CONDITION_LOGICAL_AND,
+        return ConditionExpression(
+                ConditionType.CONDITION_LOGICAL_AND,
                 expression(next, scope), expression(expression, scope))
     }
 
@@ -83,7 +85,8 @@ internal object ExpressionCompiler {
         val expression = context.exclusiveOrExpression()
         val next = context.inclusiveOrExpression() ?: return expression(
                 expression, scope)
-        return ConditionExpression(ConditionType.CONDITION_INCLUSIVE_OR,
+        return ConditionExpression(
+                ConditionType.CONDITION_INCLUSIVE_OR,
                 expression(next, scope), expression(expression, scope))
     }
 
@@ -92,7 +95,8 @@ internal object ExpressionCompiler {
         val expression = context.andExpression()
         val next = context.exclusiveOrExpression() ?: return expression(
                 expression, scope)
-        return ConditionExpression(ConditionType.CONDITION_EXCLUSIVE_OR,
+        return ConditionExpression(
+                ConditionType.CONDITION_EXCLUSIVE_OR,
                 expression(next, scope), expression(expression, scope))
     }
 
@@ -101,7 +105,8 @@ internal object ExpressionCompiler {
         val expression = context.equalityExpression()
         val next = context.andExpression() ?: return expression(expression,
                 scope)
-        return ConditionExpression(ConditionType.CONDITION_AND,
+        return ConditionExpression(
+                ConditionType.CONDITION_AND,
                 expression(next, scope), expression(expression, scope))
     }
 
@@ -118,7 +123,8 @@ internal object ExpressionCompiler {
                     "Invalid conditional operator: " + context.children[1].text,
                     context)
         }
-        return ConditionExpression(type, expression(next, scope),
+        return ConditionExpression(
+                type, expression(next, scope),
                 expression(expression, scope))
     }
 
@@ -137,7 +143,8 @@ internal object ExpressionCompiler {
                     "Invalid conditional operator: " + context.children[1].text,
                     context)
         }
-        return ConditionExpression(type, expression(next, scope),
+        return ConditionExpression(
+                type, expression(next, scope),
                 expression(expression, scope))
     }
 
@@ -154,7 +161,8 @@ internal object ExpressionCompiler {
                     "Invalid operator: " + context.children[1].text,
                     context)
         }
-        return OperationExpression(type, expression(next, scope),
+        return OperationExpression(
+                type, expression(next, scope),
                 expression(expression, scope))
     }
 
@@ -171,7 +179,8 @@ internal object ExpressionCompiler {
                     "Invalid operator: " + context.children[1].text,
                     context)
         }
-        return OperationExpression(type, expression(next, scope),
+        return OperationExpression(
+                type, expression(next, scope),
                 expression(expression, scope))
     }
 
@@ -189,7 +198,8 @@ internal object ExpressionCompiler {
                     "Invalid operator: " + context.children[1].text,
                     context)
         }
-        return OperationExpression(type, expression(next, scope),
+        return OperationExpression(
+                type, expression(next, scope),
                 expression(expression, scope))
     }
 
@@ -209,7 +219,8 @@ internal object ExpressionCompiler {
                         "Invalid operator: " + context.children[0].text,
                         context)
             }
-            return UnaryExpression(type, expression(next, scope))
+            return UnaryExpression(
+                    type, expression(next, scope))
         }
         val type: UnaryType
         when (context.children[0].text) {
@@ -219,7 +230,8 @@ internal object ExpressionCompiler {
                     "Invalid operator: " + context.children[0].text,
                     context)
         }
-        return UnaryExpression(type, expression(next, scope))
+        return UnaryExpression(
+                type, expression(next, scope))
     }
 
     fun expression(context: ScapesShaderParser.PostfixExpressionContext,
@@ -246,7 +258,8 @@ internal object ExpressionCompiler {
                     "Invalid operator: " + context.children[1].text,
                     context)
         }
-        return UnaryExpression(type, expression(next, scope))
+        return UnaryExpression(
+                type, expression(next, scope))
     }
 
     fun expression(context: ScapesShaderParser.ExpressionContext,
@@ -273,8 +286,8 @@ internal object ExpressionCompiler {
               index: ScapesShaderParser.ExpressionContext,
               scope: Scope): Expression {
         return ArrayAccessExpression(
-                ExpressionCompiler.expression(array, scope),
-                ExpressionCompiler.expression(index, scope))
+                expression(array, scope),
+                expression(index, scope))
     }
 
     fun function(context: ScapesShaderParser.FunctionExpressionContext,
@@ -286,7 +299,8 @@ internal object ExpressionCompiler {
                     arguments.assignmentExpression(), scope))
             arguments = arguments.argumentExpressionList()
         }
-        return FunctionExpression(context.Identifier().text,
+        return FunctionExpression(
+                context.Identifier().text,
                 expressions).apply {
             attach(context)
         }
@@ -295,8 +309,9 @@ internal object ExpressionCompiler {
     fun field(context: ScapesShaderParser.PostfixExpressionContext,
               name: TerminalNode,
               scope: Scope): Expression {
-        return MemberExpression(name.text,
-                ExpressionCompiler.expression(context, scope)).apply {
+        return MemberExpression(
+                name.text,
+                expression(context, scope)).apply {
             attach(context)
         }
     }
@@ -308,7 +323,8 @@ internal object ExpressionCompiler {
             val name = identifier.text
             val variable = scope[name] ?: throw ShaderCompileException(
                     "Unknown variable: $name", identifier)
-            return IdentifierExpression(variable).apply {
+            return IdentifierExpression(
+                    variable).apply {
                 attach(identifier)
             }
         }
@@ -320,7 +336,8 @@ internal object ExpressionCompiler {
         }
         val property = context.property()
         if (property != null) {
-            return PropertyExpression(property.Identifier().text).apply {
+            return PropertyExpression(
+                    property.Identifier().text).apply {
                 attach(property)
             }
         }

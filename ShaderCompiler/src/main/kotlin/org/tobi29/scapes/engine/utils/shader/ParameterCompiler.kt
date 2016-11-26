@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.shader.expression.BooleanExpression
-import org.tobi29.scapes.engine.utils.shader.expression.Parameter
-import org.tobi29.scapes.engine.utils.shader.expression.PropertyExpression
-import org.tobi29.scapes.engine.utils.shader.expression.ShaderParameter
+import org.tobi29.scapes.engine.utils.shader.BooleanExpression
+import org.tobi29.scapes.engine.utils.shader.Parameter
+import org.tobi29.scapes.engine.utils.shader.PropertyExpression
+import org.tobi29.scapes.engine.utils.shader.ShaderParameter
 
 internal object ParameterCompiler {
     tailrec fun parameters(context: ScapesShaderParser.ParameterListContext,
@@ -40,7 +40,8 @@ internal object ParameterCompiler {
         val name = context.Identifier().text
         val variable = scope.add(name) ?: throw ShaderCompileException(
                 "Redeclaring variable: $name", context.Identifier())
-        return Parameter(type, variable)
+        return Parameter(type,
+                variable)
     }
 
     tailrec fun parameters(context: ScapesShaderParser.ShaderParameterListContext,
@@ -67,10 +68,14 @@ internal object ParameterCompiler {
         val name = context.Identifier().text
         val variable = scope.add(name) ?: throw ShaderCompileException(
                 "Redeclaring variable: $name", context.Identifier())
-        val property = context.property() ?: return ShaderParameter(type,
+        val property = context.property() ?: return ShaderParameter(
+                type,
                 id, variable,
-                BooleanExpression(true))
-        return ShaderParameter(type, id, variable,
-                PropertyExpression(property.Identifier().text))
+                BooleanExpression(
+                        true))
+        return ShaderParameter(
+                type, id, variable,
+                PropertyExpression(
+                        property.Identifier().text))
     }
 }

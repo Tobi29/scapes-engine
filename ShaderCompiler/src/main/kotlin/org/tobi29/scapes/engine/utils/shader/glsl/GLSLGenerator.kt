@@ -19,8 +19,7 @@ package org.tobi29.scapes.engine.utils.shader.glsl
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.tobi29.scapes.engine.utils.join
 import org.tobi29.scapes.engine.utils.shader.*
-import org.tobi29.scapes.engine.utils.shader.expression.*
-import org.tobi29.scapes.engine.utils.shader.expression.Function
+import org.tobi29.scapes.engine.utils.shader.Function
 import java.math.BigInteger
 import java.util.*
 
@@ -350,10 +349,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun arrayUnsizedDeclarationStatement(
             statement: ArrayUnsizedDeclarationStatement,
             level: Int) {
-        val initializer: ArrayLiteralExpression
-        if (statement.initializer is PropertyArrayExpression) {
+        val initializer: ArrayExpression.Literal
+        if (statement.initializer is ArrayExpression.Property) {
             initializer = property(statement.initializer)
-        } else if (statement.initializer is ArrayLiteralExpression) {
+        } else if (statement.initializer is ArrayExpression.Literal) {
             initializer = statement.initializer
         } else {
             throw IllegalArgumentException(
@@ -367,7 +366,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 arrayExpression(initializer) + ';')
     }
 
-    private fun arrayExpression(initializer: ArrayLiteralExpression): String {
+    private fun arrayExpression(initializer: ArrayExpression.Literal): String {
         val str = StringBuilder(initializer.content.size * 7)
         str.append('(')
         var first = true
@@ -487,14 +486,14 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun property(expression: PropertyArrayExpression): ArrayLiteralExpression {
+    private fun property(expression: ArrayExpression.Property): ArrayExpression.Literal {
         val source = property(expression.key) ?: throw ShaderGenerateException(
                 "Unknown property: ${expression.key}", expression)
         try {
             val parser = ShaderCompiler.parser(source)
             val expression2 = ShaderCompiler.initializer(
                     parser.initializerArrayList(), Scope())
-            if (expression2 is ArrayLiteralExpression) {
+            if (expression2 is ArrayExpression.Literal) {
                 return expression2
             } else {
                 throw ShaderGenerateException(
@@ -530,8 +529,13 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun init(scope: Scope) {
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("texture", Types.Vector4,
-                        TypeExported(Types.Int), TypeExported(Types.Vector2)),
+                Pair(FunctionExportedSignature(
+                        "texture",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Int),
+                        TypeExported(
+                                Types.Vector2)),
                         "texture"))
         for ((type, typeBoolean) in arrayOf(
                 Pair(Types.Float, Types.Boolean),
@@ -539,46 +543,76 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 Pair(Types.Vector3, Types.Vector3),
                 Pair(Types.Vector4, Types.Vector4))) {
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("length", type,
-                            TypeExported(type)), "length"))
+                    Pair(FunctionExportedSignature(
+                            "length", type,
+                            TypeExported(
+                                    type)), "length"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("abs", type,
-                            TypeExported(type)), "abs"))
+                    Pair(FunctionExportedSignature(
+                            "abs", type,
+                            TypeExported(
+                                    type)), "abs"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("floor", type,
-                            TypeExported(type)), "floor"))
+                    Pair(FunctionExportedSignature(
+                            "floor", type,
+                            TypeExported(
+                                    type)), "floor"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("sin", type,
-                            TypeExported(type)), "sin"))
+                    Pair(FunctionExportedSignature(
+                            "sin", type,
+                            TypeExported(
+                                    type)), "sin"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("cos", type,
-                            TypeExported(type)), "cos"))
+                    Pair(FunctionExportedSignature(
+                            "cos", type,
+                            TypeExported(
+                                    type)), "cos"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("min", type,
-                            TypeExported(type),
-                            TypeExported(type)), "min"))
+                    Pair(FunctionExportedSignature(
+                            "min", type,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "min"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("max", type,
-                            TypeExported(type),
-                            TypeExported(type)), "max"))
+                    Pair(FunctionExportedSignature(
+                            "max", type,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "max"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("clamp", type,
-                            TypeExported(type),
-                            TypeExported(type),
-                            TypeExported(type)), "clamp"))
+                    Pair(FunctionExportedSignature(
+                            "clamp", type,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "clamp"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("mix", type,
-                            TypeExported(type),
-                            TypeExported(type),
-                            TypeExported(type)), "mix"))
+                    Pair(FunctionExportedSignature(
+                            "mix", type,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "mix"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("dot", type,
-                            TypeExported(type),
-                            TypeExported(type)), "dot"))
+                    Pair(FunctionExportedSignature(
+                            "dot", type,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "dot"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("mod", type,
-                            TypeExported(type),
-                            TypeExported(type)), "mod"))
+                    Pair(FunctionExportedSignature(
+                            "mod", type,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "mod"))
         }
 
         for ((type, typeBoolean) in arrayOf(
@@ -586,90 +620,180 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 Pair(Types.Vector3, Types.Vector3),
                 Pair(Types.Vector4, Types.Vector4))) {
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("greaterThan", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)), "greaterThan"))
+                    Pair(FunctionExportedSignature(
+                            "greaterThan", typeBoolean,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "greaterThan"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("greaterThanEqual",
+                    Pair(FunctionExportedSignature(
+                            "greaterThanEqual",
                             typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)), "greaterThanEqual"))
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "greaterThanEqual"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("lessThan", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)), "lessThan"))
+                    Pair(FunctionExportedSignature(
+                            "lessThan", typeBoolean,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "lessThan"))
             functionsSignatures.add(
-                    Pair(FunctionExportedSignature("lessThanEqual", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)), "lessThanEqual"))
+                    Pair(FunctionExportedSignature(
+                            "lessThanEqual", typeBoolean,
+                            TypeExported(
+                                    type),
+                            TypeExported(
+                                    type)), "lessThanEqual"))
         }
 
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("float", Types.Float,
-                        TypeExported(Types.Float)), "float"))
+                Pair(FunctionExportedSignature(
+                        "float",
+                        Types.Float,
+                        TypeExported(
+                                Types.Float)), "float"))
 
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Float)), "vec2"))
+                Pair(FunctionExportedSignature(
+                        "vector2",
+                        Types.Vector2,
+                        TypeExported(
+                                Types.Float)), "vec2"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Vector2)), "vec2"))
+                Pair(FunctionExportedSignature(
+                        "vector2",
+                        Types.Vector2,
+                        TypeExported(
+                                Types.Vector2)), "vec2"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Float), TypeExported(Types.Float)),
+                Pair(FunctionExportedSignature(
+                        "vector2",
+                        Types.Vector2,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float)),
                         "vec2"))
 
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float)), "vec3"))
+                Pair(FunctionExportedSignature(
+                        "vector3",
+                        Types.Vector3,
+                        TypeExported(
+                                Types.Float)), "vec3"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float), TypeExported(Types.Float),
-                        TypeExported(Types.Float)), "vec3"))
+                Pair(FunctionExportedSignature(
+                        "vector3",
+                        Types.Vector3,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float)), "vec3"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float), TypeExported(Types.Vector2)),
+                Pair(FunctionExportedSignature(
+                        "vector3",
+                        Types.Vector3,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Vector2)),
                         "vec3"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Vector2), TypeExported(Types.Float)),
+                Pair(FunctionExportedSignature(
+                        "vector3",
+                        Types.Vector3,
+                        TypeExported(
+                                Types.Vector2),
+                        TypeExported(
+                                Types.Float)),
                         "vec3"))
 
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Float)), "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float), TypeExported(Types.Float),
-                        TypeExported(Types.Float), TypeExported(Types.Float)),
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float)),
                         "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float), TypeExported(Types.Float),
-                        TypeExported(Types.Vector2)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Vector2)), "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float), TypeExported(Types.Vector2),
-                        TypeExported(Types.Float)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Vector2),
+                        TypeExported(
+                                Types.Float)), "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float), TypeExported(Types.Vector3)),
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Vector3)),
                         "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector2), TypeExported(Types.Float),
-                        TypeExported(Types.Float)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Vector2),
+                        TypeExported(
+                                Types.Float),
+                        TypeExported(
+                                Types.Float)), "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector2),
-                        TypeExported(Types.Vector2)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Vector2),
+                        TypeExported(
+                                Types.Vector2)), "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector3),
-                        TypeExported(Types.Float)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Vector3),
+                        TypeExported(
+                                Types.Float)), "vec4"))
         functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector4)), "vec4"))
+                Pair(FunctionExportedSignature(
+                        "vector4",
+                        Types.Vector4,
+                        TypeExported(
+                                Types.Vector4)), "vec4"))
 
         initBuiltIn(scope["discard"]) { GLSLExpression("discard") }
         initBuiltIn(scope["return"]) { GLSLExpression("return") }
@@ -802,7 +926,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun functions(functions: List<Function>) {
         for (function in functions) {
             val signature = function.signature
-            functionsSignatures.add(Pair(FunctionExportedSignature(signature),
+            functionsSignatures.add(Pair(
+                    FunctionExportedSignature(
+                            signature),
                     signature.name))
             println(0, signature(signature, signature.name))
             statement(function.compound, 0)

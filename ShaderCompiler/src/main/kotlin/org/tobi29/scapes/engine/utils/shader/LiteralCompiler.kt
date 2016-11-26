@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.shader.expression.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -38,11 +37,13 @@ internal object LiteralCompiler {
     fun floating(context: ScapesShaderParser.FloatingConstantContext): Expression {
         val literal = context.FloatingLiteral()
         if (literal != null) {
-            return FloatingExpression(BigDecimal(literal.text))
+            return FloatingExpression(
+                    BigDecimal(literal.text))
         }
         val property = context.property()
         if (property != null) {
-            return PropertyExpression(property.Identifier().text)
+            return PropertyExpression(
+                    property.Identifier().text)
         }
         throw ShaderCompileException("No constant found", context)
     }

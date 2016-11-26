@@ -17,10 +17,10 @@
 package org.tobi29.scapes.engine.utils.shader
 
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.tobi29.scapes.engine.utils.shader.expression.Precision
-import org.tobi29.scapes.engine.utils.shader.expression.Type
-import org.tobi29.scapes.engine.utils.shader.expression.TypeExported
-import org.tobi29.scapes.engine.utils.shader.expression.Types
+import org.tobi29.scapes.engine.utils.shader.Precision
+import org.tobi29.scapes.engine.utils.shader.Type
+import org.tobi29.scapes.engine.utils.shader.TypeExported
+import org.tobi29.scapes.engine.utils.shader.Types
 
 internal object TypeCompiler {
     fun type(context: ScapesShaderParser.DeclaratorContext): Type {
@@ -47,7 +47,8 @@ internal object TypeCompiler {
         } else {
             precision = precision(precisionSpecifier)
         }
-        return Type(type(context.typeSpecifier()), constant, precision)
+        return Type(
+                type(context.typeSpecifier()), constant, precision)
     }
 
     fun type(context: ScapesShaderParser.DeclaratorArrayContext): Type {
@@ -66,7 +67,8 @@ internal object TypeCompiler {
         } else {
             precision = precision(precisionSpecifier)
         }
-        return Type(type(context.typeSpecifier()),
+        return Type(
+                type(context.typeSpecifier()),
                 LiteralCompiler.integer(context.integerConstant()), constant,
                 precision)
     }
@@ -87,12 +89,14 @@ internal object TypeCompiler {
         } else {
             precision = precision(precisionSpecifier)
         }
-        return Type(type(context.typeSpecifier()), constant, precision)
+        return Type(
+                type(context.typeSpecifier()), constant, precision)
     }
 
     fun type(context: ScapesShaderParser.TypeContext): TypeExported {
         val array = context.childCount > 1
-        return TypeExported(type(context.typeSpecifier()), array)
+        return TypeExported(
+                type(context.typeSpecifier()), array)
     }
 
     fun type(context: ScapesShaderParser.TypeSpecifierContext): Types {

@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.shader.expression.*
-import org.tobi29.scapes.engine.utils.shader.expression.Function
 import java.util.*
 
 class CompiledShader(declarations: List<Statement>,
