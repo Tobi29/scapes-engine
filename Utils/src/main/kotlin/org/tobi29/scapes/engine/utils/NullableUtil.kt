@@ -18,10 +18,9 @@ package org.tobi29.scapes.engine.utils
 
 /**
  * Returns the given object if [filter] returns `true, otherwise `null`
- *
  * Useful for e.g.: `optional?.filter { it == "" }?.let(::println)`
  */
-inline fun <T : Any> T.filter(filter: (T) -> Boolean): T? {
+inline fun <T : Any> T.and(filter: (T) -> Boolean): T? {
     if (filter(this)) {
         return this
     }

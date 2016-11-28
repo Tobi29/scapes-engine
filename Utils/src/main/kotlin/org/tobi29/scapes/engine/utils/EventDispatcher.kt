@@ -139,7 +139,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
             val listeners = ArrayList<MutableSet<Listener<*>>>()
             var dispatcher: EventDispatcher? = this
             while (dispatcher != null) {
-                dispatcher.listeners[event.javaClass]?.filter {
+                dispatcher.listeners[event.javaClass]?.and {
                     it.isNotEmpty()
                 }?.let { listeners.add(it) }
                 dispatcher = dispatcher.parent
