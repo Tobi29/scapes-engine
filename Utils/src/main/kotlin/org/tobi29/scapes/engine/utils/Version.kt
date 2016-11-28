@@ -18,14 +18,19 @@ package org.tobi29.scapes.engine.utils
 
 import java.util.regex.Pattern
 
-data class Version(val major: Int, val minor: Int, val revision: Int, val build: Int) {
+/**
+ * Class representing a semantic version
+ */
+data class Version(
+        val major: Int = 0,
+        val minor: Int = 0,
+        val revision: Int = 0) {
     override fun toString(): kotlin.String {
-        return "$major.$minor.${revision}_$build"
+        return "$major.$minor.$revision"
     }
 }
 
 private val DOT = Pattern.compile("\\.")
-private val UNDERSCORE = Pattern.compile("_")
 
 /**
  * Compares two [Version] instances and returns a [Comparison] as
@@ -50,10 +55,6 @@ fun compare(current: Version,
         return Comparison.HIGHER_REVISION
     } else if (check.revision < current.revision) {
         return Comparison.LOWER_REVISION
-    } else if (check.build > current.build) {
-        return Comparison.HIGHER_BUILD
-    } else if (check.build < current.build) {
-        return Comparison.LOWER_BUILD
     }
     return Comparison.EQUAL
 }
@@ -61,8 +62,7 @@ fun compare(current: Version,
 /**
  * Constructs a [Version] instance from the given [String]
  *
- * Note if `str` is from an unreliable source, consider using [versionParse]
- *
+ * **Note**: if `str` is from an unreliable source, consider using [versionParse]
  * @param str Version in x.x.x_x format
  * @throws IllegalArgumentException When the parsing failed
  */
@@ -72,12 +72,10 @@ fun version(str: kotlin.String): Version {
     } catch (e: VersionException) {
         throw IllegalArgumentException(e)
     }
-
 }
 
 /**
  * Constructs a [Version] instance from the given [String]
- *
  * @param str Version in x.x.x_x format
  * @throws VersionException When the parsing failed
  */
@@ -93,48 +91,26 @@ fun versionParse(str: kotlin.String): Version {
     val major: Int
     var minor = 0
     var revision = 0
-    var build = 1
     try {
         major = split[0].toInt()
     } catch (e: NumberFormatException) {
         throw VersionException("Invalid major: ${split[0]}", e)
     }
-
     if (split.size >= 2) {
         try {
             minor = split[1].toInt()
         } catch (e: NumberFormatException) {
             throw VersionException("Invalid minor: ${split[1]}", e)
         }
-
         if (split.size == 3) {
-            val split2 = UNDERSCORE.split(split[2])
-            if (split2.size > 2) {
-                throw VersionException(
-                        "Too many delimiters: ${split[2]}")
-            }
-            if (split2.isEmpty()) {
-                throw VersionException("Weird string: ${split[2]}")
-            }
             try {
-                revision = split2[0].toInt()
+                revision = split[2].toInt()
             } catch (e: NumberFormatException) {
-                throw VersionException("Invalid revision: ${split2[0]}",
-                        e)
-            }
-
-            if (split2.size == 2) {
-                try {
-                    build = split2[1].toInt()
-                } catch (e: NumberFormatException) {
-                    throw VersionException(
-                            "Invalid build: ${split2[1]}", e)
-                }
-
+                throw VersionException("Invalid revision: ${split[2]}", e)
             }
         }
     }
-    return Version(major, minor, revision, build)
+    return Version(major, minor, revision)
 }
 
 enum class Comparison constructor(val level: Int) {
