@@ -16,6 +16,10 @@
 
 package org.tobi29.scapes.engine.utils
 
+/**
+ * Thrown when the program cannot run on the current JVM implementation due to
+ * missing feature support or a lack of extensions for it
+ */
 class UnsupportedJVMException : RuntimeException {
     constructor(message: String) : super(message) {
     }

@@ -48,9 +48,13 @@ private val SPLIT_EQUALS = Pattern.compile("=")
 
 /**
  * Reads a private RSA key, encoded in Base64
- * @param str String containing the PKCS8 encoded key in Base64
+ *
+ * Can be written using [writePrivate]
+ * @param str [String] containing the PKCS8 encoded key in Base64
+ * @throws InvalidKeySpecException when an invalid key was given
  * @return The [RSAPrivateKey]
  */
+@Throws(InvalidKeySpecException::class)
 fun readPrivate(str: String): RSAPrivateKey {
     try {
         val keySpec = PKCS8EncodedKeySpec(str.fromBase64())
@@ -66,13 +70,23 @@ fun readPrivate(str: String): RSAPrivateKey {
  *
  * Note: This assumes the value `65537` of `E`
  * @param key The private key
+ * @throws InvalidKeySpecException when an invalid key was given
  * @return The [PublicKey]
  */
+@Throws(InvalidKeySpecException::class)
 fun extractPublic(key: RSAPrivateKey): PublicKey {
     val publicKeySpec = RSAPublicKeySpec(key.modulus, E)
     return FACTORY.generatePublic(publicKeySpec)
 }
 
+/**
+ * Reads a public RSA key, encoded in Base64
+ *
+ * Can be written using [writePublic]
+ * @param str [String] containing the X509 encoded key in Base64
+ * @throws InvalidKeySpecException when an invalid key was given
+ * @return The [PublicKey]
+ */
 @Throws(InvalidKeySpecException::class)
 fun readPublic(str: String): PublicKey {
     try {
@@ -84,6 +98,14 @@ fun readPublic(str: String): PublicKey {
 
 }
 
+/**
+ * Writes a public key into a Base64 encoded [String]
+ *
+ * Can be read using [readPrivate]
+ * @param key The private key to write
+ * @throws InvalidKeySpecException  when an invalid key was given
+ * @return A [String] containing the PKCS8 encoded key in Base64
+ */
 @Throws(InvalidKeySpecException::class)
 fun writePrivate(key: PrivateKey): String {
     val spec = FACTORY.getKeySpec(key, PKCS8EncodedKeySpec::class.java)
@@ -93,30 +115,68 @@ fun writePrivate(key: PrivateKey): String {
     return key64
 }
 
+/**
+ * Writes a public key into a Base64 encoded [String]
+ *
+ * Can be read using [readPublic]
+ * @param key The public key to write
+ * @throws InvalidKeySpecException  when an invalid key was given
+ * @return A [String] containing the X509 encoded key in Base64
+ */
 @Throws(InvalidKeySpecException::class)
 fun writePublic(key: PublicKey): String {
     val spec = FACTORY.getKeySpec(key, X509EncodedKeySpec::class.java)
     return spec.encoded.toBase64()
 }
 
-@Throws(KeyStoreException::class, NoSuchAlgorithmException::class,
-        UnrecoverableKeyException::class)
+/**
+ * Creates an array of [KeyManager]s from the given [KeyStore]
+ * @param keyStore The [KeyStore] to take the keys from
+ * @param password Password of the key to use
+ * @throws KeyStoreException  when an error occurred
+ * @return An [Array] containing the [KeyManager]s created from the [KeyStore]
+ */
+@Throws(KeyStoreException::class)
 fun keyManagers(keyStore: KeyStore,
                 password: String): Array<KeyManager> {
-    val keyManagerFactory = KeyManagerFactory.getInstance(
-            KeyManagerFactory.getDefaultAlgorithm())
-    keyManagerFactory.init(keyStore, password.toCharArray())
-    return keyManagerFactory.keyManagers
+    try {
+        val keyManagerFactory = KeyManagerFactory.getInstance(
+                KeyManagerFactory.getDefaultAlgorithm())
+        keyManagerFactory.init(keyStore, password.toCharArray())
+        return keyManagerFactory.keyManagers
+    } catch(e: NoSuchAlgorithmException) {
+        throw KeyStoreException(e)
+    } catch(e: UnrecoverableKeyException) {
+        throw KeyStoreException(e)
+    }
 }
 
-@Throws(KeyStoreException::class, NoSuchAlgorithmException::class)
+/**
+ * Creates an array of [TrustManager]s from the given [KeyStore]
+ * @param keyStore The [KeyStore] to take the keys from
+ * @throws KeyStoreException  when an error occurred
+ * @return An [Array] containing the [TrustManager]s created from the [KeyStore]
+ */
+@Throws(KeyStoreException::class)
 fun trustManagers(keyStore: KeyStore): Array<TrustManager> {
-    val trustManagerFactory = TrustManagerFactory.getInstance(
-            TrustManagerFactory.getDefaultAlgorithm())
-    trustManagerFactory.init(keyStore)
-    return trustManagerFactory.trustManagers
+    try {
+        val trustManagerFactory = TrustManagerFactory.getInstance(
+                TrustManagerFactory.getDefaultAlgorithm())
+        trustManagerFactory.init(keyStore)
+        return trustManagerFactory.trustManagers
+    } catch(e: NoSuchAlgorithmException) {
+        throw KeyStoreException(e)
+    }
 }
 
+/**
+ * Loads a [KeyStore] from the classpath
+ * @param filepath Path to the resource
+ * @param password Password of the [KeyStore]
+ * @param classLoader [ClassLoader] to load the resource from
+ * @throws IOException when an IO error occurs
+ * @return A [KeyStore] containing the read keys
+ */
 @Throws(IOException::class)
 fun keyStore(filepath: String,
              password: String,
@@ -126,6 +186,13 @@ fun keyStore(filepath: String,
     }
 }
 
+/**
+ * Loads a [KeyStore] from the [ReadableByteStream]
+ * @param stream Stream to read from
+ * @param password Password of the [KeyStore]
+ * @throws IOException when an IO error occurs
+ * @return A [KeyStore] containing the read keys
+ */
 @Throws(IOException::class)
 fun keyStore(stream: ReadableByteStream,
              password: String): KeyStore {
@@ -134,6 +201,13 @@ fun keyStore(stream: ReadableByteStream,
     }
 }
 
+/**
+ * Loads a [KeyStore] from the [InputStream]
+ * @param streamIn Stream to read from
+ * @param password Password of the [KeyStore]
+ * @throws IOException when an IO error occurs
+ * @return A [KeyStore] containing the read keys
+ */
 @Throws(IOException::class)
 fun keyStore(streamIn: InputStream,
              password: String): KeyStore {
@@ -148,9 +222,14 @@ fun keyStore(streamIn: InputStream,
     } catch (e: CertificateException) {
         throw IOException(e)
     }
-
 }
 
+/**
+ * Reads the private keys from a PEM file
+ * @param reader [BufferedReader] to read the file from
+ * @throws IOException when an IO error occurs
+ * @return A list of [RSAPrivateKey]s
+ */
 @Throws(IOException::class)
 fun readPrivateKeys(reader: BufferedReader): List<RSAPrivateKey> {
     val keys = ArrayList<RSAPrivateKey>()
@@ -168,6 +247,12 @@ fun readPrivateKeys(reader: BufferedReader): List<RSAPrivateKey> {
     return keys
 }
 
+/**
+ * Reads the certificates from a PEM file
+ * @param reader [BufferedReader] to read the file from
+ * @throws IOException when an IO error occurs
+ * @return A list of [Certificate]s
+ */
 @Throws(IOException::class)
 fun readCertificateChain(reader: BufferedReader): List<Certificate> {
     try {
@@ -191,6 +276,12 @@ fun readCertificateChain(reader: BufferedReader): List<Certificate> {
 
 }
 
+/**
+ * Reads the content from a PEM file
+ * @param reader [BufferedReader] to read the file from
+ * @param consumer Called for each entry in the file
+ * @throws IOException when an IO error occurs
+ */
 @Throws(IOException::class)
 fun readPEM(reader: BufferedReader,
             consumer: (PEMType, ByteArray) -> Unit) {
@@ -235,6 +326,11 @@ fun readPEM(reader: BufferedReader,
     }
 }
 
+/**
+ * Parses the content of the given [X500Principal] into a map for easy access
+ * @param principal The principal to parse
+ * @return A map containing key-value pair from the entries in the principal
+ */
 fun parseX500(principal: X500Principal): Map<String, String> {
     val map = HashMap<String, String>()
     val mappings = SPLIT_COMMA.split(
@@ -251,19 +347,27 @@ fun parseX500(principal: X500Principal): Map<String, String> {
     return Collections.unmodifiableMap(map)
 }
 
-@Throws(IOException::class)
+/**
+ * Type of an entry in a PEM file
+ */
+enum class PEMType {
+    /**
+     * Certificate entry
+     */
+    CERTIFICATE,
+    /**
+     * Private key entry
+     */
+    PRIVATE_KEY
+}
+
 private fun decode(base64: StringBuilder): ByteArray {
     val array = base64.toString().fromBase64()
     base64.setLength(0)
     return array
 }
 
-enum class PEMType {
-    CERTIFICATE,
-    PRIVATE_KEY
-}
-
-enum class PEMState {
+private enum class PEMState {
     NONE,
     CERTIFICATE,
     PRIVATE_KEY

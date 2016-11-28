@@ -22,7 +22,6 @@ package org.tobi29.scapes.engine.utils
 interface Crashable {
     /**
      * Called when an unexpected error happened in execution
-
      * @param e The [Throwable] that was caught
      */
     fun crash(e: Throwable)

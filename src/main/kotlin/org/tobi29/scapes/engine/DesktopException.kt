@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils
+package org.tobi29.scapes.engine
 
 open class DesktopException(message: String) : Exception(message)

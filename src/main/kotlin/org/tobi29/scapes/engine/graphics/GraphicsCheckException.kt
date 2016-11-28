@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.DesktopException
+import org.tobi29.scapes.engine.DesktopException
 
 /**
  * Gets thrown when the computer doesn't fulfill the requirements to run the

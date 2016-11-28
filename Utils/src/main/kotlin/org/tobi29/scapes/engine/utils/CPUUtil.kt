@@ -19,6 +19,9 @@ package org.tobi29.scapes.engine.utils
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider
 import java.util.*
 
+/**
+ * Object to read the current cpu usage of the program
+ */
 object CPUUtil {
     private val PROVIDER = loadService()
 
@@ -34,13 +37,32 @@ object CPUUtil {
         return null
     }
 
+    /**
+     * Returns a new [Reader] if available on the current platform
+     * @return A new [Reader] instance or null
+     */
     fun reader(): Reader? {
         return PROVIDER?.reader()
     }
 
+    /**
+     * Allows reading the current cpu usage for a set of threads or the entire
+     * program
+     */
     interface Reader {
+        /**
+         * Returns the cpu usage of the entire program as an average between
+         * invocations
+         * @return The cpu usage of the entire program
+         */
         fun totalCPU(): Double
 
+        /**
+         * Returns the cpu usage of the specified threads program as an average
+         * between invocations
+         * @param threads Array of thread ids
+         * @return The cpu usage of the specified threads
+         */
         fun totalCPU(threads: LongArray): Double
     }
 }

@@ -57,7 +57,7 @@ class MutableMaze
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
      * @param direction direction to check, must be [Face.NORTH], [Face.EAST], [Face.SOUTH] or [Face.WEST]
-     * @returns `true` if the cell has a wall in the direction
+     * @return `true` if the cell has a wall in the direction
      * @throws IllegalArgumentException When an invalid direction was given
      */
     fun isWall(x: Int,
@@ -70,7 +70,7 @@ class MutableMaze
      * Checks if the given coordinates are inside of the maze
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
-     * @returns `true` if x and y are inside the maze
+     * @return `true` if x and y are inside the maze
      */
     fun isInside(x: Int,
                  y: Int): Boolean {
@@ -101,7 +101,7 @@ class MutableMaze
      * **Note**: Returns [Maze.OUTSIDE] if out of bounds
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
-     * @returns the value of the cell
+     * @return the value of the cell
      */
     fun getAt(x: Int,
               y: Int): Byte {

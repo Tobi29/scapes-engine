@@ -106,11 +106,8 @@ class Pool<E>
     /**
      * Removes the given object out of the pool
      *
-     *
      * **Note:** The object it removed even after calling reset
-
      * @param element Object to remove
-     * *
      * @return When `true` the object is no longer referenced by the pool,
      * * otherwise it never was to begin with
      */
@@ -125,7 +122,7 @@ class Pool<E>
     /**
      * Remove the element at the given index [i]
      * @param i The index of the element to remove
-     * @returns The element previously at that index
+     * @return The element previously at that index
      * @throws IndexOutOfBoundsException If `i < 0` or `i >= size`
      */
     fun removeAt(i: Int): E {
@@ -140,7 +137,6 @@ class Pool<E>
 
     /**
      * Appends the element to the pool to be reused by [push]
-     *
      * **Note**: This element may no longer be used outside
      * **Node**: This element will only be used by the pool once [push] needed it
      */
@@ -151,7 +147,6 @@ class Pool<E>
     /**
      * Returns an Iterator to iterate through all objects previously
      * retrieved by [.push]
-
      * @return An Iterator to iterate through the pool's data
      */
     override fun iterator(): MutableIterator<E> {
@@ -180,7 +175,6 @@ class Pool<E>
     /**
      * Returns an [Spliterator] to iterate through all objects previously
      * retrieved by [.push]
-
      * @return An [Spliterator] to iterate through the pool's data
      */
     fun spliterator8(): Spliterator<E> {
@@ -190,7 +184,6 @@ class Pool<E>
     /**
      * Returns an [Stream] to iterate through all objects previously
      * retrieved by [.push]
-
      * @return An [Stream] to iterate through the pool's data
      */
     fun stream(): Stream<E> {
@@ -200,11 +193,8 @@ class Pool<E>
     /**
      * Returns whether or not the given object can be found in the pool
      *
-     *
      * **Note:** Object outside the range are not checked
-
      * @param element The object to search or `null`
-     * *
      * @return `true` if the object was found
      */
     override operator fun contains(element: E): Boolean {

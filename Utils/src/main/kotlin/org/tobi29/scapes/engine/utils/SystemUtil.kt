@@ -16,6 +16,12 @@
 
 package org.tobi29.scapes.engine.utils
 
+/**
+ * Runs [System.exit] in a new thread
+ *
+ * **Note**: Unlike [System.exit] this function is very likely to return
+ * @param status The status code passed to [System.exit]
+ */
 fun exitLater(status: Int) {
     val thread = Thread {
         System.exit(status)

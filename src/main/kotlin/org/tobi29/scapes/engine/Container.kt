@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.input.ControllerJoystick
 import org.tobi29.scapes.engine.input.ControllerTouch
 import org.tobi29.scapes.engine.input.FileType
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.DesktopException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import java.io.IOException

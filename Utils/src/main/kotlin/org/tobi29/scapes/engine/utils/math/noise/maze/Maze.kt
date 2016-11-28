@@ -55,7 +55,7 @@ class Maze
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
      * @param direction direction to check, must be [Face.NORTH], [Face.EAST], [Face.SOUTH] or [Face.WEST]
-     * @returns `true` if the cell has a wall in the direction
+     * @return `true` if the cell has a wall in the direction
      * @throws IllegalArgumentException When an invalid direction was given
      */
     fun isWall(x: Int,
@@ -68,7 +68,7 @@ class Maze
      * Checks if the given coordinates are inside of the maze
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
-     * @returns `true` if x and y are inside the maze
+     * @return `true` if x and y are inside the maze
      */
     fun isInside(x: Int,
                  y: Int): Boolean {
@@ -79,7 +79,7 @@ class Maze
      * Returns a [MutableMaze] in order to modify a copy of this maze
      *
      * **Note**: All bit-fields other than [MASK_NORTH] and [MASK_WEST] get cleared
-     * @returns A new [MutableMaze]
+     * @return A new [MutableMaze]
      */
     fun edit(): MutableMaze {
         val cleanData = ByteArray(
