@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.shader.Expression
-
 class ShaderGenerateException : Exception {
     constructor(message: String, expression: Expression) : super(
             message(message, expression))
