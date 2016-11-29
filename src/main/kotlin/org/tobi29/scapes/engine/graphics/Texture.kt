@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
-
 import java.nio.ByteBuffer
 
 interface Texture : GraphicsObject {
@@ -43,4 +42,12 @@ interface Texture : GraphicsObject {
     fun setBuffer(buffer: ByteBuffer?,
                   width: Int,
                   height: Int)
+}
+
+fun Texture?.bind(gl: GL) {
+    if (this == null) {
+        gl.textures.unbind(gl)
+    } else {
+        bind(gl)
+    }
 }

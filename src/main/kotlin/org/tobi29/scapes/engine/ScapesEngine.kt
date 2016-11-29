@@ -24,6 +24,7 @@ import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.input.ControllerDefault
+import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider
 import org.tobi29.scapes.engine.utils.Crashable
@@ -46,28 +47,29 @@ import java.util.concurrent.atomic.AtomicReference
 class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Container,
                    val home: FilePath, cache: FilePath, private val debug: Boolean) : Crashable {
     val events = EventDispatcher()
+    val taskExecutor = TaskExecutor(this, "Engine")
+    val config: ScapesEngineConfig
+    val tagStructure: TagStructure
     val game: Game
     val container: Container
+    val files: FileSystemContainer
+    val fileCache: FileCache
+    val resources = ResourceLoader(taskExecutor)
     val graphics: GraphicsSystem
     val sounds: SoundSystem
     val guiStyle: GuiStyle
     val guiStack: GuiStack
-    private val runtime: Runtime
-    val tagStructure: TagStructure
-    val config: ScapesEngineConfig
-    val files: FileSystemContainer
-    val fileCache: FileCache
-    val taskExecutor = TaskExecutor(this, "Engine")
+    var guiController: GuiController
     val notifications: GuiNotifications
     val debugValues: GuiWidgetDebugValues
+    val profiler: GuiWidgetProfiler
+    private val runtime: Runtime
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
     private val maxMemoryDebug: GuiWidgetDebugValues.Element
     private val tpsDebug: GuiWidgetDebugValues.Element
-    val profiler: GuiWidgetProfiler
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
-    var guiController: GuiController
     private var mouseGrabbed = false
     private var state: GameState? = null
 

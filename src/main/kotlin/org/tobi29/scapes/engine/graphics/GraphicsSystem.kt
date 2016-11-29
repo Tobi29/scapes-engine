@@ -116,11 +116,7 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
             val renderState = renderState
             if (renderState !== state) {
                 profilerSection("SwitchState") {
-                    if (renderState != null) {
-                        renderState.disposeState(gl)
-                        gl.textures().clearCache()
-                        gl.clear()
-                    }
+                    renderState?.disposeState(gl)
                     this.renderState = state
                 }
             }

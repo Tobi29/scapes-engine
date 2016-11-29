@@ -17,11 +17,13 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 class GuiComponentIcon(parent: GuiLayoutData,
-                       texture: Texture? = null) : GuiComponent(parent) {
-    var texture: Texture? = texture
+                       texture: Resource<Texture>? = null) : GuiComponent(
+        parent) {
+    var texture: Resource<Texture>? = texture
         set(value) {
             field = value
             dirty()
@@ -45,7 +47,7 @@ class GuiComponentIcon(parent: GuiLayoutData,
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
         texture?.let { texture ->
-            renderer.texture(texture, 0)
+            renderer.texture(texture.get(), 0)
             GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
                     size.floatY(), r, g, b, a)
         }

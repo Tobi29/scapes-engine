@@ -21,6 +21,7 @@ import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.gui.GuiComponentImage
 import org.tobi29.scapes.engine.gui.GuiState
 import org.tobi29.scapes.engine.gui.GuiStyle
+import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.math.PI
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.sin
@@ -38,8 +39,7 @@ class GameStateStartup(private val nextState: GameState, private val image: Stri
 
     override fun init() {
         engine.guiStack.addUnfocused("20-Image",
-                GuiImage(engine.graphics.textures()[image],
-                        engine.guiStyle))
+                GuiImage(engine.graphics.textures()[image], engine.guiStyle))
     }
 
     override val isMouseGrabbed: Boolean
@@ -63,11 +63,12 @@ class GameStateStartup(private val nextState: GameState, private val image: Stri
         }
     }
 
-    private inner class GuiImage(texture: Texture, style: GuiStyle) : GuiState(
+    private inner class GuiImage(texture: Resource<Texture>, style: GuiStyle) : GuiState(
             this@GameStateStartup, style) {
         init {
-            val width = texture.width()
-            val height = texture.height()
+            val tex = texture.get()
+            val width = tex.width()
+            val height = tex.height()
             val ratio = width.toDouble() / height
             val w = (540.0 * ratio * scale).toInt()
             val h = (540 * scale).toInt()

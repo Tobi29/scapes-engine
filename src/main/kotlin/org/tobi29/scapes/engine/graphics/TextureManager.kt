@@ -16,51 +16,32 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import java8.util.Maps
 import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import java.io.IOException
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 class TextureManager(private val engine: ScapesEngine) {
-    private val cache = ConcurrentHashMap<String, Texture>()
+    private val cache = WeakHashMap<String, Resource<Texture>>()
 
-    fun bind(asset: String?,
-             gl: GL) {
-        if (asset == null) {
-            unbind(gl)
-        } else if (asset.isEmpty()) {
-            unbind(gl)
-        } else {
-            bind(get(asset), gl)
+    @Synchronized
+    operator fun get(asset: String): Resource<Texture> {
+        return Maps.computeIfAbsent(cache, asset) {
+            load(asset)
         }
-    }
-
-    fun bind(texture: Texture?,
-             gl: GL) {
-        if (texture == null) {
-            unbind(gl)
-        } else {
-            texture.bind(gl)
-        }
-    }
-
-    operator fun get(asset: String): Texture {
-        var texture: Texture? = cache[asset]
-        if (texture == null) {
-            texture = load(asset)
-        }
-        return texture
     }
 
     fun empty(): Texture {
         return engine.graphics.textureEmpty()
     }
 
-    private fun load(asset: String): Texture {
-        try {
+    private fun load(asset: String): Resource<Texture> {
+        return engine.resources.load({
+            empty()
+        }) res@ {
             val properties = Properties()
             val files = engine.files
             val imageResource = files[asset + ".png"]
@@ -70,18 +51,10 @@ class TextureManager(private val engine: ScapesEngine) {
                     properties.load(streamIn)
                 }
             }
-            val texture = imageResource.read(
-                    { stream -> texture(stream, properties) })
-            cache.put(asset, texture)
-            return texture
-        } catch (e: IOException) {
-            logger.error { "Failed to load texture from: $asset (${e.message})" }
+            imageResource.read { texture(it, properties) }
         }
-
-        return empty()
     }
 
-    @Throws(IOException::class)
     private fun texture(stream: ReadableByteStream,
                         properties: Properties): Texture {
         return engine.graphics.createTexture(decodePNG(stream,
@@ -97,6 +70,7 @@ class TextureManager(private val engine: ScapesEngine) {
         empty().bind(gl)
     }
 
+    @Synchronized
     fun clearCache() {
         cache.clear()
     }

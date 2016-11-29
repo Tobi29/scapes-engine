@@ -19,13 +19,16 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.math.PI
 import org.tobi29.scapes.engine.utils.math.sin
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
-class GuiNotificationSimple constructor(parent: GuiLayoutData, icon: Texture,
-                                        text: String, time: Double = 3.0) : GuiComponentVisibleSlabHeavy(
+class GuiNotificationSimple constructor(parent: GuiLayoutData,
+                                        icon: Resource<Texture>,
+                                        text: String,
+                                        time: Double = 3.0) : GuiComponentVisibleSlabHeavy(
         parent) {
     private val speed: Double
     private var progress = 0.0
