@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java.util.regex.Pattern
-
 /**
  * Class representing a semantic version
  */
@@ -29,8 +27,6 @@ data class Version(
         return "$major.$minor.$revision"
     }
 }
-
-private val DOT = Pattern.compile("\\.")
 
 /**
  * Compares two [Version] instances and returns a [Comparison] as
@@ -81,7 +77,7 @@ fun version(str: kotlin.String): Version {
  */
 @Throws(VersionException::class)
 fun versionParse(str: kotlin.String): Version {
-    val split = DOT.split(str)
+    val split = str.split('.')
     if (split.size > 3) {
         throw VersionException("Too many delimiters: $str")
     }

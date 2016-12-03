@@ -23,12 +23,8 @@ import org.tobi29.scapes.engine.utils.stream
 import org.tobi29.scapes.engine.utils.toTypedArray
 import java.io.IOException
 import java.util.*
-import java.util.regex.Pattern
 
 object Fonts : KLogging() {
-    private val SPLIT_SEMICOLON = Pattern.compile(";")
-    private val SPLIT_BAR = Pattern.compile("\\|")
-    private val SPLIT_COMMA = Pattern.compile(",")
     private val MONOSPACED = fontDatas("Monospaced")
 
     val monospace: Array<FontData>
@@ -50,14 +46,14 @@ object Fonts : KLogging() {
             }
             if (fonts == null) {
                 logger.warn { "Unable to identify OS, using fallback." }
-                fonts = properties.getProperty("unknown")
+                fonts = properties.getProperty("unknown").orEmpty()
             }
-            val fontDataTexts = SPLIT_SEMICOLON.split(fonts)
-            return stream(*fontDataTexts).map { text ->
-                val split = SPLIT_BAR.split(text, 3)
+            val fontDataTexts = fonts.split(';')
+            return fontDataTexts.stream().map { text ->
+                val split = text.split('|', limit = 3)
                 assert(split.size == 3)
                 val name = split[0]
-                val styles = SPLIT_COMMA.split(split[1])
+                val styles = split[1].split(',')
                 var style = 0
                 for (s in styles) {
                     when (s) {

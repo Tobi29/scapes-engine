@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.input
 import java8.util.stream.Collectors
 import org.tobi29.scapes.engine.utils.stream
 import java.util.*
-import java.util.regex.Pattern
 
 class ControllerKeyReference {
     private val key: ControllerKey?
@@ -113,19 +112,16 @@ class ControllerKeyReference {
     }
 
     companion object {
-        private val SPLIT = Pattern.compile(",")
-
         fun valueOf(str: String?): ControllerKeyReference {
             if (str == null) {
                 return ControllerKeyReference()
             }
-            val split = SPLIT.split(str, 2)
+            val split = str.split(',', limit = 2)
             val modifiers: List<ControllerKey>
             if (split.size > 1) {
-                val modifierSplit = SPLIT.split(split[1])
-                modifiers = stream(*modifierSplit).map {
+                modifiers = split[1].split(';').map {
                     ControllerKey.valueOf(it)
-                }.collect(Collectors.toList<ControllerKey>())
+                }
             } else {
                 modifiers = emptyList<ControllerKey>()
             }

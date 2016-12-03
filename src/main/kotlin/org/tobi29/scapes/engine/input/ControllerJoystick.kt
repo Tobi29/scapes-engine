@@ -20,7 +20,6 @@ import java8.util.stream.Stream
 import org.tobi29.scapes.engine.utils.stream
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.regex.Pattern
 
 class ControllerJoystick(private val name: String, axisCount: Int) : ControllerBasic {
     private val id: String
@@ -32,7 +31,7 @@ class ControllerJoystick(private val name: String, axisCount: Int) : ControllerB
         private set
 
     init {
-        id = REPLACE.matcher(name).replaceAll("")
+        id = name.replace(REPLACE, "")
         states = ByteArray(ControllerKey.values().size)
         axes = DoubleArray(axisCount)
     }
@@ -122,6 +121,6 @@ class ControllerJoystick(private val name: String, axisCount: Int) : ControllerB
     }
 
     companion object {
-        private val REPLACE = Pattern.compile(" |/|-")
+        private val REPLACE = " |/|-".toRegex()
     }
 }

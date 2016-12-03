@@ -17,10 +17,6 @@
 package org.tobi29.scapes.engine.utils
 
 import java.util.*
-import java.util.regex.Pattern
-
-private val REPLACE_Q = Pattern.compile("\\?")
-private val REPLACE_W = Pattern.compile("\\*")
 
 /**
  * Creates a hash from the given [String]
@@ -39,16 +35,12 @@ fun hash(value: String,
 }
 
 /**
- * Converts a wildcard expression into a [Pattern]
+ * Converts a wildcard expression into a [Regex]
  * @param exp [String] containing wildcard expression
- * @return A [Pattern] matching like the wildcard expression
+ * @return A [Regex] matching like the wildcard expression
  */
-fun wildcard(exp: String): Pattern {
-    // Replace "?" with ".?" and "*" with ".*"
-    val regex = REPLACE_W.matcher(
-            REPLACE_Q.matcher(exp).replaceAll(".?")).replaceAll(".*")
-    return Pattern.compile(regex)
-}
+fun wildcard(exp: String) = Regex.escape(exp).replace("?", "\\E.?\\Q").replace(
+        "*", "\\E.*\\Q").toRegex()
 
 /**
  * Assembles a list of replace operations
@@ -58,14 +50,14 @@ fun wildcard(exp: String): Pattern {
 fun replace(vararg array: String): (String) -> String {
     if (array.size % 2 != 0) {
         throw IllegalArgumentException(
-                "Amount of arguments has to be a power of 2")
+                "Amount of arguments has to be a multiple of 2")
     }
     val patterns = ArrayList<(String) -> String>(array.size shr 1)
     var i = 0
     while (i < array.size) {
-        val pattern = Pattern.compile(array[i])
+        val pattern = array[i].toRegex()
         val replace = array[i + 1]
-        patterns.add({ str -> pattern.matcher(str).replaceAll(replace) })
+        patterns.add({ it.replace(pattern, replace) })
         i += 2
     }
     return { str ->

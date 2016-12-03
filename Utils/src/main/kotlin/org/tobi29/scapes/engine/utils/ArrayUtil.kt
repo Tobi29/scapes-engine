@@ -20,9 +20,6 @@ import com.owtelse.codec.Base64
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.ByteBuffer
-import java.util.regex.Pattern
-
-private val REPLACE = Pattern.compile(" ")
 
 /**
  * Joins all values of a given array into a string
@@ -212,7 +209,7 @@ fun ByteArray.toHexadecimal(groups: Int): String {
  */
 fun String.fromHexadecimal(): ByteArray {
     try {
-        val text = REPLACE.matcher(this).replaceAll("")
+        val text = replace(" ", "")
         if (text.length and 1 == 1) {
             throw IOException("String has uneven length")
         }

@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.regex.Pattern
 
 abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
                                                           protected val controller: ControllerDefault) : GuiController(
@@ -51,7 +50,7 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
                     ControllerKey.KEY_V -> {
                         var paste = container.clipboardPaste()
                         if (!multiline) {
-                            paste = REPLACE.matcher(paste).replaceAll("")
+                            paste = paste.replace("\n", "")
                         }
                         data.paste(paste)
                     }
@@ -105,9 +104,5 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
 
     override fun captureCursor(): Boolean {
         return false
-    }
-
-    companion object {
-        private val REPLACE = Pattern.compile("\n")
     }
 }

@@ -31,11 +31,8 @@ import org.tobi29.scapes.engine.utils.io.filesystem.read
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.mapNotNull
 import java.io.IOException
-import java.util.regex.Pattern
 
 object PlatformDialogs : KLogging() {
-    private val SPLIT = Pattern.compile("\\|")
-
     private inline fun <R> filter(extensions: Array<Pair<String, String>>,
                                   block: (PointerBuffer) -> R): R {
         MemoryStack.stackPush().use { stack ->
@@ -57,7 +54,7 @@ object PlatformDialogs : KLogging() {
             filter(extensions) { filters ->
                 TinyFileDialogs.tinyfd_openFileDialog("Open File...", "",
                         filters, null, multiple)?.mapNotNull {
-                    SPLIT.split(it)
+                    it.split('|')
                 }?.forEach { filePath ->
                     val path = path(filePath).toAbsolutePath()
                     read(path) { stream ->

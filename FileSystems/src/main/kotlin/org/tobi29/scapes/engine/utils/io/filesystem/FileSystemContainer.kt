@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import java.util.concurrent.ConcurrentHashMap
-import java.util.regex.Pattern
 
 class FileSystemContainer : Path {
     private val fileSystems = ConcurrentHashMap<String, Path>()
@@ -43,14 +42,10 @@ class FileSystemContainer : Path {
     }
 
     private fun splitPath(path: String): Pair<String, String> {
-        val array = SPLIT.split(path, 2)
-        if (array.size != 2) {
+        val split = path.split(':', limit = 2)
+        if (split.size != 2) {
             throw IllegalArgumentException("Invalid path: " + path)
         }
-        return Pair(array[0], array[1])
-    }
-
-    companion object {
-        private val SPLIT = Pattern.compile(":")
+        return Pair(split[0], split[1])
     }
 }

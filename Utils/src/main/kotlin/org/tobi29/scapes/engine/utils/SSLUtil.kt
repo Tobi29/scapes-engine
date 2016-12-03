@@ -33,7 +33,6 @@ import java.security.spec.PKCS8EncodedKeySpec
 import java.security.spec.RSAPublicKeySpec
 import java.security.spec.X509EncodedKeySpec
 import java.util.*
-import java.util.regex.Pattern
 import javax.net.ssl.KeyManager
 import javax.net.ssl.KeyManagerFactory
 import javax.net.ssl.TrustManager
@@ -43,8 +42,6 @@ import javax.security.auth.x500.X500Principal
 private val FACTORY: KeyFactory = KeyFactory.getInstance("RSA")
 // TODO: Need better key storage to be more future proof
 private val E = BigInteger("65537")
-private val SPLIT_COMMA = Pattern.compile(",")
-private val SPLIT_EQUALS = Pattern.compile("=")
 
 /**
  * Reads a private RSA key, encoded in Base64
@@ -333,10 +330,9 @@ fun readPEM(reader: BufferedReader,
  */
 fun parseX500(principal: X500Principal): Map<String, String> {
     val map = HashMap<String, String>()
-    val mappings = SPLIT_COMMA.split(
-            principal.getName(X500Principal.RFC2253))
+    val mappings = principal.getName(X500Principal.RFC2253).split(',')
     for (mapping in mappings) {
-        val split = SPLIT_EQUALS.split(mapping)
+        val split = mapping.split('=', limit = 2)
         if (split.size != 2) {
             // Let's just hope it never comes to this
             throw IllegalArgumentException(
