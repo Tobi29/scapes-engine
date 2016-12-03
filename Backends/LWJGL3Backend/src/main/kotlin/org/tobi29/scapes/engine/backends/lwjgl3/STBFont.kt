@@ -41,7 +41,7 @@ class STBFont(internal val container: ContainerLWJGL3,
                 val fontBuffer = container.allocate(buffer.remaining())
                 fontBuffer.put(buffer)
                 fontBuffer.flip()
-                val infoBuffer = STBTTFontinfo.malloc()
+                val infoBuffer = STBTTFontinfo.create()
                 if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer)) {
                     return STBFont(container, fontBuffer, infoBuffer)
                 }
