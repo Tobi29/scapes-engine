@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.sql.sqlite
 
 class SQLiteConfig {
     var secureDelete = true
+    var foreignKeys = false
     var journalMode = JournalMode.DELETE
     var synchronous = Synchronous.FULL
 

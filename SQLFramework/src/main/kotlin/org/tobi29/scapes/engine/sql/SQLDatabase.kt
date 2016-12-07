@@ -20,30 +20,55 @@ import java.util.*
 
 interface SQLDatabase {
     fun replace(table: String,
-                columns: Array<String>,
-                rows: List<Array<Any>>)
+                columns: Array<out String>,
+                rows: List<Array<out Any?>>)
 
     fun replace(table: String,
-                columns: Array<String>,
-                vararg rows: Array<Any>) {
+                columns: Array<out String>,
+                vararg rows: Array<out Any?>) {
         replace(table, columns, listOf(*rows))
     }
 
-    fun insert(table: String,
-               columns: Array<String>,
-               rows: List<Array<Any>>)
+    fun update(table: String,
+               matches: List<Pair<String, Any?>>,
+               updates: List<Pair<String, Any?>>) {
+        val matchesList = ArrayList<String>(matches.size)
+        val values = ArrayList<Any?>(matches.size)
+        matches.forEach {
+            matchesList.add(it.first)
+            values.add(it.second)
+        }
+        val columns = ArrayList<String>(updates.size)
+        val updateValues = ArrayList<Any?>(updates.size)
+        updates.forEach {
+            columns.add(it.first)
+            updateValues.add(it.second)
+        }
+        compileQuery(table, columns.toTypedArray(), matchesList).run(values,
+                updateValues)
+    }
+
+    fun update(table: String,
+               matches: Array<Pair<String, Any?>>,
+               vararg updates: Pair<String, Any?>) {
+        update(table, listOf(*matches), listOf(*updates))
+    }
 
     fun insert(table: String,
-               columns: Array<String>,
-               vararg rows: Array<Any>) {
+               columns: Array<out String>,
+               rows: List<Array<out Any?>>)
+
+    fun insert(table: String,
+               columns: Array<out String>,
+               vararg rows: Array<out Any?>) {
         insert(table, columns, listOf(*rows))
     }
 
     fun query(table: String,
-              columns: Array<String>,
-              matches: List<Pair<String, Any>>): List<Array<Any?>> {
+              columns: Array<out String>,
+              matches: List<Pair<String, Any?>>): List<Array<Any?>> {
         val matchesList = ArrayList<String>(matches.size)
-        val values = ArrayList<Any>(matches.size)
+        val values = ArrayList<Any?>(matches.size)
         matches.forEach {
             matchesList.add(it.first)
             values.add(it.second)
@@ -52,53 +77,102 @@ interface SQLDatabase {
     }
 
     fun query(table: String,
-              columns: Array<String>,
-              vararg matches: Pair<String, Any>): List<Array<Any?>> {
+              columns: Array<out String>,
+              vararg matches: Pair<String, Any?>): List<Array<Any?>> {
         return query(table, columns, listOf(*matches))
     }
 
-    fun compileQuery(table: String,
-                     columns: Array<String>,
-                     matches: List<String>): SQLQuery
-
-    fun compileQuery(table: String,
-                     columns: Array<String>,
-                     vararg matches: String): SQLQuery {
-        return compileQuery(table, columns, listOf(*matches))
+    fun delete(table: String,
+               matches: List<Pair<String, Any?>>) {
+        val matchesList = ArrayList<String>(matches.size)
+        val values = ArrayList<Any?>(matches.size)
+        matches.forEach {
+            matchesList.add(it.first)
+            values.add(it.second)
+        }
+        compileDelete(table, matchesList).run(values)
     }
 
     fun delete(table: String,
-               matches: List<Pair<String, Any>>)
-
-    fun delete(table: String,
-               vararg matches: Pair<String, Any>) {
+               vararg matches: Pair<String, Any?>) {
         delete(table, listOf(*matches))
     }
 
     fun createTable(name: String,
-                    primaryKey: String?,
+                    primaryKey: List<String>,
                     columns: List<SQLColumn>)
 
     fun createTable(name: String,
-                    primaryKey: String? = null,
+                    primaryKey: Array<String>,
                     vararg columns: SQLColumn) {
-        createTable(name, primaryKey, listOf(*columns))
-    }
-
-    fun createTable(name: String,
-                    vararg columns: SQLColumn) {
-        createTable(name, null, *columns)
+        createTable(name, listOf(*primaryKey), listOf(*columns))
     }
 
     fun dropTable(name: String)
+
+    fun compileQuery(table: String,
+                     columns: Array<out String>,
+                     matches: List<String>): SQLQuery
+
+    fun compileQuery(table: String,
+                     columns: Array<out String>,
+                     vararg matches: String): SQLQuery {
+        return compileQuery(table, columns, listOf(*matches))
+    }
+
+    fun compileUpdate(table: String,
+                      matches: List<String>,
+                      columns: Array<out String>): SQLUpdate
+
+    fun compileUpdate(table: String,
+                      matches: Array<out String>,
+                      vararg columns: String): SQLUpdate {
+        return compileUpdate(table, listOf(*matches), columns)
+    }
+
+    fun compileDelete(table: String,
+                      matches: List<String>): SQLDelete
+
+    fun compileDelete(table: String,
+                      vararg matches: String): SQLDelete {
+        return compileDelete(table, listOf(*matches))
+    }
 }
 
-class SQLColumn(val name: String, val type: SQLType, val extra: String? = null)
+class SQLColumn(val name: String,
+                val type: SQLType,
+                val extra: String? = null,
+                val foreignKey: SQLForeignKey? = null,
+                val notNull: Boolean = false,
+                val unique: Boolean = false)
+
+class SQLForeignKey(val table: String,
+                    val column: String,
+                    val onUpdate: SQLReferentialAction = SQLReferentialAction.RESTRICT,
+                    val onDelete: SQLReferentialAction = onUpdate)
 
 interface SQLQuery {
-    fun run(values: List<Any>): List<Array<Any?>>
+    fun run(values: List<Any?>): List<Array<Any?>>
 
-    fun run(vararg values: Any): List<Array<Any?>> {
+    fun run(vararg values: Any?): List<Array<Any?>> {
+        return run(listOf(*values))
+    }
+}
+
+interface SQLUpdate {
+    fun run(values: List<Any?>,
+            updates: List<Any?>)
+
+    fun run(values: Array<out Any?>,
+            vararg updates: Any?) {
+        return run(listOf(*values), listOf(*updates))
+    }
+}
+
+interface SQLDelete {
+    fun run(values: List<Any?>)
+
+    fun run(vararg values: Any?) {
         return run(listOf(*values))
     }
 }
@@ -109,4 +183,10 @@ enum class SQLType {
     LONGBLOB,
     CHAR,
     VARCHAR
+}
+
+enum class SQLReferentialAction(val sql: String) {
+    RESTRICT("RESTRICT"),
+    CASCADE("CASCADE"),
+    SET_NULL("SET NULL")
 }
