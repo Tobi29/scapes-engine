@@ -166,64 +166,7 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
             try {
                 var i = 1
                 for (row in rowsSafe) {
-                    for (`object` in row) {
-                        resolveObject(`object`, i++, statement)
-                    }
-                }
-                while (statement.step()) {
-                }
-            } finally {
-                statement.dispose()
-            }
-        })
-    }
-
-    override fun insert(table: String,
-                        columns: Array<out String>,
-                        rows: List<Array<out Any?>>) {
-        val rowsSafe = ArrayList<Array<out Any?>>(rows.size)
-        rowsSafe.addAll(rows)
-        val sql = StringBuilder(columns.size shl 5)
-        sql.append("INSERT OR IGNORE INTO '").append(table).append("' (")
-        var first = true
-        for (column in columns) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append(column)
-        }
-        sql.append(") VALUES ")
-        first = true
-        for (row in rowsSafe) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append('(')
-            var rowFirst = true
-            for (ignored in row) {
-                if (rowFirst) {
-                    rowFirst = false
-                } else {
-                    sql.append(',')
-                }
-                sql.append('?')
-            }
-            sql.append(')')
-        }
-        sql.append(';')
-        val compiled = sql.toString()
-        access({
-            val statement = connection.prepare(compiled)
-            try {
-                var i = 1
-                for (row in rowsSafe) {
-                    for (`object` in row) {
-                        resolveObject(`object`, i++, statement)
-                    }
+                    i = resolveObjects(row, statement, i)
                 }
                 while (statement.step()) {
                 }
@@ -325,12 +268,77 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
                     val statement = connection.prepare(compiled)
                     try {
                         var i = 1
-                        i = whereParameters(values, statement, i)
+                        i = resolveObjects(values, statement, i)
                         val rows = ArrayList<Array<Any?>>()
                         while (statement.step()) {
                             rows.add(resolveResult(statement, columns.size))
                         }
                         return@accessReturn rows
+                    } finally {
+                        statement.dispose()
+                    }
+                })
+            }
+        }
+    }
+
+    override fun compileInsert(table: String,
+                               vararg columns: String): SQLInsert {
+        val columnSize = columns.size
+        val prefix = StringBuilder(columnSize shl 3)
+        prefix.append("INSERT OR IGNORE INTO '").append(table).append("' (")
+        var first = true
+        for (column in columns) {
+            if (first) {
+                first = false
+            } else {
+                prefix.append(',')
+            }
+            prefix.append(column)
+        }
+        prefix.append(") VALUES ")
+        val compiledPrefix = prefix.toString()
+        val compiledSuffix = ";"
+        return object : SQLInsert {
+            override fun run(values: List<Array<out Any?>>) {
+                val valuesSafe = ArrayList<Array<out Any?>>(values.size)
+                valuesSafe.addAll(values)
+                val sql = StringBuilder(columnSize shl 5)
+                sql.append(compiledPrefix)
+                first = true
+                for (row in valuesSafe) {
+                    if (row.size != columnSize) {
+                        throw IllegalArgumentException(
+                                "Amount of updated values (${row.size}) does not match amount of columns ($columnSize)")
+                    }
+                    if (first) {
+                        first = false
+                    } else {
+                        sql.append(',')
+                    }
+                    sql.append('(')
+                    var rowFirst = true
+                    for (ignored in row) {
+                        if (rowFirst) {
+                            rowFirst = false
+                        } else {
+                            sql.append(',')
+                        }
+                        sql.append('?')
+                    }
+                    sql.append(')')
+                }
+                sql.append(compiledSuffix)
+                val compiled = sql.toString()
+                access({
+                    val statement = connection.prepare(compiled)
+                    try {
+                        var i = 1
+                        for (row in valuesSafe) {
+                            i = resolveObjects(row, statement, i)
+                        }
+                        while (statement.step()) {
+                        }
                     } finally {
                         statement.dispose()
                     }
@@ -368,10 +376,8 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
                     val statement = connection.prepare(compiled)
                     try {
                         var i = 1
-                        for (update in updates) {
-                            resolveObject(update, i++, statement)
-                        }
-                        i = whereParameters(values, statement, i)
+                        i = resolveObjects(updates, statement, i)
+                        i = resolveObjects(values, statement, i)
                         while (statement.step()) {
                         }
                     } finally {
@@ -395,7 +401,7 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
                     val statement = connection.prepare(compiled)
                     try {
                         var i = 1
-                        i = whereParameters(values, statement, i)
+                        i = resolveObjects(values, statement, i)
                         while (statement.step()) {
                         }
                     } finally {
@@ -424,9 +430,19 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
         }
     }
 
-    private fun whereParameters(matches: List<Any?>,
-                                statement: SQLiteStatement,
-                                index: Int): Int {
+    private fun resolveObjects(matches: Array<out Any?>,
+                               statement: SQLiteStatement,
+                               index: Int): Int {
+        var i = index
+        for (match in matches) {
+            resolveObject(match, i++, statement)
+        }
+        return i
+    }
+
+    private fun resolveObjects(matches: List<Any?>,
+                               statement: SQLiteStatement,
+                               index: Int): Int {
         var i = index
         for (match in matches) {
             resolveObject(match, i++, statement)

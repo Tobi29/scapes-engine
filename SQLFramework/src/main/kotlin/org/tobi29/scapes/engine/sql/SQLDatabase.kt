@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.sql
 
-import java.util.*
-
 interface SQLDatabase {
     fun replace(table: String,
                 columns: Array<out String>,
@@ -27,75 +25,6 @@ interface SQLDatabase {
                 columns: Array<out String>,
                 vararg rows: Array<out Any?>) {
         replace(table, columns, listOf(*rows))
-    }
-
-    fun update(table: String,
-               matches: List<Pair<String, Any?>>,
-               updates: List<Pair<String, Any?>>) {
-        val matchesList = ArrayList<String>(matches.size)
-        val values = ArrayList<Any?>(matches.size)
-        matches.forEach {
-            matchesList.add(it.first)
-            values.add(it.second)
-        }
-        val columns = ArrayList<String>(updates.size)
-        val updateValues = ArrayList<Any?>(updates.size)
-        updates.forEach {
-            columns.add(it.first)
-            updateValues.add(it.second)
-        }
-        compileQuery(table, columns.toTypedArray(), matchesList).run(values,
-                updateValues)
-    }
-
-    fun update(table: String,
-               matches: Array<Pair<String, Any?>>,
-               vararg updates: Pair<String, Any?>) {
-        update(table, listOf(*matches), listOf(*updates))
-    }
-
-    fun insert(table: String,
-               columns: Array<out String>,
-               rows: List<Array<out Any?>>)
-
-    fun insert(table: String,
-               columns: Array<out String>,
-               vararg rows: Array<out Any?>) {
-        insert(table, columns, listOf(*rows))
-    }
-
-    fun query(table: String,
-              columns: Array<out String>,
-              matches: List<Pair<String, Any?>>): List<Array<Any?>> {
-        val matchesList = ArrayList<String>(matches.size)
-        val values = ArrayList<Any?>(matches.size)
-        matches.forEach {
-            matchesList.add(it.first)
-            values.add(it.second)
-        }
-        return compileQuery(table, columns, matchesList).run(values)
-    }
-
-    fun query(table: String,
-              columns: Array<out String>,
-              vararg matches: Pair<String, Any?>): List<Array<Any?>> {
-        return query(table, columns, listOf(*matches))
-    }
-
-    fun delete(table: String,
-               matches: List<Pair<String, Any?>>) {
-        val matchesList = ArrayList<String>(matches.size)
-        val values = ArrayList<Any?>(matches.size)
-        matches.forEach {
-            matchesList.add(it.first)
-            values.add(it.second)
-        }
-        compileDelete(table, matchesList).run(values)
-    }
-
-    fun delete(table: String,
-               vararg matches: Pair<String, Any?>) {
-        delete(table, listOf(*matches))
     }
 
     fun createTable(name: String,
@@ -119,6 +48,9 @@ interface SQLDatabase {
                      vararg matches: String): SQLQuery {
         return compileQuery(table, columns, listOf(*matches))
     }
+
+    fun compileInsert(table: String,
+                      vararg columns: String): SQLInsert
 
     fun compileUpdate(table: String,
                       matches: List<String>,
@@ -155,6 +87,14 @@ interface SQLQuery {
     fun run(values: List<Any?>): List<Array<Any?>>
 
     fun run(vararg values: Any?): List<Array<Any?>> {
+        return run(listOf(*values))
+    }
+}
+
+interface SQLInsert {
+    fun run(values: List<Array<out Any?>>)
+
+    fun run(vararg values: Array<out Any?>) {
         return run(listOf(*values))
     }
 }

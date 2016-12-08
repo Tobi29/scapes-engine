@@ -76,60 +76,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             connection.prepareStatement(compiled).use { statement ->
                 var i = 1
                 for (row in rows) {
-                    for (`object` in row) {
-                        resolveObject(`object`, i++, statement)
-                    }
-                }
-                statement.executeUpdate()
-            }
-        } catch (e: SQLException) {
-            throw IOException(e)
-        }
-    }
-
-    override fun insert(table: String,
-                        columns: Array<out String>,
-                        rows: List<Array<out Any?>>) {
-        val sql = StringBuilder(columns.size shl 5)
-        sql.append("INSERT IGNORE INTO ").append(table).append(" (")
-        var first = true
-        for (column in columns) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append(column)
-        }
-        sql.append(") VALUES ")
-        first = true
-        for (row in rows) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append('(')
-            var rowFirst = true
-            for (ignored in row) {
-                if (rowFirst) {
-                    rowFirst = false
-                } else {
-                    sql.append(',')
-                }
-                sql.append('?')
-            }
-            sql.append(')')
-        }
-        sql.append(';')
-        val compiled = sql.toString()
-        try {
-            connection.prepareStatement(compiled).use { statement ->
-                var i = 1
-                for (row in rows) {
-                    for (`object` in row) {
-                        resolveObject(`object`, i++, statement)
-                    }
+                    i = resolveObjects(row, statement, i)
                 }
                 statement.executeUpdate()
             }
@@ -229,13 +176,76 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                         // MariaDB specific optimization
                         statement.fetchSize = Int.MIN_VALUE
                         var i = 1
-                        i = whereParameters(matches, statement, i)
+                        i = resolveObjects(matches, statement, i)
                         val result = statement.executeQuery()
                         val rows = ArrayList<Array<Any?>>()
                         while (result.next()) {
                             rows.add(resolveResult(result, columns.size))
                         }
                         return@use rows
+                    }
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
+            }
+        }
+    }
+
+    override fun compileInsert(table: String,
+                               vararg columns: String): SQLInsert {
+        val columnSize = columns.size
+        val prefix = StringBuilder(columnSize shl 3)
+        prefix.append("INSERT OR IGNORE INTO '").append(table).append("' (")
+        var first = true
+        for (column in columns) {
+            if (first) {
+                first = false
+            } else {
+                prefix.append(',')
+            }
+            prefix.append(column)
+        }
+        prefix.append(") VALUES ")
+        val compiledPrefix = prefix.toString()
+        val compiledSuffix = ";"
+        return object : SQLInsert {
+            override fun run(values: List<Array<out Any?>>) {
+                val valuesSafe = ArrayList<Array<out Any?>>(values.size)
+                valuesSafe.addAll(values)
+                val sql = StringBuilder(columnSize shl 5)
+                sql.append(compiledPrefix)
+                first = true
+                for (row in valuesSafe) {
+                    if (row.size != columnSize) {
+                        throw IllegalArgumentException(
+                                "Amount of updated values (${row.size}) does not match amount of columns ($columnSize)")
+                    }
+                    if (first) {
+                        first = false
+                    } else {
+                        sql.append(',')
+                    }
+                    sql.append('(')
+                    var rowFirst = true
+                    for (ignored in row) {
+                        if (rowFirst) {
+                            rowFirst = false
+                        } else {
+                            sql.append(',')
+                        }
+                        sql.append('?')
+                    }
+                    sql.append(')')
+                }
+                sql.append(compiledSuffix)
+                val compiled = sql.toString()
+                try {
+                    connection.prepareStatement(compiled).use { statement ->
+                        var i = 1
+                        for (row in values) {
+                            i = resolveObjects(row, statement, i)
+                        }
+                        statement.executeUpdate()
                     }
                 } catch (e: SQLException) {
                     throw IOException(e)
@@ -273,10 +283,8 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                     return connection.prepareStatement(
                             compiled).use { statement ->
                         var i = 1
-                        for (update in updates) {
-                            resolveObject(update, i++, statement)
-                        }
-                        i = whereParameters(values, statement, i)
+                        i = resolveObjects(updates, statement, i)
+                        i = resolveObjects(values, statement, i)
                         statement.executeUpdate()
                     }
                 } catch (e: SQLException) {
@@ -299,7 +307,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                     return connection.prepareStatement(
                             compiled).use { statement ->
                         var i = 1
-                        i = whereParameters(matches, statement, i)
+                        i = resolveObjects(matches, statement, i)
                         statement.executeUpdate()
                     }
                 } catch (e: SQLException) {
@@ -323,9 +331,19 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         }
     }
 
-    private fun whereParameters(matches: List<Any?>,
-                                statement: PreparedStatement,
-                                index: Int): Int {
+    private fun resolveObjects(matches: Array<out Any?>,
+                               statement: PreparedStatement,
+                               index: Int): Int {
+        var i = index
+        for (match in matches) {
+            resolveObject(match, i++, statement)
+        }
+        return i
+    }
+
+    private fun resolveObjects(matches: List<Any?>,
+                               statement: PreparedStatement,
+                               index: Int): Int {
         var i = index
         for (match in matches) {
             resolveObject(match, i++, statement)
