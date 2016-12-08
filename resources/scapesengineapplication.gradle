@@ -227,25 +227,29 @@ class ScapesEngineApplication implements Plugin<Project> {
     }
 
     private Task addDeployMacOSXTask(Project target) {
-        def jre = getJRE(target, "MacOSX")
-        if (jre == null) {
+        // JRE Task
+        def jreTask = jreTask(target, "jreMacOSX", "MacOSX")
+        if (jreTask == null) {
             target.logger.warn "No JRE for Mac OS X found!"
             return null
         }
-        pruneJREMacOSX(jre)
+        pruneJREMacOSX(jreTask, "*/Contents/Home")
+
         // Bundle task
-        def bundleTask = target.tasks.
-                create("bundleMacOSX", AppBundlerTask)
+        def bundleTask = target.tasks.create("bundleMacOSX", AppBundlerTask)
+        bundleTask.dependsOn jreTask
         bundleTask.dependsOn target.jar
         bundleTask.fullName = "${-> target.application.fullName}"
         bundleTask.version = "${-> target.application.version}"
         bundleTask.company = "${-> target.application.company}"
         bundleTask.copyright = "${-> target.application.copyright}"
         bundleTask.mainClass = "${-> target.application.mainClass}"
-        bundleTask.appbundler = target.rootProject.
-                file("ScapesEngine/resources/appbundler-1.0ea.jar")
-        bundleTask.jre = jre
-        bundleTask.icon = target.file("project/Icon.icns")
+        bundleTask.appbundler = {
+            target.rootProject.
+                    file("ScapesEngine/resources/appbundler-1.0ea.jar")
+        }
+        bundleTask.jre = { jreTask.temporaryDir }
+        bundleTask.icon = "project/Icon.icns"
         bundleTask.classpath = target.configurations.runtime +
                 target.configurations.runtimeMacOSX + target.files(target.jar)
         bundleTask.output = {
@@ -292,28 +296,21 @@ class ScapesEngineApplication implements Plugin<Project> {
     }
 
     private Task addDeployWindowsTask(Project target) {
-        def jre32 = new File(target.buildDir,
-                "tmp/prepareWindows/install/32/jre")
-        if (!jre32.exists()) {
-            def extracted = getJRE(target, "Windows/32", jre32.parentFile)
-            if (extracted == null) {
-                target.logger.warn "No 32-Bit JRE for Windows found!"
-                return null
-            }
-            pruneJREWindows(extracted)
-            extracted.renameTo(jre32)
+        // JRE Task 64-Bit
+        def jreTask32 = jreTask(target, "jreWindows32", "Windows/32")
+        if (jreTask32 == null) {
+            target.logger.warn "No 32-Bit JRE for Windows found!"
+            return null
         }
-        def jre64 = new File(target.buildDir,
-                "tmp/prepareWindows/install/64/jre")
-        if (!jre64.exists()) {
-            def extracted = getJRE(target, "Windows/64", jre64.parentFile)
-            if (extracted == null) {
-                target.logger.warn "No 64-Bit JRE for Windows found!"
-                return null
-            }
-            pruneJREWindows(extracted)
-            extracted.renameTo(jre64)
+        pruneJREWindows(jreTask32, "*")
+
+        // JRE Task 64-Bit
+        def jreTask64 = jreTask(target, "jreWindows64", "Windows/64")
+        if (jreTask64 == null) {
+            target.logger.warn "No 64-Bit JRE for Windows found!"
+            return null
         }
+        pruneJREWindows(jreTask64, "*")
 
         // Program task
         def programTask = target.tasks.create("programWindows", Launch4jTask)
@@ -360,6 +357,8 @@ class ScapesEngineApplication implements Plugin<Project> {
 
         // Prepare Task
         def prepareTask = target.tasks.create("prepareWindows", Copy)
+        prepareTask.dependsOn jreTask32
+        prepareTask.dependsOn jreTask64
         prepareTask.dependsOn target.jar
         prepareTask.dependsOn programTask
         prepareTask.dependsOn programCmdTask
@@ -412,6 +411,8 @@ class ScapesEngineApplication implements Plugin<Project> {
                 { into "install/32/lib" })
         prepareTask.from(target.configurations.runtimeWindows64,
                 { into "install/64/lib" })
+        prepareTask.from({ jreTask32.temporaryDir }, { into "install/32/jre" })
+        prepareTask.from({ jreTask64.temporaryDir }, { into "install/64/jre" })
         prepareTask.from(target.rootProject.
                 file("ScapesEngine/resources/Install/Windows"),
                 { into "install" })
@@ -457,160 +458,134 @@ class ScapesEngineApplication implements Plugin<Project> {
         return task
     }
 
-    private
-    static File getJRE(Project target, String platform) {
-        return getJRE(target, platform,
-                new File(target.buildDir, "jres/" + platform))
+    private static Copy jreTask(Project target, String name, String platform) {
+        def jre = getJRE(target, platform)
+        if (jre == null) {
+            return null
+        }
+        def task = target.tasks.create(name, Copy)
+        task.from { target.tarTree(jre) }
+        task.into "${-> task.temporaryDir}"
+        task.includeEmptyDirs = false
+        task.eachFile { FileCopyDetails fcp ->
+            def segments = fcp.relativePath.segments
+            String[] newSegments
+            if (segments.length <= 1) {
+                newSegments = new String[0]
+            } else {
+                newSegments = segments[1..-1]
+            }
+            fcp.relativePath = new RelativePath(true, newSegments)
+        }
+        return task
     }
 
-    private
-    static File getJRE(Project target, String platform, File file) {
+    private static File getJRE(Project target, String platform) {
         def jres = target.rootProject.
-                file("ScapesEngine/resources/JRE/" + platform).
-                listFiles((FileFilter) {
-                    !it.isDirectory() && !it.isHidden()
-                })
+                file("ScapesEngine/resources/JRE/$platform").
+                listFiles((FileFilter) { !it.isDirectory() && !it.isHidden() })
         if (jres == null || jres.length == 0) {
             return null
         }
-        // Workaround for automatic expanding failing on 2nd build
-        if (!file.exists()) {
-            target.copy {
-                from {
-                    target.tarTree(jres[0])
-                }
-                into file
-            }
-        }
-        def jre = file.listFiles((FileFilter) {
-            it.isDirectory() && !it.isHidden()
-        })
-        if (jre == null || jre.length == 0) {
-            return null
-        }
-        return jre[0]
+        return jres[0]
     }
     private static
     final List<String> jreExtensions = ["dnsns.jar", "sunjce_provider.jar",
             "sunec.jar", "sunpkcs11.jar", "sunmscapi.jar"]
 
-    private static void pruneJREMacOSX(File jre) {
-        def jreHome = new File(jre, "Contents/Home")
-        pruneJRE(jreHome)
-        def lib = new File(jreHome, "lib")
-        deleteLibrary(lib, "libdecora_sse")
-        deleteLibrary(lib, "libfxplugins")
-        deleteLibrary(lib, "libglass")
-        deleteLibrary(lib, "libglib-lite")
-        deleteLibrary(lib, "libgstreamer-lite")
-        deleteLibrary(lib, "libjavafx_font")
-        deleteLibrary(lib, "libjavafx_font_t2k")
-        deleteLibrary(lib, "libjavafx_iio")
-        deleteLibrary(lib, "libjfxmedia")
-        deleteLibrary(lib, "libjfxwebkit")
-        deleteLibrary(lib, "libprism_common")
-        deleteLibrary(lib, "libprism_es2")
-        deleteLibrary(lib, "libprism_sw")
+    private static void pruneJREMacOSX(CopySpec copy, String dir) {
+        pruneJRE(copy, dir)
+
+        copy.exclude "$dir/bin/javaws"
+        copy.exclude "$dir/bin/orbd"
+        copy.exclude "$dir/bin/policytool"
+        copy.exclude "$dir/bin/keytool"
+        copy.exclude "$dir/bin/rmid"
+        copy.exclude "$dir/bin/rmiregistry"
+        copy.exclude "$dir/bin/servertool"
+        copy.exclude "$dir/bin/tnameserv"
+
+        copy.exclude "$dir/lib/libdecora_sse.dylib"
+        copy.exclude "$dir/lib/libfxplugins.dylib"
+        copy.exclude "$dir/lib/libglass.dylib"
+        copy.exclude "$dir/lib/libglib-lite.dylib"
+        copy.exclude "$dir/lib/libgstreamer-lite.dylib"
+        copy.exclude "$dir/lib/libjavafx_font.dylib"
+        copy.exclude "$dir/lib/libjavafx_font_t2k.dylib"
+        copy.exclude "$dir/lib/libjavafx_iio.dylib"
+        copy.exclude "$dir/lib/libjfxmedia.dylib"
+        copy.exclude "$dir/lib/libjfxwebkit.dylib"
+        copy.exclude "$dir/lib/libprism_common.dylib"
+        copy.exclude "$dir/lib/libprism_es2.dylib"
+        copy.exclude "$dir/lib/libprism_sw.dylib"
     }
 
-    private static void pruneJREWindows(File jre) {
-        pruneJRE(jre)
-        def lib = new File(jre, "lib")
-        def bin = new File(jre, "bin")
-        delete(bin, "dtplugin")
-        delete(bin, "plugin2")
-        deleteBinary(bin, "javacpl")
-        deleteBinary(bin, "jucheck")
-        deleteBinary(bin, "jabswitch")
-        deleteBinary(bin, "kinit")
-        deleteBinary(bin, "klist")
-        deleteBinary(bin, "ktab")
-        deleteLibrary(bin, "java_crw_demo")
-        deleteLibrary(bin, "JavaAccessBridge-32")
-        deleteLibrary(bin, "JavaAccessBridge")
-        deleteLibrary(bin, "JAWTAccessBridge-32")
-        deleteLibrary(bin, "JAWTAccessBridge")
-        deleteLibrary(bin, "WindowsAccessBridge-32")
-        deleteLibrary(bin, "WindowsAccessBridge")
-        deleteLibrary(bin, "wsdetect")
-        deleteLibrary(bin, "deploy")
-        deleteLibrary(bin, "jfr")
-        deleteLibrary(bin, "decora_sse")
-        deleteLibrary(bin, "fxplugins")
-        deleteLibrary(bin, "glass")
-        deleteLibrary(bin, "glib-lite")
-        deleteLibrary(bin, "gstreamer-lite")
-        deleteLibrary(bin, "javafx_font")
-        deleteLibrary(bin, "javafx_font_t2k")
-        deleteLibrary(bin, "javafx_iio")
-        deleteLibrary(bin, "jfxmedia")
-        deleteLibrary(bin, "jfxwebkit")
-        deleteLibrary(bin, "prism_common")
-        deleteLibrary(bin, "prism_d3d")
-        deleteLibrary(bin, "prism_es2")
-        deleteLibrary(bin, "prism_sw")
+    private static void pruneJREWindows(CopySpec copy, String dir) {
+        pruneJRE(copy, dir)
 
-        delete(lib, "deploy.jar")
-        delete(lib, "plugin.jar")
-        delete(lib, "deploy")
+        copy.exclude "$dir/bin/dtplugin/**"
+        copy.exclude "$dir/bin/plugin2/**"
+        copy.exclude "$dir/bin/javaws.exe"
+        copy.exclude "$dir/bin/orbd.exe"
+        copy.exclude "$dir/bin/policytool.exe"
+        copy.exclude "$dir/bin/keytool.exe"
+        copy.exclude "$dir/bin/rmid.exe"
+        copy.exclude "$dir/bin/rmiregistry.exe"
+        copy.exclude "$dir/bin/servertool.exe"
+        copy.exclude "$dir/bin/tnameserv.exe"
+
+        copy.exclude "$dir/lib/deploy/**"
+        copy.exclude "$dir/lib/ext/**"
+        copy.exclude "$dir/lib/deploy.jar"
+        copy.exclude "$dir/lib/plugin.jar"
+
+        copy.exclude "$dir/bin/javacpl.exe"
+        copy.exclude "$dir/bin/jucheck.exe"
+        copy.exclude "$dir/bin/jabswitch.exe"
+        copy.exclude "$dir/bin/kinit.exe"
+        copy.exclude "$dir/bin/klist.exe"
+        copy.exclude "$dir/bin/ktab.exe"
+        copy.exclude "$dir/bin/java_crw_demo.dll"
+        copy.exclude "$dir/bin/JavaAccessBridge-32.dll"
+        copy.exclude "$dir/bin/JavaAccessBridge.dll"
+        copy.exclude "$dir/bin/JAWTAccessBridge-32.dll"
+        copy.exclude "$dir/bin/JAWTAccessBridge.dll"
+        copy.exclude "$dir/bin/WindowsAccessBridge-32.dll"
+        copy.exclude "$dir/bin/WindowsAccessBridge.dll"
+        copy.exclude "$dir/bin/wsdetect.dll"
+        copy.exclude "$dir/bin/deploy.dll"
+        copy.exclude "$dir/bin/jfr.dll"
+        copy.exclude "$dir/bin/decora_sse.dll"
+        copy.exclude "$dir/bin/fxplugins.dll"
+        copy.exclude "$dir/bin/glass.dll"
+        copy.exclude "$dir/bin/glib-lite.dll"
+        copy.exclude "$dir/bin/gstreamer-lite.dll"
+        copy.exclude "$dir/bin/javafx_font.dll"
+        copy.exclude "$dir/bin/javafx_font_t2k.dll"
+        copy.exclude "$dir/bin/javafx_iio.dll"
+        copy.exclude "$dir/bin/jfxmedia.dll"
+        copy.exclude "$dir/bin/jfxwebkit.dll"
+        copy.exclude "$dir/bin/prism_common.dll"
+        copy.exclude "$dir/bin/prism_d3d.dll"
+        copy.exclude "$dir/bin/prism_es2.dll"
+        copy.exclude "$dir/bin/prism_sw.dll"
     }
 
-    private static void pruneJRE(File jre) {
-        def lib = new File(jre, "lib")
-        def bin = new File(jre, "bin")
-        def ext = new File(lib, "ext")
-        def unusedExtensions = ext.listFiles((FileFilter) {
-            !jreExtensions.contains(it.name)
-        })
-        if (unusedExtensions != null) {
-            for (File file : unusedExtensions) {
-                file.delete()
-            }
-        }
-        delete(jre, "THIRDPARTYLICENSEREADME-JAVAFX.txt")
-        delete(jre, "plugin")
+    private static void pruneJRE(CopySpec copy, String dir) {
+        copy.exclude "$dir/THIRDPARTYLICENSEREADME-JAVAFX.txt"
 
-        delete(bin, "javacpl.cpl")
-        deleteBinary(bin, "rmid")
-        deleteBinary(bin, "rmiregistry")
-        deleteBinary(bin, "tnameserv")
-        deleteBinary(bin, "keytool")
-        deleteBinary(bin, "policytool")
-        deleteBinary(bin, "orbd")
-        deleteBinary(bin, "servertool")
-        deleteBinary(bin, "javaws")
+        copy.exclude "$dir/plugin/**"
 
-        delete(lib, "javaws.jar")
-        delete(lib, "jfr")
-        delete(lib, "jfr.jar")
-        delete(lib, "oblique-fonts")
-        delete(lib, "desktop")
-        delete(lib, "ant-javafx.jar")
-        delete(lib, "javafx.properties")
-        delete(lib, "jfxswt.jar")
-    }
+        copy.exclude "$dir/bin/javacpl.cpl"
 
-    private static void delete(File dir, String name) {
-        def file = new File(dir, name)
-        if (file.isDirectory()) {
-            file.deleteDir()
-        } else {
-            file.delete()
-        }
-    }
-
-    private static void deleteBinary(File dir, String name) {
-        def file = new File(dir, name)
-        file.delete()
-        new File(file.parentFile, file.name + ".exe").delete()
-    }
-
-    private static void deleteLibrary(File dir, String name) {
-        def file = new File(dir, name)
-        file.delete()
-        new File(file.parentFile, file.name + ".dll").delete()
-        new File(file.parentFile, file.name + ".so").delete()
-        new File(file.parentFile, file.name + ".dylib").delete()
+        copy.exclude "$dir/lib/desktop/**"
+        copy.exclude "$dir/lib/jfr/**"
+        copy.exclude "$dir/lib/oblique-fonts/**"
+        copy.exclude "$dir/lib/ant-javafx.jar"
+        copy.exclude "$dir/lib/javafx.properties"
+        copy.exclude "$dir/lib/javaws.jar"
+        copy.exclude "$dir/lib/jfr.jar"
+        copy.exclude "$dir/lib/jfxswt.jar"
     }
 
     private static String escapeWindows(String str) {
@@ -652,13 +627,24 @@ class StartupScriptTask extends DefaultTask {
 class AppBundlerTask extends DefaultTask {
     def output
     @Input
-    def fullName, version, company, copyright, mainClass
-    @InputDirectory
-    def File jre
-    @InputFile
-    def File appbundler, icon
+    def fullName, version, company, copyright, mainClass, jre, appbundler, icon
     @InputFiles
     def FileCollection classpath
+
+    @InputDirectory
+    File getJRE() {
+        project.file(jre)
+    }
+
+    @InputFile
+    File getAppbundler() {
+        project.file(appbundler)
+    }
+
+    @InputFile
+    File getIcon() {
+        project.file(icon)
+    }
 
     @OutputDirectory
     File getOutput() {
@@ -667,12 +653,15 @@ class AppBundlerTask extends DefaultTask {
 
     @TaskAction
     void run() {
-        def outputFile = getOutput()
+        def jre = getJRE()
+        def appbundler = getAppbundler()
+        def icon = getIcon()
+        def output = getOutput()
         ant.taskdef(name: "bundleapp",
                 classpath: appbundler.absolutePath,
                 classname: "com.oracle.appbundler.AppBundlerTask")
-        ant.bundleapp(outputdirectory: outputFile.parentFile.absolutePath,
-                name: outputFile.name - ".app",
+        ant.bundleapp(outputdirectory: output.parentFile.absolutePath,
+                name: output.name - ".app",
                 displayname: fullName,
                 identifier: mainClass,
                 shortversion: version,
