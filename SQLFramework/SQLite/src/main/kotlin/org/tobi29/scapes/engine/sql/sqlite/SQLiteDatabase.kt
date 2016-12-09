@@ -247,7 +247,9 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
     override fun compileQuery(table: String,
                               columns: Array<out String>,
                               matches: List<String>): SQLQuery {
-        val sql = StringBuilder(columns.size shl 5)
+        val columnSize = columns.size
+        val matchesSize = matches.size
+        val sql = StringBuilder(columnSize shl 5)
         sql.append("SELECT ")
         var first = true
         for (column in columns) {
@@ -264,6 +266,10 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
         val compiled = sql.toString()
         return object : SQLQuery {
             override fun run(values: List<Any?>): List<Array<Any?>> {
+                if (values.size != matchesSize) {
+                    throw IllegalArgumentException(
+                            "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
+                }
                 return accessReturn({
                     val statement = connection.prepare(compiled)
                     try {
