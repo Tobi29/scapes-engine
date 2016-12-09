@@ -153,7 +153,9 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
     override fun compileQuery(table: String,
                               columns: Array<out String>,
                               matches: List<String>): SQLQuery {
-        val sql = StringBuilder(columns.size shl 5)
+        val columnSize = columns.size
+        val matchesSize = matches.size
+        val sql = StringBuilder(columnSize shl 5)
         sql.append("SELECT ")
         var first = true
         for (column in columns) {
@@ -170,13 +172,17 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         val compiled = sql.toString()
         return object : SQLQuery {
             override fun run(values: List<Any?>): List<Array<Any?>> {
+                if (values.size != matchesSize) {
+                    throw IllegalArgumentException(
+                            "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
+                }
                 try {
                     return connection.prepareStatement(
                             compiled).use { statement ->
                         // MariaDB specific optimization
                         statement.fetchSize = Int.MIN_VALUE
                         var i = 1
-                        i = resolveObjects(matches, statement, i)
+                        i = resolveObjects(values, statement, i)
                         val result = statement.executeQuery()
                         val rows = ArrayList<Array<Any?>>()
                         while (result.next()) {
@@ -307,7 +313,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                     return connection.prepareStatement(
                             compiled).use { statement ->
                         var i = 1
-                        i = resolveObjects(matches, statement, i)
+                        i = resolveObjects(values, statement, i)
                         statement.executeUpdate()
                     }
                 } catch (e: SQLException) {
