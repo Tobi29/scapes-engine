@@ -25,11 +25,27 @@ import java.nio.channels.Selector
 import java.nio.channels.SocketChannel
 import java.util.*
 
-open class ConnectionManager(val taskExecutor: TaskExecutor,
-                             private val maxWorkerSleep: Long = 1000) {
+/**
+ * Class for processing non-blocking connections asynchronously with possibly
+ * multiple threads
+ * @param taskExecutor The [TaskExecutor] to start threads with
+ * @param maxWorkerSleep Maximum sleep time in milliseconds
+ */
+open class ConnectionManager(
+        /**
+         * The [TaskExecutor] to start threads with
+         */
+        val taskExecutor: TaskExecutor,
+        private val maxWorkerSleep: Long = 1000) {
     private val workers = ArrayList<ConnectionWorker>()
     protected val joiners = ArrayList<Joiner>()
 
+    /**
+     * Starts a specified number of threads for processing connections
+     *
+     * May be called multiple times to start more threads
+     * @param workerCount The amount of worker threads to start
+     */
     fun workers(workerCount: Int) {
         logger.info { "Starting worker $workerCount threads..." }
         for (i in 0..workerCount - 1) {
@@ -50,6 +66,11 @@ open class ConnectionManager(val taskExecutor: TaskExecutor,
         }
     }
 
+    /**
+     * Adds a new connection to the least occupied worker
+     * @param supplier Code that will be executed on this worker's thread
+     * @return `false` if no workers were running
+     */
     fun addConnection(supplier: (ConnectionWorker) -> Connection): Boolean {
         var load = Int.MAX_VALUE
         var bestWorker: ConnectionWorker? = null
@@ -67,6 +88,9 @@ open class ConnectionManager(val taskExecutor: TaskExecutor,
         return true
     }
 
+    /**
+     * Stops all worker threads and blocks until they shut down
+     */
     fun stop() {
         Joiner(joiners).join()
         logger.info { "Closed connection workers" }
@@ -75,6 +99,12 @@ open class ConnectionManager(val taskExecutor: TaskExecutor,
     companion object : KLogging()
 }
 
+/**
+ * Create a new outwards connection
+ * @param address The remote address to connect to
+ * @param error Called if there was an error when connecting
+ * @param init Called once successfully connected
+ */
 inline fun ConnectionManager.addOutConnection(address: RemoteAddress,
                                               noinline error: (Exception) -> Unit,
                                               crossinline init: (ConnectionWorker, SocketChannel) -> Unit) {
@@ -85,6 +115,12 @@ inline fun ConnectionManager.addOutConnection(address: RemoteAddress,
     }
 }
 
+/**
+ * Create a new outwards connection
+ * @param address The remote address to connect to
+ * @param error Called if there was an error when connecting
+ * @param init Called once successfully connected
+ */
 inline fun ConnectionManager.addOutConnection(address: InetSocketAddress,
                                               noinline error: (Exception) -> Unit,
                                               crossinline init: (ConnectionWorker, SocketChannel) -> Unit) {

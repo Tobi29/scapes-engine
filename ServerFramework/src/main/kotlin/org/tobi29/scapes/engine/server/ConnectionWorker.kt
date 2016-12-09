@@ -22,9 +22,22 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class ConnectionWorker(val connection: ConnectionManager,
-                       val joiner: Joiner.SelectorJoinable,
-                       private val maxWorkerSleep: Long) {
+/**
+ * Class for processing non-blocking connections
+ * @param connection The [ConnectionManager] that holds this worker
+ * @param joiner The [Joiner.SelectorJoinable] used for idling
+ * @param maxWorkerSleep Maximum sleep time in milliseconds
+ */
+class ConnectionWorker(
+        /**
+         * The [ConnectionManager] that holds this worker
+         */
+        val connection: ConnectionManager,
+        /**
+         * The [Joiner.SelectorJoinable] used for idling
+         */
+        val joiner: Joiner.SelectorJoinable,
+        private val maxWorkerSleep: Long) {
     private val connectionQueue = ConcurrentLinkedQueue<(ConnectionWorker) -> Connection>()
     private val connections = ArrayList<Connection>()
 
@@ -50,7 +63,7 @@ class ConnectionWorker(val connection: ConnectionManager,
     /**
      * Executes this worker on the current thread
      *
-     * Note: Should never be called twice or concurrently
+     * **Note:** Should never be called twice or concurrently
      */
     fun run() {
         try {

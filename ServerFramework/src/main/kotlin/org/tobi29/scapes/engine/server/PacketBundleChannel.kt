@@ -85,6 +85,7 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
         return dataStreamOut.buffer().position()
     }
 
+    @Throws(IOException::class)
     fun queueBundle() {
         dataStreamOut.buffer().flip()
         byteBufferStreamOut.buffer().clear()
@@ -103,6 +104,7 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
         selector?.wakeup()
     }
 
+    @Throws(IOException::class)
     fun process(consumer: (RandomReadableByteStream) -> Boolean,
                 max: Int = Int.MAX_VALUE): Boolean {
         var timeout = if (state == State.OPEN) 0 else -2
@@ -234,17 +236,20 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
         }
     }
 
+    @Throws(IOException::class)
     fun register(selector: Selector,
                  opt: Int) {
         channel.register(selector, opt)
         this.selector = selector
     }
 
+    @Throws(IOException::class)
     fun register(joiner: Joiner.SelectorJoinable,
                  opt: Int) {
         register(joiner.selector, opt)
     }
 
+    @Throws(IOException::class)
     fun close() {
         channel.close()
         deflater.close()

@@ -39,10 +39,28 @@ import javax.crypto.*
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
 
-open class ControlPanelProtocol private constructor(private val worker: ConnectionWorker,
-                                                    private val channel: PacketBundleChannel,
-                                                    events: EventDispatcher?) : Connection, ListenerOwner {
+/**
+ * Simple tcp protocol to send [TagStructure]s back and forth
+ */
+open class ControlPanelProtocol private constructor(
+        private val worker: ConnectionWorker,
+        private val channel: PacketBundleChannel,
+        events: EventDispatcher?) : Connection, ListenerOwner {
+    /**
+     * [EventDispatcher] for this object
+     */
     val events = EventDispatcher(events)
+
+    /**
+     * Returns the client ID of this connection
+     * @throws IllegalStateException when no connection is established yet on server side
+     */
+    val id: String
+        get() {
+            return idStr ?: throw IllegalStateException(
+                    "Control panel not authenticated")
+        }
+
     private var idStr: String? = null
     private val queue = ConcurrentLinkedQueue<TagStructure>()
     private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
@@ -57,12 +75,21 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         addCommand("Commands-List") { payload ->
             val set = commands.keys
             send("Commands-Send", structure {
-                setList("Commands",
-                        set.stream().collect(Collectors.toList<String>()))
+                setList("Commands", set.toList())
             })
         }
     }
 
+    /**
+     * Construct a client-side instance for authentication with a salt
+     * @param worker The [ConnectionWorker] this will run in
+     * @param channel The [PacketBundleChannel] to communicate with
+     * @param events Optional parent [EventDispatcher]
+     * @param client Client ID
+     * @param authentication Authentication mechanism
+     * @throws IOException When an I/O error occured whilst registering to the worker's selector
+     */
+    @Throws(IOException::class)
     constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
@@ -77,6 +104,15 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> loginClient(i, o, client, authentication) })
     }
 
+    /**
+     * Construct a client-side instance for authentication without a salt
+     * @param worker The [ConnectionWorker] this will run in
+     * @param channel The [PacketBundleChannel] to communicate with
+     * @param events Optional parent [EventDispatcher]
+     * @param client Client ID
+     * @param authentication Authentication mechanism
+     */
+    @Throws(IOException::class)
     constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
@@ -91,6 +127,14 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> loginClientAsym(i, o, client, authentication) })
     }
 
+    /**
+     * Construct a server-side instance for authentication with a salt
+     * @param worker The [ConnectionWorker] this will run in
+     * @param channel The [PacketBundleChannel] to communicate with
+     * @param events Optional parent [EventDispatcher]
+     * @param authentication Authentication mechanism
+     */
+    @Throws(IOException::class)
     constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
@@ -100,6 +144,14 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> challengeServer(i, o, authentication) })
     }
 
+    /**
+     * Construct a server-side instance for authentication without a salt
+     * @param worker The [ConnectionWorker] this will run in
+     * @param channel The [PacketBundleChannel] to communicate with
+     * @param events Optional parent [EventDispatcher]
+     * @param authentication Authentication mechanism
+     */
+    @Throws(IOException::class)
     constructor(worker: ConnectionWorker,
                 channel: PacketBundleChannel,
                 events: EventDispatcher?,
@@ -109,34 +161,36 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
                 { i, o -> challengeServerAsym(i, o, authentication) })
     }
 
-    val id: String
-        get() {
-            return idStr ?: throw IllegalStateException(
-                    "Control panel not authenticated")
-        }
-
+    /**
+     * Sends the given command with the payload
+     *
+     * **Note:** The command will be sent asynchronously and this method returns
+     * immediately
+     *
+     * **Note:** This does not make a deep copy of [payload], hence it should
+     * not be used anymore after calling this
+     * @param command Command name
+     * @param payload [TagStructure] containing data to send with the command
+     */
     fun send(command: String,
              payload: TagStructure) {
-        val tagStructure = TagStructure()
-        tagStructure.setString("Command", command)
-        tagStructure.setStructure("Payload", payload)
-        queue.add(tagStructure)
+        queue.add(structure {
+            setString("Command", command)
+            setStructure("Payload", payload)
+        })
         worker.joiner.wake()
     }
 
-    private fun processCommand(command: String,
-                               payload: TagStructure) {
-        val consumer = commands[command]
-        if (consumer != null) {
-            while (!consumer.second.isEmpty()) {
-                consumer.second.poll()(payload)
-            }
-            synchronized(consumer.first) {
-                consumer.first.forEach { it(payload) }
-            }
-        }
-    }
-
+    /**
+     * Adds a receiver for the specified command
+     *
+     * **Note:** Adding multiple receivers for the same command will call all
+     * receivers that got ever added
+     * **Note:** The payload is not deep-copied between invocations to
+     * receivers, so care should be taken when keeping it
+     * @param command Command name
+     * @param consumer Callback to receive the payload
+     */
     fun addCommand(command: String,
                    consumer: (TagStructure) -> Unit) {
         val list = ConcurrentMaps.computeIfAbsent(commands,
@@ -146,28 +200,38 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         }
     }
 
+    /**
+     * Runnable that gets executed once the connection is established and
+     * authenticated
+     * @param runnable Callback that gets called
+     */
     fun openHook(runnable: () -> Unit) {
         openHooks.add(runnable)
     }
 
+    /**
+     * Runnable that gets executed once the connection is closed
+     *
+     * **Note:** This is called even when the connection breaks
+     * @param runnable Callback that gets called
+     */
     fun closeHook(runnable: () -> Unit) {
         closeHooks.add(runnable)
     }
 
+    /**
+     * Runnable that gets executed in case the connection breaks
+     * @param runnable Callback that gets called with the exception that occured
+     */
     fun disconnectHook(runnable: (Exception) -> Unit) {
         disconnectHooks.add(runnable)
     }
 
-    fun commandHook(command: String,
-                    runnable: (TagStructure) -> Unit) {
-        val list = ConcurrentMaps.computeIfAbsent(commands,
-                command) { Pair(ArrayList(), ConcurrentLinkedQueue()) }
-        list.second.add(runnable)
-    }
-
     override fun tick(worker: ConnectionWorker) {
         try {
-            tick()
+            if (channel.process2({ state })) {
+                state = null
+            }
         } catch (e: ConnectionCloseException) {
             logger.info { "Disconnecting control panel: $e" }
             state = ChannelState()
@@ -197,9 +261,20 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         channel.close()
     }
 
-    fun tick() {
-        if (channel.process2({ state })) {
-            state = null
+    override fun toString(): String {
+        return channel.toString()
+    }
+
+    private fun processCommand(command: String,
+                               payload: TagStructure) {
+        val consumer = commands[command]
+        if (consumer != null) {
+            while (!consumer.second.isEmpty()) {
+                consumer.second.poll()(payload)
+            }
+            synchronized(consumer.first) {
+                consumer.first.forEach { it(payload) }
+            }
         }
     }
 
@@ -222,7 +297,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         while (!openHooks.isEmpty()) {
             openHooks.poll()()
         }
-        state = ChannelState({ i, o -> open(i, o) }, { openSend(it) })
+        state = ChannelState({ i, o -> open(i) }, { openSend(it) })
         return true
     }
 
@@ -245,7 +320,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         } catch (e: BadPaddingException) {
             throw IOException(e)
         }
-        state = ChannelState({ i, o -> loginServer(i, o, id, challenge) })
+        state = ChannelState({ i, o -> loginServer(i, id, challenge) })
         return true
     }
 
@@ -266,7 +341,7 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         while (!openHooks.isEmpty()) {
             openHooks.poll()()
         }
-        state = ChannelState({ i, o -> open(i, o) }, { openSend(it) })
+        state = ChannelState({ i, o -> open(i) }, { openSend(it) })
         return true
     }
 
@@ -286,12 +361,11 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         } catch (e: BadPaddingException) {
             throw IOException(e)
         }
-        state = ChannelState({ i, o -> loginServer(i, o, id, challenge) })
+        state = ChannelState({ i, o -> loginServer(i, id, challenge) })
         return true
     }
 
     private fun loginServer(input: RandomReadableByteStream,
-                            output: RandomWritableByteStream,
                             id: String,
                             challenge: ByteArray): Boolean {
         val check = ByteArray(challenge.size)
@@ -304,12 +378,11 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         while (!openHooks.isEmpty()) {
             openHooks.poll()()
         }
-        state = ChannelState({ i, o -> open(i, o) }, { openSend(it) })
+        state = ChannelState({ i, o -> open(i) }, { openSend(it) })
         return false
     }
 
-    private fun open(input: RandomReadableByteStream,
-                     output: RandomWritableByteStream): Boolean {
+    private fun open(input: RandomReadableByteStream): Boolean {
         val tagStructure = TagStructureBinary.read(input)
         tagStructure.getListStructure("Commands") { commandStructure ->
             val command = commandStructure.getString(
@@ -335,17 +408,6 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         return false
     }
 
-    override fun toString(): String {
-        return channel.toString()
-    }
-
-    internal enum class State {
-        LOGIN,
-        OPEN,
-        CLOSING,
-        CLOSED
-    }
-
     companion object : KLogging() {
         private val CHALLENGE_LENGTH = 1 shl 10 shl 2
         private val SALT_LENGTH = 8
@@ -353,6 +415,13 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
         private val ASYM_CHALLENGE_LENGTH = 501
         private val ASYM_CHALLENGE_CIPHER_LENGTH = 512
 
+        /**
+         * Password and salt based authentication
+         * @param mode Mode as passed by the [ControlPanelProtocol] object
+         * @param salt Salt as passed by the [ControlPanelProtocol] object
+         * @param password The password to use for authentication
+         * @return A [Cipher] for the [ControlPanelProtocol]
+         */
         fun passwordAuthentication(mode: Int,
                                    salt: ByteArray,
                                    password: String): Cipher {
@@ -378,10 +447,21 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
             }
         }
 
+        /**
+         * Password and salt based authentication
+         * @param password The password to use for authentication
+         * @return A function that implements the authentication parameter
+         */
         fun passwordAuthentication(password: String): (String, Int, ByteArray) -> Cipher = { id, mode, salt ->
             passwordAuthentication(mode, salt, password)
         }
 
+        /**
+         * Password and salt based authentication
+         * @param mode Mode as passed by the [ControlPanelProtocol] object
+         * @param publicKey The [PublicKey] to use for authentication
+         * @return A [Cipher] for the [ControlPanelProtocol]
+         */
         fun keyPairAuthentication(mode: Int,
                                   publicKey: PublicKey): Cipher {
             try {
@@ -401,10 +481,21 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
             }
         }
 
+        /**
+         * Password and salt based authentication
+         * @param publicKey The [PublicKey] to use for authentication
+         * @return A function that implements the authentication parameter
+         */
         fun keyPairAuthentication(publicKey: PublicKey): (String, Int) -> Cipher = { id, mode ->
             keyPairAuthentication(mode, publicKey)
         }
 
+        /**
+         * Password and salt based authentication
+         * @param mode Mode as passed by the [ControlPanelProtocol] object
+         * @param privateKey The [PrivateKey] to use for authentication
+         * @return A [Cipher] for the [ControlPanelProtocol]
+         */
         fun keyPairAuthentication(mode: Int,
                                   privateKey: PrivateKey): Cipher {
             try {
@@ -424,6 +515,11 @@ open class ControlPanelProtocol private constructor(private val worker: Connecti
             }
         }
 
+        /**
+         * Password and salt based authentication
+         * @param privateKey The [PrivateKey] to use for authentication
+         * @return A function that implements the authentication parameter
+         */
         fun keyPairAuthentication(privateKey: PrivateKey): (String, Int) -> Cipher = { id, mode ->
             keyPairAuthentication(mode, privateKey)
         }

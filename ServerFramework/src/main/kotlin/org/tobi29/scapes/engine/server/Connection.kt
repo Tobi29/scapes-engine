@@ -15,12 +15,38 @@
  */
 package org.tobi29.scapes.engine.server
 
+/**
+ * Interface for a generic connection inside a [ConnectionWorker]
+ */
 interface Connection {
+    /**
+     * Called occasionally to poll the connection
+     *
+     * **Note:** To increase the frequency of this being called, register
+     * something to the [ConnectionWorker]
+     * **Note:** [worker] will always stay the same instance, so one can use it
+     * at construction time
+     */
     fun tick(worker: ConnectionWorker)
 
+    /**
+     * Should return `true` once the connection is gracefully closed
+     *
+     * **Note:** The worker will call [close] afterwards to fully clean up
+     */
     val isClosed: Boolean
 
+    /**
+     * Requests the connection to gracefully close
+     */
     fun requestClose()
 
+    /**
+     * Tears down the connection immediately, no resources like sockets should
+     * be kept open after this got called, unless passed on to some other
+     * component
+     *
+     * **Note:** This is called after the last time that [tick] got executed
+     */
     fun close()
 }

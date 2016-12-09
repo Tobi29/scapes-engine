@@ -188,9 +188,9 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
     private fun <E : Any> cascadeEvent(event: E,
                                        listeners: List<MutableSet<Listener<*>>>) {
         class IteratorState<E : Any>(private val iterator: MutableIterator<E>) {
-            var current: E? = null
+            internal var current: E? = null
 
-            fun next() {
+            internal fun next() {
                 if (iterator.hasNext()) {
                     current = iterator.next()
                 } else {
@@ -198,7 +198,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
                 }
             }
 
-            fun remove() {
+            internal fun remove() {
                 iterator.remove()
             }
         }
@@ -232,9 +232,11 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
         }
     }
 
-    private data class Listener<E : Any>(val priority: Int,
-                                         val listener: WeakReference<(E) -> Unit>) : Comparable<Listener<*>> {
+    private data class Listener<E : Any>(internal val priority: Int,
+                                         internal val listener: WeakReference<(E) -> Unit>) : Comparable<Listener<*>> {
         private val uid = UID_COUNTER.andIncrement
+
+        @Suppress("KDocMissingDocumentation")
         override fun compareTo(other: Listener<*>): Int {
             if (priority > other.priority) {
                 return -1
@@ -251,7 +253,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
             return 0
         }
 
-        operator fun invoke(event: E): Boolean {
+        internal operator fun invoke(event: E): Boolean {
             val listener = listener.get() ?: run {
                 return false
             }
@@ -259,7 +261,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
             return true
         }
 
-        val isDead: Boolean
+        internal val isDead: Boolean
             get() {
                 return listener.get() == null
             }

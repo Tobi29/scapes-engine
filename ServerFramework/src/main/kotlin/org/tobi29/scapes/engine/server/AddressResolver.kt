@@ -22,6 +22,12 @@ import java.net.InetSocketAddress
 import java.net.UnknownHostException
 
 object AddressResolver {
+    /**
+     * Resolves the [hostname] and calls [callback] once done
+     * @param hostname The hostname or ip-address to resolve
+     * @param taskExecutor The [TaskExecutor] to run a task with
+     * @param callback Called with the resulting address or `null` if it failed to resolve
+     */
     fun resolve(hostname: String,
                 taskExecutor: TaskExecutor,
                 callback: (InetAddress?) -> Unit) {
@@ -35,6 +41,13 @@ object AddressResolver {
         }, "Resolve-Address")
     }
 
+    /**
+     * Resolves the [hostname] and calls [callback] once done
+     * @param hostname The hostname or ip-address to resolve
+     * @param port The port that will be used to construct the socket address
+     * @param taskExecutor The [TaskExecutor] to run a task with
+     * @param callback Called with the resulting socket address or `null` if it failed to resolve
+     */
     inline fun resolve(hostname: String,
                        port: Int,
                        taskExecutor: TaskExecutor,
@@ -49,6 +62,12 @@ object AddressResolver {
         }
     }
 
+    /**
+     * Resolves the hostname of [address] and calls [callback] once done
+     * @param address The [RemoteAddress] to resolve
+     * @param taskExecutor The [TaskExecutor] to run a task with
+     * @param callback Called with the resulting socket address or `null` if it failed to resolve
+     */
     inline fun resolve(address: RemoteAddress,
                        taskExecutor: TaskExecutor,
                        crossinline callback: (InetSocketAddress?) -> Unit) {
