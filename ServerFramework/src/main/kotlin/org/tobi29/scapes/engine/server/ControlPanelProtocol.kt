@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.server
 
 import java8.util.concurrent.ConcurrentMaps
-import java8.util.stream.Collectors
 import mu.KLogging
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.ListenerOwner
@@ -27,7 +26,6 @@ import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
 import org.tobi29.scapes.engine.utils.io.tag.getListStructure
 import org.tobi29.scapes.engine.utils.io.tag.structure
-import org.tobi29.scapes.engine.utils.stream
 import java.io.IOException
 import java.nio.channels.SelectionKey
 import java.security.*

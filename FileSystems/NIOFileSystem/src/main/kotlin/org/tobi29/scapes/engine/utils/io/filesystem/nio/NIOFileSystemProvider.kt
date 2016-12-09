@@ -26,6 +26,6 @@ class NIOFileSystemProvider : FileSystemProvider {
     }
 
     override fun implementation(): FileUtilImpl {
-        return NIOFileUtilImpl()
+        return NIOFileUtilImpl
     }
 }

@@ -19,6 +19,7 @@
 package org.tobi29.scapes.engine.utils
 
 import java8.util.Spliterator
+import java8.util.Spliterators
 import java8.util.stream.*
 import java.util.*
 
@@ -204,4 +205,16 @@ inline fun <reified T> Stream<out T>.toTypedArray(): Array<T> {
  */
 inline fun <reified T> Stream<*>.filterMap(): Stream<T> {
     return filter { it is T }.map { it as T }
+}
+
+inline fun <T> Stream<out T>.asSequence(): Sequence<T> {
+    return iterator().asSequence()
+}
+
+inline fun <T> Sequence<T>.stream(): Stream<T> {
+    return iterator().stream()
+}
+
+inline fun <T> Iterator<T>.stream(): Stream<T> {
+    return Spliterators.spliterator(iterator(), 0, 0).stream()
 }

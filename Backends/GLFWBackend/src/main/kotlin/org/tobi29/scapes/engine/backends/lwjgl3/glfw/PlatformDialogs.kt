@@ -29,7 +29,6 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.io.filesystem.read
 import org.tobi29.scapes.engine.utils.io.use
-import org.tobi29.scapes.engine.utils.mapNotNull
 import java.io.IOException
 
 object PlatformDialogs : KLogging() {
@@ -53,9 +52,8 @@ object PlatformDialogs : KLogging() {
         iconify(window) {
             filter(extensions) { filters ->
                 TinyFileDialogs.tinyfd_openFileDialog("Open File...", "",
-                        filters, null, multiple)?.mapNotNull {
-                    it.split('|')
-                }?.forEach { filePath ->
+                        filters, null, multiple)?.split(
+                        '|')?.forEach { filePath ->
                     val path = path(filePath).toAbsolutePath()
                     read(path) { stream ->
                         result(path.fileName.toString(), stream)

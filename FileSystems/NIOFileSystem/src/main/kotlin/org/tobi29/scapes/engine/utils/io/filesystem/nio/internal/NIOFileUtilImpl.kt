@@ -16,15 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
-import java8.util.Spliterators
-import java8.util.stream.Stream
 import org.apache.tika.Tika
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
-import org.tobi29.scapes.engine.utils.stream
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI
@@ -36,7 +33,7 @@ import java.nio.file.attribute.FileTime
 import java.util.*
 import java.util.zip.ZipFile
 
-internal class NIOFileUtilImpl : FileUtilImpl {
+internal object NIOFileUtilImpl : FileUtilImpl {
     override fun path(path: String): FilePath {
         return path(Paths.get(path))
     }
@@ -115,42 +112,22 @@ internal class NIOFileUtilImpl : FileUtilImpl {
         return path(Files.move(toPath(source), toPath(target)))
     }
 
-    override fun <R> stream(path: FilePath,
-                            consumer: (Stream<FilePath>) -> R): R {
+    override fun <R> list(path: FilePath,
+                          consumer: (Sequence<FilePath>) -> R): R {
         Files.newDirectoryStream(toPath(path)).use { stream ->
-            return consumer(
-                    Spliterators.spliteratorUnknownSize(stream.iterator(),
-                            0).stream().map({ path(it) }))
+            return consumer(stream.asSequence().map { path(it) })
         }
     }
 
     override fun list(path: FilePath): List<FilePath> {
         val files = ArrayList<FilePath>()
-        stream(path) { stream ->
-            stream.forEach({ files.add(it) })
-        }
+        list(path) { it.forEach { files.add(it) } }
         return files
     }
 
-    override fun list(path: FilePath,
-                      filters: Array<out (FilePath) -> Boolean>): List<FilePath> {
-        val files = ArrayList<FilePath>()
-        stream(path) { stream ->
-            stream.filter { file ->
-                for (filter in filters) {
-                    if (!filter(file)) {
-                        return@filter false
-                    }
-                }
-                true
-            }.forEach({ files.add(it) })
-        }
-        return files
-    }
-
-    override fun <R> streamRecursive(path: FilePath,
-                                     consumer: (Stream<FilePath>) -> R): R {
-        return consumer(listRecursive(path).stream())
+    override fun <R> listRecursive(path: FilePath,
+                                   consumer: (Sequence<FilePath>) -> R): R {
+        return consumer(listRecursive(path).asSequence())
     }
 
     override fun listRecursive(path: FilePath): List<FilePath> {
@@ -167,24 +144,6 @@ internal class NIOFileUtilImpl : FileUtilImpl {
                     override fun visitFile(file: Path,
                                            attrs: BasicFileAttributes): FileVisitResult {
                         files.add(path(file))
-                        return FileVisitResult.CONTINUE
-                    }
-                })
-        return files
-    }
-
-    override fun listRecursive(path: FilePath,
-                               filters: Array<out (FilePath) -> Boolean>): List<FilePath> {
-        val files = ArrayList<FilePath>()
-        Files.walkFileTree(toPath(path),
-                EnumSet.of(FileVisitOption.FOLLOW_LINKS), Int.MAX_VALUE,
-                object : SimpleFileVisitor<Path>() {
-                    override fun visitFile(file: Path,
-                                           attrs: BasicFileAttributes): FileVisitResult {
-                        val filePath = path(file)
-                        if (filters.any { it(filePath) }) {
-                            files.add(filePath)
-                        }
                         return FileVisitResult.CONTINUE
                     }
                 })
@@ -268,89 +227,87 @@ internal class NIOFileUtilImpl : FileUtilImpl {
         }
     }
 
-    companion object {
-        fun toPath(path: FilePath): Path {
-            if (path is FilePathImpl) {
-                return path.path
+    private fun toPath(path: FilePath): Path {
+        if (path is FilePathImpl) {
+            return path.path
+        }
+        return Paths.get(path.toUri())
+    }
+
+    private fun <R> read(path: Path,
+                         read: (ReadableByteStream) -> R): R {
+        return read(path, read, StandardOpenOption.READ)
+    }
+
+    private fun <R> read(path: Path,
+                         read: (ReadableByteStream) -> R,
+                         vararg options: OpenOption): R {
+        FileChannel.open(path, *options).use { channel ->
+            return read(BufferedReadChannelStream(channel))
+        }
+    }
+
+    private fun <R> write(path: Path,
+                          write: (WritableByteStream) -> R): R {
+        return write(path, write, StandardOpenOption.WRITE,
+                StandardOpenOption.CREATE,
+                StandardOpenOption.TRUNCATE_EXISTING)
+    }
+
+    private fun <R> write(path: Path,
+                          write: (WritableByteStream) -> R,
+                          vararg options: OpenOption): R {
+        FileChannel.open(path, *options).use { channel ->
+            val stream = BufferedWriteChannelStream(channel)
+            val r = write(stream)
+            stream.flush()
+            return r
+        }
+    }
+
+    private fun path(path: Path): FilePath {
+        return FilePathImpl(path)
+    }
+
+    private fun read(path: Path): ReadSource {
+        return object : ReadSource {
+            override fun exists(): Boolean {
+                return Files.exists(path)
             }
-            return Paths.get(path.toUri())
-        }
 
-        private fun <R> read(path: Path,
-                             read: (ReadableByteStream) -> R): R {
-            return read(path, read, StandardOpenOption.READ)
-        }
-
-        private fun <R> read(path: Path,
-                             read: (ReadableByteStream) -> R,
-                             vararg options: OpenOption): R {
-            FileChannel.open(path, *options).use { channel ->
-                return read(BufferedReadChannelStream(channel))
+            override fun readIO(): InputStream {
+                return Files.newInputStream(path)
             }
-        }
 
-        private fun <R> write(path: Path,
-                              write: (WritableByteStream) -> R): R {
-            return write(path, write, StandardOpenOption.WRITE,
-                    StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING)
-        }
-
-        private fun <R> write(path: Path,
-                              write: (WritableByteStream) -> R,
-                              vararg options: OpenOption): R {
-            FileChannel.open(path, *options).use { channel ->
-                val stream = BufferedWriteChannelStream(channel)
-                val r = write(stream)
-                stream.flush()
-                return r
+            override fun channel(): ReadableByteChannel {
+                return Files.newByteChannel(path, StandardOpenOption.READ)
             }
-        }
 
-        fun path(path: Path): FilePath {
-            return FilePathImpl(path)
-        }
+            override fun <R> read(reader: (ReadableByteStream) -> R): R {
+                return read(path, reader)
+            }
 
-        fun read(path: Path): ReadSource {
-            return object : ReadSource {
-                override fun exists(): Boolean {
-                    return Files.exists(path)
-                }
-
-                override fun readIO(): InputStream {
-                    return Files.newInputStream(path)
-                }
-
-                override fun channel(): ReadableByteChannel {
-                    return Files.newByteChannel(path, StandardOpenOption.READ)
-                }
-
-                override fun <R> read(reader: (ReadableByteStream) -> R): R {
-                    return read(path, reader)
-                }
-
-                override fun mimeType(): String {
-                    readIO().use { streamIn ->
-                        return Tika().detect(streamIn, path.toString())
-                    }
+            override fun mimeType(): String {
+                readIO().use { streamIn ->
+                    return Tika().detect(streamIn, path.toString())
                 }
             }
         }
+    }
 
-        fun deleteDir(path: Path) {
-            Files.walkFileTree(path, object : SimpleFileVisitor<Path>() {
-                override fun visitFile(file: Path,
-                                       attrs: BasicFileAttributes): FileVisitResult {
-                    Files.delete(file)
-                    return FileVisitResult.CONTINUE
-                }
+    private fun deleteDir(path: Path) {
+        Files.walkFileTree(path, object : SimpleFileVisitor<Path>() {
+            override fun visitFile(file: Path,
+                                   attrs: BasicFileAttributes): FileVisitResult {
+                Files.delete(file)
+                return FileVisitResult.CONTINUE
+            }
 
-                override fun postVisitDirectory(dir: Path,
-                                                exc: IOException?): FileVisitResult {
-                    Files.delete(dir)
-                    return FileVisitResult.CONTINUE
-                }
-            })
-        }
+            override fun postVisitDirectory(dir: Path,
+                                            exc: IOException?): FileVisitResult {
+                Files.delete(dir)
+                return FileVisitResult.CONTINUE
+            }
+        })
     }
 }

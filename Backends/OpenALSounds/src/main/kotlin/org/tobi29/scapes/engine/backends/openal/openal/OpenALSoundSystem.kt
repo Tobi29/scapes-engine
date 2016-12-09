@@ -30,7 +30,6 @@ import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import org.tobi29.scapes.engine.utils.stream
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
@@ -120,9 +119,9 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     }
 
     override fun isPlaying(channel: String): Boolean {
-        return audios.stream().filter { audio ->
+        return audios.asSequence().filter { audio ->
             audio.isPlaying(channel)
-        }.findAny().isPresent
+        }.any()
     }
 
     override fun playMusic(asset: String,

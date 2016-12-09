@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import java8.util.stream.Stream
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
@@ -63,21 +62,15 @@ interface FileUtilImpl {
     fun move(source: FilePath,
              target: FilePath): FilePath
 
-    fun <R> stream(path: FilePath,
-                   consumer: (Stream<FilePath>) -> R): R
+    fun <R> list(path: FilePath,
+                 consumer: (Sequence<FilePath>) -> R): R
 
     fun list(path: FilePath): List<FilePath>
 
-    fun list(path: FilePath,
-             filters: Array<out (FilePath) -> Boolean>): List<FilePath>
-
-    fun <R> streamRecursive(path: FilePath,
-                            consumer: (Stream<FilePath>) -> R): R
+    fun <R> listRecursive(path: FilePath,
+                          consumer: (Sequence<FilePath>) -> R): R
 
     fun listRecursive(path: FilePath): List<FilePath>
-
-    fun listRecursive(path: FilePath,
-                      filters: Array<out (FilePath) -> Boolean>): List<FilePath>
 
     fun setLastModifiedTime(path: FilePath,
                             value: Instant)

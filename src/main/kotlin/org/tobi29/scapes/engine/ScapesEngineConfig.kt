@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.getDouble
 import org.tobi29.scapes.engine.utils.io.tag.setDouble
-import org.tobi29.scapes.engine.utils.stream
 
 class ScapesEngineConfig(private val tagStructure: TagStructure) {
     var fps = 0.0
@@ -50,13 +49,11 @@ class ScapesEngineConfig(private val tagStructure: TagStructure) {
         fullscreen = tagStructure.getBoolean("Fullscreen") ?: false
     }
 
-    fun volume(channel: String): Double {
-        return tagStructure.structure(
-                "Volumes").tagEntrySet.stream().filter { entry ->
-            channel.startsWith(entry.key) && entry.value is Number
-        }.sorted { entry1, entry2 -> entry2.key.length - entry1.key.length }.mapToDouble { entry -> (entry.value as Number).toDouble() }.findAny().orElse(
-                1.0)
-    }
+    fun volume(channel: String) = (tagStructure.structure(
+            "Volumes").tagEntrySet.asSequence().filter {
+        channel.startsWith(it.key)
+    }.maxBy { it.key.length }?.value as? Number)?.toDouble() ?: 1.0
+
 
     fun setVolume(channel: String,
                   value: Double) {

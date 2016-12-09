@@ -26,8 +26,3 @@ inline fun <T : Any> T.and(filter: (T) -> Boolean): T? {
     }
     return null
 }
-
-/**
- * Returns the result of [map]
- */
-inline fun <T : Any, R> T.mapNotNull(map: (T) -> R) = map(this)

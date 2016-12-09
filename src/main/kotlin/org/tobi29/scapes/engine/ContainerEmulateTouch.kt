@@ -16,11 +16,9 @@
 
 package org.tobi29.scapes.engine
 
-import java8.util.stream.Stream
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.input.ControllerTouch
-import org.tobi29.scapes.engine.utils.stream
 
 class ContainerEmulateTouch(private val container: Container,
                             private val controller: ControllerDefault = container.controller() ?: throw IllegalArgumentException(
@@ -50,8 +48,8 @@ class ContainerEmulateTouch(private val container: Container,
         return this
     }
 
-    override fun fingers(): Stream<ControllerTouch.Tracker> {
-        return stream(tracker)
+    override fun fingers(): Sequence<ControllerTouch.Tracker> {
+        return tracker?.let { sequenceOf(it) } ?: emptySequence()
     }
 
     override val isActive: Boolean

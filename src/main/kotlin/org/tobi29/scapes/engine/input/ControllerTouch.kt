@@ -16,11 +16,10 @@
 
 package org.tobi29.scapes.engine.input
 
-import java8.util.stream.Stream
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 
 interface ControllerTouch : Controller {
-    fun fingers(): Stream<Tracker>
+    fun fingers(): Sequence<Tracker>
 
     class Tracker {
         val pos = MutableVector2d()

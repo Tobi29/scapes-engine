@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import java8.util.stream.Stream
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
@@ -127,39 +126,55 @@ fun move(source: FilePath,
 }
 
 @Throws(IOException::class)
-fun stream(path: FilePath,
-           consumer: (Stream<FilePath>) -> Unit) {
-    IMPL.stream(path, consumer)
+fun list(path: FilePath): List<FilePath> {
+    return list(path) { toList() }
 }
 
 @Throws(IOException::class)
-fun list(path: FilePath): List<FilePath> {
-    return IMPL.list(path)
+fun <R> list(path: FilePath,
+             consumer: Sequence<FilePath>.() -> R): R {
+    return IMPL.list(path) { consumer(it.asSequence()) }
 }
 
-@SafeVarargs
 @Throws(IOException::class)
 fun list(path: FilePath,
          vararg filters: (FilePath) -> Boolean): List<FilePath> {
-    return IMPL.list(path, filters)
-}
-
-@Throws(IOException::class)
-fun <R> streamRecursive(path: FilePath,
-                        consumer: (Stream<FilePath>) -> R): R {
-    return IMPL.streamRecursive(path, consumer)
+    return list(path) {
+        filter {
+            filters.forEach { filter ->
+                if (!filter(it)) {
+                    return@filter false
+                }
+            }
+            true
+        }.toList()
+    }
 }
 
 @Throws(IOException::class)
 fun listRecursive(path: FilePath): List<FilePath> {
-    return IMPL.listRecursive(path)
+    return listRecursive(path) { toList() }
 }
 
-@SafeVarargs
+@Throws(IOException::class)
+fun <R> listRecursive(path: FilePath,
+                      consumer: Sequence<FilePath>.() -> R): R {
+    return IMPL.listRecursive(path) { consumer(it.asSequence()) }
+}
+
 @Throws(IOException::class)
 fun listRecursive(path: FilePath,
                   vararg filters: (FilePath) -> Boolean): List<FilePath> {
-    return IMPL.listRecursive(path, filters)
+    return listRecursive(path) {
+        filter {
+            filters.forEach { filter ->
+                if (!filter(it)) {
+                    return@filter false
+                }
+            }
+            true
+        }.toList()
+    }
 }
 
 @Throws(IOException::class)

@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.profiler
 
 import java8.util.Maps
 import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.utils.mapNotNull
 import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
 import java.util.*
 
@@ -64,7 +63,7 @@ class Profiler private constructor(thread: Thread) {
         }
 
         fun node(thread: Thread): Node? {
-            return PROFILERS[thread]?.mapNotNull { it.rootNode }
+            return PROFILERS[thread]?.rootNode
         }
 
         fun reset() {
