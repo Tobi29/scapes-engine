@@ -46,7 +46,7 @@ interface SQLDatabase {
     fun compileQuery(table: String,
                      columns: Array<out String>,
                      vararg matches: String): SQLQuery {
-        return compileQuery(table, columns, listOf(*matches))
+        return compileQuery(table, columns, matches.toList())
     }
 
     fun compileInsert(table: String,
@@ -59,7 +59,7 @@ interface SQLDatabase {
     fun compileUpdate(table: String,
                       matches: Array<out String>,
                       vararg columns: String): SQLUpdate {
-        return compileUpdate(table, listOf(*matches), columns)
+        return compileUpdate(table, matches.toList(), columns)
     }
 
     fun compileDelete(table: String,
@@ -67,7 +67,7 @@ interface SQLDatabase {
 
     fun compileDelete(table: String,
                       vararg matches: String): SQLDelete {
-        return compileDelete(table, listOf(*matches))
+        return compileDelete(table, matches.toList())
     }
 }
 
@@ -87,7 +87,7 @@ interface SQLQuery {
     fun run(values: List<Any?>): List<Array<Any?>>
 
     fun run(vararg values: Any?): List<Array<Any?>> {
-        return run(listOf(*values))
+        return run(values.toList())
     }
 }
 
@@ -105,7 +105,7 @@ interface SQLUpdate {
 
     fun run(values: Array<out Any?>,
             vararg updates: Any?) {
-        return run(listOf(*values), listOf(*updates))
+        return run(values.toList(), updates.toList())
     }
 }
 
@@ -113,7 +113,7 @@ interface SQLDelete {
     fun run(values: List<Any?>)
 
     fun run(vararg values: Any?) {
-        return run(listOf(*values))
+        return run(values.toList())
     }
 }
 
