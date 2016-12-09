@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.sql.sqlite
+package org.tobi29.scapes.engine.sql
 
-class SQLiteConfig {
-    var secureDelete = true
-    var foreignKeys = false
-    var journalMode = JournalMode.DELETE
-    var synchronous = Synchronous.FULL
-
-    enum class JournalMode {
-        DELETE,
-        TRUNCATE,
-        PERSIST,
-        MEMORY,
-        WAL,
-        OFF
+fun sqlWhere(matches: Array<out String>,
+             sql: StringBuilder) {
+    var first = true
+    for (match in matches) {
+        if (first) {
+            first = false
+        } else {
+            sql.append(" AND ")
+        }
+        sql.append(match).append("=?")
     }
+}
 
-    enum class Synchronous {
-        OFF,
-        NORMAL,
-        FULL
+fun sqlType(type: SQLType,
+            extra: String?): String {
+    val typeStr = type.toString()
+    if (extra != null) {
+        return "$typeStr($extra)"
     }
+    return typeStr
 }

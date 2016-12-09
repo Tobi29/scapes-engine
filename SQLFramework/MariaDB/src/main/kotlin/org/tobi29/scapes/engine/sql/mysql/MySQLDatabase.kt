@@ -26,68 +26,9 @@ import java.sql.SQLException
 import java.util.*
 
 class MySQLDatabase(private val connection: Connection) : SQLDatabase {
-    override fun replace(table: String,
-                         columns: Array<out String>,
-                         rows: List<Array<out Any?>>) {
-        val sql = StringBuilder(columns.size shl 5)
-        sql.append("INSERT INTO ").append(table).append(" (")
-        var first = true
-        for (column in columns) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append(column)
-        }
-        sql.append(") VALUES ")
-        first = true
-        for (row in rows) {
-            if (first) {
-                first = false
-                sql.append('(')
-            } else {
-                sql.append(",(")
-            }
-            var rowFirst = true
-            for (ignored in row) {
-                if (rowFirst) {
-                    rowFirst = false
-                } else {
-                    sql.append(',')
-                }
-                sql.append('?')
-            }
-            sql.append(')')
-        }
-        sql.append(" ON DUPLICATE KEY UPDATE ")
-        first = true
-        for (column in columns) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append(column).append("=VALUES(").append(column).append(")")
-        }
-        sql.append(';')
-        val compiled = sql.toString()
-        try {
-            connection.prepareStatement(compiled).use { statement ->
-                var i = 1
-                for (row in rows) {
-                    i = resolveObjects(row, statement, i)
-                }
-                statement.executeUpdate()
-            }
-        } catch (e: SQLException) {
-            throw IOException(e)
-        }
-    }
-
     override fun createTable(name: String,
-                             primaryKey: List<String>,
-                             columns: List<SQLColumn>) {
+                             primaryKey: Array<out String>,
+                             columns: Array<out SQLColumn>) {
         val sql = StringBuilder(512)
         sql.append("CREATE TABLE IF NOT EXISTS ").append(name).append(" (")
         var first = true
@@ -98,7 +39,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                 sql.append(',')
             }
             sql.append(column.name).append(' ')
-            sql.append(resolveType(column.type, column.extra))
+            sql.append(sqlType(column.type, column.extra))
             if (column.notNull) {
                 sql.append(" NOT NULL")
             }
@@ -140,7 +81,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     override fun dropTable(name: String) {
-        val compiled = "DROP TABLE IF EXISTS '$name';"
+        val compiled = "DROP TABLE IF EXISTS $name;"
         try {
             connection.createStatement().use { statement ->
                 statement.executeUpdate(compiled)
@@ -152,7 +93,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
 
     override fun compileQuery(table: String,
                               columns: Array<out String>,
-                              matches: List<String>): SQLQuery {
+                              matches: Array<out String>): SQLQuery {
         val columnSize = columns.size
         val matchesSize = matches.size
         val sql = StringBuilder(columnSize shl 5)
@@ -166,12 +107,12 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             }
             sql.append(column)
         }
-        sql.append(" FROM ").append(table)
-        whereSQL(matches, sql)
+        sql.append(" FROM ").append(table).append(" WHERE ")
+        sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
         return object : SQLQuery {
-            override fun run(values: List<Any?>): List<Array<Any?>> {
+            override fun invoke(values: Array<out Any?>): List<Array<Any?>> {
                 if (values.size != matchesSize) {
                     throw IllegalArgumentException(
                             "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
@@ -201,7 +142,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                                vararg columns: String): SQLInsert {
         val columnSize = columns.size
         val prefix = StringBuilder(columnSize shl 3)
-        prefix.append("INSERT OR IGNORE INTO '").append(table).append("' (")
+        prefix.append("INSERT IGNORE INTO ").append(table).append(" (")
         var first = true
         for (column in columns) {
             if (first) {
@@ -215,13 +156,11 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         val compiledPrefix = prefix.toString()
         val compiledSuffix = ";"
         return object : SQLInsert {
-            override fun run(values: List<Array<out Any?>>) {
-                val valuesSafe = ArrayList<Array<out Any?>>(values.size)
-                valuesSafe.addAll(values)
+            override fun invoke(values: Array<out Array<out Any?>>) {
                 val sql = StringBuilder(columnSize shl 5)
                 sql.append(compiledPrefix)
                 first = true
-                for (row in valuesSafe) {
+                for (row in values) {
                     if (row.size != columnSize) {
                         throw IllegalArgumentException(
                                 "Amount of updated values (${row.size}) does not match amount of columns ($columnSize)")
@@ -261,7 +200,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     override fun compileUpdate(table: String,
-                               matches: List<String>,
+                               matches: Array<out String>,
                                columns: Array<out String>): SQLUpdate {
         val columnsSize = columns.size
         val sql = StringBuilder(columns.size shl 5)
@@ -275,12 +214,13 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             }
             sql.append(column).append("'=?")
         }
-        whereSQL(matches, sql)
+        sql.append(" WHERE ")
+        sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
         return object : SQLUpdate {
-            override fun run(values: List<Any?>,
-                             updates: List<Any?>) {
+            override fun invoke(values: Array<out Any?>,
+                                updates: Array<out Any?>) {
                 if (updates.size != columnsSize) {
                     throw IllegalArgumentException(
                             "Amount of updated values (${updates.size}) does not match amount of columns ($columnsSize)")
@@ -300,15 +240,88 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         }
     }
 
+    override fun compileReplace(table: String,
+                                vararg columns: String): SQLReplace {
+        val columnsSize = columns.size
+        val prefix = StringBuilder(columnsSize shl 4)
+        prefix.append("INSERT INTO ").append(table).append(" (")
+        var first = true
+        for (column in columns) {
+            if (first) {
+                first = false
+            } else {
+                prefix.append(',')
+            }
+            prefix.append(column)
+        }
+        prefix.append(") VALUES ")
+        val compiledPrefix = prefix.toString()
+        val suffix = StringBuilder(columnsSize shl 5)
+        suffix.append(" ON DUPLICATE KEY UPDATE ")
+        first = true
+        for (column in columns) {
+            if (first) {
+                first = false
+            } else {
+                suffix.append(',')
+            }
+            suffix.append(column).append("=VALUES(").append(column).append(")")
+        }
+        suffix.append(';')
+        val compiledSuffix = suffix.toString()
+        return object : SQLReplace {
+            override fun invoke(values: Array<out Array<out Any?>>) {
+                val sql = StringBuilder(columnsSize shl 5)
+                sql.append(compiledPrefix)
+                var first = true
+                for (row in values) {
+                    if (row.size != columnsSize) {
+                        throw IllegalArgumentException(
+                                "Amount of updated values (${row.size}) does not match amount of columns ($columnsSize)")
+                    }
+                    if (first) {
+                        first = false
+                        sql.append('(')
+                    } else {
+                        sql.append(",(")
+                    }
+                    var rowFirst = true
+                    for (ignored in row) {
+                        if (rowFirst) {
+                            rowFirst = false
+                        } else {
+                            sql.append(',')
+                        }
+                        sql.append('?')
+                    }
+                    sql.append(')')
+                }
+                sql.append(compiledSuffix)
+                val compiled = sql.toString()
+                try {
+                    connection.prepareStatement(compiled).use { statement ->
+                        var i = 1
+                        for (row in values) {
+                            i = resolveObjects(row, statement, i)
+                        }
+                        statement.executeUpdate()
+                    }
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
+            }
+        }
+    }
+
     override fun compileDelete(table: String,
-                               matches: List<String>): SQLDelete {
+                               matches: Array<out String>): SQLDelete {
         val sql = StringBuilder(64)
-        sql.append("DELETE FROM ").append(table)
-        whereSQL(matches, sql)
+        sql.append("DELETE FROM ").append(table).append(" WHERE ")
+        sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
         return object : SQLDelete {
-            override fun run(values: List<Any?>) {
+            override fun invoke(values: Array<out Any?>) {
                 try {
                     return connection.prepareStatement(
                             compiled).use { statement ->
@@ -323,20 +336,6 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         }
     }
 
-    private fun whereSQL(matches: List<String>,
-                         sql: StringBuilder) {
-        sql.append(" WHERE ")
-        var first = true
-        for (match in matches) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(" AND ")
-            }
-            sql.append(match).append("=?")
-        }
-    }
-
     private fun resolveObjects(matches: Array<out Any?>,
                                statement: PreparedStatement,
                                index: Int): Int {
@@ -347,20 +346,10 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         return i
     }
 
-    private fun resolveObjects(matches: List<Any?>,
-                               statement: PreparedStatement,
-                               index: Int): Int {
-        var i = index
-        for (match in matches) {
-            resolveObject(match, i++, statement)
-        }
-        return i
-    }
-
-    private fun resolveObject(`object`: Any?,
+    private fun resolveObject(value: Any?,
                               i: Int,
                               statement: PreparedStatement) {
-        statement.setObject(i, `object`)
+        statement.setObject(i, value)
     }
 
     private fun resolveResult(result: ResultSet,
@@ -371,14 +360,5 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             row[i] = result.getObject(j)
         }
         return row
-    }
-
-    private fun resolveType(type: SQLType,
-                            extra: String?): String {
-        val typeStr = type.toString()
-        if (extra != null) {
-            return "$typeStr($extra)"
-        }
-        return typeStr
     }
 }

@@ -17,58 +17,28 @@
 package org.tobi29.scapes.engine.sql
 
 interface SQLDatabase {
-    fun replace(table: String,
-                columns: Array<out String>,
-                rows: List<Array<out Any?>>)
-
-    fun replace(table: String,
-                columns: Array<out String>,
-                vararg rows: Array<out Any?>) {
-        replace(table, columns, listOf(*rows))
-    }
-
     fun createTable(name: String,
-                    primaryKey: List<String>,
-                    columns: List<SQLColumn>)
-
-    fun createTable(name: String,
-                    primaryKey: Array<String>,
-                    vararg columns: SQLColumn) {
-        createTable(name, listOf(*primaryKey), listOf(*columns))
-    }
+                    primaryKey: Array<out String>,
+                    vararg columns: SQLColumn)
 
     fun dropTable(name: String)
 
     fun compileQuery(table: String,
                      columns: Array<out String>,
-                     matches: List<String>): SQLQuery
-
-    fun compileQuery(table: String,
-                     columns: Array<out String>,
-                     vararg matches: String): SQLQuery {
-        return compileQuery(table, columns, matches.toList())
-    }
+                     vararg matches: String): SQLQuery
 
     fun compileInsert(table: String,
                       vararg columns: String): SQLInsert
 
     fun compileUpdate(table: String,
-                      matches: List<String>,
-                      columns: Array<out String>): SQLUpdate
-
-    fun compileUpdate(table: String,
                       matches: Array<out String>,
-                      vararg columns: String): SQLUpdate {
-        return compileUpdate(table, matches.toList(), columns)
-    }
+                      vararg columns: String): SQLUpdate
+
+    fun compileReplace(table: String,
+                       vararg columns: String): SQLReplace
 
     fun compileDelete(table: String,
-                      matches: List<String>): SQLDelete
-
-    fun compileDelete(table: String,
-                      vararg matches: String): SQLDelete {
-        return compileDelete(table, matches.toList())
-    }
+                      vararg matches: String): SQLDelete
 }
 
 class SQLColumn(val name: String,
@@ -84,37 +54,24 @@ class SQLForeignKey(val table: String,
                     val onDelete: SQLReferentialAction = onUpdate)
 
 interface SQLQuery {
-    fun run(values: List<Any?>): List<Array<Any?>>
-
-    fun run(vararg values: Any?): List<Array<Any?>> {
-        return run(values.toList())
-    }
+    operator fun invoke(vararg values: Any?): List<Array<Any?>>
 }
 
 interface SQLInsert {
-    fun run(values: List<Array<out Any?>>)
-
-    fun run(vararg values: Array<out Any?>) {
-        return run(listOf(*values))
-    }
+    operator fun invoke(vararg values: Array<out Any?>)
 }
 
 interface SQLUpdate {
-    fun run(values: List<Any?>,
-            updates: List<Any?>)
+    operator fun invoke(values: Array<out Any?>,
+                        vararg updates: Any?)
+}
 
-    fun run(values: Array<out Any?>,
-            vararg updates: Any?) {
-        return run(values.toList(), updates.toList())
-    }
+interface SQLReplace {
+    operator fun invoke(vararg values: Array<out Any?>)
 }
 
 interface SQLDelete {
-    fun run(values: List<Any?>)
-
-    fun run(vararg values: Any?) {
-        return run(values.toList())
-    }
+    operator fun invoke(vararg values: Any?)
 }
 
 enum class SQLType {

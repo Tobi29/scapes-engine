@@ -16,169 +16,19 @@
 
 package org.tobi29.scapes.engine.sql.sqlite
 
-import com.almworks.sqlite4java.SQLiteConnection
-import com.almworks.sqlite4java.SQLiteConstants
-import com.almworks.sqlite4java.SQLiteException
-import com.almworks.sqlite4java.SQLiteStatement
 import org.tobi29.scapes.engine.sql.*
-import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.task.Joiner
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.io.File
+import org.tobi29.scapes.engine.utils.io.use
 import java.io.IOException
+import java.sql.Connection
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
 import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicReference
 
-class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
-                     config: SQLiteConfig) : SQLDatabase, AutoCloseable {
-    private val queue = ConcurrentLinkedQueue<() -> Unit>()
-    private val connection: SQLiteConnection
-    private val joiner: Joiner
-    private var exception: Exception? = null
-
-    init {
-        connection = SQLiteConnection(File(path.toUri()))
-        joiner = taskExecutor.runThread({ joiner ->
-            try {
-                connection.open()
-                statement("PRAGMA secure_delete = ${config.secureDelete}")
-                statement("PRAGMA foreign_keys = ${config.foreignKeys}")
-                statement("PRAGMA journal_mode = ${config.journalMode}")
-                statement("PRAGMA synchronous = ${config.synchronous}")
-            } catch (e: SQLiteException) {
-                if (exception == null) {
-                    exception = e
-                }
-                return@runThread
-            }
-            try {
-                while (!joiner.marked || !queue.isEmpty()) {
-                    while (!queue.isEmpty()) {
-                        queue.poll()()
-                    }
-                    joiner.sleep()
-                }
-                assert(queue.isEmpty())
-            } finally {
-                connection.dispose()
-            }
-        }, "SQLite")
-    }
-
-    private fun statement(sql: String) {
-        val statement = connection.prepare(sql)
-        try {
-            while (statement.step()) {
-            }
-        } finally {
-            statement.dispose()
-        }
-    }
-
-    private fun access(connection: () -> Unit) {
-        queue.add({
-            try {
-                connection()
-            } catch (e: IOException) {
-                if (exception == null) {
-                    exception = e
-                }
-            } catch (e: SQLiteException) {
-                if (exception == null) {
-                    exception = e
-                }
-            }
-        })
-        joiner.wake()
-        // This throws earlier exceptions, not current ones
-        if (exception != null) {
-            throw IOException(exception)
-        }
-    }
-
-    private fun <R> accessReturn(connection: () -> R): R {
-        val joinable = Joiner.BasicJoinable()
-        val output = AtomicReference<R>()
-        queue.add({
-            try {
-                output.set(connection())
-            } catch (e: IOException) {
-                if (exception == null) {
-                    exception = e
-                }
-            } catch (e: SQLiteException) {
-                if (exception == null) {
-                    exception = e
-                }
-            } finally {
-                joinable.join()
-            }
-        })
-        joiner.wake()
-        joinable.joiner.join()
-        if (exception != null) {
-            throw IOException(exception)
-        }
-        return output.get()
-    }
-
-    override fun replace(table: String,
-                         columns: Array<out String>,
-                         rows: List<Array<out Any?>>) {
-        val rowsSafe = ArrayList<Array<out Any?>>(rows.size)
-        rowsSafe.addAll(rows)
-        val sql = StringBuilder(columns.size shl 5)
-        sql.append("INSERT OR REPLACE INTO ").append(table).append(" (")
-        var first = true
-        for (column in columns) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(',')
-            }
-            sql.append(column)
-        }
-        sql.append(") VALUES ")
-        first = true
-        for (row in rowsSafe) {
-            if (first) {
-                first = false
-                sql.append('(')
-            } else {
-                sql.append(",(")
-            }
-            var rowFirst = true
-            for (ignored in row) {
-                if (rowFirst) {
-                    rowFirst = false
-                } else {
-                    sql.append(',')
-                }
-                sql.append('?')
-            }
-            sql.append(')')
-        }
-        sql.append(';')
-        val compiled = sql.toString()
-        access({
-            val statement = connection.prepare(compiled)
-            try {
-                var i = 1
-                for (row in rowsSafe) {
-                    i = resolveObjects(row, statement, i)
-                }
-                while (statement.step()) {
-                }
-            } finally {
-                statement.dispose()
-            }
-        })
-    }
-
+class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     override fun createTable(name: String,
-                             primaryKey: List<String>,
-                             columns: List<SQLColumn>) {
+                             primaryKey: Array<out String>,
+                             columns: Array<out SQLColumn>) {
         val sql = StringBuilder(512)
         sql.append("CREATE TABLE IF NOT EXISTS ").append(name).append(" (")
         var first = true
@@ -189,7 +39,7 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
                 sql.append(',')
             }
             sql.append(column.name).append(' ')
-            sql.append(resolveType(column.type, column.extra))
+            sql.append(sqlType(column.type, column.extra))
             if (column.notNull) {
                 sql.append(" NOT NULL")
             }
@@ -220,33 +70,30 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
         }
         sql.append(");")
         val compiled = sql.toString()
-        access({
-            val statement = connection.prepare(compiled)
-            try {
-                while (statement.step()) {
-                }
-            } finally {
-                statement.dispose()
+        try {
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(compiled)
             }
-        })
+        } catch (e: SQLException) {
+            throw IOException(e)
+        }
+
     }
 
     override fun dropTable(name: String) {
         val compiled = "DROP TABLE IF EXISTS $name;"
-        access({
-            val statement = connection.prepare(compiled)
-            try {
-                while (statement.step()) {
-                }
-            } finally {
-                statement.dispose()
+        try {
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(compiled)
             }
-        })
+        } catch (e: SQLException) {
+            throw IOException(e)
+        }
     }
 
     override fun compileQuery(table: String,
                               columns: Array<out String>,
-                              matches: List<String>): SQLQuery {
+                              matches: Array<out String>): SQLQuery {
         val columnSize = columns.size
         val matchesSize = matches.size
         val sql = StringBuilder(columnSize shl 5)
@@ -260,30 +107,31 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
             }
             sql.append(column)
         }
-        sql.append(" FROM ").append(table)
-        whereSQL(matches, sql)
+        sql.append(" FROM ").append(table).append(" WHERE ")
+        sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
         return object : SQLQuery {
-            override fun run(values: List<Any?>): List<Array<Any?>> {
+            override fun invoke(values: Array<out Any?>): List<Array<Any?>> {
                 if (values.size != matchesSize) {
                     throw IllegalArgumentException(
                             "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
                 }
-                return accessReturn({
-                    val statement = connection.prepare(compiled)
-                    try {
+                try {
+                    return connection.prepareStatement(
+                            compiled).use { statement ->
                         var i = 1
                         i = resolveObjects(values, statement, i)
+                        val result = statement.executeQuery()
                         val rows = ArrayList<Array<Any?>>()
-                        while (statement.step()) {
-                            rows.add(resolveResult(statement, columns.size))
+                        while (result.next()) {
+                            rows.add(resolveResult(result, columnSize))
                         }
-                        return@accessReturn rows
-                    } finally {
-                        statement.dispose()
+                        return@use rows
                     }
-                })
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
             }
         }
     }
@@ -306,13 +154,11 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
         val compiledPrefix = prefix.toString()
         val compiledSuffix = ";"
         return object : SQLInsert {
-            override fun run(values: List<Array<out Any?>>) {
-                val valuesSafe = ArrayList<Array<out Any?>>(values.size)
-                valuesSafe.addAll(values)
+            override fun invoke(values: Array<out Array<out Any?>>) {
                 val sql = StringBuilder(columnSize shl 5)
                 sql.append(compiledPrefix)
                 first = true
-                for (row in valuesSafe) {
+                for (row in values) {
                     if (row.size != columnSize) {
                         throw IllegalArgumentException(
                                 "Amount of updated values (${row.size}) does not match amount of columns ($columnSize)")
@@ -336,25 +182,23 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
                 }
                 sql.append(compiledSuffix)
                 val compiled = sql.toString()
-                access({
-                    val statement = connection.prepare(compiled)
-                    try {
+                try {
+                    connection.prepareStatement(compiled).use { statement ->
                         var i = 1
-                        for (row in valuesSafe) {
+                        for (row in values) {
                             i = resolveObjects(row, statement, i)
                         }
-                        while (statement.step()) {
-                        }
-                    } finally {
-                        statement.dispose()
+                        statement.executeUpdate()
                     }
-                })
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
             }
         }
     }
 
     override fun compileUpdate(table: String,
-                               matches: List<String>,
+                               matches: Array<out String>,
                                columns: Array<out String>): SQLUpdate {
         val columnsSize = columns.size
         val sql = StringBuilder(columns.size shl 5)
@@ -368,76 +212,119 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
             }
             sql.append(column).append("=?")
         }
-        whereSQL(matches, sql)
+        sql.append(" WHERE ")
+        sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
         return object : SQLUpdate {
-            override fun run(values: List<Any?>,
-                             updates: List<Any?>) {
+            override fun invoke(values: Array<out Any?>,
+                                updates: Array<out Any?>) {
                 if (updates.size != columnsSize) {
                     throw IllegalArgumentException(
                             "Amount of updated values (${updates.size}) does not match amount of columns ($columnsSize)")
                 }
-                access({
-                    val statement = connection.prepare(compiled)
-                    try {
+                try {
+                    return connection.prepareStatement(
+                            compiled).use { statement ->
                         var i = 1
                         i = resolveObjects(updates, statement, i)
                         i = resolveObjects(values, statement, i)
-                        while (statement.step()) {
-                        }
-                    } finally {
-                        statement.dispose()
+                        println(updates)
+                        statement.executeUpdate()
                     }
-                })
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
+            }
+        }
+    }
+
+    override fun compileReplace(table: String,
+                                vararg columns: String): SQLReplace {
+        val columnsSize = columns.size
+        val prefix = StringBuilder(columnsSize shl 4)
+        prefix.append("INSERT OR REPLACE INTO ").append(table).append(" (")
+        var first = true
+        for (column in columns) {
+            if (first) {
+                first = false
+            } else {
+                prefix.append(',')
+            }
+            prefix.append(column)
+        }
+        prefix.append(") VALUES ")
+        val compiledPrefix = prefix.toString()
+        val compiledSuffix = ";"
+        return object : SQLReplace {
+            override fun invoke(values: Array<out Array<out Any?>>) {
+                val sql = StringBuilder(columnsSize shl 5)
+                sql.append(compiledPrefix)
+                var first = true
+                for (row in values) {
+                    if (row.size != columnsSize) {
+                        throw IllegalArgumentException(
+                                "Amount of updated values (${row.size}) does not match amount of columns ($columnsSize)")
+                    }
+                    if (first) {
+                        first = false
+                        sql.append('(')
+                    } else {
+                        sql.append(",(")
+                    }
+                    var rowFirst = true
+                    for (ignored in row) {
+                        if (rowFirst) {
+                            rowFirst = false
+                        } else {
+                            sql.append(',')
+                        }
+                        sql.append('?')
+                    }
+                    sql.append(')')
+                }
+                sql.append(compiledSuffix)
+                val compiled = sql.toString()
+                try {
+                    connection.prepareStatement(compiled).use { statement ->
+                        var i = 1
+                        for (row in values) {
+                            i = resolveObjects(row, statement, i)
+                        }
+                        statement.executeUpdate()
+                    }
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
             }
         }
     }
 
     override fun compileDelete(table: String,
-                               matches: List<String>): SQLDelete {
+                               matches: Array<out String>): SQLDelete {
         val sql = StringBuilder(64)
-        sql.append("DELETE FROM ").append(table)
-        whereSQL(matches, sql)
+        sql.append("DELETE FROM ").append(table).append(" WHERE ")
+        sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
         return object : SQLDelete {
-            override fun run(values: List<Any?>) {
-                access({
-                    val statement = connection.prepare(compiled)
-                    try {
+            override fun invoke(values: Array<out Any?>) {
+                try {
+                    return connection.prepareStatement(
+                            compiled).use { statement ->
                         var i = 1
                         i = resolveObjects(values, statement, i)
-                        while (statement.step()) {
-                        }
-                    } finally {
-                        statement.dispose()
+                        statement.executeUpdate()
                     }
-                })
+                } catch (e: SQLException) {
+                    throw IOException(e)
+                }
             }
-        }
-    }
-
-    override fun close() {
-        joiner.join()
-    }
-
-    private fun whereSQL(matches: List<String>,
-                         sql: StringBuilder) {
-        sql.append(" WHERE ")
-        var first = true
-        for (match in matches) {
-            if (first) {
-                first = false
-            } else {
-                sql.append(" AND ")
-            }
-            sql.append(match).append("=?")
         }
     }
 
     private fun resolveObjects(matches: Array<out Any?>,
-                               statement: SQLiteStatement,
+                               statement: PreparedStatement,
                                index: Int): Int {
         var i = index
         for (match in matches) {
@@ -446,64 +333,19 @@ class SQLiteDatabase(path: FilePath, taskExecutor: TaskExecutor,
         return i
     }
 
-    private fun resolveObjects(matches: List<Any?>,
-                               statement: SQLiteStatement,
-                               index: Int): Int {
-        var i = index
-        for (match in matches) {
-            resolveObject(match, i++, statement)
-        }
-        return i
-    }
-
-    private fun resolveObject(value: Any?,
+    private fun resolveObject(`object`: Any?,
                               i: Int,
-                              statement: SQLiteStatement) {
-        if (value is Byte) {
-            statement.bind(i, value.toInt())
-        } else if (value is Short) {
-            statement.bind(i, value.toInt())
-        } else if (value is Int) {
-            statement.bind(i, value)
-        } else if (value is Long) {
-            statement.bind(i, value)
-        } else if (value is Float) {
-            statement.bind(i, value.toDouble())
-        } else if (value is Double) {
-            statement.bind(i, value)
-        } else if (value is ByteArray) {
-            statement.bind(i, value)
-        } else if (value is String) {
-            statement.bind(i, value)
-        } else if (value == null) {
-            statement.bindNull(i)
-        }
+                              statement: PreparedStatement) {
+        statement.setObject(i, `object`)
     }
 
-    private fun resolveResult(statement: SQLiteStatement,
+    private fun resolveResult(result: ResultSet,
                               columns: Int): Array<Any?> {
-        val row = arrayOfNulls<Any?>(columns)
+        val row = arrayOfNulls<Any>(columns)
         for (i in 0..columns - 1) {
-            when (statement.columnType(i)) {
-                SQLiteConstants.SQLITE_NULL -> row[i] = null
-                SQLiteConstants.SQLITE_INTEGER -> row[i] = statement.columnLong(
-                        i)
-                SQLiteConstants.SQLITE_FLOAT -> row[i] = statement.columnDouble(
-                        i)
-                SQLiteConstants.SQLITE_BLOB -> row[i] = statement.columnBlob(i)
-                SQLiteConstants.SQLITE_TEXT -> row[i] = statement.columnString(
-                        i)
-            }
+            val j = i + 1
+            row[i] = result.getObject(j)
         }
         return row
-    }
-
-    private fun resolveType(type: SQLType,
-                            extra: String?): String {
-        val typeStr = type.toString()
-        if (extra != null) {
-            return "$typeStr($extra)"
-        }
-        return typeStr
     }
 }
