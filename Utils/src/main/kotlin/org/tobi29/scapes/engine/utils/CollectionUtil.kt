@@ -55,14 +55,32 @@ inline fun <T> Set<T>.readOnly(): Set<T> = Collections.unmodifiableSet(this)
 inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> = Collections.unmodifiableMap(
         this)
 
+/**
+ * Filters out elements of the wrong type and casts them
+ * @param T The type to cast to
+ * @receiver The sequence of elements to map
+ * @returns A lazy sequence
+ */
 inline fun <reified T : Any> Sequence<*>.filterMap(): Sequence<T> {
     return mapNotNull { it as? T }
 }
 
+/**
+ * Takes all elements of a sequence and puts them into an array
+ * @param T The type of elements
+ * @receiver The sequence of elements to collect
+ * @returns A new array containing
+ */
 inline fun <reified T> Sequence<T>.toArray(): Array<T> {
     return toList().toTypedArray()
 }
 
+/**
+ * Limits the amount of elements available in the sequence
+ * @param T The type of elements
+ * @receiver The sequence of elements to limit
+ * @returns A lazy sequence
+ */
 inline fun <T> Sequence<T>.limit(amount: Int): Sequence<T> {
     return Sequence {
         val iterator = iterator()
