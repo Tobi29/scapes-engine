@@ -229,7 +229,6 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
                         var i = 1
                         i = resolveObjects(updates, statement, i)
                         i = resolveObjects(values, statement, i)
-                        println(updates)
                         statement.executeUpdate()
                     }
                 } catch (e: SQLException) {

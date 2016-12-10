@@ -207,7 +207,6 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
             }
             TagStructureBinary.ID_LIST_TERMINATE -> return true
             else -> {
-                println(list)
                 throw IOException(
                         "Not in tag format! (Invalid component-id: $componentID)")
             }
