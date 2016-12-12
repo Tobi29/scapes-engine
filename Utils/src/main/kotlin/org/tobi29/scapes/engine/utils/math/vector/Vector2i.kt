@@ -54,6 +54,8 @@ open class Vector2i(val x: Int, val y: Int) : MultiTag.Writeable {
         return tagStructure
     }
 
+    override fun toString() = "$x $y"
+
     companion object {
         val ZERO = Vector2i(0, 0)
     }

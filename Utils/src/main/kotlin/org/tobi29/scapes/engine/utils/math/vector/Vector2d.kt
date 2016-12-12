@@ -78,6 +78,8 @@ open class Vector2d(val x: Double, val y: Double) : MultiTag.Writeable {
         return tagStructure
     }
 
+    override fun toString() = "$x $y"
+
     companion object {
         val ZERO = Vector2d(0.0, 0.0)
     }

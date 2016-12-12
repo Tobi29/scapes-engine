@@ -72,6 +72,8 @@ class Vector3d(x: Double, y: Double, val z: Double) : Vector2d(x, y) {
         return z.toFloat()
     }
 
+    override fun toString() = "$x $y $z"
+
     companion object {
         val ZERO = Vector3d(0.0, 0.0, 0.0)
     }

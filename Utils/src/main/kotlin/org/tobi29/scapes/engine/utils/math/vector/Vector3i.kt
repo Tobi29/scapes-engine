@@ -54,6 +54,8 @@ class Vector3i(x: Int, y: Int, val z: Int) : Vector2i(x, y) {
         return tagStructure
     }
 
+    override fun toString() = "$x $y $z"
+
     companion object {
         val ZERO = Vector3i(0, 0, 0)
     }
