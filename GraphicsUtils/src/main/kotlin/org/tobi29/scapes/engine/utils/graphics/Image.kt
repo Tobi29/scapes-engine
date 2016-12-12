@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 
 import java.nio.ByteBuffer
 
@@ -25,4 +26,6 @@ class Image(val width: Int = 1,
             buffer: ByteBuffer = BufferCreator.bytes(width * height shl 2)) {
     val buffer = buffer
         get() = field.asReadOnlyBuffer()
+
+    val size by lazy { Vector2i(width, height) }
 }
