@@ -458,12 +458,12 @@ class ScapesEngineApplication implements Plugin<Project> {
         return task
     }
 
-    private static Copy jreTask(Project target, String name, String platform) {
+    private static Sync jreTask(Project target, String name, String platform) {
         def jre = getJRE(target, platform)
         if (jre == null) {
             return null
         }
-        def task = target.tasks.create(name, Copy)
+        def task = target.tasks.create(name, Sync)
         task.from { target.tarTree(jre) }
         task.into "${-> task.temporaryDir}"
         task.includeEmptyDirs = false
@@ -489,9 +489,6 @@ class ScapesEngineApplication implements Plugin<Project> {
         }
         return jres[0]
     }
-    private static
-    final List<String> jreExtensions = ["dnsns.jar", "sunjce_provider.jar",
-            "sunec.jar", "sunpkcs11.jar", "sunmscapi.jar"]
 
     private static void pruneJREMacOSX(CopySpec copy, String dir) {
         pruneJRE(copy, dir)
@@ -525,7 +522,14 @@ class ScapesEngineApplication implements Plugin<Project> {
 
         copy.exclude "$dir/bin/dtplugin/**"
         copy.exclude "$dir/bin/plugin2/**"
+        copy.exclude "$dir/bin/jabswitch.exe"
+        copy.exclude "$dir/bin/javacpl.cpl"
+        copy.exclude "$dir/bin/javacpl.exe"
         copy.exclude "$dir/bin/javaws.exe"
+        copy.exclude "$dir/bin/jucheck.exe"
+        copy.exclude "$dir/bin/kinit.exe"
+        copy.exclude "$dir/bin/klist.exe"
+        copy.exclude "$dir/bin/ktab.exe"
         copy.exclude "$dir/bin/orbd.exe"
         copy.exclude "$dir/bin/policytool.exe"
         copy.exclude "$dir/bin/keytool.exe"
@@ -535,16 +539,9 @@ class ScapesEngineApplication implements Plugin<Project> {
         copy.exclude "$dir/bin/tnameserv.exe"
 
         copy.exclude "$dir/lib/deploy/**"
-        copy.exclude "$dir/lib/ext/**"
         copy.exclude "$dir/lib/deploy.jar"
         copy.exclude "$dir/lib/plugin.jar"
 
-        copy.exclude "$dir/bin/javacpl.exe"
-        copy.exclude "$dir/bin/jucheck.exe"
-        copy.exclude "$dir/bin/jabswitch.exe"
-        copy.exclude "$dir/bin/kinit.exe"
-        copy.exclude "$dir/bin/klist.exe"
-        copy.exclude "$dir/bin/ktab.exe"
         copy.exclude "$dir/bin/java_crw_demo.dll"
         copy.exclude "$dir/bin/JavaAccessBridge-32.dll"
         copy.exclude "$dir/bin/JavaAccessBridge.dll"
@@ -576,7 +573,14 @@ class ScapesEngineApplication implements Plugin<Project> {
 
         copy.exclude "$dir/plugin/**"
 
-        copy.exclude "$dir/bin/javacpl.cpl"
+        copy.exclude "$dir/lib/ext/access-bridge.jar"
+        copy.exclude "$dir/lib/ext/access-bridge-32.jar"
+        copy.exclude "$dir/lib/ext/access-bridge-64.jar"
+        copy.exclude "$dir/lib/ext/cldrdata.jar"
+        copy.exclude "$dir/lib/ext/jfxrt.jar"
+        copy.exclude "$dir/lib/ext/localedata.jar"
+        copy.exclude "$dir/lib/ext/nashorn.jar"
+        copy.exclude "$dir/lib/ext/sunmscapi.jar"
 
         copy.exclude "$dir/lib/desktop/**"
         copy.exclude "$dir/lib/jfr/**"
@@ -605,9 +609,8 @@ class ScapesEngineApplicationExtension {
 }
 
 class StartupScriptTask extends DefaultTask {
-    def output
     @Input
-    def execName, libPath, mainClass
+    def output, execName, libPath, mainClass
 
     @OutputFile
     File getOutput() {
@@ -625,9 +628,8 @@ class StartupScriptTask extends DefaultTask {
 }
 
 class AppBundlerTask extends DefaultTask {
-    def output
     @Input
-    def fullName, version, company, copyright, mainClass, jre, appbundler, icon
+    def output, fullName, version, company, copyright, mainClass, jre, appbundler, icon
     @InputFiles
     def FileCollection classpath
 
@@ -686,9 +688,8 @@ class AppBundlerTask extends DefaultTask {
 }
 
 class Launch4jTask extends DefaultTask {
-    def output
     @Input
-    def exeMemoryMin, exeMemoryMax, exeType, fullName, version, company, copyright, mainClass
+    def output, exeMemoryMin, exeMemoryMax, exeType, fullName, version, company, copyright, mainClass
     @Input
     boolean runInAppData
     @InputFile
