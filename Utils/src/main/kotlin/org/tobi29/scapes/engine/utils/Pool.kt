@@ -16,10 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java8.util.Spliterator
-import java8.util.Spliterators
-import java8.util.stream.Stream
-import java8.util.stream.StreamSupport
 import java.util.*
 
 /**
@@ -170,24 +166,6 @@ class Pool<E>
                         "Cannot remove object from pool")
             }
         }
-    }
-
-    /**
-     * Returns an [Spliterator] to iterate through all objects previously
-     * retrieved by [.push]
-     * @return An [Spliterator] to iterate through the pool's data
-     */
-    fun spliterator8(): Spliterator<E> {
-        return Spliterators.spliterator(iterator(), size.toLong(), 0)
-    }
-
-    /**
-     * Returns an [Stream] to iterate through all objects previously
-     * retrieved by [.push]
-     * @return An [Stream] to iterate through the pool's data
-     */
-    fun stream(): Stream<E> {
-        return StreamSupport.stream(spliterator8(), false)
     }
 
     /**

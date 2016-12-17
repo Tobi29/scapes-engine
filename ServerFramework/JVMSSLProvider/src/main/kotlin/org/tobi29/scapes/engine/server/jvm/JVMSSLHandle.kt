@@ -18,8 +18,7 @@ package org.tobi29.scapes.engine.server.jvm
 import org.tobi29.scapes.engine.server.RemoteAddress
 import org.tobi29.scapes.engine.server.SSLHandle
 import org.tobi29.scapes.engine.utils.filterMap
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
+import org.tobi29.scapes.engine.utils.toArray
 import java.io.IOException
 import java.security.*
 import java.security.cert.X509Certificate
@@ -54,8 +53,8 @@ class JVMSSLHandle(keyManagers: Array<KeyManager>?,
             val trustManagerFactory = TrustManagerFactory.getInstance(
                     TrustManagerFactory.getDefaultAlgorithm())
             trustManagerFactory.init(null as KeyStore?)
-            val trustManagers = stream(
-                    *trustManagerFactory.trustManagers).filterMap<X509ExtendedTrustManager>().toTypedArray()
+            val trustManagers = trustManagerFactory.trustManagers.asSequence()
+                    .filterMap<X509ExtendedTrustManager>().toArray()
             return arrayOf(FeedbackExtendedTrustManager(trustManagers,
                     feedbackPredicate))
         } catch (e: NoSuchAlgorithmException) {

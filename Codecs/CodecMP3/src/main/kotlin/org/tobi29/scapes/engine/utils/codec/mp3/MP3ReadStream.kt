@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.utils.codec.mp3
 
 import javazoom.jl.decoder.*
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.FloatBuffer
 import org.tobi29.scapes.engine.utils.codec.AudioBuffer
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.utils.math.min
@@ -158,8 +158,7 @@ constructor(private val channel: ReadableByteChannel) : ReadableAudioStream {
         val index: IntArray
 
         init {
-            buffer = BufferCreator.floats(
-                    Obuffer.OBUFFERSIZE * Obuffer.MAXCHANNELS)
+            buffer = FloatBuffer(Obuffer.OBUFFERSIZE * Obuffer.MAXCHANNELS)
             index = IntArray(Obuffer.MAXCHANNELS)
             clear_buffer()
         }

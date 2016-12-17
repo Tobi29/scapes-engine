@@ -16,11 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.codec
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.FloatBuffer
 import java.nio.FloatBuffer
 
 class AudioBuffer(private val size: Int) {
-    private var buffer: FloatBuffer = BufferCreator.floats(0)
+    private var buffer = FloatBuffer(0)
     private var channels = 0
     private var rate = 0
     private var empty = true
@@ -33,7 +33,7 @@ class AudioBuffer(private val size: Int) {
             empty = false
             val capacity = size * channels
             if (buffer.capacity() != capacity) {
-                buffer = BufferCreator.floats(capacity)
+                buffer = FloatBuffer(capacity)
             }
             this.channels = channels
             this.rate = rate

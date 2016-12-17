@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.input
 
-import java8.util.stream.Stream
-import org.tobi29.scapes.engine.utils.stream
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -81,8 +79,8 @@ class ControllerJoystick(private val name: String, axisCount: Int) : ControllerB
         return states[key.id] >= 2
     }
 
-    override fun pressEvents(): Stream<ControllerBasic.PressEvent> {
-        return pressEvents.stream()
+    override fun pressEvents(): Sequence<ControllerBasic.PressEvent> {
+        return pressEvents.asSequence()
     }
 
     override fun addPressEvent(key: ControllerKey,

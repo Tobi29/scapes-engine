@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
-
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.WritableByteChannel
 
 class BufferedWriteChannelStream(private val channel: WritableByteChannel) : WritableByteStream {
-    private val buffer = BufferCreator.bytes(8192)
+    private val buffer = ByteBuffer(8192)
 
     @Throws(IOException::class)
     override fun put(buffer: ByteBuffer,

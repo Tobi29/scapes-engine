@@ -16,8 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
-
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -29,8 +28,9 @@ interface ReadableByteStream {
         return available() > 0
     }
 
-    @Throws(IOException::class) fun skip(len: Int) {
-        get(BufferCreator.bytes(len))
+    @Throws(IOException::class)
+    fun skip(len: Int) {
+        get(ByteBuffer(len))
     }
 
     @Throws(IOException::class)

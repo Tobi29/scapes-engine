@@ -40,7 +40,7 @@ class PoolTest {
         pool.push().set("2")
         pool.push().set("3")
         val output = StringBuilder(6)
-        pool.stream().map { it.str }.forEach { output.append(it) }
+        pool.asSequence().map { it.str }.forEach { output.append(it) }
         Assert.assertEquals("Unexpected output string", output.toString(),
                 "456123")
     }
@@ -56,7 +56,7 @@ class PoolTest {
         pool.push().set("2")
         pool.push().set("3")
         val output = StringBuilder(6)
-        pool.stream().map { it.str }.sorted().forEach { output.append(it) }
+        pool.asSequence().map { it.str }.sorted().forEach { output.append(it) }
         Assert.assertEquals("Unexpected output string", output.toString(),
                 "123456")
     }

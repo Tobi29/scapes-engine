@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.zip.DataFormatException
@@ -29,43 +29,39 @@ import java.util.zip.Inflater
 object CompressionUtil {
 
     @Throws(IOException::class)
-    @JvmOverloads @JvmStatic fun compress(input: ReadableByteStream,
-                               level: Int = Deflater.DEFAULT_COMPRESSION,
-                               supplier: (Int) -> ByteBuffer = {
-                                   BufferCreator.bytes(it)
-                               },
-                               growth: (Int) -> Int = { length -> length + 1024 }): ByteBuffer {
+    fun compress(input: ReadableByteStream,
+                 level: Int = Deflater.DEFAULT_COMPRESSION,
+                 supplier: (Int) -> ByteBuffer = ::ByteBuffer,
+                 growth: (Int) -> Int = { length -> length + 1024 }): ByteBuffer {
         val stream = ByteBufferStream(supplier, growth)
         compress(input, stream, level)
         return stream.buffer()
     }
 
     @Throws(IOException::class)
-    @JvmOverloads @JvmStatic fun compress(input: ReadableByteStream,
-                                              output: WritableByteStream,
-                                              level: Int = 1) {
+    fun compress(input: ReadableByteStream,
+                 output: WritableByteStream,
+                 level: Int = 1) {
         ZDeflater(level).use { filter -> filter(input, output, filter) }
     }
 
     @Throws(IOException::class)
-    @JvmOverloads @JvmStatic fun decompress(input: ReadableByteStream,
-                                 supplier: (Int) -> ByteBuffer = {
-                                     BufferCreator.bytes(it)
-                                 },
-                                 growth: (Int) -> Int = { length -> length + 1024 }): ByteBuffer {
+    fun decompress(input: ReadableByteStream,
+                   supplier: (Int) -> ByteBuffer = ::ByteBuffer,
+                   growth: (Int) -> Int = { length -> length + 1024 }): ByteBuffer {
         val output = ByteBufferStream(supplier, growth)
         decompress(input, output)
         return output.buffer()
     }
 
     @Throws(IOException::class)
-    @JvmStatic fun decompress(input: ReadableByteStream,
+    fun decompress(input: ReadableByteStream,
                    output: WritableByteStream) {
         ZInflater().use { filter -> filter(input, output, filter) }
     }
 
     @Throws(IOException::class)
-    @JvmStatic fun filter(input: ReadableByteStream,
+    fun filter(input: ReadableByteStream,
                output: WritableByteStream,
                filter: Filter) {
         while (input.hasAvailable()) {
@@ -105,21 +101,20 @@ object CompressionUtil {
         override fun close()
     }
 
-    class ZDeflater @JvmOverloads constructor(level: Int, buffer: Int = 8192) : Filter {
+    class ZDeflater(level: Int, buffer: Int = 8192) : Filter {
         private val deflater: Deflater
         private val output: ByteBuffer
         private var input: ByteBuffer
 
         init {
             deflater = Deflater(level)
-            input = BufferCreator.bytes(buffer)
-            output = BufferCreator.bytes(buffer)
+            input = ByteBuffer(buffer)
+            output = ByteBuffer(buffer)
         }
 
-        @Throws(IOException::class)
         override fun input(buffer: ReadableByteStream) {
             if (!input.hasRemaining()) {
-                val newInput = BufferCreator.bytes(input.capacity() shl 1)
+                val newInput = ByteBuffer(input.capacity() shl 1)
                 input.flip()
                 newInput.put(input)
                 input = newInput
@@ -130,7 +125,6 @@ object CompressionUtil {
                     input.remaining())
         }
 
-        @Throws(IOException::class)
         override fun output(buffer: WritableByteStream): Int {
             val len = deflater.deflate(output.array())
             output.limit(len)
@@ -160,20 +154,19 @@ object CompressionUtil {
         }
     }
 
-    class ZInflater @JvmOverloads constructor(buffer: Int = 8192) : Filter {
+    class ZInflater(buffer: Int = 8192) : Filter {
         private val inflater = Inflater()
         private val output: ByteBuffer
         private var input: ByteBuffer
 
         init {
-            input = BufferCreator.bytes(buffer)
-            output = BufferCreator.bytes(buffer)
+            input = ByteBuffer(buffer)
+            output = ByteBuffer(buffer)
         }
 
-        @Throws(IOException::class)
         override fun input(buffer: ReadableByteStream) {
             if (!input.hasRemaining()) {
-                val newInput = BufferCreator.bytes(input.capacity() shl 1)
+                val newInput = ByteBuffer(input.capacity() shl 1)
                 input.flip()
                 newInput.put(input)
                 input = newInput
@@ -184,7 +177,6 @@ object CompressionUtil {
                     input.remaining())
         }
 
-        @Throws(IOException::class)
         override fun output(buffer: WritableByteStream): Int {
             try {
                 val len = inflater.inflate(output.array())

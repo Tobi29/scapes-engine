@@ -16,16 +16,16 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-@JvmOverloads fun <E> process(input: ReadableByteStream,
-                              processor: StreamProcessor<E>,
-                              bufferSize: Int = 1024): E {
-    val buffer = BufferCreator.bytes(bufferSize)
+fun <E> process(input: ReadableByteStream,
+                processor: StreamProcessor<E>,
+                bufferSize: Int = 1024): E {
+    val buffer = ByteBuffer(bufferSize)
     var available = true
     while (available) {
         available = input.getSome(buffer)
@@ -37,10 +37,10 @@ import java.nio.charset.StandardCharsets
 }
 
 @Throws(IOException::class)
-@JvmOverloads fun process(input: ReadableByteStream,
-                          processor: (ByteBuffer) -> Unit,
-                          bufferSize: Int = 1024) {
-    val buffer = BufferCreator.bytes(bufferSize)
+fun process(input: ReadableByteStream,
+            processor: (ByteBuffer) -> Unit,
+            bufferSize: Int = 1024) {
+    val buffer = ByteBuffer(bufferSize)
     var available = true
     while (available) {
         available = input.getSome(buffer)
@@ -67,10 +67,8 @@ fun asArray(): StreamProcessor<ByteArray> {
     }
 }
 
-@JvmOverloads fun asBuffer(
-        supplier: (Int) -> ByteBuffer = {
-            BufferCreator.bytes(it)
-        },
+fun asBuffer(
+        supplier: (Int) -> ByteBuffer = ::ByteBuffer,
         growth: (Int) -> Int = { it + 8192 }): StreamProcessor<ByteBuffer> {
     return object : StreamProcessor<ByteBuffer> {
         private val stream = ByteBufferStream(supplier, growth)
@@ -86,7 +84,7 @@ fun asArray(): StreamProcessor<ByteArray> {
     }
 }
 
-@JvmOverloads fun asString(charset: Charset = StandardCharsets.UTF_8): StreamProcessor<String> {
+fun asString(charset: Charset = StandardCharsets.UTF_8): StreamProcessor<String> {
     return object : StreamProcessor<String> {
         private val stream = ByteBufferStream(
                 { ByteBuffer.wrap(ByteArray(it)) }, { it + 1024 })

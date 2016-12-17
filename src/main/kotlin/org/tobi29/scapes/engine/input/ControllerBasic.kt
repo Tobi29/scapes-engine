@@ -16,14 +16,12 @@
 
 package org.tobi29.scapes.engine.input
 
-import java8.util.stream.Stream
-
 interface ControllerBasic : Controller {
     fun isDown(key: ControllerKey): Boolean
 
     fun isPressed(key: ControllerKey): Boolean
 
-    fun pressEvents(): Stream<PressEvent>
+    fun pressEvents(): Sequence<PressEvent>
 
     fun addPressEvent(key: ControllerKey,
                       state: PressState)

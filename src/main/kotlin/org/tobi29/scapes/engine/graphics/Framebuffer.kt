@@ -16,9 +16,10 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java8.util.stream.Stream
-
 interface Framebuffer : GraphicsObject {
+    val texturesColor: List<Texture>
+    val textureDepth: Texture?
+
     fun deactivate(gl: GL)
 
     fun activate(gl: GL)
@@ -29,10 +30,4 @@ interface Framebuffer : GraphicsObject {
 
     fun setSize(width: Int,
                 height: Int)
-
-    fun texturesColor(): Stream<Texture>
-
-    fun textureColor(i: Int): Texture
-
-    fun textureDepth(): Texture
 }

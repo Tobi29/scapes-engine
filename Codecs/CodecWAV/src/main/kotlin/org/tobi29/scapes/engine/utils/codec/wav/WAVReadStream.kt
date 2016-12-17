@@ -17,7 +17,7 @@
 // Based on: http://www.labbookpages.co.uk/audio/wavFiles.html
 package org.tobi29.scapes.engine.utils.codec.wav
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.codec.AudioBuffer
 import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.utils.io.ChannelUtil
@@ -27,8 +27,7 @@ import java.nio.ByteOrder
 import java.nio.channels.ReadableByteChannel
 
 class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    private val buffer = BufferCreator.bytes(BUFFER_SIZE).order(
-            ByteOrder.LITTLE_ENDIAN)
+    private val buffer = ByteBuffer(BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
     private var channels = 0
     private var rate = 0
     private var align = 0

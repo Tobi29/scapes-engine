@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.stream
+import org.tobi29.scapes.engine.utils.limit
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -49,16 +49,12 @@ open class TagStructureBinary {
             val keys = ConcurrentHashMap<String, KeyOccurrence>()
             analyze(tagStructure, keys)
             if (keys.size > 255) {
-                keys.entries.stream().sorted { entry1, entry2 ->
-                    if (entry1.value.count == entry2.value.count)
-                        0
-                    else if (entry1.value.count < entry2.value.count)
-                        1
-                    else
-                        -1
-                }.limit(255).map { it.key }.forEach { addKeyAlias(it) }
+                keys.entries.asSequence().sortedBy { it.value.count }.limit(
+                        255).map { it.key }.forEach { addKeyAlias(it) }
             } else {
-                keys.entries.stream().map { it.key }.forEach { addKeyAlias(it) }
+                keys.entries.asSequence().map { it.key }.forEach {
+                    addKeyAlias(it)
+                }
             }
         }
 

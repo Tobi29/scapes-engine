@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.input
 
-import java8.util.stream.Collectors
-import org.tobi29.scapes.engine.utils.stream
 import java.util.*
 
 class ControllerKeyReference {
@@ -32,8 +30,7 @@ class ControllerKeyReference {
     constructor(key: ControllerKey,
                 vararg modifiers: ControllerKey) {
         this.key = key
-        this.modifiers = stream(*modifiers).collect(
-                Collectors.toList<ControllerKey>())
+        this.modifiers = modifiers.toList()
     }
 
     constructor(key: ControllerKey,

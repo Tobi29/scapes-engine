@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.input
 
-import java8.util.stream.Stream
-import org.tobi29.scapes.engine.utils.stream
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -90,8 +88,8 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
         return states[key.id] >= 2
     }
 
-    override fun pressEvents(): Stream<ControllerBasic.PressEvent> {
-        return pressEvents.stream()
+    override fun pressEvents(): Sequence<ControllerBasic.PressEvent> {
+        return pressEvents.asSequence()
     }
 
     override fun addPressEvent(key: ControllerKey,
@@ -99,8 +97,8 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
         pressEventQueue.add(ControllerBasic.PressEvent(key, state))
     }
 
-    fun typeEvents(): Stream<KeyTypeEvent> {
-        return typeEvents.stream()
+    fun typeEvents(): Sequence<KeyTypeEvent> {
+        return typeEvents.asSequence()
     }
 
     abstract val isModifierDown: Boolean

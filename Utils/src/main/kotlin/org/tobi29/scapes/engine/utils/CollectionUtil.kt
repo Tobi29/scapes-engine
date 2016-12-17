@@ -99,3 +99,47 @@ inline fun <T> Sequence<T>.limit(amount: Int): Sequence<T> {
         }
     }
 }
+
+/**
+ * Accumulates value starting with the first element and applying [operation]
+ * from left to right to current accumulator value and each element.
+ * @param S Element type
+ * @param T Element type
+ * @param operation Function that takes the current accumulator value and the element itself and calculates the next accumulator value
+ * @receiver The sequence of elements to reduce
+ * @returns The resulting element or null if called on empty sequence
+ */
+inline fun <S, T : S> Sequence<T>.reduceOrNull(operation: (S, T) -> S): S? {
+    val iterator = this.iterator()
+    if (!iterator.hasNext()) {
+        return null
+    }
+    var accumulator: S = iterator.next()
+    while (iterator.hasNext()) {
+        accumulator = operation(accumulator, iterator.next())
+    }
+    return accumulator
+}
+
+/**
+ * Accumulates value starting with the first element and applying [operation]
+ * from left to right to current accumulator value and each element with its
+ * index in the original sequence.
+ * @param S Element type
+ * @param T Element type
+ * @param operation Function that takes the index of an element, current accumulator value and the element itself and calculates the next accumulator value
+ * @receiver The sequence of elements to reduce
+ * @returns The resulting element or null if called on empty sequence
+ */
+inline fun <S, T : S> Sequence<T>.reduceIndexedOrNull(operation: (Int, S, T) -> S): S? {
+    val iterator = this.iterator()
+    if (!iterator.hasNext()) {
+        return null
+    }
+    var index = 1
+    var accumulator: S = iterator.next()
+    while (iterator.hasNext()) {
+        accumulator = operation(index++, accumulator, iterator.next())
+    }
+    return accumulator
+}

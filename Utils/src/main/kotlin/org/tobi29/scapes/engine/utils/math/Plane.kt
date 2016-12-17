@@ -16,14 +16,21 @@
 
 package org.tobi29.scapes.engine.utils.math
 
-class Plane @JvmOverloads constructor(p1x: Double = 0.0, p1y: Double = 0.0, p1z: Double = 0.0, p2x: Double = 0.0, p2y: Double = 0.0,
-                                      p2z: Double = 0.0, p3x: Double = 0.0, p3y: Double = 0.0, p3z: Double = 0.0) {
-    var normalx: Double = 0.toDouble()
-    var normaly: Double = 0.toDouble()
-    var normalz: Double = 0.toDouble()
-    var p2x: Double = 0.toDouble()
-    var p2y: Double = 0.toDouble()
-    var p2z: Double = 0.toDouble()
+class Plane(p1x: Double = 0.0,
+            p1y: Double = 0.0,
+            p1z: Double = 0.0,
+            p2x: Double = 0.0,
+            p2y: Double = 0.0,
+            p2z: Double = 0.0,
+            p3x: Double = 0.0,
+            p3y: Double = 0.0,
+            p3z: Double = 0.0) {
+    var normalx = 0.0
+    var normaly = 0.0
+    var normalz = 0.0
+    var p2x = 0.0
+    var p2y = 0.0
+    var p2z = 0.0
 
     init {
         set3Points(p1x, p1y, p1z, p2x, p2y, p2z, p3x, p3y, p3z)

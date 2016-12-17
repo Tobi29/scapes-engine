@@ -19,8 +19,7 @@ package org.tobi29.scapes.engine.swt.util
 import mu.KLogging
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.FontData
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
+import org.tobi29.scapes.engine.utils.toArray
 import java.io.IOException
 import java.util.*
 
@@ -49,7 +48,7 @@ object Fonts : KLogging() {
                 fonts = properties.getProperty("unknown").orEmpty()
             }
             val fontDataTexts = fonts.split(';')
-            return fontDataTexts.stream().map { text ->
+            return fontDataTexts.asSequence().map { text ->
                 val split = text.split('|', limit = 3)
                 assert(split.size == 3)
                 val name = split[0]
@@ -64,7 +63,7 @@ object Fonts : KLogging() {
                 }
                 val height = split[2].toInt()
                 FontData(name, height, style)
-            }.toTypedArray()
+            }.toArray()
         } catch (e: IOException) {
             logger.error { "Failed to load font: $e" }
         }

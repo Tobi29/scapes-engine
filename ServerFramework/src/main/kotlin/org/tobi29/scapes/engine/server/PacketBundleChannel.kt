@@ -15,13 +15,16 @@
  */
 package org.tobi29.scapes.engine.server
 
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ByteBuffer
+import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.filterMap
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
 import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream
 import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import org.tobi29.scapes.engine.utils.toArray
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.InetSocketAddress
@@ -42,24 +45,19 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
                           private val taskExecutor: TaskExecutor, private val ssl: SSLHandle, client: Boolean) {
     private val taskCounter = AtomicInteger()
     private val verified = AtomicBoolean()
-    private val dataStreamOut = ByteBufferStream({ BufferCreator.bytes(it) },
-            { it + 102400 })
-    private val byteBufferStreamOut = ByteBufferStream(
-            { BufferCreator.bytes(it) }, { it + 102400 })
+    private val dataStreamOut = ByteBufferStream(growth = { it + 102400 })
+    private val byteBufferStreamOut = ByteBufferStream(growth = { it + 102400 })
     private val queue = ConcurrentLinkedQueue<ByteBuffer>()
     private val deflater: CompressionUtil.Filter
     private val inflater: CompressionUtil.Filter
     private val inRate = AtomicInteger()
     private val outRate = AtomicInteger()
     private val engine: SSLEngine
-    private val myNetData = ByteBufferStream({ BufferCreator.bytes(it) },
-            { it + 16384 })
-    private val peerAppData = ByteBufferStream({ BufferCreator.bytes(it) },
-            { it + 16384 })
-    private val peerNetData = ByteBufferStream({ BufferCreator.bytes(it) },
-            { it + 16384 })
+    private val myNetData = ByteBufferStream(growth = { it + 16384 })
+    private val peerAppData = ByteBufferStream(growth = { it + 16384 })
+    private val peerNetData = ByteBufferStream(growth = { it + 16384 })
     private var output: ByteBuffer? = null
-    private var input = BufferCreator.bytes(1024)
+    private var input = ByteBuffer(1024)
     private var spill: ByteBuffer? = null
     private var selector: Selector? = null
     private var verifyException: IOException? = null
@@ -297,7 +295,7 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
             }
         }
         if (bundle == null) {
-            bundle = BufferCreator.bytes(capacity)
+            bundle = ByteBuffer(capacity)
         }
         return bundle
     }
@@ -384,8 +382,8 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
     private fun verifySSL() {
         try {
             val certificates = engine.session.peerCertificates
-            val x509Certificates = stream(
-                    *certificates).filterMap<X509Certificate>().toTypedArray()
+            val x509Certificates = certificates.asSequence()
+                    .filterMap<X509Certificate>().toArray()
             try {
                 ssl.verifySession(address, engine, x509Certificates)
                 verified.set(true)
@@ -437,7 +435,7 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
         private val BUNDLE_HEADER_SIZE = 4
         private val BUNDLE_MAX_SIZE = 1 shl 10 shl 10 shl 6
         private val BUFFER_CACHE = ThreadLocal { ArrayList<WeakReference<ByteBuffer>>() }
-        private val EMPTY_BUFFER = BufferCreator.bytes(0)
+        private val EMPTY_BUFFER = ByteBuffer(0)
     }
 }
 

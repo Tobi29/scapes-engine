@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
-
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.channels.ReadableByteChannel
 
 class BufferedReadChannelStream(private val channel: ReadableByteChannel,
-                                private val buffer: ByteBuffer = BufferCreator.bytes(
+                                private val buffer: ByteBuffer = ByteBuffer(
                                         8192)) : ReadableByteStream {
 
     init {

@@ -15,18 +15,17 @@
  */
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import java8.util.stream.Stream
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL30
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.stream
+import org.tobi29.scapes.engine.utils.readOnly
 
 internal class FBO(engine: ScapesEngine, width: Int, height: Int, colorAttachments: Int,
                    depth: Boolean, hdr: Boolean, alpha: Boolean) : Framebuffer {
-    private val texturesColor: Array<TextureFBOColor>
-    private val textureDepth: TextureFBODepth?
+    override val texturesColor: List<TextureFBOColor>
+    override val textureDepth: TextureFBODepth?
     private var detach: Function0<Unit>? = null
     private var framebufferID = 0
     private var width = 0
@@ -41,11 +40,11 @@ internal class FBO(engine: ScapesEngine, width: Int, height: Int, colorAttachmen
     init {
         this.width = max(width, 1)
         this.height = max(height, 1)
-        texturesColor = Array(colorAttachments) {
+        texturesColor = (0..colorAttachments - 1).map {
             TextureFBOColor(engine, width, height,
                     TextureFilter.LINEAR, TextureFilter.LINEAR,
                     TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr)
-        }
+        }.readOnly()
         if (depth) {
             textureDepth = TextureFBODepth(engine, width, height,
                     TextureFilter.LINEAR, TextureFilter.LINEAR,
@@ -78,21 +77,6 @@ internal class FBO(engine: ScapesEngine, width: Int, height: Int, colorAttachmen
                          height: Int) {
         this.width = width
         this.height = height
-    }
-
-    override fun texturesColor(): Stream<Texture> {
-        return stream(*texturesColor)
-    }
-
-    override fun textureColor(i: Int): Texture {
-        return texturesColor[i]
-    }
-
-    override fun textureDepth(): Texture {
-        if (textureDepth == null) {
-            throw IllegalStateException("FBO has no depth buffer")
-        }
-        return textureDepth
     }
 
     override fun ensureStored(gl: GL): Boolean {

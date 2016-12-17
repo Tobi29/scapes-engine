@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.min
 import java.io.IOException
 import java.nio.channels.FileChannel
@@ -30,7 +30,7 @@ object ChannelUtil {
             channel.position(channel.position() + skip)
             return 0
         } else {
-            val buffer = BufferCreator.bytes(min(4096, skip).toInt())
+            val buffer = ByteBuffer(min(4096, skip).toInt())
             while (skip > 0) {
                 buffer.limit(min(buffer.capacity().toLong(), skip).toInt())
                 val read = channel.read(buffer)

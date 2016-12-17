@@ -16,12 +16,10 @@
 
 package org.tobi29.scapes.engine.swt.util.framework
 
-import java8.util.stream.Collectors
 import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.TabFolder
 import org.eclipse.swt.widgets.TabItem
-import org.tobi29.scapes.engine.utils.stream
 
 internal class DocumentShellTab(display: Display, style: Int,
                                 application: MultiDocumentApplication, hideSingleTab: Boolean) : DocumentShell(
@@ -62,9 +60,7 @@ internal class DocumentShellTab(display: Display, style: Int,
         val tabFolder = tabFolder
         if (tabFolder != null) {
             composite.dispose()
-            val composites = stream(*tabFolder.items).map {
-                tab(it)
-            }.collect(Collectors.toList<DocumentCompositeTab>())
+            val composites = tabFolder.items.map { tab(it) }
             if (composites.isEmpty()) {
                 dispose()
             } else if (composites.size == 1 && hideSingleTab) {

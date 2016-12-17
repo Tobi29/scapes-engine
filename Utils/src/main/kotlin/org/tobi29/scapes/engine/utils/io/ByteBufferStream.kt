@@ -16,20 +16,17 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.min
 import java.io.IOException
 import java.nio.ByteBuffer
 
-class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = {
-    BufferCreator.bytes(it)
-},
+class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                        private val growth: (Int) -> Int = { it + 8192 },
                        private var buffer: ByteBuffer = supplier(
                                growth(0))) : RandomWritableByteStream, RandomReadableByteStream {
 
-    constructor(buffer: ByteBuffer) : this({ BufferCreator.bytes(it) },
-            buffer) {
+    constructor(buffer: ByteBuffer) : this(::ByteBuffer, buffer) {
     }
 
     constructor(supplier: (Int) -> ByteBuffer,

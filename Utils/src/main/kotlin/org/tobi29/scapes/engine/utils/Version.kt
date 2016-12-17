@@ -120,17 +120,18 @@ enum class Comparison constructor(val level: Int) {
     HIGHER_MINOR(3),
     HIGHER_MAJOR(4);
 
-    fun atLeast(other: Comparison): Boolean {
+    infix fun atLeast(other: Comparison): Boolean {
         return level >= other.level
     }
 
-    fun atMost(other: Comparison): Boolean {
+    infix fun atMost(other: Comparison): Boolean {
         return level <= other.level
     }
 
-    fun `in`(lower: Comparison,
-             upper: Comparison): Boolean {
-        return level >= lower.level && level <= upper.level
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun inside(lower: Comparison,
+                  upper: Comparison): Boolean {
+        return atLeast(lower) && atMost(upper)
     }
 }
 

@@ -18,19 +18,18 @@ package org.tobi29.scapes.engine.utils.tests
 
 import org.junit.Assert
 import org.junit.Test
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
 import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
 import org.tobi29.scapes.engine.utils.io.ByteBufferChannel
 import org.tobi29.scapes.engine.utils.tests.util.RandomInput
-
 import java.io.IOException
 
 class BufferedStreamTest {
     @Test
     @Throws(IOException::class)
     fun testWriteRead() {
-        val channel = ByteBufferChannel(BufferCreator.bytes(1 shl 16))
+        val channel = ByteBufferChannel(ByteBuffer(1 shl 16))
         val arrays = RandomInput.createRandomArrays(16, 8)
         for (size in 0..15) {
             channel.buffer().clear()

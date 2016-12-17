@@ -61,32 +61,27 @@ class AABB(var minX: Double, var minY: Double, var minZ: Double, var maxX: Doubl
         return base
     }
 
-    fun moveOutX(aabbs: Iterator<AABB>,
+    fun moveOutX(aabbs: Sequence<AABB>,
                  base: Double): Double {
-        var base = base
-        while (aabbs.hasNext()) {
-            base = moveOutX(aabbs.next(), base)
-        }
-        return base
+        var output = base
+        aabbs.forEach { output = moveOutX(it, output) }
+        return output
     }
 
-    fun moveOutY(aabbs: Iterator<AABB>,
+    fun moveOutY(aabbs: Sequence<AABB>,
                  base: Double): Double {
-        var base = base
-        while (aabbs.hasNext()) {
-            base = moveOutY(aabbs.next(), base)
-        }
-        return base
+        var output = base
+        aabbs.forEach { output = moveOutY(it, output) }
+        return output
     }
 
-    fun moveOutZ(aabbs: Iterator<AABB>,
+    fun moveOutZ(aabbs: Sequence<AABB>,
                  base: Double): Double {
-        var base = base
-        while (aabbs.hasNext()) {
-            base = moveOutZ(aabbs.next(), base)
-        }
-        return base
+        var output = base
+        aabbs.forEach { output = moveOutZ(it, output) }
+        return output
     }
+
 
     fun copy(aabb: AABB): AABB {
         minX = aabb.minX
@@ -224,25 +219,25 @@ class AABB(var minX: Double, var minY: Double, var minZ: Double, var maxX: Doubl
                 !(maxZ < z || minZ > z)
     }
 
-    @JvmOverloads fun moveOutX(check: AABB,
-                               base: Double,
-                               error: Double = 0.00001): Double {
+    fun moveOutX(check: AABB,
+                 base: Double,
+                 error: Double = 0.00001): Double {
         return offset(minX, check.minX, maxX, check.maxX, minY, check.minY,
                 maxY, check.maxY, minZ, check.minZ, maxZ, check.maxZ, base,
                 error)
     }
 
-    @JvmOverloads fun moveOutY(check: AABB,
-                               base: Double,
-                               error: Double = 0.00001): Double {
+    fun moveOutY(check: AABB,
+                 base: Double,
+                 error: Double = 0.00001): Double {
         return offset(minY, check.minY, maxY, check.maxY, minX, check.minX,
                 maxX, check.maxX, minZ, check.minZ, maxZ, check.maxZ, base,
                 error)
     }
 
-    @JvmOverloads fun moveOutZ(check: AABB,
-                               base: Double,
-                               error: Double = 0.00001): Double {
+    fun moveOutZ(check: AABB,
+                 base: Double,
+                 error: Double = 0.00001): Double {
         return offset(minZ, check.minZ, maxZ, check.maxZ, minX, check.minX,
                 maxX, check.maxX, minY, check.minY, maxY, check.maxY, base,
                 error)

@@ -27,8 +27,7 @@ import org.eclipse.swt.events.VerifyEvent
 import org.eclipse.swt.events.VerifyListener
 import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Display
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
+import org.tobi29.scapes.engine.utils.toArray
 import java.io.StringReader
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -73,11 +72,11 @@ class HTMLLineStyler(display: Display) : DisposeListener, LineStyleListener, Ver
     override fun lineGetStyle(event: LineStyleEvent) {
         val start = event.lineOffset
         val end = event.lineOffset + event.lineText.length
-        event.styles = styles.stream().filter { style ->
+        event.styles = styles.asSequence().filter { style ->
             val styleStart = style.start
             val styleEnd = styleStart + style.length
             !(end <= styleStart || start >= styleEnd)
-        }.toTypedArray()
+        }.toArray()
     }
 
     override fun verifyText(e: VerifyEvent) {
@@ -141,7 +140,8 @@ class HTMLLineStyler(display: Display) : DisposeListener, LineStyleListener, Ver
         for (i in 0..count - 1) {
             if ("style" == reader.getAttributeName(i).localPart) {
                 val attribute = reader.getAttributeValue(i).split(
-                        ";".toRegex()).dropLastWhile(String::isEmpty).toTypedArray()
+                        ";".toRegex()).dropLastWhile(
+                        String::isEmpty).toTypedArray()
                 for (property in attribute) {
                     val split = property.split(":".toRegex(), 2).toTypedArray()
                     if (split.size == 2) {

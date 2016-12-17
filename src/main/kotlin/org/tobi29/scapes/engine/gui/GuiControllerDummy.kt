@@ -15,10 +15,8 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import java8.util.stream.Stream
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerBasic
-import org.tobi29.scapes.engine.utils.stream
 
 class GuiControllerDummy(engine: ScapesEngine) : GuiController(engine) {
 
@@ -34,12 +32,12 @@ class GuiControllerDummy(engine: ScapesEngine) : GuiController(engine) {
         return false
     }
 
-    override fun cursors(): Stream<GuiCursor> {
-        return stream()
+    override fun cursors(): Sequence<GuiCursor> {
+        return emptySequence()
     }
 
-    override fun clicks(): Stream<Pair<GuiCursor, ControllerBasic.PressEvent>> {
-        return stream()
+    override fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>> {
+        return emptySequence()
     }
 
     override fun captureCursor(): Boolean {

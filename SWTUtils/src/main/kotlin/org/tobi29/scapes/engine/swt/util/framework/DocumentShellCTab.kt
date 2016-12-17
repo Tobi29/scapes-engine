@@ -16,14 +16,12 @@
 
 package org.tobi29.scapes.engine.swt.util.framework
 
-import java8.util.stream.Collectors
 import org.eclipse.swt.SWT
 import org.eclipse.swt.custom.CTabFolder
 import org.eclipse.swt.custom.CTabFolder2Adapter
 import org.eclipse.swt.custom.CTabFolderEvent
 import org.eclipse.swt.custom.CTabItem
 import org.eclipse.swt.widgets.Display
-import org.tobi29.scapes.engine.utils.stream
 
 
 internal class DocumentShellCTab(display: Display, style: Int,
@@ -63,8 +61,7 @@ internal class DocumentShellCTab(display: Display, style: Int,
         val tabFolder = tabFolder
         if (tabFolder != null) {
             composite.dispose()
-            val composites = stream(*tabFolder.items).map { tab(it) }.collect(
-                    Collectors.toList<DocumentCompositeCTab>())
+            val composites = tabFolder.items.map { tab(it) }
             if (composites.isEmpty()) {
                 dispose()
             } else if (composites.size == 1 && hideSingleTab) {

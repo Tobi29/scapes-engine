@@ -19,13 +19,17 @@ package org.tobi29.scapes.engine.utils
 import org.tobi29.scapes.engine.utils.io.Algorithm
 import org.tobi29.scapes.engine.utils.io.tag.MultiTag
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.structure
 import java.util.*
 
 /**
  * Class representing a checksum hash
  */
 class Checksum : MultiTag.Writeable {
-    private val algorithm: Algorithm
+    /**
+     * Algorithm of this checksum, might be [Algorithm.UNKNOWN]
+     */
+    val algorithm: Algorithm
     private val array: ByteArray
 
     /**
@@ -50,14 +54,6 @@ class Checksum : MultiTag.Writeable {
         }
         this.algorithm = algorithm
         array = tagStructure.getByteArray("Array") ?: ByteArray(algorithm.bytes)
-    }
-
-    /**
-     * Return algorithm used to create this checksum
-     * @return Algorithm of this checksum, might be [Algorithm.UNKNOWN]
-     */
-    fun algorithm(): Algorithm {
-        return algorithm
     }
 
     /**
@@ -88,9 +84,14 @@ class Checksum : MultiTag.Writeable {
     }
 
     override fun write(): TagStructure {
-        val tagStructure = TagStructure()
-        tagStructure.setString("Algorithm", algorithm.toString())
-        tagStructure.setByteArray("Array", *array)
-        return tagStructure
+        return structure {
+            setString("Algorithm", algorithm.toString())
+            setByteArray("Array", *array())
+        }
     }
+}
+
+fun TagStructure.setChecksum(key: String,
+                             checksum: Checksum) {
+    setStructure(key, checksum.write())
 }

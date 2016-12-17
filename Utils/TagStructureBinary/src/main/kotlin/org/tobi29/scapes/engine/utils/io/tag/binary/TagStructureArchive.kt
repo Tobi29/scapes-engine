@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.binary
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
@@ -38,7 +38,7 @@ class TagStructureArchive {
         byteStream.buffer().clear()
         TagStructureBinary.write(byteStream, tagStructure, compression)
         byteStream.buffer().flip()
-        val buffer = BufferCreator.bytes(byteStream.buffer().remaining())
+        val buffer = ByteBuffer(byteStream.buffer().remaining())
         buffer.put(byteStream.buffer())
         buffer.flip()
         tagStructures.put(key, buffer)
@@ -97,7 +97,7 @@ class TagStructureArchive {
     @Synchronized fun read(stream: ReadableByteStream) {
         val entries = readHeader(stream)
         for (entry in entries) {
-            val array = BufferCreator.bytes(entry.length)
+            val array = ByteBuffer(entry.length)
             stream[array]
             array.flip()
             tagStructures.put(entry.name, array)

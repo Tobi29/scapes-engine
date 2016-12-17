@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.BufferCreator
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.io.IOException
 import java.io.InputStream
 
 class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStream() {
-    private val single = BufferCreator.bytes(1)
+    private val single = ByteBuffer(1)
 
     @Throws(IOException::class)
     override fun read(): Int {

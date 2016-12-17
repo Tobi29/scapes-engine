@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import ar.com.hjg.pngj.*
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
@@ -28,13 +29,13 @@ import java.nio.ByteBuffer
 
 @Throws(IOException::class)
 fun decodePNG(stream: ReadableByteStream,
-              supplier: (Int) -> ByteBuffer): Image {
+              supplier: (Int) -> ByteBuffer = ::ByteBuffer): Image {
     return decodePNG(ByteStreamInputStream(stream), supplier)
 }
 
 @Throws(IOException::class)
 fun decodePNG(streamIn: InputStream,
-              supplier: (Int) -> ByteBuffer): Image {
+              supplier: (Int) -> ByteBuffer = ::ByteBuffer): Image {
     try {
         val reader = PngReaderByte(streamIn)
         val width = reader.imgInfo.cols

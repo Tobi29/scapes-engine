@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.gui
 
-import java8.util.stream.Stream
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerKey
@@ -33,9 +32,9 @@ abstract class GuiController(protected val engine: ScapesEngine) {
     abstract fun processTextField(data: TextFieldData,
                                   multiline: Boolean): Boolean
 
-    abstract fun cursors(): Stream<GuiCursor>
+    abstract fun cursors(): Sequence<GuiCursor>
 
-    abstract fun clicks(): Stream<Pair<GuiCursor, ControllerBasic.PressEvent>>
+    abstract fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>>
 
     abstract fun captureCursor(): Boolean
 

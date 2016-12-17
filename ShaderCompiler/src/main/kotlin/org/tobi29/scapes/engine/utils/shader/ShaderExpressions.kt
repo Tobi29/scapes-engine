@@ -20,8 +20,7 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
+import org.tobi29.scapes.engine.utils.toArray
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
@@ -109,11 +108,9 @@ class FunctionExportedSignature(val name: String,
             signature.parameters))
 
     companion object {
-        private fun convertParameters(parameters: Array<out Parameter>) = stream(
-                *parameters).map {
-            TypeExported(
-                    it.type.type, it.type.array != null)
-        }.toTypedArray()
+        private fun convertParameters(parameters: Array<out Parameter>) = parameters.asSequence().map {
+            TypeExported(it.type.type, it.type.array != null)
+        }.toArray()
     }
 }
 

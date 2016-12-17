@@ -21,7 +21,6 @@ import org.junit.Test
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
-import java.io.IOException
 import java.util.*
 
 class TagStructureBinaryTest {
@@ -86,29 +85,33 @@ class TagStructureBinaryTest {
         }
     }
 
-    @Test
-    @Throws(IOException::class)
-    fun testUncompressedBinaryFile() {
-        val tagStructure = createTagStructure()
+    private fun checkWriteAndRead(structure: TagStructure,
+                                  compression: Byte = -1) {
         val channel = ByteBufferStream()
-        TagStructureBinary.write(channel, tagStructure, (-1).toByte())
+        TagStructureBinary.write(channel, structure, compression)
         channel.buffer().flip()
         val read = TagStructure()
         TagStructureBinary.read(ByteBufferStream(channel.buffer()), read)
         Assert.assertEquals("Read structure doesn't match written one",
-                tagStructure, read)
+                structure, read)
     }
 
     @Test
-    @Throws(IOException::class)
+    fun testUncompressedBinaryFile() {
+        checkWriteAndRead(createTagStructure(), -1)
+    }
+
+    @Test
     fun testCompressedBinaryFile() {
-        val tagStructure = createTagStructure()
-        val channel = ByteBufferStream()
-        TagStructureBinary.write(channel, tagStructure, 1.toByte())
-        channel.buffer().flip()
-        val read = TagStructure()
-        TagStructureBinary.read(ByteBufferStream(channel.buffer()), read)
-        Assert.assertEquals("Read structure doesn't match written one",
-                tagStructure, read)
+        checkWriteAndRead(createTagStructure(), 1)
+    }
+
+    @Test
+    fun testOverflowDictionary() {
+        checkWriteAndRead(structure {
+            repeat(512) {
+                setInt("Entry#$it", it)
+            }
+        }, 1)
     }
 }

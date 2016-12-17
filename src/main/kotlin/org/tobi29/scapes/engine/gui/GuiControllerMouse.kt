@@ -15,13 +15,11 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import java8.util.stream.Stream
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.stream
 
 class GuiControllerMouse constructor(engine: ScapesEngine, controller: ControllerDefault,
                                      private val scrollSensitivity: Double = 1.0) : GuiControllerDefault(
@@ -78,11 +76,11 @@ class GuiControllerMouse constructor(engine: ScapesEngine, controller: Controlle
         }
     }
 
-    override fun cursors(): Stream<GuiCursor> {
-        return stream(cursor)
+    override fun cursors(): Sequence<GuiCursor> {
+        return sequenceOf(cursor)
     }
 
-    override fun clicks(): Stream<Pair<GuiCursor, ControllerBasic.PressEvent>> {
+    override fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>> {
         return controller.pressEvents().map { event -> Pair(cursor, event) }
     }
 

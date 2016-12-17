@@ -122,16 +122,14 @@ abstract class GameState(val engine: ScapesEngine, protected var scene: Scene) {
                           depthFBO: Framebuffer,
                           i: Int) {
         gl.setAttribute4f(GL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f)
-        val texturesColor = fbo.texturesColor().iterator()
-        val textureColor = texturesColor.next()
-        var j = 2
-        while (texturesColor.hasNext()) {
-            gl.activeTexture(j)
-            texturesColor.next().bind(gl)
-            j++
+        val texturesColor = fbo.texturesColor
+        val textureColor = texturesColor[0]
+        for (j in 1..texturesColor.lastIndex) {
+            gl.activeTexture(j + 1)
+            texturesColor[j].bind(gl)
         }
         gl.activeTexture(1)
-        depthFBO.textureDepth().bind(gl)
+        depthFBO.textureDepth?.bind(gl)
         gl.activeTexture(0)
         textureColor.bind(gl)
         var shader: Shader? = scene.postProcessing(gl, i)
