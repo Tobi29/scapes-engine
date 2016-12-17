@@ -28,8 +28,8 @@ interface GlyphRenderer {
 
     fun pageCode(character: Char): Int
 
-    class GlyphPage(val width: FloatArray,
+    class GlyphPage(val width: IntArray,
                     val size: Int,
                     val tiles: Int,
-                    val tileSize: Float)
+                    val tileSize: Double)
 }

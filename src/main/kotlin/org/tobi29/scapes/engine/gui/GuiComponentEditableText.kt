@@ -77,8 +77,8 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData, text: String,
                 textFilter(text), size.floatY(), size.floatX())
         val batch = GuiRenderBatch(renderer.pixelSize)
         val cursor = clamp(data.cursor, 0, text.length)
-        font.render(FontRenderer.to(batch, 0.0f - size.floatY() * 0.1f,
-                0.0f - size.floatY() * 0.1f, 1.0f, 1.0f, 1.0f, 1.0f),
+        font.render(FontRenderer.to(batch, -size.floatY() * 0.1f,
+                -size.floatY() * 0.2f, 1.0f, 1.0f, 1.0f, 1.0f),
                 text.substring(0, cursor) + '|', size.floatY(),
                 size.floatY() * 1.2f, size.floatY(), Float.MAX_VALUE,
                 cursor,

@@ -120,34 +120,36 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
         if (text == null || start == -1) {
             return EMPTY_TEXT_INFO
         }
-        val size = output.size(height)
+        val size = output.size(height.toDouble())
         if (size <= 0) {
             return EMPTY_TEXT_INFO
         }
         val pages = Maps.computeIfAbsent(pageCache, size) {
             GlyphPages(font.createGlyphRenderer(size))
         }
-        var textWidth = 0.0f
+        val ratio = width / size
+        var textWidth = 0.0
         var length = 0
-        var xx = 0.0f
-        var yy = 0.0f
+        var xx = 0.0
+        var yy = 0.0
         for (i in 0..text.length - 1) {
             val letter = text[i]
             if (letter == '\n') {
-                xx = 0f
+                xx = 0.0
                 yy += line
                 length++
             } else {
                 val id = pages.renderer.pageID(letter)
                 val pageLetter = pages.renderer.pageCode(letter)
                 val page = pages[id]
-                val letterWidth = page.width[pageLetter]
-                val actualWidth = letterWidth * width
+                val actualWidth = page.width[pageLetter] * ratio
                 if (xx + actualWidth > limit) {
                     break
                 }
                 if (i >= start && i < end) {
-                    output.rectangle(xx, yy, width, height, letterWidth, page,
+                    output.rectangle(floor(xx).toDouble(), floor(yy).toDouble(),
+                            width.toDouble(),
+                            height.toDouble(), actualWidth.toDouble(), page,
                             pageLetter)
                 }
                 xx += actualWidth
@@ -155,27 +157,29 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
                 length++
             }
         }
-        return TextInfo(text,
-                Vector2d(textWidth.toDouble(), (yy + height).toDouble()),
-                length)
+        return TextInfo(text, Vector2d(textWidth, yy + height), length)
     }
 
     interface MeshOutput {
-        fun size(height: Float): Int
+        fun size(height: Double): Int
 
-        fun rectangle(xx: Float,
-                      yy: Float,
-                      width: Float,
-                      height: Float,
-                      letterWidth: Float,
+        fun rectangle(xx: Double,
+                      yy: Double,
+                      width: Double,
+                      height: Double,
+                      letterWidth: Double,
                       page: GlyphPage,
                       pageLetter: Int)
     }
 
-    class TextInfo(val text: String, val size: Vector2d, val length: Int)
+    class TextInfo(val text: String,
+                   val size: Vector2d,
+                   val length: Int)
 
-    class GlyphPage(val texture: Texture, val width: FloatArray, val tiles: Int,
-                    val tileSize: Float)
+    class GlyphPage(val texture: Texture,
+                    val width: IntArray,
+                    val tiles: Int,
+                    val tileSize: Double)
 
     private inner class GlyphPages(val renderer: GlyphRenderer) {
         private var pages = emptyArray<GlyphPage?>()
@@ -241,57 +245,70 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
             val pixelSize = renderer.pixelSize.floatY()
             if (cropped) {
                 return object : MeshOutput {
-                    override fun size(height: Float): Int {
+                    override fun size(height: Double): Int {
                         return round(height / pixelSize)
                     }
 
-                    override fun rectangle(xx: Float,
-                                           yy: Float,
-                                           width: Float,
-                                           height: Float,
-                                           letterWidth: Float,
+                    override fun rectangle(xx: Double,
+                                           yy: Double,
+                                           width: Double,
+                                           height: Double,
+                                           letterWidth: Double,
                                            page: GlyphPage,
                                            pageLetter: Int) {
                         val xxx = x + xx
                         val yyy = y + yy
-                        val w = width * letterWidth
-                        val tx = (pageLetter % page.tiles + 0.125f) * page.tileSize
-                        val ty = (floor(
-                                pageLetter.toFloat() / page.tiles) + 0.125f) * page.tileSize
-                        val tw = page.tileSize * letterWidth * 0.75f
-                        val th = page.tileSize * 0.75f
+                        val w = letterWidth
+                        val h = height
+                        val tx = (pageLetter % page.tiles + 0.25) * page.tileSize
+                        val ty = (pageLetter / page.tiles + 0.25) * page.tileSize
+                        val tw = (letterWidth / width) * page.tileSize * 0.5
+                        val th = page.tileSize * 0.5
                         renderer.texture(page.texture, 0)
-                        GuiUtils.rectangle(renderer, xxx, yyy, xxx + w,
-                                yyy + height, tx, ty, tx + tw, ty + th, r, g, b,
-                                a)
+                        GuiUtils.rectangle(renderer,
+                                xxx.toFloat(),
+                                yyy.toFloat(),
+                                (xxx + w).toFloat(),
+                                (yyy + h).toFloat(),
+                                tx.toFloat(),
+                                ty.toFloat(),
+                                (tx + tw).toFloat(),
+                                (ty + th).toFloat(),
+                                r, g, b, a)
                     }
                 }
             } else {
                 return object : MeshOutput {
-                    override fun size(height: Float): Int {
+                    override fun size(height: Double): Int {
                         return round(height / pixelSize)
                     }
 
-                    override fun rectangle(xx: Float,
-                                           yy: Float,
-                                           width: Float,
-                                           height: Float,
-                                           letterWidth: Float,
+                    override fun rectangle(xx: Double,
+                                           yy: Double,
+                                           width: Double,
+                                           height: Double,
+                                           letterWidth: Double,
                                            page: GlyphPage,
                                            pageLetter: Int) {
-                        val xxx = x + xx - width * 0.25f
-                        val yyy = y + yy - height * 0.25f
-                        val w = width * 1.5f
-                        val h = height * 1.5f
+                        val xxx = x + xx - width * 0.5
+                        val yyy = y + yy - height * 0.5
+                        val w = width * 2.0
+                        val h = height * 2.0
                         val tx = pageLetter % page.tiles * page.tileSize
-                        val ty = floor(
-                                pageLetter.toFloat() / page.tiles) * page.tileSize
+                        val ty = pageLetter / page.tiles * page.tileSize
                         val tw = page.tileSize
                         val th = page.tileSize
                         renderer.texture(page.texture, 0)
-                        GuiUtils.rectangle(renderer, xxx, yyy, xxx + w, yyy + h,
-                                tx,
-                                ty, tx + tw, ty + th, r, g, b, a)
+                        GuiUtils.rectangle(renderer,
+                                xxx.toFloat(),
+                                yyy.toFloat(),
+                                (xxx + w).toFloat(),
+                                (yyy + h).toFloat(),
+                                tx.toFloat(),
+                                ty.toFloat(),
+                                (tx + tw).toFloat(),
+                                (ty + th).toFloat(),
+                                r, g, b, a)
                     }
                 }
             }
@@ -299,15 +316,15 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
 
         fun to(): MeshOutput {
             return object : MeshOutput {
-                override fun size(height: Float): Int {
+                override fun size(height: Double): Int {
                     return 16
                 }
 
-                override fun rectangle(xx: Float,
-                                       yy: Float,
-                                       width: Float,
-                                       height: Float,
-                                       letterWidth: Float,
+                override fun rectangle(xx: Double,
+                                       yy: Double,
+                                       width: Double,
+                                       height: Double,
+                                       letterWidth: Double,
                                        page: GlyphPage,
                                        pageLetter: Int) {
                 }
