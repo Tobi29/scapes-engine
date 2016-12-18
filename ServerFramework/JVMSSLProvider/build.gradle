@@ -16,7 +16,7 @@
 
 apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
-version = "0.0.0_1"
+version = "0.0.0"
 
 dependencies {
     compile project(":ScapesEngine:ServerFramework")
