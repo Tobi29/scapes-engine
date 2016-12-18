@@ -705,7 +705,7 @@ class Launch4jTask extends DefaultTask {
         ant.taskdef(name: "launch4j",
                 classpath: launch4j.absolutePath,
                 classname: "net.sf.launch4j.ant.Launch4jTask")
-        def winVersion = version.replaceAll("_", ".")
+        def winVersion = "$version.0"
         Map<String, String> configMap = [headerType: exeType,
                 outfile: getOutput().absolutePath,
                 dontWrapJar: "true",
