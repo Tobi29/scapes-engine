@@ -85,7 +85,7 @@ open class ControlPanelProtocol private constructor(
      * @param events Optional parent [EventDispatcher]
      * @param client Client ID
      * @param authentication Authentication mechanism
-     * @throws IOException When an I/O error occured whilst registering to the worker's selector
+     * @throws IOException When an I/O error occurred whilst registering to the worker's selector
      */
     @Throws(IOException::class)
     constructor(worker: ConnectionWorker,
@@ -219,10 +219,23 @@ open class ControlPanelProtocol private constructor(
 
     /**
      * Runnable that gets executed in case the connection breaks
-     * @param runnable Callback that gets called with the exception that occured
+     * @param runnable Callback that gets called with the exception that occurred
      */
     fun disconnectHook(runnable: (Exception) -> Unit) {
         disconnectHooks.add(runnable)
+    }
+
+    /**
+     * Runnable that gets executed when receiving the specified command for the
+     * first time after calling this
+     * @param command The name of the command to listen to
+     * @param runnable Callback that gets called with the payload
+     */
+    fun commandHook(command: String,
+                    runnable: (TagStructure) -> Unit) {
+        val list = ConcurrentMaps.computeIfAbsent(commands,
+                command) { Pair(ArrayList(), ConcurrentLinkedQueue()) }
+        list.second.add(runnable)
     }
 
     override fun tick(worker: ConnectionWorker) {
