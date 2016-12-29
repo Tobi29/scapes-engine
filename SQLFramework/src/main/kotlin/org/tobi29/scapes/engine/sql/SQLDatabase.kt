@@ -25,20 +25,40 @@ interface SQLDatabase {
 
     fun compileQuery(table: String,
                      columns: Array<out String>,
-                     vararg matches: String): SQLQuery
+                     vararg matches: String): SQLQuery {
+        return compileQuery(table, columns,
+                *Array(matches.size) { SQLMatch(matches[it]) })
+    }
+
+    fun compileQuery(table: String,
+                     columns: Array<out String>,
+                     vararg matches: SQLMatch): SQLQuery
 
     fun compileInsert(table: String,
                       vararg columns: String): SQLInsert
 
     fun compileUpdate(table: String,
                       matches: Array<out String>,
+                      vararg columns: String): SQLUpdate {
+        return compileUpdate(table,
+                Array(matches.size) { SQLMatch(matches[it]) }, *columns)
+    }
+
+    fun compileUpdate(table: String,
+                      matches: Array<out SQLMatch>,
                       vararg columns: String): SQLUpdate
 
     fun compileReplace(table: String,
                        vararg columns: String): SQLReplace
 
     fun compileDelete(table: String,
-                      vararg matches: String): SQLDelete
+                      vararg matches: String): SQLDelete {
+        return compileDelete(table,
+                *Array(matches.size) { SQLMatch(matches[it]) })
+    }
+
+    fun compileDelete(table: String,
+                      vararg matches: SQLMatch): SQLDelete
 }
 
 class SQLColumn(val name: String,
@@ -52,6 +72,9 @@ class SQLForeignKey(val table: String,
                     val column: String,
                     val onUpdate: SQLReferentialAction = SQLReferentialAction.RESTRICT,
                     val onDelete: SQLReferentialAction = onUpdate)
+
+class SQLMatch(val name: String,
+               val operator: SQLMatchOperator = SQLMatchOperator.EQUALS)
 
 interface SQLQuery {
     operator fun invoke(vararg values: Any?): List<Array<Any?>>
@@ -86,4 +109,16 @@ enum class SQLReferentialAction(val sql: String) {
     RESTRICT("RESTRICT"),
     CASCADE("CASCADE"),
     SET_NULL("SET NULL")
+}
+
+enum class SQLMatchOperator(val sql: String) {
+    EQUALS("="),
+    NOT("<>"),
+    GREATER_THAN(">"),
+    GREATER_THAN_EQUAL(">="),
+    LESS_THAN("<"),
+    LESS_THAN_EQUAL("<="),
+    BETWEEN(" BETWEEN "),
+    LIKE(" LIKE "),
+    IN(" IN ")
 }

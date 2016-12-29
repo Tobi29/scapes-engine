@@ -93,7 +93,7 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
 
     override fun compileQuery(table: String,
                               columns: Array<out String>,
-                              matches: Array<out String>): SQLQuery {
+                              matches: Array<out SQLMatch>): SQLQuery {
         val columnSize = columns.size
         val matchesSize = matches.size
         val sql = StringBuilder(columnSize shl 5)
@@ -137,7 +137,7 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     override fun compileInsert(table: String,
-                               vararg columns: String): SQLInsert {
+                               columns: Array<out String>): SQLInsert {
         val columnSize = columns.size
         val prefix = StringBuilder(columnSize shl 3)
         prefix.append("INSERT OR IGNORE INTO '").append(table).append("' (")
@@ -198,7 +198,7 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     override fun compileUpdate(table: String,
-                               matches: Array<out String>,
+                               matches: Array<out SQLMatch>,
                                columns: Array<out String>): SQLUpdate {
         val columnsSize = columns.size
         val sql = StringBuilder(columns.size shl 5)
@@ -239,7 +239,7 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     override fun compileReplace(table: String,
-                                vararg columns: String): SQLReplace {
+                                columns: Array<out String>): SQLReplace {
         val columnsSize = columns.size
         val prefix = StringBuilder(columnsSize shl 4)
         prefix.append("INSERT OR REPLACE INTO ").append(table).append(" (")
@@ -300,7 +300,7 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     override fun compileDelete(table: String,
-                               matches: Array<out String>): SQLDelete {
+                               matches: Array<out SQLMatch>): SQLDelete {
         val sql = StringBuilder(64)
         sql.append("DELETE FROM ").append(table).append(" WHERE ")
         sqlWhere(matches, sql)

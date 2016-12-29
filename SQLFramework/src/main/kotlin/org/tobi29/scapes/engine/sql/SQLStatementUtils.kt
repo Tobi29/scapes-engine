@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.sql
 
-fun sqlWhere(matches: Array<out String>,
+fun sqlWhere(matches: Array<out SQLMatch>,
              sql: StringBuilder) {
     var first = true
     for (match in matches) {
@@ -25,7 +25,7 @@ fun sqlWhere(matches: Array<out String>,
         } else {
             sql.append(" AND ")
         }
-        sql.append(match).append("=?")
+        sql.append(match.name).append(match.operator.sql).append('?')
     }
 }
 
