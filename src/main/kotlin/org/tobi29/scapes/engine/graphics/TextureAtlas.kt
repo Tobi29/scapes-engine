@@ -20,7 +20,6 @@ import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.graphics.*
-import org.tobi29.scapes.engine.utils.io.filesystem.write
 import org.tobi29.scapes.engine.utils.math.min
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -218,9 +217,6 @@ abstract class TextureAtlas<T : TextureAtlasEntry>(val engine: ScapesEngine, min
         }
         texture = engine.graphics.createTexture(image.toImage(), 4)
         sources.clear()
-        write(engine.home.resolve("$this.png")) {
-            encodePNG(image.toImage(), it, 1, true)
-        }
         return textures.size
     }
 
