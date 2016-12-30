@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
+import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.resource.ResourceLoader
@@ -45,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
 class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Container,
-                   val home: FilePath, cache: FilePath, private val debug: Boolean) : Crashable {
+                   val home: FilePath, cache: FilePath, val debug: Boolean) : Crashable {
     val events = EventDispatcher()
     val taskExecutor = TaskExecutor(this, "Engine")
     val config: ScapesEngineConfig
@@ -63,6 +64,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
     val notifications: GuiNotifications
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
+    val performance: GuiWidgetPerformance
     private val runtime: Runtime
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
@@ -152,6 +154,9 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
         debugValues.visible = false
         profiler = debugGui.add(32.0, 32.0, 360.0, 256.0, ::GuiWidgetProfiler)
         profiler.visible = false
+        performance = debugGui.add(32.0, 32.0, 360.0, 256.0,
+                ::GuiWidgetPerformance)
+        performance.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
         usedMemoryDebug = debugValues["Runtime-Memory-Used"]
         heapMemoryDebug = debugValues["Runtime-Memory-Heap"]
@@ -333,6 +338,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
         profilerSection("State") {
             state.step(delta)
         }
+        performance.updateTimestamp(delta)
         usedMemoryDebug.setValue(
                 (runtime.totalMemory() - runtime.freeMemory()) / 1048576)
         heapMemoryDebug.setValue(runtime.totalMemory() / 1048576)

@@ -16,40 +16,26 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.Pipeline
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-abstract class GameState(val engine: ScapesEngine, protected var scene: Scene) {
-    protected val model: Model
-    protected val newScene = AtomicReference<Scene>()
-    private val shaderTextured: Shader
-    private val shaderGui: Shader
-    protected var fbos: Array<Framebuffer>? = null
-
-    init {
-        newScene.set(scene)
-        model = createVTI(engine,
-                floatArrayOf(0.0f, 540.0f, 0.0f, 960.0f, 540.0f, 0.0f, 0.0f,
-                        0.0f, 0.0f, 960.0f, 0.0f, 0.0f),
-                floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
-                intArrayOf(0, 1, 2, 3, 2, 1), RenderType.TRIANGLES)
-        val graphics = engine.graphics
-        shaderTextured = graphics.createShader("Engine:shader/Textured")
-        shaderGui = graphics.createShader("Engine:shader/Gui")
-    }
-
-    open val tps: Double = 60.0
+abstract class GameState(val engine: ScapesEngine) {
+    open val tps = 60.0
+    private val newPipeline = AtomicReference<((GL) -> () -> Unit)?>()
+    private val dirtyPipeline = AtomicBoolean()
+    private var pipeline: Pipeline? = null
+    private var guiRenderer: (Double) -> Unit = {}
 
     fun engine(): ScapesEngine {
         return engine
     }
 
     fun disposeState(gl: GL) {
-        scene.dispose(gl)
     }
 
     fun disposeState() {
-        scene.dispose()
         dispose()
     }
 
@@ -60,87 +46,46 @@ abstract class GameState(val engine: ScapesEngine, protected var scene: Scene) {
 
     abstract val isMouseGrabbed: Boolean
 
-    fun scene(): Scene {
-        return scene
-    }
-
-    fun switchScene(scene: Scene) {
-        newScene.set(scene)
-    }
-
     abstract fun step(delta: Double)
 
-    fun render(gl: GL,
-               delta: Double,
-               updateSize: Boolean) {
-        val newScene = this.newScene.getAndSet(null)
-        if (newScene != null) {
-            scene.dispose(gl)
-            scene.dispose()
-            fbos = null
-            newScene.init(gl)
-            scene = newScene
+    fun renderState(gl: GL,
+                    delta: Double,
+                    updateSize: Boolean) {
+        newPipeline.getAndSet(null)?.let { newPipeline ->
+            pipeline = Pipeline(gl, newPipeline)
+            guiRenderer = renderGui(gl)
         }
-        val sceneWidth = scene.width(gl.sceneWidth())
-        val sceneHeight = scene.height(gl.sceneHeight())
-        if (fbos == null || updateSize) {
-            fbos = Array(scene.renderPasses()) {
-                val fbo = engine.graphics.createFramebuffer(sceneWidth,
-                        sceneHeight, scene.colorAttachments(), true, true,
-                        false)
-                scene.initFBO(it, fbo)
-                fbo
+        val pipeline = pipeline
+        if (pipeline == null) {
+            gl.clear(1.0f, 0.0f, 0.0f, 1.0f)
+        } else {
+            if (dirtyPipeline.getAndSet(false) || updateSize) {
+                this.pipeline = pipeline.rebuild(gl)
+                guiRenderer = renderGui(gl)
             }
+            renderStep(delta)
+            pipeline.render()
+            guiRenderer(delta)
         }
-        val fbos = fbos ?: throw IllegalStateException("FBOs not initialized")
-        gl.checkError("Initializing-Scene-Rendering")
-        fbos[0].activate(gl)
-        gl.viewport(0, 0, sceneWidth, sceneHeight)
-        gl.clearDepth()
-        scene.renderScene(gl)
-        fbos[0].deactivate(gl)
-        gl.checkError("Scene-Rendering")
-        gl.setProjectionOrthogonal(0.0f, 0.0f, 960.0f, 540.0f)
-        for (i in 0..fbos.size - 1 - 1) {
-            fbos[i + 1].activate(gl)
-            //gl.viewport(0, 0, gl.sceneWidth(), gl.sceneHeight());
-            renderPostProcess(gl, fbos[i], fbos[i], i)
-            fbos[i + 1].deactivate(gl)
-        }
-        gl.viewport(0, 0, gl.contentWidth(), gl.contentHeight())
-        renderPostProcess(gl, fbos[fbos.size - 1], fbos[0],
-                fbos.size - 1)
-        gl.checkError("Post-Processing")
-        engine.guiStack.render(gl, shaderGui, delta)
-        gl.checkError("Gui-Rendering")
-        scene.postRender(gl, delta)
-        gl.checkError("Post-Render")
     }
 
-    fun renderPostProcess(gl: GL,
-                          fbo: Framebuffer,
-                          depthFBO: Framebuffer,
-                          i: Int) {
-        gl.setAttribute4f(GL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f)
-        val texturesColor = fbo.texturesColor
-        val textureColor = texturesColor[0]
-        for (j in 1..texturesColor.lastIndex) {
-            gl.activeTexture(j + 1)
-            texturesColor[j].bind(gl)
-        }
-        gl.activeTexture(1)
-        depthFBO.textureDepth?.bind(gl)
-        gl.activeTexture(0)
-        textureColor.bind(gl)
-        var shader: Shader? = scene.postProcessing(gl, i)
-        if (shader == null) {
-            shader = shaderTextured
-        }
-        model.render(gl, shader)
+    open fun renderStep(delta: Double) {
     }
 
-    fun fbo(i: Int): Framebuffer {
-        val fbos = fbos ?: throw IllegalStateException("FBOs not initialized")
-        return fbos[i]
+    fun dirtyPipeline() {
+        dirtyPipeline.set(true)
+    }
+
+    fun switchPipeline(block: (GL) -> () -> Unit) {
+        newPipeline.set(block)
+    }
+
+    private fun renderGui(gl: GL): (Double) -> Unit {
+        val shader = gl.engine.graphics.createShader("Engine:shader/Gui")
+        return { delta ->
+            gl.clearDepth()
+            gl.engine.guiStack.render(gl, shader, delta)
+            gl.checkError("Gui-Rendering")
+        }
     }
 }

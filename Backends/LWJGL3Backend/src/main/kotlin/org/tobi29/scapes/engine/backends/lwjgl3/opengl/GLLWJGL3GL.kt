@@ -180,11 +180,15 @@ class GLLWJGL3GL(engine: ScapesEngine, container: Container) : GL(engine,
         }
     }
 
-    override fun viewport(x: Int,
-                          y: Int,
-                          width: Int,
-                          height: Int) {
+    override fun setViewport(x: Int,
+                             y: Int,
+                             width: Int,
+                             height: Int) {
         GL11.glViewport(x, y, width, height)
+    }
+
+    override fun getViewport(output: IntArray) {
+        GL11.glGetIntegerv(GL11.GL_VIEWPORT, output)
     }
 
     override fun screenShot(x: Int,

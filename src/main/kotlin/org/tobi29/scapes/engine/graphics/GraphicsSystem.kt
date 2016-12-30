@@ -120,14 +120,16 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
                     this.renderState = state
                 }
             }
+            gl.setViewport(0, 0, gl.contentWidth(), gl.contentHeight())
             profilerSection("State") {
-                state.render(gl, delta, fboSizeDirty)
+                state.renderState(gl, delta, fboSizeDirty)
             }
             fpsDebug.setValue(1.0 / delta)
             textureDebug.setValue(gl.textureTracker().count())
             vaoDebug.setValue(gl.vaoTracker().count())
             fboDebug.setValue(gl.fboTracker().count())
             shaderDebug.setValue(gl.shaderTracker().count())
+            engine.performance.renderTimestamp(delta)
             if (triggerScreenshot) {
                 profilerSection("Screenshot") {
                     triggerScreenshot = false
@@ -261,7 +263,7 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
     }
 
     fun createShader(asset: String,
-                     consumer: (ShaderCompileInformation) -> Unit): Shader {
+                     consumer: ShaderCompileInformation.() -> Unit): Shader {
         val information = ShaderCompileInformation()
         consumer(information)
         return createShader(asset, information)
@@ -281,7 +283,6 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
             engine.crash(e)
             throw AssertionError()
         }
-
     }
 
     fun createShader(shader: CompiledShader,

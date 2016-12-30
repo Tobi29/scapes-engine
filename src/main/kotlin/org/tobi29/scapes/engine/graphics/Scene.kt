@@ -19,41 +19,5 @@ package org.tobi29.scapes.engine.graphics
 import org.tobi29.scapes.engine.ScapesEngine
 
 abstract class Scene(val engine: ScapesEngine) {
-    abstract fun init(gl: GL)
-
-    abstract fun renderScene(gl: GL)
-
-    open fun postRender(gl: GL,
-                        delta: Double) {
-    }
-
-    open fun postProcessing(gl: GL,
-                            pass: Int): Shader? {
-        return null
-    }
-
-    open fun width(width: Int): Int {
-        return width
-    }
-
-    open fun height(height: Int): Int {
-        return height
-    }
-
-    open fun renderPasses(): Int {
-        return 1
-    }
-
-    open fun colorAttachments(): Int {
-        return 1
-    }
-
-    fun initFBO(i: Int,
-                fbo: Framebuffer) {
-    }
-
-    open fun dispose(gl: GL) {
-    }
-
-    abstract fun dispose()
+    abstract fun appendToPipeline(gl: GL): () -> Unit
 }

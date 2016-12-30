@@ -19,14 +19,10 @@ package org.tobi29.scapes.engine.graphics
 import java.util.*
 
 class ShaderCompileInformation {
-    private val preCompileListeners = ArrayList<(GL, ShaderPreprocessor) -> Unit>()
+    private val preCompileListeners = ArrayList<(ShaderPreprocessor, GL) -> Unit>()
     private val postCompileListeners = ArrayList<(GL, Shader) -> Unit>()
 
-    fun supplyPreCompile(listener: (ShaderPreprocessor) -> Unit) {
-        supplyPreCompile({ gl, shader -> listener(shader) })
-    }
-
-    fun supplyPreCompile(listener: (GL, ShaderPreprocessor) -> Unit) {
+    fun supplyPreCompile(listener: ShaderPreprocessor.(GL) -> Unit) {
         preCompileListeners.add(listener)
     }
 
@@ -46,7 +42,7 @@ class ShaderCompileInformation {
         processor.supplyProperty("CONTAINER_HEIGHT", gl.containerHeight())
         processor.supplyProperty("CONTENT_WIDTH", gl.contentWidth())
         processor.supplyProperty("CONTENT_HEIGHT", gl.contentHeight())
-        preCompileListeners.forEach { it(gl, processor) }
+        preCompileListeners.forEach { it(processor, gl) }
         return processor
     }
 

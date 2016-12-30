@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.graphics.Scene
 import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.gui.GuiComponentImage
 import org.tobi29.scapes.engine.gui.GuiState
@@ -26,20 +25,22 @@ import org.tobi29.scapes.engine.utils.math.PI
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.sin
 
-class GameStateStartup(private val nextState: GameState, private val image: String, private val scale: Double,
-                       scene: Scene, engine: ScapesEngine) : GameState(engine,
-        scene) {
+class GameStateStartup(private val nextState: GameState,
+                       private val image: String,
+                       private val scale: Double,
+                       engine: ScapesEngine) : GameState(engine) {
     private var icon: GuiComponentImage? = null
     private var time = 0.0
     private var warmUp = 0
 
-    init {
-        this.scene = scene
-    }
-
     override fun init() {
         engine.guiStack.addUnfocused("20-Image",
                 GuiImage(engine.graphics.textures()[image], engine.guiStyle))
+        switchPipeline { gl ->
+            {
+                gl.clear(0.0f, 0.0f, 0.0f, 1.0f)
+            }
+        }
     }
 
     override val isMouseGrabbed: Boolean

@@ -142,14 +142,18 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
             engine.graphics.triggerScreenshot()
         }
         if (isPressed(ControllerKey.KEY_F3)) {
-            if (isDown(ControllerKey.KEY_LEFT_CONTROL)) {
+            val shift = isDown(ControllerKey.KEY_LEFT_SHIFT)
+            val control = isDown(ControllerKey.KEY_LEFT_CONTROL)
+            if (shift && control) {
                 engine.writeCrash(Throwable("Debug report"))
-            } else if (engine.debug() && isDown(ControllerKey.KEY_LEFT_SHIFT)) {
-                val profiler = engine.profiler
-                profiler.visible = !profiler.visible
-            } else if (engine.debug()) {
-                val debugValues = engine.debugValues
-                debugValues.visible = !debugValues.visible
+            } else if (engine.debug) {
+                if (shift) {
+                    engine.profiler.visible = !engine.profiler.visible
+                } else if (control) {
+                    engine.performance.visible = !engine.performance.visible
+                } else {
+                    engine.debugValues.visible = !engine.debugValues.visible
+                }
             }
         }
     }

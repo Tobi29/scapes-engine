@@ -133,7 +133,7 @@ abstract class GL protected constructor(val engine: ScapesEngine, val container:
     }
 
     fun sceneSpace(): Double {
-        return max(sceneWidth(), sceneHeight()) / 1920.0
+        return max(contentWidth, contentHeight) * resolutionMultiplier / 1920.0
     }
 
     fun contentWidth(): Int {
@@ -142,6 +142,10 @@ abstract class GL protected constructor(val engine: ScapesEngine, val container:
 
     fun contentHeight(): Int {
         return contentHeight
+    }
+
+    fun contentSpace(): Double {
+        return max(contentWidth, contentHeight) / 1920.0
     }
 
     fun containerWidth(): Int {
@@ -260,10 +264,12 @@ abstract class GL protected constructor(val engine: ScapesEngine, val container:
 
     abstract fun setBlending(mode: BlendingMode)
 
-    abstract fun viewport(x: Int,
-                          y: Int,
-                          width: Int,
-                          height: Int)
+    abstract fun setViewport(x: Int,
+                             y: Int,
+                             width: Int,
+                             height: Int)
+
+    abstract fun getViewport(output: IntArray)
 
     abstract fun screenShot(x: Int,
                             y: Int,
@@ -271,6 +277,19 @@ abstract class GL protected constructor(val engine: ScapesEngine, val container:
                             height: Int): Image
 
     abstract fun screenShotFBO(fbo: Framebuffer): Image
+
+    fun into(framebuffer: Framebuffer,
+             block: () -> Unit): () -> Unit {
+        val viewport = IntArray(4)
+        return {
+            getViewport(viewport)
+            framebuffer.activate(this)
+            setViewport(0, 0, framebuffer.width(), framebuffer.height())
+            block()
+            framebuffer.deactivate(this)
+            setViewport(viewport[0], viewport[1], viewport[2], viewport[3])
+        }
+    }
 
     abstract fun setAttribute1f(id: Int,
                                 v0: Float)
