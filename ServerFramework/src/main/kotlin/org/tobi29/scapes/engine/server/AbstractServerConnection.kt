@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.server
 import mu.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import java.io.IOException
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
@@ -37,48 +38,61 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
     fun start(address: InetSocketAddress): InetSocketAddress {
         logger.info { "Starting socket thread..." }
         val channel = ServerSocketChannel.open()
-        channel.configureBlocking(false)
-        channel.socket().bind(address)
-        joiners.add(taskExecutor.runThread({ joiner ->
-            try {
-                channel.register(joiner.selector, SelectionKey.OP_ACCEPT)
+        try {
+            channel.configureBlocking(false)
+            channel.socket().bind(address)
+            joiners.add(taskExecutor.runThread({ joiner ->
                 try {
-                    while (!joiner.marked) {
-                        val client = channel.accept()
-                        if (client == null) {
-                            joiner.sleep()
-                        } else {
-                            client.configureBlocking(false)
-                            val result = accept(client)
-                            if (result != null) {
-                                // Logged as trace to avoid spam
-                                logger.trace { "Denied connection: $result" }
-                                client.close()
-                                continue
-                            }
-                            if (!addConnection { worker ->
-                                val bundleChannel = PacketBundleChannel(
-                                        RemoteAddress(address), client,
-                                        taskExecutor,
-                                        ssl, false)
-                                UnknownConnection(worker, bundleChannel, this,
-                                        connectionHeader)
-                            }) {
-                                logger.warn { "Failed to assign connection to worker" }
-                                client.close()
+                    channel.use {
+                        channel.register(joiner.selector,
+                                SelectionKey.OP_ACCEPT)
+                        while (!joiner.marked) {
+                            val client = channel.accept()
+                            if (client == null) {
+                                joiner.sleep()
+                            } else {
+                                client.configureBlocking(false)
+                                val result = accept(client)
+                                if (result != null) {
+                                    // Logged as trace to avoid spam
+                                    logger.trace { "Denied connection: $result" }
+                                    client.close()
+                                    continue
+                                }
+                                if (!addConnection { worker ->
+                                    val bundleChannel = PacketBundleChannel(
+                                            RemoteAddress(address), client,
+                                            taskExecutor,
+                                            ssl, false)
+                                    UnknownConnection(worker, bundleChannel,
+                                            this,
+                                            connectionHeader)
+                                }) {
+                                    logger.warn { "Failed to assign connection to worker" }
+                                    client.close()
+                                }
                             }
                         }
                     }
                 } finally {
-                    channel.close()
+                    joiner.selector.close()
                 }
-            } finally {
-                joiner.selector.close()
+                logger.info { "Stopped socket thread..." }
+            }, "Socket", TaskExecutor.Priority.MEDIUM,
+                    Joiner.SelectorJoinable(Selector.open())))
+            return channel.socket().localSocketAddress as InetSocketAddress
+        } catch (e: Throwable) {
+            // Avoid leaking channel if setting up outside of the socket thread
+            // fails
+            try {
+                channel.close()
+            } catch (e: IOException) {
+                logger.error(e) { "Failed closing socket after error" }
             }
-            logger.info { "Stopped socket thread..." }
-        }, "Socket", TaskExecutor.Priority.MEDIUM,
-                Joiner.SelectorJoinable(Selector.open())))
-        return channel.socket().localSocketAddress as InetSocketAddress
+
+            // Rethrow e, we do not actually handle anything here
+            throw e
+        }
     }
 
     protected abstract fun accept(channel: SocketChannel): String?
