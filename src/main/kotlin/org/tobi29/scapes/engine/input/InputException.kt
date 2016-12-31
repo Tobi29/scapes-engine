@@ -17,9 +17,7 @@
 package org.tobi29.scapes.engine.input
 
 class InputException : RuntimeException {
-    constructor(message: String) : super(message) {
-    }
+    constructor(message: String) : super(message)
 
-    constructor(message: String, cause: Throwable) : super(message, cause) {
-    }
+    constructor(message: String, cause: Throwable) : super(message, cause)
 }

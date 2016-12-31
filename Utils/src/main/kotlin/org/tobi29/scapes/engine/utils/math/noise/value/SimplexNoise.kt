@@ -22,8 +22,7 @@ import java.util.*
 class SimplexNoise(random: Random) : ValueNoise {
     private val perm = IntArray(512)
 
-    constructor(seed: Long) : this(Random(seed)) {
-    }
+    constructor(seed: Long) : this(Random(seed))
 
     init {
         var v: Int

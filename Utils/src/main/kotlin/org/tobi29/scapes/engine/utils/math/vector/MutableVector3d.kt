@@ -24,20 +24,16 @@ import org.tobi29.scapes.engine.utils.math.floor
 class MutableVector3d(x: Double = 0.0, y: Double = 0.0, var z: Double = 0.0) : MutableVector2d(
         x, y) {
 
-    constructor(vector: Vector3d) : this(vector.x, vector.y, vector.z) {
-    }
+    constructor(vector: Vector3d) : this(vector.x, vector.y, vector.z)
 
     constructor(vector: Vector3i) : this(vector.x.toDouble() + 0.5,
-            vector.y.toDouble() + 0.5, vector.z.toDouble() + 0.5) {
-    }
+            vector.y.toDouble() + 0.5, vector.z.toDouble() + 0.5)
 
     constructor(vector: MutableVector3d) : this(vector.doubleX(),
-            vector.doubleY(), vector.doubleZ()) {
-    }
+            vector.doubleY(), vector.doubleZ())
 
     constructor(vector: MutableVector3i) : this(vector.x.toDouble() + 0.5,
-            vector.y.toDouble() + 0.5, vector.z.toDouble() + 0.5) {
-    }
+            vector.y.toDouble() + 0.5, vector.z.toDouble() + 0.5)
 
     override fun plus(a: Int): MutableVector3d {
         x += a.toDouble()

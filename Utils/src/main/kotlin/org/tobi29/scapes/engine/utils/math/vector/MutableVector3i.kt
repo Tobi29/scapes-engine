@@ -24,18 +24,14 @@ class MutableVector3i(x: Int = 0, y: Int = 0, var z: Int = 0) : MutableVector2i(
         x, y) {
 
     constructor(vector: Vector3d) : this(vector.intX(), vector.intY(),
-            vector.intZ()) {
-    }
+            vector.intZ())
 
-    constructor(vector: Vector3i) : this(vector.x, vector.y, vector.z) {
-    }
+    constructor(vector: Vector3i) : this(vector.x, vector.y, vector.z)
 
     constructor(vector: MutableVector3d) : this(vector.intX(), vector.intY(),
-            vector.intZ()) {
-    }
+            vector.intZ())
 
-    constructor(vector: MutableVector3i) : this(vector.x, vector.y, vector.z) {
-    }
+    constructor(vector: MutableVector3i) : this(vector.x, vector.y, vector.z)
 
     override fun plus(a: Int): MutableVector3i {
         x += a

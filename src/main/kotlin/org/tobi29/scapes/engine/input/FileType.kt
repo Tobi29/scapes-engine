@@ -19,8 +19,7 @@ package org.tobi29.scapes.engine.input
 import java.util.*
 
 class FileType(val extensions: Array<Pair<String, String>>) {
-    constructor(vararg extensions: String) : this(parseExtensions(extensions)) {
-    }
+    constructor(vararg extensions: String) : this(parseExtensions(extensions))
 
     companion object {
         val IMAGE = FileType("*.png", "PNG File")

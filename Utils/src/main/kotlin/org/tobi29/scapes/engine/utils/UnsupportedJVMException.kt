@@ -21,9 +21,7 @@ package org.tobi29.scapes.engine.utils
  * missing feature support or a lack of extensions for it
  */
 class UnsupportedJVMException : RuntimeException {
-    constructor(message: String) : super(message) {
-    }
+    constructor(message: String) : super(message)
 
-    constructor(cause: Throwable) : super(cause) {
-    }
+    constructor(cause: Throwable) : super(cause)
 }

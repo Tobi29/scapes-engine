@@ -22,8 +22,7 @@ import org.tobi29.scapes.engine.utils.io.tag.setInt
 
 open class Vector2i(val x: Int, val y: Int) : MultiTag.Writeable {
 
-    constructor(vector: Vector2d) : this(vector.intX(), vector.intY()) {
-    }
+    constructor(vector: Vector2d) : this(vector.intX(), vector.intY())
 
     override fun hashCode(): Int {
         var result = x

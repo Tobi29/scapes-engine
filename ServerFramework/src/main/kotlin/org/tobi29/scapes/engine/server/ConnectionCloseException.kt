@@ -19,9 +19,7 @@ package org.tobi29.scapes.engine.server
 import java.io.IOException
 
 open class ConnectionCloseException : IOException {
-    constructor(message: String) : super(message) {
-    }
+    constructor(message: String) : super(message)
 
-    constructor(e: Exception) : super(e) {
-    }
+    constructor(e: Exception) : super(e)
 }

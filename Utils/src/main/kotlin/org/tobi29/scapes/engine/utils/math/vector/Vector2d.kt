@@ -23,8 +23,7 @@ import org.tobi29.scapes.engine.utils.math.floor
 
 open class Vector2d(val x: Double, val y: Double) : MultiTag.Writeable {
 
-    constructor(vector: Vector2i) : this(vector.x + 0.5, vector.y + 0.5) {
-    }
+    constructor(vector: Vector2i) : this(vector.x + 0.5, vector.y + 0.5)
 
     fun intX(): Int {
         return floor(x)

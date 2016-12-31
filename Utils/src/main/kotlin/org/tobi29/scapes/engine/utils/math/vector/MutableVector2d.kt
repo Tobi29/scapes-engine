@@ -24,20 +24,16 @@ import org.tobi29.scapes.engine.utils.math.floor
 
 open class MutableVector2d(var x: Double = 0.0, var y: Double = 0.0) : MultiTag.ReadAndWrite {
 
-    constructor(vector: Vector2d) : this(vector.x, vector.y) {
-    }
+    constructor(vector: Vector2d) : this(vector.x, vector.y)
 
     constructor(vector: Vector2i) : this(vector.x.toDouble() + 0.5,
-            vector.y.toDouble() + 0.5) {
-    }
+            vector.y.toDouble() + 0.5)
 
     constructor(vector: MutableVector2d) : this(vector.doubleX(),
-            vector.doubleY()) {
-    }
+            vector.doubleY())
 
     constructor(vector: MutableVector2i) : this(vector.x.toDouble() + 0.5,
-            vector.y.toDouble() + 0.5) {
-    }
+            vector.y.toDouble() + 0.5)
 
     open operator fun plus(a: Int): MutableVector2d {
         x += a.toDouble()

@@ -25,14 +25,11 @@ import org.tobi29.scapes.engine.swt.util.Shortcut
 import org.tobi29.scapes.engine.swt.util.framework.Application
 
 open class SmartMenu : Menu {
-    protected constructor(shell: Shell, style: Int) : super(shell, style) {
-    }
+    protected constructor(shell: Shell, style: Int) : super(shell, style)
 
-    protected constructor(menu: Menu) : super(menu) {
-    }
+    protected constructor(menu: Menu) : super(menu)
 
-    constructor(control: Control) : super(control) {
-    }
+    constructor(control: Control) : super(control)
 
     fun menu(name: String): SmartMenu {
         for (item in items) {

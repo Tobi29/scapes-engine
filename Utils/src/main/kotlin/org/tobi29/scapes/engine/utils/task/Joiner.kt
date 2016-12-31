@@ -30,11 +30,9 @@ class Joiner {
         joinables = arrayOf(thread)
     }
 
-    constructor(joiners: Queue<Joiner>) : this(collectQueue(joiners)) {
-    }
+    constructor(joiners: Queue<Joiner>) : this(collectQueue(joiners))
 
-    constructor(joiners: Collection<Joiner>) : this(*joiners.toTypedArray()) {
-    }
+    constructor(joiners: Collection<Joiner>) : this(*joiners.toTypedArray())
 
     constructor(vararg joiners: Joiner) {
         val list = ArrayList<Joinable>(joiners.size)

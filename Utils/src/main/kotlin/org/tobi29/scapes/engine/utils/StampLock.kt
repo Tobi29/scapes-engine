@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicLong
  * Writes are always synchronized, whilst reads can happen in parallel as long
  * as there is no write going on at the same time
  */
-class StampLock() {
+class StampLock {
     /**
      * Counter used internally by the lock and for synchronization
      * Made public for the inline modifier

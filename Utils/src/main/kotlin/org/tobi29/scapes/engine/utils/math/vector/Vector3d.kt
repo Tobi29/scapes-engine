@@ -23,8 +23,7 @@ import org.tobi29.scapes.engine.utils.math.floor
 class Vector3d(x: Double, y: Double, val z: Double) : Vector2d(x, y) {
 
     constructor(vector: Vector3i) : this(vector.x + 0.5, vector.y + 0.5,
-            vector.z + 0.5) {
-    }
+            vector.z + 0.5)
 
     override fun hasNaN(): Boolean {
         return x.isNaN() || y.isNaN() || z.isNaN()

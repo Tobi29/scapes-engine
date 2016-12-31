@@ -26,12 +26,10 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                        private var buffer: ByteBuffer = supplier(
                                growth(0))) : RandomWritableByteStream, RandomReadableByteStream {
 
-    constructor(buffer: ByteBuffer) : this(::ByteBuffer, buffer) {
-    }
+    constructor(buffer: ByteBuffer) : this(::ByteBuffer, buffer)
 
     constructor(supplier: (Int) -> ByteBuffer,
-                buffer: ByteBuffer) : this(supplier, { it + 8192 }, buffer) {
-    }
+                buffer: ByteBuffer) : this(supplier, { it + 8192 }, buffer)
 
     fun buffer(): ByteBuffer {
         return buffer

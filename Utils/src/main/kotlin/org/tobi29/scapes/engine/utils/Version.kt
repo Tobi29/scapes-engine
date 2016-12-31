@@ -136,10 +136,8 @@ enum class Comparison constructor(val level: Int) {
 }
 
 class VersionException : Exception {
-    constructor(message: kotlin.String) : super(message) {
-    }
+    constructor(message: kotlin.String) : super(message)
 
     constructor(message: kotlin.String, cause: Throwable) : super(message,
-            cause) {
-    }
+            cause)
 }

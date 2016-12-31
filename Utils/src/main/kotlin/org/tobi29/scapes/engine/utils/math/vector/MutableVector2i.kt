@@ -23,17 +23,13 @@ import org.tobi29.scapes.engine.utils.io.tag.setInt
 
 open class MutableVector2i(var x: Int = 0, var y: Int = 0) : MultiTag.ReadAndWrite {
 
-    constructor(vector: Vector2d) : this(vector.intX(), vector.intY()) {
-    }
+    constructor(vector: Vector2d) : this(vector.intX(), vector.intY())
 
-    constructor(vector: Vector2i) : this(vector.x, vector.y) {
-    }
+    constructor(vector: Vector2i) : this(vector.x, vector.y)
 
-    constructor(vector: MutableVector2d) : this(vector.intX(), vector.intY()) {
-    }
+    constructor(vector: MutableVector2d) : this(vector.intX(), vector.intY())
 
-    constructor(vector: MutableVector2i) : this(vector.x, vector.y) {
-    }
+    constructor(vector: MutableVector2i) : this(vector.x, vector.y)
 
     open operator fun plus(a: Int): MutableVector2i {
         x += a

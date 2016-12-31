@@ -22,8 +22,7 @@ class AABB(var minX: Double, var minY: Double, var minZ: Double, var maxX: Doubl
            var maxZ: Double) {
 
     constructor(aabb: AABB) : this(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX,
-            aabb.maxY, aabb.maxZ) {
-    }
+            aabb.maxY, aabb.maxZ)
 
     private fun offset(min1: Double,
                        min2: Double,

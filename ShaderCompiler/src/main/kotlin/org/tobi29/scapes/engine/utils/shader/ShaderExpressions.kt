@@ -25,7 +25,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
 
-open class Expression() {
+open class Expression {
     var location: Vector2i? = null
 
     fun attach(context: ParserRuleContext) {
@@ -186,8 +186,7 @@ class Type(val type: Types,
     constructor(type: Types,
                 constant: Boolean,
                 precision: Precision) : this(
-            type, null, constant, precision) {
-    }
+            type, null, constant, precision)
 }
 
 class TypeExported(val type: Types,

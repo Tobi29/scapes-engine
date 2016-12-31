@@ -32,8 +32,7 @@ open class TagStructureBinary {
         val aliasKeyMap: MutableMap<Byte, String> = ConcurrentHashMap()
         private var currentId: Byte = 0
 
-        constructor() {
-        }
+        constructor()
 
         constructor(stream: ReadableByteStream) {
             var length = stream.get().toInt()

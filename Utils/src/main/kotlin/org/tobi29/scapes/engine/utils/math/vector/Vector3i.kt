@@ -22,8 +22,7 @@ import org.tobi29.scapes.engine.utils.io.tag.setInt
 class Vector3i(x: Int, y: Int, val z: Int) : Vector2i(x, y) {
 
     constructor(vector: Vector3d) : this(vector.intX(), vector.intY(),
-            vector.intZ()) {
-    }
+            vector.intZ())
 
     override fun hashCode(): Int {
         var result = x

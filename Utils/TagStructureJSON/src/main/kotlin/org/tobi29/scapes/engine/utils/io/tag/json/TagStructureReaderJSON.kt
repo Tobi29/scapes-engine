@@ -30,8 +30,7 @@ class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCl
     private val reader: JsonParser
 
     constructor(stream: ReadableByteStream) : this(
-            ByteStreamInputStream(stream)) {
-    }
+            ByteStreamInputStream(stream))
 
     init {
         reader = Json.createParser(streamIn)

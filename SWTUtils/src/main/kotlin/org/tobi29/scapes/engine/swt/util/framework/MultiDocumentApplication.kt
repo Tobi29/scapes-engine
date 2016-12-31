@@ -29,13 +29,11 @@ abstract class MultiDocumentApplication : Application {
     internal val composites = HashMap<Document, DocumentComposite>()
 
     protected constructor(name: String, id: String,
-                          version: Version) : super(name, id, version) {
-    }
+                          version: Version) : super(name, id, version)
 
     protected constructor(name: String, id: String, version: Version,
                           taskExecutor: TaskExecutor) : super(name, id, version,
-            taskExecutor) {
-    }
+            taskExecutor)
 
     abstract fun populate(composite: Composite,
                           menu: SmartMenuBar)
