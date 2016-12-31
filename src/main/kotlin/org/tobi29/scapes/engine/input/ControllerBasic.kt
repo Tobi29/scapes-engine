@@ -32,7 +32,8 @@ interface ControllerBasic : Controller {
         RELEASE
     }
 
-    class PressEvent(val key: ControllerKey, val state: PressState) {
+    class PressEvent(val key: ControllerKey,
+                     val state: PressState) {
 
         fun key(): ControllerKey {
             return key

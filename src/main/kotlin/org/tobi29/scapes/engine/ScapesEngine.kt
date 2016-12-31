@@ -45,27 +45,30 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
 
-class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Container,
-                   val home: FilePath, cache: FilePath, val debug: Boolean) : Crashable {
+class ScapesEngine(game: (ScapesEngine) -> Game,
+                   backend: (ScapesEngine) -> Container,
+                   val home: FilePath,
+                   cache: FilePath,
+                   val debug: Boolean) : Crashable {
+    private val runtime = Runtime.getRuntime()
+    val files = FileSystemContainer()
     val events = EventDispatcher()
+    val fileCache = FileCache(cache)
     val taskExecutor = TaskExecutor(this, "Engine")
+    val resources = ResourceLoader(taskExecutor)
     val config: ScapesEngineConfig
-    val tagStructure: TagStructure
+    val tagStructure = TagStructure()
     val game: Game
     val container: Container
-    val files: FileSystemContainer
-    val fileCache: FileCache
-    val resources = ResourceLoader(taskExecutor)
     val graphics: GraphicsSystem
     val sounds: SoundSystem
     val guiStyle: GuiStyle
-    val guiStack: GuiStack
-    var guiController: GuiController
+    val guiStack = GuiStack()
+    var guiController: GuiController = GuiControllerDummy(this)
     val notifications: GuiNotifications
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
-    private val runtime: Runtime
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
     private val maxMemoryDebug: GuiWidgetDebugValues.Element
@@ -75,10 +78,11 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
     private var mouseGrabbed = false
     private var state: GameState? = null
 
-    constructor(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Container,
-                home: FilePath, debug: Boolean) : this(game, backend, home,
-            home.resolve("cache"), debug) {
-    }
+    constructor(game: (ScapesEngine) -> Game,
+                backend: (ScapesEngine) -> Container,
+                home: FilePath,
+                debug: Boolean) : this(game, backend, home,
+            home.resolve("cache"), debug)
 
     init {
         if (instance != null) {
@@ -86,22 +90,23 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
                     "You can only have one engine running at a time!")
         }
         instance = this
-        runtime = Runtime.getRuntime()
         this.game = game(this)
         checkSystem()
+
         logger.info { "Starting Scapes-Engine: $this (Game: $game)" }
+
         logger.info { "Initializing asset system" }
-        files = FileSystemContainer()
         files.registerFileSystem("Class",
                 ClasspathPath(javaClass.classLoader, ""))
         files.registerFileSystem("Engine",
                 ClasspathPath(javaClass.classLoader,
                         "assets/scapes/tobi29/engine/"))
+
         logger.info { "Initializing game" }
         this.game.initEarly()
-        tagStructure = TagStructure()
+
+        logger.info { "Reading config" }
         try {
-            logger.info { "Reading config" }
             val configPath = this.home.resolve("ScapesEngine.json")
             if (exists(configPath)) {
                 read(configPath) { stream ->
@@ -111,7 +116,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
         } catch (e: IOException) {
             logger.warn { "Failed to load config file: $e" }
         }
-
         if (tagStructure.has("Engine")) {
             config = ScapesEngineConfig(tagStructure.structure("Engine"))
         } else {
@@ -126,7 +130,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
             config = ScapesEngineConfig(engineTag)
         }
         try {
-            fileCache = FileCache(cache)
             fileCache.check()
             createDirectories(this.home.resolve("screenshots"))
         } catch (e: IOException) {
@@ -136,18 +139,18 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
 
         logger.info { "Creating container" }
         container = backend(this)
+
         logger.info { "Loading default font" }
         val font = FontRenderer(this, container.loadFont(
                 "Engine:font/QuicksandPro-Regular") ?: throw IllegalStateException(
                 "Failed to load default font"))
+
         logger.info { "Setting up GUI" }
-        guiStack = GuiStack()
         guiStyle = GuiBasicStyle(this, font)
         notifications = GuiNotifications(guiStyle)
         guiStack.addUnfocused("90-Notifications", notifications)
         val debugGui = object : Gui(guiStyle) {
-            override val isValid: Boolean
-                get() = true
+            override val isValid = true
         }
         debugValues = debugGui.add(32.0, 32.0, 360.0, 256.0,
                 ::GuiWidgetDebugValues)
@@ -166,7 +169,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
         graphics = GraphicsSystem(this, container.gl())
         logger.info { "Creating sound system" }
         sounds = container.sound()
-        guiController = GuiControllerDummy(this)
         this.game.init()
     }
 
@@ -320,7 +322,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game, backend: (ScapesEngine) -> Cont
             taskExecutor.tick()
         }
         profilerSection("Game") {
-            game.step()
+            game.step(delta)
         }
         profilerSection("Gui") {
             guiStack.step(delta)

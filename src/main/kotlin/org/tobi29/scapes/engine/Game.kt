@@ -30,7 +30,7 @@ abstract class Game(val engine: ScapesEngine) {
 
     abstract fun initLate()
 
-    abstract fun step()
+    abstract fun step(delta: Double)
 
     abstract fun dispose()
 }

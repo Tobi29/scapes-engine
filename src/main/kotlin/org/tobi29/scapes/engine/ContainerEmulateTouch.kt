@@ -19,10 +19,13 @@ package org.tobi29.scapes.engine
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.input.ControllerTouch
+import org.tobi29.scapes.engine.utils.EventDispatcher
 
 class ContainerEmulateTouch(private val container: Container,
                             private val controller: ControllerDefault = container.controller() ?: throw IllegalArgumentException(
                                     "Trying to create mouse to touch emulator without mouse input")) : Container by container, ControllerTouch {
+    override val events = EventDispatcher()
+
     private var tracker: ControllerTouch.Tracker? = null
 
     override fun containerWidth(): Int {

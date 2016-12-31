@@ -16,10 +16,13 @@
 
 package org.tobi29.scapes.engine.input
 
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-class ControllerJoystick(private val name: String, axisCount: Int) : ControllerBasic {
+class ControllerJoystick(private val name: String,
+                         axisCount: Int) : ControllerBasic {
+    override val events = EventDispatcher()
     private val id: String
     private val states: ByteArray
     private val axes: DoubleArray
