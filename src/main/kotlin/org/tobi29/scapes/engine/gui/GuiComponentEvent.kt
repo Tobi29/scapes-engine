@@ -28,26 +28,21 @@ open class GuiComponentEvent(val x: Double = Double.NaN,
                                      Int.MAX_VALUE.toDouble())) {
 
     constructor(x: Double, y: Double, size: Vector2d) : this(x, y,
-            Double.NaN, Double.NaN, size) {
-    }
+            Double.NaN, Double.NaN, size)
 
     constructor(x: Double, y: Double, relativeX: Double,
                 relativeY: Double, size: Vector2d) : this(x, y, relativeX,
-            relativeY, true, size) {
-    }
+            relativeY, true, size)
 
     constructor(parent: GuiComponentEvent, size: Vector2d) : this(parent.x,
             parent.y, parent.relativeX, parent.relativeY,
-            parent.screen, size) {
-    }
+            parent.screen, size)
 
     constructor(parent: GuiComponentEvent, size: Vector2d, scale: Vector2d) : this(
             parent.x * scale.x, parent.y * scale.y, parent.relativeX * scale.x,
-            parent.relativeY * scale.y, parent.screen, size) {
-    }
+            parent.relativeY * scale.y, parent.screen, size)
 
     constructor(parent: GuiComponentEvent, x: Double, y: Double,
                 size: Vector2d) : this(x, y, parent.relativeX, parent.relativeY,
-            parent.screen, size) {
-    }
+            parent.screen, size)
 }

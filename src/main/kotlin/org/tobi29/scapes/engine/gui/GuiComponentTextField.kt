@@ -25,13 +25,11 @@ class GuiComponentTextField(parent: GuiLayoutData, textX: Int, textSize: Int,
 
     constructor(parent: GuiLayoutData, textSize: Int,
                 text: String, hiddenText: Boolean = false) : this(
-            parent, textSize, text, Int.MAX_VALUE, hiddenText) {
-    }
+            parent, textSize, text, Int.MAX_VALUE, hiddenText)
 
     constructor(parent: GuiLayoutData, textSize: Int,
                 text: String, maxLength: Int, hiddenText: Boolean = false, major: Boolean = false) : this(
-            parent, 4, textSize, text, maxLength, hiddenText, major) {
-    }
+            parent, 4, textSize, text, maxLength, hiddenText, major)
 
     init {
         this.text = addSubHori(textX.toDouble(), 0.0, -1.0, textSize.toDouble()

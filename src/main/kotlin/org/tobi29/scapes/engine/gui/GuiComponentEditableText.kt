@@ -36,8 +36,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData, text: String,
 
     constructor(parent: GuiLayoutData, text: String, r: Float = 1.0f,
                 g: Float = 1.0f, b: Float = 1.0f, a: Float = 1.0f) : this(
-            parent, text, Int.MAX_VALUE, r, g, b, a) {
-    }
+            parent, text, Int.MAX_VALUE, r, g, b, a)
 
     init {
         data.text.append(text)

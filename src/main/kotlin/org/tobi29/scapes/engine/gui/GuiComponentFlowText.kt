@@ -38,13 +38,11 @@ class GuiComponentFlowText constructor(parent: GuiLayoutData, private val textWi
         }
 
     constructor(parent: GuiLayoutData, text: String) : this(parent,
-            Int.MAX_VALUE, text) {
-    }
+            Int.MAX_VALUE, text)
 
     constructor(parent: GuiLayoutData, text: String, r: Float,
                 g: Float, b: Float, a: Float) : this(parent, Int.MAX_VALUE,
-            text, r, g, b, a) {
-    }
+            text, r, g, b, a)
 
     init {
         this.text = text

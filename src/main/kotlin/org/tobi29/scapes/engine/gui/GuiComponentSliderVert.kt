@@ -24,8 +24,7 @@ class GuiComponentSliderVert(parent: GuiLayoutData, sliderHeight: Int,
     private var hovered = false
 
     constructor(parent: GuiLayoutData, value: Double) : this(parent, 16,
-            value) {
-    }
+            value)
 
     init {
         this.sliderHeight = sliderHeight.toDouble()

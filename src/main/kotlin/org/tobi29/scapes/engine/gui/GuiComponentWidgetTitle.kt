@@ -22,8 +22,7 @@ class GuiComponentWidgetTitle(parent: GuiLayoutData, textX: Int,
                               textSize: Int, text: String) : GuiComponentSlab(
         parent) {
     constructor(parent: GuiLayoutData, textSize: Int,
-                text: String) : this(parent, 4, textSize, text) {
-    }
+                text: String) : this(parent, 4, textSize, text)
 
     init {
         addSubHori(textX.toDouble(), 0.0, -1.0,

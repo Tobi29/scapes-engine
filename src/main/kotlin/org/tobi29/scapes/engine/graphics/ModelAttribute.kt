@@ -29,8 +29,7 @@ class ModelAttribute {
 
     constructor(id: Int, size: Int, array: IntArray, divisor: Int,
                 vertexType: VertexType) : this(id, size, array, array.size,
-            divisor, vertexType) {
-    }
+            divisor, vertexType)
 
     constructor(id: Int, size: Int, array: IntArray, length: Int,
                 divisor: Int, vertexType: VertexType) {
@@ -46,8 +45,7 @@ class ModelAttribute {
 
     constructor(id: Int, size: Int, array: FloatArray, normalized: Boolean,
                 divisor: Int, vertexType: VertexType) : this(id, size, array,
-            array.size, normalized, divisor, vertexType) {
-    }
+            array.size, normalized, divisor, vertexType)
 
     constructor(id: Int, size: Int, array: FloatArray, length: Int,
                 normalized: Boolean, divisor: Int, vertexType: VertexType) {

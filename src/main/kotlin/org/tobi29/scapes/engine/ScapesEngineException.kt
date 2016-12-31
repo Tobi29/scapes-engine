@@ -22,9 +22,7 @@ package org.tobi29.scapes.engine
  * @author Tobi29
  */
 class ScapesEngineException : RuntimeException {
-    constructor(message: String) : super(message) {
-    }
+    constructor(message: String) : super(message)
 
-    constructor(message: String, cause: Throwable) : super(message, cause) {
-    }
+    constructor(message: String, cause: Throwable) : super(message, cause)
 }
