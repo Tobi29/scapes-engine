@@ -960,3 +960,35 @@ inline fun diff(value1: Double,
 inline fun lb(value: Int): Int {
     return FastMath.lb(value)
 }
+
+/**
+ * Computes the modulus of the given number and [value]
+ * Unlike the normal modulo operator this always returns a positive value
+ * @param value The divisor
+ * @receiver The dividend
+ * @return Returns the modulus of the given number and [value]
+ */
+inline infix fun Int.modP(value: Int): Int {
+    val mod = this % value
+    return if (mod < 0) {
+        mod + value
+    } else {
+        mod
+    }
+}
+
+/**
+ * Computes the modulus of the given number and [value]
+ * Unlike the normal modulo operator this always returns a positive value
+ * @param value The divisor
+ * @receiver The dividend
+ * @return Returns the modulus of the given number and [value]
+ */
+inline infix fun Long.modP(value: Long): Long {
+    val mod = this % value
+    return if (mod < 0L) {
+        mod + value
+    } else {
+        mod
+    }
+}
