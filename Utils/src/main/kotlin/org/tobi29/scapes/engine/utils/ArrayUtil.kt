@@ -207,6 +207,7 @@ fun ByteArray.toHexadecimal(groups: Int): String {
  * @return A byte array containing the data
  * @throws IOException Thrown in case of an invalid string
  */
+@Throws(IOException::class)
 fun String.fromHexadecimal(): ByteArray {
     try {
         val text = replace(" ", "")
