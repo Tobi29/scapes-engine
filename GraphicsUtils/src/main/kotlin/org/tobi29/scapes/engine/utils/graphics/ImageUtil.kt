@@ -18,6 +18,7 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import java.nio.ByteBuffer
 
 /**
@@ -166,6 +167,45 @@ fun copy(srcX: Int,
     srcBuffer.limit(oldSrcLimit)
     srcBuffer.position(oldSrcPosition)
     destBuffer.position(oldDestPosition)
+}
+
+inline fun MutableImage.flipVertical() {
+    flipVertical(width, height, buffer)
+}
+
+fun flipVertical(width: Int,
+                 height: Int,
+                 buffer: ByteBuffer) {
+    val scanline = width shl 2
+    val limit = scanline * height
+    if (limit != buffer.remaining()) {
+        throw IllegalArgumentException("Buffer not correctly sized")
+    }
+
+    val oldLimit = buffer.limit()
+    val oldPosition = buffer.position()
+
+    val copy = buffer.asReadOnlyBuffer()
+    val swap = ByteBuffer(scanline)
+    val offset = oldPosition
+    val offsetInv = offset + limit - scanline
+    for (yy in 0..(height shr 1) - 1) {
+        buffer.limit((yy + 1) * scanline)
+        buffer.position(offset + yy * scanline)
+        swap.put(buffer)
+        buffer.position(offset + yy * scanline)
+        swap.rewind()
+        copy.limit(offsetInv - (yy - 1) * scanline)
+        copy.position(offsetInv - yy * scanline)
+        buffer.put(copy)
+        buffer.limit(limit)
+        buffer.position(offsetInv - yy * scanline)
+        buffer.put(swap)
+        swap.rewind()
+    }
+
+    buffer.limit(oldLimit)
+    buffer.position(oldPosition)
 }
 
 /**
