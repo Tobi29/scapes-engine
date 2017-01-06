@@ -953,6 +953,15 @@ inline fun diff(value1: Double,
 }
 
 /**
+ * Computes the next higher power of two for the given value
+ * @param value The value
+ * @return Returns the smallest higher power of two greater or equal to value
+ */
+inline fun nextPowerOfTwo(value: Int): Int {
+    return FastMath.nextPowerOfTwo(value)
+}
+
+/**
  * Computes the logarithm with base 2 of [value]
  * @param value The value
  * @return Returns the logarithm with base 2 of [value]
