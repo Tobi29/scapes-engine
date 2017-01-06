@@ -21,13 +21,15 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.graphics.flipVertical
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.pow
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
-class GLLWJGL3GL(engine: ScapesEngine, container: Container) : GL(engine,
+class GLLWJGL3GL(engine: ScapesEngine,
+                 container: Container) : GL(engine,
         container) {
 
     override fun createTexture(width: Int,
@@ -195,10 +197,11 @@ class GLLWJGL3GL(engine: ScapesEngine, container: Container) : GL(engine,
                             y: Int,
                             width: Int,
                             height: Int): Image {
-        GL11.glReadBuffer(GL11.GL_FRONT)
         val buffer = container.allocate(width * height shl 2)
+        GL11.glReadBuffer(GL11.GL_FRONT)
         GL11.glReadPixels(x, y, width, height, GL11.GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE, buffer)
+        flipVertical(width, height, buffer)
         return Image(width, height, buffer)
     }
 
@@ -206,6 +209,7 @@ class GLLWJGL3GL(engine: ScapesEngine, container: Container) : GL(engine,
         val buffer = container.allocate(fbo.width() * fbo.height() shl 2)
         GL11.glGetTexImage(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA,
                 GL11.GL_UNSIGNED_BYTE, buffer)
+        flipVertical(fbo.width(), fbo.height(), buffer)
         return Image(fbo.width(), fbo.height(), buffer)
     }
 

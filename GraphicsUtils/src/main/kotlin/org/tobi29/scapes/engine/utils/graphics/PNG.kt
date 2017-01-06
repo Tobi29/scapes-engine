@@ -91,7 +91,7 @@ fun encodePNG(image: Image,
         val line = ImageLineByte(info)
         val scanline = line.scanline
         if (alpha) {
-            for (y in height - 1 downTo 0) {
+            for (y in 0..height - 1) {
                 buffer.position(y * width shl 2)
                 var x = 0
                 while (x < scanline.size) {
@@ -103,7 +103,7 @@ fun encodePNG(image: Image,
                 writer.writeRow(line)
             }
         } else {
-            for (y in height - 1 downTo 0) {
+            for (y in 0..height - 1) {
                 buffer.position(y * width shl 2)
                 var x = 0
                 while (x < scanline.size) {
