@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap
 class TagStructureArchive {
     private val tagStructures = ConcurrentHashMap<String, ByteBuffer>()
 
+    @Throws(IOException::class)
     @Synchronized fun setTagStructure(key: String,
                                       tagStructure: TagStructure,
                                       compression: Byte = 1) {
@@ -44,6 +45,7 @@ class TagStructureArchive {
         tagStructures.put(key, buffer)
     }
 
+    @Throws(IOException::class)
     @Synchronized fun getTagStructure(key: String): TagStructure? {
         val buffer = tagStructures[key] ?: return null
         val tagStructure = TagStructure()
@@ -71,6 +73,7 @@ class TagStructureArchive {
     val keys: Collection<String>
         get() = tagStructures.keys
 
+    @Throws(IOException::class)
     @Synchronized fun write(stream: WritableByteStream) {
         stream.put(HEADER_MAGIC)
         stream.put(HEADER_VERSION.toInt())
@@ -94,6 +97,7 @@ class TagStructureArchive {
         }
     }
 
+    @Throws(IOException::class)
     @Synchronized fun read(stream: ReadableByteStream) {
         val entries = readHeader(stream)
         for (entry in entries) {
@@ -104,7 +108,8 @@ class TagStructureArchive {
         }
     }
 
-    class Entry(val name: String, val length: Int)
+    class Entry(val name: String,
+                val length: Int)
 
     companion object {
         private val HEADER_VERSION: Byte = 1
@@ -115,8 +120,9 @@ class TagStructureArchive {
             ByteBufferStream(growth = { it + 1048576 })
         }
 
-        @Throws(IOException::class) fun extract(name: String,
-                                                stream: ReadableByteStream): TagStructure? {
+        @Throws(IOException::class)
+        fun extract(name: String,
+                    stream: ReadableByteStream): TagStructure? {
             val entries = readHeader(stream)
             var offset = 0
             for (entry in entries) {
@@ -129,6 +135,7 @@ class TagStructureArchive {
             return null
         }
 
+        @Throws(IOException::class)
         fun readHeader(stream: ReadableByteStream): List<Entry> {
             val magic = ByteArray(HEADER_MAGIC.size)
             stream[magic]
