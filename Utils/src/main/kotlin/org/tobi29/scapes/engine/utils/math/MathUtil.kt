@@ -953,6 +953,30 @@ inline fun diff(value1: Double,
 }
 
 /**
+ * Moves values between `0.0` and `1.0` into range `margin` and
+ * `1.0 - margin` by scaling and offsetting them
+ * @param value The value to transform
+ * @param margin The margin on the sides
+ * @return Returns the value after the linear transformation
+ */
+inline fun margin(value: Float,
+                  margin: Float): Float {
+    return margin + value * (1.0f - margin * 2.0f)
+}
+
+/**
+ * Moves values between `0.0` and `1.0` into range `margin` and
+ * `1.0 - margin` by scaling and offsetting them
+ * @param value The value to transform
+ * @param margin The margin on the sides
+ * @return Returns the value after the linear transformation
+ */
+inline fun margin(value: Double,
+                  margin: Double): Double {
+    return margin + value * (1.0 - margin * 2.0)
+}
+
+/**
  * Computes the next higher power of two for the given value
  * @param value The value
  * @return Returns the smallest higher power of two greater or equal to value
