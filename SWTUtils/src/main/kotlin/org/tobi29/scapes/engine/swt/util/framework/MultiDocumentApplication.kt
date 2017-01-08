@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.swt.util.framework
 
 import org.eclipse.swt.SWT
-import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
@@ -35,7 +34,7 @@ abstract class MultiDocumentApplication : Application {
                           taskExecutor: TaskExecutor) : super(name, id, version,
             taskExecutor)
 
-    abstract fun populate(composite: Composite,
+    abstract fun populate(composite: DocumentComposite,
                           menu: SmartMenuBar)
 
     fun openShell(document: Document) {
@@ -46,46 +45,32 @@ abstract class MultiDocumentApplication : Application {
         tab(document)
     }
 
-    fun document(composite: Composite): Document {
-        if (composite !is DocumentComposite) {
-            throw IllegalArgumentException("Not a document composite")
-        }
+    fun document(composite: DocumentComposite): Document {
         return composite.document ?: throw IllegalStateException(
                 "Composite does not hold document")
     }
 
-    fun openNewShell(source: Composite,
+
+    fun openNewShell(source: DocumentComposite,
                      document: Document) {
-        if (source !is DocumentComposite) {
-            throw IllegalArgumentException("Not a document composite")
-        }
         shell(source, document)
     }
 
-    fun openNewTab(source: Composite,
+    fun openNewTab(source: DocumentComposite,
                    document: Document) {
-        if (source !is DocumentComposite) {
-            throw IllegalArgumentException("Not a document composite")
-        }
         tab(source, document)
     }
 
-    fun replaceTab(source: Composite,
+    fun replaceTab(source: DocumentComposite,
                    document: Document) {
-        if (source !is DocumentComposite) {
-            throw IllegalArgumentException("Not a document composite")
-        }
         reuse(source, document)
     }
 
-    fun closeTab(source: Composite) {
-        if (source !is DocumentComposite) {
-            throw IllegalArgumentException("Not a document composite")
-        }
+    fun closeTab(source: DocumentComposite) {
         closeTabItem(source)
     }
 
-    fun message(source: Composite,
+    fun message(source: DocumentComposite,
                 style: Int,
                 title: String,
                 message: String): Int {
@@ -101,19 +86,19 @@ abstract class MultiDocumentApplication : Application {
     }
 
     fun access(document: Document,
-               consumer: (Composite) -> Unit): Boolean {
+               consumer: (DocumentComposite) -> Unit): Boolean {
         val output = AtomicBoolean()
         display.syncExec { output.set(accessDocument(document, consumer)) }
         return output.get()
     }
 
     fun accessAsync(document: Document,
-                    consumer: (Composite) -> Unit) {
+                    consumer: (DocumentComposite) -> Unit) {
         display.asyncExec { accessDocument(document, consumer) }
     }
 
     private fun accessDocument(document: Document,
-                               consumer: (Composite) -> Unit): Boolean {
+                               consumer: (DocumentComposite) -> Unit): Boolean {
         val composite = composites[document] ?: return false
         assert(composite.document === document)
         consumer(composite)

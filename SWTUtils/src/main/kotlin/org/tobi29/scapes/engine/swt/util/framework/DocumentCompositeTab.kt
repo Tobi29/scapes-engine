@@ -19,8 +19,10 @@ package org.tobi29.scapes.engine.swt.util.framework
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.TabItem
 
-internal class DocumentCompositeTab(parent: Composite, style: Int,
-                                    shell: DocumentShell, val tabItem: TabItem) : DocumentComposite(
+internal class DocumentCompositeTab(parent: Composite,
+                                    style: Int,
+                                    shell: DocumentShell,
+                                    val tabItem: TabItem) : DocumentComposite(
         parent, style, shell) {
 
     init {

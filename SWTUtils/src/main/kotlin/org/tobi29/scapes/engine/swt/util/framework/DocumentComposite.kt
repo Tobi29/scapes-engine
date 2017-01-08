@@ -20,10 +20,12 @@ import org.eclipse.swt.widgets.Composite
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
 import org.tobi29.scapes.engine.swt.util.widgets.ifPresent
 
-internal open class DocumentComposite(parent: Composite, style: Int, val shell: DocumentShell) : Composite(
+open class DocumentComposite internal constructor(parent: Composite,
+                                                  style: Int,
+                                                  internal val shell: DocumentShell) : Composite(
         parent, style) {
-    val menu: SmartMenuBar
-    var document: Document? = null
+    internal val menu = SmartMenuBar(parent.shell)
+    internal var document: Document? = null
         set(value) {
             field?.let {
                 it.destroy()
@@ -37,7 +39,6 @@ internal open class DocumentComposite(parent: Composite, style: Int, val shell: 
         }
 
     init {
-        menu = SmartMenuBar(parent.shell)
         addDisposeListener { e ->
             document?.let {
                 it.forceClose()

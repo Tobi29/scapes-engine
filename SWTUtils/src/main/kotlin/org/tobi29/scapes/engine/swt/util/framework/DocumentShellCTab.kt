@@ -24,8 +24,10 @@ import org.eclipse.swt.custom.CTabItem
 import org.eclipse.swt.widgets.Display
 
 
-internal class DocumentShellCTab(display: Display, style: Int,
-                                 application: MultiDocumentApplication, hideSingleTab: Boolean) : DocumentShell(
+internal class DocumentShellCTab(display: Display,
+                                 style: Int,
+                                 application: MultiDocumentApplication,
+                                 hideSingleTab: Boolean) : DocumentShell(
         display, style, application, hideSingleTab) {
     var tabFolder: CTabFolder? = null
 
@@ -45,15 +47,7 @@ internal class DocumentShellCTab(display: Display, style: Int,
         } else {
             composite = directComposite
         }
-        if (composite == null) {
-            return
-        }
-        text = composite.document?.title ?: ""
-        if (composite.menu.itemCount == 0) {
-            menuBar = null
-        } else {
-            menuBar = composite.menu
-        }
+        composite?.let { setMenuBar(it) }
     }
 
     override fun remove(composite: DocumentComposite) {
@@ -106,14 +100,7 @@ internal class DocumentShellCTab(display: Display, style: Int,
             })
             this.tabFolder = tabFolder
         }
-        val directComposite = directComposite
-        if (directComposite != null) {
-            val otherDocument = directComposite.document
-            directComposite.removeDocument()
-            directComposite.dispose()
-            this.directComposite = null
-            otherDocument?.let { tabItem(it) }
-        }
+        clearDirect()
         return tabFolder
     }
 }

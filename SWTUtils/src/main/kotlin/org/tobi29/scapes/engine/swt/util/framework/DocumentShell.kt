@@ -21,8 +21,10 @@ import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
 
-internal abstract class DocumentShell protected constructor(display: Display, style: Int,
-                                                            val application: MultiDocumentApplication, protected val hideSingleTab: Boolean) : Shell(
+internal abstract class DocumentShell(display: Display,
+                                      style: Int,
+                                      val application: MultiDocumentApplication,
+                                      protected val hideSingleTab: Boolean) : Shell(
         display, style) {
     protected var directComposite: DocumentComposite? = null
 
@@ -53,5 +55,25 @@ internal abstract class DocumentShell protected constructor(display: Display, st
     protected abstract fun tabItem(document: Document): DocumentComposite
 
     override fun checkSubclass() {
+    }
+
+    protected fun setMenuBar(composite: DocumentComposite) {
+        text = composite.document?.title ?: ""
+        if (composite.menu.itemCount == 0) {
+            menuBar = null
+        } else {
+            menuBar = composite.menu
+        }
+    }
+
+    protected fun clearDirect() {
+        val directComposite = directComposite
+        if (directComposite != null) {
+            val otherDocument = directComposite.document
+            directComposite.removeDocument()
+            directComposite.dispose()
+            this.directComposite = null
+            otherDocument?.let { tabItem(it) }
+        }
     }
 }

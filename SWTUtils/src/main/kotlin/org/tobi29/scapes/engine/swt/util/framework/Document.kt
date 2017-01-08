@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine.swt.util.framework
 
-import org.eclipse.swt.widgets.Composite
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
 
 interface Document {
@@ -39,7 +38,7 @@ interface Document {
     val isEmpty: Boolean
         get() = false
 
-    fun populate(composite: Composite,
+    fun populate(composite: DocumentComposite,
                  menu: SmartMenuBar,
                  application: MultiDocumentApplication)
 }
