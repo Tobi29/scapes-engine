@@ -16,45 +16,14 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.utils.graphics.TextureAtlasEntry
 import java.nio.ByteBuffer
 
-open class TextureAtlasEntry(var buffer: ByteBuffer?,
-                             val resolution: Int,
-                             protected val texture: () -> Texture) {
-    var tileX = 0
-    var tileY = 0
-    var x = 0.0
-    var y = 0.0
-    var size = 0.0
-
-    fun x(): Double {
-        return x + size * 0.005
-    }
-
-    fun realX(): Double {
-        return x
-    }
-
-    fun y(): Double {
-        return y + size * 0.005
-    }
-
-    fun realY(): Double {
-        return y
-    }
-
-    fun size(): Double {
-        return size * 0.99
-    }
-
-    fun realSize(): Double {
-        return size
-    }
-
-    fun resolution(): Int {
-        return resolution
-    }
-
+open class TextureAtlasEngineEntry(buffer: ByteBuffer?,
+                                   width: Int,
+                                   height: Int,
+                                   protected val texture: () -> Texture) : TextureAtlasEntry(
+        buffer, width, height) {
     fun texture(): Texture {
         return texture.invoke()
     }

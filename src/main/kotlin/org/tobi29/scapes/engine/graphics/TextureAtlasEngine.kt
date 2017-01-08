@@ -19,24 +19,23 @@ package org.tobi29.scapes.engine.graphics
 import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.ByteBuffer
-import org.tobi29.scapes.engine.utils.graphics.*
+import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.graphics.TextureAtlas
+import org.tobi29.scapes.engine.utils.graphics.decodePNG
+import org.tobi29.scapes.engine.utils.graphics.encodePNG
+import org.tobi29.scapes.engine.utils.io.filesystem.write
 import org.tobi29.scapes.engine.utils.math.min
 import java.io.IOException
 import java.nio.ByteBuffer
-import java.util.concurrent.ConcurrentHashMap
 
-abstract class TextureAtlas<T : TextureAtlasEntry>(val engine: ScapesEngine, minBits: Int) {
-    protected val textures = ConcurrentHashMap<String, T>()
-    protected val sources = ConcurrentHashMap<String, Image>()
-    protected val minBits: Int
-    protected val minSize: Int
-    var texture: Texture? = null
+abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: ScapesEngine,
+                                                               minSize: Int = 1) : TextureAtlas<T>(
+        minSize) {
+    var textureMut: Texture? = null
         protected set
-
-    init {
-        this.minBits = 4
-        minSize = 1 shl minBits
-    }
+    val texture: Texture
+        get() = textureMut ?: throw IllegalStateException(
+                "Atlas not finished yet")
 
     protected fun path(paths: Array<out String>): String {
         val pathBuilder = StringBuilder(paths[0])
@@ -136,96 +135,8 @@ abstract class TextureAtlas<T : TextureAtlasEntry>(val engine: ScapesEngine, min
         return Image(width, height, buffer)
     }
 
-    fun init(engine: ScapesEngine): Int {
-        // TODO: Clean up
-        val textureList = textures.values.asSequence()
-                .sortedBy { it.resolution }.toMutableList<T?>()
-        textureList.add(0, null)
-        var size = 16
-        var atlas = Array(size) { IntArray(size) }
-        var tiles = 0
-        var boundary = 0
-        var x = 0
-        var y = 0
-        for (i in 1..textureList.size - 1) {
-            val texture = textureList[i]!!
-            val textureTiles = (texture.resolution() - 1 shr minBits) + 1
-            if (textureTiles != tiles) {
-                x = 0
-                y = 0
-                tiles = textureTiles
-                boundary = size - tiles
-            }
-            var flag = true
-            while (flag) {
-                if (atlas[x][y] == 0 && x <= boundary && y <= boundary) {
-                    for (yy in 0..tiles - 1) {
-                        val yyy = yy + y
-                        for (xx in 0..tiles - 1) {
-                            if (xx == 0 && yy == 0) {
-                                atlas[x][y] = i
-                            } else {
-                                atlas[xx + x][yyy] = -1
-                            }
-                        }
-                    }
-                    flag = false
-                }
-                x += textureTiles
-                if (x >= size) {
-                    y += textureTiles
-                    x = 0
-                }
-                if (y >= size) {
-                    y = 0
-                    size = size shl 1
-                    boundary = size - tiles
-                    val newAtlas = Array(size) { IntArray(size) }
-                    for (j in atlas.indices) {
-                        System.arraycopy(atlas[j], 0, newAtlas[j], 0,
-                                atlas[j].size)
-                    }
-                    atlas = newAtlas
-                }
-            }
-        }
-        val imageSize = size shl minBits
-        y = 0
-        val image = MutableImage(imageSize, imageSize)
-        while (y < size) {
-            val yy = y shl minBits
-            x = 0
-            while (x < size) {
-                val i = atlas[x][y]
-                if (i > 0) {
-                    val xx = x shl minBits
-                    val texture = textureList[i]!!
-                    texture.x = x.toDouble() / size
-                    texture.y = y.toDouble() / size
-                    texture.tileX = xx
-                    texture.tileY = yy
-                    texture.size = texture.resolution.toDouble() / imageSize
-                    texture.buffer?.let {
-                        image.set(xx, yy, texture.resolution,
-                                texture.resolution, it)
-                    }
-                    texture.buffer = null
-                }
-                x++
-            }
-            y++
-        }
-        texture = engine.graphics.createTexture(image.toImage(), 4)
-        sources.clear()
-        return textures.size
-    }
-
-    fun engine(): ScapesEngine {
-        return engine
-    }
-
-    fun texture(): Texture {
-        return texture ?: throw IllegalStateException("Atlas not finished yet")
+    fun initTexture(mipmaps: Int = 0) {
+        textureMut = engine.graphics.createTexture(image, mipmaps)
     }
 
     companion object : KLogging()
