@@ -20,6 +20,7 @@ import mu.KLogging
 import org.tobi29.scapes.engine.utils.math.ceil
 import org.tobi29.scapes.engine.utils.math.nextPowerOfTwo
 import org.tobi29.scapes.engine.utils.math.sqrt
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class TextureAtlas<T : TextureAtlasEntry>(protected val minSize: Int = 1) {
@@ -42,7 +43,7 @@ abstract class TextureAtlas<T : TextureAtlasEntry>(protected val minSize: Int = 
                 .sortedByDescending { it.width * it.height }
         val tree = insert(sequence)
         val image = MutableImage(tree.rectangle.width, tree.rectangle.height)
-        tree.paint(image)
+        paint(tree, image)
         imageMut = image.toImage()
         sources.clear()
         return textures.size
@@ -60,80 +61,104 @@ abstract class TextureAtlas<T : TextureAtlasEntry>(protected val minSize: Int = 
 
     private fun tryInsert(size: Int,
                           textures: Sequence<T>): TextureNode? {
-        var root: TextureNode = TextureNode.Empty(
-                Rectangle(0, 0, size - 1, size - 1))
-        textures.forEach {
-            if (!root.insert(it) { root = it }) {
+        var root: TextureNode
+        root = TextureNode.Empty(
+                Rectangle(0, 0, size - 1, size - 1), { root = it })
+        textures.forEach { texture ->
+            if (!insert(root, texture)) {
                 return null
             }
         }
         return root
     }
 
-    private fun TextureNode.insert(texture: TextureAtlasEntry,
-                                   swap: (TextureNode) -> Unit): Boolean {
-        when (this) {
-            is TextureNode.Texture -> return false
-            is TextureNode.Branch -> {
-                if (left.insert(texture) { left = it }) {
-                    return true
+    private fun insert(nodeStart: TextureNode,
+                       texture: TextureAtlasEntry): Boolean {
+        val deque = ArrayDeque<TextureNode>()
+        deque.add(nodeStart)
+        while (deque.isNotEmpty()) {
+            var node = deque.pollLast()
+            current@ while (true) {
+                when (node) {
+                    is TextureNode.Branch -> {
+                        val branch = node
+                        node = branch.left
+                        deque.addLast(branch.right)
+                    }
+                    is TextureNode.Empty -> {
+                        val w = nextValidSize(texture.width)
+                        val h = nextValidSize(texture.height)
+                        if (w > node.rectangle.width || h > node.rectangle.height) {
+                            break@current
+                        }
+                        val dw = node.rectangle.width - w
+                        val dh = node.rectangle.height - h
+                        if (dw == 0 && dh == 0) {
+                            node.swap(TextureNode.Texture(node.rectangle,
+                                    texture))
+                            return true
+                        }
+                        val split = if (dw > dh) {
+                            TextureNode.Branch(node.rectangle,
+                                    Rectangle(node.rectangle.left,
+                                            node.rectangle.top,
+                                            node.rectangle.left + w - 1,
+                                            node.rectangle.bottom),
+                                    Rectangle(node.rectangle.left + w,
+                                            node.rectangle.top,
+                                            node.rectangle.right,
+                                            node.rectangle.bottom))
+                        } else {
+                            TextureNode.Branch(node.rectangle,
+                                    Rectangle(node.rectangle.left,
+                                            node.rectangle.top,
+                                            node.rectangle.right,
+                                            node.rectangle.top + h - 1),
+                                    Rectangle(node.rectangle.left,
+                                            node.rectangle.top + h,
+                                            node.rectangle.right,
+                                            node.rectangle.bottom))
+                        }
+                        node.swap(split)
+                        node = split.left
+                    }
+                    else -> break@current
                 }
-                if (right.insert(texture) { right = it }) {
-                    return true
-                }
-                return false
-            }
-            is TextureNode.Empty -> {
-                val w = nextValidSize(texture.width)
-                val h = nextValidSize(texture.height)
-                if (w > rectangle.width || h > rectangle.height) {
-                    return false
-                }
-                val dw = rectangle.width - w
-                val dh = rectangle.height - h
-                if (dw == 0 && dh == 0) {
-                    swap(TextureNode.Texture(rectangle, texture))
-                    return true
-                }
-                val node = if (dw > dh) {
-                    TextureNode.Branch(rectangle, TextureNode.Empty(
-                            Rectangle(rectangle.left, rectangle.top,
-                                    rectangle.left + w - 1, rectangle.bottom)),
-                            TextureNode.Empty(
-                                    Rectangle(rectangle.left + w, rectangle.top,
-                                            rectangle.right, rectangle.bottom)))
-                } else {
-                    TextureNode.Branch(rectangle, TextureNode.Empty(
-                            Rectangle(rectangle.left, rectangle.top,
-                                    rectangle.right, rectangle.top + h - 1)),
-                            TextureNode.Empty(
-                                    Rectangle(rectangle.left, rectangle.top + h,
-                                            rectangle.right, rectangle.bottom)))
-                }
-                swap(node)
-                return node.left.insert(texture) { node.left = it }
             }
         }
+        return false
     }
 
-    private fun TextureNode.paint(image: MutableImage) {
-        when (this) {
-            is TextureNode.Texture -> {
-                texture.textureX = rectangle.left.toDouble() / image.width
-                texture.textureY = rectangle.top.toDouble() / image.height
-                texture.x = rectangle.left
-                texture.y = rectangle.top
-                texture.textureWidth = texture.width.toDouble() / image.width
-                texture.textureHeight = texture.height.toDouble() / image.height
-                texture.buffer?.let {
-                    image.set(rectangle.left, rectangle.top, texture.width,
-                            texture.height, it)
+    private fun paint(nodeStart: TextureNode,
+                      image: MutableImage) {
+        val deque = ArrayDeque<TextureNode>()
+        deque.add(nodeStart)
+        while (deque.isNotEmpty()) {
+            var current = deque.pollLast()
+            current@ while (true) {
+                when (current) {
+                    is TextureNode.Texture -> {
+                        current.run {
+                            texture.textureX = rectangle.left.toDouble() / image.width
+                            texture.textureY = rectangle.top.toDouble() / image.height
+                            texture.x = rectangle.left
+                            texture.y = rectangle.top
+                            texture.textureWidth = texture.width.toDouble() / image.width
+                            texture.textureHeight = texture.height.toDouble() / image.height
+                            texture.buffer?.let {
+                                image.set(rectangle.left, rectangle.top,
+                                        texture.width, texture.height, it)
+                            }
+                            texture.buffer = null
+                        }
+                        break@current
+                    }
+                    is TextureNode.Branch -> current.run {
+                        current = left
+                        deque.addLast(right)
+                    }
+                    else -> break@current
                 }
-                texture.buffer = null
-            }
-            is TextureNode.Branch -> {
-                left.paint(image)
-                right.paint(image)
             }
         }
     }
@@ -145,14 +170,24 @@ abstract class TextureAtlas<T : TextureAtlasEntry>(protected val minSize: Int = 
     companion object : KLogging()
 
     private sealed class TextureNode(val rectangle: Rectangle) {
-        class Empty(rectangle: Rectangle) : TextureNode(rectangle)
+        class Empty(rectangle: Rectangle,
+                    val swap: (TextureNode) -> Unit) : TextureNode(rectangle)
 
         class Texture(rectangle: Rectangle,
-                      val texture: TextureAtlasEntry) : TextureNode(rectangle)
+                      val texture: TextureAtlasEntry) : TextureNode(
+                rectangle)
 
         class Branch(rectangle: Rectangle,
-                     var left: TextureNode,
-                     var right: TextureNode) : TextureNode(rectangle)
+                     left: Rectangle,
+                     right: Rectangle) : TextureNode(rectangle) {
+            var left: TextureNode
+            var right: TextureNode
+
+            init {
+                this.left = TextureNode.Empty(left) { this.left = it }
+                this.right = TextureNode.Empty(right) { this.right = it }
+            }
+        }
     }
 
     private class Rectangle(val left: Int,
