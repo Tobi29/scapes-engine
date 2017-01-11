@@ -87,9 +87,12 @@ class TagStructure {
     }
 
     fun <E : MultiTag.Readable> getMultiTag(key: String,
-                                            value: E): E {
-        getStructure(key)?.let { value.read(it) }
-        return value
+                                            value: E): Boolean {
+        getStructure(key)?.let {
+            value.read(it)
+            return true
+        }
+        return false
     }
 
     val tagEntrySet: Set<Map.Entry<String, Any>>
