@@ -18,7 +18,21 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
+import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.getInt
 import org.tobi29.scapes.engine.utils.math.sqrt
+
+/**
+ * Create vector from the tag structure entry, as created by [Vector2i.write]
+ */
+inline fun TagStructure.getVector2i(key: String) = getStructure(
+        key)?.let(::Vector2i)
+
+/**
+ * Creates vector from the given tag structure, as created by [Vector2i.write]
+ */
+inline fun Vector2i(tagStructure: TagStructure) = Vector2i(
+        tagStructure.getInt("X") ?: 0, tagStructure.getInt("Y") ?: 0)
 
 /**
  * Returns the sum of the given vector and [a]
