@@ -223,6 +223,13 @@ inline fun TagStructure.getProperties(key: String): Properties? {
     return MultiTag.readProperties(tagStructure)
 }
 
+inline fun TagStructure.getProperties(key: String,
+                                      properties: Properties) {
+    val tagStructure = getStructure(key) ?: return
+    properties.clear()
+    MultiTag.readProperties(tagStructure, properties)
+}
+
 inline fun TagStructure.setProperties(key: String,
                                       value: Properties) {
     setStructure(key, MultiTag.writeProperties(value))
