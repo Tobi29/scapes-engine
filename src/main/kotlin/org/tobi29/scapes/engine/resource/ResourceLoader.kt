@@ -17,20 +17,26 @@
 package org.tobi29.scapes.engine.resource
 
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import java.util.concurrent.atomic.AtomicLong
 
-class ResourceLoader(
-        private val taskExecutor: TaskExecutor
-) {
+class ResourceLoader(private val taskExecutor: TaskExecutor) {
+    private val tasks = AtomicLong()
+
     fun <T : Any> load(error: (Throwable) -> T,
                        supplier: () -> T): Resource<T> {
         val reference = ResourceReference<T>()
+        tasks.andIncrement
         taskExecutor.runTask({
             try {
                 reference.value = supplier()
             } catch(e: Throwable) {
                 reference.value = error(e)
+            } finally {
+                tasks.andDecrement
             }
         }, "Load-Resource")
         return reference.resource
     }
+
+    fun isDone() = tasks.get() == 0L
 }
