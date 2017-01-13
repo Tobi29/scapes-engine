@@ -16,6 +16,12 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.graphics.Mesh
+import org.tobi29.scapes.engine.utils.math.cos
+import org.tobi29.scapes.engine.utils.math.max
+import org.tobi29.scapes.engine.utils.math.sin
+import org.tobi29.scapes.engine.utils.math.toRad
+
 object GuiUtils {
 
     fun rectangle(renderer: GuiRenderBatch,
@@ -226,5 +232,74 @@ object GuiUtils {
         mesh.addVertex(brb.floatX().toDouble(), brb.floatY().toDouble(), 0.0,
                 r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
                 0.0)
+    }
+
+    fun busy(mesh: Mesh,
+             width: Double,
+             height: Double,
+             pixelSizeX: Double,
+             pixelSizeY: Double,
+             r: Double,
+             g: Double,
+             b: Double,
+             a: Double) {
+        val w2 = width * 0.5
+        val h2 = height * 0.5
+        val w3 = max(w2 - 3.0, 0.0)
+        val h3 = max(h2 - 3.0, 0.0)
+        val w1 = w2 + pixelSizeX
+        val h1 = h2 + pixelSizeY
+        val w4 = w3 - pixelSizeX
+        val h4 = h3 - pixelSizeY
+        val section = 5.0
+        renderPart(mesh, 40.0, 140.0, section, w1, h1, w2, h2, w3, h3, w4, h4,
+                r, g, b, a)
+        renderPart(mesh, 220.0, 320.0, section, w1, h1, w2, h2, w3, h3, w4, h4,
+                r, g, b, a)
+    }
+
+    private fun renderPart(mesh: Mesh,
+                           start: Double,
+                           end: Double,
+                           section: Double,
+                           w1: Double,
+                           h1: Double,
+                           w2: Double,
+                           h2: Double,
+                           w3: Double,
+                           h3: Double,
+                           w4: Double,
+                           h4: Double,
+                           r: Double,
+                           g: Double,
+                           b: Double,
+                           a: Double) {
+        var cos = cos(start.toRad())
+        var sin = sin(start.toRad())
+        mesh.color(r, g, b, 0.0)
+        var dir = start + section
+        while (dir <= end) {
+            val ncos = cos(dir.toRad())
+            val nsin = sin(dir.toRad())
+            mesh.vertex(ncos * w1, nsin * h1, 0.0)
+            mesh.vertex(cos * w1, sin * h1, 0.0)
+            mesh.color(r, g, b, a)
+            mesh.vertex(cos * w2, sin * h2, 0.0)
+            mesh.vertex(ncos * w2, nsin * h2, 0.0)
+
+            mesh.vertex(ncos * w2, nsin * h2, 0.0)
+            mesh.vertex(cos * w2, sin * h2, 0.0)
+            mesh.vertex(cos * w3, sin * h3, 0.0)
+            mesh.vertex(ncos * w3, nsin * h3, 0.0)
+
+            mesh.vertex(ncos * w3, nsin * h3, 0.0)
+            mesh.vertex(cos * w3, sin * h3, 0.0)
+            mesh.color(r, g, b, 0.0)
+            mesh.vertex(cos * w4, sin * h4, 0.0)
+            mesh.vertex(ncos * w4, nsin * h4, 0.0)
+            cos = ncos
+            sin = nsin
+            dir += section
+        }
     }
 }
