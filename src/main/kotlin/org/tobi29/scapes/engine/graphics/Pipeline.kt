@@ -66,41 +66,6 @@ fun postProcess(gl: GL,
     }
 }
 
-fun postProcess(gl: GL,
-                shader: Shader,
-                framebuffer: Framebuffer,
-                config: () -> Unit): () -> Unit {
-    return postProcess(gl, shader, framebuffer, framebuffer, config)
-}
-
-fun postProcess(gl: GL,
-                shader: Shader,
-                framebuffer: Framebuffer,
-                depthbuffer: Framebuffer = framebuffer,
-                config: () -> Unit): () -> Unit {
-    val render = postProcess(gl, shader, framebuffer, depthbuffer)
-    return {
-        config()
-        render()
-    }
-}
-
-fun postProcess(gl: GL,
-                shader: Shader,
-                framebuffer: Framebuffer,
-                depthbuffer: Framebuffer = framebuffer): () -> Unit {
-    val model = createVTI(gl.engine,
-            floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f),
-            floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
-            intArrayOf(0, 1, 2, 3, 2, 1), RenderType.TRIANGLES)
-    return {
-        gl.clearDepth()
-        renderPostProcess(gl, framebuffer, depthbuffer, model, shader)
-        gl.checkError("Post-Process")
-    }
-}
-
 private fun renderPostProcess(gl: GL,
                               framebuffer: Framebuffer,
                               depthbuffer: Framebuffer,
