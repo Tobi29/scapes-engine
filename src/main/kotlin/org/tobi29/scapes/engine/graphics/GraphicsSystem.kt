@@ -20,6 +20,7 @@ import mu.KLogging
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
+import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.encodePNG
 import org.tobi29.scapes.engine.utils.io.asString
@@ -33,7 +34,8 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
-class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
+class GraphicsSystem(val engine: ScapesEngine,
+                     private val gl: GL) {
     val textures: TextureManager
         get() = gl.textures
     private val fpsDebug: GuiWidgetDebugValues.Element
@@ -46,6 +48,7 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
     private val empty: Texture
     private val shaderCompiler = ShaderCompiler()
     private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
+    private val shaderFallback = createShader("Engine:shader/Textured")
     private var triggerScreenshot = false
     private var resolutionMultiplier = 1.0
     private var renderState: GameState? = null
@@ -93,6 +96,7 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
     @Synchronized fun render(delta: Double) {
         try {
             gl.checkError("Pre-Render")
+            gl.step(delta)
             val container = engine.container
             val containerWidth = container.containerWidth()
             val containerHeight = container.containerHeight()
@@ -260,6 +264,20 @@ class GraphicsSystem(val engine: ScapesEngine, private val gl: GL) {
                           renderType: RenderType): ModelHybrid {
         return gl.createModelHybrid(attributes, length, attributesStream,
                 lengthStream, renderType)
+    }
+
+    fun loadShader(asset: String,
+                   consumer: ShaderCompileInformation.() -> Unit): Resource<Shader> {
+        return engine.resources.load({ shaderFallback }) {
+            createShader(asset, consumer)
+        }
+    }
+
+    fun loadShader(asset: String,
+                   information: ShaderCompileInformation = ShaderCompileInformation()): Resource<Shader> {
+        return engine.resources.load({ shaderFallback }) {
+            createShader(asset, information)
+        }
     }
 
     fun createShader(asset: String,
