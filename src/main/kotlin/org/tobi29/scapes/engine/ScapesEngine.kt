@@ -169,7 +169,9 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         graphics = GraphicsSystem(this, container.gl())
         logger.info { "Creating sound system" }
         sounds = container.sound()
+        logger.info { "Initializing game" }
         this.game.init()
+        logger.info { "Engine created" }
     }
 
     private fun checkSystem() {
