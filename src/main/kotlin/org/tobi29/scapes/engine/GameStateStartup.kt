@@ -16,68 +16,33 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.gui.GuiComponentImage
-import org.tobi29.scapes.engine.gui.GuiState
-import org.tobi29.scapes.engine.gui.GuiStyle
-import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.math.PI
-import org.tobi29.scapes.engine.utils.math.min
-import org.tobi29.scapes.engine.utils.math.sin
+import org.tobi29.scapes.engine.graphics.busyPipeline
+import java.util.concurrent.atomic.AtomicReference
 
-class GameStateStartup(private val nextState: GameState,
-                       private val image: String,
-                       private val scale: Double,
-                       engine: ScapesEngine) : GameState(engine) {
-    private var icon: GuiComponentImage? = null
-    private var time = 0.0
-    private var warmUp = 0
+class GameStateStartup(engine: ScapesEngine,
+                       private val switch: () -> GameState) : GameState(
+        engine) {
+    val readySwitch = AtomicReference<GameState?>()
 
     override fun init() {
-        engine.guiStack.addUnfocused("20-Image",
-                GuiImage(engine.graphics.textures()[image], engine.guiStyle))
         switchPipeline { gl ->
+            val busy = busyPipeline(gl);
             {
                 gl.clear(0.0f, 0.0f, 0.0f, 1.0f)
+                busy()
             }
         }
+        engine.taskExecutor.runTask({ readySwitch.set(switch()) }, "Load-State")
     }
 
     override val isMouseGrabbed: Boolean
         get() = true
 
     override fun step(delta: Double) {
-        icon?.let { icon ->
-            if (warmUp > 20) {
-                time += delta / 5.0
-                var a = sin(time * PI).toFloat()
-                a = min(a * 1.4f, 1.0f)
-                icon.setColor(1.0f, 1.0f, 1.0f, a)
-                if (time > 1.0) {
-                    engine.switchState(nextState)
-                }
-                Unit
-            } else {
-                icon.setColor(1.0f, 1.0f, 1.0f, 0.0f)
-                warmUp++
+        readySwitch.get()?.let { switch ->
+            if (engine.resources.isDone()) {
+                engine.switchState(switch)
             }
-        }
-    }
-
-    private inner class GuiImage(texture: Resource<Texture>, style: GuiStyle) : GuiState(
-            this@GameStateStartup, style) {
-        init {
-            val tex = texture.get()
-            val width = tex.width()
-            val height = tex.height()
-            val ratio = width.toDouble() / height
-            val w = (540.0 * ratio * scale).toInt()
-            val h = (540 * scale).toInt()
-            spacer()
-            icon = addHori(((960 - w) / 2).toDouble(),
-                    ((540 - h) / 2).toDouble(), w.toDouble(), h.toDouble()
-            ) { GuiComponentImage(it, texture) }
-            spacer()
         }
     }
 }
