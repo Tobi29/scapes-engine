@@ -25,7 +25,8 @@ import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
-abstract class GL protected constructor(val engine: ScapesEngine, val container: Container) {
+abstract class GL protected constructor(val engine: ScapesEngine,
+                                        val container: Container) {
     val textures: TextureManager
     val matrixStack: MatrixStack
     val projectionMatrix = Matrix4f()
@@ -39,6 +40,8 @@ abstract class GL protected constructor(val engine: ScapesEngine, val container:
     protected var containerHeight = 1
     protected var contentWidth = 1
     protected var contentHeight = 1
+    var timer = 0.0
+        private set
     var currentFBO = 0
     private var mainThread: Thread? = null
 
@@ -68,6 +71,14 @@ abstract class GL protected constructor(val engine: ScapesEngine, val container:
         this.containerHeight = containerHeight
         this.resolutionMultiplier = resolutionMultiplier
         shaderTracker.disposeAll(this)
+    }
+
+    fun step(delta: Double) {
+        timer += delta
+        // This is over 4 days, should be fine
+        if (timer >= 360000.0) {
+            timer -= 360000.0
+        }
     }
 
     fun engine(): ScapesEngine {
