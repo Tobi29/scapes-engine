@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.resource.Resource
+
 class Pipeline(gl: GL,
                private val builder: (GL) -> () -> Unit) {
     private val steps = builder(gl)
@@ -35,6 +37,32 @@ fun renderScene(gl: GL,
     return {
         render()
         gl.checkError("Scene-Rendering")
+    }
+}
+
+fun postProcess(gl: GL,
+                shader: Resource<Shader>,
+                framebuffer: Framebuffer,
+                config: Shader.() -> Unit): () -> Unit {
+    return postProcess(gl, shader, framebuffer, framebuffer, config)
+}
+
+fun postProcess(gl: GL,
+                shader: Resource<Shader>,
+                framebuffer: Framebuffer,
+                depthbuffer: Framebuffer = framebuffer,
+                config: Shader.() -> Unit = {}): () -> Unit {
+    val model = createVTI(gl.engine,
+            floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f),
+            floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+            intArrayOf(0, 1, 2, 3, 2, 1), RenderType.TRIANGLES)
+    return {
+        val s = shader.get()
+        config(s)
+        gl.clearDepth()
+        renderPostProcess(gl, framebuffer, depthbuffer, model, s)
+        gl.checkError("Post-Process")
     }
 }
 
