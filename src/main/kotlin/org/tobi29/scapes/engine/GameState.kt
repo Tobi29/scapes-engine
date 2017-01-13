@@ -24,8 +24,10 @@ import java.util.concurrent.atomic.AtomicReference
 abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0
     private val newPipeline = AtomicReference<((GL) -> () -> Unit)?>()
+    private val newPipelineLoaded = AtomicReference<((GL) -> () -> Unit)?>()
     private val dirtyPipeline = AtomicBoolean()
     private var pipeline: Pipeline? = null
+    private var pipelineLoaded: Pipeline? = null
     private var guiRenderer: (Double) -> Unit = {}
 
     fun engine(): ScapesEngine {
@@ -51,6 +53,16 @@ abstract class GameState(val engine: ScapesEngine) {
     fun renderState(gl: GL,
                     delta: Double,
                     updateSize: Boolean) {
+        newPipelineLoaded.getAndSet(null)?.let { newPipeline ->
+                pipelineLoaded = Pipeline(gl, newPipeline)
+        }
+        pipelineLoaded?.let { pipeline ->
+            if (engine.resources.isDone()) {
+                this.pipeline = pipeline
+                guiRenderer = renderGui(gl)
+                pipelineLoaded = null
+            }
+        }
         newPipeline.getAndSet(null)?.let { newPipeline ->
             pipeline = Pipeline(gl, newPipeline)
             guiRenderer = renderGui(gl)
@@ -80,11 +92,15 @@ abstract class GameState(val engine: ScapesEngine) {
         newPipeline.set(block)
     }
 
+    fun switchPipelineWhenLoaded(block: (GL) -> () -> Unit) {
+        newPipelineLoaded.set(block)
+    }
+
     private fun renderGui(gl: GL): (Double) -> Unit {
-        val shader = gl.engine.graphics.createShader("Engine:shader/Gui")
+        val shader = gl.engine.graphics.loadShader("Engine:shader/Gui")
         return { delta ->
             gl.clearDepth()
-            gl.engine.guiStack.render(gl, shader, delta)
+            gl.engine.guiStack.render(gl, shader.get(), delta)
             gl.checkError("Gui-Rendering")
         }
     }
