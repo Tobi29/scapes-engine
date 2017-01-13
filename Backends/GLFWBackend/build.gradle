@@ -20,9 +20,9 @@ version = "0.0.0"
 
 dependencies {
     compile project(":ScapesEngine:Backends:LWJGL3Backend")
-    compile("org.lwjgl:lwjgl:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-glfw:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-tinyfd:3.1.0") { transitive = false }
+    compile("org.lwjgl:lwjgl:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-glfw:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-tinyfd:3.1.1") { transitive = false }
 
     testCompile "junit:junit:4.12"
 }

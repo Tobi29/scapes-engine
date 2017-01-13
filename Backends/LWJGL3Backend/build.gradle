@@ -20,12 +20,12 @@ version = "0.0.0"
 
 dependencies {
     compile project(":ScapesEngine:Backends:OpenALSounds")
-    compile("org.lwjgl:lwjgl:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-glfw:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-openal:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-opengl:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-opengles:3.1.0") { transitive = false }
-    compile("org.lwjgl:lwjgl-stb:3.1.0") { transitive = false }
+    compile("org.lwjgl:lwjgl:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-glfw:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-openal:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-opengl:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-opengles:3.1.1") { transitive = false }
+    compile("org.lwjgl:lwjgl-stb:3.1.1") { transitive = false }
 
     testCompile "junit:junit:4.12"
 }
