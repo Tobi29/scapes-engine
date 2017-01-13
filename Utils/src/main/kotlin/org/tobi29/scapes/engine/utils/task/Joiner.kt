@@ -23,10 +23,10 @@ import java.nio.channels.Selector
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Joiner {
+open class Joiner {
     private val joinables: Array<Joinable>
 
-    private constructor(thread: Joinable) {
+    protected constructor(thread: Joinable) {
         joinables = arrayOf(thread)
     }
 
@@ -87,17 +87,13 @@ class Joiner {
         fun sleep(time: Long = 0)
     }
 
-    class BasicJoinable : Joinable {
-        override val joiner: Joiner
+    open class BasicJoinable : Joinable {
+        override val joiner = Joiner(this)
         private val woken = AtomicBoolean()
         override @Volatile var joined = false
-            private set
+            protected set
         override @Volatile var marked = false
-            private set
-
-        init {
-            joiner = Joiner(this)
-        }
+            protected set
 
         override fun mark() {
             marked = true
@@ -142,17 +138,19 @@ class Joiner {
         }
     }
 
+    class ThreadJoinable : BasicJoinable() {
+        lateinit var thread: Thread
+            internal set
+        override val joiner = ThreadJoiner(this)
+    }
+
     class SelectorJoinable(val selector: Selector) : Joinable {
-        override val joiner: Joiner
+        override val joiner = Joiner(this)
         private val woken = AtomicBoolean()
         override @Volatile var joined = false
             private set
         override @Volatile var marked = false
             private set
-
-        init {
-            joiner = Joiner(this)
-        }
 
         override fun mark() {
             marked = true
@@ -208,6 +206,11 @@ class Joiner {
             return list
         }
     }
+}
+
+class ThreadJoiner(private val joinable: ThreadJoinable) : Joiner(joinable) {
+    val thread: Thread
+        get() = joinable.thread
 }
 
 inline fun Joiner.Joinable.wake(block: () -> Unit) {

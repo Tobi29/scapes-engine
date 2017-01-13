@@ -34,7 +34,9 @@ class TaskExecutor {
     private val root: Boolean
     private var eventLoop: Joiner?
 
-    constructor(parent: TaskExecutor, name: String, wakeup: Joiner? = null) {
+    constructor(parent: TaskExecutor,
+                name: String,
+                wakeup: Joiner? = null) {
         crashHandler = parent.crashHandler
         this.name = parent.name + name + '-'
         this.eventLoop = wakeup
@@ -42,7 +44,9 @@ class TaskExecutor {
         taskPool = parent.taskPool
     }
 
-    constructor(crashHandler: Crashable, name: String, wakeup: Joiner? = null) {
+    constructor(crashHandler: Crashable,
+                name: String,
+                wakeup: Joiner? = null) {
         this.crashHandler = crashHandler
         this.name = name + '-'
         this.eventLoop = wakeup
@@ -105,10 +109,17 @@ class TaskExecutor {
         return max(earliestTask - System.currentTimeMillis(), 1)
     }
 
-    fun runThread(task: (Joiner.BasicJoinable) -> Unit,
+    fun runThread(task: (Joiner.ThreadJoinable) -> Unit,
                   name: String,
-                  priority: Priority = Priority.LOW): Joiner {
-        return runThread(task, name, priority, Joiner.BasicJoinable())
+                  priority: Priority = Priority.LOW): ThreadJoiner {
+        val joiner = Joiner.ThreadJoinable()
+        val wrapper = ThreadWrapper(joiner) { task(joiner) }
+        val thread = Thread(wrapper)
+        thread.name = this.name + name
+        thread.priority = priority.priority
+        joiner.thread = thread
+        thread.start()
+        return joiner.joiner
     }
 
     fun <J : Joiner.Joinable> runThread(task: (J) -> Unit,
@@ -120,7 +131,7 @@ class TaskExecutor {
         thread.name = this.name + name
         thread.priority = priority.priority
         thread.start()
-        return wrapper.joinable.joiner
+        return joiner.joiner
     }
 
     fun runTask(task: () -> Unit,
@@ -226,7 +237,8 @@ class TaskExecutor {
         override fun run() {
             try {
                 task()
-            } catch (e: Throwable) { // Yes this catches ThreadDeath, so don't use it
+            } catch (e: Throwable) {
+                // Yes this catches ThreadDeath, so don't use it
                 crashHandler.crash(e)
             } finally {
                 joinable.join()
