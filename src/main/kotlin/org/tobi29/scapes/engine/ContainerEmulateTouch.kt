@@ -40,9 +40,6 @@ class ContainerEmulateTouch(private val container: Container,
         return Container.FormFactor.PHONE
     }
 
-    override fun setMouseGrabbed(value: Boolean) {
-    }
-
     override fun controller(): ControllerDefault? {
         return null
     }

@@ -42,8 +42,6 @@ interface Container {
 
     fun contentResized(): Boolean
 
-    fun setMouseGrabbed(value: Boolean)
-
     fun updateContainer()
 
     fun update(delta: Double)

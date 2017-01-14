@@ -75,7 +75,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
-    private var mouseGrabbed = false
     private var state: GameState? = null
 
     constructor(game: (ScapesEngine) -> Game,
@@ -331,11 +330,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
             guiController.update(delta)
         }
         val state = currentState ?: return config.fps
-        val mouseGrabbed = state.isMouseGrabbed || guiController.captureCursor()
-        if (this.mouseGrabbed != mouseGrabbed) {
-            this.mouseGrabbed = mouseGrabbed
-            container.setMouseGrabbed(mouseGrabbed)
-        }
         profilerSection("Container") {
             container.update(delta)
         }
@@ -348,6 +342,13 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         heapMemoryDebug.setValue(runtime.totalMemory() / 1048576)
         maxMemoryDebug.setValue(runtime.maxMemory() / 1048576)
         return state.tps
+    }
+
+    fun isMouseGrabbed(): Boolean {
+        if (container.controller() == null) {
+            return false
+        }
+        return state?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
 
     companion object : KLogging() {

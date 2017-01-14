@@ -56,7 +56,7 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
     private var window: Long = 0
     private var running = true
     private var mouseGrabbed = false
-    private var mouseGrabbedCurrent = false
+    private var mouseDeltaSkip = true
 
     init {
         errorFun = GLFWErrorCallback.createPrint()
@@ -116,10 +116,14 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
             if (dx != 0.0 || dy != 0.0) {
                 mouseX = xpos
                 mouseY = ypos
-                if (!mouseGrabbedCurrent) {
+                if (!mouseGrabbed) {
                     set(mouseX, mouseY)
                 }
-                addDelta(dx, dy)
+                if (mouseDeltaSkip) {
+                    mouseDeltaSkip = false
+                } else {
+                    addDelta(dx, dy)
+                }
             }
         }
         scrollFun = GLFWScrollCallback.create { window, xoffset, yoffset ->
@@ -131,10 +135,6 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
 
     override fun formFactor(): Container.FormFactor {
         return Container.FormFactor.DESKTOP
-    }
-
-    override fun setMouseGrabbed(value: Boolean) {
-        mouseGrabbed = value
     }
 
     override fun update(delta: Double) {
@@ -190,7 +190,7 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
                 gl.init()
                 valid = true
                 containerResized = true
-                if (mouseGrabbedCurrent) {
+                if (mouseGrabbed) {
                     mouseX = containerWidth * 0.5
                     mouseY = containerHeight * 0.5
                     set(mouseX, mouseY)
@@ -200,14 +200,15 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
                 engine.graphics.render(sync.delta())
             }
             containerResized = false
-            val mouseGrabbed = this.mouseGrabbed
-            if (mouseGrabbed != mouseGrabbedCurrent) {
-                mouseGrabbedCurrent = mouseGrabbed
+            val mouseGrabbed = engine.isMouseGrabbed()
+            if (mouseGrabbed != this.mouseGrabbed) {
+                this.mouseGrabbed = mouseGrabbed
                 mouseX = containerWidth * 0.5
                 mouseY = containerHeight * 0.5
                 if (mouseGrabbed) {
                     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
                             GLFW.GLFW_CURSOR_DISABLED)
+                    mouseDeltaSkip = true
                 } else {
                     mouseX = containerWidth * 0.5
                     mouseY = containerHeight * 0.5
