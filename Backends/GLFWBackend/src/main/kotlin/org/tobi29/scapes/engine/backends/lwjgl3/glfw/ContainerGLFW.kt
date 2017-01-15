@@ -181,12 +181,6 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
                     cleanWindow()
                 }
                 initWindow(engine.config.fullscreen, engine.config.vSync)
-                if (useGLES) {
-                    GLES.createCapabilities()
-                } else {
-                    GL.createCapabilities()
-                }
-                checkContext()?.let { throw GraphicsCheckException(it) }
                 gl.init()
                 valid = true
                 containerResized = true
@@ -304,45 +298,35 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
             val videoMode = GLFW.glfwGetVideoMode(monitor)
             val monitorWidth = videoMode.width()
             val monitorHeight = videoMode.height()
-            GLFW.glfwDefaultWindowHints()
-            GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE)
-            // >:V Seriously, stop with this crap!
-            GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GL11.GL_FALSE)
             if (useGLES) {
-                GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API,
-                        GLFW.GLFW_OPENGL_ES_API)
-                GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-                GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0)
-            } else if (!(engine.tagStructure.getStructure(
-                    "Compatibility")?.getBoolean("ForceLegacyGL") ?: false)) {
-                GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-                GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
-                GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,
-                        GLFW.GLFW_OPENGL_CORE_PROFILE)
-                GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT,
-                        GL11.GL_TRUE)
-            }
-            if (fullscreen) {
-                window = GLFW.glfwCreateWindow(monitorWidth, monitorHeight,
-                        title, monitor, 0L)
-                if (window == 0L) {
-                    throw GraphicsCheckException(
-                            "Failed to create fullscreen window")
-                }
+                GLFW.glfwDefaultWindowHints()
+                initContextGLES()
+                initWindow(title, fullscreen, monitor, monitorWidth,
+                        monitorHeight)
+                GLFW.glfwMakeContextCurrent(window)
+                GLES.createCapabilities()
+                checkContextGLES()?.let { throw GraphicsCheckException(it) }
             } else {
-                val width: Int
-                val height: Int
-                if (monitorWidth > 1280 && monitorHeight > 720) {
-                    width = 1280
-                    height = 720
-                } else {
-                    width = 960
-                    height = 540
+                GLFW.glfwDefaultWindowHints()
+                initContextGL()
+                initWindow(title, fullscreen, monitor, monitorWidth,
+                        monitorHeight)
+                GLFW.glfwMakeContextCurrent(window)
+                GL.createCapabilities()
+                val tagStructure = engine.tagStructure.getStructure(
+                        "Compatibility")
+                workaroundLegacyProfile(tagStructure)?.let {
+                    logger.warn { "Detected problem with using a core profile on this driver: $it" }
+                    logger.warn { "Recreating window with legacy context..." }
+                    cleanWindow()
+                    GLFW.glfwDefaultWindowHints()
+                    initContextGL(true)
+                    initWindow(title, fullscreen, monitor, monitorWidth,
+                            monitorHeight)
+                    GLFW.glfwMakeContextCurrent(window)
+                    GL.createCapabilities()
                 }
-                window = GLFW.glfwCreateWindow(width, height, title, 0L, 0L)
-                if (window == 0L) {
-                    throw GraphicsCheckException("Failed to create window")
-                }
+                checkContextGL()?.let { throw GraphicsCheckException(it) }
             }
             val widthBuffer = stack.mallocInt(1)
             val heightBuffer = stack.mallocInt(1)
@@ -361,8 +345,56 @@ class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
             GLFW.glfwSetMouseButtonCallback(window, mouseButtonFun)
             GLFW.glfwSetCursorPosCallback(window, cursorPosFun)
             GLFW.glfwSetScrollCallback(window, scrollFun)
-            GLFW.glfwMakeContextCurrent(window)
             GLFW.glfwSwapInterval(if (vSync) 1 else 0)
+        }
+    }
+
+    private fun initContextGL(contextLegacy: Boolean = false) {
+        if (!contextLegacy) {
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
+            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,
+                    GLFW.GLFW_OPENGL_CORE_PROFILE)
+            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT,
+                    GL11.GL_TRUE)
+        }
+    }
+
+    private fun initContextGLES() {
+        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API)
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
+        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0)
+    }
+
+    private fun initWindow(title: String,
+                           fullscreen: Boolean,
+                           monitor: Long,
+                           monitorWidth: Int,
+                           monitorHeight: Int) {
+        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE)
+        // >:V Seriously, stop with this crap!
+        GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GL11.GL_FALSE)
+        if (fullscreen) {
+            window = GLFW.glfwCreateWindow(monitorWidth, monitorHeight,
+                    title, monitor, 0L)
+            if (window == 0L) {
+                throw GraphicsCheckException(
+                        "Failed to create fullscreen window")
+            }
+        } else {
+            val width: Int
+            val height: Int
+            if (monitorWidth > 1280 && monitorHeight > 720) {
+                width = 1280
+                height = 720
+            } else {
+                width = 960
+                height = 540
+            }
+            window = GLFW.glfwCreateWindow(width, height, title, 0L, 0L)
+            if (window == 0L) {
+                throw GraphicsCheckException("Failed to create window")
+            }
         }
     }
 

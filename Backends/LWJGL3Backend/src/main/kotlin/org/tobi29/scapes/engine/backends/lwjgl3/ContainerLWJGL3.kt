@@ -31,6 +31,7 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.sound.SoundSystem
+import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -69,14 +70,6 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
         }
         soundSystem = OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
         superModifier = Platform.get() === Platform.MACOSX
-    }
-
-    fun checkContext(): String? {
-        if (useGLES) {
-            return checkContextGLES()
-        } else {
-            return checkContextGL()
-        }
     }
 
     override fun containerWidth(): Int {
@@ -170,6 +163,32 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
     }
 
     companion object : KLogging() {
+        fun workaroundLegacyProfile(tagStructure: TagStructure?): String? {
+            if (tagStructure?.getBoolean("ForceLegacyGL") ?: false) {
+                logger.warn { "Forcing a legacy profile, this is unsupported!" }
+                return "Forced by config"
+            }
+            if (tagStructure?.getBoolean("ForceCoreGL") ?: false) {
+                logger.warn { "Forcing a core profile, this is unsupported!" }
+                return null
+            }
+            val platform = Platform.get()
+            val vendor = GL11.glGetString(GL11.GL_VENDOR)
+            // AMD Catalyst/Crimson driver on both Linux and MS Windows ©
+            // causes JVM crashes in glDrawArrays and glDrawElements without
+            // any obvious reason to why, using a legacy context appears to
+            // fully get rid of those crashes, so this might be a driver bug
+            // as this does not happen on any other driver
+            // Note: This does not affect the macOS driver or radeonsi
+            // Note: Untested with AMDGPU-Pro
+            if ((platform == Platform.LINUX || platform == Platform.WINDOWS) &&
+                    vendor == "ATI Technologies Inc.") {
+                // AMD is bloody genius with their names
+                return "Crashes on AMD Radeon Software Crimson"
+            }
+            return null
+        }
+
         fun checkContextGL(): String? {
             logger.info {
                 "OpenGL: ${GL11.glGetString(
