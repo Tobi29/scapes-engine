@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import java.util.stream.Collectors
-
 apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 apply plugin: "idea"
 
@@ -67,81 +65,16 @@ afterEvaluate {
     }
 }
 
-apply plugin: ScapesEngineApplication
+apply plugin: ScapesEngineExtension
 
-class ScapesEngineApplication implements Plugin<Project> {
+class ScapesEngineExtension implements Plugin<Project> {
     @Override
     void apply(Project target) {
         // Extension properties
-        target.extensions.
-                create("extension", ScapesEngineExtensionExtension)
-
-        // Platform deploy tasks
-        def deployLinux32Task = addDeployLinuxTask(target, "32",
-                target.configurations.runtimeLinux32,
-                target.configurations.nativesLinux32)
-        def deployLinux64Task = addDeployLinuxTask(target, "64",
-                target.configurations.runtimeLinux64,
-                target.configurations.nativesLinux64)
+        target.extensions.create("extension", ScapesEngineExtensionExtension)
 
         // Full deploy task
         def deployTask = target.tasks.create("deploy", Task)
         deployTask.group = "Deployment"
-        if (deployLinux32Task != null) {
-            deployTask.dependsOn deployLinux32Task
-        }
-        if (deployLinux64Task != null) {
-            deployTask.dependsOn deployLinux64Task
-        }
     }
-
-    private Task addDeployLinuxTask(Project target, String arch,
-            Configuration runtime, Configuration natives) {
-        def name = "${-> target.extension.name.toLowerCase()}"
-        def libPath = "/usr/share/java"
-        if (target.rootProject.hasProperty("libPath")) {
-            libPath = target.rootProject.libPath
-        }
-
-        // Main task
-        def task = target.tasks.create("deployLinux$arch", Tar)
-        task.description =
-                "Contains tarball that can be extracted into root for easier package creation"
-        task.group = "Deployment"
-        task.dependsOn target.jar
-        target.afterEvaluate {
-            task.baseName = "${-> target.extension.name}-Linux$arch"
-        }
-        task.compression = Compression.GZIP
-        task.from({ ->
-            (target.configurations.runtime + runtime +
-                    target.files(target.jar)) -
-                    target.files(target.extension.parent.tasks.jar) -
-                    target.extension.parent.configurations.runtime
-        }, { into "$libPath/${-> target.extension.parent.name.toLowerCase()}" })
-        task.from({ ->
-            natives.files.stream().
-                    map({
-                        if (it.name.endsWith(".jar")) {
-                            target.zipTree(it).files.stream().filter({
-                                it.isFile() &&
-                                        it.name.matches("(.+)\\.so(.[0-9]+)?")
-                            }).collect(Collectors.toList())
-                        } else {
-                            return it
-                        }
-                    }).collect(Collectors.toList())
-        }) {
-            eachFile { FileCopyDetails fcp ->
-                String[] segments = [libPath, name, fcp.name]
-                fcp.relativePath = new RelativePath(true, segments)
-            }
-        }
-        return task
-    }
-}
-
-class ScapesEngineExtensionExtension {
-    def String name
-    def Project parent
 }
