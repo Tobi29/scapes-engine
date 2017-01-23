@@ -143,3 +143,38 @@ inline fun <S, T : S> Sequence<T>.reduceIndexedOrNull(operation: (Int, S, T) -> 
     }
     return accumulator
 }
+
+inline fun <T> Iterator(crossinline block: () -> T?): Iterator<T> {
+    return object : Iterator<T> {
+        private var next: T? = null
+        private var init = false
+
+        // We have this in a function to only inline once, but still have a
+        // non-virtual call
+        private fun iterate() {
+            next = block()
+        }
+
+        // Used to avoid having to call invoke() before actually evaluating
+        // Makes this properly lazy
+        private fun touch() {
+            if (!init) {
+                init = true
+                iterate()
+            }
+        }
+
+        override fun hasNext(): Boolean {
+            touch()
+            return next != null
+        }
+
+        override fun next(): T {
+            touch()
+            val element = next ?: throw NoSuchElementException(
+                    "No more elements in iterator")
+            iterate()
+            return element
+        }
+    }
+}
