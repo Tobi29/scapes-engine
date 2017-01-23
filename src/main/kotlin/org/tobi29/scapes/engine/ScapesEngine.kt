@@ -99,7 +99,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
                 ClasspathPath(javaClass.classLoader, ""))
         files.registerFileSystem("Engine",
                 ClasspathPath(javaClass.classLoader,
-                        "assets/scapes/tobi29/engine/"))
+                        "assets/scapes/tobi29/engine"))
 
         logger.info { "Initializing game" }
         this.game.initEarly()

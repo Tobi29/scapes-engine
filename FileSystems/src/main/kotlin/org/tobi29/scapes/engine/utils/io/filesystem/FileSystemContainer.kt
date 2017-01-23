@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
+import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 class FileSystemContainer : Path {
@@ -30,15 +31,25 @@ class FileSystemContainer : Path {
         fileSystems.remove(id)
     }
 
+    override fun get(path: String): Path {
+        val location = splitPath(path)
+        return fileSystem(location.first)[location.second]
+    }
+
+    override fun get(): ReadSource {
+        throw IOException("Cannot get read source from container")
+    }
+
+    override fun parent(): Path? {
+        // This is a container of parent-less roots, having a parent speaks
+        // plenty sense
+        return null
+    }
+
     private fun fileSystem(id: String): Path {
         val fileSystem = fileSystems[id] ?: throw IllegalArgumentException(
                 "Unknown file system: " + id)
         return fileSystem
-    }
-
-    override fun get(path: String): ReadSource {
-        val location = splitPath(path)
-        return fileSystem(location.first)[location.second]
     }
 
     private fun splitPath(path: String): Pair<String, String> {

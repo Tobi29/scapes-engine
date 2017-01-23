@@ -290,7 +290,7 @@ class GraphicsSystem(val engine: ScapesEngine,
     fun createShader(asset: String,
                      information: ShaderCompileInformation = ShaderCompileInformation()): Shader {
         try {
-            val program = gl.engine.files[asset + ".program"]
+            val program = gl.engine.files[asset + ".program"].get()
             val source = program.read({ stream -> process(stream, asString()) })
             val shader = compiled(source)
             return createShader(shader, information)

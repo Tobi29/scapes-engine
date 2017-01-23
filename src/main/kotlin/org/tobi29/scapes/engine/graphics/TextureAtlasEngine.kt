@@ -55,7 +55,7 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
             val source2 = sources[paths[0]]
             val source: Image
             if (source2 == null) {
-                source = engine.files[paths[0]].read { decodePNG(it) }
+                source = engine.files[paths[0]].get().read { decodePNG(it) }
                 sources.put(paths[0], source)
             } else {
                 source = source2
@@ -71,7 +71,9 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
                     val layer2 = sources[paths[i]]
                     val layer: Image
                     if (layer2 == null) {
-                        layer = engine.files[paths[i]].read { decodePNG(it) }
+                        layer = engine.files[paths[i]].get().read {
+                            decodePNG(it)
+                        }
                         sources.put(paths[i], layer)
                     } else {
                         layer = layer2

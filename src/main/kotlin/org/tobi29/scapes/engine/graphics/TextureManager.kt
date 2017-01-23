@@ -44,8 +44,8 @@ class TextureManager(private val engine: ScapesEngine) {
         }) res@ {
             val properties = Properties()
             val files = engine.files
-            val imageResource = files[asset + ".png"]
-            val propertiesResource = files[asset + ".properties"]
+            val imageResource = files[asset + ".png"].get()
+            val propertiesResource = files[asset + ".properties"].get()
             if (propertiesResource.exists()) {
                 propertiesResource.readIO().use { streamIn ->
                     properties.load(streamIn)

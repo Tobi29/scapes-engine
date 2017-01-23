@@ -19,8 +19,21 @@ package org.tobi29.scapes.engine.utils.io.filesystem.classpath
 import org.tobi29.scapes.engine.utils.io.filesystem.Path
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 
-data class ClasspathPath(val classLoader: ClassLoader, val path: String) : Path {
-    override fun get(path: String): ReadSource {
-        return ClasspathResource(classLoader, this.path + path)
+data class ClasspathPath(private val classLoader: ClassLoader,
+                         private val path: String) : Path {
+    override fun get(): ReadSource {
+        return ClasspathResource(classLoader, path)
+    }
+
+    override fun get(path: String): Path {
+        return ClasspathPath(classLoader, "${this.path}/$path")
+    }
+
+    override fun parent(): Path? {
+        val i = path.lastIndexOf('/')
+        if (i < 0) {
+            return null
+        }
+        return ClasspathPath(classLoader, path.substring(0, i))
     }
 }

@@ -17,5 +17,9 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 interface Path {
-    operator fun get(path: String): ReadSource
+    fun get(): ReadSource
+
+    operator fun get(path: String): Path
+
+    fun parent(): Path?
 }

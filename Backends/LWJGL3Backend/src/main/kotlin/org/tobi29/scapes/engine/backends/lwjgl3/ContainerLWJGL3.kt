@@ -113,7 +113,7 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
     }
 
     override fun loadFont(asset: String): Font? {
-        return STBFont.fromFont(this, engine.files[asset + ".ttf"])
+        return STBFont.fromFont(this, engine.files[asset + ".ttf"].get())
     }
 
     override fun allocate(capacity: Int): ByteBuffer {

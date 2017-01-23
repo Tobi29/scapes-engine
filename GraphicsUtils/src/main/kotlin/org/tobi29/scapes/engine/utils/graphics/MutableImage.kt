@@ -27,4 +27,10 @@ class MutableImage(val width: Int = 1,
         get() = field.duplicate()
 
     val size by lazy { Vector2i(width, height) }
+
+    init {
+        if (buffer.remaining() != width * height shl 2) {
+            throw IllegalArgumentException("Backing buffer sized incorrectly")
+        }
+    }
 }

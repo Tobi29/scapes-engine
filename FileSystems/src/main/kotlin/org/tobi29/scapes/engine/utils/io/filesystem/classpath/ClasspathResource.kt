@@ -26,7 +26,8 @@ import java.nio.channels.ReadableByteChannel
 import java.security.AccessController
 import java.security.PrivilegedAction
 
-class ClasspathResource(private val classLoader: ClassLoader, private val path: String) : ReadSource {
+class ClasspathResource(private val classLoader: ClassLoader,
+                        private val path: String) : ReadSource {
     override fun <R> read(reader: (ReadableByteStream) -> R): R {
         readIO().use { streamIn ->
             return reader(BufferedReadChannelStream(

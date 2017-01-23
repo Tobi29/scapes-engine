@@ -221,10 +221,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         override fun toAbsolutePath(): FilePath {
             return path(path.toAbsolutePath())
         }
-
-        override fun get(path: String): ReadSource {
-            return read(toPath(resolve(path)))
-        }
     }
 
     private fun toPath(path: FilePath): Path {

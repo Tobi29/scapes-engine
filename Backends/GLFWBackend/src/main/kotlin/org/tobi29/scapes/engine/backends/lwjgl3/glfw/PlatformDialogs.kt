@@ -26,7 +26,7 @@ import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.filesystem.path
+import org.tobi29.scapes.engine.utils.io.filesystem.get
 import org.tobi29.scapes.engine.utils.io.filesystem.read
 import org.tobi29.scapes.engine.utils.io.use
 import java.io.IOException
@@ -54,7 +54,7 @@ object PlatformDialogs : KLogging() {
                 TinyFileDialogs.tinyfd_openFileDialog("Open File...", "",
                         filters, null, multiple)?.split(
                         '|')?.forEach { filePath ->
-                    val path = path(filePath).toAbsolutePath()
+                    val path = get(filePath).toAbsolutePath()
                     read(path) { stream ->
                         result(path.fileName.toString(), stream)
                     }
@@ -69,7 +69,7 @@ object PlatformDialogs : KLogging() {
             filter(extensions) { filters ->
                 TinyFileDialogs.tinyfd_saveFileDialog("Save File...", "",
                         filters, null)?.let { filePath ->
-                    return path(filePath).toAbsolutePath()
+                    return get(filePath).toAbsolutePath()
                 }
             }
         }

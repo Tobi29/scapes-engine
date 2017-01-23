@@ -129,7 +129,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
                            pitch: Float,
                            gain: Float,
                            state: Boolean) {
-        playMusic(engine.files[asset], channel, pitch, gain, state)
+        playMusic(engine.files[asset].get(), channel, pitch, gain, state)
     }
 
     override fun playMusic(asset: String,
@@ -139,7 +139,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
                            position: Vector3d,
                            velocity: Vector3d,
                            state: Boolean) {
-        playMusic(engine.files[asset], channel, pitch, gain, position,
+        playMusic(engine.files[asset].get(), channel, pitch, gain, position,
                 velocity, state)
     }
 
@@ -266,7 +266,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     internal operator fun get(openAL: OpenAL,
                               asset: String): OpenALAudioData? {
         if (!cache.containsKey(asset)) {
-            val resource = engine.files[asset]
+            val resource = engine.files[asset].get()
             if (resource.exists()) {
                 try {
                     AudioStream.create(resource).use {

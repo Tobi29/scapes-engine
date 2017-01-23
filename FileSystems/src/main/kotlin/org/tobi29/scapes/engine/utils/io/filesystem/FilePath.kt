@@ -36,4 +36,16 @@ interface FilePath : Path, Comparable<FilePath> {
     val fileName: FilePath
 
     fun toAbsolutePath(): FilePath
+
+    override fun get(): ReadSource {
+        return read(this)
+    }
+
+    override fun get(path: String): Path {
+        return resolve(path)
+    }
+
+    override fun parent(): FilePath {
+        return resolve("..")
+    }
 }
