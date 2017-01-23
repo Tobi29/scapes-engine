@@ -19,7 +19,9 @@
 package org.tobi29.scapes.engine.utils.math
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.math.vector.Vector3i
 
 /**
  * Estimate for `e`
@@ -224,6 +226,31 @@ inline fun max(value1: Vector2d,
 inline fun max(value1: Vector3d,
                value2: Vector3d): Vector3d {
     return Vector3d(max(value1.x, value2.x),
+            max(value1.y, value2.y),
+            max(value1.z, value2.z))
+}
+
+/**
+ * Returns the greater values between [value1] and [value2]
+ * @param value1 The first value
+ * @param value2 The second value
+ * @return [Vector2i] with greater values between [value1] and [value2]
+ */
+inline fun max(value1: Vector2i,
+               value2: Vector2i): Vector2i {
+    return Vector2i(max(value1.x, value2.x),
+            max(value1.y, value2.y))
+}
+
+/**
+ * Returns the greater values between [value1] and [value2]
+ * @param value1 The first value
+ * @param value2 The second value
+ * @return [Vector3i] with greater values between [value1] and [value2]
+ */
+inline fun max(value1: Vector3i,
+               value2: Vector3i): Vector3i {
+    return Vector3i(max(value1.x, value2.x),
             max(value1.y, value2.y),
             max(value1.z, value2.z))
 }
