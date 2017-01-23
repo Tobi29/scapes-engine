@@ -26,13 +26,19 @@ data class ClasspathPath(private val classLoader: ClassLoader,
     }
 
     override fun get(path: String): Path {
+        if (this.path.isEmpty()) {
+            return ClasspathPath(classLoader, path)
+        }
         return ClasspathPath(classLoader, "${this.path}/$path")
     }
 
     override fun parent(): Path? {
+        if (path.isEmpty()) {
+            return null
+        }
         val i = path.lastIndexOf('/')
         if (i < 0) {
-            return null
+            return ClasspathPath(classLoader, "")
         }
         return ClasspathPath(classLoader, path.substring(0, i))
     }
