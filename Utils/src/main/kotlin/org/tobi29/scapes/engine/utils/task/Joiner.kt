@@ -90,13 +90,15 @@ open class Joiner {
     open class BasicJoinable : Joinable {
         override val joiner = Joiner(this)
         private val woken = AtomicBoolean()
-        override @Volatile var joined = false
-            protected set
-        override @Volatile var marked = false
-            protected set
+        private val joinedMut = AtomicBoolean()
+        private val markedMut = AtomicBoolean()
+        override val joined: Boolean
+            get() = joinedMut.get()
+        override val marked: Boolean
+            get() = markedMut.get()
 
         override fun mark() {
-            marked = true
+            markedMut.set(true)
         }
 
         override fun joinWait(time: Long) {
@@ -110,7 +112,7 @@ open class Joiner {
         }
 
         override fun join() {
-            joined = true
+            joinedMut.set(true)
             synchronized(this) {
                 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
                 (this as Object).notifyAll()
@@ -147,13 +149,15 @@ open class Joiner {
     class SelectorJoinable(val selector: Selector) : Joinable {
         override val joiner = Joiner(this)
         private val woken = AtomicBoolean()
-        override @Volatile var joined = false
-            private set
-        override @Volatile var marked = false
-            private set
+        private val joinedMut = AtomicBoolean()
+        private val markedMut = AtomicBoolean()
+        override val joined: Boolean
+            get() = joinedMut.get()
+        override val marked: Boolean
+            get() = markedMut.get()
 
         override fun mark() {
-            marked = true
+            markedMut.set(true)
         }
 
         override fun joinWait(time: Long) {
@@ -167,7 +171,7 @@ open class Joiner {
         }
 
         override fun join() {
-            joined = true
+            joinedMut.set(true)
             synchronized(this) {
                 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
                 (this as Object).notifyAll()
