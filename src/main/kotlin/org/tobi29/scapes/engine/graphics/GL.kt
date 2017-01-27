@@ -29,8 +29,6 @@ abstract class GL protected constructor(val engine: ScapesEngine,
                                         val container: Container) {
     val textures: TextureManager
     val matrixStack: MatrixStack
-    val projectionMatrix = Matrix4f()
-    val modelViewProjectionMatrix = Matrix4f()
     protected val vaoTracker: GraphicsObjectTracker<Model>
     protected val textureTracker: GraphicsObjectTracker<Texture>
     protected val fboTracker: GraphicsObjectTracker<Framebuffer>
@@ -91,48 +89,6 @@ abstract class GL protected constructor(val engine: ScapesEngine,
 
     fun matrixStack(): MatrixStack {
         return matrixStack
-    }
-
-    fun projectionMatrix(): Matrix4f {
-        return projectionMatrix
-    }
-
-    fun modelViewProjectionMatrix(): Matrix4f {
-        projectionMatrix.multiply(matrixStack.current().modelView(),
-                modelViewProjectionMatrix)
-        return modelViewProjectionMatrix
-    }
-
-    fun setProjectionPerspective(width: Float,
-                                 height: Float,
-                                 cam: Cam) {
-        projectionMatrix.identity()
-        projectionMatrix.perspective(cam.fov, width / height, cam.near, cam.far)
-        val matrix = matrixStack.current()
-        matrix.identity()
-        val viewMatrix = matrix.modelView()
-        viewMatrix.rotateAccurate((-cam.tilt).toDouble(), 0.0f, 0.0f, 1.0f)
-        viewMatrix.rotateAccurate((-cam.pitch - 90.0f).toDouble(), 1.0f, 0.0f,
-                0.0f)
-        viewMatrix.rotateAccurate((-cam.yaw + 90.0f).toDouble(), 0.0f, 0.0f,
-                1.0f)
-        enableCulling()
-        enableDepthTest()
-        setBlending(BlendingMode.NORMAL)
-    }
-
-    fun setProjectionOrthogonal(x: Float,
-                                y: Float,
-                                width: Float,
-                                height: Float) {
-        projectionMatrix.identity()
-        projectionMatrix.orthogonal(x, x + width, y + height, y, -1024.0f,
-                1024.0f)
-        val matrix = matrixStack.current()
-        matrix.identity()
-        disableCulling()
-        disableDepthTest()
-        setBlending(BlendingMode.NORMAL)
     }
 
     fun sceneWidth(): Int {
@@ -349,4 +305,10 @@ abstract class GL protected constructor(val engine: ScapesEngine,
         val TEXTURE_ATTRIBUTE = 2
         val NORMAL_ATTRIBUTE = 3
     }
+}
+
+fun Matrix4f.camera(cam: Cam) {
+    rotateAccurate((-cam.tilt).toDouble(), 0.0f, 0.0f, 1.0f)
+    rotateAccurate((-cam.pitch - 90.0f).toDouble(), 1.0f, 0.0f, 0.0f)
+    rotateAccurate((-cam.yaw + 90.0f).toDouble(), 0.0f, 0.0f, 1.0f)
 }

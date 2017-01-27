@@ -19,15 +19,18 @@ import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 
 class Matrix {
+    private val modelViewProjectionMatrix = Matrix4f()
     private val modelViewMatrix = Matrix4f()
     private val normalMatrix = Matrix3f()
 
     fun copy(matrix: Matrix) {
+        modelViewProjectionMatrix.copy(matrix.modelViewProjectionMatrix)
         modelViewMatrix.copy(matrix.modelViewMatrix)
         normalMatrix.copy(matrix.normalMatrix)
     }
 
     fun identity() {
+        modelViewProjectionMatrix.identity()
         modelViewMatrix.identity()
         normalMatrix.identity()
     }
@@ -35,12 +38,14 @@ class Matrix {
     fun scale(x: Float,
               y: Float,
               z: Float) {
+        modelViewProjectionMatrix.scale(x, y, z)
         modelViewMatrix.scale(x, y, z)
     }
 
     fun translate(x: Float,
                   y: Float,
                   z: Float) {
+        modelViewProjectionMatrix.translate(x, y, z)
         modelViewMatrix.translate(x, y, z)
     }
 
@@ -48,6 +53,7 @@ class Matrix {
                x: Float,
                y: Float,
                z: Float) {
+        modelViewProjectionMatrix.rotate(angle.toFloat(), x, y, z)
         modelViewMatrix.rotate(angle.toFloat(), x, y, z)
         normalMatrix.rotate(angle.toFloat(), x, y, z)
     }
@@ -56,6 +62,7 @@ class Matrix {
                x: Float,
                y: Float,
                z: Float) {
+        modelViewProjectionMatrix.rotate(angle, x, y, z)
         modelViewMatrix.rotate(angle, x, y, z)
         normalMatrix.rotate(angle, x, y, z)
     }
@@ -64,8 +71,13 @@ class Matrix {
                        x: Float,
                        y: Float,
                        z: Float) {
+        modelViewProjectionMatrix.rotateAccurate(angle, x, y, z)
         modelViewMatrix.rotateAccurate(angle, x, y, z)
         normalMatrix.rotateAccurate(angle, x, y, z)
+    }
+
+    fun modelViewProjection(): Matrix4f {
+        return modelViewProjectionMatrix
     }
 
     fun modelView(): Matrix4f {

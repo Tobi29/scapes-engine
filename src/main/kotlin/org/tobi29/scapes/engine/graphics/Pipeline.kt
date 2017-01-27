@@ -71,17 +71,23 @@ private fun renderPostProcess(gl: GL,
                               depthbuffer: Framebuffer,
                               model: Model,
                               shader: Shader) {
-    gl.setProjectionOrthogonal(0.0f, 0.0f, 1.0f, 1.0f)
-    gl.setAttribute4f(GL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f)
-    val texturesColor = framebuffer.texturesColor
-    val textureColor = texturesColor[0]
-    for (j in 1..texturesColor.lastIndex) {
-        gl.activeTexture(j + 1)
-        texturesColor[j].bind(gl)
+    gl.disableCulling()
+    gl.disableDepthTest()
+    gl.setBlending(BlendingMode.NORMAL)
+    gl.matrixStack.push { matrix ->
+        matrix.identity()
+        matrix.modelViewProjection().orthogonal(0.0f, 0.0f, 1.0f, 1.0f)
+        gl.setAttribute4f(GL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f)
+        val texturesColor = framebuffer.texturesColor
+        val textureColor = texturesColor[0]
+        for (j in 1..texturesColor.lastIndex) {
+            gl.activeTexture(j + 1)
+            texturesColor[j].bind(gl)
+        }
+        gl.activeTexture(1)
+        depthbuffer.textureDepth?.bind(gl)
+        gl.activeTexture(0)
+        textureColor.bind(gl)
+        model.render(gl, shader)
     }
-    gl.activeTexture(1)
-    depthbuffer.textureDepth?.bind(gl)
-    gl.activeTexture(0)
-    textureColor.bind(gl)
-    model.render(gl, shader)
 }

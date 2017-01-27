@@ -16,8 +16,10 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.graphics.BlendingMode
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.graphics.push
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.div
 import java.util.*
@@ -151,8 +153,15 @@ class GuiStack {
         guis.values.forEach {
             val size = it.baseSize()
             val pixelSize = size / framebufferSize
-            gl.setProjectionOrthogonal(0.0f, 0.0f, size.floatX(), size.floatY())
-            it.render(gl, shader, size, pixelSize, delta)
+            gl.disableCulling()
+            gl.disableDepthTest()
+            gl.setBlending(BlendingMode.NORMAL)
+            gl.matrixStack.push { matrix ->
+                matrix.identity()
+                matrix.modelViewProjection().orthogonal(0.0f, 0.0f,
+                        size.floatX(), size.floatY())
+                it.render(gl, shader, size, pixelSize, delta)
+            }
         }
         guis.values.forEach {
             val size = it.baseSize()

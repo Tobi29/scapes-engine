@@ -254,12 +254,17 @@ class Matrix4f {
         values[V33] = 0.0f
     }
 
-    fun orthogonal(left: Float,
-                   right: Float,
-                   bottom: Float,
-                   top: Float,
-                   zNear: Float,
-                   zFar: Float) {
+    fun orthogonal(x: Float,
+                   y: Float,
+                   width: Float,
+                   height: Float,
+                   zNear: Float = -1024.0f,
+                   zFar: Float = 1024.0f) {
+        val left = x
+        val right = x + width
+        val bottom = y + height
+        val top = y
+
         values[V00] = 2.0f / (right - left)
         values[V01] = 0.0f
         values[V02] = 0.0f
@@ -329,42 +334,22 @@ class Matrix4f {
         return true
     }
 
-    companion object {
-        private val V00: Int
-        private val V01: Int
-        private val V02: Int
-        private val V03: Int
-        private val V10: Int
-        private val V11: Int
-        private val V12: Int
-        private val V13: Int
-        private val V20: Int
-        private val V21: Int
-        private val V22: Int
-        private val V23: Int
-        private val V30: Int
-        private val V31: Int
-        private val V32: Int
-        private val V33: Int
-
-        init {
-            var i = 0
-            V00 = i++
-            V01 = i++
-            V02 = i++
-            V03 = i++
-            V10 = i++
-            V11 = i++
-            V12 = i++
-            V13 = i++
-            V20 = i++
-            V21 = i++
-            V22 = i++
-            V23 = i++
-            V30 = i++
-            V31 = i++
-            V32 = i++
-            V33 = i++
-        }
+    private companion object {
+        private const val V00 = 0
+        private const val V01 = 1
+        private const val V02 = 2
+        private const val V03 = 3
+        private const val V10 = 4
+        private const val V11 = 5
+        private const val V12 = 6
+        private const val V13 = 7
+        private const val V20 = 8
+        private const val V21 = 9
+        private const val V22 = 10
+        private const val V23 = 11
+        private const val V30 = 12
+        private const val V31 = 13
+        private const val V32 = 14
+        private const val V33 = 15
     }
 }

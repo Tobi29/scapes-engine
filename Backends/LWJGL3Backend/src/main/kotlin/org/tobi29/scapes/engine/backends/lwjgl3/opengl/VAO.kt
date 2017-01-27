@@ -94,7 +94,7 @@ internal abstract class VAO(protected val engine: ScapesEngine) : Model {
         uniformLocation = shader.uniformLocation(1)
         if (uniformLocation != -1) {
             GL20.glUniformMatrix4fv(uniformLocation, false,
-                    gl.modelViewProjectionMatrix().values())
+                    matrix.modelViewProjection().values())
         }
         uniformLocation = shader.uniformLocation(2)
         if (uniformLocation != -1) {

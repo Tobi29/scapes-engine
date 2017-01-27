@@ -26,12 +26,16 @@ fun busyPipeline(gl: GL): () -> Unit {
     val width = gl.contentWidth().toFloat()
     val height = gl.contentHeight().toFloat()
     return {
-        gl.setProjectionOrthogonal(-width * 0.5f, -height * 0.5f, width, height)
-        gl.textures().unbind(gl)
-        val matrixStack = gl.matrixStack()
-        val matrix = matrixStack.push()
-        matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
-        busy.render(gl, shader.get())
-        matrixStack.pop()
+        gl.disableCulling()
+        gl.disableDepthTest()
+        gl.setBlending(BlendingMode.NORMAL)
+        gl.matrixStack.push { matrix ->
+            matrix.identity()
+            matrix.modelViewProjection().orthogonal(-width * 0.5f,
+                    -height * 0.5f, width, height)
+            gl.textures().unbind(gl)
+            matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
+            busy.render(gl, shader.get())
+        }
     }
 }

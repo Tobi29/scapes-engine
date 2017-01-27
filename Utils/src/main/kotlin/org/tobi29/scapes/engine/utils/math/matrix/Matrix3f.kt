@@ -184,28 +184,15 @@ class Matrix3f {
         return Vector3d(v1, v2, v3)
     }
 
-    companion object {
-        private val V00: Int
-        private val V01: Int
-        private val V02: Int
-        private val V10: Int
-        private val V11: Int
-        private val V12: Int
-        private val V20: Int
-        private val V21: Int
-        private val V22: Int
-
-        init {
-            var i = 0
-            V00 = i++
-            V01 = i++
-            V02 = i++
-            V10 = i++
-            V11 = i++
-            V12 = i++
-            V20 = i++
-            V21 = i++
-            V22 = i++
-        }
+    private companion object {
+        private const val V00 = 0
+        private const val V01 = 1
+        private const val V02 = 2
+        private const val V10 = 3
+        private const val V11 = 4
+        private const val V12 = 5
+        private const val V20 = 6
+        private const val V21 = 7
+        private const val V22 = 8
     }
 }
