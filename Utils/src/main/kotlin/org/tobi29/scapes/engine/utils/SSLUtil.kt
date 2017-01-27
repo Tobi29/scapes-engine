@@ -41,7 +41,7 @@ import javax.security.auth.x500.X500Principal
 
 private val FACTORY: KeyFactory = KeyFactory.getInstance("RSA")
 // TODO: Need better key storage to be more future proof
-private val E = BigInteger("65537")
+private val e = BigInteger("65537")
 
 /**
  * Reads a private RSA key, encoded in Base64
@@ -72,7 +72,7 @@ fun readPrivate(str: String): RSAPrivateKey {
  */
 @Throws(InvalidKeySpecException::class)
 fun extractPublic(key: RSAPrivateKey): PublicKey {
-    val publicKeySpec = RSAPublicKeySpec(key.modulus, E)
+    val publicKeySpec = RSAPublicKeySpec(key.modulus, e)
     return FACTORY.generatePublic(publicKeySpec)
 }
 
