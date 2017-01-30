@@ -23,6 +23,7 @@ dependencies {
     compile(project(":ScapesEngine:Utils:TagStructureBinary")) {
         transitive = false
     }
+    compile "org.jetbrains.kotlinx:kotlinx-coroutines-core:0.4-beta"
 
     testCompile "junit:junit:4.12"
 }

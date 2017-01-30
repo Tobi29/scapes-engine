@@ -16,16 +16,13 @@
 package org.tobi29.scapes.engine.server
 
 import java8.util.concurrent.ConcurrentMaps
+import kotlinx.coroutines.experimental.yield
 import mu.KLogging
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.ListenerOwner
 import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
-import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream
-import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
-import org.tobi29.scapes.engine.utils.io.tag.getListStructure
-import org.tobi29.scapes.engine.utils.io.tag.structure
 import java.io.IOException
 import java.nio.channels.SelectionKey
 import java.security.*
@@ -40,10 +37,9 @@ import javax.crypto.spec.PBEParameterSpec
 /**
  * Simple tcp protocol to send [TagStructure]s back and forth
  */
-open class ControlPanelProtocol private constructor(
-        private val worker: ConnectionWorker,
-        private val channel: PacketBundleChannel,
-        events: EventDispatcher?) : Connection, ListenerOwner {
+open class ControlPanelProtocol(private val worker: ConnectionWorker,
+                                private val channel: PacketBundleChannel,
+                                events: EventDispatcher?) : ListenerOwner {
     /**
      * [EventDispatcher] for this object
      */
@@ -62,10 +58,12 @@ open class ControlPanelProtocol private constructor(
     private var idStr: String? = null
     private val queue = ConcurrentLinkedQueue<TagStructure>()
     private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
-    private val closeHooks = ConcurrentLinkedQueue<() -> Unit>()
     private val disconnectHooks = ConcurrentLinkedQueue<(Exception) -> Unit>()
     private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagStructure) -> Unit>, Queue<(TagStructure) -> Unit>>>()
-    private var state: ChannelState? = null
+    private var isClosed = false
+    private var pingWait = 0L
+    var ping = 0L
+        private set
     override val listenerOwner = ListenerOwnerHandle { !isClosed }
 
     init {
@@ -78,85 +76,96 @@ open class ControlPanelProtocol private constructor(
         }
     }
 
-    /**
-     * Construct a client-side instance for authentication with a salt
-     * @param worker The [ConnectionWorker] this will run in
-     * @param channel The [PacketBundleChannel] to communicate with
-     * @param events Optional parent [EventDispatcher]
-     * @param client Client ID
-     * @param authentication Authentication mechanism
-     * @throws IOException When an I/O error occurred whilst registering to the worker's selector
-     */
     @Throws(IOException::class)
-    constructor(worker: ConnectionWorker,
-                channel: PacketBundleChannel,
-                events: EventDispatcher?,
-                client: String,
-                authentication: (String, Int, ByteArray) -> Cipher) : this(
-            worker, channel, events) {
+    suspend fun runClient(connection: Connection,
+                          client: String,
+                          authentication: (String, Int, ByteArray) -> Cipher) {
         idStr = client
-        val output = channel.outputStream
-        output.putString(client)
-        channel.queueBundle()
-        state = ChannelState(
-                { i, o -> loginClient(i, o, client, authentication) })
+        try {
+            if (loginClient(client, authentication)) {
+                return
+            }
+            open(connection)
+        } catch (e: ConnectionCloseException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: InvalidPacketDataException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: IOException) {
+            logger.info { "Control panel disconnected: $e" }
+            while (!disconnectHooks.isEmpty()) {
+                disconnectHooks.poll()(e)
+            }
+        } finally {
+            close()
+        }
     }
 
-    /**
-     * Construct a client-side instance for authentication without a salt
-     * @param worker The [ConnectionWorker] this will run in
-     * @param channel The [PacketBundleChannel] to communicate with
-     * @param events Optional parent [EventDispatcher]
-     * @param client Client ID
-     * @param authentication Authentication mechanism
-     */
     @Throws(IOException::class)
-    constructor(worker: ConnectionWorker,
-                channel: PacketBundleChannel,
-                events: EventDispatcher?,
-                client: String,
-                authentication: (String, Int) -> Cipher) : this(worker, channel,
-            events) {
+    suspend fun runClientAsym(connection: Connection,
+                              client: String,
+                              authentication: (String, Int) -> Cipher) {
         idStr = client
-        val output = channel.outputStream
-        output.putString(client)
-        channel.queueBundle()
-        state = ChannelState(
-                { i, o -> loginClientAsym(i, o, client, authentication) })
+        try {
+            if (loginClientAsym(client, authentication)) {
+                return
+            }
+            open(connection)
+        } catch (e: ConnectionCloseException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: InvalidPacketDataException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: IOException) {
+            logger.info { "Control panel disconnected: $e" }
+            while (!disconnectHooks.isEmpty()) {
+                disconnectHooks.poll()(e)
+            }
+        } finally {
+            close()
+        }
     }
 
-    /**
-     * Construct a server-side instance for authentication with a salt
-     * @param worker The [ConnectionWorker] this will run in
-     * @param channel The [PacketBundleChannel] to communicate with
-     * @param events Optional parent [EventDispatcher]
-     * @param authentication Authentication mechanism
-     */
     @Throws(IOException::class)
-    constructor(worker: ConnectionWorker,
-                channel: PacketBundleChannel,
-                events: EventDispatcher?,
-                authentication: (String, Int, ByteArray) -> Cipher?) : this(
-            worker, channel, events) {
-        state = ChannelState(
-                { i, o -> challengeServer(i, o, authentication) })
+    suspend fun runServer(connection: Connection,
+                          authentication: (String, Int, ByteArray) -> Cipher?) {
+        try {
+            if (challengeServer(authentication)) {
+                return
+            }
+            open(connection)
+        } catch (e: ConnectionCloseException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: InvalidPacketDataException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: IOException) {
+            logger.info { "Control panel disconnected: $e" }
+            while (!disconnectHooks.isEmpty()) {
+                disconnectHooks.poll()(e)
+            }
+        } finally {
+            close()
+        }
     }
 
-    /**
-     * Construct a server-side instance for authentication without a salt
-     * @param worker The [ConnectionWorker] this will run in
-     * @param channel The [PacketBundleChannel] to communicate with
-     * @param events Optional parent [EventDispatcher]
-     * @param authentication Authentication mechanism
-     */
     @Throws(IOException::class)
-    constructor(worker: ConnectionWorker,
-                channel: PacketBundleChannel,
-                events: EventDispatcher?,
-                authentication: (String, Int) -> Cipher?) : this(worker,
-            channel, events) {
-        state = ChannelState(
-                { i, o -> challengeServerAsym(i, o, authentication) })
+    suspend fun runServerAsym(connection: Connection,
+                              authentication: (String, Int) -> Cipher?) {
+        try {
+            if (challengeServerAsym(authentication)) {
+                return
+            }
+            open(connection)
+        } catch (e: ConnectionCloseException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: InvalidPacketDataException) {
+            logger.info { "Disconnecting control panel: $e" }
+        } catch (e: IOException) {
+            logger.info { "Control panel disconnected: $e" }
+            while (!disconnectHooks.isEmpty()) {
+                disconnectHooks.poll()(e)
+            }
+        } finally {
+            close()
+        }
     }
 
     /**
@@ -208,16 +217,6 @@ open class ControlPanelProtocol private constructor(
     }
 
     /**
-     * Runnable that gets executed once the connection is closed
-     *
-     * **Note:** This is called even when the connection breaks
-     * @param runnable Callback that gets called
-     */
-    fun closeHook(runnable: () -> Unit) {
-        closeHooks.add(runnable)
-    }
-
-    /**
      * Runnable that gets executed in case the connection breaks
      * @param runnable Callback that gets called with the exception that occurred
      */
@@ -238,40 +237,6 @@ open class ControlPanelProtocol private constructor(
         list.second.add(runnable)
     }
 
-    override fun tick(worker: ConnectionWorker) {
-        try {
-            if (channel.process2({ state })) {
-                state = null
-            }
-        } catch (e: ConnectionCloseException) {
-            logger.info { "Disconnecting control panel: $e" }
-            state = ChannelState()
-        } catch (e: InvalidPacketDataException) {
-            logger.info { "Disconnecting control panel: $e" }
-            state = ChannelState()
-        } catch (e: IOException) {
-            logger.info { "Control panel disconnected: $e" }
-            while (!disconnectHooks.isEmpty()) {
-                disconnectHooks.poll()(e)
-            }
-            state = null
-        }
-    }
-
-    override val isClosed: Boolean
-        get() = state == null
-
-    override fun requestClose() {
-        channel.requestClose()
-    }
-
-    override fun close() {
-        while (!closeHooks.isEmpty()) {
-            closeHooks.poll()()
-        }
-        channel.close()
-    }
-
     override fun toString(): String {
         return channel.toString()
     }
@@ -289,33 +254,37 @@ open class ControlPanelProtocol private constructor(
         }
     }
 
-    private fun loginClient(input: RandomReadableByteStream,
-                            output: RandomWritableByteStream,
-                            client: String,
-                            authentication: (String, Int, ByteArray) -> Cipher): Boolean {
+    private suspend fun loginClient(client: String,
+                                    authentication: (String, Int, ByteArray) -> Cipher): Boolean {
+        channel.outputStream.putString(client)
+        channel.queueBundle()
+        if (channel.receive()) {
+            return true
+        }
         val challenge = ByteArray(CHALLENGE_CIPHER_LENGTH)
         val salt = ByteArray(SALT_LENGTH)
-        input[challenge]
-        input[salt]
+        channel.inputStream[challenge]
+        channel.inputStream[salt]
         try {
             val cipher = authentication(client, Cipher.DECRYPT_MODE, salt)
-            output.put(cipher.doFinal(challenge))
+            channel.outputStream.put(cipher.doFinal(challenge))
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
             throw IOException(e)
         }
+        channel.queueBundle()
         while (!openHooks.isEmpty()) {
             openHooks.poll()()
         }
-        state = ChannelState({ i, o -> open(i) }, { openSend(it) })
-        return true
+        return false
     }
 
-    private fun challengeServer(input: RandomReadableByteStream,
-                                output: RandomWritableByteStream,
-                                authentication: (String, Int, ByteArray) -> Cipher?): Boolean {
-        val id = input.getString(1024)
+    private suspend fun challengeServer(authentication: (String, Int, ByteArray) -> Cipher?): Boolean {
+        if (channel.receive()) {
+            return true
+        }
+        val id = channel.inputStream.getString(1024)
         val challenge = ByteArray(CHALLENGE_LENGTH)
         val salt = ByteArray(SALT_LENGTH)
         val random = SecureRandom()
@@ -324,88 +293,132 @@ open class ControlPanelProtocol private constructor(
         try {
             val cipher = authentication(id, Cipher.ENCRYPT_MODE,
                     salt) ?: throw IOException("Unknown id")
-            output.put(cipher.doFinal(challenge))
-            output.put(salt)
+            channel.outputStream.put(cipher.doFinal(challenge))
+            channel.outputStream.put(salt)
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
             throw IOException(e)
         }
-        state = ChannelState({ i, o -> loginServer(i, id, challenge) })
-        return true
+        channel.queueBundle()
+        return loginServer(id, challenge)
     }
 
-    private fun loginClientAsym(input: RandomReadableByteStream,
-                                output: RandomWritableByteStream,
-                                client: String,
-                                authentication: (String, Int) -> Cipher): Boolean {
+    private suspend fun loginClientAsym(client: String,
+                                        authentication: (String, Int) -> Cipher): Boolean {
+        channel.outputStream.putString(client)
+        channel.queueBundle()
+        if (channel.receive()) {
+            return true
+        }
         val challenge = ByteArray(ASYM_CHALLENGE_CIPHER_LENGTH)
-        input[challenge]
+        channel.inputStream[challenge]
         try {
             val cipher = authentication(client, Cipher.DECRYPT_MODE)
-            output.put(cipher.doFinal(challenge))
+            channel.outputStream.put(cipher.doFinal(challenge))
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
             throw IOException(e)
         }
+        channel.queueBundle()
         while (!openHooks.isEmpty()) {
             openHooks.poll()()
         }
-        state = ChannelState({ i, o -> open(i) }, { openSend(it) })
-        return true
+        return false
     }
 
-    private fun challengeServerAsym(input: RandomReadableByteStream,
-                                    output: RandomWritableByteStream,
-                                    authentication: (String, Int) -> Cipher?): Boolean {
-        val id = input.getString(1024)
+    private suspend fun challengeServerAsym(authentication: (String, Int) -> Cipher?): Boolean {
+        if (channel.receive()) {
+            return true
+        }
+        val id = channel.inputStream.getString(1024)
         val challenge = ByteArray(ASYM_CHALLENGE_LENGTH)
         val random = SecureRandom()
         random.nextBytes(challenge)
         try {
             val cipher = authentication(id,
                     Cipher.ENCRYPT_MODE) ?: throw IOException("Unknown id")
-            output.put(cipher.doFinal(challenge))
+            channel.outputStream.put(cipher.doFinal(challenge))
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
             throw IOException(e)
         }
-        state = ChannelState({ i, o -> loginServer(i, id, challenge) })
-        return true
+        channel.queueBundle()
+        return loginServer(id, challenge)
     }
 
-    private fun loginServer(input: RandomReadableByteStream,
-                            id: String,
-                            challenge: ByteArray): Boolean {
+    private suspend fun loginServer(id: String,
+                                    challenge: ByteArray): Boolean {
+        if (channel.receive()) {
+            return true
+        }
         val check = ByteArray(challenge.size)
-        input[check]
+        channel.inputStream[check]
         if (!Arrays.equals(check, challenge)) {
-            throw ConnectionCloseException(
-                    "Failed password authentication")
+            throw ConnectionCloseException("Failed password authentication")
         }
         idStr = id
         while (!openHooks.isEmpty()) {
             openHooks.poll()()
         }
-        state = ChannelState({ i, o -> open(i) }, { openSend(it) })
         return false
     }
 
-    private fun open(input: RandomReadableByteStream): Boolean {
-        val tagStructure = TagStructureBinary.read(input)
-        tagStructure.getListStructure("Commands") { commandStructure ->
-            val command = commandStructure.getString(
-                    "Command") ?: throw IOException("Command without id")
-            val payload = commandStructure.getStructure(
-                    "Payload") ?: throw IOException("Command without payload")
-            processCommand(command, payload)
+    private suspend fun open(connection: Connection) {
+        pingWait = System.currentTimeMillis() + 1000
+        while (!connection.shouldClose) {
+            val currentTime = System.currentTimeMillis()
+            if (pingWait < currentTime) {
+                pingWait = currentTime + 1000
+                TagStructureBinary.write(channel.outputStream,
+                        structure { setLong("Ping", currentTime) })
+                channel.queueBundle()
+            }
+            openSend()
+            if (openReceive(connection)) {
+                break
+            }
+            yield()
+        }
+    }
+
+    private suspend fun openReceive(connection: Connection): Boolean {
+        loop@ while (true) {
+            when (channel.process()) {
+                PacketBundleChannel.FetchResult.CLOSED -> return true
+                PacketBundleChannel.FetchResult.YIELD -> break@loop
+                PacketBundleChannel.FetchResult.BUNDLE -> {
+                    val tagStructure = TagStructureBinary.read(
+                            channel.inputStream)
+                    tagStructure.getLong("Ping")?.let {
+                        TagStructureBinary.write(channel.outputStream,
+                                structure { setLong("Pong", it) })
+                        channel.queueBundle()
+                    }
+                    tagStructure.getLong("Pong")?.let {
+                        val ping = System.currentTimeMillis() - it
+                        this.ping = ping
+                        connection.increaseTimeout(10000 - ping)
+                    }
+                    tagStructure.getListStructure(
+                            "Commands") { commandStructure ->
+                        val command = commandStructure.getString(
+                                "Command") ?: throw IOException(
+                                "Command without id")
+                        val payload = commandStructure.getStructure(
+                                "Payload") ?: throw IOException(
+                                "Command without payload")
+                        processCommand(command, payload)
+                    }
+                }
+            }
         }
         return false
     }
 
-    private fun openSend(output: RandomWritableByteStream): Boolean {
+    private suspend fun openSend() {
         val list = ArrayList<TagStructure>(0)
         while (!queue.isEmpty()) {
             list.add(queue.poll())
@@ -413,10 +426,14 @@ open class ControlPanelProtocol private constructor(
         if (!list.isEmpty()) {
             val tagStructure = TagStructure()
             tagStructure.setList("Commands", list)
-            TagStructureBinary.write(output, tagStructure)
-            return true
+            TagStructureBinary.write(channel.outputStream, tagStructure)
+            channel.queueBundle()
         }
-        return false
+    }
+
+    private fun close() {
+        channel.close()
+        isClosed = true
     }
 
     companion object : KLogging() {

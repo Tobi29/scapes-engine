@@ -15,38 +15,97 @@
  */
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.yield
+import org.tobi29.scapes.engine.utils.math.max
+import java.io.IOException
+import java.net.SocketAddress
+import java.nio.channels.SelectionKey
+import java.nio.channels.SocketChannel
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
+
 /**
- * Interface for a generic connection inside a [ConnectionWorker]
+ * Handle to communicate with the worker from a connection job
+ *
+ * This class serves 2 purposes:
+ * * Notifying the worker that the connection has not timed out
+ * * Keeping track of whether or not the connection should gracefully close
  */
-interface Connection {
+class Connection(private val requestClose: AtomicBoolean,
+                 private val timeout: AtomicLong) {
     /**
-     * Called occasionally to poll the connection
-     *
-     * **Note:** To increase the frequency of this being called, register
-     * something to the [ConnectionWorker]
-     * **Note:** [worker] will always stay the same instance, so one can use it
-     * at construction time
+     * Set the timeout to at least [timeout] ms from now
+     * @param timeout The time from now in milliseconds
      */
-    fun tick(worker: ConnectionWorker)
+    fun increaseTimeout(timeout: Long) {
+        val nextTime = System.currentTimeMillis() + timeout
+        while (true) {
+            val prev = this.timeout.get()
+            val next = max(prev, nextTime)
+            if (this.timeout.compareAndSet(prev, next)) {
+                break
+            }
+        }
+    }
 
     /**
-     * Should return `true` once the connection is gracefully closed
-     *
-     * **Note:** The worker will call [close] afterwards to fully clean up
+     * Sets [shouldClose] to `true`
      */
-    val isClosed: Boolean
+    fun requestClose() = requestClose.set(true)
 
     /**
-     * Requests the connection to gracefully close
+     * Returns `true` whenever a request was made to close this connection job,
+     * possibly called by the worker
      */
-    fun requestClose()
+    val shouldClose get() = requestClose.get()
+}
 
-    /**
-     * Tears down the connection immediately, no resources like sockets should
-     * be kept open after this got called, unless passed on to some other
-     * component
-     *
-     * **Note:** This is called after the last time that [tick] got executed
-     */
-    fun close()
+/**
+ * Async function to resolve and address and connect to it through a
+ * [SocketChannel]
+ * @param worker This worker will be used for waking when the connection can continue
+ * @param address The address to connect to
+ */
+suspend fun connect(worker: ConnectionWorker,
+                    address: RemoteAddress): SocketChannel {
+    val state = AtomicReference<(() -> SocketAddress)?>()
+    AddressResolver.resolve(address,
+            worker.connection.taskExecutor) { socketAddress ->
+        if (socketAddress == null) {
+            state.set { throw UnresolvableAddressException(address.address) }
+            return@resolve
+        }
+        worker.joiner.wake()
+        state.set { socketAddress }
+    }
+    var result: (() -> SocketAddress)? = state.get()
+    while (result == null) {
+        yield()
+        result = state.get()
+    }
+    return connect(worker, result())
+}
+
+/**
+ * Async function to resolve and address and connect to it through a
+ * [SocketChannel]
+ * @param worker This worker will be used for waking when the connection can continue
+ * @param address The address to connect to
+ */
+suspend fun connect(worker: ConnectionWorker,
+                    address: SocketAddress): SocketChannel {
+    val channel = SocketChannel.open()
+    try {
+        channel.configureBlocking(false)
+        channel.connect(address)
+        channel.register(worker.joiner.selector, SelectionKey.OP_CONNECT)
+        while (!channel.finishConnect()) {
+            yield()
+        }
+        return channel
+    } catch (e: IOException) {
+        channel.close()
+        throw e
+    }
 }

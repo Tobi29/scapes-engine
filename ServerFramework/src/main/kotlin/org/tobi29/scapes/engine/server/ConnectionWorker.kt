@@ -16,11 +16,14 @@
 
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.*
 import mu.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
-import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Class for processing non-blocking connections
@@ -37,9 +40,14 @@ class ConnectionWorker(
          * The [Joiner.SelectorJoinable] used for idling
          */
         val joiner: Joiner.SelectorJoinable,
-        private val maxWorkerSleep: Long) {
-    private val connectionQueue = ConcurrentLinkedQueue<(ConnectionWorker) -> Connection>()
-    private val connections = ArrayList<Connection>()
+        private val maxWorkerSleep: Long,
+        private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher(), Yield {
+    private val connectionQueue = ConcurrentLinkedQueue<suspend CoroutineScope.(Connection) -> Unit>()
+    private val connections = ArrayList<() -> Unit>()
+
+    private val queue = ConcurrentLinkedQueue<() -> Unit>()
+    private var continuations = ArrayList<CancellableContinuation<Unit>>()
+    private var continuationsSwap = ArrayList<CancellableContinuation<Unit>>()
 
     /**
      * Returns an estimate for how many connections this worker is processing
@@ -53,10 +61,10 @@ class ConnectionWorker(
 
     /**
      * Adds a new connection to this worker
-     * @param supplier Code that will be executed on this worker's thread
+     * @param block Code that will be executed on this worker's thread
      */
-    fun addConnection(supplier: (ConnectionWorker) -> Connection) {
-        connectionQueue.add(supplier)
+    fun addConnection(block: suspend CoroutineScope.(Connection) -> Unit) {
+        connectionQueue.add(block)
         joiner.wake()
     }
 
@@ -66,57 +74,94 @@ class ConnectionWorker(
      * **Note:** Should never be called twice or concurrently
      */
     fun run() {
-        try {
-            while (!joiner.marked) {
-                process()
-                if (!connectionQueue.isEmpty()) {
-                    while (!connectionQueue.isEmpty()) {
-                        val connection = connectionQueue.poll()(this)
-                        connections.add(connection)
+        while (!joiner.marked) {
+            process()
+            if (connectionQueue.isNotEmpty()) {
+                while (connectionQueue.isNotEmpty()) {
+                    val coroutine = connectionQueue.poll()
+                    val requestClose = AtomicBoolean()
+                    val timeout = AtomicLong(System.currentTimeMillis() + 10000)
+                    val connection = Connection(requestClose, timeout)
+                    val job = launch(this) { coroutine(connection) }
+                    launch(this) {
+                        while (job.isActive) {
+                            if (System.currentTimeMillis() > timeout.get()) {
+                                job.cancel(IOException("Timeout"))
+                            }
+                            // TODO: This throws AbstractMethodError with yield(), kotlin bug?
+                            // yield()
+                            suspendCancellableCoroutine<Unit> { cont ->
+                                scheduleResume(cont)
+                            }
+                        }
                     }
-                } else if (!joiner.marked) {
-                    val sleep = if (connections.isEmpty()) 0 else maxWorkerSleep
-                    joiner.sleep(sleep)
+                    val close = { requestClose.set(true) }
+                    connections.add(close)
+                    job.onCompletion {
+                        connections.remove(close)
+                    }
                 }
+            } else if (!joiner.marked) {
+                val sleep = if (connections.isEmpty()) 0 else maxWorkerSleep
+                joiner.sleep(sleep)
             }
-            connections.forEach { it.requestClose() }
-            val stopTimeout = System.nanoTime()
-            while (!connections.isEmpty() && System.nanoTime() - stopTimeout < 10000000000L) {
-                process()
-                if (!joiner.marked) {
-                    joiner.sleep(10)
-                }
+        }
+        connections.forEach { it() }
+        val stopTimeout = System.nanoTime()
+        while (connections.isNotEmpty() && System.nanoTime() - stopTimeout < 10000000000L) {
+            process()
+            if (!joiner.marked) {
+                joiner.sleep(10)
             }
-            while (!connectionQueue.isEmpty()) {
-                connectionQueue.poll()(this).close()
-            }
-        } finally {
-            for (connection in connections) {
-                try {
-                    connection.close()
-                } catch (e: IOException) {
-                    logger.warn { "Failed to close connection: $e" }
-                }
-            }
+        }
+        while (connections.isNotEmpty()) {
+            kill(IOException("Killing worker"))
         }
     }
 
     private fun process() {
-        val iterator = connections.iterator()
-        while (iterator.hasNext()) {
-            val connection = iterator.next()
-            if (!connection.isClosed) {
-                connection.tick(this)
-            }
-            if (connection.isClosed) {
-                try {
-                    connection.close()
-                } catch (e: IOException) {
-                    logger.warn { "Failed to close connection: $e" }
-                }
-                iterator.remove()
+        while (queue.isNotEmpty()) {
+            queue.poll()()
+        }
+        val process = continuations
+        if (process.isNotEmpty()) {
+            continuations = continuationsSwap
+            process.forEach { it.resume(Unit) }
+            process.clear()
+            continuationsSwap = process
+        }
+    }
+
+    private fun kill(e: Throwable) {
+        while (queue.isNotEmpty()) {
+            queue.poll()()
+        }
+        val process = continuations
+        if (process.isNotEmpty()) {
+            continuations = continuationsSwap
+            process.forEach { it.resumeWithException(e) }
+            process.clear()
+            continuationsSwap = process
+        }
+    }
+
+    override fun dispatch(context: CoroutineContext,
+                          block: Runnable) {
+        queue.add {
+            try {
+                block.run()
+            } catch (e: CancellationException) {
+                logger.warn { "Job cancelled: ${e.message}" }
             }
         }
+    }
+
+    override fun isDispatchNeeded(context: CoroutineContext): Boolean {
+        return thread == Thread.currentThread()
+    }
+
+    override fun scheduleResume(continuation: CancellableContinuation<Unit>) {
+        continuations.add(continuation)
     }
 
     companion object : KLogging()

@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.filterMap
@@ -41,8 +42,11 @@ import javax.net.ssl.SSLEngineResult
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLPeerUnverifiedException
 
-class PacketBundleChannel(private val address: RemoteAddress, private val channel: SocketChannel,
-                          private val taskExecutor: TaskExecutor, private val ssl: SSLHandle, client: Boolean) {
+class PacketBundleChannel(private val address: RemoteAddress,
+                          private val channel: SocketChannel,
+                          private val taskExecutor: TaskExecutor,
+                          private val ssl: SSLHandle,
+                          client: Boolean) {
     private val taskCounter = AtomicInteger()
     private val verified = AtomicBoolean()
     private val dataStreamOut = ByteBufferStream(growth = { it + 102400 })
@@ -79,6 +83,9 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
     val outputStream: RandomWritableByteStream
         get() = dataStreamOut
 
+    val inputStream: RandomReadableByteStream
+        get() = byteBufferStreamOut
+
     fun bundleSize(): Int {
         return dataStreamOut.buffer().position()
     }
@@ -103,29 +110,24 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
     }
 
     @Throws(IOException::class)
-    fun process(consumer: (RandomReadableByteStream) -> Boolean,
-                max: Int = Int.MAX_VALUE): Boolean {
+    fun process(): FetchResult {
         var timeout = if (state == State.OPEN) 0 else -2
-        var received = 0
-        while (timeout < 2 && received < max) {
+        while (timeout < 2) {
             if (hasBundle) {
-                if (!consumer(byteBufferStreamOut)) {
-                    return false
-                }
-                received++
                 hasBundle = false
+                return FetchResult.BUNDLE
             } else {
                 timeout++
             }
             fetch()
-            if (process()) {
-                return true
+            if (processChannel()) {
+                return FetchResult.CLOSED
             }
             if (hasBundle) {
                 timeout = 0
             }
         }
-        return false
+        return FetchResult.YIELD
     }
 
     private fun fetch() {
@@ -176,7 +178,7 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
         hasBundle = true
     }
 
-    private fun process(): Boolean {
+    private fun processChannel(): Boolean {
         while (true) {
             // Glorious design on Java's part:
             // The SSLEngine locks whilst delegated task runs
@@ -437,47 +439,35 @@ class PacketBundleChannel(private val address: RemoteAddress, private val channe
         private val BUFFER_CACHE = ThreadLocal { ArrayList<WeakReference<ByteBuffer>>() }
         private val EMPTY_BUFFER = ByteBuffer(0)
     }
-}
 
-inline fun PacketBundleChannel.processVoid(): Boolean {
-    return process({ true })
-}
-
-inline fun <S> PacketBundleChannel.process(crossinline state: () -> S?,
-                                           crossinline consumer: (S, RandomReadableByteStream) -> Unit,
-                                           max: Int = Int.MAX_VALUE): Boolean {
-    return process({ bundle ->
-        val currentState = state()
-        if (currentState == null) {
-            false
-        } else {
-            consumer(currentState, bundle)
-            true
-        }
-    }, max)
-}
-
-inline fun PacketBundleChannel.process2(crossinline state: () -> ChannelState?,
-                                        max: Int = Int.MAX_VALUE): Boolean {
-    val output = outputStream
-    if (state()?.producer?.invoke(output) ?: false) {
-        queueBundle()
+    enum class FetchResult {
+        BUNDLE, YIELD, CLOSED
     }
-    return process({ bundle ->
-        val currentState = state()
-        if (currentState == null) {
-            false
-        } else {
-            if (currentState.consumer(bundle, output)) {
-                queueBundle()
-            }
-            if (currentState.producer(output)) {
-                queueBundle()
-            }
-            true
-        }
-    }, max)
 }
 
-class ChannelState(val consumer: (RandomReadableByteStream, RandomWritableByteStream) -> Boolean = { i, o -> false },
-                   val producer: (RandomWritableByteStream) -> Boolean = { false })
+suspend fun PacketBundleChannel.receive(): Boolean {
+    while (true) {
+        when (process()) {
+            PacketBundleChannel.FetchResult.CLOSED -> return true
+            PacketBundleChannel.FetchResult.BUNDLE -> return false
+            PacketBundleChannel.FetchResult.YIELD -> yield()
+        }
+    }
+}
+
+@Throws(IOException::class)
+suspend fun PacketBundleChannel.receiveOrThrow() {
+    if (receive()) {
+        throw IOException("Connection closed")
+    }
+}
+
+suspend fun PacketBundleChannel.aClose() {
+    try {
+        requestClose()
+        while (!receive()) {
+            yield()
+        }
+    } catch (e: Exception) {
+    }
+}

@@ -24,6 +24,7 @@ import java.nio.channels.SelectionKey
 import java.nio.channels.Selector
 import java.nio.channels.ServerSocketChannel
 import java.nio.channels.SocketChannel
+import java.util.*
 
 abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
                                         private val connectionHeader: ByteArray,
@@ -59,14 +60,29 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
                                     client.close()
                                     continue
                                 }
-                                if (!addConnection { worker ->
+                                if (!addConnection { worker, connection ->
+                                    client.register(worker.joiner.selector,
+                                            SelectionKey.OP_READ)
                                     val bundleChannel = PacketBundleChannel(
                                             RemoteAddress(address), client,
                                             taskExecutor,
                                             ssl, false)
-                                    UnknownConnection(worker, bundleChannel,
-                                            this,
-                                            connectionHeader)
+                                    try {
+                                        if (bundleChannel.receive()) {
+                                            return@addConnection
+                                        }
+                                        val header = ByteArray(
+                                                connectionHeader.size)
+                                        bundleChannel.inputStream[header]
+                                        val id = bundleChannel.inputStream.get()
+                                        if (Arrays.equals(header,
+                                                connectionHeader)) {
+                                            onConnect(worker, bundleChannel,
+                                                    id, connection)
+                                        }
+                                    } catch (e: IOException) {
+                                        logger.info { "Error in new connection: $e" }
+                                    }
                                 }) {
                                     logger.warn { "Failed to assign connection to worker" }
                                     client.close()
@@ -97,9 +113,10 @@ abstract class AbstractServerConnection(taskExecutor: TaskExecutor,
 
     protected abstract fun accept(channel: SocketChannel): String?
 
-    abstract fun newConnection(worker: ConnectionWorker,
-                               channel: PacketBundleChannel,
-                               id: Byte): Connection?
+    abstract suspend fun onConnect(worker: ConnectionWorker,
+                                   channel: PacketBundleChannel,
+                                   id: Byte,
+                                   connection: Connection)
 
     companion object : KLogging()
 }

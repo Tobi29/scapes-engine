@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.CoroutineScope
 import mu.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
-import java.net.InetSocketAddress
 import java.nio.channels.Selector
-import java.nio.channels.SocketChannel
-import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Class for processing non-blocking connections asynchronously with possibly
@@ -48,10 +47,15 @@ open class ConnectionManager(
      */
     fun workers(workerCount: Int) {
         logger.info { "Starting worker $workerCount threads..." }
+        val newWorkers = ConcurrentLinkedQueue<ConnectionWorker>()
+        val joiners = ArrayList<Joiner>()
         for (i in 0..workerCount - 1) {
             val joiner = Joiner.SelectorJoinable(Selector.open())
-            val worker = ConnectionWorker(this, joiner, maxWorkerSleep)
-            joiners.add(taskExecutor.runThread({ joiner ->
+            val startJoiner = Joiner.BasicJoinable()
+            this.joiners.add(taskExecutor.runThread({ joiner ->
+                val worker = ConnectionWorker(this, joiner, maxWorkerSleep)
+                newWorkers.add(worker)
+                startJoiner.join()
                 try {
                     worker.run()
                 } finally {
@@ -62,7 +66,11 @@ open class ConnectionManager(
                     }
                 }
             }, "Connection-Worker-" + i, joiner = joiner))
-            workers.add(worker)
+            joiners.add(startJoiner.joiner)
+        }
+        Joiner(joiners).join()
+        while (newWorkers.isNotEmpty()) {
+            workers.add(newWorkers.poll())
         }
     }
 
@@ -71,7 +79,7 @@ open class ConnectionManager(
      * @param supplier Code that will be executed on this worker's thread
      * @return `false` if no workers were running
      */
-    fun addConnection(supplier: (ConnectionWorker) -> Connection): Boolean {
+    fun addConnection(block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit): Boolean {
         var load = Int.MAX_VALUE
         var bestWorker: ConnectionWorker? = null
         for (worker in workers) {
@@ -84,7 +92,8 @@ open class ConnectionManager(
         if (bestWorker == null) {
             return false
         }
-        bestWorker.addConnection(supplier)
+        val worker = bestWorker
+        worker.addConnection { block(this, worker, it) }
         return true
     }
 
@@ -97,36 +106,4 @@ open class ConnectionManager(
     }
 
     companion object : KLogging()
-}
-
-/**
- * Create a new outwards connection
- * @param address The remote address to connect to
- * @param error Called if there was an error when connecting
- * @param init Called once successfully connected
- */
-inline fun ConnectionManager.addOutConnection(address: RemoteAddress,
-                                              noinline error: (Exception) -> Unit,
-                                              crossinline init: (ConnectionWorker, SocketChannel) -> Unit) {
-    addConnection { worker ->
-        NewOutConnection(worker, address, error) { channel ->
-            init(worker, channel)
-        }
-    }
-}
-
-/**
- * Create a new outwards connection
- * @param address The remote address to connect to
- * @param error Called if there was an error when connecting
- * @param init Called once successfully connected
- */
-inline fun ConnectionManager.addOutConnection(address: InetSocketAddress,
-                                              noinline error: (Exception) -> Unit,
-                                              crossinline init: (ConnectionWorker, SocketChannel) -> Unit) {
-    addConnection { worker ->
-        NewOutConnection(worker, address, error) { channel ->
-            init(worker, channel)
-        }
-    }
 }
