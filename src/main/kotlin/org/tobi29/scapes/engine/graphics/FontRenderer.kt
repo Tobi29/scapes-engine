@@ -146,7 +146,7 @@ class FontRenderer(private val engine: ScapesEngine, private val font: Font) {
                 if (xx + actualWidth > limit) {
                     break
                 }
-                if (i >= start && i < end) {
+                if (i in start..(end - 1)) {
                     output.rectangle(floor(xx).toDouble(), floor(yy).toDouble(),
                             width.toDouble(),
                             height.toDouble(), actualWidth.toDouble(), page,
