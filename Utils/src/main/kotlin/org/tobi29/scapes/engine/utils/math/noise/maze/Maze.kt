@@ -17,8 +17,6 @@
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
 import org.tobi29.scapes.engine.utils.math.Face
-import org.tobi29.scapes.engine.utils.math.and
-import org.tobi29.scapes.engine.utils.math.or
 
 /**
  * Class representing a maze using one byte per cell

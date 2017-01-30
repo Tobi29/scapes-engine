@@ -18,8 +18,6 @@ package org.tobi29.scapes.engine.utils.math.noise.maze
 
 import org.tobi29.scapes.engine.utils.Pool
 import org.tobi29.scapes.engine.utils.math.Face
-import org.tobi29.scapes.engine.utils.math.and
-import org.tobi29.scapes.engine.utils.math.or
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
 import java.util.*
 
