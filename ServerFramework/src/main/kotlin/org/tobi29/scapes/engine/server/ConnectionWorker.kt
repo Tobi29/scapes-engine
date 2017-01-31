@@ -80,7 +80,7 @@ class ConnectionWorker(
                 while (connectionQueue.isNotEmpty()) {
                     val coroutine = connectionQueue.poll()
                     val requestClose = AtomicBoolean()
-                    val timeout = AtomicLong(System.currentTimeMillis() + 10000)
+                    val timeout = AtomicLong(System.currentTimeMillis() + 20000)
                     val connection = Connection(requestClose, timeout)
                     val job = launch(this) { coroutine(connection) }
                     launch(this) {
