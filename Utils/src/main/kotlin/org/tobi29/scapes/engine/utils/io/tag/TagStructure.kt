@@ -18,6 +18,8 @@ package org.tobi29.scapes.engine.utils.io.tag
 
 import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.utils.forEachNonNull
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -254,10 +256,11 @@ class TagStructure {
                     } else if (value != otherTag) {
                         return false
                     }
-                } else {
-                    if (value != otherTag) {
-                        return false
-                    }
+                } else if (value is Number && otherTag is Number
+                        && value::class != otherTag::class) {
+                    return compareNumbers(value, otherTag)
+                } else if (value != otherTag) {
+                    return false
                 }
             }
             return true
@@ -399,6 +402,43 @@ class TagStructure {
             } else {
                 writer.listEmpty()
             }
+        }
+    }
+
+    private fun compareNumbers(first: Number,
+                               second: Number): Boolean {
+        return compareNumbersSameType(convertNumberToType(first, second),
+                first) && compareNumbersSameType(
+                convertNumberToType(second, first), second)
+    }
+
+    private fun compareNumbersSameType(first: Number,
+                                       second: Number): Boolean {
+        if (first is Float && second is Float) {
+            return first == second || first.isNaN() && second.isNaN()
+        } else if (first is Double && second is Double) {
+            return first == second || first.isNaN() && second.isNaN()
+        }
+        return first == second
+    }
+
+    private fun convertNumberToType(type: Number,
+                                    convert: Number): Number {
+        return when (type) {
+            is Byte -> convert.toByte()
+            is Short -> convert.toShort()
+            is Int -> convert.toInt()
+            is Long -> convert.toLong()
+            is Float -> convert.toFloat()
+            is Double -> convert.toDouble()
+            is BigInteger -> try {
+                BigInteger(convert.toString())
+            } catch(e: NumberFormatException) {
+                BigDecimal(convert.toString()).toBigInteger()
+            }
+            is BigDecimal -> BigDecimal(convert.toString())
+            else -> throw IllegalArgumentException(
+                    "Invalid number type: ${type::class}")
         }
     }
 }
