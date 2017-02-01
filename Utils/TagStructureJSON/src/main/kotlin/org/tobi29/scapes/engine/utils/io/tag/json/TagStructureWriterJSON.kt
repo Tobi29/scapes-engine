@@ -181,7 +181,7 @@ class TagStructureWriterJSON(streamOut: OutputStream, pretty: Boolean) : TagStru
         if (value == Double.POSITIVE_INFINITY) {
             return TagStructureJSON.POSITIVE_INFINITY
         } else if (value == Double.NEGATIVE_INFINITY) {
-            return TagStructureJSON.POSITIVE_INFINITY
+            return TagStructureJSON.NEGATIVE_INFINITY
         } else if (value.isNaN()) {
             return TagStructureJSON.NAN
         }
