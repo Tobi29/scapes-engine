@@ -27,7 +27,9 @@ see [Scapes](https://github.com/Tobi29/Scapes)
   * [PNGJ](https://github.com/leonbloy/pngj)
   * [JSON Processing](https://jsonp.java.net)
   * [Apache Tika](https://tika.apache.org)
-  * [JUnit](http://junit.org)
+  * [Antlr](http://www.antlr.org)
+  * [JUnit 5](http://junit.org/junit5)
+  * [Spek](http://spekframework.org)
   * [Gradle](https://gradle.org)
   * OpenGL 3.3
   * OpenAL 1.1
@@ -41,5 +43,5 @@ see [Scapes](https://github.com/Tobi29/Scapes)
   * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
 
 ### SQL Databases
-  * [SQLite4Java](https://bitbucket.org/almworks/sqlite4java)
+  * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
   * [MariaDB](https://mariadb.org)
