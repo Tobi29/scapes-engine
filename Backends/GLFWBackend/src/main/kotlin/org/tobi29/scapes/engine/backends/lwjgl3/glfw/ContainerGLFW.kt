@@ -39,7 +39,9 @@ import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class ContainerGLFW(engine: ScapesEngine) : ContainerLWJGL3(engine) {
+class ContainerGLFW(engine: ScapesEngine,
+                    useGLES: Boolean = false) : ContainerLWJGL3(engine,
+        useGLES) {
     private val sync: Sync
     private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
