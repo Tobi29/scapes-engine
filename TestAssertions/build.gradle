@@ -14,30 +14,12 @@
  * limitations under the License.
  */
 
-apply plugin: "org.junit.platform.gradle.plugin"
+apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
-sourceCompatibility = 1.7
+version = "0.0.0"
 
-repositories {
-    jcenter()
-    maven {
-        url "https://dl.bintray.com/kotlin/kotlin-eap-1.1"
-    }
-    maven {
-        url "https://dl.bintray.com/jetbrains/spek"
-    }
-    maven {
-        url "https://maven-eclipse.github.io/maven"
-    }
-    maven {
-        url "https://jitpack.io"
-    }
-}
-
-jar {
-    if (project.group == "") {
-        baseName = "${project.name}"
-    } else {
-        baseName = "${project.group}.${project.name}"
-    }
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.0-beta-22"
+    compile "org.jetbrains.kotlin:kotlin-test:1.1.0-beta-22"
+    compile "org.jetbrains.spek:spek-api:1.1.0-beta3"
 }

@@ -16,63 +16,72 @@
 
 package org.tobi29.scapes.engine.utils.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.byteArrays
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.fromHexadecimal
 import org.tobi29.scapes.engine.utils.join
-import org.tobi29.scapes.engine.utils.tests.util.RandomInput
 import org.tobi29.scapes.engine.utils.toHexadecimal
 import java.util.*
 
-class ArrayUtilTest {
-    @Test
-    fun testJoin() {
-        for (array in RandomInput.createRandomArrays(64, 4)) {
-            val joined = "[${join(*array)}]"
-            val check = Arrays.toString(array)
-            Assert.assertEquals("Joined array different to Arrays.toString()",
-                    check, joined)
-        }
-    }
-
-    @Test
-    fun testHexadecimal() {
-        for (array in RandomInput.createRandomArrays(64, 4)) {
-            val hex = array.toHexadecimal()
-            val bytes = hex.fromHexadecimal()
-            Assert.assertArrayEquals(
-                    "Decoded array not equal to original array", array, bytes)
-            val hex2 = bytes.toHexadecimal()
-            Assert.assertEquals(
-                    "Encoded string not equal to original encoded string", hex,
-                    hex2)
-        }
-    }
-
-    @Test
-    fun testHexadecimalGrouped() {
-        for (array in RandomInput.createRandomArrays(64, 4)) {
-            for (group in 1..15) {
-                val hex = array.toHexadecimal(group)
-                val bytes = hex.fromHexadecimal()
-                Assert.assertArrayEquals(
-                        "Decoded array not equal to original array", array,
-                        bytes)
-                val hex2 = bytes.toHexadecimal(group)
-                Assert.assertEquals(
-                        "Encoded string not equal to original encoded string",
-                        hex, hex2)
+object ArrayUtilTests : Spek({
+    describe("join") {
+        given("any byte array") {
+            val arrays by memoized { byteArrays() }
+            on("an array with default arguments and wrapped with []") {
+                for (array in arrays) {
+                    val joined = "[${join(*array)}]"
+                    val arrayStr = Arrays.toString(array)
+                    it("should equal Arrays.toString") {
+                        joined shouldEqual arrayStr
+                    }
+                }
             }
         }
     }
-
-    @Test
-    fun testHexadecimalGroup() {
-        val hex = "ff 0f 00 f0 ff"
-        val bytes = hex.fromHexadecimal()
-        val hex2 = bytes.toHexadecimal(1)
-        Assert.assertEquals(
-                "Encoded string not equal to original encoded string", hex,
-                hex2)
+    describe("toHexadecimal and fromHexadecimal") {
+        given("any byte array") {
+            val arrays by memoized { byteArrays() }
+            on("encoding, decoding and encoding again") {
+                for (array in arrays) {
+                    val hex = array.toHexadecimal()
+                    val bytes = hex.fromHexadecimal()
+                    val hex2 = bytes.toHexadecimal()
+                    it("should reproduce arrays") {
+                        bytes shouldEqual array
+                    }
+                    it("should reproduce encoded strings") {
+                        hex2 shouldEqual hex
+                    }
+                }
+            }
+            for (group in 1..15) {
+                on("encoding, decoding and encoding again, grouped by $group") {
+                    for (array in arrays) {
+                        val hex = array.toHexadecimal()
+                        val bytes = hex.fromHexadecimal()
+                        val hex2 = bytes.toHexadecimal()
+                        it("should reproduce arrays") {
+                            bytes shouldEqual array
+                        }
+                        it("should reproduce encoded strings") {
+                            hex2 shouldEqual hex
+                        }
+                    }
+                }
+            }
+        }
+        on("decoding and encoding, grouped by 1") {
+            val hex = "ff 0f 00 f0 ff"
+            val bytes = hex.fromHexadecimal()
+            val hex2 = bytes.toHexadecimal(1)
+            it("should reproduce encoded strings") {
+                hex2 shouldEqual hex
+            }
+        }
     }
-}
+})

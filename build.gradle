@@ -26,8 +26,6 @@ dependencies {
     compile project(":ScapesEngine:ShaderCompiler")
     compile project(":ScapesEngine:Utils:TagStructureBinary")
     compile project(":ScapesEngine:Utils:TagStructureJSON")
-
-    testCompile "junit:junit:4.12"
 }
 
 idea {

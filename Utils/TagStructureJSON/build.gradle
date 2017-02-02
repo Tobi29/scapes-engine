@@ -21,6 +21,4 @@ version = "0.0.0"
 dependencies {
     compile project(":ScapesEngine:Utils")
     compile("org.glassfish:javax.json:1.0.4") { transitive = false }
-
-    testCompile "junit:junit:4.12"
 }

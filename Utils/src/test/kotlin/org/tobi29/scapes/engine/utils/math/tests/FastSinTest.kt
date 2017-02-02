@@ -16,30 +16,45 @@
 
 package org.tobi29.scapes.engine.utils.math.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.math.FastSin
 
-class FastSinTest {
-    @Test
-    fun testSin() {
-        var r = -8.0
-        while (r < 8.0) {
-            val expected = Math.sin(r)
-            Assert.assertEquals("sin($r) => $expected", expected,
-                    FastSin.sin(r), 0.03)
-            r += 0.0009765625
+object FastSinTests : Spek({
+    describe("table sin") {
+        given("any number") {
+            var rv = -8.0
+            while (rv <= 8.0) {
+                val r = rv
+                on("calculating the sin") {
+                    val sin = FastSin.sin(r)
+                    it("should be close to the mathematical sin") {
+                        val expected = Math.sin(r)
+                        sin.shouldEqual(expected, 0.03)
+                    }
+                }
+                rv += 0.0009765625
+            }
         }
     }
-
-    @Test
-    fun testCos() {
-        var r = -8.0
-        while (r < 8.0) {
-            val expected = Math.cos(r)
-            Assert.assertEquals("cos($r) => $expected", expected,
-                    FastSin.cos(r), 0.03)
-            r += 0.0009765625
+    describe("table cos") {
+        given("any number") {
+            var rv = -8.0
+            while (rv <= 8.0) {
+                val r = rv
+                on("calculating the cos") {
+                    val sin = FastSin.cos(r)
+                    it("should be close to the mathematical cos") {
+                        val expected = Math.cos(r)
+                        sin.shouldEqual(expected, 0.03)
+                    }
+                }
+                rv += 0.0009765625
+            }
         }
     }
-}
+})

@@ -16,30 +16,45 @@
 
 package org.tobi29.scapes.engine.utils.math.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.math.FastAsin
 
-class FastAsinTest {
-    @Test
-    fun testAsin() {
-        var r = -2.0
-        while (r <= 2.0) {
-            val expected = Math.asin(r)
-            Assert.assertEquals("asin($r) => $expected", expected,
-                    FastAsin.asin(r), 0.01)
-            r += 0.0009765625
+object FastAsinTests : Spek({
+    describe("table asin") {
+        given("any number") {
+            var rv = -2.0
+            while (rv <= 2.0) {
+                val r = rv
+                on("calculating the asin") {
+                    val sin = FastAsin.asin(r)
+                    it("should be close to the mathematical asin") {
+                        val expected = Math.asin(r)
+                        sin.shouldEqual(expected, 0.01)
+                    }
+                }
+                rv += 0.0009765625
+            }
         }
     }
-
-    @Test
-    fun testAcos() {
-        var r = -2.0
-        while (r <= 2.0) {
-            val expected = Math.acos(r)
-            Assert.assertEquals("acos($r) => $expected", expected,
-                    FastAsin.acos(r), 0.01)
-            r += 0.0009765625
+    describe("table acos") {
+        given("any number") {
+            var rv = -2.0
+            while (rv <= 2.0) {
+                val r = rv
+                on("calculating the acos") {
+                    val cos = FastAsin.acos(r)
+                    it("should be close to the mathematical acos") {
+                        val expected = Math.acos(r)
+                        cos.shouldEqual(expected, 0.01)
+                    }
+                }
+                rv += 0.0009765625
+            }
         }
     }
-}
+})

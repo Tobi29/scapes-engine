@@ -15,93 +15,80 @@
  */
 package org.tobi29.scapes.engine.utils.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.shouldContain
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
+import org.tobi29.scapes.engine.test.assertions.shouldNotContain
+import org.tobi29.scapes.engine.test.assertions.shouldThrow
 import org.tobi29.scapes.engine.utils.Pool
 import java.util.*
 
-class PoolTest {
-    private fun fillPool(pool: Pool<StringHolder>,
-                         size: Int) {
-        for (i in 0..size - 1) {
-            pool.push()
+object PoolTests : Spek({
+    given("a pool with 4 allocated") {
+        val pool4Alloc by memoized {
+            Pool { StringHolder() }.apply {
+                for (i in 0..3) {
+                    push()
+                }
+                reset()
+            }
         }
-        pool.reset()
-    }
-
-    @Test
-    fun testStream() {
-        val pool = Pool({ StringHolder() })
-        fillPool(pool, 4)
-        pool.push().set("4")
-        pool.push().set("5")
-        pool.push().set("6")
-        pool.push().set("1")
-        pool.push().set("2")
-        pool.push().set("3")
-        val output = StringBuilder(6)
-        pool.asSequence().map { it.str }.forEach { output.append(it) }
-        Assert.assertEquals("Unexpected output string", output.toString(),
-                "456123")
-    }
-
-    @Test
-    fun testSortedStream() {
-        val pool = Pool({ StringHolder() })
-        fillPool(pool, 4)
-        pool.push().set("4")
-        pool.push().set("5")
-        pool.push().set("6")
-        pool.push().set("1")
-        pool.push().set("2")
-        pool.push().set("3")
-        val output = StringBuilder(6)
-        pool.asSequence().map { it.str }.sorted().forEach { output.append(it) }
-        Assert.assertEquals("Unexpected output string", output.toString(),
-                "123456")
-    }
-
-    @Test
-    fun testPop() {
-        val pool = Pool({ StringHolder() })
-        fillPool(pool, 4)
-        pool.push().set("1")
-        pool.push().set("2")
-        pool.push().set("3")
-        Assert.assertEquals("Popping returned wrong object", "2",
-                pool.pop()?.str)
-        Assert.assertEquals("Popping returned wrong object", "1",
-                pool.pop()?.str)
-        pool.push().set("4")
-        Assert.assertEquals("Popping returned wrong object", "1",
-                pool.pop()?.str)
-        Assert.assertEquals("Popping returned wrong object", null,
-                pool.pop()?.str)
-        Assert.assertTrue("Pool is not empty", pool.isEmpty())
-        try {
-            pool.pop()
-            Assert.fail("Pool did not throw when popping on empty")
-        } catch (e: NoSuchElementException) {
+        given("a pool filled with 4 5 6 1 2 3") {
+            val pool = pool4Alloc
+            pool.push().set("4")
+            pool.push().set("5")
+            pool.push().set("6")
+            pool.push().set("1")
+            pool.push().set("2")
+            pool.push().set("3")
+            it("equals 456123 when mapped into a string") {
+                pool.asSequence().map { it.str }.reduce(
+                        String::plus) shouldEqual "456123"
+            }
+            it("equals 123456 when mapped and sorted into a string") {
+                pool.asSequence().map { it.str }.sorted().reduce(
+                        String::plus) shouldEqual "123456"
+            }
         }
-
-    }
-
-    @Test
-    fun testRemove() {
-        val pool = Pool({ StringHolder() })
-        fillPool(pool, 4)
-        pool.push().set("1")
-        pool.push().set("2")
-        pool.push().set("3")
-        Assert.assertTrue("Object not in pool",
-                pool.contains(StringHolder("2")))
-        pool.remove(StringHolder("2"))
-        Assert.assertFalse("Object in pool", pool.contains(StringHolder("2")))
-    }
-
-    data class StringHolder(var str: String = "") {
-        fun set(str: String) {
-            this.str = str
+        given("a pool filled with 1 2 3") {
+            val pool123 by memoized {
+                pool4Alloc.apply {
+                    push().set("1")
+                    push().set("2")
+                    push().set("3")
+                }
+            }
+            on("popping elements out and adding one back") {
+                val pool = pool123
+                it("should return the correct elements and throw when empty") {
+                    pool.pop()?.str shouldEqual "2"
+                    pool.pop()?.str shouldEqual "1"
+                    pool.push().set("4")
+                    pool.pop()?.str shouldEqual "1"
+                    pool.pop()?.str shouldEqual null
+                    pool.isEmpty() shouldEqual true
+                    shouldThrow<NoSuchElementException> {
+                        pool.pop()
+                    }
+                }
+            }
+            on("checking if an element is contained, removing it and checking again") {
+                val pool = pool123
+                it("should first contain 2 and then not") {
+                    pool shouldContain StringHolder("2")
+                    pool.remove(StringHolder("2"))
+                    pool shouldNotContain StringHolder("2")
+                }
+            }
         }
+    }
+})
+
+private data class StringHolder(var str: String = "") {
+    fun set(str: String) {
+        this.str = str
     }
 }

@@ -21,6 +21,4 @@ version = "0.0.0"
 dependencies {
     compile project(":ScapesEngine:Utils")
     compile project(":ScapesEngine:ShaderCompiler:ShaderParser")
-
-    testCompile "junit:junit:4.12"
 }

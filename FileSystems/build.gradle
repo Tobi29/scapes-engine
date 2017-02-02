@@ -21,6 +21,4 @@ version = "0.0.0"
 dependencies {
     compile project(":ScapesEngine:Utils")
     compile("org.apache.tika:tika-core:1.10") { transitive = false }
-
-    testCompile "junit:junit:4.12"
 }

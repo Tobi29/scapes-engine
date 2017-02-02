@@ -16,32 +16,35 @@
 
 package org.tobi29.scapes.engine.utils.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.byteArrays
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
-import org.tobi29.scapes.engine.utils.tests.util.RandomInput
-
-import java.io.IOException
 import java.nio.ByteBuffer
 
-class CompressionUtilTest {
-    @Test
-    @Throws(IOException::class)
-    fun testCompressArray() {
-        for (array in RandomInput.createRandomArrays(32, 8)) {
-            val compressed = ByteBufferStream()
-            CompressionUtil.compress(ByteBufferStream(ByteBuffer.wrap(array)),
-                    compressed)
-            compressed.buffer().flip()
-            val decompressed = ByteBufferStream()
-            CompressionUtil.decompress(ByteBufferStream(compressed.buffer()),
-                    decompressed)
-            decompressed.buffer().flip()
-            val check = ByteArray(decompressed.buffer().remaining())
-            decompressed.buffer().get(check)
-            Assert.assertArrayEquals("Data not equal after decompression",
-                    array, check)
+object CompressionUtilTests : Spek({
+    given("any byte array") {
+        val arrays by memoized { byteArrays(32, 8) }
+        on("compressing and decompressing") {
+            for (array in arrays) {
+                val compressed = ByteBufferStream()
+                CompressionUtil.compress(
+                        ByteBufferStream(ByteBuffer.wrap(array)), compressed)
+                compressed.buffer().flip()
+                val decompressed = ByteBufferStream()
+                CompressionUtil.decompress(
+                        ByteBufferStream(compressed.buffer()), decompressed)
+                decompressed.buffer().flip()
+                val check = ByteArray(decompressed.buffer().remaining())
+                decompressed.buffer().get(check)
+                it("should result with the same array") {
+                    check shouldEqual array
+                }
+            }
         }
     }
-}
+})

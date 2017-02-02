@@ -16,17 +16,26 @@
 
 package org.tobi29.scapes.engine.utils.math.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.describe
+import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.math.FastMath
 
-class FastMathTest {
-    @Test
-    fun testLogBinary() {
-        for (i in 0..30) {
-            val j = 1 shl i
-            val k = FastMath.lb(j)
-            Assert.assertEquals("Unexpected result", i, k)
+object FastMathTests : Spek({
+    describe("log base 2") {
+        given("any number") {
+            for (i in 0..30) {
+                on("calculating 2 to the power of it and then the log base 2") {
+                    val j = 1 shl i
+                    val k = FastMath.lb(j)
+                    it("should produce the original number") {
+                        k shouldEqual i
+                    }
+                }
+            }
         }
     }
-}
+})

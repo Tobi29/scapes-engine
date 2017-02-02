@@ -16,55 +16,59 @@
 
 package org.tobi29.scapes.engine.utils.tests
 
-import org.junit.Assert
-import org.junit.Test
+import org.jetbrains.spek.api.Spek
+import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.test.assertions.byteArrays
+import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
 import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
 import org.tobi29.scapes.engine.utils.io.ByteBufferChannel
-import org.tobi29.scapes.engine.utils.tests.util.RandomInput
-import java.io.IOException
 
-class BufferedStreamTest {
-    @Test
-    @Throws(IOException::class)
-    fun testWriteRead() {
-        val channel = ByteBufferChannel(ByteBuffer(1 shl 16))
-        val arrays = RandomInput.createRandomArrays(16, 8)
-        for (size in 0..15) {
+object BufferedStreamTests : Spek({
+    for (size in (0..15).map { 1 shl 16 }) {
+        on("writing to and reading from a buffered stream with buffer size $size") {
+            val channel = ByteBufferChannel(ByteBuffer(1 shl 16))
+            val arrays = byteArrays(16, 8)
             channel.buffer().clear()
-            write(BufferedWriteChannelStream(channel), arrays)
+            BufferedWriteChannelStream(channel).apply {
+                for (array in arrays) {
+                    put(array)
+                }
+                put(123)
+                putShort(1234)
+                putInt(12345678)
+                putLong(123456789101112L)
+                flush()
+            }
             channel.buffer().flip()
-            read(BufferedReadChannelStream(channel), arrays)
+            BufferedReadChannelStream(channel).apply {
+                for (array in arrays) {
+                    val check = ByteArray(array.size)
+                    get(check)
+                    it("should equal to original array") {
+                        check shouldEqual array
+                    }
+                }
+                val getByte = get()
+                val getShort = short
+                val getInt = int
+                val getLong = long
+                it("should equal the original byte") {
+                    getByte shouldEqual 123.toByte()
+                }
+                it("should equal the original short") {
+                    getShort shouldEqual 1234.toShort()
+                }
+                it("should equal the original int") {
+                    getInt shouldEqual 12345678
+                }
+                it("should equal the original long") {
+                    getLong shouldEqual 123456789101112L
+                }
+            }
         }
     }
+})
 
-    @Throws(IOException::class)
-    private fun write(stream: BufferedWriteChannelStream,
-                      arrays: Array<ByteArray>) {
-        for (array in arrays) {
-            stream.put(array)
-        }
-        stream.put(123)
-        stream.putShort(1234)
-        stream.putInt(12345678)
-        stream.putLong(123456789101112L)
-        stream.flush()
-    }
-
-    @Throws(IOException::class)
-    private fun read(stream: BufferedReadChannelStream,
-                     arrays: Array<ByteArray>) {
-        for (array in arrays) {
-            val check = ByteArray(array.size)
-            stream[check]
-            Assert.assertArrayEquals("Arrays did not match", array, check)
-        }
-        Assert.assertEquals("Byte did not match", 123, stream.get().toLong())
-        Assert.assertEquals("Short did not match", 1234, stream.short.toLong())
-        Assert.assertEquals("Integer did not match", 12345678,
-                stream.int.toLong())
-        Assert.assertEquals("Long did not match", 123456789101112L,
-                stream.long)
-    }
-}

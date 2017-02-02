@@ -21,6 +21,4 @@ version = "0.0.0"
 dependencies {
     compile project(":ScapesEngine:SQLFramework")
     compile "org.xerial:sqlite-jdbc:3.15.1"
-
-    testCompile "junit:junit:4.12"
 }
