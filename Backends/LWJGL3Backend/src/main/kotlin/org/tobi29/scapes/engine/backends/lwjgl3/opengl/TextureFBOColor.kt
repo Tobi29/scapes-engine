@@ -45,6 +45,7 @@ internal class TextureFBOColor(engine: ScapesEngine, width: Int, height: Int,
         assert(isStored)
         gl.check()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
+        setFilter()
         if (hdr) {
             GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0,
                     if (alpha) GL30.GL_RGBA16F else GL30.GL_RGB16F,

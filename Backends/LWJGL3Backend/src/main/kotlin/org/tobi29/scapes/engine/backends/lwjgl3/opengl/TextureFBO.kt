@@ -17,17 +17,21 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL12
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
-
 import java.nio.ByteBuffer
 
-internal abstract class TextureFBO(engine: ScapesEngine, width: Int, height: Int,
-                                   buffer: ByteBuffer?, mipmaps: Int, minFilter: TextureFilter,
-                                   magFilter: TextureFilter, wrapS: TextureWrap, wrapT: TextureWrap) : TextureGL(
+internal abstract class TextureFBO(engine: ScapesEngine,
+                                   width: Int,
+                                   height: Int,
+                                   buffer: ByteBuffer?,
+                                   mipmaps: Int,
+                                   minFilter: TextureFilter,
+                                   magFilter: TextureFilter,
+                                   wrapS: TextureWrap,
+                                   wrapT: TextureWrap) : TextureGL(
         engine, width, height, buffer, mipmaps, minFilter, magFilter, wrapS,
         wrapT) {
 
@@ -44,56 +48,7 @@ internal abstract class TextureFBO(engine: ScapesEngine, width: Int, height: Int
         }
         gl.check()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
-        if (dirtyFilter.getAndSet(false)) {
-            if (mipmaps > 0) {
-                when (minFilter) {
-                    TextureFilter.NEAREST -> GL11.glTexParameteri(
-                            GL11.GL_TEXTURE_2D,
-                            GL11.GL_TEXTURE_MIN_FILTER,
-                            GL11.GL_NEAREST_MIPMAP_LINEAR)
-                    TextureFilter.LINEAR -> GL11.glTexParameteri(
-                            GL11.GL_TEXTURE_2D,
-                            GL11.GL_TEXTURE_MIN_FILTER,
-                            GL11.GL_LINEAR_MIPMAP_LINEAR)
-                    else -> throw IllegalArgumentException(
-                            "Illegal texture-filter!")
-                }
-            } else {
-                when (minFilter) {
-                    TextureFilter.NEAREST -> GL11.glTexParameteri(
-                            GL11.GL_TEXTURE_2D,
-                            GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST)
-                    TextureFilter.LINEAR -> GL11.glTexParameteri(
-                            GL11.GL_TEXTURE_2D,
-                            GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
-                    else -> throw IllegalArgumentException(
-                            "Illegal texture-filter!")
-                }
-            }
-            when (magFilter) {
-                TextureFilter.NEAREST -> GL11.glTexParameteri(
-                        GL11.GL_TEXTURE_2D,
-                        GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST)
-                TextureFilter.LINEAR -> GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-                        GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR)
-                else -> throw IllegalArgumentException(
-                        "Illegal texture-filter!")
-            }
-            when (wrapS) {
-                TextureWrap.REPEAT -> GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-                        GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT)
-                TextureWrap.CLAMP -> GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-                        GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE)
-                else -> throw IllegalArgumentException("Illegal texture-wrap!")
-            }
-            when (wrapT) {
-                TextureWrap.REPEAT -> GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-                        GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT)
-                TextureWrap.CLAMP -> GL11.glTexParameteri(GL11.GL_TEXTURE_2D,
-                        GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE)
-                else -> throw IllegalArgumentException("Illegal texture-wrap!")
-            }
-        }
+        setFilter()
     }
 
     override fun markDisposed() {

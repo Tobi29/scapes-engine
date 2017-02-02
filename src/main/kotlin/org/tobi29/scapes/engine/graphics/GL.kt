@@ -175,7 +175,9 @@ abstract class GL protected constructor(val engine: ScapesEngine,
                                    colorAttachments: Int,
                                    depth: Boolean,
                                    hdr: Boolean,
-                                   alpha: Boolean): Framebuffer
+                                   alpha: Boolean,
+                                   minFilter: TextureFilter = TextureFilter.NEAREST,
+                                   magFilter: TextureFilter = minFilter): Framebuffer
 
     abstract fun createModelFast(attributes: List<ModelAttribute>,
                                  length: Int,

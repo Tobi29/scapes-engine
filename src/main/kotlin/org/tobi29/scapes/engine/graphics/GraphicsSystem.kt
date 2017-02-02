@@ -229,9 +229,11 @@ class GraphicsSystem(val engine: ScapesEngine,
                           colorAttachments: Int,
                           depth: Boolean,
                           hdr: Boolean,
-                          alpha: Boolean): Framebuffer {
+                          alpha: Boolean,
+                          minFilter: TextureFilter = TextureFilter.NEAREST,
+                          magFilter: TextureFilter = minFilter): Framebuffer {
         return gl.createFramebuffer(width, height, colorAttachments, depth, hdr,
-                alpha)
+                alpha, minFilter, magFilter)
     }
 
     fun createModelFast(attributes: List<ModelAttribute>,

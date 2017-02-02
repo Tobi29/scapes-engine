@@ -49,9 +49,11 @@ class GLLWJGL3GL(engine: ScapesEngine,
                                    colorAttachments: Int,
                                    depth: Boolean,
                                    hdr: Boolean,
-                                   alpha: Boolean): Framebuffer {
+                                   alpha: Boolean,
+                                   minFilter: TextureFilter,
+                                   magFilter: TextureFilter): Framebuffer {
         return FBO(engine, width, height, colorAttachments, depth, hdr,
-                alpha)
+                alpha, minFilter, magFilter)
     }
 
     override fun createModelFast(attributes: List<ModelAttribute>,

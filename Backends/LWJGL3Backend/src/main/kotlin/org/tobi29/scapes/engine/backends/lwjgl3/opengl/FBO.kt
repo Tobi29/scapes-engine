@@ -22,8 +22,15 @@ import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.readOnly
 
-internal class FBO(engine: ScapesEngine, width: Int, height: Int, colorAttachments: Int,
-                   depth: Boolean, hdr: Boolean, alpha: Boolean) : Framebuffer {
+internal class FBO(engine: ScapesEngine,
+                   width: Int,
+                   height: Int,
+                   colorAttachments: Int,
+                   depth: Boolean,
+                   hdr: Boolean,
+                   alpha: Boolean,
+                   minFilter: TextureFilter,
+                   magFilter: TextureFilter) : Framebuffer {
     override val texturesColor: List<TextureFBOColor>
     override val textureDepth: TextureFBODepth?
     private var detach: Function0<Unit>? = null
@@ -41,14 +48,12 @@ internal class FBO(engine: ScapesEngine, width: Int, height: Int, colorAttachmen
         this.width = max(width, 1)
         this.height = max(height, 1)
         texturesColor = (0..colorAttachments - 1).map {
-            TextureFBOColor(engine, width, height,
-                    TextureFilter.LINEAR, TextureFilter.LINEAR,
+            TextureFBOColor(engine, width, height, minFilter, magFilter,
                     TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr)
         }.readOnly()
         if (depth) {
-            textureDepth = TextureFBODepth(engine, width, height,
-                    TextureFilter.LINEAR, TextureFilter.LINEAR,
-                    TextureWrap.CLAMP, TextureWrap.CLAMP)
+            textureDepth = TextureFBODepth(engine, width, height, minFilter,
+                    magFilter, TextureWrap.CLAMP, TextureWrap.CLAMP)
         } else {
             textureDepth = null
         }

@@ -27,9 +27,15 @@ import org.tobi29.scapes.engine.utils.math.max
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicBoolean
 
-internal open class TextureGL(override val engine: ScapesEngine, width: Int, height: Int,
-                              buffer: ByteBuffer?, protected val mipmaps: Int, minFilter: TextureFilter,
-                              magFilter: TextureFilter, wrapS: TextureWrap, wrapT: TextureWrap) : Texture {
+internal open class TextureGL(override val engine: ScapesEngine,
+                              width: Int,
+                              height: Int,
+                              buffer: ByteBuffer?,
+                              protected val mipmaps: Int,
+                              minFilter: TextureFilter,
+                              magFilter: TextureFilter,
+                              wrapS: TextureWrap,
+                              wrapT: TextureWrap) : Texture {
     protected val dirtyFilter = AtomicBoolean(true)
     protected val dirtyBuffer = AtomicBoolean(true)
     protected var textureID = 0
@@ -55,6 +61,10 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
         ensureStored(gl)
         gl.check()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
+        setFilter()
+    }
+
+    protected fun setFilter() {
         if (dirtyFilter.getAndSet(false)) {
             if (mipmaps > 0) {
                 when (minFilter) {
@@ -198,6 +208,7 @@ internal open class TextureGL(override val engine: ScapesEngine, width: Int, hei
         assert(isStored)
         gl.check()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
+        setFilter()
         if (buffer.buffers.size > 1) {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL12.GL_TEXTURE_MAX_LEVEL,
                     buffer.buffers.size - 1)

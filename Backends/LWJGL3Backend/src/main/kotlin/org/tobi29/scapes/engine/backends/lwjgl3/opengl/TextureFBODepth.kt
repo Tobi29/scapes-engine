@@ -41,6 +41,7 @@ internal class TextureFBODepth(engine: ScapesEngine, width: Int, height: Int,
         assert(isStored)
         gl.check()
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID)
+        setFilter()
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL14.GL_DEPTH_COMPONENT24,
                 buffer.width, buffer.height, 0, GL11.GL_DEPTH_COMPONENT,
                 GL11.GL_UNSIGNED_INT, null as ByteBuffer?)
