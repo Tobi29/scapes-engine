@@ -307,6 +307,11 @@ class ContainerGLFW(engine: ScapesEngine,
                         monitorHeight)
                 GLFW.glfwMakeContextCurrent(window)
                 GLES.createCapabilities()
+                // TODO: Remove once fix is released
+                // https://github.com/LWJGL/lwjgl3/issues/276
+                // This *can* be worked around, but as this is basically
+                // useless at the moment leaving it broken
+                logger.error { "This will not work with LWJGL 3.1.1 due to a bug" }
                 checkContextGLES()?.let { throw GraphicsCheckException(it) }
             } else {
                 GLFW.glfwDefaultWindowHints()

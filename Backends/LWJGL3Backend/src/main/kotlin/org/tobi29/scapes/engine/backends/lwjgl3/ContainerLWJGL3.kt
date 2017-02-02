@@ -25,6 +25,7 @@ import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.lwjgl3.openal.LWJGL3OpenAL
 import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GLLWJGL3GL
+import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GL
@@ -62,9 +63,7 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
         mainThread = Thread.currentThread()
         logger.info { "LWJGL version: ${Version.getVersion()}" }
         if (useGLES) {
-            throw UnsupportedOperationException(
-                    "OpenGLES Support not implemented")
-            //gl = new GLLWJGL3GLES(engine, this);
+            gl = GLLWJGL3GLES(engine, this)
         } else {
             gl = GLLWJGL3GL(engine, this)
         }
