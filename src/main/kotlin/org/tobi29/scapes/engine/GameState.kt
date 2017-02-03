@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ abstract class GameState(val engine: ScapesEngine) {
                     delta: Double,
                     updateSize: Boolean) {
         newPipelineLoaded.getAndSet(null)?.let { newPipeline ->
-                pipelineLoaded = Pipeline(gl, newPipeline)
+            pipelineLoaded = Pipeline(gl, newPipeline)
         }
         pipelineLoaded?.let { pipeline ->
             if (engine.resources.isDone()) {

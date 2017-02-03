@@ -24,7 +24,9 @@ import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import java.nio.ByteBuffer
 
-internal class VAOHybrid(private val vbo1: VBO, private val vbo2: VBO, private val renderType: RenderType) : VAO(
+internal class VAOHybrid(private val vbo1: VBO,
+                         private val vbo2: VBO,
+                         private val renderType: RenderType) : VAO(
         vbo1.engine), ModelHybrid {
     private var arrayID = 0
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,19 @@ class ModelAttribute {
     private val byteArray: IntArray?
     private var offset = 0
 
-    constructor(id: Int, size: Int, array: IntArray, divisor: Int,
+    constructor(id: Int,
+                size: Int,
+                array: IntArray,
+                divisor: Int,
                 vertexType: VertexType) : this(id, size, array, array.size,
             divisor, vertexType)
 
-    constructor(id: Int, size: Int, array: IntArray, length: Int,
-                divisor: Int, vertexType: VertexType) {
+    constructor(id: Int,
+                size: Int,
+                array: IntArray,
+                length: Int,
+                divisor: Int,
+                vertexType: VertexType) {
         this.id = id
         this.length = length
         this.size = size
@@ -43,12 +50,21 @@ class ModelAttribute {
         floatArray = null
     }
 
-    constructor(id: Int, size: Int, array: FloatArray, normalized: Boolean,
-                divisor: Int, vertexType: VertexType) : this(id, size, array,
+    constructor(id: Int,
+                size: Int,
+                array: FloatArray,
+                normalized: Boolean,
+                divisor: Int,
+                vertexType: VertexType) : this(id, size, array,
             array.size, normalized, divisor, vertexType)
 
-    constructor(id: Int, size: Int, array: FloatArray, length: Int,
-                normalized: Boolean, divisor: Int, vertexType: VertexType) {
+    constructor(id: Int,
+                size: Int,
+                array: FloatArray,
+                length: Int,
+                normalized: Boolean,
+                divisor: Int,
+                vertexType: VertexType) {
         this.id = id
         this.length = length
         this.size = size

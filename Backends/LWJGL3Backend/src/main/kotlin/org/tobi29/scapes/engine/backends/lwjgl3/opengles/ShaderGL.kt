@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import mu.KLogging
@@ -105,7 +106,9 @@ internal class ShaderGL(private val shader: CompiledShader,
                               v0: Float,
                               v1: Float,
                               v2: Float) {
-        uniforms.add { GLES20.glUniform3f(uniformLocation(uniform), v0, v1, v2) }
+        uniforms.add {
+            GLES20.glUniform3f(uniformLocation(uniform), v0, v1, v2)
+        }
     }
 
     override fun setUniform4f(uniform: Int,
@@ -133,7 +136,9 @@ internal class ShaderGL(private val shader: CompiledShader,
                               v0: Int,
                               v1: Int,
                               v2: Int) {
-        uniforms.add { GLES20.glUniform3i(uniformLocation(uniform), v0, v1, v2) }
+        uniforms.add {
+            GLES20.glUniform3i(uniformLocation(uniform), v0, v1, v2)
+        }
     }
 
     override fun setUniform4i(uniform: Int,

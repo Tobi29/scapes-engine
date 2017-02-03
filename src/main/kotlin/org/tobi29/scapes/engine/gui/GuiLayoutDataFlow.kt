@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
-open class GuiLayoutDataFlow(parent: GuiComponent, val marginStart: Vector2d,
-                        val marginEnd: Vector2d, size: Vector2d, priority: Long,
-                        blocksEvents: Boolean = false) : GuiLayoutData(
+open class GuiLayoutDataFlow(parent: GuiComponent,
+                             val marginStart: Vector2d,
+                             val marginEnd: Vector2d,
+                             size: Vector2d,
+                             priority: Long,
+                             blocksEvents: Boolean = false) : GuiLayoutData(
         parent, size, priority, blocksEvents)

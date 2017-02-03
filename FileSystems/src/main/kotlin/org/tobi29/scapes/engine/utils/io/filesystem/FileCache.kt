@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.toHexadecimal
 import java.io.IOException
 
-class FileCache(private val root: FilePath, private val time: Duration = Duration.ofDays(
-        16)) {
+class FileCache(private val root: FilePath,
+                private val time: Duration = Duration.ofDays(
+                        16)) {
 
     init {
         createDirectories(root)
@@ -109,7 +110,8 @@ class FileCache(private val root: FilePath, private val time: Duration = Duratio
         return root.resolve(type).resolve(name)
     }
 
-    class Location(val type: String, val array: ByteArray)
+    class Location(val type: String,
+                   val array: ByteArray)
 
     companion object : KLogging()
 }

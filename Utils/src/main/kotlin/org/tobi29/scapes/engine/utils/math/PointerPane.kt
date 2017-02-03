@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,11 @@ package org.tobi29.scapes.engine.utils.math
 
 class PointerPane @JvmOverloads constructor(val aabb: AABB = AABB(0.0, 0.0, 0.0,
         0.0, 0.0,
-        0.0), var face: Face = Face.NONE, var x: Int = 0, var y: Int = 0, var z: Int = 0) {
+        0.0),
+                                            var face: Face = Face.NONE,
+                                            var x: Int = 0,
+                                            var y: Int = 0,
+                                            var z: Int = 0) {
 
     fun set(aabb: AABB,
             face: Face,

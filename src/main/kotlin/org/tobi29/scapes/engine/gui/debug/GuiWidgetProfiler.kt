@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,9 +100,12 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         nodes()
     }
 
-    private inner class ElementThread(parent: GuiLayoutData, private val node: Node, go: Node?) : GuiComponentGroupSlabHeavy(
+    private inner class ElementThread(parent: GuiLayoutData,
+                                      private val node: Node,
+                                      go: Node?) : GuiComponentGroupSlabHeavy(
             parent) {
         private val key: GuiComponentTextButton
+
         init {
             key = addHori(2.0, 2.0, -1.0, -1.0) {
                 GuiComponentTextButton(it, 12, node.name.invoke())
@@ -111,7 +114,9 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
     }
 
-    private inner class Element(parent: GuiLayoutData, private val node: Node, go: Node?) : GuiComponentGroupSlabHeavy(
+    private inner class Element(parent: GuiLayoutData,
+                                private val node: Node,
+                                go: Node?) : GuiComponentGroupSlabHeavy(
             parent) {
         private val key: GuiComponentTextButton
         private val value: GuiComponentText

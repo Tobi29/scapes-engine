@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.FontRenderer
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
-class GuiBasicStyle(override val engine: ScapesEngine, override val font: FontRenderer) : GuiStyle {
+class GuiBasicStyle(override val engine: ScapesEngine,
+                    override val font: FontRenderer) : GuiStyle {
 
     override fun pane(renderer: GuiRenderer,
                       size: Vector2d) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,22 +27,32 @@ open class GuiComponentEvent(val x: Double = Double.NaN,
                                      Int.MAX_VALUE.toDouble(),
                                      Int.MAX_VALUE.toDouble())) {
 
-    constructor(x: Double, y: Double, size: Vector2d) : this(x, y,
+    constructor(x: Double,
+                y: Double,
+                size: Vector2d) : this(x, y,
             Double.NaN, Double.NaN, size)
 
-    constructor(x: Double, y: Double, relativeX: Double,
-                relativeY: Double, size: Vector2d) : this(x, y, relativeX,
+    constructor(x: Double,
+                y: Double,
+                relativeX: Double,
+                relativeY: Double,
+                size: Vector2d) : this(x, y, relativeX,
             relativeY, true, size)
 
-    constructor(parent: GuiComponentEvent, size: Vector2d) : this(parent.x,
+    constructor(parent: GuiComponentEvent,
+                size: Vector2d) : this(parent.x,
             parent.y, parent.relativeX, parent.relativeY,
             parent.screen, size)
 
-    constructor(parent: GuiComponentEvent, size: Vector2d, scale: Vector2d) : this(
+    constructor(parent: GuiComponentEvent,
+                size: Vector2d,
+                scale: Vector2d) : this(
             parent.x * scale.x, parent.y * scale.y, parent.relativeX * scale.x,
             parent.relativeY * scale.y, parent.screen, size)
 
-    constructor(parent: GuiComponentEvent, x: Double, y: Double,
+    constructor(parent: GuiComponentEvent,
+                x: Double,
+                y: Double,
                 size: Vector2d) : this(x, y, parent.relativeX, parent.relativeY,
             parent.screen, size)
 }

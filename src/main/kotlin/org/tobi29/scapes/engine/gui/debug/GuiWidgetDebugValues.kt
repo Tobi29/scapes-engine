@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
 
     init {
         scrollPane = addVert(10.0, 10.0, -1.0,
-                -1.0) {  GuiComponentScrollPane(it, 20) }.viewport
+                -1.0) { GuiComponentScrollPane(it, 20) }.viewport
     }
 
     @Synchronized operator fun get(key: String): Element {
@@ -53,7 +53,8 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         return elements.entries
     }
 
-    class Element(parent: GuiLayoutData, key: String) : GuiComponentGroupSlabHeavy(
+    class Element(parent: GuiLayoutData,
+                  key: String) : GuiComponentGroupSlabHeavy(
             parent) {
         private val value: GuiComponentText
         private val text = AtomicReference<String>()

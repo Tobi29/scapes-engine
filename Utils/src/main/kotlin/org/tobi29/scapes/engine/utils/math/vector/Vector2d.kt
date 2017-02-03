@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.setDouble
 import org.tobi29.scapes.engine.utils.math.floor
 
-open class Vector2d(val x: Double, val y: Double) : MultiTag.Writeable {
+open class Vector2d(val x: Double,
+                    val y: Double) : MultiTag.Writeable {
 
     constructor(vector: Vector2i) : this(vector.x + 0.5, vector.y + 0.5)
 

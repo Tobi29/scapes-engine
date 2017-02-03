@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.TabFolder
 import org.eclipse.swt.widgets.TabItem
 
-internal class DocumentShellTab(display: Display, style: Int,
-                                application: MultiDocumentApplication, hideSingleTab: Boolean) : DocumentShell(
+internal class DocumentShellTab(display: Display,
+                                style: Int,
+                                application: MultiDocumentApplication,
+                                hideSingleTab: Boolean) : DocumentShell(
         display, style, application, hideSingleTab) {
     var tabFolder: TabFolder? = null
 

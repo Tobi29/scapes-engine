@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import org.tobi29.scapes.engine.utils.io.tag.getDouble
 import org.tobi29.scapes.engine.utils.io.tag.setDouble
 import org.tobi29.scapes.engine.utils.math.floor
 
-class MutableVector3d(x: Double = 0.0, y: Double = 0.0, var z: Double = 0.0) : MutableVector2d(
+class MutableVector3d(x: Double = 0.0,
+                      y: Double = 0.0,
+                      var z: Double = 0.0) : MutableVector2d(
         x, y) {
 
     constructor(vector: Vector3d) : this(vector.x, vector.y, vector.z)

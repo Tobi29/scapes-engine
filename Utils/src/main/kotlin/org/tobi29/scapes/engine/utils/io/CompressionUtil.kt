@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,8 @@ object CompressionUtil {
         override fun close()
     }
 
-    class ZDeflater(level: Int, buffer: Int = 8192) : Filter {
+    class ZDeflater(level: Int,
+                    buffer: Int = 8192) : Filter {
         private val deflater: Deflater
         private val output: ByteBuffer
         private var input: ByteBuffer

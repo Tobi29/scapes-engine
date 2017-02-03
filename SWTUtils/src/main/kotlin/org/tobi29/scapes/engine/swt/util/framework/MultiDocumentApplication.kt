@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,13 @@ import java.util.concurrent.atomic.AtomicBoolean
 abstract class MultiDocumentApplication : Application {
     internal val composites = HashMap<Document, DocumentComposite>()
 
-    protected constructor(name: String, id: String,
+    protected constructor(name: String,
+                          id: String,
                           version: Version) : super(name, id, version)
 
-    protected constructor(name: String, id: String, version: Version,
+    protected constructor(name: String,
+                          id: String,
+                          version: Version,
                           taskExecutor: TaskExecutor) : super(name, id, version,
             taskExecutor)
 

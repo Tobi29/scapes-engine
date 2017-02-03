@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,20 +73,23 @@ class ArrayUnsizedDeclarationStatement(val type: Type,
                                        val identifier: Identifier,
                                        val initializer: ArrayExpression) : Statement()
 
-class AssignmentExpression(val type: AssignmentType, val left: Expression,
+class AssignmentExpression(val type: AssignmentType,
+                           val left: Expression,
                            val right: Expression) : Expression()
 
 class BooleanExpression(val value: Boolean) : Expression()
 
 class CompoundStatement(val block: StatementBlock) : Statement()
 
-class ConditionExpression(val type: ConditionType, val left: Expression,
+class ConditionExpression(val type: ConditionType,
+                          val left: Expression,
                           val right: Expression) : Expression()
 
 class Declaration(val identifier: Identifier,
                   val initializer: Expression? = null) : Expression()
 
-class DeclarationStatement(val type: Type, declarations: List<Declaration>) : Statement() {
+class DeclarationStatement(val type: Type,
+                           declarations: List<Declaration>) : Statement() {
     val declarations: List<Declaration>
 
     init {
@@ -98,7 +101,8 @@ class ExpressionStatement(val expression: Expression) : Statement()
 
 class FloatingExpression(val value: BigDecimal) : Expression()
 
-class Function(val signature: FunctionSignature, val compound: CompoundStatement)
+class Function(val signature: FunctionSignature,
+               val compound: CompoundStatement)
 
 class FunctionExportedSignature(val name: String,
                                 val returned: Types,
@@ -142,7 +146,8 @@ class LoopFixedStatement(val index: Identifier,
 class MemberExpression(val name: String,
                        val member: Expression) : Expression()
 
-class OperationExpression(val type: OperationType, val left: Expression,
+class OperationExpression(val type: OperationType,
+                          val left: Expression,
                           val right: Expression) : Expression()
 
 class Parameter(val type: Type,

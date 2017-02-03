@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import java.nio.ByteBuffer
 
-internal class VAOStatic(private val vbo: VBO, index: IntArray, private val length: Int, private val renderType: RenderType) : VAO(
+internal class VAOStatic(private val vbo: VBO,
+                         index: IntArray,
+                         private val length: Int,
+                         private val renderType: RenderType) : VAO(
         vbo.engine) {
     private var data: ByteBuffer? = null
     private var indexID = 0

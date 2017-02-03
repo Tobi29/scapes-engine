@@ -23,7 +23,10 @@ import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import java.nio.ByteBuffer
 
-internal class VAOStatic(private val vbo: VBO, index: IntArray, private val length: Int, private val renderType: RenderType) : VAO(
+internal class VAOStatic(private val vbo: VBO,
+                         index: IntArray,
+                         private val length: Int,
+                         private val renderType: RenderType) : VAO(
         vbo.engine) {
     private var data: ByteBuffer? = null
     private var indexID = 0

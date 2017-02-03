@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,13 @@ import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
-class GuiComponentEditableText constructor(parent: GuiLayoutData, text: String,
-                                           private val maxLength: Int, private val r: Float = 1.0f, private val g: Float = 1.0f, private val b: Float = 1.0f, private val a: Float = 1.0f) : GuiComponentHeavy(
+class GuiComponentEditableText constructor(parent: GuiLayoutData,
+                                           text: String,
+                                           private val maxLength: Int,
+                                           private val r: Float = 1.0f,
+                                           private val g: Float = 1.0f,
+                                           private val b: Float = 1.0f,
+                                           private val a: Float = 1.0f) : GuiComponentHeavy(
         parent) {
     private val data = GuiController.TextFieldData()
     private var active2 = false
@@ -34,8 +39,12 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData, text: String,
             dirty()
         }
 
-    constructor(parent: GuiLayoutData, text: String, r: Float = 1.0f,
-                g: Float = 1.0f, b: Float = 1.0f, a: Float = 1.0f) : this(
+    constructor(parent: GuiLayoutData,
+                text: String,
+                r: Float = 1.0f,
+                g: Float = 1.0f,
+                b: Float = 1.0f,
+                a: Float = 1.0f) : this(
             parent, text, Int.MAX_VALUE, r, g, b, a)
 
     init {

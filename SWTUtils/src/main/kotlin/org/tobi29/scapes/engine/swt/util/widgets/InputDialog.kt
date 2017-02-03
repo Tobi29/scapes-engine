@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import org.eclipse.swt.layout.GridData
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.*
 
-class InputDialog(parent: Shell, title: String, private val button: String = "OK") : Dialog(
+class InputDialog(parent: Shell,
+                  title: String,
+                  private val button: String = "OK") : Dialog(
         parent) {
     private val shell: Shell
 

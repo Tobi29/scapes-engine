@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,11 @@ package org.tobi29.scapes.engine.utils.math
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector3i
 
-enum class Face(val value: Int, val x: Int, val y: Int, val z: Int, val data: Byte) {
+enum class Face(val value: Int,
+                val x: Int,
+                val y: Int,
+                val z: Int,
+                val data: Byte) {
     NONE(-1, 0, 0, 1, -1),
     UP(0, 0, 0, 1, 0),
     DOWN(1, 0, 0, -1, 1),

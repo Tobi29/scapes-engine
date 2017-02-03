@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
 import org.tobi29.scapes.engine.utils.math.Face
-import kotlin.experimental.*
+import kotlin.experimental.and
+import kotlin.experimental.or
 
 /**
  * Class representing a maze using one byte per cell
@@ -44,7 +45,8 @@ class Maze
      * @param width The width of the maze
      * @param height The height of the maze
      */
-    constructor(width: Int, height: Int) : this(
+    constructor(width: Int,
+                height: Int) : this(
             ByteArray(width * height), width, height)
 
     /**

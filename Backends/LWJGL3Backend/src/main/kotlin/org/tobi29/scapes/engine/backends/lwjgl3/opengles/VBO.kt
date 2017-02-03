@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.lwjgl.opengles.GLES20
@@ -26,7 +27,8 @@ import org.tobi29.scapes.engine.utils.math.round
 import java.nio.ByteBuffer
 import java.util.*
 
-internal class VBO(val engine: ScapesEngine, attributes: List<ModelAttribute>,
+internal class VBO(val engine: ScapesEngine,
+                   attributes: List<ModelAttribute>,
                    length: Int) {
     private val stride: Int
     private val attributes = ArrayList<ModelAttributeData>()
@@ -288,7 +290,8 @@ internal class VBO(val engine: ScapesEngine, attributes: List<ModelAttribute>,
         stored = false
     }
 
-    private class ModelAttributeData(attribute: ModelAttribute, val offset: Int) {
+    private class ModelAttributeData(attribute: ModelAttribute,
+                                     val offset: Int) {
         val vertexType: VertexType
         val id: Int
         val size: Int

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,28 @@ package org.tobi29.scapes.engine.gui
 
 import java.util.*
 
-class GuiComponentTextField(parent: GuiLayoutData, textX: Int, textSize: Int,
-                            text: String, maxLength: Int, hiddenText: Boolean, private val major: Boolean) : GuiComponentButtonHeavy(
+class GuiComponentTextField(parent: GuiLayoutData,
+                            textX: Int,
+                            textSize: Int,
+                            text: String,
+                            maxLength: Int,
+                            hiddenText: Boolean,
+                            private val major: Boolean) : GuiComponentButtonHeavy(
         parent) {
     private val text: GuiComponentEditableText
 
-    constructor(parent: GuiLayoutData, textSize: Int,
-                text: String, hiddenText: Boolean = false) : this(
+    constructor(parent: GuiLayoutData,
+                textSize: Int,
+                text: String,
+                hiddenText: Boolean = false) : this(
             parent, textSize, text, Int.MAX_VALUE, hiddenText)
 
-    constructor(parent: GuiLayoutData, textSize: Int,
-                text: String, maxLength: Int, hiddenText: Boolean = false, major: Boolean = false) : this(
+    constructor(parent: GuiLayoutData,
+                textSize: Int,
+                text: String,
+                maxLength: Int,
+                hiddenText: Boolean = false,
+                major: Boolean = false) : this(
             parent, 4, textSize, text, maxLength, hiddenText, major)
 
     init {

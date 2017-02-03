@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.layer
 
-import java.util.Random
+import java.util.*
 
-class RandomNoiseBorderLayer(private val parent: RandomNoiseLayer, private val seed: Long,
-                             private val outside: Int, private val border: Int, private val factor: Int) : RandomNoiseLayer {
+class RandomNoiseBorderLayer(private val parent: RandomNoiseLayer,
+                             private val seed: Long,
+                             private val outside: Int,
+                             private val border: Int,
+                             private val factor: Int) : RandomNoiseLayer {
     private val random = Random()
 
     @Synchronized override fun getInt(x: Int,

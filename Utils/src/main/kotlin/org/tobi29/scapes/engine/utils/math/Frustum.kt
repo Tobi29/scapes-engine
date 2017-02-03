@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,10 @@ class Frustum() {
     private var nw = 0.0
     private var range = 0.0
 
-    constructor(angle: Double, ratio: Double, nearD: Double, farD: Double) : this() {
+    constructor(angle: Double,
+                ratio: Double,
+                nearD: Double,
+                farD: Double) : this() {
         setPerspective(angle, ratio, nearD, farD)
     }
 

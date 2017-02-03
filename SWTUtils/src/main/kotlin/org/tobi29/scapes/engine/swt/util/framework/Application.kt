@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,14 +39,18 @@ abstract class Application : Runnable, Crashable {
     val taskExecutor: TaskExecutor
     private var timerSchedule: Long = Long.MIN_VALUE
 
-    protected constructor(name: String, id: String, version: Version) {
+    protected constructor(name: String,
+                          id: String,
+                          version: Version) {
         Display.setAppName(name)
         Display.setAppVersion(version.toString())
         display = Display.getDefault()
         taskExecutor = TaskExecutor(this, id)
     }
 
-    protected constructor(name: String, id: String, version: Version,
+    protected constructor(name: String,
+                          id: String,
+                          version: Version,
                           taskExecutor: TaskExecutor) {
         Display.setAppName(name)
         Display.setAppVersion(version.toString())

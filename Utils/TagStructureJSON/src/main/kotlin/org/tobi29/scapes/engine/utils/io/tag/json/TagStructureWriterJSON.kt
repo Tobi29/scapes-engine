@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ import javax.json.Json
 import javax.json.stream.JsonGenerator
 import javax.json.stream.JsonGeneratorFactory
 
-class TagStructureWriterJSON(streamOut: OutputStream, pretty: Boolean) : TagStructureJSON(), TagStructureWriter {
+class TagStructureWriterJSON(streamOut: OutputStream,
+                             pretty: Boolean) : TagStructureJSON(), TagStructureWriter {
     private val writer: JsonGenerator
 
-    constructor(stream: WritableByteStream, pretty: Boolean) : this(
+    constructor(stream: WritableByteStream,
+                pretty: Boolean) : this(
             ByteStreamOutputStream(stream), pretty)
 
     init {

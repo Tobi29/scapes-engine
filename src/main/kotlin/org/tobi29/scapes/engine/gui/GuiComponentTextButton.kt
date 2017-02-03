@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 
 package org.tobi29.scapes.engine.gui
 
-class GuiComponentTextButton(parent: GuiLayoutData, textX: Int, textSize: Int,
+class GuiComponentTextButton(parent: GuiLayoutData,
+                             textX: Int,
+                             textSize: Int,
                              text: String) : GuiComponentButton(parent) {
     private val text: GuiComponentText
 
-    constructor(parent: GuiLayoutData, textSize: Int,
+    constructor(parent: GuiLayoutData,
+                textSize: Int,
                 text: String) : this(parent, 4, textSize, text)
 
     init {
         this.text = addSubHori(textX.toDouble(), 0.0, -1.0, textSize.toDouble()
-        ) {  GuiComponentText(it, text) }
+        ) { GuiComponentText(it, text) }
     }
 
     fun text(): String {

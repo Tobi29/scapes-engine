@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -237,7 +237,9 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         }
     }
 
-    private data class Chunk(val id: Int, val size: Int, val bytes: Int)
+    private data class Chunk(val id: Int,
+                             val size: Int,
+                             val bytes: Int)
 
     private fun chunk(buffer: ByteBuffer): Chunk {
         val chunkID = buffer.int

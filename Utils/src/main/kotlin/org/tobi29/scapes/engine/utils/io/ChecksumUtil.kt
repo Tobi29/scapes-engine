@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,8 @@ fun checksum(input: ReadableByteStream,
 /**
  * Enum containing available checksum algorithms
  */
-enum class Algorithm(private val digestName: String, val bytes: Int) {
+enum class Algorithm(private val digestName: String,
+                     val bytes: Int) {
     UNKNOWN("UNKNOWN", 0),
     SHA256("SHA-256", 32),
     SHA1("SHA1", 20),

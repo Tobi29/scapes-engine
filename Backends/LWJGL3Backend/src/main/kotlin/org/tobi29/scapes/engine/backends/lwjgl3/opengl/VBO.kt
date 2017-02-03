@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,8 @@ import org.tobi29.scapes.engine.utils.math.round
 import java.nio.ByteBuffer
 import java.util.*
 
-internal class VBO(val engine: ScapesEngine, attributes: List<ModelAttribute>,
+internal class VBO(val engine: ScapesEngine,
+                   attributes: List<ModelAttribute>,
                    length: Int) {
     private val stride: Int
     private val attributes = ArrayList<ModelAttributeData>()
@@ -287,7 +288,8 @@ internal class VBO(val engine: ScapesEngine, attributes: List<ModelAttribute>,
         stored = false
     }
 
-    private class ModelAttributeData(attribute: ModelAttribute, val offset: Int) {
+    private class ModelAttributeData(attribute: ModelAttribute,
+                                     val offset: Int) {
         val vertexType: VertexType
         val id: Int
         val size: Int

@@ -24,8 +24,12 @@ import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import java.nio.ByteBuffer
 
-internal class TextureFBODepth(engine: ScapesEngine, width: Int, height: Int,
-                               minFilter: TextureFilter, magFilter: TextureFilter, wrapS: TextureWrap,
+internal class TextureFBODepth(engine: ScapesEngine,
+                               width: Int,
+                               height: Int,
+                               minFilter: TextureFilter,
+                               magFilter: TextureFilter,
+                               wrapS: TextureWrap,
                                wrapT: TextureWrap) : TextureFBO(engine, width,
         height, null, 0, minFilter, magFilter, wrapS, wrapT) {
 
@@ -40,7 +44,8 @@ internal class TextureFBODepth(engine: ScapesEngine, width: Int, height: Int,
         gl.check()
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID)
         setFilter()
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0, GLES30.GL_DEPTH_COMPONENT24,
+        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
+                GLES30.GL_DEPTH_COMPONENT24,
                 buffer.width, buffer.height, 0, GLES20.GL_DEPTH_COMPONENT,
                 GLES20.GL_UNSIGNED_INT, null as ByteBuffer?)
     }

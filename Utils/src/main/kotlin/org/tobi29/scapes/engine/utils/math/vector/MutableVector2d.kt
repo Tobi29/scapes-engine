@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import org.tobi29.scapes.engine.utils.io.tag.getDouble
 import org.tobi29.scapes.engine.utils.io.tag.setDouble
 import org.tobi29.scapes.engine.utils.math.floor
 
-open class MutableVector2d(var x: Double = 0.0, var y: Double = 0.0) : MultiTag.ReadAndWrite {
+open class MutableVector2d(var x: Double = 0.0,
+                           var y: Double = 0.0) : MultiTag.ReadAndWrite {
 
     constructor(vector: Vector2d) : this(vector.x, vector.y)
 

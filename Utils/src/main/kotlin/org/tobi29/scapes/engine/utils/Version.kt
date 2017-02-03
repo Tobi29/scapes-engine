@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ enum class Comparison constructor(val level: Int) {
 
     @Suppress("NOTHING_TO_INLINE")
     inline fun inside(lower: Comparison,
-                  upper: Comparison): Boolean {
+                      upper: Comparison): Boolean {
         return atLeast(lower) && atMost(upper)
     }
 }
@@ -138,6 +138,7 @@ enum class Comparison constructor(val level: Int) {
 class VersionException : Exception {
     constructor(message: kotlin.String) : super(message)
 
-    constructor(message: kotlin.String, cause: Throwable) : super(message,
+    constructor(message: kotlin.String,
+                cause: Throwable) : super(message,
             cause)
 }

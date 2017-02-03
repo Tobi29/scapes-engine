@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2016 Tobi29
+ * Copyright 2012-2017 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,18 @@ import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
 class ShaderCompileException : Exception {
-    constructor(message: String, context: TerminalNode) : super(
+    constructor(message: String,
+                context: TerminalNode) : super(
             message(message, context.symbol))
 
-    constructor(message: String, context: ParserRuleContext) : super(
+    constructor(message: String,
+                context: ParserRuleContext) : super(
             message(message, context.start))
 
     constructor(message: String) : super(message)
 
-    constructor(e: Exception, context: ParserRuleContext) : super(
+    constructor(e: Exception,
+                context: ParserRuleContext) : super(
             message(e.message ?: "", context.start), e)
 
     constructor(e: Exception) : super(e)
