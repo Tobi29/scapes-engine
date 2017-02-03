@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.utils.Pool
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
 import java.util.*
+import kotlin.experimental.*
 
 /**
  * Maze generator using recursive backtracking

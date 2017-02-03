@@ -223,7 +223,7 @@ class TagStructure {
                 return false
             }
             for ((key, value) in tags) {
-                val otherTag = other.tags[key]
+                val otherTag = other.tags[key] ?: return false
                 if (value is ByteArray) {
                     if (otherTag is ByteArray) {
                         if (!Arrays.equals(value, otherTag)) {

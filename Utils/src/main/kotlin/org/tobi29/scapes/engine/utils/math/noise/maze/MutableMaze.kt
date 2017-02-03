@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
 import org.tobi29.scapes.engine.utils.math.Face
+import kotlin.experimental.*
 
 /**
  * Class representing a mutable maze using one byte per cell

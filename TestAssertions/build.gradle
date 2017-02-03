@@ -18,8 +18,12 @@ apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
+compileKotlin {
+    kotlinOptions.freeCompilerArgs += "-Xskip-runtime-version-check"
+}
+
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.0-beta-22"
-    compile "org.jetbrains.kotlin:kotlin-test:1.1.0-beta-22"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.0-beta-38"
+    compile "org.jetbrains.kotlin:kotlin-test:1.1.0-beta-38"
     compile "org.jetbrains.spek:spek-api:1.1.0-beta3"
 }

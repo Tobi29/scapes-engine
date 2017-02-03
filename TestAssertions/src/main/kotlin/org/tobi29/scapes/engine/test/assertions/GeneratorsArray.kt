@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.test.assertions
 
 import java.util.*
+import kotlin.coroutines.experimental.buildSequence
 
 fun byteArrays(amount: Int = 64,
                sizeBits: Int = 4,

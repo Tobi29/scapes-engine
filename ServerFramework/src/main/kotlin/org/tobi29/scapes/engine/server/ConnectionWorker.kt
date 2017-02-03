@@ -23,7 +23,7 @@ import java.io.IOException
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Class for processing non-blocking connections
@@ -41,13 +41,11 @@ class ConnectionWorker(
          */
         val joiner: Joiner.SelectorJoinable,
         private val maxWorkerSleep: Long,
-        private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher(), Yield {
+        private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher() {
     private val connectionQueue = ConcurrentLinkedQueue<suspend CoroutineScope.(Connection) -> Unit>()
-    private val connections = ArrayList<() -> Unit>()
+    private val connections = ArrayList<ConnectionHandle>()
 
-    private val queue = ConcurrentLinkedQueue<() -> Unit>()
-    private var continuations = ArrayList<CancellableContinuation<Unit>>()
-    private var continuationsSwap = ArrayList<CancellableContinuation<Unit>>()
+    private val queue = ConcurrentLinkedQueue<() -> Boolean>()
 
     /**
      * Returns an estimate for how many connections this worker is processing
@@ -83,20 +81,16 @@ class ConnectionWorker(
                     val timeout = AtomicLong(System.currentTimeMillis() + 20000)
                     val connection = Connection(requestClose, timeout)
                     val job = launch(this) { coroutine(connection) }
+                    val close = ConnectionHandle(job, requestClose)
+                    connections.add(close)
                     launch(this) {
                         while (job.isActive) {
                             if (System.currentTimeMillis() > timeout.get()) {
                                 job.cancel(IOException("Timeout"))
                             }
-                            // TODO: This throws AbstractMethodError with yield(), kotlin bug?
-                            // yield()
-                            suspendCancellableCoroutine<Unit> { cont ->
-                                scheduleResume(cont)
-                            }
+                            yield()
                         }
                     }
-                    val close = { requestClose.set(true) }
-                    connections.add(close)
                     job.onCompletion {
                         connections.remove(close)
                     }
@@ -106,7 +100,7 @@ class ConnectionWorker(
                 joiner.sleep(sleep)
             }
         }
-        connections.forEach { it() }
+        connections.forEach { it.requestClose.set(true) }
         val stopTimeout = System.nanoTime()
         while (connections.isNotEmpty() && System.nanoTime() - stopTimeout < 10000000000L) {
             process()
@@ -114,34 +108,20 @@ class ConnectionWorker(
                 joiner.sleep(10)
             }
         }
+        connections.forEach { it.job.cancel(IOException("Killing worker")) }
         while (connections.isNotEmpty()) {
-            kill(IOException("Killing worker"))
+            process()
         }
     }
 
     private fun process() {
-        while (queue.isNotEmpty()) {
-            queue.poll()()
-        }
-        val process = continuations
-        if (process.isNotEmpty()) {
-            continuations = continuationsSwap
-            process.forEach { it.resume(Unit) }
-            process.clear()
-            continuationsSwap = process
-        }
-    }
-
-    private fun kill(e: Throwable) {
-        while (queue.isNotEmpty()) {
-            queue.poll()()
-        }
-        val process = continuations
-        if (process.isNotEmpty()) {
-            continuations = continuationsSwap
-            process.forEach { it.resumeWithException(e) }
-            process.clear()
-            continuationsSwap = process
+        if (queue.isNotEmpty()) {
+            queue.add { true }
+            while (queue.isNotEmpty()) {
+                if (queue.poll()()) {
+                    break
+                }
+            }
         }
     }
 
@@ -153,6 +133,7 @@ class ConnectionWorker(
             } catch (e: CancellationException) {
                 logger.warn { "Job cancelled: ${e.message}" }
             }
+            false
         }
     }
 
@@ -160,9 +141,8 @@ class ConnectionWorker(
         return thread == Thread.currentThread()
     }
 
-    override fun scheduleResume(continuation: CancellableContinuation<Unit>) {
-        continuations.add(continuation)
-    }
-
     companion object : KLogging()
+
+    private class ConnectionHandle(val job: Job,
+                                   val requestClose: AtomicBoolean)
 }
