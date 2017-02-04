@@ -116,10 +116,14 @@ class ContainerGLFW(engine: ScapesEngine,
             val dx = xpos - mouseX
             val dy = ypos - mouseY
             if (dx != 0.0 || dy != 0.0) {
-                mouseX = xpos
-                mouseY = ypos
-                if (!mouseGrabbed) {
+                if (mouseGrabbed) {
+                    GLFW.glfwSetCursorPos(window, 0.0, 0.0)
+                    mouseX = 0.0
+                    mouseY = 0.0
+                } else {
                     set(mouseX, mouseY)
+                    mouseX = xpos
+                    mouseY = ypos
                 }
                 if (mouseDeltaSkip) {
                     mouseDeltaSkip = false
