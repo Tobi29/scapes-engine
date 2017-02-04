@@ -33,6 +33,7 @@ import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -68,7 +69,19 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
             gl = GLLWJGL3GL(engine, this)
         }
         soundSystem = OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
-        superModifier = Platform.get() === Platform.MACOSX
+        superModifier = Platform.get() == Platform.MACOSX
+
+        // It's 2017 and this is still a thing...
+        if (Platform.get() == Platform.WINDOWS) {
+            val sleepThread = Thread {
+                while (true) {
+                    sleep(Long.MAX_VALUE)
+                }
+            }
+            sleepThread.name = "Sleep-Thread"
+            sleepThread.isDaemon = true
+            sleepThread.start()
+        }
     }
 
     override fun containerWidth(): Int {
