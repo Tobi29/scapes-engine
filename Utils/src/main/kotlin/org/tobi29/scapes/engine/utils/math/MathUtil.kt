@@ -1028,6 +1028,38 @@ inline fun lb(value: Int): Int {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
+inline infix fun Float.remP(value: Float): Float {
+    val mod = this % value
+    return if (mod < 0.0f) {
+        mod + value
+    } else {
+        mod
+    }
+}
+
+/**
+ * Computes the modulus of the given number and [value]
+ * Unlike the normal modulo operator this always returns a positive value
+ * @param value The divisor
+ * @receiver The dividend
+ * @return Returns the modulus of the given number and [value]
+ */
+inline infix fun Double.remP(value: Double): Double {
+    val mod = this % value
+    return if (mod < 0.0) {
+        mod + value
+    } else {
+        mod
+    }
+}
+
+/**
+ * Computes the modulus of the given number and [value]
+ * Unlike the normal modulo operator this always returns a positive value
+ * @param value The divisor
+ * @receiver The dividend
+ * @return Returns the modulus of the given number and [value]
+ */
 inline infix fun Int.remP(value: Int): Int {
     val mod = this % value
     return if (mod < 0) {
