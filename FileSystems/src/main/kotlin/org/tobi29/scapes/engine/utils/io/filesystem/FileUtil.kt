@@ -42,7 +42,7 @@ private fun loadService(): FileUtilImpl {
             "No filesystem implementation available")
 }
 
-fun get(path: String): FilePath {
+fun path(path: String): FilePath {
     return IMPL.path(path)
 }
 
