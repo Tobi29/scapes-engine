@@ -1028,7 +1028,7 @@ inline fun lb(value: Int): Int {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
-inline infix fun Int.modP(value: Int): Int {
+inline infix fun Int.remP(value: Int): Int {
     val mod = this % value
     return if (mod < 0) {
         mod + value
@@ -1044,7 +1044,7 @@ inline infix fun Int.modP(value: Int): Int {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
-inline infix fun Long.modP(value: Long): Long {
+inline infix fun Long.remP(value: Long): Long {
     val mod = this % value
     return if (mod < 0L) {
         mod + value
