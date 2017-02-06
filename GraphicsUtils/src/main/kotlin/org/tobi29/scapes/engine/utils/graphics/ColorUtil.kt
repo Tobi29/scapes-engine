@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.utils.graphics
 
+import org.tobi29.scapes.engine.utils.math.remP
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
 fun hsvToRGB(color: Vector3d): Vector3d {
@@ -24,11 +25,7 @@ fun hsvToRGB(color: Vector3d): Vector3d {
 fun hsvToRGB(h: Double,
              s: Double,
              v: Double): Vector3d {
-    var c = (h * 6.0).toInt()
-    c %= 6
-    if (c < 0) {
-        c += 6
-    }
+    val c = (h * 6.0).toInt() remP 6
     val f = h * 6.0 - c
     val p = v * (1.0 - s)
     val q = v * (1.0 - f * s)
