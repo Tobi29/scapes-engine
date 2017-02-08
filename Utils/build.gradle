@@ -16,8 +16,6 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-version = "0.0.0"
-
 dependencies {
     compile "io.github.microutils:kotlin-logging:${findProperty("kotlin-logging.version")}"
     compile "org.slf4j:slf4j-api:${findProperty("slf4j.version")}"

@@ -16,8 +16,6 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-version = "0.0.0"
-
 dependencies {
     compile project(":Utils")
     compile("org.glassfish:javax.json:1.0.4") { transitive = false }

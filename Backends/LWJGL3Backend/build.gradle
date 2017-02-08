@@ -16,8 +16,6 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-version = "0.0.0"
-
 dependencies {
     compile project(":Backends:OpenALSounds")
     compile("org.lwjgl:lwjgl:${findProperty("lwjgl.version")}") {

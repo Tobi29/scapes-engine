@@ -18,8 +18,6 @@ apply from: "$rootDir/resources/scapesenginemodulejava.gradle"
 apply plugin: "antlr"
 apply plugin: "idea"
 
-version = "0.0.0"
-
 dependencies {
     // Full library included by antlr plugin
     // compile "org.antlr:antlr4-runtime:${findProperty("antlr.version")}"
