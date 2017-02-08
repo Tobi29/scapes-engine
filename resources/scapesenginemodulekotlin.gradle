@@ -25,6 +25,10 @@ kotlin {
     }
 }
 
+compileTestKotlin {
+    kotlinOptions.freeCompilerArgs += "-Xskip-runtime-version-check"
+}
+
 dependencies {
     // TODO: Use official module once 1.1.0 is released
     // testCompile "org.jetbrains.spek:spek-api:1.1.0-beta3"
