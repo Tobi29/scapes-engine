@@ -20,8 +20,6 @@ apply plugin: "maven"
 
 apply from: "$rootDir/resources/scapesenginemodule.gradle"
 
-group = "com.github.Tobi29.ScapesEngine"
-
 kotlin {
     experimental {
         coroutines "enable"
