@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile project(":ScapesEngine:Utils")
-    compile("org.apache.tika:tika-core:1.10") { transitive = false }
+    compile project(":Utils")
+    compile("org.apache.tika:tika-core:${findProperty("tika.version")}") {
+        transitive = false
+    }
 }

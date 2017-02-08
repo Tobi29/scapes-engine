@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
-apply plugin: "idea"
-
-version = "0.0.0"
-
-dependencies {
-    compile project(":ScapesEngine:Codecs")
-    compile project(":ScapesEngine:FileSystems")
-    compile project(":ScapesEngine:GraphicsUtils")
-    compile project(":ScapesEngine:ShaderCompiler")
-    compile project(":ScapesEngine:Utils:TagStructureBinary")
-    compile project(":ScapesEngine:Utils:TagStructureJSON")
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "https://dl.bintray.com/kotlin/kotlin-eap-1.1"
+        }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.1.0-beta-38"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.11"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:1.0.0-M3"
+    }
 }
 
-idea {
-    module {
-        excludeDirs += file("resources/Inno Setup 5")
-        excludeDirs += file("resources/JRE")
-        excludeDirs += file("resources/Launch4j")
-    }
+task wrapper(type: Wrapper) {
+    gradleVersion = "3.3"
+    distributionUrl =
+            "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }

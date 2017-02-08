@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile project(":ScapesEngine:Utils")
-    compile("ar.com.hjg:pngj:2.1.0") { transitive = false }
+    compile project(":Utils")
+    compile("ar.com.hjg:pngj:${findProperty("pngj.version")}") {
+        transitive = false
+    }
 }

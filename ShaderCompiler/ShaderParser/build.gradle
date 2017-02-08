@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulejava.gradle"
-apply plugin: 'antlr'
+apply from: "$rootDir/resources/scapesenginemodulejava.gradle"
+apply plugin: "antlr"
 apply plugin: "idea"
 
 version = "0.0.0"
 
 dependencies {
     // Full library included by antlr plugin
-    // compile "org.antlr:antlr4-runtime:4.5.1-1"
+    // compile "org.antlr:antlr4-runtime:${findProperty("antlr.version")}"
 
-    antlr "org.antlr:antlr4:4.5.1-1"
+    antlr "org.antlr:antlr4:${findProperty("antlr.version")}"
 }
 
 idea {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
@@ -23,7 +23,7 @@ compileKotlin {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.0-beta-38"
-    compile "org.jetbrains.kotlin:kotlin-test:1.1.0-beta-38"
-    compile "org.jetbrains.spek:spek-api:1.1.0-beta3"
+    compile "org.jetbrains.kotlin:kotlin-stdlib:${findProperty("kotlin.version")}"
+    compile "org.jetbrains.kotlin:kotlin-test:${findProperty("kotlin.version")}"
+    compile "org.jetbrains.spek:spek-api:${findProperty("spek.version")}"
 }

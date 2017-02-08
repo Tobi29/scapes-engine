@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile "io.github.microutils:kotlin-logging:1.3.3"
-    compile "org.slf4j:slf4j-api:1.7.21"
-    compile "net.sourceforge.streamsupport:streamsupport:1.5.3"
-    compile "org.threeten:threetenbp:1.3.3"
-    compile("com.owtelse.codec:base64:1.0.6") { transitive = false }
-    compile "org.jetbrains.kotlin:kotlin-stdlib:1.1.0-beta-38"
+    compile "io.github.microutils:kotlin-logging:${findProperty("kotlin-logging.version")}"
+    compile "org.slf4j:slf4j-api:${findProperty("slf4j.version")}"
+    compile "net.sourceforge.streamsupport:streamsupport:${findProperty("streamsupport.version")}"
+    compile "org.threeten:threetenbp:${findProperty("threetenbp.version")}"
+    compile("com.owtelse.codec:base64:${findProperty("base64.version")}") {
+        transitive = false
+    }
+    compile "org.jetbrains.kotlin:kotlin-stdlib:${findProperty("kotlin.version")}"
 }

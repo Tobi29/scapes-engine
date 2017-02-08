@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile project(":ScapesEngine:Utils")
-    compile project(":ScapesEngine:ShaderCompiler:ShaderParser")
+    compile project(":Utils")
+    compile project(":ShaderCompiler:ShaderParser")
 }

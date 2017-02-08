@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile project(":ScapesEngine:Backends:LWJGL3Backend")
-    compile("org.lwjgl:lwjgl:3.1.1") { transitive = false }
-    compile("org.lwjgl:lwjgl-glfw:3.1.1") { transitive = false }
-    compile("org.lwjgl:lwjgl-tinyfd:3.1.1") { transitive = false }
+    compile project(":Backends:LWJGL3Backend")
+    compile("org.lwjgl:lwjgl:${findProperty("lwjgl.version")}") {
+        transitive = false
+    }
+    compile("org.lwjgl:lwjgl-glfw:${findProperty("lwjgl.version")}") {
+        transitive = false
+    }
+    compile("org.lwjgl:lwjgl-tinyfd:${findProperty("lwjgl.version")}") {
+        transitive = false
+    }
 }

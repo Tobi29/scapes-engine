@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-apply plugin: "java"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-apply from: "$rootDir/resources/scapesenginemodule.gradle"
+version = "0.0.0"
 
 dependencies {
-    testCompile("org.junit.jupiter:junit-jupiter-api:5.0.0-M3")
-    testRuntime("org.junit.jupiter:junit-jupiter-engine:5.0.0-M3")
+    compile project(":Codecs")
+    compile project(":FileSystems")
+    compile project(":GraphicsUtils")
+    compile project(":ShaderCompiler")
+    compile project(":Utils:TagStructureBinary")
+    compile project(":Utils:TagStructureJSON")
 }

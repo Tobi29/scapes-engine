@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile project(":ScapesEngine:SQLFramework")
-    compile "org.xerial:sqlite-jdbc:3.15.1"
+    compile project(":SQLFramework")
+    compile "org.xerial:sqlite-jdbc:${findProperty("sqlite-jdbc.version")}"
 }

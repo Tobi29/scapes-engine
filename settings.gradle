@@ -26,20 +26,20 @@ Closure subProjects = { root ->
     list.toArray(new String[0])
 }
 
-include "ScapesEngine"
-include "ScapesEngine:Codecs"
-include "ScapesEngine:FileSystems"
-include "ScapesEngine:GraphicsUtils"
-include "ScapesEngine:ServerFramework"
-include "ScapesEngine:ShaderCompiler"
-include "ScapesEngine:ShaderCompiler:ShaderParser"
-include "ScapesEngine:SQLFramework"
-include "ScapesEngine:SWTUtils"
-include "ScapesEngine:TestAssertions"
-include "ScapesEngine:Utils"
-include subProjects("ScapesEngine:Backends")
-include subProjects("ScapesEngine:Codecs")
-include subProjects("ScapesEngine:Utils")
-include subProjects("ScapesEngine:FileSystems")
-include subProjects("ScapesEngine:ServerFramework")
-include subProjects("ScapesEngine:SQLFramework")
+include "Engine"
+include "Codecs"
+include "FileSystems"
+include "GraphicsUtils"
+include "ServerFramework"
+include "ShaderCompiler"
+include "ShaderCompiler:ShaderParser"
+include "SQLFramework"
+include "SWTUtils"
+include "TestAssertions"
+include "Utils"
+include subProjects("Backends")
+include subProjects("Codecs")
+include subProjects("Utils")
+include subProjects("FileSystems")
+include subProjects("ServerFramework")
+include subProjects("SQLFramework")

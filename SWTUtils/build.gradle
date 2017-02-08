@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/ScapesEngine/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 version = "0.0.0"
 
 dependencies {
-    compile project(":ScapesEngine:FileSystems")
+    compile project(":FileSystems")
 
-    compileOnly "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:4.6"
+    compileOnly "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:${findProperty("swt.version")}"
 }

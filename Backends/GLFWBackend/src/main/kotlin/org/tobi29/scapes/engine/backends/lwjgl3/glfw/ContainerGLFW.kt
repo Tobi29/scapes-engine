@@ -22,6 +22,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
 import org.lwjgl.system.MemoryStack
+import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
@@ -35,9 +36,12 @@ import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
+import org.tobi29.scapes.engine.utils.math.clamp
+import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.locks.LockSupport
 
 class ContainerGLFW(engine: ScapesEngine,
                     useGLES: Boolean = false) : ContainerLWJGL3(engine,
@@ -55,10 +59,13 @@ class ContainerGLFW(engine: ScapesEngine,
     private val mouseButtonFun: GLFWMouseButtonCallback
     private val cursorPosFun: GLFWCursorPosCallback
     private val scrollFun: GLFWScrollCallback
-    private var window: Long = 0
+    private val monitorFun: GLFWMonitorCallback
+    private var window = 0L
+    private var refreshRate = 60
     private var running = true
     private var mouseGrabbed = false
     private var mouseDeltaSkip = true
+    private var plebSyncEnable = true
 
     init {
         errorFun = GLFWErrorCallback.createPrint()
@@ -96,6 +103,9 @@ class ContainerGLFW(engine: ScapesEngine,
                     GLFW.GLFW_RELEASE -> addPressEvent(virtualKey,
                             ControllerBasic.PressState.RELEASE)
                 }
+            }
+            if (key == GLFW.GLFW_KEY_GRAVE_ACCENT && action == GLFW.GLFW_PRESS) {
+                plebSyncEnable = !plebSyncEnable
             }
         }
         charFun = GLFWCharCallback.create { window, codepoint ->
@@ -137,6 +147,10 @@ class ContainerGLFW(engine: ScapesEngine,
                 addScroll(xoffset, yoffset)
             }
         }
+        monitorFun = GLFWMonitorCallback.create { monitor, event ->
+            refreshRate = Companion.refreshRate(window) ?: 60
+        }
+        GLFW.glfwSetMonitorCallback(monitorFun)
     }
 
     override fun formFactor(): Container.FormFactor {
@@ -176,17 +190,41 @@ class ContainerGLFW(engine: ScapesEngine,
     }
 
     override fun run() {
+        val latencyDebug = engine.debugValues["Input-Latency"]
+        val plebSyncDebug = engine.debugValues["PlebSync™-Sleep"]
+        var plebSync = 0L
         sync.init()
         while (running) {
+            val start = System.nanoTime()
+            val vSync = engine.config.vSync
             while (!tasks.isEmpty()) {
                 tasks.poll()()
             }
             if (!valid) {
+                engine.graphics.reset()
+                clearStates()
+                visible = false
                 if (window != 0L) {
-                    engine.graphics.reset()
-                    cleanWindow()
+                    GLFW.glfwDestroyWindow(window)
                 }
-                initWindow(engine.config.fullscreen, engine.config.vSync)
+                window = initWindow(engine, engine.config.fullscreen,
+                        engine.config.vSync, useGLES, windowSizeFun,
+                        windowCloseFun, windowFocusFun, frameBufferSizeFun,
+                        keyFun, charFun, mouseButtonFun, cursorPosFun,
+                        scrollFun)
+                refreshRate = refreshRate(window) ?: 60
+                val stack = MemoryStack.stackGet()
+                stack.push {
+                    val widthBuffer = stack.mallocInt(1)
+                    val heightBuffer = stack.mallocInt(1)
+                    GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer)
+                    containerWidth = widthBuffer.get(0)
+                    containerHeight = heightBuffer.get(0)
+                    GLFW.glfwGetFramebufferSize(window, widthBuffer,
+                            heightBuffer)
+                    contentWidth = widthBuffer.get(0)
+                    contentHeight = heightBuffer.get(0)
+                }
                 gl.init()
                 valid = true
                 containerResized = true
@@ -195,6 +233,14 @@ class ContainerGLFW(engine: ScapesEngine,
                     mouseY = containerHeight * 0.5
                     set(mouseX, mouseY)
                 }
+            }
+            if (plebSync > 0) {
+                LockSupport.parkNanos(plebSync)
+            }
+            val time = System.nanoTime()
+            GLFW.glfwPollEvents()
+            if (controllers.poll()) {
+                joysticksChanged.set(true)
             }
             profilerSection("Render") {
                 engine.graphics.render(sync.delta())
@@ -218,15 +264,27 @@ class ContainerGLFW(engine: ScapesEngine,
                 }
                 set(mouseX, mouseY)
             }
-            GLFW.glfwPollEvents()
-            if (controllers.poll()) {
-                joysticksChanged.set(true)
+            if (vSync) {
+                sync.tick()
+            } else {
+                sync.cap()
             }
-            sync.cap()
             GLFW.glfwSwapBuffers(window)
             if (!visible) {
                 GLFW.glfwShowWindow(window)
                 visible = true
+            }
+            if (vSync && plebSyncEnable) {
+                val maxDiff = 1000000000L / refreshRate
+                val latency = System.nanoTime() - time
+                val delta = System.nanoTime() - start
+                val targetDelta = max(maxDiff - latency - PLEB_SYNC_GAP, 0L)
+                val diff = delta - targetDelta
+                plebSync = clamp(plebSync + diff, 0L, targetDelta)
+                latencyDebug.setValue(latency / 1000000L)
+                plebSyncDebug.setValue(plebSync)
+            } else {
+                plebSync = 0L
             }
         }
         logger.info { "Disposing graphics system" }
@@ -294,127 +352,159 @@ class ContainerGLFW(engine: ScapesEngine,
         PlatformDialogs.openFile(path)
     }
 
-    private fun initWindow(fullscreen: Boolean,
-                           vSync: Boolean) {
-        val stack = MemoryStack.stackGet()
-        stack.push {
-            logger.info { "Creating GLFW window..." }
-            val title = engine.game.name
-            val monitor = GLFW.glfwGetPrimaryMonitor()
-            val videoMode = GLFW.glfwGetVideoMode(monitor)
-            val monitorWidth = videoMode.width()
-            val monitorHeight = videoMode.height()
-            if (useGLES) {
-                GLFW.glfwDefaultWindowHints()
-                initContextGLES()
-                initWindow(title, fullscreen, monitor, monitorWidth,
-                        monitorHeight)
-                GLFW.glfwMakeContextCurrent(window)
-                GLES.createCapabilities()
-                // TODO: Remove once fix is released
-                // https://github.com/LWJGL/lwjgl3/issues/276
-                // This *can* be worked around, but as this is basically
-                // useless at the moment leaving it broken
-                logger.error { "This will not work with LWJGL 3.1.1 due to a bug" }
-                checkContextGLES()?.let { throw GraphicsCheckException(it) }
-            } else {
-                GLFW.glfwDefaultWindowHints()
-                initContextGL()
-                initWindow(title, fullscreen, monitor, monitorWidth,
-                        monitorHeight)
-                GLFW.glfwMakeContextCurrent(window)
-                GL.createCapabilities()
-                val tagStructure = engine.tagStructure.getStructure(
-                        "Compatibility")
-                workaroundLegacyProfile(tagStructure)?.let {
-                    logger.warn { "Detected problem with using a core profile on this driver: $it" }
-                    logger.warn { "Recreating window with legacy context..." }
-                    cleanWindow()
+    companion object : KLogging() {
+        private val PLEB_SYNC_GAP = when (Platform.get()) {
+            // Causes severe lag on Windows, but obviously Windows is THE
+            // best "gaming" OS
+            // Platform.WINDOWS -> 40000L
+            else -> 20000L
+        }
+
+        private fun initWindow(engine: ScapesEngine,
+                               fullscreen: Boolean,
+                               vSync: Boolean,
+                               useGLES: Boolean,
+                               windowSizeFun: GLFWWindowSizeCallback,
+                               windowCloseFun: GLFWWindowCloseCallback,
+                               windowFocusFun: GLFWWindowFocusCallback,
+                               frameBufferSizeFun: GLFWFramebufferSizeCallback,
+                               keyFun: GLFWKeyCallback,
+                               charFun: GLFWCharCallback,
+                               mouseButtonFun: GLFWMouseButtonCallback,
+                               cursorPosFun: GLFWCursorPosCallback,
+                               scrollFun: GLFWScrollCallback): Long {
+            val stack = MemoryStack.stackGet()
+            stack.push {
+                logger.info { "Creating GLFW window..." }
+                val title = engine.game.name
+                val monitor = GLFW.glfwGetPrimaryMonitor()
+                val videoMode = GLFW.glfwGetVideoMode(monitor)
+                val monitorWidth = videoMode.width()
+                val monitorHeight = videoMode.height()
+                val window = if (useGLES) {
                     GLFW.glfwDefaultWindowHints()
-                    initContextGL(true)
-                    initWindow(title, fullscreen, monitor, monitorWidth,
-                            monitorHeight)
+                    initContextGLES()
+                    val window = initWindow(title, fullscreen, monitor,
+                            monitorWidth, monitorHeight)
+                    GLFW.glfwMakeContextCurrent(window)
+                    GLES.createCapabilities()
+                    // TODO: Remove once fix is released
+                    // https://github.com/LWJGL/lwjgl3/issues/276
+                    // This *can* be worked around, but as this is basically
+                    // useless at the moment leaving it broken
+                    logger.error { "This will not work with LWJGL 3.1.1 due to a bug" }
+                    checkContextGLES()?.let { throw GraphicsCheckException(it) }
+                    window
+                } else {
+                    GLFW.glfwDefaultWindowHints()
+                    initContextGL()
+                    var window = initWindow(title, fullscreen, monitor,
+                            monitorWidth, monitorHeight)
                     GLFW.glfwMakeContextCurrent(window)
                     GL.createCapabilities()
+                    val tagStructure = engine.tagStructure.getStructure(
+                            "Compatibility")
+                    workaroundLegacyProfile(tagStructure)?.let {
+                        logger.warn { "Detected problem with using a core profile on this driver: $it" }
+                        logger.warn { "Recreating window with legacy context..." }
+                        GLFW.glfwDestroyWindow(window)
+                        GLFW.glfwDefaultWindowHints()
+                        initContextGL(true)
+                        window = initWindow(title, fullscreen, monitor,
+                                monitorWidth, monitorHeight)
+                        GLFW.glfwMakeContextCurrent(window)
+                        GL.createCapabilities()
+                    }
+                    checkContextGL()?.let { throw GraphicsCheckException(it) }
+                    window
                 }
-                checkContextGL()?.let { throw GraphicsCheckException(it) }
+                GLFW.glfwSetWindowSizeCallback(window, windowSizeFun)
+                GLFW.glfwSetWindowCloseCallback(window, windowCloseFun)
+                GLFW.glfwSetWindowFocusCallback(window, windowFocusFun)
+                GLFW.glfwSetFramebufferSizeCallback(window, frameBufferSizeFun)
+                GLFW.glfwSetKeyCallback(window, keyFun)
+                GLFW.glfwSetCharCallback(window, charFun)
+                GLFW.glfwSetMouseButtonCallback(window, mouseButtonFun)
+                GLFW.glfwSetCursorPosCallback(window, cursorPosFun)
+                GLFW.glfwSetScrollCallback(window, scrollFun)
+                GLFW.glfwSwapInterval(if (vSync) 1 else 0)
+                return window
             }
-            val widthBuffer = stack.mallocInt(1)
-            val heightBuffer = stack.mallocInt(1)
-            GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer)
-            containerWidth = widthBuffer.get(0)
-            containerHeight = heightBuffer.get(0)
-            GLFW.glfwGetFramebufferSize(window, widthBuffer, heightBuffer)
-            contentWidth = widthBuffer.get(0)
-            contentHeight = heightBuffer.get(0)
-            GLFW.glfwSetWindowSizeCallback(window, windowSizeFun)
-            GLFW.glfwSetWindowCloseCallback(window, windowCloseFun)
-            GLFW.glfwSetWindowFocusCallback(window, windowFocusFun)
-            GLFW.glfwSetFramebufferSizeCallback(window, frameBufferSizeFun)
-            GLFW.glfwSetKeyCallback(window, keyFun)
-            GLFW.glfwSetCharCallback(window, charFun)
-            GLFW.glfwSetMouseButtonCallback(window, mouseButtonFun)
-            GLFW.glfwSetCursorPosCallback(window, cursorPosFun)
-            GLFW.glfwSetScrollCallback(window, scrollFun)
-            GLFW.glfwSwapInterval(if (vSync) 1 else 0)
         }
-    }
 
-    private fun initContextGL(contextLegacy: Boolean = false) {
-        if (!contextLegacy) {
+        private fun initContextGL(contextLegacy: Boolean = false) {
+            if (!contextLegacy) {
+                GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
+                GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
+                GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,
+                        GLFW.GLFW_OPENGL_CORE_PROFILE)
+                GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT,
+                        GL11.GL_TRUE)
+            }
+        }
+
+        private fun initContextGLES() {
+            GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API)
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
-            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,
-                    GLFW.GLFW_OPENGL_CORE_PROFILE)
-            GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT,
-                    GL11.GL_TRUE)
+            GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0)
         }
-    }
 
-    private fun initContextGLES() {
-        GLFW.glfwWindowHint(GLFW.GLFW_CLIENT_API, GLFW.GLFW_OPENGL_ES_API)
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
-        GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0)
-    }
-
-    private fun initWindow(title: String,
-                           fullscreen: Boolean,
-                           monitor: Long,
-                           monitorWidth: Int,
-                           monitorHeight: Int) {
-        GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE)
-        // >:V Seriously, stop with this crap!
-        GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GL11.GL_FALSE)
-        if (fullscreen) {
-            window = GLFW.glfwCreateWindow(monitorWidth, monitorHeight,
-                    title, monitor, 0L)
-            if (window == 0L) {
-                throw GraphicsCheckException(
-                        "Failed to create fullscreen window")
-            }
-        } else {
-            val width: Int
-            val height: Int
-            if (monitorWidth > 1280 && monitorHeight > 720) {
-                width = 1280
-                height = 720
+        private fun initWindow(title: String,
+                               fullscreen: Boolean,
+                               monitor: Long,
+                               monitorWidth: Int,
+                               monitorHeight: Int): Long {
+            GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE)
+            // >:V Seriously, stop with this crap!
+            GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GL11.GL_FALSE)
+            return if (fullscreen) {
+                val window = GLFW.glfwCreateWindow(monitorWidth, monitorHeight,
+                        title, monitor, 0L)
+                if (window == 0L) {
+                    throw GraphicsCheckException(
+                            "Failed to create fullscreen window")
+                }
+                window
             } else {
-                width = 960
-                height = 540
-            }
-            window = GLFW.glfwCreateWindow(width, height, title, 0L, 0L)
-            if (window == 0L) {
-                throw GraphicsCheckException("Failed to create window")
+                val width: Int
+                val height: Int
+                if (monitorWidth > 1280 && monitorHeight > 720) {
+                    width = 1280
+                    height = 720
+                } else {
+                    width = 960
+                    height = 540
+                }
+                val window = GLFW.glfwCreateWindow(width, height, title, 0L, 0L)
+                if (window == 0L) {
+                    throw GraphicsCheckException("Failed to create window")
+                }
+                window
             }
         }
-    }
 
-    private fun cleanWindow() {
-        clearStates()
-        GLFW.glfwDestroyWindow(window)
-        window = 0
-        visible = false
+        private fun refreshRate(window: Long): Int? {
+            val monitor = GLFW.glfwGetWindowMonitor(window)
+            if (monitor != 0L) {
+                return GLFW.glfwGetVideoMode(monitor).refreshRate()
+            }
+            val monitors = GLFW.glfwGetMonitors()
+            if (!monitors.hasRemaining()) {
+                return null
+            }
+            // We use the maximum refresh rate to avoid slowing rendering in
+            // case of different rates
+            // GLFW sadly does not seem to support fetching the current monitor
+            // of non-fullscreen windows
+            val firstMonitor = monitors.get()
+            var refreshRate = GLFW.glfwGetVideoMode(firstMonitor).refreshRate()
+            while (monitors.hasRemaining()) {
+                val otherMonitor = monitors.get()
+                val otherRefreshRate = GLFW.glfwGetVideoMode(
+                        otherMonitor).refreshRate()
+                refreshRate = max(refreshRate, otherRefreshRate)
+            }
+            return refreshRate
+        }
     }
-
-    companion object : KLogging()
 }
