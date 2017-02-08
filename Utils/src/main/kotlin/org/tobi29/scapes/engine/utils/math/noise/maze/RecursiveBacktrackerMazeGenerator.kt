@@ -16,12 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
+import org.tobi29.scapes.engine.utils.BitFieldGrid
 import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.utils.setAt
 import java.util.*
-import kotlin.experimental.and
-import kotlin.experimental.or
 
 /**
  * Maze generator using recursive backtracking
@@ -32,7 +33,7 @@ object RecursiveBacktrackerMazeGenerator : MazeGenerator {
                           startX: Int,
                           startY: Int,
                           random: Random): Maze {
-        val maze = MutableMaze(width, height)
+        val maze = BitFieldGrid(width, height)
         val maxX = width - 1
         val maxY = height - 1
         val path = Pool { MutableVector2i() }
@@ -41,46 +42,36 @@ object RecursiveBacktrackerMazeGenerator : MazeGenerator {
         while (current != null) {
             val x = current.x
             val y = current.y
-            maze.changeAt(x, y) { it or MASK_VISITED }
+            maze.setAt(x, y, 2, true)
             var validDirections = 0
-            if (x < maxX) {
-                if (maze.getAt(x + 1, y) and MASK_VISITED == 0.toByte()) {
-                    directions[validDirections++] = Face.EAST
-                }
+            if (x < maxX && !maze.getAt(x + 1, y, 2)) {
+                directions[validDirections++] = Face.EAST
             }
-            if (y < maxY) {
-                if (maze.getAt(x, y + 1) and MASK_VISITED == 0.toByte()) {
-                    directions[validDirections++] = Face.SOUTH
-                }
+            if (y < maxY && !maze.getAt(x, y + 1, 2)) {
+                directions[validDirections++] = Face.SOUTH
             }
-            if (x > 0) {
-                if (maze.getAt(x - 1, y) and MASK_VISITED == 0.toByte()) {
-                    directions[validDirections++] = Face.WEST
-                }
+            if (x > 0 && !maze.getAt(x - 1, y, 2)) {
+                directions[validDirections++] = Face.WEST
             }
-            if (y > 0) {
-                if (maze.getAt(x, y - 1) and MASK_VISITED == 0.toByte()) {
-                    directions[validDirections++] = Face.NORTH
-                }
+            if (y > 0 && !maze.getAt(x, y - 1, 2)) {
+                directions[validDirections++] = Face.NORTH
             }
             if (validDirections > 0) {
                 val direction = directions[random.nextInt(validDirections)]
-                if (direction === Face.NORTH) {
-                    maze.changeAt(x, y) { it or Maze.MASK_NORTH }
-                } else if (direction === Face.EAST) {
-                    maze.changeAt(x + 1, y) { it or Maze.MASK_WEST }
-                } else if (direction === Face.SOUTH) {
-                    maze.changeAt(x, y + 1) { it or Maze.MASK_NORTH }
-                } else if (direction === Face.WEST) {
-                    maze.changeAt(x, y) { it or Maze.MASK_WEST }
+                if (direction == Face.NORTH) {
+                    maze.setAt(x, y, 0, true)
+                } else if (direction == Face.EAST) {
+                    maze.setAt(x + 1, y, 1, true)
+                } else if (direction == Face.SOUTH) {
+                    maze.setAt(x, y + 1, 0, true)
+                } else if (direction == Face.WEST) {
+                    maze.setAt(x, y, 1, true)
                 }
                 current = path.push().set(x + direction.x, y + direction.y)
             } else {
                 current = path.pop()
             }
         }
-        return maze.toMaze()
+        return Maze(maze)
     }
-
-    private val MASK_VISITED: Byte = 0x4
 }

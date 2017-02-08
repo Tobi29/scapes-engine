@@ -15,12 +15,13 @@
  */
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
+import org.tobi29.scapes.engine.utils.BitFieldGrid
 import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.utils.setAt
 import java.util.*
-import kotlin.experimental.and
-import kotlin.experimental.or
 
 /**
  * Maze generator using prim's algorithm
@@ -31,26 +32,27 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
                           startX: Int,
                           startY: Int,
                           random: Random): Maze {
-        val maze = MutableMaze(width, height)
+        val maze = BitFieldGrid(width, height)
         val maxX = width - 1
         val maxY = height - 1
         val list = Pool { MutableVector2i() }
-        maze.changeAt(startX, startY) { it or MASK_LISTED or MASK_VISITED }
+        maze.setAt(startX, startY, 2, true)
+        maze.setAt(startX, startY, 3, true)
         if (startY > 0) {
             list.push().set(startX, startY - 1)
-            maze.changeAt(startX, startY - 1) { it or MASK_LISTED }
+            maze.setAt(startX, startY - 1, 3, true)
         }
         if (startX < maxX) {
             list.push().set(startX + 1, startY)
-            maze.changeAt(startX + 1, startY) { it or MASK_LISTED }
+            maze.setAt(startX + 1, startY, 3, true)
         }
         if (startY < maxY) {
             list.push().set(startX, startY + 1)
-            maze.changeAt(startX, startY + 1) { it or MASK_LISTED }
+            maze.setAt(startX, startY + 1, 3, true)
         }
         if (startX > 0) {
             list.push().set(startX - 1, startY)
-            maze.changeAt(startX - 1, startY) { it or MASK_LISTED }
+            maze.setAt(startX - 1, startY, 3, true)
         }
         val directions = arrayOfNulls<Face>(4)
         while (true) {
@@ -58,62 +60,59 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
             val x = current.x
             val y = current.y
             list.give(current)
-            maze.changeAt(x, y) { it or MASK_VISITED }
+            maze.setAt(x, y, 2)
             var validDirections = 0
             if (y > 0) {
-                if (maze.getAt(x, y - 1) and MASK_VISITED != 0.toByte()) {
+                if (maze.getAt(x, y - 1, 2)) {
                     directions[validDirections++] = Face.NORTH
                 }
-                if (maze.getAt(x, y - 1) and MASK_LISTED == 0.toByte()) {
+                if (!maze.getAt(x, y - 1, 3)) {
                     list.push().set(x, y - 1)
-                    maze.changeAt(x, y - 1) { it or MASK_LISTED }
+                    maze.setAt(x, y - 1, 3, true)
                 }
             }
             if (x < maxX) {
-                if (maze.getAt(x + 1, y) and MASK_VISITED != 0.toByte()) {
+                if (maze.getAt(x + 1, y, 2)) {
                     directions[validDirections++] = Face.EAST
                 }
-                if (maze.getAt(x + 1, y) and MASK_LISTED == 0.toByte()) {
+                if (!maze.getAt(x + 1, y, 3)) {
                     list.push().set(x + 1, y)
-                    maze.changeAt(x + 1, y) { it or MASK_LISTED }
+                    maze.setAt(x + 1, y, 3, true)
                 }
             }
             if (y < maxY) {
-                if (maze.getAt(x, y + 1) and MASK_VISITED != 0.toByte()) {
+                if (maze.getAt(x, y + 1, 2)) {
                     directions[validDirections++] = Face.SOUTH
                 }
-                if (maze.getAt(x, y + 1) and MASK_LISTED == 0.toByte()) {
+                if (!maze.getAt(x, y + 1, 3)) {
                     list.push().set(x, y + 1)
-                    maze.changeAt(x, y + 1) { it or MASK_LISTED }
+                    maze.setAt(x, y + 1, 3, true)
                 }
             }
             if (x > 0) {
-                if (maze.getAt(x - 1, y) and MASK_VISITED != 0.toByte()) {
+                if (maze.getAt(x - 1, y, 2)) {
                     directions[validDirections++] = Face.WEST
                 }
-                if (maze.getAt(x - 1, y) and MASK_LISTED == 0.toByte()) {
+                if (!maze.getAt(x - 1, y, 3)) {
                     list.push().set(x - 1, y)
-                    maze.changeAt(x - 1, y) { it or MASK_LISTED }
+                    maze.setAt(x - 1, y, 3, true)
                 }
             }
             assert(validDirections > 0)
             val direction = directions[random.nextInt(validDirections)]
             if (direction === Face.NORTH) {
-                maze.changeAt(x, y) { it or Maze.MASK_NORTH }
+                maze.setAt(x, y, 0, true)
             } else if (direction === Face.EAST) {
-                maze.changeAt(x + 1, y) { it or Maze.MASK_WEST }
+                maze.setAt(x + 1, y, 1, true)
             } else if (direction === Face.SOUTH) {
-                maze.changeAt(x, y + 1) { it or Maze.MASK_NORTH }
+                maze.setAt(x, y + 1, 0, true)
             } else if (direction === Face.WEST) {
-                maze.changeAt(x, y) { it or Maze.MASK_WEST }
+                maze.setAt(x, y, 1, true)
             }
             if (list.isEmpty()) {
                 break
             }
         }
-        return maze.toMaze()
+        return Maze(maze)
     }
-
-    private val MASK_VISITED: Byte = 0x4
-    private val MASK_LISTED: Byte = 0x8
 }

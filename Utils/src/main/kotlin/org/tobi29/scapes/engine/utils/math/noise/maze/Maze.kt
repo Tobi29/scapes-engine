@@ -16,9 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
+import org.tobi29.scapes.engine.utils.BitFieldGrid
+import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.math.Face
 import kotlin.experimental.and
-import kotlin.experimental.or
 
 /**
  * Class representing a maze using one byte per cell
@@ -26,28 +27,19 @@ import kotlin.experimental.or
 class Maze
 /**
  * Constructs a new maze
- * @param data The cells of the maze
+ * @param grid The cells of the maze
  * @param width The width of the maze
  * @param height The height of the maze
  */
-(private val data: ByteArray,
- /**
-  * The width of the maze
-  */
- val width: Int,
- /**
-  * The height of the maze
-  */
- val height: Int) {
-
+(private val grid: BitFieldGrid) {
     /**
-     * Constructs a new maze and allocates the data for it
-     * @param width The width of the maze
-     * @param height The height of the maze
+     * The width of the maze
      */
-    constructor(width: Int,
-                height: Int) : this(
-            ByteArray(width * height), width, height)
+    val width get() = grid.width
+    /**
+     * The height of the maze
+     */
+    val height get() = grid.height
 
     /**
      * Returns `true` if the cell has a wall in the given direction
@@ -62,7 +54,7 @@ class Maze
     fun isWall(x: Int,
                y: Int,
                direction: Face): Boolean {
-        return isWall({ x, y -> getAt(x, y) }, x, y, direction)
+        return isWall({ x, y, i -> getAt(x, y, i) }, x, y, direction)
     }
 
     /**
@@ -72,51 +64,39 @@ class Maze
      * @return `true` if x and y are inside the maze
      */
     fun isInside(x: Int,
-                 y: Int): Boolean {
-        return x >= 0 && y >= 0 && x < width && y < height
-    }
+                 y: Int) = grid.isInside(x, y)
 
     /**
-     * Returns a [MutableMaze] in order to modify a copy of this maze
+     * Returns a [BitFieldGrid] in order to modify a copy of this maze
      *
-     * **Note**: All bit-fields other than [MASK_NORTH] and [MASK_WEST] get cleared
-     * @return A new [MutableMaze]
+     * **Note**: All flags other than at index 0 and 1 get cleared
+     * @return A new [BitFieldGrid]
      */
-    fun edit(): MutableMaze {
-        val cleanData = ByteArray(
-                data.size) { data[it] and (MASK_NORTH or MASK_WEST) }
-        return MutableMaze(cleanData, width, height)
+    fun edit(): BitFieldGrid {
+        val cleanData = ByteArray(grid.data.size) { grid.data[it] and 0x3 }
+        return BitFieldGrid(cleanData, grid.width, grid.height)
     }
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun getAt(x: Int,
-                             y: Int): Byte {
+                             y: Int,
+                             i: Int): Boolean {
         if (!isInside(x, y)) {
-            return OUTSIDE
+            return true
         }
-        return data[index(x, y)]
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun index(x: Int,
-                             y: Int): Int {
-        return y * width + x
+        return grid.getAt(x, y, i)
     }
 
     companion object {
-        val MASK_NORTH: Byte = 0x1
-        val MASK_WEST: Byte = 0x2
-        val OUTSIDE = MASK_NORTH or MASK_WEST
-
-        internal inline fun isWall(getAt: (Int, Int) -> Byte,
+        internal inline fun isWall(getAt: (Int, Int, Int) -> Boolean,
                                    x: Int,
                                    y: Int,
                                    direction: Face): Boolean {
             return when (direction) {
-                Face.NORTH -> getAt(x, y) and MASK_NORTH == 0.toByte()
-                Face.WEST -> getAt(x, y) and MASK_WEST == 0.toByte()
-                Face.SOUTH -> getAt(x, y + 1) and MASK_NORTH == 0.toByte()
-                Face.EAST -> getAt(x + 1, y) and MASK_WEST == 0.toByte()
+                Face.NORTH -> !getAt(x, y, 0)
+                Face.WEST -> !getAt(x, y, 1)
+                Face.SOUTH -> !getAt(x, y + 1, 0)
+                Face.EAST -> !getAt(x + 1, y, 1)
                 else -> throw IllegalArgumentException(
                         "Invalid direction: $direction")
             }

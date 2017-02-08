@@ -14,64 +14,50 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.math.noise.maze
+package org.tobi29.scapes.engine.utils
 
-import org.tobi29.scapes.engine.utils.math.Face
+import kotlin.experimental.and
+import kotlin.experimental.inv
+import kotlin.experimental.or
 
 /**
- * Class representing a mutable maze using one byte per cell
+ * Class for conveniently managing an 8-bit bit field mapped as a 2d grid
  */
-class MutableMaze
+class BitFieldGrid
 /**
- * Constructs a new maze
- * @param data The cells of the maze
- * @param width The width of the maze
- * @param height The height of the maze
+ * Constructs a new bit field
+ * @param data The original data for the bit field
+ * @param width The width of the grid
+ * @param height The height of the grid
  */
 (
         /**
-         * The cells of the maze, exposed for inlined functions
+         * The data of the bit field, exposed for inlined functions
          */
         val data: ByteArray,
         /**
-         * The width of the maze
+         * The width of the grid
          */
         val width: Int,
         /**
-         * The width of the maze
+         * The width of the grid
          */
         val height: Int) {
 
     /**
-     * Constructs a new maze and allocates the data for it
-     * @param width The width of the maze
-     * @param height The height of the maze
+     * Constructs a new bit field and allocates the data for it
+     * @param width The width of the grid
+     * @param height The height of the grid
      */
     constructor(width: Int,
                 height: Int) : this(
             ByteArray(width * height), width, height)
 
     /**
-     * Returns `true` if the cell has a wall in the given direction
-     *
-     * Always returns `true` if the cell is outside of the maze bounds
+     * Checks if the given coordinates are inside of the grid
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
-     * @param direction direction to check, must be [Face.NORTH], [Face.EAST], [Face.SOUTH] or [Face.WEST]
-     * @return `true` if the cell has a wall in the direction
-     * @throws IllegalArgumentException When an invalid direction was given
-     */
-    fun isWall(x: Int,
-               y: Int,
-               direction: Face): Boolean {
-        return Maze.isWall({ x, y -> getAt(x, y) }, x, y, direction)
-    }
-
-    /**
-     * Checks if the given coordinates are inside of the maze
-     * @param x x-coordinate of the cell
-     * @param y y-coordinate of the cell
-     * @return `true` if x and y are inside the maze
+     * @return `true` if x and y are inside the grid
      */
     fun isInside(x: Int,
                  y: Int): Boolean {
@@ -98,16 +84,15 @@ class MutableMaze
 
     /**
      * Returns the cell at the given coordinates
-     *
-     * **Note**: Returns [Maze.OUTSIDE] if out of bounds
      * @param x x-coordinate of the cell
      * @param y y-coordinate of the cell
+     * @throws IndexOutOfBoundsException if the given coords are outside of the grid
      * @return the value of the cell
      */
     fun getAt(x: Int,
               y: Int): Byte {
         if (!isInside(x, y)) {
-            return Maze.OUTSIDE
+            throw IndexOutOfBoundsException("$x $y")
         }
         return data[index(x, y)]
     }
@@ -130,22 +115,13 @@ class MutableMaze
     }
 
     /**
-     * Iterates through the entire maze and sets its values
+     * Iterates through the entire grid and sets its values
      * @param block maps old values to new ones
      */
     inline fun fill(block: (Byte) -> Byte) {
         for (i in 0..data.lastIndex) {
             data[i] = block(data[i])
         }
-    }
-
-    /**
-     * Returns an immutable version of this maze
-     *
-     * **Note**: The data is **not** copied!
-     */
-    fun toMaze(): Maze {
-        return Maze(data, width, height)
     }
 
     /**
@@ -157,5 +133,46 @@ class MutableMaze
     inline fun index(x: Int,
                      y: Int): Int {
         return y * width + x
+    }
+}
+
+/**
+ * Returns the flag at the given coordinates
+ * @param x x-coordinate of the cell
+ * @param y y-coordinate of the cell
+ * @param i the index of the flag, 0 <= i < 8
+ * @throws IndexOutOfBoundsException if the given coords are outside of the grid
+ * @return the value of the flag
+ */
+@Suppress("NOTHING_TO_INLINE")
+inline fun BitFieldGrid.getAt(x: Int,
+                              y: Int,
+                              i: Int): Boolean {
+    if (i < 0 || i >= 8) {
+        throw IllegalArgumentException("Invalid flag index: $i")
+    }
+    val mask = (1 shl i).toByte()
+    return getAt(x, y) and mask == mask
+}
+
+/**
+ * Sets the cell at the given coordinates
+ *
+ * **Note**: Does nothing if out of bounds
+ * @param x x-coordinate of the cell
+ * @param y y-coordinate of the cell
+ * @param value the value to set to the cell
+ */
+fun BitFieldGrid.setAt(x: Int,
+                       y: Int,
+                       i: Int,
+                       value: Boolean) {
+    val mask = (1 shl i).toByte()
+    changeAt(x, y) {
+        if (value) {
+            it or mask
+        } else {
+            it and mask.inv()
+        }
     }
 }

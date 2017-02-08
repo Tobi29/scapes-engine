@@ -16,14 +16,14 @@
 
 package org.tobi29.scapes.engine.utils.math.noise.maze
 
+import org.tobi29.scapes.engine.utils.BitFieldGrid
 import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector3i
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.setAt
 import kotlin.experimental.and
-import kotlin.experimental.or
-
-private val MASK_PATH: Byte = 0x4
 
 inline fun Maze.drawMazeWalls(roomSizeX: Int,
                               roomSizeY: Int,
@@ -74,8 +74,8 @@ fun Maze.findPath(from: Vector2i,
     return edit().findPath(from, to)
 }
 
-private fun MutableMaze.findPath(from: Vector2i,
-                                 to: Vector2i): Array<Vector2i>? {
+private fun BitFieldGrid.findPath(from: Vector2i,
+                                  to: Vector2i): Array<Vector2i>? {
     val path = Pool { MutableVector3i() }
     var current: MutableVector3i? = path.push().set(from.x, from.y, 0)
     val w = width
@@ -95,24 +95,18 @@ private fun MutableMaze.findPath(from: Vector2i,
             current.z++
             when (dir) {
                 0 -> {
-                    changeAt(x, y) { it or MASK_PATH }
-                    if (y > 0 && getAt(x,
-                            y) and Maze.MASK_NORTH == Maze.MASK_NORTH && getAt(
-                            x, y - 1) and MASK_PATH == 0.toByte()) {
+                    setAt(x, y, 2, true)
+                    if (y > 0 && getAt(x, y, 0) && getAt(x, y - 1, 2)) {
                         current = path.push().set(x, y - 1, 0)
                     }
                 }
-                1 -> if (x < lw && getAt(x + 1,
-                        y) and (Maze.MASK_WEST or MASK_PATH) == Maze.MASK_WEST) {
+                1 -> if (x < lw && getAt(x + 1, y) and 0x6 == 0x6.toByte()) {
                     current = path.push().set(x + 1, y, 0)
                 }
-                2 -> if (y < lh && getAt(x,
-                        y + 1) and (Maze.MASK_NORTH or MASK_PATH) == Maze.MASK_NORTH) {
+                2 -> if (y < lh && getAt(x, y + 1) and 0x5 == 0x5.toByte()) {
                     current = path.push().set(x, y + 1, 0)
                 }
-                3 -> if (x > 0 && getAt(x,
-                        y) and Maze.MASK_WEST == Maze.MASK_WEST && getAt(x - 1,
-                        y) and MASK_PATH == 0.toByte()) {
+                3 -> if (x > 0 && getAt(x, y, 1) && getAt(x - 1, y, 2)) {
                     current = path.push().set(x - 1, y, 0)
                 }
             }
