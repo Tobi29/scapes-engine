@@ -33,11 +33,3 @@ repositories {
         url "https://jitpack.io"
     }
 }
-
-jar {
-    if (project.group == "") {
-        baseName = "${project.name}"
-    } else {
-        baseName = "${project.group}.${project.name}"
-    }
-}
