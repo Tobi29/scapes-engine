@@ -19,10 +19,7 @@ apply plugin: "antlr"
 apply plugin: "idea"
 
 dependencies {
-    // Full library included by antlr plugin
-    // compile "org.antlr:antlr4-runtime:${findProperty("antlr.version")}"
-
-    antlr "org.antlr:antlr4:${findProperty("antlr.version")}"
+    antlr rootProject.ext.antlr
 }
 
 idea {

@@ -18,7 +18,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Codecs")
-    compile("javazoom:jlayer:${findProperty("jlayer.version")}") {
-        transitive = false
-    }
+    compile(rootProject.ext.jlayer) { transitive = false }
 }

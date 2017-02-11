@@ -18,7 +18,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Utils")
-    compile("org.apache.tika:tika-core:${findProperty("tika.version")}") {
-        transitive = false
-    }
+    compile(rootProject.ext.tika) { transitive = false }
 }

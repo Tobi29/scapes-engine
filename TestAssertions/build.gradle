@@ -21,7 +21,7 @@ compileKotlin {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:${findProperty("kotlin.version")}"
-    compile "org.jetbrains.kotlin:kotlin-test:${findProperty("kotlin.version")}"
-    compile "org.jetbrains.spek:spek-api:${findProperty("spek.version")}"
+    compile rootProject.ext.kotlinSTD
+    compile rootProject.ext.kotlinTest
+    compile rootProject.ext.spekAPI
 }

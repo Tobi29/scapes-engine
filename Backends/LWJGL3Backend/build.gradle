@@ -18,25 +18,11 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Backends:OpenALSounds")
-    compile("org.lwjgl:lwjgl:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-egl:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-glfw:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-openal:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-opengl:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-opengles:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-stb:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
+    compile(rootProject.ext.lwjgl) { transitive = false }
+    compile(rootProject.ext.lwjglEGL) { transitive = false }
+    compile(rootProject.ext.lwjglGLFW) { transitive = false }
+    compile(rootProject.ext.lwjglOpenAL) { transitive = false }
+    compile(rootProject.ext.lwjglOpenGL) { transitive = false }
+    compile(rootProject.ext.lwjglOpenGLES) { transitive = false }
+    compile(rootProject.ext.lwjglSTB) { transitive = false }
 }

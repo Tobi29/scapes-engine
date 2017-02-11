@@ -18,13 +18,7 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Backends:LWJGL3Backend")
-    compile("org.lwjgl:lwjgl:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-glfw:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
-    compile("org.lwjgl:lwjgl-tinyfd:${findProperty("lwjgl.version")}") {
-        transitive = false
-    }
+    compile(rootProject.ext.lwjgl) { transitive = false }
+    compile(rootProject.ext.lwjglGLFW) { transitive = false }
+    compile(rootProject.ext.lwjglTinyFD) { transitive = false }
 }

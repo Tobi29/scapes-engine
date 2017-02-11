@@ -18,5 +18,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":SQLFramework")
-    compile "org.xerial:sqlite-jdbc:${findProperty("sqlite-jdbc.version")}"
+    compile rootProject.ext.sqliteJDBC
 }

@@ -18,7 +18,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Utils")
-    compile("ar.com.hjg:pngj:${findProperty("pngj.version")}") {
-        transitive = false
-    }
+    compile(rootProject.ext.pngj) { transitive = false }
 }

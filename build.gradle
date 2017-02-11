@@ -15,6 +15,10 @@
  */
 
 buildscript {
+    def kotlinVersion = "1.1.0-beta-38"
+    def dokkaVersion = "0.9.11"
+    def junitPlatformVersion = "1.0.0-M3"
+
     repositories {
         jcenter()
         maven {
@@ -22,9 +26,35 @@ buildscript {
         }
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.1.0-beta-38"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.11"
-        classpath "org.junit.platform:junit-platform-gradle-plugin:1.0.0-M3"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"
+        classpath "org.junit.platform:junit-platform-gradle-plugin:$junitPlatformVersion"
+    }
+}
+
+allprojects {
+    def env = System.getenv()
+    if (env.containsKey("VERSION")) {
+        version = env["VERSION"]
+    } else {
+        version = findProperty("build.version")
+    }
+    group = "com.github.Tobi29.ScapesEngine"
+
+    repositories {
+        jcenter()
+        maven {
+            url "https://dl.bintray.com/kotlin/kotlin-eap-1.1"
+        }
+        maven {
+            url "https://dl.bintray.com/jetbrains/spek"
+        }
+        maven {
+            url "https://maven-eclipse.github.io/maven"
+        }
+        maven {
+            url "https://jitpack.io"
+        }
     }
 }
 
@@ -32,4 +62,61 @@ task wrapper(type: Wrapper) {
     gradleVersion = "3.3"
     distributionUrl =
             "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
+
+ext {
+    kotlinVersion = "1.1.0-beta-38"
+    kotlinxCoroutinesVersion = "0.6-beta"
+    kotlinLoggingVersion = "1.3.3"
+    slf4jVersion = "1.7.21"
+    spekVersion = "f0935817fa"
+    junitJupiterVersion = "5.0.0-M3"
+    swtVersion = "4.6"
+    threetenbpVersion = "1.3.3"
+    base64Version = "1.0.6"
+    streamsupportVersion = "1.5.3"
+    antlrVersion = "4.5.1-1"
+    mariadbJavaClientVersion = "1.3.0"
+    sqliteJDBCVersion = "3.15.1"
+    pngjVersion = "2.1.0"
+    tikaVersion = "1.10"
+    jlayerVersion = "1.0.1"
+    jorbisVersion = "0.0.17"
+    lwjglVersion = "3.1.1"
+    javaxJSONVersion = "1.0.4"
+
+    kotlinLogging = "io.github.microutils:kotlin-logging:$kotlinLoggingVersion"
+    slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
+    streamsupport =
+            "net.sourceforge.streamsupport:streamsupport:$streamsupportVersion"
+    threeten = "org.threeten:threetenbp:$threetenbpVersion"
+    base64 = "com.owtelse.codec:base64:$base64Version"
+    kotlinSTD = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    javaxJSON = "org.glassfish:javax.json:$javaxJSONVersion"
+    kotlinTest = "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
+    swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
+    mariaDBJavaClient =
+            "org.mariadb.jdbc:mariadb-java-client:$mariadbJavaClientVersion"
+    sqliteJDBC = "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
+    antlr = "org.antlr:antlr4:$antlrVersion"
+    kotlinxCoroutines =
+            "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
+    pngj = "ar.com.hjg:pngj:$pngjVersion"
+    tika = "org.apache.tika:tika-core:$tikaVersion"
+    jorbis = "org.jcraft:jorbis:$jorbisVersion"
+    jlayer = "javazoom:jlayer:$jlayerVersion"
+    lwjgl = "org.lwjgl:lwjgl:$lwjglVersion"
+    lwjglEGL = "org.lwjgl:lwjgl-egl:$lwjglVersion"
+    lwjglGLFW = "org.lwjgl:lwjgl-glfw:$lwjglVersion"
+    lwjglOpenAL = "org.lwjgl:lwjgl-openal:$lwjglVersion"
+    lwjglOpenGL = "org.lwjgl:lwjgl-opengl:$lwjglVersion"
+    lwjglOpenGLES = "org.lwjgl:lwjgl-opengles:$lwjglVersion"
+    lwjglSTB = "org.lwjgl:lwjgl-stb:$lwjglVersion"
+    lwjglTinyFD = "org.lwjgl:lwjgl-tinyfd:$lwjglVersion"
+    junitJupiterAPI = "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+    junitJupiterEngine =
+            "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+    spekAPI = "com.github.JetBrains.spek:spek-api:$spekVersion"
+    spekEngine =
+            "com.github.JetBrains.spek:spek-junit-platform-engine:$spekVersion"
 }
