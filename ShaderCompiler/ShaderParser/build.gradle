@@ -19,6 +19,8 @@ apply plugin: "antlr"
 apply plugin: "idea"
 
 dependencies {
+    runtime rootProject.ext.antlrRuntime
+
     antlr rootProject.ext.antlr
 }
 

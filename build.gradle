@@ -99,6 +99,7 @@ ext {
             "org.mariadb.jdbc:mariadb-java-client:$mariadbJavaClientVersion"
     sqliteJDBC = "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
     antlr = "org.antlr:antlr4:$antlrVersion"
+    antlrRuntime = "org.antlr:antlr4-runtime:$antlrVersion"
     kotlinxCoroutines =
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
     pngj = "ar.com.hjg:pngj:$pngjVersion"
