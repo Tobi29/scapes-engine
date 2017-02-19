@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.1.0-beta-38"
+    def kotlinVersion = "1.1.0-rc-91"
     def dokkaVersion = "0.9.11"
     def junitPlatformVersion = "1.0.0-M3"
 
@@ -65,8 +65,8 @@ task wrapper(type: Wrapper) {
 }
 
 ext {
-    kotlinVersion = "1.1.0-beta-38"
-    kotlinxCoroutinesVersion = "0.6-beta"
+    kotlinVersion = "1.1.0-rc-91"
+    kotlinxCoroutinesVersion = "0.9-rc"
     kotlinLoggingVersion = "1.4.2"
     slf4jVersion = "1.7.22"
     spekVersion = "f0935817fa"
