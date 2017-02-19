@@ -18,19 +18,32 @@ package org.tobi29.scapes.engine.test.assertions
 
 import kotlin.reflect.KClass
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.asserter
 
 infix fun Any?.shouldEqual(other: Any?) = assertEquals(other, this)
 
+infix fun Any?.shouldNotEqual(other: Any?) = assertNotEquals(other, this)
+
 infix fun Any?.shouldBe(other: Any?) = assertSame(other, this)
+
+infix fun Any?.shouldNotBe(other: Any?) = assertNotSame(other, this)
 
 fun Float.shouldEqual(other: Float,
                       margin: Float = 0.0001f) = assertEquals(this, other,
         margin)
 
+fun Float.shouldNotEqual(other: Float,
+                         margin: Float = 0.0001f) = assertNotEquals(this, other,
+        margin)
+
 fun Double.shouldEqual(other: Double,
                        margin: Double = 0.0001) = assertEquals(this, other,
         margin)
+
+fun Double.shouldNotEqual(other: Double,
+                          margin: Double = 0.0001) = assertNotEquals(this,
+        other, margin)
 
 inline fun <reified E : Throwable> shouldThrow(noinline block: () -> Unit) {
     shouldThrow<E>(null, block)
@@ -60,6 +73,14 @@ fun assertSame(expected: Any?,
     }, actual == expected)
 }
 
+fun assertNotSame(expected: Any?,
+                  actual: Any?,
+                  message: String? = null) {
+    asserter.assertTrue({
+        (message?.let { "$it. " } ?: "") + "Illegal value: <$actual>."
+    }, actual != expected)
+}
+
 fun assertEquals(expected: Float,
                  actual: Float,
                  margin: Float = 0.0001f,
@@ -76,4 +97,22 @@ fun assertEquals(expected: Double,
     asserter.assertTrue({
         (message?.let { "$it. " } ?: "") + "Expected <$expected>, actual <$actual> with a margin of error of <$margin>."
     }, actual.isNaN() && expected.isNaN() || actual - expected <= margin)
+}
+
+fun assertNotEquals(expected: Float,
+                    actual: Float,
+                    margin: Float = 0.0001f,
+                    message: String? = null) {
+    asserter.assertTrue({
+        (message?.let { "$it. " } ?: "") + "Illegal value: <$actual> with a margin of error of <$margin>."
+    }, actual.isNaN() && expected.isNaN() || actual - expected > margin)
+}
+
+fun assertNotEquals(expected: Double,
+                    actual: Double,
+                    margin: Double = 0.0001,
+                    message: String? = null) {
+    asserter.assertTrue({
+        (message?.let { "$it. " } ?: "") + "Illegal value: <$actual> with a margin of error of <$margin>."
+    }, actual.isNaN() && expected.isNaN() || actual - expected > margin)
 }
