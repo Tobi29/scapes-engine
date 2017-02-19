@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.TagMap
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
@@ -32,12 +32,12 @@ class TagStructureArchive {
     private val tagStructures = ConcurrentHashMap<String, ByteBuffer>()
 
     @Throws(IOException::class)
-    @Synchronized fun setTagStructure(key: String,
-                                      tagStructure: TagStructure,
-                                      compression: Byte = 1) {
+    @Synchronized fun setTagMap(key: String,
+                                map: TagMap,
+                                compression: Byte = 1) {
         val byteStream = DATA_STREAM.get()
         byteStream.buffer().clear()
-        TagStructureBinary.write(byteStream, tagStructure, compression)
+        map.writeBinary(byteStream, compression)
         byteStream.buffer().flip()
         val buffer = ByteBuffer(byteStream.buffer().remaining())
         buffer.put(byteStream.buffer())
@@ -46,12 +46,9 @@ class TagStructureArchive {
     }
 
     @Throws(IOException::class)
-    @Synchronized fun getTagStructure(key: String): TagStructure? {
+    @Synchronized fun getTagMap(key: String): TagMap? {
         val buffer = tagStructures[key] ?: return null
-        val tagStructure = TagStructure()
-        TagStructureBinary.read(ByteBufferStream(buffer.duplicate()),
-                tagStructure)
-        return tagStructure
+        return readBinary(ByteBufferStream(buffer.duplicate()))
     }
 
     @Synchronized fun removeTagStructure(key: String) {
@@ -122,13 +119,13 @@ class TagStructureArchive {
 
         @Throws(IOException::class)
         fun extract(name: String,
-                    stream: ReadableByteStream): TagStructure? {
+                    stream: ReadableByteStream): TagMap? {
             val entries = readHeader(stream)
             var offset = 0
             for (entry in entries) {
                 if (entry.name == name) {
                     stream.skip(offset)
-                    return TagStructureBinary.read(stream)
+                    return readBinary(stream)
                 }
                 offset += entry.length
             }

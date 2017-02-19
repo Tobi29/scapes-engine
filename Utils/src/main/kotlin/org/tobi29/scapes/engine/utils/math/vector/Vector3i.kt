@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.setInt
+import org.tobi29.scapes.engine.utils.io.tag.ReadWriteTagMap
+import org.tobi29.scapes.engine.utils.io.tag.set
 
 class Vector3i(x: Int,
                y: Int,
@@ -49,10 +49,9 @@ class Vector3i(x: Int,
         return x == other.x && y == other.y && z == other.z
     }
 
-    override fun write(): TagStructure {
-        val tagStructure = super.write()
-        tagStructure.setInt("Z", z)
-        return tagStructure
+    override fun write(map: ReadWriteTagMap) {
+        super.write(map)
+        map["Z"] = z
     }
 
     override fun toString() = "$x $y $z"

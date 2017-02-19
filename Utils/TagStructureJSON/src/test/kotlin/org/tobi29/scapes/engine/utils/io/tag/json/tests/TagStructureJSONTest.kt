@@ -22,88 +22,105 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
+import org.tobi29.scapes.engine.test.assertions.shouldThrow
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.tag.*
-import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON
+import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
+import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
+import java.io.IOException
 import java.util.*
 
-private fun createTagStructure(): TagStructure {
+private fun createTagMap(): TagMap {
     val random = Random()
-    return structure {
+    return TagMap {
         // All primitive tags
-        setUnit("Unit")
-        setBoolean("Boolean", random.nextBoolean())
-        setByte("Byte", random.nextInt(0x100).toByte())
-        setShort("Short", random.nextInt(0x10000).toShort())
-        setInt("Integer", random.nextInt())
-        setLong("Long", random.nextLong())
-        setFloat("Float", random.nextFloat())
-        setDouble("Double", random.nextDouble())
-        setDouble("NaN", Double.NaN)
-        setDouble("PosInf", Double.POSITIVE_INFINITY)
-        setDouble("NegInf", Double.NEGATIVE_INFINITY)
+        this["Unit"] = Unit
+        this["True"] = true
+        this["False"] = false
+        this["BytePos"] = 42.toByte()
+        this["ByteNeg"] = -42.toByte()
+        this["ShortPos"] = 12345.toShort()
+        this["ShortNeg"] = 12345.toShort()
+        this["IntPos"] = 12345678
+        this["IntNeg"] = -12345678
+        this["LongPos"] = 123456789069L
+        this["LongNeg"] = -123456789069L
+        this["Float"] = 0.25f
+        this["Double"] = 0.25
+        // TODO: Test BigInteger and BigDecimal
         val array = ByteArray(1024)
         random.nextBytes(array)
-        setByteArray("Byte[]", *array)
-        setString("String", "◊Blah blah blah◊")
+        this["Byte[]"] = array
+        this["String"] = "◊Blah blah blah◊"
         // Filled structure and list
-        setStructure("Structure") {
+        this["Map"] = TagMap {
             for (i in 0..255) {
-                setByte("Entry#" + i, i.toByte())
+                this["Entry#$i"] = i.toByte()
             }
         }
-        setList("List") {
-            add(structure { setByte("Entry", 0) })
-            add(structure {})
-            add(list {
+        this["List"] = TagList {
+            add(TagMap { this["Entry"] = 0.toByte() })
+            add(TagMap())
+            add(TagList {
                 add("Entry#1")
                 add("Entry#2")
             })
-            add(emptyList<Any>())
-            add(Unit)
-            add(0)
-            add("String")
+            add(TagList())
+            add(Unit.toTag())
+            add(0.toByte().toTag())
+            add("String".toTag())
         }
-        setList("ListEndStructure") {
-            add(structure { setInt("Entry#1", 1) })
-            add(structure { setInt("Entry#2", 2) })
+        this["ListEndMap"] = TagList {
+            add(TagMap { this["Entry#1"] = 1.toByte() })
+            add(TagMap { this["Entry#2"] = 2.toByte() })
         }
-        setList("ListEndList") {
-            add(list {
+        this["ListEndList"] = TagList {
+            add(TagList {
                 add("Entry#1")
                 add("Entry#2")
             })
-            add(list {
+            add(TagList {
                 add("Entry#1")
                 add("Entry#2")
             })
         }
-        setList("ListEndEmptyList") {
-            add(emptyList<Any>())
-            add(emptyList<Any>())
+        this["ListEndEmptyList"] = TagList {
+            add(TagList())
+            add(TagList())
         }
         // Empty structure and list
-        structure("EmptyStructure")
-        setList("EmptyList")
+        this["EmptyMap"] = TagMap()
+        this["EmptyList"] = TagList()
     }
 }
 
-private fun checkWriteAndRead(structure: TagStructure): TagStructure {
+private fun checkWriteAndRead(map: TagMap): TagMap {
     val channel = ByteBufferStream()
-    TagStructureJSON.write(structure, channel)
+    map.writeJSON(channel)
     channel.buffer().flip()
-    return TagStructureJSON.read(ByteBufferStream(channel.buffer()))
+    return readJSON(ByteBufferStream(channel.buffer()))
 }
 
-object TagStructureJSONTest : Spek({
-    describe("serialization for tag structures") {
-        given("any tag structure") {
-            val tagStructureComplex by memoized { createTagStructure() }
+object TagStructureJSONTests : Spek({
+    describe("serialization for tag map") {
+        given("any tag map") {
+            val tagMapComplex by memoized { createTagMap() }
             on("writing and reading") {
-                val tagStructure = tagStructureComplex
-                val read = checkWriteAndRead(tagStructure)
-                it("should return an equal tag structure") {
-                    read shouldEqual tagStructure
+                val tagMap = tagMapComplex
+                val read = checkWriteAndRead(tagMap)
+                it("should return an equal tag map") {
+                    read shouldEqual tagMap
+                }
+            }
+        }
+        val invalidTag = TagMap { this["NaN"] = Double.NaN }
+        given("a tag with an invalid number") {
+            on("writing") {
+                it("should fail") {
+                    shouldThrow<IOException> {
+                        val channel = ByteBufferStream()
+                        invalidTag.writeJSON(channel)
+                    }
                 }
             }
         }

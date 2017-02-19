@@ -16,13 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.MultiTag
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getInt
-import org.tobi29.scapes.engine.utils.io.tag.setInt
+import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.io.tag.toInt
 
 open class MutableVector2i(var x: Int = 0,
-                           var y: Int = 0) : MultiTag.ReadAndWrite {
+                           var y: Int = 0) {
 
     constructor(vector: Vector2d) : this(vector.intX(), vector.intY())
 
@@ -139,22 +137,8 @@ open class MutableVector2i(var x: Int = 0,
         return Vector2i(x, y)
     }
 
-    override fun write(): TagStructure {
-        val tagStructure = TagStructure()
-        tagStructure.setInt("X", x)
-        tagStructure.setInt("Y", y)
-        return tagStructure
-    }
-
-    override fun read(tagStructure: TagStructure) {
-        var value: Int?
-        value = tagStructure.getInt("X")
-        if (value != null) {
-            x = value
-        }
-        value = tagStructure.getInt("Y")
-        if (value != null) {
-            y = value
-        }
+    open fun set(map: ReadTagMutableMap) {
+        map["X"]?.toInt()?.let { x = it }
+        map["Y"]?.toInt()?.let { y = it }
     }
 }

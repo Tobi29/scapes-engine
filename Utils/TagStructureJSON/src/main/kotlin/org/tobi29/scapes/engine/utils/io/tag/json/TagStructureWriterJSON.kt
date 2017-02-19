@@ -17,11 +17,11 @@ package org.tobi29.scapes.engine.utils.io.tag.json
 
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.TagStructureWriter
+import org.tobi29.scapes.engine.utils.io.tag.*
 import java.io.IOException
 import java.io.OutputStream
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import javax.json.Json
@@ -29,7 +29,7 @@ import javax.json.stream.JsonGenerator
 import javax.json.stream.JsonGeneratorFactory
 
 class TagStructureWriterJSON(streamOut: OutputStream,
-                             pretty: Boolean) : TagStructureJSON(), TagStructureWriter {
+                             pretty: Boolean) : TagStructureWriter {
     private val writer: JsonGenerator
 
     constructor(stream: WritableByteStream,
@@ -44,7 +44,7 @@ class TagStructureWriterJSON(streamOut: OutputStream,
         }
     }
 
-    override fun begin(root: TagStructure) {
+    override fun begin(root: TagMap) {
         writer.writeStartObject()
     }
 
@@ -113,81 +113,40 @@ class TagStructureWriterJSON(streamOut: OutputStream,
     }
 
     override fun writePrimitiveTag(key: String,
-                                   tag: Any) {
-        if (tag is Unit) {
-            writer.writeNull(key)
-        } else if (tag is Boolean) {
-            writer.write(key, tag)
-        } else if (tag is Byte) {
-            writer.write(key, tag.toInt())
-        } else if (tag is ByteArray) {
-            writer.writeStartArray(key)
-            for (value in tag) {
-                writer.write(value.toInt())
+                                   tag: TagPrimitive) {
+        when (tag) {
+            is TagUnit -> writer.writeNull(key)
+            is TagBoolean -> writer.write(key, tag.value)
+            is TagInteger -> writer.write(key, BigInteger(tag.value.toString()))
+            is TagDecimal -> writer.write(key, BigDecimal(tag.value.toString()))
+            is TagString -> writer.write(key, tag.value)
+            is TagByteArray -> {
+                writer.writeStartArray(key)
+                for (value in tag.value) {
+                    writer.write(value.toInt())
+                }
+                writer.writeEnd()
             }
-            writer.writeEnd()
-        } else if (tag is Short) {
-            writer.write(key, tag.toInt())
-        } else if (tag is Int) {
-            writer.write(key, tag)
-        } else if (tag is Long) {
-            writer.write(key, tag)
-        } else if (tag is Float) {
-            writer.write(key, armor(tag.toDouble()))
-        } else if (tag is Double) {
-            writer.write(key, armor(tag))
-        } else if (tag is Number) {
-            // TODO: Use BigDecimal instead?
-            writer.write(key, armor(tag.toDouble()))
-        } else if (tag is String) {
-            writer.write(key, tag)
-        } else {
-            throw IOException("Invalid type: " + tag.javaClass)
+            else -> throw IOException("Invalid type: ${tag::class}")
         }
     }
 
-    override fun writePrimitiveTag(tag: Any) {
-        if (tag is Unit) {
-            writer.writeNull()
-        } else if (tag is Boolean) {
-            writer.write(tag)
-        } else if (tag is Byte) {
-            writer.write(tag.toInt())
-        } else if (tag is ByteArray) {
-            writer.writeStartArray()
-            for (value in tag) {
-                writer.write(value.toInt())
+    override fun writePrimitiveTag(tag: TagPrimitive) {
+        when (tag) {
+            is TagUnit -> writer.writeNull()
+            is TagBoolean -> writer.write(tag.value)
+            is TagInteger -> writer.write(BigInteger(tag.value.toString()))
+            is TagDecimal -> writer.write(BigDecimal(tag.value.toString()))
+            is TagString -> writer.write(tag.value)
+            is TagByteArray -> {
+                writer.writeStartArray()
+                for (value in tag.value) {
+                    writer.write(value.toInt())
+                }
+                writer.writeEnd()
             }
-            writer.writeEnd()
-        } else if (tag is Short) {
-            writer.write(tag.toInt())
-        } else if (tag is Int) {
-            writer.write(tag)
-        } else if (tag is Long) {
-            writer.write(tag)
-        } else if (tag is Float) {
-            writer.write(armor(tag.toDouble()))
-        } else if (tag is Double) {
-            writer.write(armor(tag))
-        } else if (tag is Number) {
-            // TODO: Use BigDecimal instead?
-            writer.write(armor(tag.toDouble()))
-        } else if (tag is String) {
-            writer.write(tag)
-        } else {
-            throw IOException("Invalid type: " + tag.javaClass)
+            else -> throw IOException("Invalid type: ${tag::class}")
         }
-    }
-
-    private fun armor(value: Double): BigDecimal {
-        if (value == Double.POSITIVE_INFINITY) {
-            return TagStructureJSON.POSITIVE_INFINITY
-        } else if (value == Double.NEGATIVE_INFINITY) {
-            return TagStructureJSON.NEGATIVE_INFINITY
-        } else if (value.isNaN()) {
-            return TagStructureJSON.NAN
-        }
-        return BigDecimal(value)
     }
 
     companion object {

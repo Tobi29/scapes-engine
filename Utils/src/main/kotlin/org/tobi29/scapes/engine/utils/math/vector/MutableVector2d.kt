@@ -16,14 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.MultiTag
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getDouble
-import org.tobi29.scapes.engine.utils.io.tag.setDouble
+import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.io.tag.toDouble
 import org.tobi29.scapes.engine.utils.math.floor
 
 open class MutableVector2d(var x: Double = 0.0,
-                           var y: Double = 0.0) : MultiTag.ReadAndWrite {
+                           var y: Double = 0.0) {
 
     constructor(vector: Vector2d) : this(vector.x, vector.y)
 
@@ -323,22 +321,8 @@ open class MutableVector2d(var x: Double = 0.0,
         return Vector2d(x, y)
     }
 
-    override fun write(): TagStructure {
-        val tagStructure = TagStructure()
-        tagStructure.setDouble("X", x)
-        tagStructure.setDouble("Y", y)
-        return tagStructure
-    }
-
-    override fun read(tagStructure: TagStructure) {
-        var value: Double?
-        value = tagStructure.getDouble("X")
-        if (value != null) {
-            x = value
-        }
-        value = tagStructure.getDouble("Y")
-        if (value != null) {
-            y = value
-        }
+    open fun set(map: ReadTagMutableMap) {
+        map["X"]?.toDouble()?.let { x = it }
+        map["Y"]?.toDouble()?.let { y = it }
     }
 }

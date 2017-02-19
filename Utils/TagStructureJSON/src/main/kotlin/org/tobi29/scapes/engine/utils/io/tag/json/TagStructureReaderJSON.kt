@@ -18,15 +18,13 @@ package org.tobi29.scapes.engine.utils.io.tag.json
 
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.*
 import java.io.IOException
 import java.io.InputStream
-import java.math.BigDecimal
-import java.util.*
 import javax.json.Json
 import javax.json.stream.JsonParser
 
-class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCloseable {
+class TagStructureReaderJSON(streamIn: InputStream) : AutoCloseable {
     private val reader: JsonParser
 
     constructor(stream: ReadableByteStream) : this(
@@ -44,7 +42,7 @@ class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCl
         reader.close()
     }
 
-    fun readStructure(tagStructure: TagStructure) {
+    fun readMap(map: MutableMap<String, Tag>) {
         while (true) {
             val keyEvent = reader.next()
             when (keyEvent) {
@@ -60,83 +58,67 @@ class TagStructureReaderJSON(streamIn: InputStream) : TagStructureJSON(), AutoCl
             val event = reader.next()
             when (event) {
                 JsonParser.Event.START_OBJECT -> {
-                    val childStructure = TagStructure()
-                    readStructure(childStructure)
-                    tagStructure.setStructure(key, childStructure)
+                    map[key] = TagMap { readMap(this) }
                 }
                 JsonParser.Event.START_ARRAY -> {
-                    tagStructure.setList(key, readList())
+                    map[key] = TagList { readList(this) }
                 }
                 JsonParser.Event.VALUE_NUMBER -> {
                     if (reader.isIntegralNumber) {
-                        tagStructure.setNumber(key, reader.long)
+                        map[key] = reader.bigDecimal.toBigIntegerExact()
                     } else {
-                        tagStructure.setNumber(key, unarmor(reader.bigDecimal))
+                        map[key] = reader.bigDecimal
                     }
                 }
                 JsonParser.Event.VALUE_STRING -> {
-                    tagStructure.setString(key, reader.string)
+                    map[key] = reader.string
                 }
                 JsonParser.Event.VALUE_NULL -> {
-                    tagStructure.setUnit(key)
+                    map[key] = Unit
                 }
                 JsonParser.Event.VALUE_FALSE -> {
-                    tagStructure.setBoolean(key, false)
+                    map[key] = false
                 }
                 JsonParser.Event.VALUE_TRUE -> {
-                    tagStructure.setBoolean(key, true)
+                    map[key] = true
                 }
                 else -> throw IOException("Unexpected event: $event")
             }
         }
     }
 
-    fun readList(): List<Any> {
-        val list = ArrayList<Any>()
+    fun readList(list: MutableList<Tag>) {
         while (true) {
             val event = reader.next()
             when (event) {
                 JsonParser.Event.START_OBJECT -> {
-                    val tagStructure = TagStructure()
-                    readStructure(tagStructure)
-                    list.add(tagStructure)
+                    list.add(TagMap { readMap(this) })
                 }
                 JsonParser.Event.START_ARRAY -> {
-                    list.add(readList())
+                    list.add(TagList { readList(this) })
                 }
                 JsonParser.Event.VALUE_NUMBER -> {
                     if (reader.isIntegralNumber) {
-                        list.add(reader.long)
+                        list.add(reader.bigDecimal.toBigIntegerExact().toTag())
                     } else {
-                        list.add(unarmor(reader.bigDecimal))
+                        list.add(reader.bigDecimal.toTag())
                     }
                 }
                 JsonParser.Event.VALUE_STRING -> {
-                    list.add(reader.string)
+                    list.add(reader.string.toTag())
                 }
                 JsonParser.Event.VALUE_NULL -> {
-                    list.add(Unit)
+                    list.add(Unit.toTag())
                 }
                 JsonParser.Event.VALUE_FALSE -> {
-                    list.add(false)
+                    list.add(false.toTag())
                 }
                 JsonParser.Event.VALUE_TRUE -> {
-                    list.add(true)
+                    list.add(true.toTag())
                 }
-                JsonParser.Event.END_ARRAY -> return list
+                JsonParser.Event.END_ARRAY -> return
                 else -> throw IOException("Unexpected event: $event")
             }
         }
-    }
-
-    private fun unarmor(value: BigDecimal): Double {
-        if (value.compareTo(TagStructureJSON.POSITIVE_INFINITY) == 0) {
-            return Double.POSITIVE_INFINITY
-        } else if (value.compareTo(TagStructureJSON.NEGATIVE_INFINITY) == 0) {
-            return Double.NEGATIVE_INFINITY
-        } else if (value.compareTo(TagStructureJSON.NAN) == 0) {
-            return Double.NaN
-        }
-        return value.toDouble()
     }
 }

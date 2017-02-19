@@ -16,9 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getDouble
-import org.tobi29.scapes.engine.utils.io.tag.setDouble
+import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.io.tag.toDouble
 import org.tobi29.scapes.engine.utils.math.floor
 
 class MutableVector3d(x: Double = 0.0,
@@ -319,21 +318,6 @@ class MutableVector3d(x: Double = 0.0,
         return Vector3d(x, y, z)
     }
 
-    override fun write(): TagStructure {
-        val tagStructure = super.write()
-        tagStructure.setDouble("Z", z)
-        return tagStructure
-    }
-
-    override fun read(tagStructure: TagStructure) {
-        super.read(tagStructure)
-        val value: Double?
-        value = tagStructure.getDouble("Z")
-        if (value != null) {
-            z = value
-        }
-    }
-
     fun set(x: Int,
             y: Int,
             z: Int): MutableVector3d {
@@ -455,5 +439,10 @@ class MutableVector3d(x: Double = 0.0,
         setY(a.y)
         setZ(a.z)
         return this
+    }
+
+    override fun set(map: ReadTagMutableMap) {
+        super.set(map)
+        map["Z"]?.toDouble()?.let { z = it }
     }
 }

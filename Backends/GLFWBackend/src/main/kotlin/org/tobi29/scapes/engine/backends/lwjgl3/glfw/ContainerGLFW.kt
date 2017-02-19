@@ -36,6 +36,7 @@ import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
+import org.tobi29.scapes.engine.utils.io.tag.toMap
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
@@ -402,9 +403,8 @@ class ContainerGLFW(engine: ScapesEngine,
                             monitorWidth, monitorHeight)
                     GLFW.glfwMakeContextCurrent(window)
                     GL.createCapabilities()
-                    val tagStructure = engine.tagStructure.getStructure(
-                            "Compatibility")
-                    workaroundLegacyProfile(tagStructure)?.let {
+                    val tagMap = engine.configMap["Compatibility"]?.toMap()
+                    workaroundLegacyProfile(tagMap)?.let {
                         logger.warn { "Detected problem with using a core profile on this driver: $it" }
                         logger.warn { "Recreating window with legacy context..." }
                         GLFW.glfwDestroyWindow(window)

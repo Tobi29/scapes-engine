@@ -32,7 +32,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.io.tag.toBoolean
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
@@ -175,12 +176,12 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
     }
 
     companion object : KLogging() {
-        fun workaroundLegacyProfile(tagStructure: TagStructure?): String? {
-            if (tagStructure?.getBoolean("ForceLegacyGL") ?: false) {
+        fun workaroundLegacyProfile(tagMap: ReadTagMutableMap?): String? {
+            if (tagMap?.get("ForceLegacyGL")?.toBoolean() ?: false) {
                 logger.warn { "Forcing a legacy profile, this is unsupported!" }
                 return "Forced by config"
             }
-            if (tagStructure?.getBoolean("ForceCoreGL") ?: false) {
+            if (tagMap?.get("ForceCoreGL")?.toBoolean() ?: false) {
                 logger.warn { "Forcing a core profile, this is unsupported!" }
                 return null
             }

@@ -16,14 +16,11 @@
 
 package org.tobi29.scapes.engine.server
 
-import org.tobi29.scapes.engine.utils.io.tag.MultiTag
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getInt
-import org.tobi29.scapes.engine.utils.io.tag.setInt
+import org.tobi29.scapes.engine.utils.io.tag.*
 
 import java.net.InetSocketAddress
 
-class RemoteAddress : MultiTag.Writeable {
+class RemoteAddress : TagMapWrite {
     val address: String
     val port: Int
 
@@ -38,15 +35,14 @@ class RemoteAddress : MultiTag.Writeable {
         port = address.port
     }
 
-    constructor(tagStructure: TagStructure) {
-        address = tagStructure.getString("Address") ?: ""
-        port = tagStructure.getInt("Port") ?: -1
+    override fun write(map: ReadWriteTagMap) {
+        map["Address"] = address
+        map["Port"] = port
     }
+}
 
-    override fun write(): TagStructure {
-        val tagStructure = TagStructure()
-        tagStructure.setString("Address", address)
-        tagStructure.setInt("Port", port)
-        return tagStructure
-    }
+fun RemoteAddress(map: ReadTagMutableMap): RemoteAddress {
+    val address = map["Address"].toString()
+    val port = map["Port"]?.toInt() ?: -1
+    return RemoteAddress(address, port)
 }

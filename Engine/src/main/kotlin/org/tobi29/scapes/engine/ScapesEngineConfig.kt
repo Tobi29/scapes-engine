@@ -15,48 +15,45 @@
  */
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getDouble
-import org.tobi29.scapes.engine.utils.io.tag.setDouble
+import org.tobi29.scapes.engine.utils.io.tag.*
 
-class ScapesEngineConfig(private val tagStructure: TagStructure) {
+class ScapesEngineConfig(private val tagStructure: MutableTagMap) {
     var fps = 0.0
         set(value) {
             field = value
-            tagStructure.setDouble("Framerate", value)
+            tagStructure["Framerate"] = value
         }
     var resolutionMultiplier = 0.0
         set(value) {
             field = value
-            tagStructure.setDouble("ResolutionMultiplier", value)
+            tagStructure["ResolutionMultiplier"] = value
         }
     var vSync = false
         set(value) {
             field = value
-            tagStructure.setBoolean("VSync", value)
+            tagStructure["VSync"] = value
         }
     var fullscreen = false
         set(value) {
             field = value
-            tagStructure.setBoolean("Fullscreen", value)
+            tagStructure["Fullscreen"] = value
         }
 
     init {
-        vSync = tagStructure.getBoolean("VSync") ?: false
-        fps = tagStructure.getDouble("Framerate") ?: 0.0
-        resolutionMultiplier = tagStructure.getDouble(
-                "ResolutionMultiplier") ?: 0.0
-        fullscreen = tagStructure.getBoolean("Fullscreen") ?: false
+        vSync = tagStructure["VSync"]?.toBoolean() ?: false
+        fps = tagStructure["Framerate"]?.toDouble() ?: 0.0
+        resolutionMultiplier = tagStructure["ResolutionMultiplier"]?.toDouble() ?: 0.0
+        fullscreen = tagStructure["Fullscreen"]?.toBoolean() ?: false
     }
 
-    fun volume(channel: String) = (tagStructure.structure(
-            "Volumes").tagEntrySet.asSequence().filter {
+    fun volume(channel: String) = tagStructure.mapMut(
+            "Volumes").asSequence().filter {
         channel.startsWith(it.key)
-    }.maxBy { it.key.length }?.value as? Number)?.toDouble() ?: 1.0
+    }.maxBy { it.key.length }?.value?.toDouble() ?: 1.0
 
 
     fun setVolume(channel: String,
                   value: Double) {
-        tagStructure.structure("Volumes").setDouble(channel, value)
+        tagStructure.mapMut("Volumes")[channel] = value
     }
 }

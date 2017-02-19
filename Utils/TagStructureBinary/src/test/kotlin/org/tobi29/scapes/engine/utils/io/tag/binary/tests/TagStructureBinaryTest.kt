@@ -24,108 +24,113 @@ import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.tag.*
-import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
+import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
+import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import java.util.*
 
-private fun createTagStructure(): TagStructure {
+private fun createTagMap(): TagMap {
     val random = Random()
-    return structure {
+    return TagMap {
         // All primitive tags
-        setUnit("Unit")
-        setBoolean("Boolean", random.nextBoolean())
-        setByte("Byte", random.nextInt(0x100).toByte())
-        setShort("Short", random.nextInt(0x10000).toShort())
-        setInt("Integer", random.nextInt())
-        setLong("Long", random.nextLong())
-        setFloat("Float", random.nextFloat())
-        setDouble("Double", random.nextDouble())
-        setDouble("NaN", Double.NaN)
-        setDouble("PosInf", Double.POSITIVE_INFINITY)
-        setDouble("NegInf", Double.NEGATIVE_INFINITY)
+        this["Unit"] = Unit
+        this["True"] = true
+        this["False"] = false
+        this["BytePos"] = 42.toByte()
+        this["ByteNeg"] = -42.toByte()
+        this["ShortPos"] = 12345.toShort()
+        this["ShortNeg"] = 12345.toShort()
+        this["IntPos"] = 12345678
+        this["IntNeg"] = -12345678
+        this["LongPos"] = 123456789069L
+        this["LongNeg"] = -123456789069L
+        this["Float"] = 0.25f
+        this["Double"] = 0.25
+        this["NaN"] = Double.NaN
+        this["InfPos"] = Double.POSITIVE_INFINITY
+        this["InfNeg"] = Double.NEGATIVE_INFINITY
+        // TODO: Test BigInteger and BigDecimal
         val array = ByteArray(1024)
         random.nextBytes(array)
-        setByteArray("Byte[]", *array)
-        setString("String", "◊Blah blah blah◊")
+        this["Byte[]"] = array
+        this["String"] = "◊Blah blah blah◊"
         // Filled structure and list
-        setStructure("Structure") {
+        this["Map"] = TagMap {
             for (i in 0..255) {
-                setByte("Entry#" + i, i.toByte())
+                this["Entry#$i"] = i.toByte()
             }
         }
-        setList("List") {
-            add(structure { setByte("Entry", 0) })
-            add(structure {})
-            add(list {
+        this["List"] = TagList {
+            add(TagMap { this["Entry"] = 0.toByte() })
+            add(TagMap())
+            add(TagList {
                 add("Entry#1")
                 add("Entry#2")
             })
-            add(emptyList<Any>())
-            add(Unit)
-            add(0)
-            add("String")
+            add(TagList())
+            add(Unit.toTag())
+            add(0.toByte().toTag())
+            add("String".toTag())
         }
-        setList("ListEndStructure") {
-            add(structure { setInt("Entry#1", 1) })
-            add(structure { setInt("Entry#2", 2) })
+        this["ListEndMap"] = TagList {
+            add(TagMap { this["Entry#1"] = 1.toByte() })
+            add(TagMap { this["Entry#2"] = 2.toByte() })
         }
-        setList("ListEndList") {
-            add(list {
+        this["ListEndList"] = TagList {
+            add(TagList {
                 add("Entry#1")
                 add("Entry#2")
             })
-            add(list {
+            add(TagList {
                 add("Entry#1")
                 add("Entry#2")
             })
         }
-        setList("ListEndEmptyList") {
-            add(emptyList<Any>())
-            add(emptyList<Any>())
+        this["ListEndEmptyList"] = TagList {
+            add(TagList())
+            add(TagList())
         }
         // Empty structure and list
-        structure("EmptyStructure")
-        setList("EmptyList")
+        this["EmptyMap"] = TagMap()
+        this["EmptyList"] = TagList()
     }
 }
 
-private fun checkWriteAndRead(structure: TagStructure,
-                              compression: Byte): TagStructure {
+private fun checkWriteAndRead(map: TagMap,
+                              compression: Byte = -1): TagMap {
     val channel = ByteBufferStream()
-    TagStructureBinary.write(channel, structure, compression)
+    map.writeBinary(channel, compression)
     channel.buffer().flip()
-    return TagStructureBinary.read(ByteBufferStream(channel.buffer()))
+    return readBinary(ByteBufferStream(channel.buffer()))
 }
 
-object TagStructureBinaryTest : Spek({
+object TagStructureBinaryTests : Spek({
     describe("serialization for tag structures") {
         given("any tag structure") {
-            val tagStructureComplex by memoized { createTagStructure() }
+            val tagMapComplex by memoized { createTagMap() }
             on("writing and reading, uncompressed") {
-                val tagStructure = tagStructureComplex
-                val read = checkWriteAndRead(tagStructure, -1)
+                val tagMap = tagMapComplex
+                val read = checkWriteAndRead(tagMap, -1)
                 it("should return an equal tag structure") {
-                    read shouldEqual tagStructure
+                    read shouldEqual tagMap
                 }
             }
             on("writing and reading, compressed") {
-                val tagStructure = tagStructureComplex
-                val read = checkWriteAndRead(tagStructure, 1)
+                val tagMap = tagMapComplex
+                val read = checkWriteAndRead(tagMap, 1)
                 it("should return an equal tag structure") {
-                    read shouldEqual tagStructure
+                    read shouldEqual tagMap
                 }
             }
         }
         given("a tag structure with more than 255 different keys") {
-            val tagStructureManyKeys by memoized {
-                structure {
-                    repeat(512) { setInt("Entry#$it", it) }
-                }
+            val tagMapManyKeys by memoized {
+                TagMap { repeat(512) { this["Entry#$it"] = it } }
             }
             on("writing and reading, uncompressed") {
-                val tagStructure = tagStructureManyKeys
-                val read = checkWriteAndRead(tagStructure, -1)
+                val tagMap = tagMapManyKeys
+                val read = checkWriteAndRead(tagMap, -1)
                 it("should return an equal tag structure") {
-                    read shouldEqual tagStructure
+                    read shouldEqual tagMap
                 }
             }
         }

@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.MultiTag
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.setInt
+import org.tobi29.scapes.engine.utils.io.tag.ReadWriteTagMap
+import org.tobi29.scapes.engine.utils.io.tag.TagMapWrite
+import org.tobi29.scapes.engine.utils.io.tag.set
 
 open class Vector2i(val x: Int,
-                    val y: Int) : MultiTag.Writeable {
+                    val y: Int) : TagMapWrite {
 
     constructor(vector: Vector2d) : this(vector.intX(), vector.intY())
 
@@ -47,11 +47,9 @@ open class Vector2i(val x: Int,
         return x == other.x && y == other.y
     }
 
-    override fun write(): TagStructure {
-        val tagStructure = TagStructure()
-        tagStructure.setInt("X", x)
-        tagStructure.setInt("Y", y)
-        return tagStructure
+    override fun write(map: ReadWriteTagMap) {
+        map["X"] = x
+        map["Y"] = y
     }
 
     override fun toString() = "$x $y"

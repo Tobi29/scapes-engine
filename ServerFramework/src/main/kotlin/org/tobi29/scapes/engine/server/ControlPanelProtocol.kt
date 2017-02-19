@@ -21,8 +21,10 @@ import mu.KLogging
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.ListenerOwner
 import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
+import org.tobi29.scapes.engine.utils.filterMap
 import org.tobi29.scapes.engine.utils.io.tag.*
-import org.tobi29.scapes.engine.utils.io.tag.binary.TagStructureBinary
+import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
+import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import java.io.IOException
 import java.nio.channels.SelectionKey
 import java.security.*
@@ -35,7 +37,7 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
 
 /**
- * Simple tcp protocol to send [TagStructure]s back and forth
+ * Simple tcp protocol to send [TagMap]s back and forth
  */
 open class ControlPanelProtocol(private val worker: ConnectionWorker,
                                 private val channel: PacketBundleChannel,
@@ -56,10 +58,10 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
 
     private var idStr: String? = null
-    private val queue = ConcurrentLinkedQueue<TagStructure>()
+    private val queue = ConcurrentLinkedQueue<TagMap>()
     private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
     private val disconnectHooks = ConcurrentLinkedQueue<(Exception) -> Unit>()
-    private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagStructure) -> Unit>, Queue<(TagStructure) -> Unit>>>()
+    private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, Queue<(TagMap) -> Unit>>>()
     private var isClosed = false
     private var pingWait = 0L
     var ping = 0L
@@ -68,10 +70,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     init {
         channel.register(worker.joiner, SelectionKey.OP_READ)
-        addCommand("Commands-List") { payload ->
-            val set = commands.keys
-            send("Commands-Send", structure {
-                setList("Commands", set.toList())
+        addCommand("Commands-List") {
+            send("Commands-Send", TagMap {
+                this["Commands"] = TagList { commands.keys.forEach { add(it) } }
             })
         }
     }
@@ -177,13 +178,13 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      * **Note:** This does not make a deep copy of [payload], hence it should
      * not be used anymore after calling this
      * @param command Command name
-     * @param payload [TagStructure] containing data to send with the command
+     * @param payload [TagMap] containing data to send with the command
      */
     fun send(command: String,
-             payload: TagStructure) {
-        queue.add(structure {
-            setString("Command", command)
-            setStructure("Payload", payload)
+             payload: TagMap) {
+        queue.add(TagMap {
+            this["Command"] = command
+            this["Payload"] = payload
         })
         worker.joiner.wake()
     }
@@ -199,7 +200,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      * @param consumer Callback to receive the payload
      */
     fun addCommand(command: String,
-                   consumer: (TagStructure) -> Unit) {
+                   consumer: (TagMap) -> Unit) {
         val list = ConcurrentMaps.computeIfAbsent(commands,
                 command) { Pair(ArrayList(), ConcurrentLinkedQueue()) }
         synchronized(list.first) {
@@ -231,7 +232,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      * @param runnable Callback that gets called with the payload
      */
     fun commandHook(command: String,
-                    runnable: (TagStructure) -> Unit) {
+                    runnable: (TagMap) -> Unit) {
         val list = ConcurrentMaps.computeIfAbsent(commands,
                 command) { Pair(ArrayList(), ConcurrentLinkedQueue()) }
         list.second.add(runnable)
@@ -242,7 +243,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     }
 
     private fun processCommand(command: String,
-                               payload: TagStructure) {
+                               payload: TagMap) {
         val consumer = commands[command]
         if (consumer != null) {
             while (!consumer.second.isEmpty()) {
@@ -372,8 +373,8 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             val currentTime = System.currentTimeMillis()
             if (pingWait < currentTime) {
                 pingWait = currentTime + 1000
-                TagStructureBinary.write(channel.outputStream,
-                        structure { setLong("Ping", currentTime) })
+                TagMap { this["Ping"] = currentTime }.writeBinary(
+                        channel.outputStream)
                 channel.queueBundle()
             }
             openSend()
@@ -390,25 +391,22 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 PacketBundleChannel.FetchResult.CLOSED -> return true
                 PacketBundleChannel.FetchResult.YIELD -> break@loop
                 PacketBundleChannel.FetchResult.BUNDLE -> {
-                    val tagStructure = TagStructureBinary.read(
-                            channel.inputStream)
-                    tagStructure.getLong("Ping")?.let {
-                        TagStructureBinary.write(channel.outputStream,
-                                structure { setLong("Pong", it) })
+                    val tagStructure = readBinary(channel.inputStream)
+                    tagStructure["Ping"]?.toLong()?.let {
+                        TagMap { this["Pong"] = it }.writeBinary(
+                                channel.outputStream)
                         channel.queueBundle()
                     }
-                    tagStructure.getLong("Pong")?.let {
+                    tagStructure["Pong"]?.toLong()?.let {
                         val ping = System.currentTimeMillis() - it
                         this.ping = ping
                         connection.increaseTimeout(10000 - ping)
                     }
-                    tagStructure.getListStructure(
-                            "Commands") { commandStructure ->
-                        val command = commandStructure.getString(
-                                "Command") ?: throw IOException(
+                    tagStructure["Commands"]?.toList()?.asSequence()
+                            ?.filterMap<TagMap>()?.forEach { commandStructure ->
+                        val command = commandStructure["Command"]?.toString() ?: throw IOException(
                                 "Command without id")
-                        val payload = commandStructure.getStructure(
-                                "Payload") ?: throw IOException(
+                        val payload = commandStructure["Payload"]?.toMap() ?: throw IOException(
                                 "Command without payload")
                         processCommand(command, payload)
                     }
@@ -419,14 +417,12 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     }
 
     private suspend fun openSend() {
-        val list = ArrayList<TagStructure>(0)
+        val list = ArrayList<TagMap>(0)
         while (!queue.isEmpty()) {
             list.add(queue.poll())
         }
         if (!list.isEmpty()) {
-            val tagStructure = TagStructure()
-            tagStructure.setList("Commands", list)
-            TagStructureBinary.write(channel.outputStream, tagStructure)
+            TagMap { this["Commands"] = list }.writeBinary(channel.outputStream)
             channel.queueBundle()
         }
     }

@@ -17,45 +17,23 @@
 package org.tobi29.scapes.engine.utils
 
 import org.tobi29.scapes.engine.utils.io.Algorithm
-import org.tobi29.scapes.engine.utils.io.tag.MultiTag
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.structure
+import org.tobi29.scapes.engine.utils.io.tag.*
 import java.util.*
 
 /**
  * Class representing a checksum hash
  */
-class Checksum : MultiTag.Writeable {
-    /**
-     * Algorithm of this checksum, might be [Algorithm.UNKNOWN]
-     */
-    val algorithm: Algorithm
-    private val array: ByteArray
-
-    /**
-     * Construct new checksum from the given array
-     * @param array Byte array containing hash
-     */
-    constructor(algorithm: Algorithm,
-                array: ByteArray) {
-        if (array.size != algorithm.bytes) {
-            throw IllegalArgumentException(
-                    "Byte array size different from algorithm: ${array.size} (Should be: ${algorithm.bytes})")
-        }
-        this.algorithm = algorithm
-        this.array = array
-    }
-
-    constructor(tagStructure: TagStructure) {
-        var algorithm = Algorithm.UNKNOWN
-        try {
-            algorithm = Algorithm.valueOf(
-                    tagStructure.getString("Algorithm") ?: "")
-        } catch (e: IllegalArgumentException) {
-        }
-        this.algorithm = algorithm
-        array = tagStructure.getByteArray("Array") ?: ByteArray(algorithm.bytes)
-    }
+class Checksum
+/**
+ * Construct new checksum from the given array
+ * @param array Byte array containing hash
+ */
+(
+        /**
+         * Algorithm of this checksum, might be [Algorithm.UNKNOWN]
+         */
+        val algorithm: Algorithm,
+        private val array: ByteArray) : TagMapWrite {
 
     /**
      * Returns byte array containing checksum hash
@@ -63,6 +41,11 @@ class Checksum : MultiTag.Writeable {
      */
     fun array(): ByteArray {
         return array.clone()
+    }
+
+    override fun write(map: ReadWriteTagMap) {
+        map["Algorithm"] = algorithm.toString()
+        map["Array"] = array
     }
 
     override fun hashCode(): Int {
@@ -84,15 +67,23 @@ class Checksum : MultiTag.Writeable {
         return array.toHexadecimal()
     }
 
-    override fun write(): TagStructure {
-        return structure {
-            setString("Algorithm", algorithm.toString())
-            setByteArray("Array", *array())
+    init {
+        if (array.size != algorithm.bytes) {
+            throw IllegalArgumentException(
+                    "Byte array size different from algorithm: ${array.size} (Should be: ${algorithm.bytes})")
         }
     }
 }
 
-fun TagStructure.setChecksum(key: String,
-                             checksum: Checksum) {
-    setStructure(key, checksum.write())
+fun Checksum(map: ReadTagMutableMap): Checksum? {
+    val algorithm =
+            try {
+                Algorithm.valueOf(map["Algorithm"].toString())
+            } catch (e: IllegalArgumentException) {
+                Algorithm.UNKNOWN
+            }
+    val array = map["Array"]?.toByteArray() ?: ByteArray(algorithm.bytes)
+    return Checksum(algorithm, array)
 }
+
+inline fun MutableTag.toChecksum() = toMap()?.let(::Checksum)

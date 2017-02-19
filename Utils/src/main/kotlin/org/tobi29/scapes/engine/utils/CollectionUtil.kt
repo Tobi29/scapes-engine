@@ -56,6 +56,84 @@ inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> = Collections.unmodifiableMap(
         this)
 
 /**
+ * Returns a synchronized version of the given collection
+ * @param T The type of elements
+ * @receiver The collection
+ * @returns A synchronized view of the collection
+ */
+inline fun <T> Collection<T>.synchronized(): Collection<T> = Collections.synchronizedCollection(
+        this)
+
+/**
+ * Returns a synchronized version of the given collection
+ * @param T The type of elements
+ * @receiver The collection
+ * @returns A synchronized view of the collection
+ */
+@JvmName("synchronizedMut")
+inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> = Collections.synchronizedCollection(
+        this)
+
+/**
+ * Returns a synchronized version of the given list
+ * @param T The type of elements
+ * @receiver The list
+ * @returns A synchronized view of the list
+ */
+inline fun <T> List<T>.synchronized(): List<T> = Collections.synchronizedList(
+        this)
+
+/**
+ * Returns a synchronized version of the given list
+ * @param T The type of elements
+ * @receiver The list
+ * @returns A synchronized view of the list
+ */
+@JvmName("synchronizedMut")
+inline fun <T> MutableList<T>.synchronized(): MutableList<T> = Collections.synchronizedList(
+        this)
+
+/**
+ * Returns a synchronized version of the given set
+ * @param T The type of elements
+ * @receiver The set
+ * @returns A synchronized view of the set
+ */
+inline fun <T> Set<T>.synchronized(): Set<T> = Collections.synchronizedSet(
+        this)
+
+/**
+ * Returns a synchronized version of the given set
+ * @param T The type of elements
+ * @receiver The set
+ * @returns A synchronized view of the set
+ */
+@JvmName("synchronizedMut")
+inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> = Collections.synchronizedSet(
+        this)
+
+/**
+ * Returns a synchronized version of the given map
+ * @param K The type of keys
+ * @param V The type of values
+ * @receiver The map
+ * @returns A synchronized view of the map
+ */
+inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> = Collections.synchronizedMap(
+        this)
+
+/**
+ * Returns a synchronized version of the given map
+ * @param K The type of keys
+ * @param V The type of values
+ * @receiver The map
+ * @returns A synchronized view of the map
+ */
+@JvmName("synchronizedMut")
+inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> = Collections.synchronizedMap(
+        this)
+
+/**
  * Filters out elements of the wrong type and casts them
  * @param T The type to cast to
  * @receiver The sequence of elements to map

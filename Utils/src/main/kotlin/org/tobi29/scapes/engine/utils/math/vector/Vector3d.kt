@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.setDouble
+import org.tobi29.scapes.engine.utils.io.tag.ReadWriteTagMap
+import org.tobi29.scapes.engine.utils.io.tag.set
 import org.tobi29.scapes.engine.utils.math.floor
 
 class Vector3d(x: Double,
@@ -59,18 +59,17 @@ class Vector3d(x: Double,
         return x == other.x && y == other.y && z == other.z
     }
 
-    override fun write(): TagStructure {
-        val tagStructure = super.write()
-        tagStructure.setDouble("Z", z)
-        return tagStructure
-    }
-
     fun intZ(): Int {
         return floor(z)
     }
 
     fun floatZ(): Float {
         return z.toFloat()
+    }
+
+    override fun write(map: ReadWriteTagMap) {
+        super.write(map)
+        map["Z"] = z
     }
 
     override fun toString() = "$x $y $z"

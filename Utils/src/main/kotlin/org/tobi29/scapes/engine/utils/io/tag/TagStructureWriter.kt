@@ -19,8 +19,9 @@ package org.tobi29.scapes.engine.utils.io.tag
 import java.io.IOException
 
 interface TagStructureWriter {
+
     @Throws(IOException::class)
-    fun begin(root: TagStructure)
+    fun begin(root: TagMap)
 
     @Throws(IOException::class)
     fun end()
@@ -66,8 +67,8 @@ interface TagStructureWriter {
 
     @Throws(IOException::class)
     fun writePrimitiveTag(key: String,
-                          tag: Any)
+                          tag: TagPrimitive)
 
     @Throws(IOException::class)
-    fun writePrimitiveTag(tag: Any)
+    fun writePrimitiveTag(tag: TagPrimitive)
 }

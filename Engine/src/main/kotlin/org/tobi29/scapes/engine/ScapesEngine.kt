@@ -33,9 +33,9 @@ import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.filesystem.classpath.ClasspathPath
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON
-import org.tobi29.scapes.engine.utils.io.tag.setDouble
+import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
+import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
@@ -57,7 +57,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     val taskExecutor = TaskExecutor(this, "Engine")
     val resources = ResourceLoader(taskExecutor)
     val config: ScapesEngineConfig
-    val tagStructure = TagStructure()
+    val configMap: MutableTagMap
     val game: Game
     val container: Container
     val graphics: GraphicsSystem
@@ -105,27 +105,28 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         this.game.initEarly()
 
         logger.info { "Reading config" }
-        try {
+        configMap = try {
             val configPath = this.home.resolve("ScapesEngine.json")
             if (exists(configPath)) {
-                read(configPath) { stream ->
-                    TagStructureJSON.read(stream, tagStructure)
-                }
+                read(configPath, ::readJSON)
+            } else {
+                TagMap()
             }
         } catch (e: IOException) {
             logger.warn { "Failed to load config file: $e" }
-        }
-        if (tagStructure.has("Engine")) {
-            config = ScapesEngineConfig(tagStructure.structure("Engine"))
+            TagMap()
+        }.toMutTag()
+        if (configMap.containsKey("Engine")) {
+            config = ScapesEngineConfig(configMap.mapMut("Engine"))
         } else {
             logger.info { "Setting defaults to config" }
-            val engineTag = tagStructure.structure("Engine")
-            engineTag.setBoolean("VSync", true)
-            engineTag.setDouble("Framerate", 60.0)
-            engineTag.setDouble("ResolutionMultiplier", 1.0)
-            engineTag.setDouble("MusicVolume", 1.0)
-            engineTag.setDouble("SoundVolume", 1.0)
-            engineTag.setBoolean("Fullscreen", false)
+            val engineTag = configMap.mapMut("Engine")
+            engineTag["VSync"] = true
+            engineTag["Framerate"] = 60.0
+            engineTag["ResolutionMultiplier"] = 1.0
+            engineTag["MusicVolume"] = 1.0
+            engineTag["SoundVolume"] = 1.0
+            engineTag["Fullscreen"] = false
             config = ScapesEngineConfig(engineTag)
         }
         try {
@@ -269,9 +270,8 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         logger.info { "Disposing game" }
         game.dispose()
         try {
-            write(home.resolve("ScapesEngine.json")) { streamOut ->
-                TagStructureJSON.write(tagStructure, streamOut)
-            }
+            write(home.resolve(
+                    "ScapesEngine.json")) { configMap.toTag().writeJSON(it) }
         } catch (e: IOException) {
             logger.warn { "Failed to save config file!" }
         }

@@ -20,25 +20,25 @@ import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
 import org.tobi29.scapes.engine.utils.io.LimitedBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.*
 import java.io.IOException
 import java.util.*
 
 class TagStructureReaderBinary(stream: ReadableByteStream,
-                               compressionStream: ByteBufferStream,
-                               private var allocationLimit: Int) : TagStructureBinary() {
-    private var dictionary: TagStructureBinary.KeyDictionary? = null
+                               private var allocationLimit: Int,
+                               compressionStream: ByteBufferStream) {
+    private var dictionary: KeyDictionary? = null
     private val structureBuffer: ReadableByteStream
 
     init {
-        val magic = ByteArray(TagStructureBinary.HEADER_MAGIC.size)
+        val magic = ByteArray(HEADER_MAGIC.size)
         stream[magic]
         if (!Arrays.equals(magic, magic)) {
             throw IOException("Not in tag format! (Magic-Header: " +
                     Arrays.toString(magic) + ')')
         }
         val version = stream.get()
-        if (version > TagStructureBinary.HEADER_VERSION) {
+        if (version > HEADER_VERSION) {
             throw IOException(
                     "Unsupported version or not in tag format! (Version: " +
                             version + ')')
@@ -54,84 +54,79 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
         } else {
             structureBuffer = stream
         }
-        dictionary = TagStructureBinary.KeyDictionary(structureBuffer)
+        dictionary = KeyDictionary(structureBuffer)
     }
 
-    fun readStructure(tagStructure: TagStructure): Boolean {
+    fun readMap(map: MutableMap<String, Tag>): Boolean {
         while (true) {
             val componentID = structureBuffer.get()
-            if (componentID == TagStructureBinary.ID_STRUCTURE_TERMINATE) {
+            if (componentID == ID_STRUCTURE_TERMINATE) {
                 return false
-            } else if (componentID == TagStructureBinary.ID_LIST_TERMINATE) {
+            } else if (componentID == ID_LIST_TERMINATE) {
                 return true
             }
             val key = allocate(
-                    TagStructureBinary.readKey(structureBuffer, dictionary,
+                    readKey(structureBuffer, dictionary,
                             allocationLimit))
             when (componentID) {
-                TagStructureBinary.ID_STRUCTURE_BEGIN -> {
+                ID_STRUCTURE_BEGIN -> {
                     allocate(16) // Those are heavy, do not want too many
-                    val childStructure = TagStructure()
-                    if (readStructure(childStructure)) {
-                        throw IOException("List termination in structure")
-                    }
-                    tagStructure.setStructure(key, childStructure)
+                    map[key] = TagMap { readMap(this) }
                 }
-                TagStructureBinary.ID_STRUCTURE_EMPTY -> {
+                ID_STRUCTURE_EMPTY -> {
                     allocate(16) // Those are heavy, do not want too many
-                    tagStructure.setStructure(key, TagStructure())
+                    map[key] = TagMap()
                 }
-                TagStructureBinary.ID_LIST_BEGIN -> {
+                ID_LIST_BEGIN -> {
                     allocate(4) // Structure + list size
-                    val list = ArrayList<Any>()
-                    while (!readListElement(list)) {
+                    map[key] = TagList {
+                        while (!readListElement(this)) {
+                        }
                     }
-                    tagStructure.setList(key, list)
                 }
-                TagStructureBinary.ID_LIST_EMPTY -> {
+                ID_LIST_EMPTY -> {
                     allocate(4) // Those are fairly light on their own
-                    tagStructure.setList(key, emptyList())
+                    map[key] = TagList()
                 }
-                TagStructureBinary.ID_TAG_UNIT -> {
+                ID_TAG_UNIT -> {
                     allocate(1)
-                    tagStructure.setUnit(key)
+                    map[key] = Unit
                 }
-                TagStructureBinary.ID_TAG_BOOLEAN -> {
+                ID_TAG_BOOLEAN -> {
                     allocate(1)
-                    tagStructure.setBoolean(key,
-                            structureBuffer.get() != 0.toByte())
+                    map[key] = structureBuffer.get() != 0.toByte()
                 }
-                TagStructureBinary.ID_TAG_BYTE -> {
+                ID_TAG_BYTE -> {
                     allocate(1)
-                    tagStructure.setNumber(key, structureBuffer.get())
+                    map[key] = structureBuffer.get()
                 }
-                TagStructureBinary.ID_TAG_INT_16 -> {
+                ID_TAG_INT_16 -> {
                     allocate(2)
-                    tagStructure.setNumber(key, structureBuffer.short)
+                    map[key] = structureBuffer.short
                 }
-                TagStructureBinary.ID_TAG_INT_32 -> {
+                ID_TAG_INT_32 -> {
                     allocate(4)
-                    tagStructure.setNumber(key, structureBuffer.int)
+                    map[key] = structureBuffer.int
                 }
-                TagStructureBinary.ID_TAG_INT_64 -> {
+                ID_TAG_INT_64 -> {
                     allocate(8)
-                    tagStructure.setNumber(key, structureBuffer.long)
+                    map[key] = structureBuffer.long
                 }
-                TagStructureBinary.ID_TAG_FLOAT_32 -> {
+                ID_TAG_FLOAT_32 -> {
                     allocate(4)
-                    tagStructure.setNumber(key, structureBuffer.float)
+                    map[key] = structureBuffer.float
                 }
-                TagStructureBinary.ID_TAG_FLOAT_64 -> {
+                ID_TAG_FLOAT_64 -> {
                     allocate(8)
-                    tagStructure.setNumber(key, structureBuffer.double)
+                    map[key] = structureBuffer.double
                 }
-                TagStructureBinary.ID_TAG_BYTE_ARRAY -> {
-                    tagStructure.setByteArray(key, *allocate(
-                            structureBuffer.getByteArrayLong(allocationLimit)))
+                ID_TAG_BYTE_ARRAY -> {
+                    map[key] = allocate(
+                            structureBuffer.getByteArrayLong(allocationLimit))
                 }
-                TagStructureBinary.ID_TAG_STRING -> {
-                    tagStructure.setString(key, allocate(
-                            structureBuffer.getString(allocationLimit)))
+                ID_TAG_STRING -> {
+                    map[key] = allocate(
+                            structureBuffer.getString(allocationLimit))
                 }
                 else -> throw IOException(
                         "Not in tag format! (Invalid component-id: $componentID)")
@@ -139,73 +134,72 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
         }
     }
 
-    fun readListElement(list: MutableList<Any>): Boolean {
+    fun readListElement(list: MutableList<Tag>): Boolean {
         val componentID = structureBuffer.get()
         when (componentID) {
-            TagStructureBinary.ID_STRUCTURE_BEGIN -> {
+            ID_STRUCTURE_BEGIN -> {
                 allocate(16) // Those are heavy, do not want too many
-                val childStructure = TagStructure()
-                val terminate = readStructure(childStructure)
-                list.add(childStructure)
+                var terminate = false
+                list.add(TagMap { terminate = readMap(this) })
                 if (terminate) {
                     return true
                 }
             }
-            TagStructureBinary.ID_STRUCTURE_EMPTY -> {
+            ID_STRUCTURE_EMPTY -> {
                 allocate(16) // Those are heavy, do not want too many
-                list.add(TagStructure())
+                list.add(TagMap())
             }
-            TagStructureBinary.ID_LIST_BEGIN -> {
+            ID_LIST_BEGIN -> {
                 allocate(4) // Structure + list size
-                val childList = ArrayList<Any>()
-                while (!readListElement(childList)) {
-                }
-                list.add(childList)
+                list.add(TagList {
+                    while (!readListElement(this)) {
+                    }
+                })
             }
-            TagStructureBinary.ID_LIST_EMPTY -> {
+            ID_LIST_EMPTY -> {
                 allocate(4) // Those are fairly light on their own
-                list.add(emptyList<Any>())
+                list.add(TagList())
             }
-            TagStructureBinary.ID_TAG_UNIT -> {
+            ID_TAG_UNIT -> {
                 allocate(1)
                 list.add(Unit)
             }
-            TagStructureBinary.ID_TAG_BOOLEAN -> {
+            ID_TAG_BOOLEAN -> {
                 allocate(1)
                 list.add(structureBuffer.get() != 0.toByte())
             }
-            TagStructureBinary.ID_TAG_BYTE -> {
+            ID_TAG_BYTE -> {
                 allocate(1)
                 list.add(structureBuffer.get())
             }
-            TagStructureBinary.ID_TAG_INT_16 -> {
+            ID_TAG_INT_16 -> {
                 allocate(2)
                 list.add(structureBuffer.short)
             }
-            TagStructureBinary.ID_TAG_INT_32 -> {
+            ID_TAG_INT_32 -> {
                 allocate(4)
                 list.add(structureBuffer.int)
             }
-            TagStructureBinary.ID_TAG_INT_64 -> {
+            ID_TAG_INT_64 -> {
                 allocate(8)
                 list.add(structureBuffer.long)
             }
-            TagStructureBinary.ID_TAG_FLOAT_32 -> {
+            ID_TAG_FLOAT_32 -> {
                 allocate(4)
                 list.add(structureBuffer.float)
             }
-            TagStructureBinary.ID_TAG_FLOAT_64 -> {
+            ID_TAG_FLOAT_64 -> {
                 allocate(8)
                 list.add(structureBuffer.double)
             }
-            TagStructureBinary.ID_TAG_BYTE_ARRAY -> {
+            ID_TAG_BYTE_ARRAY -> {
                 list.add(allocate(
                         structureBuffer.getByteArrayLong(allocationLimit)))
             }
-            TagStructureBinary.ID_TAG_STRING -> {
+            ID_TAG_STRING -> {
                 list.add(allocate(structureBuffer.getString(allocationLimit)))
             }
-            TagStructureBinary.ID_LIST_TERMINATE -> return true
+            ID_LIST_TERMINATE -> return true
             else -> {
                 throw IOException(
                         "Not in tag format! (Invalid component-id: $componentID)")
