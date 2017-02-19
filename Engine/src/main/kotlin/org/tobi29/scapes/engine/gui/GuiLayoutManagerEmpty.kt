@@ -36,7 +36,7 @@ object GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
                         size.now()))
             } else {
                 throw IllegalStateException(
-                        "Invalid layout node: " + data.javaClass)
+                        "Invalid layout node: " + data::class.java)
             }
         }
         this.size = outSize.now()

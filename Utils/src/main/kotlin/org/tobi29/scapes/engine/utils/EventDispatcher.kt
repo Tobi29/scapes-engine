@@ -139,7 +139,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
             val listeners = ArrayList<MutableSet<Listener<*>>>()
             var dispatcher: EventDispatcher? = this
             while (dispatcher != null) {
-                dispatcher.listeners[event.javaClass]?.and {
+                dispatcher.listeners[event::class.java]?.and {
                     it.isNotEmpty()
                 }?.let { listeners.add(it) }
                 dispatcher = dispatcher.parent
@@ -160,7 +160,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
      * @param E The type of the event
      */
     fun <E : Any> fireLocal(event: E) {
-        listeners[event.javaClass]?.let { cascadeEventFast(event, it) }
+        listeners[event::class.java]?.let { cascadeEventFast(event, it) }
     }
 
     private fun cleanListeners(listeners: MutableSet<Listener<*>>) {

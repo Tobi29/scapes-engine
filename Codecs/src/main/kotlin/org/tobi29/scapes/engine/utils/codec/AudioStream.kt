@@ -62,7 +62,7 @@ object AudioStream : KLogging() {
                 ReadableAudioStreamProvider::class.java)) {
             try {
                 if (codec.accepts(mime)) {
-                    logger.debug { "Loaded audio codec ($mime): ${codec.javaClass.name}" }
+                    logger.debug { "Loaded audio codec ($mime): ${codec::class.java.name}" }
                     return codec
                 }
             } catch (e: ServiceConfigurationError) {

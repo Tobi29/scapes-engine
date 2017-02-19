@@ -108,7 +108,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return ""
         }
         throw IllegalArgumentException(
-                "Unknown expression: ${expression.javaClass}")
+                "Unknown expression: ${expression::class.java}")
     }
 
     private fun assignmentExpression(expression: AssignmentExpression): String {
@@ -219,7 +219,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                     "Unknown property: ${expression.key}", expression)
         }
         throw IllegalArgumentException(
-                "Unknown integer: ${expression.javaClass}")
+                "Unknown integer: ${expression::class.java}")
     }
 
     private fun floatingExpression(expression: FloatingExpression): String {
@@ -356,7 +356,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             initializer = statement.initializer
         } else {
             throw IllegalArgumentException(
-                    "Unknown array initializer: ${statement.javaClass}")
+                    "Unknown array initializer: ${statement::class.java}")
         }
         identifiers[statement.identifier] = GLSLExpression(
                 statement.identifier.name)
@@ -995,7 +995,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                     expression(statement.expression) + ';')
         } else {
             throw IllegalArgumentException(
-                    "Unknown statement: ${statement.javaClass}")
+                    "Unknown statement: ${statement::class.java}")
         }
     }
 

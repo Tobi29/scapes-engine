@@ -96,9 +96,9 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
 
         logger.info { "Initializing asset system" }
         files.registerFileSystem("Class",
-                ClasspathPath(javaClass.classLoader, ""))
+                ClasspathPath(this::class.java.classLoader, ""))
         files.registerFileSystem("Engine",
-                ClasspathPath(javaClass.classLoader,
+                ClasspathPath(this::class.java.classLoader,
                         "assets/scapes/tobi29/engine"))
 
         logger.info { "Initializing game" }
@@ -358,7 +358,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
             for (backend in ServiceLoader.load(
                     ScapesEngineBackendProvider::class.java)) {
                 try {
-                    logger.debug { "Loaded backend: ${backend.javaClass.name}" }
+                    logger.debug { "Loaded backend: ${backend::class.java.name}" }
                     return { backend.createContainer(it) }
                 } catch (e: ServiceConfigurationError) {
                     logger.warn { "Unable to load backend provider: $e" }

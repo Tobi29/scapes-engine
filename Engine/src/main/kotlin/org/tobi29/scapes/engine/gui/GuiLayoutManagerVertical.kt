@@ -77,7 +77,7 @@ class GuiLayoutManagerVertical(start: Vector2d,
                 setSize(pos.now().plus(size.now()), outSize)
             } else {
                 throw IllegalStateException(
-                        "Invalid layout node: " + data.javaClass)
+                        "Invalid layout node: " + data::class.java)
             }
             output.add(Triple(component, pos.now(), size.now()))
         }
