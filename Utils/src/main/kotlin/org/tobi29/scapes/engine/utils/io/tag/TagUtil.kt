@@ -153,7 +153,7 @@ fun MutableTagMap.toTag() = TagMap {
 
 fun MutableTagList.toTag() = TagList {
     for (element in this@toTag) {
-        add(element)
+        add(element.toTag())
     }
 }
 
