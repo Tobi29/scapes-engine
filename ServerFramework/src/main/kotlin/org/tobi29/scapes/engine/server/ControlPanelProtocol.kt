@@ -32,6 +32,7 @@ import java.security.spec.InvalidKeySpecException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.crypto.*
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
@@ -62,7 +63,8 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
     private val disconnectHooks = ConcurrentLinkedQueue<(Exception) -> Unit>()
     private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, Queue<(TagMap) -> Unit>>>()
-    private var isClosed = false
+    private val isClosedMut = AtomicBoolean()
+    val isClosed get() = isClosedMut.get()
     private var pingWait = 0L
     var ping = 0L
         private set
@@ -429,7 +431,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     private fun close() {
         channel.close()
-        isClosed = true
+        isClosedMut.set(true)
     }
 
     companion object : KLogging() {
