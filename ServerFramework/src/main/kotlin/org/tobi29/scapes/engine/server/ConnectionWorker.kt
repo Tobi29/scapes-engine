@@ -42,7 +42,7 @@ class ConnectionWorker(
         val joiner: Joiner.SelectorJoinable,
         private val maxWorkerSleep: Long,
         private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher() {
-    private val connectionQueue = ConcurrentLinkedQueue<suspend CoroutineScope.(Connection) -> Unit>()
+    private val connectionQueue = ConcurrentLinkedQueue<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
     private val connections = ArrayList<ConnectionHandle>()
 
     private val queue = ConcurrentLinkedQueue<() -> Boolean>()
@@ -59,10 +59,12 @@ class ConnectionWorker(
 
     /**
      * Adds a new connection to this worker
+     * @param timeout Initial timeout of the connection, negative for no timeout
      * @param block Code that will be executed on this worker's thread
      */
-    fun addConnection(block: suspend CoroutineScope.(Connection) -> Unit) {
-        connectionQueue.add(block)
+    fun addConnection(timeout: Long,
+                      block: suspend CoroutineScope.(Connection) -> Unit) {
+        connectionQueue.add(Pair(timeout, block))
         joiner.wake()
     }
 
@@ -76,19 +78,26 @@ class ConnectionWorker(
             process()
             if (connectionQueue.isNotEmpty()) {
                 while (connectionQueue.isNotEmpty()) {
-                    val coroutine = connectionQueue.poll()
+                    val (initialTimeout, coroutine) = connectionQueue.poll()
                     val requestClose = AtomicBoolean()
-                    val timeout = AtomicLong(System.currentTimeMillis() + 20000)
+                    val timeout = if (initialTimeout < 0) {
+                        null
+                    } else {
+                        AtomicLong(
+                                System.currentTimeMillis() + initialTimeout)
+                    }
                     val connection = Connection(requestClose, timeout)
                     val job = launch(this) { coroutine(connection) }
                     val close = ConnectionHandle(job, requestClose)
                     connections.add(close)
-                    launch(this) {
-                        while (job.isActive) {
-                            if (System.currentTimeMillis() > timeout.get()) {
-                                job.cancel(IOException("Timeout"))
+                    if (timeout != null) {
+                        launch(this) {
+                            while (job.isActive) {
+                                if (System.currentTimeMillis() > timeout.get()) {
+                                    job.cancel(IOException("Timeout"))
+                                }
+                                yield()
                             }
-                            yield()
                         }
                     }
                     job.onCompletion {

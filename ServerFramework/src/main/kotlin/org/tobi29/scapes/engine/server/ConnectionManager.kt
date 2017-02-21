@@ -30,14 +30,14 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * @param taskExecutor The [TaskExecutor] to start threads with
  * @param maxWorkerSleep Maximum sleep time in milliseconds
  */
-open class ConnectionManager(
+class ConnectionManager(
         /**
          * The [TaskExecutor] to start threads with
          */
         val taskExecutor: TaskExecutor,
         private val maxWorkerSleep: Long = 1000) {
     private val workers = ArrayList<ConnectionWorker>()
-    protected val joiners = ArrayList<Joiner>()
+    private val joiners = ArrayList<Joiner>()
 
     /**
      * Starts a specified number of threads for processing connections
@@ -76,10 +76,19 @@ open class ConnectionManager(
 
     /**
      * Adds a new connection to the least occupied worker
-     * @param supplier Code that will be executed on this worker's thread
+     * @param block Code that will be executed on this worker's thread
      * @return `false` if no workers were running
      */
-    fun addConnection(block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit): Boolean {
+    fun addConnection(block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit) = addConnection(
+            20000, block)
+
+    /**
+     * Adds a new connection to the least occupied worker
+     * @param block Code that will be executed on this worker's thread
+     * @return `false` if no workers were running
+     */
+    fun addConnection(timeout: Long,
+                      block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit): Boolean {
         var load = Int.MAX_VALUE
         var bestWorker: ConnectionWorker? = null
         for (worker in workers) {
@@ -93,7 +102,7 @@ open class ConnectionManager(
             return false
         }
         val worker = bestWorker
-        worker.addConnection { block(this, worker, it) }
+        worker.addConnection(timeout) { block(this, worker, it) }
         return true
     }
 

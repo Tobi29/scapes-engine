@@ -33,12 +33,15 @@ import java.util.concurrent.atomic.AtomicReference
  * * Keeping track of whether or not the connection should gracefully close
  */
 class Connection(private val requestClose: AtomicBoolean,
-                 private val timeout: AtomicLong) {
+                 private val timeout: AtomicLong?) {
     /**
      * Set the timeout to at least [timeout] ms from now
      * @param timeout The time from now in milliseconds
      */
     fun increaseTimeout(timeout: Long) {
+        if (this.timeout == null) {
+            return
+        }
         val nextTime = System.currentTimeMillis() + timeout
         while (true) {
             val prev = this.timeout.get()
