@@ -171,4 +171,16 @@ fun UUID(map: ReadTagMutableMap): UUID? {
     return UUID(most, least)
 }
 
-inline fun MutableTag.toUUID() = toMap()?.let(::UUID)
+fun UUID(str: String): UUID? {
+    try {
+        return UUID.fromString(str)
+    } catch (e: IllegalArgumentException) {
+        return null
+    }
+}
+
+inline fun MutableTag.toUUID(): UUID? {
+    toMap()?.let(::UUID)?.let { return it }
+    toString().let(::UUID)?.let { return it }
+    return null
+}
