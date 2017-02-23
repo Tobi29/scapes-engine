@@ -24,6 +24,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
 import kotlin.collections.ArrayList
 
 /**
@@ -303,7 +304,7 @@ fun TagMap(value: Map<String, Tag> = emptyMap()) = TagMap {
 
 fun ReadTagMap.toTag() = TagMap(this)
 
-class MutableTagMap internal constructor(override val value: ConcurrentHashMap<String, MutableTag>) : MutableTag(), MutableMap<String, MutableTag> by value
+class MutableTagMap internal constructor(override val value: ConcurrentHashMap<String, MutableTag>) : MutableTag(), ConcurrentMap<String, MutableTag> by value
 
 fun MutableTagMap(block: MutableMap<String, MutableTag>.() -> Unit) = MutableTagMap(
         ConcurrentHashMap<String, MutableTag>().apply(block))
