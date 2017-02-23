@@ -20,54 +20,47 @@ import mu.KLogging
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.FontData
 import org.tobi29.scapes.engine.utils.toArray
-import java.io.IOException
 import java.util.*
+import kotlin.collections.HashMap
 
 object Fonts : KLogging() {
-    private val MONOSPACED = fontDatas("Monospaced")
+    private val MONOSPACED = fontDatas(monospaceFonts)
 
     val monospace: Array<FontData>
         get() = Arrays.copyOf(MONOSPACED, MONOSPACED.size)
 
-    private fun fontDatas(font: String): Array<FontData> {
-        try {
-            val classLoader = Fonts::class.java.classLoader
-            val properties = Properties()
-            classLoader.getResourceAsStream(
-                    "fonts/$font.properties").use { streamIn ->
-                properties.load(streamIn)
-            }
-            val os = identifier(System.getProperty("os.name"))
-            val ws = identifier(SWT.getPlatform())
-            var fonts: String? = properties.getProperty(os + '_' + ws)
-            if (fonts == null) {
-                fonts = properties.getProperty(os)
-            }
-            if (fonts == null) {
-                logger.warn { "Unable to identify OS, using fallback." }
-                fonts = properties.getProperty("unknown").orEmpty()
-            }
-            val fontDataTexts = fonts.split(';')
-            return fontDataTexts.asSequence().map { text ->
-                val split = text.split('|', limit = 3)
-                assert(split.size == 3)
-                val name = split[0]
-                val styles = split[1].split(',')
-                var style = 0
-                for (s in styles) {
-                    when (s) {
-                        "normal" -> style = style or SWT.NORMAL
-                        "bold" -> style = style or SWT.BOLD
-                        "italic" -> style = style or SWT.ITALIC
-                    }
-                }
-                val height = split[2].toInt()
-                FontData(name, height, style)
-            }.toArray()
-        } catch (e: IOException) {
-            logger.error { "Failed to load font: $e" }
+    private fun fontDatas(map: Map<String, String>): Array<FontData> {
+        val os = identifier(System.getProperty("os.name"))
+        val ws = identifier(SWT.getPlatform())
+        var fonts: String? = map["${os}_$ws"]
+        if (fonts == null) {
+            fonts = map[os]
         }
-        return arrayOf()
+        if (fonts == null) {
+            logger.warn { "Unable to identify OS, using fallback." }
+            fonts = map["unknown"].orEmpty()
+        }
+        return parseFontString(fonts)
+    }
+
+    private fun parseFontString(fonts: String): Array<FontData> {
+        val fontDataTexts = fonts.split(';')
+        return fontDataTexts.asSequence().map { text ->
+            val split = text.split('|', limit = 3)
+            assert(split.size == 3)
+            val name = split[0]
+            val styles = split[1].split(',')
+            var style = 0
+            for (s in styles) {
+                when (s) {
+                    "normal" -> style = style or SWT.NORMAL
+                    "bold" -> style = style or SWT.BOLD
+                    "italic" -> style = style or SWT.ITALIC
+                }
+            }
+            val height = split[2].toInt()
+            FontData(name, height, style)
+        }.toArray()
     }
 
     private fun identifier(str: String): String {
@@ -81,4 +74,22 @@ object Fonts : KLogging() {
         }
         return String(characters, 0, i)
     }
+}
+
+private val monospaceFonts = HashMap<String, String>().apply {
+    this["aix"] = "adobe-courier|normal|12"
+    this["hp-ux"] = "adobe-courier|normal|14"
+    this["linux_gtk"] = "Monospace|normal|10"
+    this["linux"] = "adobe-courier|normal|12"
+    this["macosx"] = "Monaco|normal|11;Courier|normal|12;Courier New|normal|12"
+    this["sunos"] = "adobe-courier|normal|12"
+    this["solaris"] = "adobe-courier|normal|12"
+    this["windows98"] = "Courier New|normal|10;Courier|normal|10;Lucida Console|normal|9"
+    this["windowsnt"] = "Courier New|normal|10;Courier|normal|10;Lucida Console|normal|9"
+    this["windows2000"] = "Courier New|normal|10;Courier|normal|10;Lucida Console|normal|9"
+    this["windowsxp"] = "Courier New|normal|10;Courier|normal|10;Lucida Console|normal|9"
+    this["windowsvista"] = "Consolas|normal|10;Courier New|normal|10"
+    this["windows7"] = "Consolas|normal|10;Courier New|normal|10"
+    this["windows8"] = "Consolas|normal|10;Courier New|normal|10"
+    this["unknown"] = "Courier New|normal|10;Courier|normal|10;b&h-lucidabright|normal|9"
 }
