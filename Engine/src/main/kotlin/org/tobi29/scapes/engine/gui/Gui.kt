@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import java8.util.concurrent.ConcurrentMaps
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
@@ -148,7 +148,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
 
     fun on(action: GuiAction,
            listener: () -> Unit) {
-        val listeners = ConcurrentMaps.computeIfAbsent(actions, action) { key ->
+        val listeners = actions.computeAbsent(action) {
             Collections.newSetFromMap(ConcurrentHashMap())
         }
         listeners.add(listener)

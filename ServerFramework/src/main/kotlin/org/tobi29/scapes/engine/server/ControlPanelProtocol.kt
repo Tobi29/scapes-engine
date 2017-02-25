@@ -15,13 +15,12 @@
  */
 package org.tobi29.scapes.engine.server
 
-import java8.util.concurrent.ConcurrentMaps
 import kotlinx.coroutines.experimental.yield
 import mu.KLogging
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.ListenerOwner
 import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
-import org.tobi29.scapes.engine.utils.filterMap
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.io.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
@@ -203,8 +202,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      */
     fun addCommand(command: String,
                    consumer: (TagMap) -> Unit) {
-        val list = ConcurrentMaps.computeIfAbsent(commands,
-                command) { Pair(ArrayList(), ConcurrentLinkedQueue()) }
+        val list = commands.computeAbsent(command) {
+            Pair(ArrayList(), ConcurrentLinkedQueue())
+        }
         synchronized(list.first) {
             list.first.add(consumer)
         }
@@ -235,8 +235,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      */
     fun commandHook(command: String,
                     runnable: (TagMap) -> Unit) {
-        val list = ConcurrentMaps.computeIfAbsent(commands,
-                command) { Pair(ArrayList(), ConcurrentLinkedQueue()) }
+        val list = commands.computeAbsent(command) {
+            Pair(ArrayList(), ConcurrentLinkedQueue())
+        }
         list.second.add(runnable)
     }
 
@@ -405,7 +406,8 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                         connection.increaseTimeout(10000 - ping)
                     }
                     tagStructure["Commands"]?.toList()?.asSequence()
-                            ?.filterMap<TagMap>()?.forEach { commandStructure ->
+                            ?.mapNotNull(
+                                    Tag::toMap)?.forEach { commandStructure ->
                         val command = commandStructure["Command"]?.toString() ?: throw IOException(
                                 "Command without id")
                         val payload = commandStructure["Payload"]?.toMap() ?: throw IOException(

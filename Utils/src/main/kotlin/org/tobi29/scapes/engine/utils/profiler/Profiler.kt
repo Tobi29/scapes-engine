@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.profiler
 
-import java8.util.Maps
 import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
 import java.util.*
 
@@ -33,9 +33,7 @@ class Profiler private constructor(thread: Thread) {
     }
 
     fun enterNode(name: String) {
-        node = Maps.computeIfAbsent(node.children, name) {
-            Node({ it }, node)
-        }
+        node = node.children.computeAbsent(name) { Node({ it }, node) }
         node.lastEnter = System.nanoTime()
         ProfilerDispatch.dispatchers.forEach { it.enterNode(name) }
     }

@@ -15,12 +15,12 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import java8.util.Maps
 import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.gui.GuiRenderBatch
 import org.tobi29.scapes.engine.gui.GuiUtils
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
@@ -125,7 +125,7 @@ class FontRenderer(private val engine: ScapesEngine,
         if (size <= 0) {
             return EMPTY_TEXT_INFO
         }
-        val pages = Maps.computeIfAbsent(pageCache, size) {
+        val pages = pageCache.computeAbsent(size) {
             GlyphPages(font.createGlyphRenderer(size))
         }
         val ratio = width / size

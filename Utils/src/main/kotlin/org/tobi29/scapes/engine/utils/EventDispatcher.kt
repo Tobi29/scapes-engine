@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.utils.math.max
 import java.lang.ref.WeakReference
 import java.util.*
@@ -69,7 +68,7 @@ class EventDispatcher(private val parent: EventDispatcher? = null) {
                            owner: ListenerOwner,
                            priority: Int,
                            listener: (E) -> Unit) {
-        val list = ConcurrentMaps.computeIfAbsent(listeners, clazz) {
+        val list = listeners.computeAbsent(clazz) {
             ConcurrentSkipListSet<Listener<*>>()
         }
         val ownerHandle = owner.listenerOwner

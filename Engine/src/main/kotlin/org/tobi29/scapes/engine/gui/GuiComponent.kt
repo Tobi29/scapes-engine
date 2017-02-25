@@ -15,13 +15,13 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.utils.ListenerOwner
 import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.times
@@ -57,7 +57,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
 
     fun on(event: GuiEvent,
            listener: (GuiComponentEvent) -> Unit) {
-        val listeners = ConcurrentMaps.computeIfAbsent(events, event) { key ->
+        val listeners = events.computeAbsent(event) {
             Collections.newSetFromMap(ConcurrentHashMap())
         }
         listeners.add(listener)

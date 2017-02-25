@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java8.util.Maps
 import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.resource.Resource
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import java.util.*
@@ -29,9 +29,7 @@ class TextureManager(private val engine: ScapesEngine) {
 
     @Synchronized
     operator fun get(asset: String): Resource<Texture> {
-        return Maps.computeIfAbsent(cache, asset) {
-            load(asset)
-        }
+        return cache.computeAbsent(asset) { load(asset) }
     }
 
     fun empty(): Texture {

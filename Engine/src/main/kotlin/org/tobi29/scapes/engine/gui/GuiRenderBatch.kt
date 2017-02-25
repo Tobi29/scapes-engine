@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import java8.util.concurrent.ConcurrentMaps
 import org.tobi29.scapes.engine.graphics.Mesh
 import org.tobi29.scapes.engine.graphics.Model
 import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import java.util.*
@@ -39,7 +39,7 @@ open class GuiRenderBatch(var pixelSize: Vector2d) {
     fun texture(texture: Texture,
                 priority: Int) {
         val layer = priority + offset
-        val map = ConcurrentMaps.computeIfAbsent(meshes, layer) { HashMap() }
+        val map = meshes.computeAbsent(layer) { HashMap() }
         currentMesh = map[texture]
         if (currentMesh == null) {
             val newMesh = Mesh(true)

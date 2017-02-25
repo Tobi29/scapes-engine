@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.mbeans
 
-import java8.util.Maps
 import org.tobi29.scapes.engine.utils.CPUUtil
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider
 import java.lang.management.ManagementFactory
@@ -48,8 +47,8 @@ class MBeansCPUReaderProvider : CPUReaderProvider {
                     val delta = (time - lastTime).toDouble()
                     for (thread in threads) {
                         val threadTime = THREADS.getThreadCpuTime(thread)
-                        var threadDelta = (threadTime - Maps.getOrDefault(
-                                threadTimes, thread, 0L)).toDouble()
+                        var threadDelta = (threadTime
+                                - (threadTimes[thread] ?: 0L)).toDouble()
                         this.threads.add(thread)
                         threadTimes.put(thread, threadTime)
                         threadDelta /= delta

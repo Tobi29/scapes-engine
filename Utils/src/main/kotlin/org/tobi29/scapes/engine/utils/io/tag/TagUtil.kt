@@ -18,7 +18,7 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import java8.util.Maps
+import org.tobi29.scapes.engine.utils.computeAlways
 import java.io.IOException
 import java.util.*
 
@@ -107,8 +107,8 @@ fun UUID.toTag() = TagMap {
 
 inline fun ReadTagMutableMap.map(key: String) = this[key]?.asMap()
 
-inline fun ReadTagMutableMap.mapMut(key: String): MutableTagMap {
-    return Maps.compute(this, key) { _, value ->
+inline fun ReadWriteTagMutableMap.mapMut(key: String): MutableTagMap {
+    return computeAlways(key) { _, value ->
         when (value) {
             is TagMap -> value.toMutTag()
             is MutableTagMap -> value
@@ -117,8 +117,8 @@ inline fun ReadTagMutableMap.mapMut(key: String): MutableTagMap {
     } as MutableTagMap
 }
 
-inline fun <R> ReadTagMutableMap.syncMapMut(key: String,
-                                            block: (MutableTagMap) -> R): R {
+inline fun <R> ReadWriteTagMutableMap.syncMapMut(key: String,
+                                                 block: (MutableTagMap) -> R): R {
     mapMut(key).let { map ->
         synchronized(map) {
             return block(map)
@@ -128,8 +128,8 @@ inline fun <R> ReadTagMutableMap.syncMapMut(key: String,
 
 inline fun ReadTagMutableMap.list(key: String) = this[key]?.asList()
 
-inline fun ReadTagMutableMap.listMut(key: String): MutableTagList {
-    return Maps.compute(this, key) { _, value ->
+inline fun ReadWriteTagMutableMap.listMut(key: String): MutableTagList {
+    return computeAlways(key) { _, value ->
         when (value) {
             is TagList -> value.toMutTag()
             is MutableTagList -> value
