@@ -19,7 +19,6 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 dependencies {
     compile rootProject.ext.kotlinLogging
     compile rootProject.ext.slf4jAPI
-    compile rootProject.ext.streamsupport
     compile rootProject.ext.threeten
     compile rootProject.ext.base64
     compile rootProject.ext.kotlinSTD
