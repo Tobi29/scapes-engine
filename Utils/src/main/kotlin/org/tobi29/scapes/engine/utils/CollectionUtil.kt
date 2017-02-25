@@ -19,6 +19,7 @@
 package org.tobi29.scapes.engine.utils
 
 import java.util.*
+import java.util.concurrent.ConcurrentMap
 
 /**
  * Returns an unmodifiable version of the given collection
@@ -255,4 +256,193 @@ inline fun <T> Iterator(crossinline block: () -> T?): Iterator<T> {
             return element
         }
     }
+}
+
+/**
+ * Adds the given [value] if [key] was not already in the map
+ * @return The value that was already mapped or `null` if [value] got added
+ */
+fun <K, V> MutableMap<K, V>.putAbsent(key: K,
+                                      value: V): V? {
+    if (this is ConcurrentMap) {
+        return (this as ConcurrentMap).putAbsent(key, value)
+    } else {
+        this[key]?.let { return it }
+        put(key, value)
+        return null
+    }
+}
+
+/**
+ * Adds the given [value] if [key] was not already in the map
+ * @return The value that was already mapped or `null` if [value] got added
+ */
+inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
+                                                value: V) = putIfAbsent(key,
+        value)
+
+/**
+ * Fetch the value for the [key] and remap it using [block]
+ * @return The value returned from [block]
+ */
+fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+                                          block: (K, V?) -> V): V {
+    if (this is ConcurrentMap) {
+        return (this as ConcurrentMap).computeAlways(key, block)
+    } else {
+        val old = this[key]
+        val new = block(key, old)
+        this[key] = new
+        return new
+    }
+}
+
+/**
+ * Fetch the value for the [key] and remap it using [block]
+ * @return The value returned from [block]
+ */
+fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+                                             block: (K, V?) -> V): V {
+    while (true) {
+        var old = this[key]
+        while (true) {
+            val new = block(key, old)
+            if (old == null) {
+                old = putAbsent(key, new)
+                if (old == null) {
+                    return new
+                } else {
+                    continue
+                }
+            }
+            if (replace(key, old, new)) {
+                return new
+            } else {
+                break
+            }
+        }
+    }
+}
+
+/**
+ * Fetch the value for the [key] and remap it using [block]
+ *
+ * Returning `null` in [block] will remove the value from the map
+ * @return The value returned from [block]
+ */
+@JvmName("computeAlwaysNullable")
+fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+                                          block: (K, V?) -> V?): V? {
+    if (this is ConcurrentMap) {
+        return (this as ConcurrentMap).computeAlways(key, block)
+    } else {
+        val old = this[key]
+        val new = block(key, old)
+        if (new != null) {
+            this[key] = new
+        } else if (old != null || containsKey(key)) {
+            remove(key)
+        }
+        return new
+    }
+}
+
+/**
+ * Fetch the value for the [key] and remap it using [block]
+ *
+ * Returning `null` in [block] will remove the value from the map
+ * @return The value returned from [block]
+ */
+@JvmName("computeAlwaysNullable")
+fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+                                             block: (K, V?) -> V?): V? {
+    while (true) {
+        var old = this[key]
+        while (true) {
+            val new = block(key, old)
+            if (new == null) {
+                if (old == null || remove(key, old)) {
+                    return new
+                }
+                break
+            }
+            if (old == null) {
+                old = putAbsent(key, new)
+                if (old == null) {
+                    return new
+                } else {
+                    continue
+                }
+            }
+            if (replace(key, old, new)) {
+                return new
+            } else {
+                break
+            }
+        }
+    }
+}
+
+/**
+ * Fetch the value for the [key], if it is not set, call [block] and add its
+ * result
+ * @return The value mapped to [key] at the end
+ */
+inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+                                                 block: (K) -> V): V {
+    if (this is ConcurrentMap) {
+        // Should we try to eliminate the second inline of block?
+        return (this as ConcurrentMap).computeAbsent(key, block)
+    } else {
+        this[key]?.let { return it }
+        val new = block(key)
+        return putAbsent(key, new) ?: new
+    }
+}
+
+/**
+ * Fetch the value for the [key], if it is not set, call [block] and add its
+ * result
+ * @return The value mapped to [key] at the end
+ */
+inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+                                                    block: (K) -> V): V {
+    this[key]?.let { return it }
+    val new = block(key)
+    return putAbsent(key, new) ?: new
+}
+
+/**
+ * Fetch the value for the [key], if it is not set, call [block] and add its
+ * result
+ *
+ * Returning `null` in [block] will remove the value from the map
+ * @return The value mapped to [key] at the end
+ */
+@JvmName("computeAbsentNullable")
+inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+                                                 block: (K) -> V?): V? {
+    if (this is ConcurrentMap) {
+        // Should we try to eliminate the second inline of block?
+        return (this as ConcurrentMap).computeAbsent(key, block)
+    } else {
+        this[key]?.let { return it }
+        val new = block(key) ?: return null
+        return putAbsent(key, new) ?: new
+    }
+}
+
+/**
+ * Fetch the value for the [key], if it is not set, call [block] and add its
+ * result
+ *
+ * Returning `null` in [block] will remove the value from the map
+ * @return The value mapped to [key] at the end
+ */
+@JvmName("computeAbsentNullable")
+inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+                                                    block: (K) -> V?): V? {
+    this[key]?.let { return it }
+    val new = block(key) ?: return null
+    return putAbsent(key, new) ?: new
 }
