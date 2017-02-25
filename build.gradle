@@ -68,7 +68,7 @@ ext {
     kotlinVersion = "1.1.0-rc-91"
     kotlinxCoroutinesVersion = "0.9-rc"
     kotlinLoggingVersion = "1.4.2"
-    slf4jVersion = "1.7.22"
+    slf4jVersion = "1.7.23"
     spekVersion = "f0935817fa"
     junitJupiterVersion = "5.0.0-M3"
     swtVersion = "4.6"
