@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.shader
 
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.tobi29.scapes.engine.utils.forEach
 
 internal object TypeCompiler {
     fun type(context: ScapesShaderParser.DeclaratorContext): Type {
@@ -30,7 +29,7 @@ internal object TypeCompiler {
 
     fun type(context: ScapesShaderParser.DeclaratorFieldContext): Type {
         var constant = false
-        context.children.forEach({ it is TerminalNode }) { child ->
+        context.children.asSequence().filter { it is TerminalNode }.forEach { child ->
             when (child.text) {
                 "const" -> constant = true
             }
@@ -48,7 +47,7 @@ internal object TypeCompiler {
 
     fun type(context: ScapesShaderParser.DeclaratorArrayContext): Type {
         var constant = false
-        context.children.forEach({ it is TerminalNode }) { child ->
+        context.children.asSequence().filter { it is TerminalNode }.forEach { child ->
             when (child.text) {
                 "const" -> constant = true
             }
@@ -68,7 +67,7 @@ internal object TypeCompiler {
 
     fun type(context: ScapesShaderParser.DeclaratorArrayUnsizedContext): Type {
         var constant = false
-        context.children.forEach({ it is TerminalNode }) { child ->
+        context.children.asSequence().filter { it is TerminalNode }.forEach { child ->
             when (child.text) {
                 "const" -> constant = true
             }

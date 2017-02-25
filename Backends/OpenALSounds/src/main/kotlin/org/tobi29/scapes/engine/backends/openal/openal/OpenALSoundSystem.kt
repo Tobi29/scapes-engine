@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.codec.AudioStream
-import org.tobi29.scapes.engine.utils.forEach
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
@@ -69,9 +68,14 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
                     while (!queue.isEmpty()) {
                         queue.poll()(openAL)
                     }
-                    audios.forEach({
-                        it.poll(this, openAL, listenerPosition, delta)
-                    }) { audios.remove(it) }
+                    val iterator = audios.iterator()
+                    while (iterator.hasNext()) {
+                        val element = iterator.next()
+                        if (element.poll(this, openAL, listenerPosition,
+                                delta)) {
+                            iterator.remove()
+                        }
+                    }
                     openAL.checkError("Sound-Effects")
                     openAL.setListener(listenerPosition.minus(origin),
                             listenerOrientation, listenerVelocity)
