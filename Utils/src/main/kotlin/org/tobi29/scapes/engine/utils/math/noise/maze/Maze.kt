@@ -28,8 +28,6 @@ class Maze
 /**
  * Constructs a new maze
  * @param grid The cells of the maze
- * @param width The width of the maze
- * @param height The height of the maze
  */
 (private val grid: BitFieldGrid) {
     /**
