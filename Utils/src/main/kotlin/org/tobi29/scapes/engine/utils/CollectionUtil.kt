@@ -265,7 +265,7 @@ inline fun <T> Iterator(crossinline block: () -> T?): Iterator<T> {
 fun <K, V> MutableMap<K, V>.putAbsent(key: K,
                                       value: V): V? {
     if (this is ConcurrentMap) {
-        return (this as ConcurrentMap).putAbsent(key, value)
+        return this.putAbsent(key, value)
     } else {
         this[key]?.let { return it }
         put(key, value)
@@ -288,7 +288,7 @@ inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
 fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                           block: (K, V?) -> V): V {
     if (this is ConcurrentMap) {
-        return (this as ConcurrentMap).computeAlways(key, block)
+        return this.computeAlways(key, block)
     } else {
         val old = this[key]
         val new = block(key, old)
@@ -334,7 +334,7 @@ fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
 fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                           block: (K, V?) -> V?): V? {
     if (this is ConcurrentMap) {
-        return (this as ConcurrentMap).computeAlways(key, block)
+        return this.computeAlways(key, block)
     } else {
         val old = this[key]
         val new = block(key, old)
@@ -392,7 +392,7 @@ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                  block: (K) -> V): V {
     if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
-        return (this as ConcurrentMap).computeAbsent(key, block)
+        return this.computeAbsent(key, block)
     } else {
         this[key]?.let { return it }
         val new = block(key)
@@ -424,7 +424,7 @@ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                  block: (K) -> V?): V? {
     if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
-        return (this as ConcurrentMap).computeAbsent(key, block)
+        return this.computeAbsent(key, block)
     } else {
         this[key]?.let { return it }
         val new = block(key) ?: return null
