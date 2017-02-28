@@ -66,6 +66,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     val guiStack = GuiStack()
     var guiController: GuiController = GuiControllerDummy(this)
     val notifications: GuiNotifications
+    val tooltip: GuiTooltip
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
@@ -149,6 +150,8 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         guiStyle = GuiBasicStyle(this, font)
         notifications = GuiNotifications(guiStyle)
         guiStack.addUnfocused("90-Notifications", notifications)
+        tooltip = GuiTooltip(guiStyle)
+        guiStack.addUnfocused("80-Tooltip", tooltip)
         val debugGui = object : Gui(guiStyle) {
             override val isValid = true
         }

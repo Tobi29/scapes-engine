@@ -84,6 +84,8 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
         return success
     }
 
+    open fun tooltip(p: GuiContainerRow): (() -> Unit)? = null
+
     protected fun checkInside(x: Double,
                               y: Double,
                               size: Vector2d): Boolean {

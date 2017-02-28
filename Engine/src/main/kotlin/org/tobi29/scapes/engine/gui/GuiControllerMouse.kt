@@ -65,8 +65,9 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                             scrollY, false))
         }
         val componentEvent = GuiComponentEvent(cursorX, cursorY)
-        engine.guiStack.fireEvent(componentEvent,
+        val hover = engine.guiStack.fireEvent(componentEvent,
                 GuiComponent::hover)
+        engine.tooltip.setTooltip(hover?.let { Pair(it, cursor) })
         controller.pressEvents().forEach { event ->
             when (event.state()) {
                 ControllerBasic.PressState.PRESS, ControllerBasic.PressState.REPEAT -> handlePress(
