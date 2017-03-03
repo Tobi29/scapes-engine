@@ -100,7 +100,7 @@ class ConnectionWorker(
                             }
                         }
                     }
-                    job.onCompletion {
+                    job.invokeOnCompletion {
                         connections.remove(close)
                     }
                 }
