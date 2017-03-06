@@ -42,7 +42,9 @@ class StampLock {
         if (stamp == validate && validate and 1L == 0L) {
             return output
         }
-        return write(block)
+        synchronized(counter) {
+            return block()
+        }
     }
 
     /**
@@ -52,7 +54,12 @@ class StampLock {
      */
     inline fun <R> write(block: () -> R): R {
         synchronized(counter) {
-            return block()
+            counter.incrementAndGet()
+            try {
+                return block()
+            } finally {
+                counter.incrementAndGet()
+            }
         }
     }
 }
