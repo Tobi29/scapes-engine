@@ -76,26 +76,42 @@ class SQLForeignKey(val table: String,
 class SQLMatch(val name: String,
                val operator: SQLMatchOperator = SQLMatchOperator.EQUALS)
 
-interface SQLQuery {
-    operator fun invoke(vararg values: Any?): List<Array<Any?>>
+typealias SQLQuery = (Array<out Any?>) -> List<Array<Any?>>
+
+typealias SQLInsert = (Array<out Array<out Any?>>) -> Unit
+
+typealias SQLUpdate = (Array<out Any?>, Array<out Any?>) -> Unit
+
+typealias SQLReplace = (Array<out Array<out Any?>>) -> Unit
+
+typealias SQLDelete = (Array<out Any?>) -> Unit
+
+// SQLQuery
+inline operator fun ((Array<out Any?>) -> List<Array<Any?>>).invoke(vararg values: Any?) = invoke(
+        values)
+
+@JvmName("supplyAny")
+fun ((Array<out Any?>) -> List<Array<Any?>>).supply(vararg values: Any?): ((Array<out Any?>) -> List<Array<Any?>>) = {
+    this@supply(*values, *it)
 }
 
-interface SQLInsert {
-    operator fun invoke(vararg values: Array<out Any?>)
+// SQLUpdate
+inline operator fun ((Array<out Any?>, Array<out Any?>) -> Unit).invoke(matches: Array<out Any?>,
+                                                                        vararg values: Any?) =
+        invoke(matches, values)
+
+// SQLInsert, SQLReplace
+inline operator fun ((Array<out Array<out Any?>>) -> Unit).invoke(vararg values: Array<out Any?>) =
+        invoke(values)
+
+@JvmName("supplyArrayOfAny")
+fun ((Array<out Array<out Any?>>) -> Unit).supply(vararg values: Any?): ((Array<out Array<out Any?>>) -> Unit) = { postValues ->
+    this@supply(Array(postValues.size) { arrayOf(*values, *postValues[it]) })
 }
 
-interface SQLUpdate {
-    operator fun invoke(values: Array<out Any?>,
-                        vararg updates: Any?)
-}
-
-interface SQLReplace {
-    operator fun invoke(vararg values: Array<out Any?>)
-}
-
-interface SQLDelete {
-    operator fun invoke(vararg values: Any?)
-}
+// SQLDelete
+inline operator fun ((Array<out Any?>) -> Unit).invoke(vararg values: Any?) =
+        invoke(values)
 
 enum class SQLType {
     INT,

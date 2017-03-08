@@ -111,29 +111,26 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
-        return object : SQLQuery {
-            override fun invoke(values: Array<out Any?>): List<Array<Any?>> {
-                if (values.size != matchesSize) {
-                    throw IllegalArgumentException(
-                            "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
-                }
-                try {
-                    return connection.prepareStatement(
-                            compiled).use { statement ->
-                        // MariaDB specific optimization
-                        statement.fetchSize = Int.MIN_VALUE
-                        var i = 1
-                        i = resolveObjects(values, statement, i)
-                        val result = statement.executeQuery()
-                        val rows = ArrayList<Array<Any?>>()
-                        while (result.next()) {
-                            rows.add(resolveResult(result, columns.size))
-                        }
-                        return@use rows
+        return { values ->
+            if (values.size != matchesSize) {
+                throw IllegalArgumentException(
+                        "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
+            }
+            try {
+                connection.prepareStatement(compiled).use { statement ->
+                    // MariaDB specific optimization
+                    statement.fetchSize = Int.MIN_VALUE
+                    var i = 1
+                    i = resolveObjects(values, statement, i)
+                    val result = statement.executeQuery()
+                    val rows = ArrayList<Array<Any?>>()
+                    while (result.next()) {
+                        rows.add(resolveResult(result, columns.size))
                     }
-                } catch (e: SQLException) {
-                    throw IOException(e)
+                    return@use rows
                 }
+            } catch (e: SQLException) {
+                throw IOException(e)
             }
         }
     }
@@ -155,46 +152,44 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         prefix.append(") VALUES ")
         val compiledPrefix = prefix.toString()
         val compiledSuffix = ";"
-        return object : SQLInsert {
-            override fun invoke(values: Array<out Array<out Any?>>) {
-                val sql = StringBuilder(columnSize shl 5)
-                sql.append(compiledPrefix)
-                first = true
-                for (row in values) {
-                    if (row.size != columnSize) {
-                        throw IllegalArgumentException(
-                                "Amount of updated values (${row.size}) does not match amount of columns ($columnSize)")
-                    }
-                    if (first) {
-                        first = false
+        return { values ->
+            val sql = StringBuilder(columnSize shl 5)
+            sql.append(compiledPrefix)
+            first = true
+            for (row in values) {
+                if (row.size != columnSize) {
+                    throw IllegalArgumentException(
+                            "Amount of updated values (${row.size}) does not match amount of columns ($columnSize)")
+                }
+                if (first) {
+                    first = false
+                } else {
+                    sql.append(',')
+                }
+                sql.append('(')
+                var rowFirst = true
+                for (ignored in row) {
+                    if (rowFirst) {
+                        rowFirst = false
                     } else {
                         sql.append(',')
                     }
-                    sql.append('(')
-                    var rowFirst = true
-                    for (ignored in row) {
-                        if (rowFirst) {
-                            rowFirst = false
-                        } else {
-                            sql.append(',')
-                        }
-                        sql.append('?')
-                    }
-                    sql.append(')')
+                    sql.append('?')
                 }
-                sql.append(compiledSuffix)
-                val compiled = sql.toString()
-                try {
-                    connection.prepareStatement(compiled).use { statement ->
-                        var i = 1
-                        for (row in values) {
-                            i = resolveObjects(row, statement, i)
-                        }
-                        statement.executeUpdate()
+                sql.append(')')
+            }
+            sql.append(compiledSuffix)
+            val compiled = sql.toString()
+            try {
+                connection.prepareStatement(compiled).use { statement ->
+                    var i = 1
+                    for (row in values) {
+                        i = resolveObjects(row, statement, i)
                     }
-                } catch (e: SQLException) {
-                    throw IOException(e)
+                    statement.executeUpdate()
                 }
+            } catch (e: SQLException) {
+                throw IOException(e)
             }
         }
     }
@@ -218,24 +213,20 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
-        return object : SQLUpdate {
-            override fun invoke(values: Array<out Any?>,
-                                updates: Array<out Any?>) {
-                if (updates.size != columnsSize) {
-                    throw IllegalArgumentException(
-                            "Amount of updated values (${updates.size}) does not match amount of columns ($columnsSize)")
+        return { values, updates ->
+            if (updates.size != columnsSize) {
+                throw IllegalArgumentException(
+                        "Amount of updated values (${updates.size}) does not match amount of columns ($columnsSize)")
+            }
+            try {
+                connection.prepareStatement(compiled).use { statement ->
+                    var i = 1
+                    i = resolveObjects(updates, statement, i)
+                    i = resolveObjects(values, statement, i)
+                    statement.executeUpdate()
                 }
-                try {
-                    return connection.prepareStatement(
-                            compiled).use { statement ->
-                        var i = 1
-                        i = resolveObjects(updates, statement, i)
-                        i = resolveObjects(values, statement, i)
-                        statement.executeUpdate()
-                    }
-                } catch (e: SQLException) {
-                    throw IOException(e)
-                }
+            } catch (e: SQLException) {
+                throw IOException(e)
             }
         }
     }
@@ -269,46 +260,44 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         }
         suffix.append(';')
         val compiledSuffix = suffix.toString()
-        return object : SQLReplace {
-            override fun invoke(values: Array<out Array<out Any?>>) {
-                val sql = StringBuilder(columnsSize shl 5)
-                sql.append(compiledPrefix)
-                var first = true
-                for (row in values) {
-                    if (row.size != columnsSize) {
-                        throw IllegalArgumentException(
-                                "Amount of updated values (${row.size}) does not match amount of columns ($columnsSize)")
-                    }
-                    if (first) {
-                        first = false
-                        sql.append('(')
+        return { values ->
+            val sql = StringBuilder(columnsSize shl 5)
+            sql.append(compiledPrefix)
+            var first = true
+            for (row in values) {
+                if (row.size != columnsSize) {
+                    throw IllegalArgumentException(
+                            "Amount of updated values (${row.size}) does not match amount of columns ($columnsSize)")
+                }
+                if (first) {
+                    first = false
+                    sql.append('(')
+                } else {
+                    sql.append(",(")
+                }
+                var rowFirst = true
+                for (ignored in row) {
+                    if (rowFirst) {
+                        rowFirst = false
                     } else {
-                        sql.append(",(")
+                        sql.append(',')
                     }
-                    var rowFirst = true
-                    for (ignored in row) {
-                        if (rowFirst) {
-                            rowFirst = false
-                        } else {
-                            sql.append(',')
-                        }
-                        sql.append('?')
-                    }
-                    sql.append(')')
+                    sql.append('?')
                 }
-                sql.append(compiledSuffix)
-                val compiled = sql.toString()
-                try {
-                    connection.prepareStatement(compiled).use { statement ->
-                        var i = 1
-                        for (row in values) {
-                            i = resolveObjects(row, statement, i)
-                        }
-                        statement.executeUpdate()
+                sql.append(')')
+            }
+            sql.append(compiledSuffix)
+            val compiled = sql.toString()
+            try {
+                connection.prepareStatement(compiled).use { statement ->
+                    var i = 1
+                    for (row in values) {
+                        i = resolveObjects(row, statement, i)
                     }
-                } catch (e: SQLException) {
-                    throw IOException(e)
+                    statement.executeUpdate()
                 }
+            } catch (e: SQLException) {
+                throw IOException(e)
             }
         }
     }
@@ -320,18 +309,15 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         sqlWhere(matches, sql)
         sql.append(';')
         val compiled = sql.toString()
-        return object : SQLDelete {
-            override fun invoke(values: Array<out Any?>) {
-                try {
-                    return connection.prepareStatement(
-                            compiled).use { statement ->
-                        var i = 1
-                        i = resolveObjects(values, statement, i)
-                        statement.executeUpdate()
-                    }
-                } catch (e: SQLException) {
-                    throw IOException(e)
+        return { values ->
+            try {
+                connection.prepareStatement(compiled).use { statement ->
+                    var i = 1
+                    i = resolveObjects(values, statement, i)
+                    statement.executeUpdate()
                 }
+            } catch (e: SQLException) {
+                throw IOException(e)
             }
         }
     }
