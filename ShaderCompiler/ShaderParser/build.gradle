@@ -24,7 +24,8 @@ dependencies {
     antlr rootProject.ext.antlr
 }
 
-configurations.all { exclude group: "org.antlr", module: "antlr4" }
+configurations.compile.exclude group: "org.antlr", module: "antlr4"
+configurations.runtime.exclude group: "org.antlr", module: "antlr4"
 
 idea {
     module {
