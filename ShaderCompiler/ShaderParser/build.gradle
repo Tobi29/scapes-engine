@@ -19,10 +19,12 @@ apply plugin: "antlr"
 apply plugin: "idea"
 
 dependencies {
-    runtime rootProject.ext.antlrRuntime
+    compile rootProject.ext.antlrRuntime
 
     antlr rootProject.ext.antlr
 }
+
+configurations.all { exclude group: "org.antlr", module: "antlr4" }
 
 idea {
     module {
