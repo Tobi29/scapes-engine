@@ -31,7 +31,7 @@ allow easier Android support
   * [Base64](https://github.com/karlroberts/base64)
   * [JUnit 5](http://junit.org/junit5) (testing only)
   * [Spek](http://spekframework.org) (testing only)
-#### For JSON support
+### For JSON support
   * [JSON Processing](https://jsonp.java.net)
 
 ## File system api
@@ -50,9 +50,9 @@ Audio decoding library that can use mime-types to identify the format
 and load an appropriate decoder through an SPI
 ### Dependencies
   * File system api
-#### For OGG Vorbis support
+### For OGG Vorbis support
   * [JOrbis](http://www.jcraft.com/jorbis)
-#### For MP3 support
+### For MP3 support
   * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
 
 ## SQL api
@@ -62,9 +62,9 @@ SQL statements
 Allows abstracting over different backends more reliably
 ### Dependencies
   * File system api
-#### For SQLite support
+### For SQLite support
   * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
-#### For MariaDB support
+### For MariaDB support
   * [MariaDB](https://mariadb.org)
 
 ## Graphics utils
