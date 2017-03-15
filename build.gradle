@@ -15,13 +15,14 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.1.0"
+    def kotlinVersion = "1.1.1"
     def dokkaVersion = "0.9.13"
     def junitPlatformVersion = "1.0.0-M3"
 
     repositories {
         jcenter()
     }
+
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion"
@@ -56,23 +57,23 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.4"
+    gradleVersion = "3.4.1"
     distributionUrl =
             "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 ext {
-    kotlinVersion = "1.1.0"
-    kotlinxCoroutinesVersion = "0.12"
+    kotlinVersion = "1.1.1"
+    kotlinxCoroutinesVersion = "0.13"
     kotlinLoggingVersion = "1.4.3"
-    slf4jVersion = "1.7.23"
+    slf4jVersion = "1.7.24"
     spekVersion = "f871624307"
     junitJupiterVersion = "5.0.0-M3"
     swtVersion = "4.6"
     threetenbpVersion = "1.3.3"
     base64Version = "1.0.6"
     antlrVersion = "4.6"
-    mariadbJavaClientVersion = "1.5.8"
+    mariadbJavaClientVersion = "1.5.9"
     sqliteJDBCVersion = "3.16.1"
     sqljetVersion = "1.1.10"
     pngjVersion = "2.1.0"
