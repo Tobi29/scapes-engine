@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.antlr.v4.runtime.tree.TerminalNode
+import org.tobi29.scapes.engine.utils.shader.*
 
-internal object TypeCompiler {
+internal object TypeParser {
     fun type(context: ScapesShaderParser.DeclaratorContext): Type {
         val field = context.declaratorField()
         if (field != null) {
@@ -61,7 +62,7 @@ internal object TypeCompiler {
         }
         return Type(
                 type(context.typeSpecifier()),
-                LiteralCompiler.integer(context.integerConstant()), constant,
+                LiteralParser.integer(context.integerConstant()), constant,
                 precision)
     }
 

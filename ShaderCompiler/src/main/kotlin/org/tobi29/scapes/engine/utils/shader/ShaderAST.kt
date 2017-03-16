@@ -20,10 +20,10 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.toArray
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
 
 open class Expression {
     var location: Vector2i? = null
@@ -42,13 +42,22 @@ open class Expression {
     }
 }
 
+class ShaderProgram(
+        declarations: List<Statement>,
+        functions: List<Function>,
+        shaders: Map <String, Pair<Scope, (Scope) -> ShaderFunction>>,
+        val outputs: ShaderSignature?,
+        uniforms: List<Uniform?>
+) : Expression() {
+    val declarations = declarations.readOnly()
+    val functions = functions.readOnly()
+    val shaders = shaders.readOnly()
+    val uniforms = uniforms.readOnly()
+}
+
 sealed class ArrayExpression : Expression() {
     class Literal(content: List<Expression>) : ArrayExpression() {
-        val content: List<Expression>
-
-        init {
-            this.content = Collections.unmodifiableList(content)
-        }
+        val content = content.readOnly()
     }
 
     class Property(val key: String) : ArrayExpression()
@@ -62,11 +71,7 @@ class ArrayDeclaration(val identifier: Identifier) : Expression()
 class ArrayDeclarationStatement(val type: Type,
                                 val length: Expression,
                                 declarations: List<ArrayDeclaration>) : Statement() {
-    val declarations: List<ArrayDeclaration>
-
-    init {
-        this.declarations = Collections.unmodifiableList(declarations)
-    }
+    val declarations = declarations.readOnly()
 }
 
 class ArrayUnsizedDeclarationStatement(val type: Type,
@@ -90,11 +95,7 @@ class Declaration(val identifier: Identifier,
 
 class DeclarationStatement(val type: Type,
                            declarations: List<Declaration>) : Statement() {
-    val declarations: List<Declaration>
-
-    init {
-        this.declarations = Collections.unmodifiableList(declarations)
-    }
+    val declarations = declarations.readOnly()
 }
 
 class ExpressionStatement(val expression: Expression) : Statement()
@@ -163,21 +164,13 @@ class ShaderParameter(val type: Type,
                       val available: Expression)
 
 class ShaderSignature(val name: String,
-                      vararg parameters: ShaderParameter) {
-    val parameters: Array<out ShaderParameter>
-
-    init {
-        this.parameters = parameters
-    }
+                      parameters: List<ShaderParameter>) {
+    val parameters = parameters.readOnly()
 }
 
 open class Statement : Expression()
 class StatementBlock(statements: List<Statement>) : Expression() {
-    val statements: List<Statement>
-
-    init {
-        this.statements = Collections.unmodifiableList(statements)
-    }
+    val statements = statements.readOnly()
 }
 
 class TernaryExpression(val condition: Expression,

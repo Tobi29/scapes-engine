@@ -46,7 +46,6 @@ class GraphicsSystem(val engine: ScapesEngine,
     private val fboDebug: GuiWidgetDebugValues.Element
     private val shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture
-    private val shaderCompiler = ShaderCompiler()
     private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
     private val shaderFallback = createShader("Engine:shader/Textured")
     private var triggerScreenshot = false
@@ -312,9 +311,7 @@ class GraphicsSystem(val engine: ScapesEngine,
 
     private fun compiled(source: String): CompiledShader {
         return shaderCache[source] ?: run {
-            val shader = synchronized(shaderCompiler) {
-                shaderCompiler.compile(source)
-            }
+            val shader = ShaderCompiler.compile(source)
             shaderCache.put(source, shader)
             shader
         }

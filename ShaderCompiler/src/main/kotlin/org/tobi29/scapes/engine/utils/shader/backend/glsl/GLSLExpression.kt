@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader.glsl
+package org.tobi29.scapes.engine.utils.shader.backend.glsl
 
 import org.tobi29.scapes.engine.utils.shader.Expression
 

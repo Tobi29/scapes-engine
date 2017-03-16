@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.antlr.v4.runtime.tree.TerminalNode
+import org.tobi29.scapes.engine.utils.shader.*
 import java.util.*
 
-internal object ExpressionCompiler {
+internal object ExpressionParser {
     fun expression(
             context: ScapesShaderParser.AssignmentExpressionContext,
             scope: Scope): Expression {
@@ -271,7 +272,7 @@ internal object ExpressionCompiler {
                    scope: Scope): Expression {
         val expression = context.expression()
         if (expression != null) {
-            return ExpressionCompiler.expression(expression, scope)
+            return expression(expression, scope)
         }
         throw ShaderCompileException("No expression found", context)
     }
@@ -279,7 +280,7 @@ internal object ExpressionCompiler {
     fun expression(context: ScapesShaderParser.ExpressionStatementContext,
                    scope: Scope): Expression {
         val expression = context.expression() ?: return VoidExpression()
-        return ExpressionCompiler.expression(expression, scope)
+        return expression(expression, scope)
     }
 
     fun array(array: ScapesShaderParser.PostfixExpressionContext,
@@ -295,7 +296,7 @@ internal object ExpressionCompiler {
         val expressions = ArrayList<Expression>()
         var arguments = context.argumentExpressionList()
         while (arguments != null) {
-            expressions.add(ExpressionCompiler.expression(
+            expressions.add(expression(
                     arguments.assignmentExpression(), scope))
             arguments = arguments.argumentExpressionList()
         }
@@ -330,7 +331,7 @@ internal object ExpressionCompiler {
         }
         val constant = context.constant()
         if (constant != null) {
-            return LiteralCompiler.constant(constant).apply {
+            return LiteralParser.constant(constant).apply {
                 attach(constant)
             }
         }
@@ -341,6 +342,6 @@ internal object ExpressionCompiler {
                 attach(property)
             }
         }
-        return ExpressionCompiler.expression(context.expression(), scope)
+        return expression(context.expression(), scope)
     }
 }

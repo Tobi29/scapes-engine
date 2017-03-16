@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
+import org.tobi29.scapes.engine.utils.shader.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
-internal object LiteralCompiler {
+internal object LiteralParser {
     fun integer(context: ScapesShaderParser.IntegerConstantContext): IntegerExpression {
         val literal = context.IntegerLiteral()
         if (literal != null) {

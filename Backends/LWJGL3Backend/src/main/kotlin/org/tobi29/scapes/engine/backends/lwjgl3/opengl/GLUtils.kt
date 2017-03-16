@@ -27,7 +27,7 @@ import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.ShaderGenerateException
-import org.tobi29.scapes.engine.utils.shader.glsl.GLSLGenerator
+import org.tobi29.scapes.engine.utils.shader.backend.glsl.GLSLGenerator
 import java.io.IOException
 
 internal object GLUtils : KLogging() {

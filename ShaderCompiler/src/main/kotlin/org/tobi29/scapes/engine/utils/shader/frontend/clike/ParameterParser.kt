@@ -14,9 +14,11 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
-internal object ParameterCompiler {
+import org.tobi29.scapes.engine.utils.shader.*
+
+internal object ParameterParser {
     tailrec fun parameters(context: ScapesShaderParser.ParameterListContext?,
                            parameters: MutableList<Parameter>,
                            scope: Scope) {
@@ -29,7 +31,7 @@ internal object ParameterCompiler {
     fun parameter(context: ScapesShaderParser.ParameterDeclarationContext,
                   scope: Scope): Parameter {
         context.Identifier().symbol
-        val type = TypeCompiler.type(context.declarator())
+        val type = TypeParser.type(context.declarator())
         val name = context.Identifier().text
         val variable = scope.add(name) ?: throw ShaderCompileException(
                 "Redeclaring variable: $name", context.Identifier())
@@ -48,7 +50,7 @@ internal object ParameterCompiler {
 
     fun parameter(context: ScapesShaderParser.ShaderParameterDeclarationContext,
                   scope: Scope): ShaderParameter {
-        val type = TypeCompiler.type(context.declarator())
+        val type = TypeParser.type(context.declarator())
         val idConstant = context.IntegerLiteral()
         val id: Int
         if (idConstant == null) {

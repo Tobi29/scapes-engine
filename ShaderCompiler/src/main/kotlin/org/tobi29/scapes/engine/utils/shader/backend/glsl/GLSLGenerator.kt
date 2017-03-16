@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader.glsl
+package org.tobi29.scapes.engine.utils.shader.backend.glsl
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.tobi29.scapes.engine.utils.join
 import org.tobi29.scapes.engine.utils.shader.*
 import org.tobi29.scapes.engine.utils.shader.Function
+import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeParser
 import java.math.BigInteger
 import java.util.*
 
@@ -490,8 +491,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         val source = property(expression.key) ?: throw ShaderGenerateException(
                 "Unknown property: ${expression.key}", expression)
         try {
-            val parser = ShaderCompiler.parser(source)
-            val expression2 = ShaderCompiler.initializer(
+            val parser = CLikeParser.parser(source)
+            val expression2 = CLikeParser.initializer(
                     parser.initializerArrayList(), Scope())
             if (expression2 is ArrayExpression.Literal) {
                 return expression2
