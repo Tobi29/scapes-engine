@@ -60,7 +60,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
             val x = current.x
             val y = current.y
             list.give(current)
-            maze.setAt(x, y, 2)
+            maze.setAt(x, y, 2, true)
             var validDirections = 0
             if (y > 0) {
                 if (maze.getAt(x, y - 1, 2)) {
