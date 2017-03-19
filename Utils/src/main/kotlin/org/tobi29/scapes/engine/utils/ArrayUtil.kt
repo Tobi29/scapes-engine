@@ -239,7 +239,6 @@ fun ByteArray.toBase64(): String {
     } catch (e: UnsupportedEncodingException) {
         throw UnsupportedJVMException(e)
     }
-
 }
 
 /**

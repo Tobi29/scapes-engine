@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
-import org.tobi29.scapes.engine.utils.io.tag.toDouble
+import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.tag.toDouble
 import org.tobi29.scapes.engine.utils.math.floor
 
 class MutableVector3d(x: Double = 0.0,

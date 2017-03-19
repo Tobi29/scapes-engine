@@ -16,8 +16,9 @@
 
 package org.tobi29.scapes.engine.utils
 
-import org.tobi29.scapes.engine.utils.io.Algorithm
-import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.tag.*
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
 import java.util.*
 
 /**
@@ -75,6 +76,8 @@ class Checksum
     }
 }
 
+inline fun MutableTag.toChecksum() = toMap()?.let(::Checksum)
+
 fun Checksum(map: ReadTagMutableMap): Checksum? {
     val algorithm =
             try {
@@ -86,4 +89,29 @@ fun Checksum(map: ReadTagMutableMap): Checksum? {
     return Checksum(algorithm, array)
 }
 
-inline fun MutableTag.toChecksum() = toMap()?.let(::Checksum)
+/**
+ * Enum containing available checksum algorithms
+ */
+enum class Algorithm(private val digestName: String,
+                     val bytes: Int) {
+    UNKNOWN("UNKNOWN", 0),
+    SHA256("SHA-256", 32),
+    SHA1("SHA1", 20),
+    @Deprecated("") MD5("MD5", 16);
+
+    /**
+     * Creates a new [MessageDigest]
+     * @return [MessageDigest] using the specified algorithm
+     */
+    fun digest(): MessageDigest {
+        if (this == UNKNOWN) {
+            throw IllegalStateException(
+                    "Trying to create digest from unknown algorithm")
+        }
+        try {
+            return MessageDigest.getInstance(digestName)
+        } catch (e: NoSuchAlgorithmException) {
+            throw UnsupportedJVMException(e)
+        }
+    }
+}

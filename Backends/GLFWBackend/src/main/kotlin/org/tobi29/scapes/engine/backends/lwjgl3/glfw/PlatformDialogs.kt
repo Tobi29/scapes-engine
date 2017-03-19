@@ -28,7 +28,7 @@ import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.io.filesystem.read
-import org.tobi29.scapes.engine.utils.io.use
+import org.tobi29.scapes.engine.utils.use
 import java.io.IOException
 
 object PlatformDialogs : KLogging() {

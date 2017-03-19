@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.sql.mysql
 
 import org.tobi29.scapes.engine.sql.*
-import org.tobi29.scapes.engine.utils.io.use
+import org.tobi29.scapes.engine.utils.use
 import java.io.IOException
 import java.sql.Connection
 import java.sql.PreparedStatement

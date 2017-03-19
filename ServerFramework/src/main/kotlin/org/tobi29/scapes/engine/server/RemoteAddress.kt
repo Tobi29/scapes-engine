@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.server
 
-import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.tag.*
 
 import java.net.InetSocketAddress
 

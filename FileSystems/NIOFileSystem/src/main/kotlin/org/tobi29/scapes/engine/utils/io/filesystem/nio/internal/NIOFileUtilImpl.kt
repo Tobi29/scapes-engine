@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
+import org.tobi29.scapes.engine.utils.use
 import java.io.IOException
 import java.io.InputStream
 import java.net.URI

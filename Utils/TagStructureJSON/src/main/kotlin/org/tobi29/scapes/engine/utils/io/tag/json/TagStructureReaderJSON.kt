@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.utils.io.tag.json
 
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.tag.*
 import java.io.IOException
 import java.io.InputStream
 import javax.json.Json

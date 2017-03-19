@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils
 
 import org.tobi29.scapes.engine.utils.math.max
 import java.lang.ref.WeakReference
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentSkipListSet
 import java.util.concurrent.atomic.AtomicLong

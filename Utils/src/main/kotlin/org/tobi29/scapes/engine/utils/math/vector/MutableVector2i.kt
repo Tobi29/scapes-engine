@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
-import org.tobi29.scapes.engine.utils.io.tag.toInt
+import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.tag.toInt
 
 open class MutableVector2i(var x: Int = 0,
                            var y: Int = 0) {

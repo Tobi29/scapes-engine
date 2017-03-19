@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
 import org.tobi29.scapes.engine.utils.io.LimitedBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.tag.*
 import java.io.IOException
 import java.util.*
 

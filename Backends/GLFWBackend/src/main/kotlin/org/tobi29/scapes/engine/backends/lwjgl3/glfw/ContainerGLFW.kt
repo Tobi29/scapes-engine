@@ -36,7 +36,7 @@ import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.tag.toMap
+import org.tobi29.scapes.engine.utils.tag.toMap
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.profiler.profilerSection

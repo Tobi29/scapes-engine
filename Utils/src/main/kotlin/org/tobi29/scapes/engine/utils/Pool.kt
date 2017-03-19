@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java.util.*
-
 /**
  * Using [.push] you can retrieve objects from this pool, modify them
  * and then later iterate through them
@@ -77,8 +75,7 @@ class Pool<E>
      */
     operator fun get(i: Int): E {
         if (i < 0 || i >= size) {
-            throw IndexOutOfBoundsException(
-                    "Index: $i Size: $size")
+            throw IndexOutOfBoundsException("Index: $i Size: $size")
         }
         return list[i]
     }

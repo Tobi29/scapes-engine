@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java.util.*
-
 /**
  * Creates a hash from the given [String]
  * @param value String to create the hash from

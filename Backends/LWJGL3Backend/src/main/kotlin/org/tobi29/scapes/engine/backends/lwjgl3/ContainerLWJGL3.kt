@@ -32,8 +32,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.io.tag.ReadTagMutableMap
-import org.tobi29.scapes.engine.utils.io.tag.toBoolean
+import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
+import org.tobi29.scapes.engine.utils.tag.toBoolean
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException

@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
-import org.tobi29.scapes.engine.utils.io.tag.ReadWriteTagMap
-import org.tobi29.scapes.engine.utils.io.tag.TagMapWrite
-import org.tobi29.scapes.engine.utils.io.tag.set
+import org.tobi29.scapes.engine.utils.tag.ReadWriteTagMap
+import org.tobi29.scapes.engine.utils.tag.TagMapWrite
+import org.tobi29.scapes.engine.utils.tag.set
 
 open class Vector2i(val x: Int,
                     val y: Int) : TagMapWrite {

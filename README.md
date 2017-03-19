@@ -34,6 +34,13 @@ allow easier Android support
 ### For JSON support
   * [JSON Processing](https://jsonp.java.net)
 
+## IO utils
+Base library for IO operations using `java.nio`
+
+Contains various interfaces and utilities for doing IO work
+### Dependencies
+  * Utils
+
 ## File system api
 File system api designed as a basic alternative to `java.nio.file`
 
@@ -42,7 +49,7 @@ Android (can be found in the ScapesEngineAndroid repository)
 
 Uses Apache Tika for cross-platform mime-type support
 ### Dependencies
-  * Utils
+  * IO utils
   * [Apache Tika](https://tika.apache.org)
 
 ## Audio codecs
@@ -61,22 +68,36 @@ SQL statements
 
 Allows abstracting over different backends more reliably
 ### Dependencies
-  * File system api
+  * Utils
 ### For SQLite support
   * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
+### For pure Java SQLIte support
+  * [SQLJet](https://sqljet.com)
 ### For MariaDB support
   * [MariaDB](https://mariadb.org)
 
 ## Graphics utils
+Library for image loading, writing and very basic manipulations
 
+Contains a PNG decoder and encoder function implemented by PNGJ and a simple
+Image class to pass around images and do copy paste operations on them
 ### Dependencies
+  * IO utils
   * [PNGJ](https://github.com/leonbloy/pngj)
 
 ## SWT utils
+Base library for making GUI applications using SWT
+
+Contains various utilities and a simple framework for an application
 ### Dependencies
+  * File system api
   * [SWT](https://www.eclipse.org/swt)
 
 ## Engine
+General purpose engine foundation
+
+Straps together a backend and various utilities to allow cross-platform
+development of games or more sophisticated engines
 ### Dependencies
   * [Antlr](http://www.antlr.org)
   * OpenGL 3.3

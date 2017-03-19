@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.tag.*
 
 class ScapesEngineConfig(private val tagStructure: MutableTagMap) {
     var fps = 0.0

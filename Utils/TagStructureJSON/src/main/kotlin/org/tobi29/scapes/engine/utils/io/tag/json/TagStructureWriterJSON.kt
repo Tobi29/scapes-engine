@@ -17,7 +17,7 @@ package org.tobi29.scapes.engine.utils.io.tag.json
 
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
-import org.tobi29.scapes.engine.utils.io.tag.*
+import org.tobi29.scapes.engine.utils.tag.*
 import java.io.IOException
 import java.io.OutputStream
 import java.math.BigDecimal
