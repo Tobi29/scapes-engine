@@ -151,7 +151,7 @@ inline fun min(value1: Vector3d,
  */
 inline fun min(value1: Int,
                value2: Int): Int {
-    return if (value1 < value2) value1 else value2
+    return Math.min(value1, value2)
 }
 
 /**
@@ -162,7 +162,7 @@ inline fun min(value1: Int,
  */
 inline fun min(value1: Long,
                value2: Long): Long {
-    return if (value1 < value2) value1 else value2
+    return Math.min(value1, value2)
 }
 
 /**
@@ -173,7 +173,7 @@ inline fun min(value1: Long,
  */
 inline fun min(value1: Float,
                value2: Float): Float {
-    return if (value1 < value2) value1 else value2
+    return Math.min(value1, value2)
 }
 
 /**
@@ -184,7 +184,7 @@ inline fun min(value1: Float,
  */
 inline fun min(value1: Double,
                value2: Double): Double {
-    return if (value1 < value2) value1 else value2
+    return Math.min(value1, value2)
 }
 
 /**
@@ -263,7 +263,7 @@ inline fun max(value1: Vector3i,
  */
 inline fun max(value1: Int,
                value2: Int): Int {
-    return if (value1 > value2) value1 else value2
+    return Math.max(value1, value2)
 }
 
 /**
@@ -274,7 +274,7 @@ inline fun max(value1: Int,
  */
 inline fun max(value1: Long,
                value2: Long): Long {
-    return if (value1 > value2) value1 else value2
+    return Math.max(value1, value2)
 }
 
 /**
@@ -285,7 +285,7 @@ inline fun max(value1: Long,
  */
 inline fun max(value1: Float,
                value2: Float): Float {
-    return if (value1 > value2) value1 else value2
+    return Math.max(value1, value2)
 }
 
 /**
@@ -296,7 +296,7 @@ inline fun max(value1: Float,
  */
 inline fun max(value1: Double,
                value2: Double): Double {
-    return if (value1 > value2) value1 else value2
+    return Math.max(value1, value2)
 }
 
 /**
