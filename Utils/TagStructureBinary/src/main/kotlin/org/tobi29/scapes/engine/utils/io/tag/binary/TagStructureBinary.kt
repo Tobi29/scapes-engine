@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.tag.TagList
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.write
-import org.tobi29.scapes.engine.utils.limit
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -136,7 +135,7 @@ internal class KeyDictionary {
         val keys = ConcurrentHashMap<String, KeyOccurrence>()
         analyze(tagStructure, keys)
         if (keys.size > 255) {
-            keys.entries.asSequence().sortedBy { it.value.count }.limit(
+            keys.entries.asSequence().sortedBy { it.value.count }.take(
                     255).map { it.key }.forEach { addKeyAlias(it) }
         } else {
             keys.entries.asSequence().map { it.key }.forEach {

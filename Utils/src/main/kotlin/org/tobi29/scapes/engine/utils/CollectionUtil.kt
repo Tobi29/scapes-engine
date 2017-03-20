@@ -155,31 +155,6 @@ inline fun <reified T> Sequence<T>.toArray(): Array<T> {
 }
 
 /**
- * Limits the amount of elements available in the sequence
- * @param T The type of elements
- * @receiver The sequence of elements to limit
- * @returns A lazy sequence
- */
-inline fun <T> Sequence<T>.limit(amount: Int): Sequence<T> {
-    return Sequence {
-        val iterator = iterator()
-        object : Iterator<T> {
-            private var count = 0
-
-            override fun hasNext() = iterator.hasNext() && count < amount
-
-            override fun next(): T {
-                if (!hasNext()) {
-                    throw NoSuchElementException()
-                }
-                count++
-                return iterator.next()
-            }
-        }
-    }
-}
-
-/**
  * Constructs an infinite sequence starting with all the elements in the given
  * one and filling the rest with `null`
  * @receiver The sequence to start with
