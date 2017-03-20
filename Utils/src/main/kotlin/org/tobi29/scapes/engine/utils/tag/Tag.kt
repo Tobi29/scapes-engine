@@ -349,6 +349,8 @@ fun TagList(block: MutableList<Tag>.() -> Unit): TagList = TagList(Unit,
 
 fun TagList(value: List<Tag> = emptyList()) = TagList { addAll(value) }
 
+fun TagList(value: Sequence<Tag>) = TagList { value.forEach { add(it) } }
+
 fun ReadTagList.toTag() = TagList(this)
 
 // The hashCode() of the alternative checks should be identical
