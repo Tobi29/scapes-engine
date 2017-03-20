@@ -180,6 +180,23 @@ inline fun <T> Sequence<T>.limit(amount: Int): Sequence<T> {
 }
 
 /**
+ * Constructs an infinite sequence starting with all the elements in the given
+ * one and filling the rest with `null`
+ * @receiver The sequence to start with
+ * @returns An infinite sequence
+ */
+fun <T> Sequence<T>.andNull() = Sequence {
+    val iterator = iterator()
+    object : Iterator<T?> {
+        override fun hasNext() = true
+
+        override fun next(): T? {
+            return if (iterator.hasNext()) iterator.next() else null
+        }
+    }
+}
+
+/**
  * Accumulates value starting with the first element and applying [operation]
  * from left to right to current accumulator value and each element.
  * @param S Element type
