@@ -136,24 +136,6 @@ class TaskExecutor {
 
     fun runTask(task: () -> Unit,
                 name: String) {
-        taskPool.execute {
-            var time = System.nanoTime()
-            try {
-                profilerSection(name) {
-                    task()
-                }
-            } finally {
-                time = System.nanoTime() - time
-                if (time > 10000000000L) {
-                    logger.warn { "Task took ${time / 1000000000} seconds to complete: $name" }
-                }
-            }
-        }
-    }
-
-    fun runTask(task: () -> Unit,
-                taskLock: TaskLock,
-                name: String) {
         taskLock.increment()
         taskPool.execute {
             var time = System.nanoTime()
@@ -169,6 +151,19 @@ class TaskExecutor {
                 taskLock.decrement()
             }
         }
+    }
+
+    fun runTask(task: () -> Unit,
+                taskLock: TaskLock,
+                name: String) {
+        taskLock.increment()
+        runTask({
+            try {
+                task()
+            } finally {
+                taskLock.decrement()
+            }
+        }, name)
     }
 
     fun addTaskOnce(task: () -> Unit,
