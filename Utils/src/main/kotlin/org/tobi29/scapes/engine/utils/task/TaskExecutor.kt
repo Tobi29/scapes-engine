@@ -193,6 +193,7 @@ class TaskExecutor {
     fun shutdown() {
         eventLoop?.join()
         if (root) {
+            taskLock.lock()
             taskPool.shutdown()
             try {
                 if (!taskPool.awaitTermination(10, TimeUnit.SECONDS)) {
@@ -200,7 +201,6 @@ class TaskExecutor {
                 }
             } catch (e: InterruptedException) {
             }
-            taskLock.lock()
         }
     }
 
