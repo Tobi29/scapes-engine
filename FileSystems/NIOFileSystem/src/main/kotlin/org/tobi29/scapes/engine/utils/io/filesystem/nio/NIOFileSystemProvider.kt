@@ -21,11 +21,7 @@ import org.tobi29.scapes.engine.utils.io.filesystem.nio.internal.NIOFileUtilImpl
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
 
 class NIOFileSystemProvider : FileSystemProvider {
-    override fun available(): Boolean {
-        return true
-    }
+    override fun available() = true
 
-    override fun implementation(): FileUtilImpl {
-        return NIOFileUtilImpl
-    }
+    override fun implementation(): FileUtilImpl = NIOFileUtilImpl
 }
