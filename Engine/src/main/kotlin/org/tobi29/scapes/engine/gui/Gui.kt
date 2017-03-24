@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.utils.computeAbsent
+import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
@@ -43,28 +44,10 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
                                 entry.components.size - 1)])
             }
         })
-        on(GuiAction.UP, {
-            synchronized(selections) {
-                selection = max(selection - 1,
-                        min(0, selections.size - 1))
-            }
-        })
-        on(GuiAction.DOWN, {
-            synchronized(selections) {
-                selection = min(selection + 1, selections.size - 1)
-            }
-        })
+        on(GuiAction.UP, { moveSelectionV(true) })
+        on(GuiAction.DOWN, { moveSelectionV(false) })
         on(GuiAction.LEFT, {
-            synchronized(selections) {
-                if (selection < 0) {
-                    return@on
-                }
-                val entry = selections[selection]
-                if (selectionColumn > 0) {
-                    selectionColumn = min(selectionColumn,
-                            entry.components.size - 1)
-                    selectionColumn = max(selectionColumn - 1, 0)
-                }
+            moveSelectionH(true)?.let { entry ->
                 sendNewEvent(GuiEvent.SCROLL,
                         GuiComponentEvent(Double.NaN,
                                 Double.NaN, 1.0, 0.0,
@@ -74,30 +57,75 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
         })
         on(GuiAction.RIGHT, {
             synchronized(selections) {
-                if (selection < 0) {
-                    return@on
+                moveSelectionH(false)?.let { entry ->
+                    sendNewEvent(GuiEvent.SCROLL,
+                            GuiComponentEvent(Double.NaN,
+                                    Double.NaN, -1.0, 0.0,
+                                    false),
+                            entry.components[min(selectionColumn,
+                                    entry.components.size - 1)])
                 }
-                val entry = selections[selection]
-                if (selectionColumn < entry.components.size - 1) {
-                    selectionColumn = min(selectionColumn + 1,
-                            entry.components.size - 1)
-                }
-                sendNewEvent(GuiEvent.SCROLL,
-                        GuiComponentEvent(Double.NaN,
-                                Double.NaN, -1.0, 0.0,
-                                false), entry.components[min(selectionColumn,
-                        entry.components.size - 1)])
             }
         })
     }
 
-    protected fun selection(component: GuiComponent) {
-        selection(component.parent.priority, component)
+    private fun fixSelection(): SelectionEntry? {
+        selections.getOrNull(selection)?.let { entry ->
+            val moveOnwards = entry.visible()
+            if (moveOnwards == Face.NONE) {
+                return null
+            }
+            if (moveOnwards != Face.NORTH && moveOnwards != Face.SOUTH) {
+                throw IllegalArgumentException("Invalid move: $moveOnwards")
+            }
+            return moveSelectionV(moveOnwards == Face.NORTH)
+        }
+        return null
     }
 
-    protected fun selection(priority: Long,
-                            component: GuiComponent) {
-        addSelection(priority, arrayListOf(component))
+    private fun moveSelectionH(left: Boolean): SelectionEntry? {
+        if (left) {
+            selections.getOrNull(selection)?.let { entry ->
+                if (selectionColumn > 0) {
+                    selectionColumn = min(selectionColumn,
+                            entry.components.size - 1)
+                    selectionColumn = max(selectionColumn - 1, 0)
+                }
+            }
+        } else {
+            selections.getOrNull(selection)?.let { entry ->
+                if (selectionColumn < entry.components.size - 1) {
+                    selectionColumn = min(selectionColumn + 1,
+                            entry.components.size - 1)
+                }
+            }
+        }
+        return fixSelection()
+    }
+
+    private fun moveSelectionV(up: Boolean): SelectionEntry? {
+        var dir = up
+        while (true) {
+            if (dir) {
+                selection = max(selection - 1, min(0, selections.lastIndex))
+            } else {
+                selection = min(selection + 1, selections.lastIndex)
+            }
+            (selections.getOrNull(selection) ?: return null).let { entry ->
+                val moveOnwards = entry.visible()
+                if (moveOnwards == Face.NONE) {
+                    return entry
+                }
+                if (moveOnwards != Face.NORTH && moveOnwards != Face.SOUTH) {
+                    throw IllegalArgumentException("Invalid move: $moveOnwards")
+                }
+                if (dir && selection <= 0) {
+                    dir = false
+                } else if (selection >= selections.lastIndex) {
+                    dir = true
+                }
+            }
+        }
     }
 
     protected fun selection(vararg components: GuiComponent) {
@@ -115,26 +143,46 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
         addSelection(priority, arrayListOf(*components))
     }
 
-    protected fun selection(components: List<GuiComponent>) {
+    protected fun selection(visible: () -> Face,
+                            vararg components: GuiComponent) {
         if (components.isEmpty()) {
             return
         }
-        selection(components[0].parent.priority, components)
+        selection(components[0].parent.priority, visible, *components)
     }
 
     protected fun selection(priority: Long,
-                            components: List<GuiComponent>) {
+                            visible: () -> Face,
+                            vararg components: GuiComponent) {
+        if (components.isEmpty()) {
+            return
+        }
+        addSelection(priority, arrayListOf(*components), visible)
+    }
+
+    protected fun selection(components: List<GuiComponent>,
+                            visible: () -> Face = { Face.NONE }) {
+        if (components.isEmpty()) {
+            return
+        }
+        selection(components[0].parent.priority, components, visible)
+    }
+
+    protected fun selection(priority: Long,
+                            components: List<GuiComponent>,
+                            visible: () -> Face = { Face.NONE }) {
         if (components.isEmpty()) {
             return
         }
         val list = ArrayList<GuiComponent>()
         list.addAll(components)
-        addSelection(priority, list)
+        addSelection(priority, list, visible)
     }
 
     private fun addSelection(priority: Long,
-                             components: MutableList<GuiComponent>) {
-        val entry = SelectionEntry(priority, components)
+                             components: MutableList<GuiComponent>,
+                             visible: () -> Face = { Face.NONE }) {
+        val entry = SelectionEntry(priority, components, visible)
         synchronized(selections) {
             for (i in selections.indices.reversed()) {
                 if (selections[i].priority >= priority) {
@@ -208,6 +256,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
         super.update(delta)
         if (visible) {
             synchronized(selections) {
+                fixSelection()
                 val iterator = selections.iterator()
                 while (iterator.hasNext()) {
                     val entry = iterator.next()
@@ -228,7 +277,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
                 }
                 val entry = selections[selection]
                 val component = entry.components[min(selectionColumn,
-                        entry.components.size - 1)]
+                        entry.components.lastIndex)]
                 sendNewEvent(GuiComponentEvent(), component,
                         { component.hover(it) })
             }
@@ -248,5 +297,6 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
     }
 
     private class SelectionEntry(val priority: Long,
-                                 val components: MutableList<GuiComponent>)
+                                 val components: MutableList<GuiComponent>,
+                                 val visible: () -> Face)
 }
