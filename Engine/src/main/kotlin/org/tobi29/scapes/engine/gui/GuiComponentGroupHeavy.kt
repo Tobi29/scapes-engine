@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-class GuiComponentGroupHeavy(parent: GuiLayoutData) : GuiComponentPaneHeavy(
+open class GuiComponentGroupHeavy(parent: GuiLayoutData) : GuiComponentPaneHeavy(
         parent) {
 
     override fun ignoresEvents(): Boolean {
