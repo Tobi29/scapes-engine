@@ -242,7 +242,7 @@ internal open class TextureGL(override val engine: ScapesEngine,
                        height: Int): TextureBuffer {
         return TextureBuffer(
                 generateMipMaps(buffer, { engine.allocate(it) }, width,
-                        height, mipmaps, minFilter === TextureFilter.LINEAR),
+                        height, mipmaps, minFilter == TextureFilter.LINEAR),
                 width, height)
     }
 

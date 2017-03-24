@@ -33,9 +33,9 @@ internal class VAOStatic(private val vbo: VBO,
     private var arrayID = 0
 
     init {
-        if (renderType === RenderType.TRIANGLES && length % 3 != 0) {
+        if (renderType == RenderType.TRIANGLES && length % 3 != 0) {
             throw IllegalArgumentException("Length not multiply of 3")
-        } else if (renderType === RenderType.LINES && length % 2 != 0) {
+        } else if (renderType == RenderType.LINES && length % 2 != 0) {
             throw IllegalArgumentException("Length not multiply of 2")
         }
         val indexBuffer = engine.allocate(length shl 1)

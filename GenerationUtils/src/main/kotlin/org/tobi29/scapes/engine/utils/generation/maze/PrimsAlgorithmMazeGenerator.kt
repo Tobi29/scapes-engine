@@ -100,13 +100,13 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
             }
             assert(validDirections > 0)
             val direction = directions[random.nextInt(validDirections)]
-            if (direction === Face.NORTH) {
+            if (direction == Face.NORTH) {
                 maze.setAt(x, y, 0, true)
-            } else if (direction === Face.EAST) {
+            } else if (direction == Face.EAST) {
                 maze.setAt(x + 1, y, 1, true)
-            } else if (direction === Face.SOUTH) {
+            } else if (direction == Face.SOUTH) {
                 maze.setAt(x, y + 1, 0, true)
-            } else if (direction === Face.WEST) {
+            } else if (direction == Face.WEST) {
                 maze.setAt(x, y, 1, true)
             }
             if (list.isEmpty()) {

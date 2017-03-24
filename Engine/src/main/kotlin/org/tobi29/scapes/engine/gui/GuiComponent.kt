@@ -268,7 +268,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
                     }
                 }
             }
-            if (destination === this) {
+            if (destination == this) {
                 listener(event)
                 return true
             }

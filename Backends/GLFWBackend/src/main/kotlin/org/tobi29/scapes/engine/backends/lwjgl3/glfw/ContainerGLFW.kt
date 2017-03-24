@@ -93,7 +93,7 @@ class ContainerGLFW(engine: ScapesEngine,
         keyFun = GLFWKeyCallback.create { window, key, scancode, action, mods ->
             val virtualKey = GLFWKeyMap.key(key)
             if (virtualKey != null) {
-                if (virtualKey === ControllerKey.KEY_BACKSPACE && action != GLFW.GLFW_RELEASE) {
+                if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW.GLFW_RELEASE) {
                     addTypeEvent(127.toChar())
                 }
                 when (action) {

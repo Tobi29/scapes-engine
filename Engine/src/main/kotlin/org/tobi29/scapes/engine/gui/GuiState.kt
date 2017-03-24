@@ -23,5 +23,5 @@ open class GuiState(protected val state: GameState,
         style) {
 
     override val isValid: Boolean
-        get() = state.engine.getState() === state
+        get() = state.engine.getState() == state
 }

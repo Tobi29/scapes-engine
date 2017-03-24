@@ -60,8 +60,7 @@ class Checksum
         if (other !is Checksum) {
             return false
         }
-        return algorithm === other.algorithm && Arrays.equals(array,
-                other.array)
+        return algorithm == other.algorithm && Arrays.equals(array, other.array)
     }
 
     override fun toString(): String {

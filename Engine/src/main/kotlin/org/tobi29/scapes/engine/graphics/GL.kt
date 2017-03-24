@@ -158,7 +158,7 @@ abstract class GL protected constructor(val engine: ScapesEngine,
     }
 
     fun check() {
-        assert(Thread.currentThread() === mainThread)
+        assert(Thread.currentThread() == mainThread)
     }
 
     abstract fun createTexture(width: Int,

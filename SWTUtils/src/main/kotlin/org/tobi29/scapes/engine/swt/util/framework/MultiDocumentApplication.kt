@@ -103,7 +103,7 @@ abstract class MultiDocumentApplication : Application {
     private fun accessDocument(document: Document,
                                consumer: (DocumentComposite) -> Unit): Boolean {
         val composite = composites[document] ?: return false
-        assert(composite.document === document)
+        assert(composite.document == document)
         consumer(composite)
         return true
     }
