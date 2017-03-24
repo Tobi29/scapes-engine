@@ -279,16 +279,13 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
     protected fun calculateSize(size: Vector2d,
                                 destination: GuiComponent): Vector2d? {
         if (visible) {
+            if (destination == this) {
+                return size
+            }
             val layout = layoutManager(size)
             for (component in layout.layout()) {
-                val success = component.first.calculateSize(component.third,
-                        destination)
-                if (success != null) {
-                    return success
-                }
-            }
-            if (destination === this) {
-                return size
+                component.first.calculateSize(component.third,
+                        destination)?.let { return it }
             }
         }
         return null
