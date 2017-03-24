@@ -4,6 +4,37 @@ General purpose game engine written in Kotlin.
 Its codebase was split off [Scapes](https://github.com/Tobi29/Scapes) to make it
 reusable for other projects.
 
+## Platforms
+
+### Linux, MacOSX, Windows
+Uses LWJGL3 for access to GLFW (for graphics and input) and OpenAL-soft (for
+audio).
+
+Either OpenGL 3.3 or OpenGL ES 3.0 need to be supported by the graphics
+driver (support for ES is not automatically enabled currently).
+
+Can be embedded into any program as long as giving up the main thread to the
+rendering loop is acceptable (one also could make a customized backend to allow
+embedding into an existing loop on the main thread).
+
+### Android
+Android support is contained in the
+[ScapesEngineAndroid](https://github.com/Tobi29/ScapesEngineAndroid) repository.
+For technical information visit that repository.
+
+Requires OpenGL ES 3.0, making it impossible to run the engine in an emulator.
+Should theoretically support API Level 18 and higher, however only 25 is
+actively tested. Also as Java performance varies a lot between older Android
+releases to now, the engine probably will not run smoothly on older devices.
+
+Embedding into existing applications might be possible, but is not supported
+at the moment and requires a custom backend.
+
+### iOS
+The engine can run on the [Multi OS Engine](https://multi-os-engine.org),
+however there is no backend for it that is in a usable state. There might be one
+added in the future, but this is rather low priority.
+
 ## Build
 The project uses Gradle to build all modules.
 
