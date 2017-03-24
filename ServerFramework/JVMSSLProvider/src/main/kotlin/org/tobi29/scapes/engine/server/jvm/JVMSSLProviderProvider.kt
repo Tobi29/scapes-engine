@@ -24,7 +24,5 @@ class JVMSSLProviderProvider : SSLProviderProvider {
         return true
     }
 
-    override fun implementation(): SSLProviderImpl {
-        return JVMSSLProviderImpl()
-    }
+    override fun implementation(): SSLProviderImpl = JVMSSLProviderImpl
 }
