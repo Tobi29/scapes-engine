@@ -73,7 +73,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
         selections.getOrNull(selection)?.let { entry ->
             val moveOnwards = entry.visible()
             if (moveOnwards == Face.NONE) {
-                return null
+                return entry
             }
             if (moveOnwards != Face.NORTH && moveOnwards != Face.SOUTH) {
                 throw IllegalArgumentException("Invalid move: $moveOnwards")
