@@ -122,6 +122,6 @@ class ControllerJoystick(private val name: String,
     }
 
     companion object {
-        private val REPLACE = " |/|-".toRegex()
+        private val REPLACE = "[ /-]".toRegex()
     }
 }
