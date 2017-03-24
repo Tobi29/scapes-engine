@@ -45,7 +45,7 @@ Contains various interfaces and utilities for doing IO work
 File system api designed as a basic alternative to `java.nio.file`
 
 Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
-Android (can be found in the ScapesEngineAndroid repository)
+Android or other platforms lacking support for `java.nio.file`
 
 Uses Apache Tika for cross-platform mime-type support
 ### Dependencies
