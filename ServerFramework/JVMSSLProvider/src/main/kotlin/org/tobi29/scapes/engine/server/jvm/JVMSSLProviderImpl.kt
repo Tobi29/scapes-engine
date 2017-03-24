@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.server.SSLProviderImpl
 import java.security.cert.X509Certificate
 import javax.net.ssl.KeyManager
 
-class JVMSSLProviderImpl : SSLProviderImpl {
+internal object JVMSSLProviderImpl : SSLProviderImpl {
     override fun sslHandle(keyManagers: Array<KeyManager>?,
                            feedbackPredicate: ((Array<X509Certificate>) -> Boolean)?): SSLHandle {
         return JVMSSLHandle(keyManagers, feedbackPredicate)

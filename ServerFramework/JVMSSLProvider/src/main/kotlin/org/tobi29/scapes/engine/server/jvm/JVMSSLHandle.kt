@@ -24,8 +24,8 @@ import java.security.*
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
 
-class JVMSSLHandle(keyManagers: Array<KeyManager>?,
-                   feedbackPredicate: ((Array<X509Certificate>) -> Boolean)?) : SSLHandle {
+internal class JVMSSLHandle(keyManagers: Array<KeyManager>?,
+                            feedbackPredicate: ((Array<X509Certificate>) -> Boolean)?) : SSLHandle {
     private val context: SSLContext
     private val feedbackPredicate: (Array<X509Certificate>) -> Boolean
 
