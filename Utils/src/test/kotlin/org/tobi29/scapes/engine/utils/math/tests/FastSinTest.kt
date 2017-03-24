@@ -23,6 +23,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.math.FastSin
+import org.tobi29.scapes.engine.utils.math.toRad
 
 object FastSinTests : Spek({
     describe("table sin") {
@@ -40,6 +41,18 @@ object FastSinTests : Spek({
                 rv += 0.0009765625
             }
         }
+        given("cardinal directions") {
+            for (r in sequenceOf(0.0, 90.0, 180.0, 270.0, 360.0).map(
+                    Double::toRad)) {
+                on("calculating the sin") {
+                    val sin = FastSin.sin(r)
+                    it("should be equal to the mathematical sin") {
+                        val expected = Math.sin(r)
+                        sin shouldEqual expected
+                    }
+                }
+            }
+        }
     }
     describe("table cos") {
         given("any number") {
@@ -54,6 +67,18 @@ object FastSinTests : Spek({
                     }
                 }
                 rv += 0.0009765625
+            }
+        }
+        given("cardinal directions") {
+            for (r in sequenceOf(0.0, 90.0, 180.0, 270.0, 360.0).map(
+                    Double::toRad)) {
+                on("calculating the cos") {
+                    val sin = FastSin.sin(r)
+                    it("should be equal to the mathematical cos") {
+                        val expected = Math.sin(r)
+                        sin shouldEqual expected
+                    }
+                }
             }
         }
     }
