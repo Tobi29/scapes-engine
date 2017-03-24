@@ -30,14 +30,12 @@ class GuiComponentFlowText constructor(parent: GuiLayoutData,
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
-            updateSize()
             dirty()
         }
     var text: String = ""
         set(value) {
             if (field != value) {
                 field = value
-                updateSize()
                 dirty()
             }
         }
@@ -56,18 +54,17 @@ class GuiComponentFlowText constructor(parent: GuiLayoutData,
 
     init {
         this.text = text
-        updateSize()
+        parent.preferredSize = { size, maxSize ->
+            val layoutSize = mangleSize(size, maxSize)
+            val font = gui.style.font
+            val textInfo = font.render(FontRenderer.to(), textFilter(text),
+                    layoutSize.y.toFloat(), textWidth.toFloat())
+            textInfo.size
+        }
     }
 
     fun text(): String {
         return text
-    }
-
-    private fun updateSize() {
-        val font = gui.style.font
-        val textInfo = font.render(FontRenderer.to(), textFilter(text),
-                parent.height().toFloat(), textWidth.toFloat())
-        parent.setSize(textInfo.size)
     }
 
     override fun updateMesh(renderer: GuiRenderer,

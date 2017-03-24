@@ -16,36 +16,13 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 open class GuiLayoutData(val parent: GuiComponent?,
-                         size: Vector2d,
+                         val size: Vector2d,
                          val priority: Long,
                          val blocksEvents: Boolean) {
-    private val size = MutableVector2d()
+    var preferredSize: (Vector2d, Vector2d) -> Vector2d = { a, _ -> a }
 
-    init {
-        this.size.set(size)
-    }
-
-    fun width(): Double {
-        return size.doubleX()
-    }
-
-    fun height(): Double {
-        return size.doubleY()
-    }
-
-    fun setWidth(value: Double) {
-        size.setX(value)
-    }
-
-    fun setHeight(value: Double) {
-        size.setY(value)
-    }
-
-    fun setSize(size: Vector2d) {
-        this.size.set(size)
-    }
+    fun calculateSize(maxSize: Vector2d) = preferredSize(size, maxSize)
 }

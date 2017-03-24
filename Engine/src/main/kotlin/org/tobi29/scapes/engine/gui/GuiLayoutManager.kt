@@ -43,17 +43,20 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
     protected abstract fun layout(
             output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>)
 
-    protected fun size(size: MutableVector2d,
+    protected fun size(size: Vector2d,
                        preferredSize: Vector2d,
-                       maxSize: Vector2d) {
-        if (size.doubleX() < 0.0) {
-            size.setX(preferredSize.x * -size.doubleX())
+                       maxSize: Vector2d): Vector2d {
+        var x = size.x
+        var y = size.y
+        if (x < 0.0) {
+            x = preferredSize.x * -x
         }
-        size.setX(max(min(size.doubleX(), maxSize.x), 0.0))
-        if (size.doubleY() < 0.0) {
-            size.setY(preferredSize.y * -size.doubleY())
+        x = max(min(x, maxSize.x), 0.0)
+        if (y < 0.0) {
+            y = preferredSize.y * -y
         }
-        size.setY(max(min(size.doubleY(), maxSize.y), 0.0))
+        y = max(min(y, maxSize.y), 0.0)
+        return Vector2d(x, y)
     }
 
     protected fun setSize(size: Vector2d,
@@ -65,5 +68,18 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
         val size = size ?: throw IllegalStateException(
                 "Size unknown until layout is processed")
         return size - start
+    }
+}
+
+fun mangleSize(size: Vector2d,
+               maxSize: Vector2d): Vector2d {
+    val x = size.x
+    val y = size.y
+    return if (x >= 0.0 && y >= 0.0) {
+        size
+    } else if (x < 0.0 && y < 0.0) {
+        maxSize
+    } else {
+        Vector2d(if (x >= 0.0) x else maxSize.x, if (y >= 0.0) y else maxSize.y)
     }
 }

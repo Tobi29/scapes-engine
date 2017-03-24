@@ -16,29 +16,13 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.plus
 
 object GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
         emptySet<GuiComponent>()) {
-
-    override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
-        val size = MutableVector2d()
-        val outSize = MutableVector2d()
-        for (component in components) {
-            val data = component.parent
-            if (data is GuiLayoutDataAbsolute) {
-                size.set(data.width(), data.height())
-                size(size, maxSize, maxSize)
-                setSize(data.pos() + size.now(), outSize)
-                output.add(Triple(component, data.pos(),
-                        size.now()))
-            } else {
-                throw IllegalStateException(
-                        "Invalid layout node: " + data::class.java)
-            }
-        }
-        this.size = outSize.now()
+    init {
+        size = Vector2d.ZERO
     }
+
+    override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {}
 }

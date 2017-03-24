@@ -29,24 +29,28 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
         var unsized = 0.0
         var usedWidth = 0.0
+        val sizes = HashMap<GuiComponent, Vector2d>()
         for (component in components) {
             if (!component.visible) {
                 continue
             }
             val data = component.parent
             if (data is GuiLayoutDataFlow) {
-                if (data.width() < 0.0) {
-                    unsized -= data.width()
+                val marginStart = data.marginStart
+                val marginEnd = data.marginEnd
+                val size = data.calculateSize(maxSize - marginStart - marginEnd)
+                sizes[component] = size
+                if (size.x < 0.0) {
+                    unsized -= size.x
                 } else {
-                    val marginStart = data.marginStart
-                    val marginEnd = data.marginEnd
-                    usedWidth += data.width() + marginStart.x +
-                            marginEnd.x
+                    usedWidth += size.x + marginStart.x + marginEnd.x
                 }
+            } else {
+                val size = data.calculateSize(maxSize)
+                sizes[component] = size
             }
         }
         val pos = MutableVector2d()
-        val size = MutableVector2d()
         val offset = MutableVector2d(start)
         val outSize = MutableVector2d()
         val preferredSize = Vector2d((maxSize.x - usedWidth) / unsized,
@@ -56,30 +60,32 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
                 continue
             }
             val data = component.parent
+            val size = sizes[component]!!
             pos.set(offset.now())
-            size.set(data.width(), data.height())
-            if (data is GuiLayoutDataFlow) {
+            val asize = if (data is GuiLayoutDataFlow) {
                 val marginStart = data.marginStart
                 val marginEnd = data.marginEnd
-                if (size.doubleY() >= 0.0) {
-                    pos.plusY((maxSize.y - size.doubleY() -
+                if (size.y >= 0.0) {
+                    pos.plusY((maxSize.y - size.y -
                             marginStart.y - marginEnd.y) * 0.5)
                 }
-                size(size, preferredSize.minus(marginStart).minus(marginEnd),
+                val asize = size(size,
+                        preferredSize.minus(marginStart).minus(marginEnd),
                         maxSize.minus(marginStart).minus(marginEnd))
                 pos.plus(marginStart)
-                offset.plusX(size.doubleX() + marginStart.x +
-                        marginEnd.x)
-                setSize(pos.now().plus(size.now()).plus(marginEnd), outSize)
+                offset.plusX(asize.x + marginStart.x + marginEnd.x)
+                setSize(pos.now().plus(asize).plus(marginEnd), outSize)
+                asize
             } else if (data is GuiLayoutDataAbsolute) {
                 pos.set(data.pos())
-                size(size, maxSize, maxSize)
-                setSize(pos.now().plus(size.now()), outSize)
+                val asize = size(size, maxSize, maxSize)
+                setSize(pos.now().plus(asize), outSize)
+                asize
             } else {
                 throw IllegalStateException(
                         "Invalid layout node: " + data::class.java)
             }
-            output.add(Triple(component, pos.now(), size.now()))
+            output.add(Triple(component, pos.now(), asize))
         }
         this.size = outSize.now()
     }

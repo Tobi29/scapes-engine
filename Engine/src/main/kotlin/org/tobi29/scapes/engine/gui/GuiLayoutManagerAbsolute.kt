@@ -26,16 +26,14 @@ class GuiLayoutManagerAbsolute(start: Vector2d,
         start, maxSize, components) {
 
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
-        val size = MutableVector2d()
         val outSize = MutableVector2d()
         for (component in components) {
             val data = component.parent
             if (data is GuiLayoutDataAbsolute) {
-                size.set(data.width(), data.height())
-                size(size, maxSize, maxSize)
-                setSize(data.pos() + size.now(), outSize)
-                output.add(Triple(component, data.pos(),
-                        size.now()))
+                val size = data.calculateSize(maxSize)
+                val asize = size(size, maxSize, maxSize)
+                setSize(data.pos() + asize, outSize)
+                output.add(Triple(component, data.pos(), asize))
             } else {
                 throw IllegalStateException(
                         "Invalid layout node: " + data::class.java)
