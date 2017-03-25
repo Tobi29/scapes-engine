@@ -539,7 +539,6 @@ inline fun glVertexAttrib4f(location: Int,
                             v3: Float) =
         GLES20.glVertexAttrib4f(location, v0, v1, v2, v3)
 
-// TODO: Support in GL
 inline fun glVertexAttrib1fv(location: Int,
                              value: FloatBuffer) =
         GLES20.glVertexAttrib1fv(location, value)

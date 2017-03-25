@@ -173,6 +173,11 @@ class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
         glVertexAttrib4f(id, v0, v1, v2, v3)
     }
 
+    override fun setAttribute1f(uniform: Int,
+                                values: FloatBuffer) {
+        glVertexAttrib1fv(uniform, values)
+    }
+
     override fun setAttribute2f(uniform: Int,
                                 values: FloatBuffer) {
         glVertexAttrib2fv(uniform, values)

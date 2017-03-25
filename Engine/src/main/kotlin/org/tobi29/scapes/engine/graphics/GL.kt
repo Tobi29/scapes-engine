@@ -164,6 +164,9 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
                                 v2: Float,
                                 v3: Float)
 
+    abstract fun setAttribute1f(uniform: Int,
+                                values: FloatBuffer)
+
     abstract fun setAttribute2f(uniform: Int,
                                 values: FloatBuffer)
 
