@@ -21,7 +21,6 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 import org.lwjgl.opengles.GLES20
 import org.lwjgl.opengles.GLES30
 import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 
 const val NOOP = -1
 
@@ -316,9 +315,9 @@ inline fun glBindBuffer(target: Int,
         GLES20.glBindBuffer(target, buffer)
 
 inline fun glBufferData(target: Int,
-                        size: Long,
+                        size: Int,
                         usage: Int) =
-        GLES20.glBufferData(target, size, usage)
+        GLES20.glBufferData(target, size.toLong(), usage)
 
 inline fun glBufferData(target: Int,
                         data: ByteBuffer,
@@ -342,16 +341,17 @@ inline fun glVertexAttribPointer(index: Int,
                                  type: Int,
                                  normalized: Boolean,
                                  stride: Int,
-                                 pointer: Long) =
+                                 pointer: Int) =
         GLES20.glVertexAttribPointer(index, size, type, normalized, stride,
-                pointer)
+                pointer.toLong())
 
 inline fun glVertexAttribIPointer(index: Int,
                                   size: Int,
                                   type: Int,
                                   stride: Int,
-                                  pointer: Long) =
-        GLES30.glVertexAttribIPointer(index, size, type, stride, pointer)
+                                  pointer: Int) =
+        GLES30.glVertexAttribIPointer(index, size, type, stride,
+                pointer.toLong())
 
 inline fun glEnable(target: Int) =
         GLES20.glEnable(target)
@@ -540,17 +540,17 @@ inline fun glVertexAttrib4f(location: Int,
         GLES20.glVertexAttrib4f(location, v0, v1, v2, v3)
 
 inline fun glVertexAttrib1fv(location: Int,
-                             value: FloatBuffer) =
+                             value: FloatArray) =
         GLES20.glVertexAttrib1fv(location, value)
 
 inline fun glVertexAttrib2fv(location: Int,
-                             value: FloatBuffer) =
+                             value: FloatArray) =
         GLES20.glVertexAttrib2fv(location, value)
 
 inline fun glVertexAttrib3fv(location: Int,
-                             value: FloatBuffer) =
+                             value: FloatArray) =
         GLES20.glVertexAttrib3fv(location, value)
 
 inline fun glVertexAttrib4fv(location: Int,
-                             value: FloatBuffer) =
+                             value: FloatArray) =
         GLES20.glVertexAttrib4fv(location, value)

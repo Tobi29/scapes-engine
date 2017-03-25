@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.utils.graphics.flipVertical
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.pow
 import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 
 class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
     override fun checkError(message: String) {
@@ -174,22 +173,22 @@ class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
     }
 
     override fun setAttribute1f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib1fv(uniform, values)
     }
 
     override fun setAttribute2f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib2fv(uniform, values)
     }
 
     override fun setAttribute3f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib3fv(uniform, values)
     }
 
     override fun setAttribute4f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib4fv(uniform, values)
     }
 

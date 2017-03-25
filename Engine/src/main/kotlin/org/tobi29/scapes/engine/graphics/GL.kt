@@ -20,7 +20,6 @@ import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 import org.tobi29.scapes.engine.utils.math.max
 import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 
 abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)
@@ -165,16 +164,16 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
                                 v3: Float)
 
     abstract fun setAttribute1f(uniform: Int,
-                                values: FloatBuffer)
+                                values: FloatArray)
 
     abstract fun setAttribute2f(uniform: Int,
-                                values: FloatBuffer)
+                                values: FloatArray)
 
     abstract fun setAttribute3f(uniform: Int,
-                                values: FloatBuffer)
+                                values: FloatArray)
 
     abstract fun setAttribute4f(uniform: Int,
-                                values: FloatBuffer)
+                                values: FloatArray)
 
     abstract fun replaceTexture(x: Int,
                                 y: Int,

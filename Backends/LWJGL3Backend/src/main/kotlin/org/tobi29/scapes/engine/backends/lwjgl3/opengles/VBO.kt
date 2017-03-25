@@ -60,8 +60,7 @@ internal class VBO(val engine: ScapesEngine,
         assert(stored)
         gl.check()
         glBindBuffer(GL_ARRAY_BUFFER, vertexID)
-        glBufferData(GL_ARRAY_BUFFER, buffer.capacity().toLong(),
-                GL_STREAM_DRAW)
+        glBufferData(GL_ARRAY_BUFFER, buffer.capacity(), GL_STREAM_DRAW)
         glBufferSubData(GL_ARRAY_BUFFER, 0, buffer)
     }
 
@@ -73,24 +72,24 @@ internal class VBO(val engine: ScapesEngine,
             when (attribute.vertexType) {
                 VertexType.FLOAT -> glVertexAttribIPointer(attribute.id,
                         attribute.size,
-                        GL_FLOAT, stride, attribute.offset.toLong())
+                        GL_FLOAT, stride, attribute.offset)
                 VertexType.HALF_FLOAT -> glVertexAttribIPointer(
                         attribute.id, attribute.size,
-                        GL_HALF_FLOAT, stride, attribute.offset.toLong())
+                        GL_HALF_FLOAT, stride, attribute.offset)
                 VertexType.BYTE -> glVertexAttribIPointer(attribute.id,
                         attribute.size,
-                        GL_BYTE, stride, attribute.offset.toLong())
+                        GL_BYTE, stride, attribute.offset)
                 VertexType.UNSIGNED_BYTE -> glVertexAttribIPointer(
                         attribute.id, attribute.size,
                         GL_UNSIGNED_BYTE, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 VertexType.SHORT -> glVertexAttribIPointer(attribute.id,
                         attribute.size,
-                        GL_SHORT, stride, attribute.offset.toLong())
+                        GL_SHORT, stride, attribute.offset)
                 VertexType.UNSIGNED_SHORT -> glVertexAttribIPointer(
                         attribute.id, attribute.size,
                         GL_UNSIGNED_SHORT, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 else -> throw IllegalArgumentException("Unknown vertex type!")
             }
         } else {
@@ -98,27 +97,27 @@ internal class VBO(val engine: ScapesEngine,
                 VertexType.FLOAT -> glVertexAttribPointer(attribute.id,
                         attribute.size,
                         GL_FLOAT, attribute.normalized, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 VertexType.HALF_FLOAT -> glVertexAttribPointer(
                         attribute.id, attribute.size,
                         GL_HALF_FLOAT, attribute.normalized, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 VertexType.BYTE -> glVertexAttribPointer(attribute.id,
                         attribute.size,
                         GL_BYTE, attribute.normalized, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 VertexType.UNSIGNED_BYTE -> glVertexAttribPointer(
                         attribute.id, attribute.size,
                         GL_UNSIGNED_BYTE, attribute.normalized, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 VertexType.SHORT -> glVertexAttribPointer(attribute.id,
                         attribute.size,
                         GL_SHORT, attribute.normalized, stride,
-                        attribute.offset.toLong())
+                        attribute.offset)
                 VertexType.UNSIGNED_SHORT -> glVertexAttribPointer(
                         attribute.id, attribute.size,
                         GL_UNSIGNED_SHORT, attribute.normalized,
-                        stride, attribute.offset.toLong())
+                        stride, attribute.offset)
                 else -> throw IllegalArgumentException("Unknown vertex type!")
             }
         }

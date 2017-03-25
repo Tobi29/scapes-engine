@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.utils.graphics.flipVertical
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.pow
 import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 
 class GLLWJGL3GLES(gos: GraphicsObjectSupplier) : GL(gos) {
     override fun checkError(message: String) {
@@ -31,8 +30,11 @@ class GLLWJGL3GLES(gos: GraphicsObjectSupplier) : GL(gos) {
                 GL_INVALID_ENUM -> "Enum argument out of range"
                 GL_INVALID_VALUE -> "Numeric argument out of range"
                 GL_INVALID_OPERATION -> "Operation illegal in current state"
+                GL_STACK_OVERFLOW -> "Command would cause a stack overflow"
+                GL_STACK_UNDERFLOW -> "Command would cause a stack underflow"
                 GL_OUT_OF_MEMORY -> "Not enough memory left to execute command"
                 GL_INVALID_FRAMEBUFFER_OPERATION -> "Framebuffer object is not complete"
+                GL_TABLE_TOO_LARGE -> "The specified table is too large"
                 else -> "Unknown error code"
             }
             throw GraphicsException("$errorName in $message")
@@ -171,22 +173,22 @@ class GLLWJGL3GLES(gos: GraphicsObjectSupplier) : GL(gos) {
     }
 
     override fun setAttribute1f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib1fv(uniform, values)
     }
 
     override fun setAttribute2f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib2fv(uniform, values)
     }
 
     override fun setAttribute3f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib3fv(uniform, values)
     }
 
     override fun setAttribute4f(uniform: Int,
-                                values: FloatBuffer) {
+                                values: FloatArray) {
         glVertexAttrib4fv(uniform, values)
     }
 
