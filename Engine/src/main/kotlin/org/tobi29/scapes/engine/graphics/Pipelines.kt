@@ -33,7 +33,7 @@ fun busyPipeline(gl: GL): () -> Unit {
             matrix.identity()
             matrix.modelViewProjection().orthogonal(-width * 0.5f,
                     -height * 0.5f, width, height)
-            gl.textures().unbind(gl)
+            gl.textures.unbind(gl)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
             busy.render(gl, shader.get())
         }

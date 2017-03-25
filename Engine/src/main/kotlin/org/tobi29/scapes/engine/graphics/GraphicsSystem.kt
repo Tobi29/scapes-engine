@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.encodePNG
 import org.tobi29.scapes.engine.utils.io.asString
 import org.tobi29.scapes.engine.utils.io.filesystem.write
@@ -31,13 +30,9 @@ import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.ShaderCompileException
 import org.tobi29.scapes.engine.utils.shader.ShaderCompiler
 import java.io.IOException
-import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
-class GraphicsSystem(val engine: ScapesEngine,
-                     private val gl: GL) {
-    val textures: TextureManager
-        get() = gl.textures
+class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     private val fpsDebug: GuiWidgetDebugValues.Element
     private val widthDebug: GuiWidgetDebugValues.Element
     private val heightDebug: GuiWidgetDebugValues.Element
@@ -51,6 +46,8 @@ class GraphicsSystem(val engine: ScapesEngine,
     private var triggerScreenshot = false
     private var resolutionMultiplier = 1.0
     private var renderState: GameState? = null
+    private var lastContentWidth = 0
+    private var lastContentHeight = 0
 
     init {
         val buffer = engine.allocate(4)
@@ -71,12 +68,15 @@ class GraphicsSystem(val engine: ScapesEngine,
         shaderDebug = debugValues["Graphics-Shaders"]
     }
 
-    fun dispose() {
+    fun dispose(gl: GL) {
         engine.halt()
         synchronized(this) {
             val state = engine.getState()
             state.disposeState(gl)
-            gl.clear()
+            gos.vaoTracker.disposeAll(gl)
+            gos.textureTracker.disposeAll(gl)
+            gos.fboTracker.disposeAll(gl)
+            gos.shaderTracker.disposeAll(gl)
         }
     }
 
@@ -85,32 +85,34 @@ class GraphicsSystem(val engine: ScapesEngine,
     }
 
     fun textures(): TextureManager {
-        return gl.textures()
+        return textures
     }
 
     fun textureEmpty(): Texture {
         return empty
     }
 
-    @Synchronized fun render(delta: Double) {
+    @Synchronized fun render(gl: GL,
+                             delta: Double,
+                             contentWidth: Int = 0,
+                             contentHeight: Int = 0) {
         try {
             gl.checkError("Pre-Render")
             gl.step(delta)
-            val container = engine.container
-            val containerWidth = container.containerWidth()
-            val containerHeight = container.containerHeight()
             val fboSizeDirty: Boolean
             val resolutionMultiplier = engine.config.resolutionMultiplier
-            if (container.contentResized() || this.resolutionMultiplier != resolutionMultiplier) {
+            if (lastContentWidth != contentWidth ||
+                    lastContentHeight != contentHeight ||
+                    this.resolutionMultiplier != resolutionMultiplier) {
+                lastContentWidth = contentWidth
+                lastContentHeight = contentHeight
                 this.resolutionMultiplier = resolutionMultiplier
-                val contentWidth = container.contentWidth()
-                val contentHeight = container.contentHeight()
                 fboSizeDirty = true
                 widthDebug.setValue(contentWidth)
                 heightDebug.setValue(contentHeight)
                 profilerSection("Reshape") {
-                    gl.reshape(contentWidth, contentHeight, containerWidth,
-                            containerHeight, resolutionMultiplier)
+                    gl.reshape(contentWidth, contentHeight,
+                            resolutionMultiplier)
                 }
             } else {
                 fboSizeDirty = false
@@ -128,10 +130,10 @@ class GraphicsSystem(val engine: ScapesEngine,
                 state.renderState(gl, delta, fboSizeDirty)
             }
             fpsDebug.setValue(1.0 / delta)
-            textureDebug.setValue(gl.textureTracker().count())
-            vaoDebug.setValue(gl.vaoTracker().count())
-            fboDebug.setValue(gl.fboTracker().count())
-            shaderDebug.setValue(gl.shaderTracker().count())
+            textureDebug.setValue(gos.textureTracker.count())
+            vaoDebug.setValue(gos.vaoTracker.count())
+            fboDebug.setValue(gos.fboTracker.count())
+            shaderDebug.setValue(gos.shaderTracker.count())
             engine.performance.renderTimestamp(delta)
             if (triggerScreenshot) {
                 profilerSection("Screenshot") {
@@ -152,10 +154,10 @@ class GraphicsSystem(val engine: ScapesEngine,
                 }
             }
             profilerSection("Cleanup") {
-                gl.vaoTracker().disposeUnused(gl)
-                gl.textureTracker().disposeUnused(gl)
-                gl.fboTracker().disposeUnused(gl)
-                gl.shaderTracker().disposeUnused(gl)
+                gos.vaoTracker.disposeUnused(gl)
+                gos.textureTracker.disposeUnused(gl)
+                gos.fboTracker.disposeUnused(gl)
+                gos.shaderTracker.disposeUnused(gl)
             }
         } catch (e: GraphicsException) {
             logger.warn { "Graphics error during rendering: $e" }
@@ -164,107 +166,6 @@ class GraphicsSystem(val engine: ScapesEngine,
 
     fun triggerScreenshot() {
         triggerScreenshot = true
-    }
-
-    fun createTexture(width: Int,
-                      height: Int): Texture {
-        return createTexture(width, height, engine.allocate(width * height * 4),
-                0)
-    }
-
-    fun createTexture(image: Image,
-                      mipmaps: Int): Texture {
-        return createTexture(image.width, image.height, image.buffer,
-                mipmaps, TextureFilter.NEAREST, TextureFilter.NEAREST,
-                TextureWrap.REPEAT, TextureWrap.REPEAT)
-    }
-
-    fun createTexture(width: Int,
-                      height: Int,
-                      mipmaps: Int): Texture {
-        return createTexture(width, height, engine.allocate(width * height * 4),
-                mipmaps)
-    }
-
-    fun createTexture(width: Int,
-                      height: Int,
-                      mipmaps: Int,
-                      minFilter: TextureFilter,
-                      magFilter: TextureFilter,
-                      wrapS: TextureWrap,
-                      wrapT: TextureWrap): Texture {
-        return createTexture(width, height, engine.allocate(width * height * 4),
-                mipmaps, minFilter, magFilter, wrapS, wrapT)
-    }
-
-    fun createTexture(image: Image): Texture {
-        return createTexture(image.width, image.height, image.buffer, 4)
-    }
-
-    fun createTexture(image: Image,
-                      mipmaps: Int,
-                      minFilter: TextureFilter,
-                      magFilter: TextureFilter,
-                      wrapS: TextureWrap,
-                      wrapT: TextureWrap): Texture {
-        return createTexture(image.width, image.height, image.buffer,
-                mipmaps, minFilter, magFilter, wrapS, wrapT)
-    }
-
-    fun createTexture(width: Int,
-                      height: Int,
-                      buffer: ByteBuffer,
-                      mipmaps: Int = 4,
-                      minFilter: TextureFilter = TextureFilter.NEAREST,
-                      magFilter: TextureFilter = TextureFilter.NEAREST,
-                      wrapS: TextureWrap = TextureWrap.REPEAT,
-                      wrapT: TextureWrap = TextureWrap.REPEAT): Texture {
-        return gl.createTexture(width, height, buffer, mipmaps, minFilter,
-                magFilter, wrapS, wrapT)
-    }
-
-    fun createFramebuffer(width: Int,
-                          height: Int,
-                          colorAttachments: Int,
-                          depth: Boolean,
-                          hdr: Boolean,
-                          alpha: Boolean,
-                          minFilter: TextureFilter = TextureFilter.NEAREST,
-                          magFilter: TextureFilter = minFilter): Framebuffer {
-        return gl.createFramebuffer(width, height, colorAttachments, depth, hdr,
-                alpha, minFilter, magFilter)
-    }
-
-    fun createModelFast(attributes: List<ModelAttribute>,
-                        length: Int,
-                        renderType: RenderType): Model {
-        return gl.createModelFast(attributes, length, renderType)
-    }
-
-    fun createModelStatic(attributes: List<ModelAttribute>,
-                          length: Int,
-                          index: IntArray,
-                          renderType: RenderType): Model {
-        return createModelStatic(attributes, length, index, index.size,
-                renderType)
-    }
-
-    fun createModelStatic(attributes: List<ModelAttribute>,
-                          length: Int,
-                          index: IntArray,
-                          indexLength: Int,
-                          renderType: RenderType): Model {
-        return gl.createModelStatic(attributes, length, index, indexLength,
-                renderType)
-    }
-
-    fun createModelHybrid(attributes: List<ModelAttribute>,
-                          length: Int,
-                          attributesStream: List<ModelAttribute>,
-                          lengthStream: Int,
-                          renderType: RenderType): ModelHybrid {
-        return gl.createModelHybrid(attributes, length, attributesStream,
-                lengthStream, renderType)
     }
 
     fun loadShader(asset: String,
@@ -291,7 +192,7 @@ class GraphicsSystem(val engine: ScapesEngine,
     fun createShader(asset: String,
                      information: ShaderCompileInformation = ShaderCompileInformation()): Shader {
         try {
-            val program = gl.engine.files[asset + ".program"].get()
+            val program = engine.files[asset + ".program"].get()
             val source = program.read({ stream -> process(stream, asString()) })
             val shader = compiled(source)
             return createShader(shader, information)
@@ -304,11 +205,6 @@ class GraphicsSystem(val engine: ScapesEngine,
         }
     }
 
-    fun createShader(shader: CompiledShader,
-                     information: ShaderCompileInformation): Shader {
-        return gl.createShader(shader, information)
-    }
-
     private fun compiled(source: String): CompiledShader {
         return shaderCache[source] ?: run {
             val shader = ShaderCompiler.compile(source)
@@ -317,12 +213,11 @@ class GraphicsSystem(val engine: ScapesEngine,
         }
     }
 
-    fun clear() {
-        gl.clear()
-    }
-
     fun reset() {
-        gl.reset()
+        gos.vaoTracker.resetAll()
+        gos.textureTracker.resetAll()
+        gos.fboTracker.resetAll()
+        gos.shaderTracker.resetAll()
     }
 
     companion object : KLogging()

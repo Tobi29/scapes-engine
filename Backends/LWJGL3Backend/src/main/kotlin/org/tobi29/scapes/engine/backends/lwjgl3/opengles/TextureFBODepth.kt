@@ -16,13 +16,10 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import org.lwjgl.opengles.GLES20
-import org.lwjgl.opengles.GLES30
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
-import java.nio.ByteBuffer
 
 internal class TextureFBODepth(engine: ScapesEngine,
                                width: Int,
@@ -35,18 +32,17 @@ internal class TextureFBODepth(engine: ScapesEngine,
 
     fun attach(gl: GL) {
         store(gl)
-        GLES20.glFramebufferTexture2D(GLES20.GL_FRAMEBUFFER,
-                GLES20.GL_DEPTH_ATTACHMENT, GLES20.GL_TEXTURE_2D, textureID, 0)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                GL_TEXTURE_2D, textureID, 0)
     }
 
     override fun texture(gl: GL) {
         assert(isStored)
         gl.check()
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID)
+        glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
-        GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D, 0,
-                GLES30.GL_DEPTH_COMPONENT24,
-                buffer.width, buffer.height, 0, GLES20.GL_DEPTH_COMPONENT,
-                GLES20.GL_UNSIGNED_INT, null as ByteBuffer?)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,
+                buffer.width, buffer.height, 0, GL_DEPTH_COMPONENT,
+                GL_UNSIGNED_INT, null)
     }
 }

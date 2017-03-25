@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.lwjgl.opengl.GL20
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Model
@@ -27,7 +26,7 @@ internal abstract class VAO(protected val engine: ScapesEngine) : Model {
     override var isStored = false
     protected var markAsDisposed = false
     override var weak = false
-    protected var detach: Function0<Unit>? = null
+    protected var detach: (() -> Unit)? = null
 
     override fun markAsDisposed() {
         markAsDisposed = true
@@ -83,22 +82,22 @@ internal abstract class VAO(protected val engine: ScapesEngine) : Model {
     protected fun shader(gl: GL,
                          shader: Shader) {
         gl.check()
-        val matrix = gl.matrixStack().current()
+        val matrix = gl.matrixStack.current()
         shader.activate(gl)
         shader.updateUniforms(gl)
         var uniformLocation = shader.uniformLocation(0)
         if (uniformLocation != -1) {
-            GL20.glUniformMatrix4fv(uniformLocation, false,
+            glUniformMatrix4fv(uniformLocation, false,
                     matrix.modelView().values())
         }
         uniformLocation = shader.uniformLocation(1)
         if (uniformLocation != -1) {
-            GL20.glUniformMatrix4fv(uniformLocation, false,
+            glUniformMatrix4fv(uniformLocation, false,
                     matrix.modelViewProjection().values())
         }
         uniformLocation = shader.uniformLocation(2)
         if (uniformLocation != -1) {
-            GL20.glUniformMatrix3fv(uniformLocation, false,
+            glUniformMatrix3fv(uniformLocation, false,
                     matrix.normal().values())
         }
     }

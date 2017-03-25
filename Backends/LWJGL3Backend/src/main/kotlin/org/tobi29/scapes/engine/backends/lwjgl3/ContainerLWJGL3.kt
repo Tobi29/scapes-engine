@@ -25,16 +25,19 @@ import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.lwjgl3.openal.LWJGL3OpenAL
 import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GLLWJGL3GL
+import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GOSLWJGL3GL
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
+import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.sound.SoundSystem
+import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toBoolean
-import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.task.Joiner
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -44,32 +47,33 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
                                protected val useGLES: Boolean = false) : ControllerDefault(), Container {
+    override val gos: GraphicsObjectSupplier
+    override val sounds: SoundSystem
     protected val tasks = ConcurrentLinkedQueue<() -> Unit>()
-    protected val mainThread: Thread
+    protected val mainThread: Thread = Thread.currentThread()
     protected val gl: GL
-    protected val soundSystem: SoundSystem
     protected val superModifier: Boolean
     protected val joysticksChanged = AtomicBoolean(false)
     protected var focus = true
     protected var valid = false
     protected var visible = false
-    protected var containerResized = true
-    protected var containerWidth = 0
-    protected var containerHeight = 0
-    protected var contentWidth = 0
-    protected var contentHeight = 0
+    override var containerWidth = 0
+        protected set
+    override var containerHeight = 0
+        protected set
     protected var mouseX = 0.0
     protected var mouseY = 0.0
 
     init {
-        mainThread = Thread.currentThread()
         logger.info { "LWJGL version: ${Version.getVersion()}" }
         if (useGLES) {
-            gl = GLLWJGL3GLES(engine, this)
+            gos = GOSLWJGL3GLES(engine)
+            gl = GLLWJGL3GLES(gos)
         } else {
-            gl = GLLWJGL3GL(engine, this)
+            gos = GOSLWJGL3GL(engine)
+            gl = GLLWJGL3GL(gos)
         }
-        soundSystem = OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
+        sounds = OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
         superModifier = Platform.get() == Platform.MACOSX
 
         // It's 2017 and this is still a thing...
@@ -85,36 +89,8 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
         }
     }
 
-    override fun containerWidth(): Int {
-        return containerWidth
-    }
-
-    override fun containerHeight(): Int {
-        return containerHeight
-    }
-
-    override fun contentWidth(): Int {
-        return contentWidth
-    }
-
-    override fun contentHeight(): Int {
-        return contentHeight
-    }
-
-    override fun contentResized(): Boolean {
-        return containerResized
-    }
-
     override fun updateContainer() {
         valid = false
-    }
-
-    override fun gl(): GL {
-        return gl
-    }
-
-    override fun sound(): SoundSystem {
-        return soundSystem
     }
 
     override fun controller(): ControllerDefault? {

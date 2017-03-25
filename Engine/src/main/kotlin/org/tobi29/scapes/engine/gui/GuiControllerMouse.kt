@@ -36,9 +36,9 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
     override fun update(delta: Double) {
         val cursorX = controller.x()
         val cursorY = controller.y()
-        cursor.set(Vector2d(cursorX, cursorY), Vector2d(cursorX, cursorY))
+        cursor.set(Vector2d(cursorX, cursorY))
         draggingLeft?.let { component ->
-            val guiPos = cursor.currentGuiPos()
+            val guiPos = cursor.currentPos()
             val relativeX = guiPos.x - dragLeftX
             val relativeY = guiPos.y - dragLeftY
             dragLeftX = guiPos.x
@@ -48,7 +48,7 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                             relativeY), component)
         }
         draggingRight?.let { component ->
-            val guiPos = cursor.currentGuiPos()
+            val guiPos = cursor.currentPos()
             val relativeX = guiPos.x - dragRightX
             val relativeY = guiPos.y - dragRightY
             dragRightX = guiPos.x
@@ -90,7 +90,7 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                             event: GuiComponentEvent) {
         when (key) {
             ControllerKey.BUTTON_0 -> {
-                val guiPos = cursor.currentGuiPos()
+                val guiPos = cursor.currentPos()
                 draggingLeft = engine.guiStack.fireEvent(GuiEvent.PRESS_LEFT,
                         event)
                 dragLeftX = guiPos.x
@@ -101,7 +101,7 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                 }
             }
             ControllerKey.BUTTON_1 -> {
-                val guiPos = cursor.currentGuiPos()
+                val guiPos = cursor.currentPos()
                 draggingRight = engine.guiStack.fireEvent(GuiEvent.PRESS_RIGHT,
                         event)
                 dragRightX = guiPos.x

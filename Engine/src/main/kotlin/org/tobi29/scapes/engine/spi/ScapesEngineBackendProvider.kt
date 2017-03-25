@@ -22,5 +22,5 @@ import org.tobi29.scapes.engine.ScapesEngine
 interface ScapesEngineBackendProvider {
     fun available(): Boolean
 
-    fun createContainer(engine: ScapesEngine): Container
+    fun create(engine: ScapesEngine): Container
 }

@@ -102,7 +102,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
                     pixelSize: Vector2d,
                     delta: Double) {
         if (visible) {
-            val matrixStack = gl.matrixStack()
+            val matrixStack = gl.matrixStack
             val matrix = matrixStack.push()
             transform(matrix, size)
             val layout = layoutManager(size)

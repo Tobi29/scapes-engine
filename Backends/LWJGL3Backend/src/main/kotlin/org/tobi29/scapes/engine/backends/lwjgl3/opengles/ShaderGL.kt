@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import mu.KLogging
-import org.lwjgl.opengles.GLES20
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.ShaderCompileInformation
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import java.io.IOException
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
 import java.util.*
 
 internal class ShaderGL(private val shader: CompiledShader,
@@ -36,7 +32,7 @@ internal class ShaderGL(private val shader: CompiledShader,
     private var uniformLocations: IntArray? = null
     private var program = 0
     private var used: Long = 0
-    private var detach: Function0<Unit>? = null
+    private var detach: (() -> Unit)? = null
 
     override fun ensureStored(gl: GL): Boolean {
         if (!isStored) {
@@ -59,7 +55,7 @@ internal class ShaderGL(private val shader: CompiledShader,
 
     override fun dispose(gl: GL) {
         gl.check()
-        GLES20.glDeleteProgram(program)
+        glDeleteProgram(program)
     }
 
     override fun reset() {
@@ -76,7 +72,7 @@ internal class ShaderGL(private val shader: CompiledShader,
             return
         }
         gl.check()
-        GLES20.glUseProgram(program)
+        glUseProgram(program)
     }
 
     override fun updateUniforms(gl: GL) {
@@ -93,22 +89,20 @@ internal class ShaderGL(private val shader: CompiledShader,
 
     override fun setUniform1f(uniform: Int,
                               v0: Float) {
-        uniforms.add { GLES20.glUniform1f(uniformLocation(uniform), v0) }
+        uniforms.add { glUniform1f(uniformLocation(uniform), v0) }
     }
 
     override fun setUniform2f(uniform: Int,
                               v0: Float,
                               v1: Float) {
-        uniforms.add { GLES20.glUniform2f(uniformLocation(uniform), v0, v1) }
+        uniforms.add { glUniform2f(uniformLocation(uniform), v0, v1) }
     }
 
     override fun setUniform3f(uniform: Int,
                               v0: Float,
                               v1: Float,
                               v2: Float) {
-        uniforms.add {
-            GLES20.glUniform3f(uniformLocation(uniform), v0, v1, v2)
-        }
+        uniforms.add { glUniform3f(uniformLocation(uniform), v0, v1, v2) }
     }
 
     override fun setUniform4f(uniform: Int,
@@ -116,29 +110,25 @@ internal class ShaderGL(private val shader: CompiledShader,
                               v1: Float,
                               v2: Float,
                               v3: Float) {
-        uniforms.add {
-            GLES20.glUniform4f(uniformLocation(uniform), v0, v1, v2, v3)
-        }
+        uniforms.add { glUniform4f(uniformLocation(uniform), v0, v1, v2, v3) }
     }
 
     override fun setUniform1i(uniform: Int,
                               v0: Int) {
-        uniforms.add { GLES20.glUniform1i(uniformLocation(uniform), v0) }
+        uniforms.add { glUniform1i(uniformLocation(uniform), v0) }
     }
 
     override fun setUniform2i(uniform: Int,
                               v0: Int,
                               v1: Int) {
-        uniforms.add { GLES20.glUniform2i(uniformLocation(uniform), v0, v1) }
+        uniforms.add { glUniform2i(uniformLocation(uniform), v0, v1) }
     }
 
     override fun setUniform3i(uniform: Int,
                               v0: Int,
                               v1: Int,
                               v2: Int) {
-        uniforms.add {
-            GLES20.glUniform3i(uniformLocation(uniform), v0, v1, v2)
-        }
+        uniforms.add { glUniform3i(uniformLocation(uniform), v0, v1, v2) }
     }
 
     override fun setUniform4i(uniform: Int,
@@ -146,57 +136,54 @@ internal class ShaderGL(private val shader: CompiledShader,
                               v1: Int,
                               v2: Int,
                               v3: Int) {
-        uniforms.add {
-            GLES20.glUniform4i(uniformLocation(uniform), v0, v1, v2, v3)
-        }
+        uniforms.add { glUniform4i(uniformLocation(uniform), v0, v1, v2, v3) }
     }
 
     override fun setUniform1(uniform: Int,
-                             values: FloatBuffer) {
-        uniforms.add { GLES20.glUniform1fv(uniformLocation(uniform), values) }
+                             values: FloatArray) {
+        uniforms.add { glUniform1fv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform2(uniform: Int,
-                             values: FloatBuffer) {
-        uniforms.add { GLES20.glUniform2fv(uniformLocation(uniform), values) }
+                             values: FloatArray) {
+        uniforms.add { glUniform2fv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform3(uniform: Int,
-                             values: FloatBuffer) {
-        uniforms.add { GLES20.glUniform3fv(uniformLocation(uniform), values) }
+                             values: FloatArray) {
+        uniforms.add { glUniform3fv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform4(uniform: Int,
-                             values: FloatBuffer) {
-        uniforms.add { GLES20.glUniform4fv(uniformLocation(uniform), values) }
+                             values: FloatArray) {
+        uniforms.add { glUniform4fv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform1(uniform: Int,
-                             values: IntBuffer) {
-        uniforms.add { GLES20.glUniform1iv(uniformLocation(uniform), values) }
+                             values: IntArray) {
+        uniforms.add { glUniform1iv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform2(uniform: Int,
-                             values: IntBuffer) {
-        uniforms.add { GLES20.glUniform2iv(uniformLocation(uniform), values) }
+                             values: IntArray) {
+        uniforms.add { glUniform2iv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform3(uniform: Int,
-                             values: IntBuffer) {
-        uniforms.add { GLES20.glUniform3iv(uniformLocation(uniform), values) }
+                             values: IntArray) {
+        uniforms.add { glUniform3iv(uniformLocation(uniform), values) }
     }
 
     override fun setUniform4(uniform: Int,
-                             values: IntBuffer) {
-        uniforms.add { GLES20.glUniform4iv(uniformLocation(uniform), values) }
+                             values: IntArray) {
+        uniforms.add { glUniform4iv(uniformLocation(uniform), values) }
     }
 
     override fun setUniformMatrix2(uniform: Int,
                                    transpose: Boolean,
                                    matrices: FloatArray) {
         uniforms.add {
-            GLES20.glUniformMatrix2fv(uniformLocation(uniform), transpose,
-                    matrices)
+            glUniformMatrix2fv(uniformLocation(uniform), transpose, matrices)
         }
     }
 
@@ -204,8 +191,7 @@ internal class ShaderGL(private val shader: CompiledShader,
                                    transpose: Boolean,
                                    matrices: FloatArray) {
         uniforms.add {
-            GLES20.glUniformMatrix3fv(uniformLocation(uniform), transpose,
-                    matrices)
+            glUniformMatrix3fv(uniformLocation(uniform), transpose, matrices)
         }
     }
 
@@ -213,8 +199,7 @@ internal class ShaderGL(private val shader: CompiledShader,
                                    transpose: Boolean,
                                    matrices: FloatArray) {
         uniforms.add {
-            GLES20.glUniformMatrix4fv(uniformLocation(uniform), transpose,
-                    matrices)
+            glUniformMatrix4fv(uniformLocation(uniform), transpose, matrices)
         }
     }
 
@@ -233,7 +218,7 @@ internal class ShaderGL(private val shader: CompiledShader,
 
         information.postCompile(gl, this)
         valid = true
-        detach = gl.shaderTracker().attach(this)
+        detach = gl.shaderTracker.attach(this)
     }
 
     companion object : KLogging()

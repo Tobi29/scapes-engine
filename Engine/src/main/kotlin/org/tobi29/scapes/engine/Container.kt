@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine
 
 import org.tobi29.scapes.engine.graphics.Font
-import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerJoystick
@@ -30,25 +30,15 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 interface Container {
-    fun formFactor(): FormFactor
-
-    fun containerWidth(): Int
-
-    fun containerHeight(): Int
-
-    fun contentWidth(): Int
-
-    fun contentHeight(): Int
-
-    fun contentResized(): Boolean
+    val gos: GraphicsObjectSupplier
+    val sounds: SoundSystem
+    val formFactor: FormFactor
+    val containerWidth: Int
+    val containerHeight: Int
 
     fun updateContainer()
 
     fun update(delta: Double)
-
-    fun gl(): GL
-
-    fun sound(): SoundSystem
 
     fun controller(): ControllerDefault?
 

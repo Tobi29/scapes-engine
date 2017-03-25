@@ -52,7 +52,7 @@ fun postProcess(gl: GL,
                 framebuffer: Framebuffer,
                 depthbuffer: Framebuffer = framebuffer,
                 config: Shader.() -> Unit = {}): () -> Unit {
-    val model = createVTI(gl.engine,
+    val model = gl.createVTI(
             floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 1.0f, 0.0f, 0.0f),
             floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),

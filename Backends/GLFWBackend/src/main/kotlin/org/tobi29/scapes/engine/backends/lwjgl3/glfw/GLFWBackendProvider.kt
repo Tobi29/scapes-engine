@@ -16,16 +16,11 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
-import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider
 
 class GLFWBackendProvider : ScapesEngineBackendProvider {
-    override fun available(): Boolean {
-        return true
-    }
+    override fun available() = true
 
-    override fun createContainer(engine: ScapesEngine): Container {
-        return ContainerGLFW(engine)
-    }
+    override fun create(engine: ScapesEngine) = ContainerGLFW(engine)
 }

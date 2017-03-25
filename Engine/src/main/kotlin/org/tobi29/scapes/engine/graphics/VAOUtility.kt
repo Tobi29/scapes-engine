@@ -16,120 +16,98 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.ScapesEngine
 import java.util.*
 
-fun createV(engine: ScapesEngine,
-            vertex: FloatArray,
-            renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createV(vertex: FloatArray,
+                                   renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVI(engine: ScapesEngine,
-             vertex: FloatArray,
-             index: IntArray,
-             renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVI(vertex: FloatArray,
+                                    index: IntArray,
+                                    renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
 
-fun createVN(engine: ScapesEngine,
-             vertex: FloatArray,
-             normal: FloatArray,
-             renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVN(vertex: FloatArray,
+                                    normal: FloatArray,
+                                    renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
     attributes.add(ModelAttribute(GL.NORMAL_ATTRIBUTE, 3, normal, true, 0,
             VertexType.BYTE))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVNI(engine: ScapesEngine,
-              vertex: FloatArray,
-              normal: FloatArray,
-              index: IntArray,
-              renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVNI(vertex: FloatArray,
+                                     normal: FloatArray,
+                                     index: IntArray,
+                                     renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
     attributes.add(ModelAttribute(GL.NORMAL_ATTRIBUTE, 3, normal, true, 0,
             VertexType.BYTE))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
 
-fun createVC(engine: ScapesEngine,
-             vertex: FloatArray,
-             color: FloatArray,
-             renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVC(vertex: FloatArray,
+                                    color: FloatArray,
+                                    renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
     attributes.add(ModelAttribute(GL.COLOR_ATTRIBUTE, 4, color, true, 0,
             VertexType.UNSIGNED_BYTE))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVCI(engine: ScapesEngine,
-              vertex: FloatArray,
-              color: FloatArray,
-              index: IntArray,
-              renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVCI(vertex: FloatArray,
+                                     color: FloatArray,
+                                     index: IntArray,
+                                     renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
     attributes.add(ModelAttribute(GL.COLOR_ATTRIBUTE, 4, color, true, 0,
             VertexType.UNSIGNED_BYTE))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
 
-fun createVT(engine: ScapesEngine,
-             vertex: FloatArray,
-             texture: FloatArray,
-             renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVT(vertex: FloatArray,
+                                    texture: FloatArray,
+                                    renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
     attributes.add(ModelAttribute(GL.TEXTURE_ATTRIBUTE, 2, texture, false,
             0, VertexType.FLOAT))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVTI(engine: ScapesEngine,
-              vertex: FloatArray,
-              texture: FloatArray,
-              index: IntArray,
-              renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVTI(vertex: FloatArray,
+                                     texture: FloatArray,
+                                     index: IntArray,
+                                     renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
     attributes.add(ModelAttribute(GL.TEXTURE_ATTRIBUTE, 2, texture, false,
             0, VertexType.FLOAT))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
 
-fun createVTN(engine: ScapesEngine,
-              vertex: FloatArray,
-              texture: FloatArray,
-              normal: FloatArray,
-              renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVTN(vertex: FloatArray,
+                                     texture: FloatArray,
+                                     normal: FloatArray,
+                                     renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
@@ -137,16 +115,14 @@ fun createVTN(engine: ScapesEngine,
             0, VertexType.FLOAT))
     attributes.add(ModelAttribute(GL.NORMAL_ATTRIBUTE, 3, normal, true, 0,
             VertexType.BYTE))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVTNI(engine: ScapesEngine,
-               vertex: FloatArray,
-               texture: FloatArray,
-               normal: FloatArray,
-               index: IntArray,
-               renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVTNI(vertex: FloatArray,
+                                      texture: FloatArray,
+                                      normal: FloatArray,
+                                      index: IntArray,
+                                      renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
@@ -154,16 +130,13 @@ fun createVTNI(engine: ScapesEngine,
             0, VertexType.FLOAT))
     attributes.add(ModelAttribute(GL.NORMAL_ATTRIBUTE, 3, normal, true, 0,
             VertexType.BYTE))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
 
-fun createVCT(engine: ScapesEngine,
-              vertex: FloatArray,
-              color: FloatArray,
-              texture: FloatArray,
-              renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVCT(vertex: FloatArray,
+                                     color: FloatArray,
+                                     texture: FloatArray,
+                                     renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
@@ -171,16 +144,14 @@ fun createVCT(engine: ScapesEngine,
             VertexType.UNSIGNED_BYTE))
     attributes.add(ModelAttribute(GL.TEXTURE_ATTRIBUTE, 2, texture, false,
             0, VertexType.FLOAT))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVCTI(engine: ScapesEngine,
-               vertex: FloatArray,
-               color: FloatArray,
-               texture: FloatArray,
-               index: IntArray,
-               renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVCTI(vertex: FloatArray,
+                                      color: FloatArray,
+                                      texture: FloatArray,
+                                      index: IntArray,
+                                      renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
@@ -188,17 +159,14 @@ fun createVCTI(engine: ScapesEngine,
             VertexType.UNSIGNED_BYTE))
     attributes.add(ModelAttribute(GL.TEXTURE_ATTRIBUTE, 2, texture, false,
             0, VertexType.FLOAT))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
 
-fun createVCTN(engine: ScapesEngine,
-               vertex: FloatArray,
-               color: FloatArray,
-               texture: FloatArray,
-               normal: FloatArray,
-               renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVCTN(vertex: FloatArray,
+                                      color: FloatArray,
+                                      texture: FloatArray,
+                                      normal: FloatArray,
+                                      renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))
@@ -208,17 +176,15 @@ fun createVCTN(engine: ScapesEngine,
             0, VertexType.FLOAT))
     attributes.add(ModelAttribute(GL.NORMAL_ATTRIBUTE, 3, normal, true, 0,
             VertexType.BYTE))
-    return engine.graphics.createModelFast(attributes, vertex.size / 3,
-            renderType)
+    return createModelFast(attributes, vertex.size / 3, renderType)
 }
 
-fun createVCTNI(engine: ScapesEngine,
-                vertex: FloatArray,
-                color: FloatArray,
-                texture: FloatArray,
-                normal: FloatArray,
-                index: IntArray,
-                renderType: RenderType): Model {
+fun GraphicsObjectSupplier.createVCTNI(vertex: FloatArray,
+                                       color: FloatArray,
+                                       texture: FloatArray,
+                                       normal: FloatArray,
+                                       index: IntArray,
+                                       renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()
     attributes.add(ModelAttribute(GL.VERTEX_ATTRIBUTE, 3, vertex, false,
             0, VertexType.HALF_FLOAT))

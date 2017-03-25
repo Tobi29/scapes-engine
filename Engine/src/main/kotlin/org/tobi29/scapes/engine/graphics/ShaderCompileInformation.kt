@@ -38,8 +38,6 @@ class ShaderCompileInformation {
         val processor = ShaderPreprocessor()
         processor.supplyProperty("SCENE_WIDTH", gl.sceneWidth())
         processor.supplyProperty("SCENE_HEIGHT", gl.sceneHeight())
-        processor.supplyProperty("CONTAINER_WIDTH", gl.containerWidth())
-        processor.supplyProperty("CONTAINER_HEIGHT", gl.containerHeight())
         processor.supplyProperty("CONTENT_WIDTH", gl.contentWidth())
         processor.supplyProperty("CONTENT_HEIGHT", gl.contentHeight())
         preCompileListeners.forEach { it(processor, gl) }

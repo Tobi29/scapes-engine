@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.utils.graphics
 import org.tobi29.scapes.engine.utils.math.max
 import java.nio.ByteBuffer
 
+
 /**
  * Creates an array of [ByteBuffer] containing mipmap
  * textures from the given source texture
@@ -29,6 +30,7 @@ import java.nio.ByteBuffer
  * @param alpha    Whether or not to allow transparent borders or harsh ones
  * @return An array of [ByteBuffer] containing the mipmap textures
  */
+@JvmName("generateMipMapsNullable")
 fun generateMipMaps(buffer: ByteBuffer?,
                     supplier: (Int) -> ByteBuffer,
                     width: Int,
@@ -46,6 +48,34 @@ fun generateMipMaps(buffer: ByteBuffer?,
                 buffers[i + 1], 1)
     }
     return buffers
+}
+
+/**
+ * Creates an array of [ByteBuffer] containing mipmap
+ * textures from the given source texture
+ * @param buffer   [ByteBuffer] containing texture data in RGBA format
+ * @param supplier Supplier for [ByteBuffer] instances
+ * @param width    Width of source texture in pixels
+ * @param height   Height of source texture in pixels
+ * @param mipmaps  Amount of mipmap levels, resulting array will be n + 1 in size
+ * @param alpha    Whether or not to allow transparent borders or harsh ones
+ * @return An array of [ByteBuffer] containing the mipmap textures
+ */
+fun generateMipMaps(buffer: ByteBuffer,
+                    supplier: (Int) -> ByteBuffer,
+                    width: Int,
+                    height: Int,
+                    mipmaps: Int,
+                    alpha: Boolean): Array<ByteBuffer> {
+    val buffers = arrayOfNulls<ByteBuffer>(mipmaps + 1)
+    buffers[mipmaps] = generateMipMap(buffer, supplier, width, height, mipmaps,
+            alpha)
+    for (i in mipmaps - 1 downTo 0) {
+        buffers[i] = generateMipMap(buffer, supplier, width, height, i, alpha,
+                buffers[i + 1], 1)
+    }
+    @Suppress("UNCHECKED_CAST")
+    return buffers as Array<ByteBuffer>
 }
 
 /**

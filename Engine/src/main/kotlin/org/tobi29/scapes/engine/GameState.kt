@@ -97,10 +97,10 @@ abstract class GameState(val engine: ScapesEngine) {
     }
 
     private fun renderGui(gl: GL): (Double) -> Unit {
-        val shader = gl.engine.graphics.loadShader("Engine:shader/Gui")
+        val shader = engine.graphics.loadShader("Engine:shader/Gui")
         return { delta ->
             gl.clearDepth()
-            gl.engine.guiStack.render(gl, shader.get(), delta)
+            engine.guiStack.render(gl, shader.get(), delta)
             gl.checkError("Gui-Rendering")
         }
     }

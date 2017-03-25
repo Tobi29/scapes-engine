@@ -16,14 +16,10 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL30
-import org.lwjgl.opengl.GL31
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
-
 import java.nio.ByteBuffer
 
 internal class VAOHybrid(private val vbo1: VBO,
@@ -45,9 +41,9 @@ internal class VAOHybrid(private val vbo1: VBO,
             return false
         }
         gl.check()
-        GL30.glBindVertexArray(arrayID)
+        glBindVertexArray(arrayID)
         shader(gl, shader)
-        GL11.glDrawArrays(GLUtils.renderType(renderType), 0, length)
+        glDrawArrays(GLUtils.renderType(renderType), 0, length)
         return true
     }
 
@@ -66,10 +62,9 @@ internal class VAOHybrid(private val vbo1: VBO,
             return false
         }
         gl.check()
-        GL30.glBindVertexArray(arrayID)
+        glBindVertexArray(arrayID)
         shader(gl, shader)
-        GL31.glDrawArraysInstanced(GLUtils.renderType(renderType), 0, length,
-                count)
+        glDrawArraysInstanced(GLUtils.renderType(renderType), 0, length, count)
         return true
     }
 
@@ -89,11 +84,11 @@ internal class VAOHybrid(private val vbo1: VBO,
         }
         isStored = true
         gl.check()
-        arrayID = GL30.glGenVertexArrays()
-        GL30.glBindVertexArray(arrayID)
+        arrayID = glGenVertexArrays()
+        glBindVertexArray(arrayID)
         vbo1.store(gl, weak)
         vbo2.store(gl, weak)
-        detach = gl.vaoTracker().attach(this)
+        detach = gl.vaoTracker.attach(this)
         return true
     }
 
@@ -102,7 +97,7 @@ internal class VAOHybrid(private val vbo1: VBO,
         gl.check()
         vbo1.dispose(gl)
         vbo2.dispose(gl)
-        GL30.glDeleteVertexArrays(arrayID)
+        glDeleteVertexArrays(arrayID)
     }
 
     override fun strideStream(): Int {

@@ -16,9 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
-
 interface Shader : GraphicsObject {
     fun activate(gl: GL)
 
@@ -63,28 +60,28 @@ interface Shader : GraphicsObject {
                      v3: Int)
 
     fun setUniform1(uniform: Int,
-                    values: FloatBuffer)
+                    values: FloatArray)
 
     fun setUniform2(uniform: Int,
-                    values: FloatBuffer)
+                    values: FloatArray)
 
     fun setUniform3(uniform: Int,
-                    values: FloatBuffer)
+                    values: FloatArray)
 
     fun setUniform4(uniform: Int,
-                    values: FloatBuffer)
+                    values: FloatArray)
 
     fun setUniform1(uniform: Int,
-                    values: IntBuffer)
+                    values: IntArray)
 
     fun setUniform2(uniform: Int,
-                    values: IntBuffer)
+                    values: IntArray)
 
     fun setUniform3(uniform: Int,
-                    values: IntBuffer)
+                    values: IntArray)
 
     fun setUniform4(uniform: Int,
-                    values: IntBuffer)
+                    values: IntArray)
 
     fun setUniformMatrix2(uniform: Int,
                           transpose: Boolean,

@@ -246,8 +246,8 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
 
     open fun baseSize(): Vector2d {
         val container = engine.container
-        return Vector2d(container.containerWidth().toDouble(),
-                container.containerHeight().toDouble())
+        return Vector2d(container.containerWidth.toDouble(),
+                container.containerHeight.toDouble())
     }
 
     abstract val isValid: Boolean
@@ -291,8 +291,8 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
     private fun scaleEvent(event: GuiComponentEvent): GuiComponentEvent {
         val size = baseSize()
         val container = engine.container
-        val containerSize = Vector2d(container.containerWidth().toDouble(),
-                container.containerHeight().toDouble())
+        val containerSize = Vector2d(container.containerWidth.toDouble(),
+                container.containerHeight.toDouble())
         return GuiComponentEvent(event, size, size / containerSize)
     }
 

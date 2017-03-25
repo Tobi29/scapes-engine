@@ -82,8 +82,8 @@ class GuiComponentGraph(parent: GuiLayoutData,
                 index[l] = k + 1
             }
         }
-        gl.textures().unbind(gl)
-        val model = createVCI(engine, vertex, color, index,
+        gl.textures.unbind(gl)
+        val model = engine.graphics.createVCI(vertex, color, index,
                 RenderType.LINES)
         model.render(gl, shader)
         model.markAsDisposed()

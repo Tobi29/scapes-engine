@@ -15,27 +15,16 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.Container
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.graphics.Cam
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
-abstract class GL protected constructor(val engine: ScapesEngine,
-                                        val container: Container) {
-    val textures: TextureManager
-    val matrixStack: MatrixStack
-    protected val vaoTracker: GraphicsObjectTracker<Model>
-    protected val textureTracker: GraphicsObjectTracker<Texture>
-    protected val fboTracker: GraphicsObjectTracker<Framebuffer>
-    protected val shaderTracker: GraphicsObjectTracker<Shader>
-    protected var resolutionMultiplier = 1.0
-    protected var containerWidth = 1
-    protected var containerHeight = 1
+abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
+    val matrixStack = MatrixStack(64)
+    protected var resolutionMultiplier = engine.config.resolutionMultiplier
     protected var contentWidth = 1
     protected var contentHeight = 1
     var timer = 0.0
@@ -43,30 +32,15 @@ abstract class GL protected constructor(val engine: ScapesEngine,
     var currentFBO = 0
     private var mainThread: Thread? = null
 
-    init {
-        matrixStack = MatrixStack(64)
-        textures = TextureManager(engine)
-        vaoTracker = GraphicsObjectTracker<Model>()
-        textureTracker = GraphicsObjectTracker<Texture>()
-        fboTracker = GraphicsObjectTracker<Framebuffer>()
-        shaderTracker = GraphicsObjectTracker<Shader>()
-        resolutionMultiplier = engine.config.resolutionMultiplier
-        container.loadFont("Engine:font/QuicksandPro-Regular")
-    }
-
     fun init() {
         mainThread = Thread.currentThread()
     }
 
     fun reshape(contentWidth: Int,
                 contentHeight: Int,
-                containerWidth: Int,
-                containerHeight: Int,
                 resolutionMultiplier: Double) {
         this.contentWidth = contentWidth
         this.contentHeight = contentHeight
-        this.containerWidth = containerWidth
-        this.containerHeight = containerHeight
         this.resolutionMultiplier = resolutionMultiplier
         shaderTracker.disposeAll(this)
     }
@@ -77,18 +51,6 @@ abstract class GL protected constructor(val engine: ScapesEngine,
         if (timer >= 360000.0) {
             timer -= 360000.0
         }
-    }
-
-    fun engine(): ScapesEngine {
-        return engine
-    }
-
-    fun textures(): TextureManager {
-        return textures
-    }
-
-    fun matrixStack(): MatrixStack {
-        return matrixStack
     }
 
     fun sceneWidth(): Int {
@@ -115,89 +77,13 @@ abstract class GL protected constructor(val engine: ScapesEngine,
         return max(contentWidth, contentHeight) / 1920.0
     }
 
-    fun containerWidth(): Int {
-        return containerWidth
-    }
-
-    fun containerHeight(): Int {
-        return containerHeight
-    }
-
-    fun vaoTracker(): GraphicsObjectTracker<Model> {
-        return vaoTracker
-    }
-
-    fun textureTracker(): GraphicsObjectTracker<Texture> {
-        return textureTracker
-    }
-
-    fun fboTracker(): GraphicsObjectTracker<Framebuffer> {
-        return fboTracker
-    }
-
-    fun shaderTracker(): GraphicsObjectTracker<Shader> {
-        return shaderTracker
-    }
-
     fun currentFBO(): Int {
         return currentFBO
-    }
-
-    fun clear() {
-        vaoTracker.disposeAll(this)
-        textureTracker.disposeAll(this)
-        fboTracker.disposeAll(this)
-        shaderTracker.disposeAll(this)
-    }
-
-    fun reset() {
-        vaoTracker.resetAll()
-        textureTracker.resetAll()
-        fboTracker.resetAll()
-        shaderTracker.resetAll()
     }
 
     fun check() {
         assert(Thread.currentThread() == mainThread)
     }
-
-    abstract fun createTexture(width: Int,
-                               height: Int,
-                               buffer: ByteBuffer,
-                               mipmaps: Int,
-                               minFilter: TextureFilter,
-                               magFilter: TextureFilter,
-                               wrapS: TextureWrap,
-                               wrapT: TextureWrap): Texture
-
-    abstract fun createFramebuffer(width: Int,
-                                   height: Int,
-                                   colorAttachments: Int,
-                                   depth: Boolean,
-                                   hdr: Boolean,
-                                   alpha: Boolean,
-                                   minFilter: TextureFilter = TextureFilter.NEAREST,
-                                   magFilter: TextureFilter = minFilter): Framebuffer
-
-    abstract fun createModelFast(attributes: List<ModelAttribute>,
-                                 length: Int,
-                                 renderType: RenderType): Model
-
-    abstract fun createModelStatic(attributes: List<ModelAttribute>,
-                                   length: Int,
-                                   index: IntArray,
-                                   indexLength: Int,
-                                   renderType: RenderType): Model
-
-    abstract fun createModelHybrid(
-            attributes: List<ModelAttribute>,
-            length: Int,
-            attributesStream: List<ModelAttribute>,
-            lengthStream: Int,
-            renderType: RenderType): ModelHybrid
-
-    abstract fun createShader(shader: CompiledShader,
-                              information: ShaderCompileInformation): Shader
 
     abstract fun checkError(message: String)
 
@@ -297,7 +183,7 @@ abstract class GL protected constructor(val engine: ScapesEngine,
                                       y: Int,
                                       width: Int,
                                       height: Int,
-                                      vararg buffers: ByteBuffer?)
+                                      vararg buffers: ByteBuffer)
 
     abstract fun activeTexture(i: Int)
 

@@ -36,10 +36,10 @@ import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.tag.toMap
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
+import org.tobi29.scapes.engine.utils.tag.toMap
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.LockSupport
@@ -63,6 +63,8 @@ class ContainerGLFW(engine: ScapesEngine,
     private val monitorFun: GLFWMonitorCallback
     private var window = 0L
     private var refreshRate = 60
+    private var contentWidth = 0
+    private var contentHeight = 0
     private var running = true
     private var mouseGrabbed = false
     private var mouseDeltaSkip = true
@@ -81,14 +83,12 @@ class ContainerGLFW(engine: ScapesEngine,
         windowSizeFun = GLFWWindowSizeCallback.create { window, width, height ->
             containerWidth = width
             containerHeight = height
-            containerResized = true
         }
         windowCloseFun = GLFWWindowCloseCallback.create { engine.stop() }
         windowFocusFun = GLFWWindowFocusCallback.create { window, focused -> focus = focused }
         frameBufferSizeFun = GLFWFramebufferSizeCallback.create { window, width, height ->
             contentWidth = width
             contentHeight = height
-            containerResized = true
         }
         keyFun = GLFWKeyCallback.create { window, key, scancode, action, mods ->
             val virtualKey = GLFWKeyMap.key(key)
@@ -154,9 +154,7 @@ class ContainerGLFW(engine: ScapesEngine,
         GLFW.glfwSetMonitorCallback(monitorFun)
     }
 
-    override fun formFactor(): Container.FormFactor {
-        return Container.FormFactor.DESKTOP
-    }
+    override val formFactor = Container.FormFactor.DESKTOP
 
     override fun update(delta: Double) {
         if (isPressed(ControllerKey.KEY_F2)) {
@@ -228,12 +226,12 @@ class ContainerGLFW(engine: ScapesEngine,
                 }
                 gl.init()
                 valid = true
-                containerResized = true
                 if (mouseGrabbed) {
                     mouseX = containerWidth * 0.5
                     mouseY = containerHeight * 0.5
                     set(mouseX, mouseY)
                 }
+            } else {
             }
             if (plebSync > 0) {
                 LockSupport.parkNanos(plebSync)
@@ -244,9 +242,9 @@ class ContainerGLFW(engine: ScapesEngine,
                 joysticksChanged.set(true)
             }
             profilerSection("Render") {
-                engine.graphics.render(sync.delta())
+                engine.graphics.render(gl, sync.delta(), contentWidth,
+                        contentHeight)
             }
-            containerResized = false
             val mouseGrabbed = engine.isMouseGrabbed()
             if (mouseGrabbed != this.mouseGrabbed) {
                 this.mouseGrabbed = mouseGrabbed
@@ -289,7 +287,7 @@ class ContainerGLFW(engine: ScapesEngine,
             }
         }
         logger.info { "Disposing graphics system" }
-        engine.graphics.dispose()
+        engine.graphics.dispose(gl)
         engine.dispose()
         GLFW.glfwDestroyWindow(window)
         GLFW.glfwTerminate()
@@ -355,9 +353,9 @@ class ContainerGLFW(engine: ScapesEngine,
 
     companion object : KLogging() {
         private val PLEB_SYNC_GAP = when (Platform.get()) {
-            // Causes severe lag on Windows, but obviously Windows is THE
-            // best "gaming" OS
-            // Platform.WINDOWS -> 40000L
+        // Causes severe lag on Windows, but obviously Windows is THE
+        // best "gaming" OS
+        // Platform.WINDOWS -> 40000L
             else -> 20000L
         }
 

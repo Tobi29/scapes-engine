@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.lwjgl.opengl.*
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelAttribute
@@ -60,70 +59,70 @@ internal class VBO(val engine: ScapesEngine,
                       buffer: ByteBuffer) {
         assert(stored)
         gl.check()
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexID)
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer.capacity().toLong(),
-                GL15.GL_STREAM_DRAW)
-        GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer)
+        glBindBuffer(GL_ARRAY_BUFFER, vertexID)
+        glBufferData(GL_ARRAY_BUFFER, buffer.capacity().toLong(),
+                GL_STREAM_DRAW)
+        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer)
     }
 
     private fun storeAttribute(gl: GL,
                                attribute: ModelAttributeData) {
         gl.check()
-        GL20.glEnableVertexAttribArray(attribute.id)
+        glEnableVertexAttribArray(attribute.id)
         if (attribute.integer) {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> GL30.glVertexAttribIPointer(attribute.id,
+                VertexType.FLOAT -> glVertexAttribIPointer(attribute.id,
                         attribute.size,
-                        GL11.GL_FLOAT, stride, attribute.offset.toLong())
-                VertexType.HALF_FLOAT -> GL30.glVertexAttribIPointer(
+                        GL_FLOAT, stride, attribute.offset.toLong())
+                VertexType.HALF_FLOAT -> glVertexAttribIPointer(
                         attribute.id, attribute.size,
-                        GL30.GL_HALF_FLOAT, stride, attribute.offset.toLong())
-                VertexType.BYTE -> GL30.glVertexAttribIPointer(attribute.id,
+                        GL_HALF_FLOAT, stride, attribute.offset.toLong())
+                VertexType.BYTE -> glVertexAttribIPointer(attribute.id,
                         attribute.size,
-                        GL11.GL_BYTE, stride, attribute.offset.toLong())
-                VertexType.UNSIGNED_BYTE -> GL30.glVertexAttribIPointer(
+                        GL_BYTE, stride, attribute.offset.toLong())
+                VertexType.UNSIGNED_BYTE -> glVertexAttribIPointer(
                         attribute.id, attribute.size,
-                        GL11.GL_UNSIGNED_BYTE, stride,
+                        GL_UNSIGNED_BYTE, stride,
                         attribute.offset.toLong())
-                VertexType.SHORT -> GL30.glVertexAttribIPointer(attribute.id,
+                VertexType.SHORT -> glVertexAttribIPointer(attribute.id,
                         attribute.size,
-                        GL11.GL_SHORT, stride, attribute.offset.toLong())
-                VertexType.UNSIGNED_SHORT -> GL30.glVertexAttribIPointer(
+                        GL_SHORT, stride, attribute.offset.toLong())
+                VertexType.UNSIGNED_SHORT -> glVertexAttribIPointer(
                         attribute.id, attribute.size,
-                        GL11.GL_UNSIGNED_SHORT, stride,
+                        GL_UNSIGNED_SHORT, stride,
                         attribute.offset.toLong())
                 else -> throw IllegalArgumentException("Unknown vertex type!")
             }
         } else {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> GL20.glVertexAttribPointer(attribute.id,
+                VertexType.FLOAT -> glVertexAttribPointer(attribute.id,
                         attribute.size,
-                        GL11.GL_FLOAT, attribute.normalized, stride,
+                        GL_FLOAT, attribute.normalized, stride,
                         attribute.offset.toLong())
-                VertexType.HALF_FLOAT -> GL20.glVertexAttribPointer(
+                VertexType.HALF_FLOAT -> glVertexAttribPointer(
                         attribute.id, attribute.size,
-                        GL30.GL_HALF_FLOAT, attribute.normalized, stride,
+                        GL_HALF_FLOAT, attribute.normalized, stride,
                         attribute.offset.toLong())
-                VertexType.BYTE -> GL20.glVertexAttribPointer(attribute.id,
+                VertexType.BYTE -> glVertexAttribPointer(attribute.id,
                         attribute.size,
-                        GL11.GL_BYTE, attribute.normalized, stride,
+                        GL_BYTE, attribute.normalized, stride,
                         attribute.offset.toLong())
-                VertexType.UNSIGNED_BYTE -> GL20.glVertexAttribPointer(
+                VertexType.UNSIGNED_BYTE -> glVertexAttribPointer(
                         attribute.id, attribute.size,
-                        GL11.GL_UNSIGNED_BYTE, attribute.normalized, stride,
+                        GL_UNSIGNED_BYTE, attribute.normalized, stride,
                         attribute.offset.toLong())
-                VertexType.SHORT -> GL20.glVertexAttribPointer(attribute.id,
+                VertexType.SHORT -> glVertexAttribPointer(attribute.id,
                         attribute.size,
-                        GL11.GL_SHORT, attribute.normalized, stride,
+                        GL_SHORT, attribute.normalized, stride,
                         attribute.offset.toLong())
-                VertexType.UNSIGNED_SHORT -> GL20.glVertexAttribPointer(
+                VertexType.UNSIGNED_SHORT -> glVertexAttribPointer(
                         attribute.id, attribute.size,
-                        GL11.GL_UNSIGNED_SHORT, attribute.normalized,
+                        GL_UNSIGNED_SHORT, attribute.normalized,
                         stride, attribute.offset.toLong())
                 else -> throw IllegalArgumentException("Unknown vertex type!")
             }
         }
-        GL33.glVertexAttribDivisor(attribute.id, attribute.divisor)
+        glVertexAttribDivisor(attribute.id, attribute.divisor)
     }
 
     private fun addToBuffer(attribute: ModelAttribute,
@@ -268,9 +267,9 @@ internal class VBO(val engine: ScapesEngine,
         stored = true
         gl.check()
         data.rewind()
-        vertexID = GL15.glGenBuffers()
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vertexID)
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, data, GL15.GL_STATIC_DRAW)
+        vertexID = glGenBuffers()
+        glBindBuffer(GL_ARRAY_BUFFER, vertexID)
+        glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
         attributes.forEach { storeAttribute(gl, it) }
         if (weak) {
             this.data = null
@@ -281,7 +280,7 @@ internal class VBO(val engine: ScapesEngine,
         assert(stored)
         stored = false
         gl.check()
-        GL15.glDeleteBuffers(vertexID)
+        glDeleteBuffers(vertexID)
     }
 
     fun reset() {

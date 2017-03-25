@@ -147,9 +147,8 @@ class GuiStack {
     fun render(gl: GL,
                shader: Shader,
                delta: Double) {
-        val container = gl.engine.container
-        val framebufferSize = Vector2d(container.contentWidth().toDouble(),
-                container.contentHeight().toDouble())
+        val framebufferSize = Vector2d(gl.contentWidth().toDouble(),
+                gl.contentHeight().toDouble())
         guis.values.forEach {
             val size = it.baseSize()
             val pixelSize = size / framebufferSize

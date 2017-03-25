@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import org.lwjgl.opengles.GLES20
-import org.lwjgl.opengles.GLES30
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
@@ -57,10 +55,10 @@ internal class VAOStatic(private val vbo: VBO,
             return false
         }
         gl.check()
-        GLES30.glBindVertexArray(arrayID)
+        glBindVertexArray(arrayID)
         shader(gl, shader)
-        GLES20.glDrawElements(GLUtils.renderType(renderType), length,
-                GLES20.GL_UNSIGNED_SHORT, 0)
+        glDrawElements(GLUtils.renderType(renderType), length,
+                GL_UNSIGNED_SHORT, 0)
         return true
     }
 
@@ -92,15 +90,14 @@ internal class VAOStatic(private val vbo: VBO,
         }
         isStored = true
         gl.check()
-        arrayID = GLES30.glGenVertexArrays()
-        GLES30.glBindVertexArray(arrayID)
+        arrayID = glGenVertexArrays()
+        glBindVertexArray(arrayID)
         vbo.store(gl, weak)
         data.rewind()
-        indexID = GLES20.glGenBuffers()
-        GLES20.glBindBuffer(GLES20.GL_ELEMENT_ARRAY_BUFFER, indexID)
-        GLES20.glBufferData(GLES20.GL_ELEMENT_ARRAY_BUFFER, data,
-                GLES20.GL_STATIC_DRAW)
-        detach = gl.vaoTracker().attach(this)
+        indexID = glGenBuffers()
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, data, GL_STATIC_DRAW)
+        detach = gl.vaoTracker.attach(this)
         if (weak) {
             this.data = null
         }
@@ -111,7 +108,7 @@ internal class VAOStatic(private val vbo: VBO,
         assert(isStored)
         gl.check()
         vbo.dispose(gl)
-        GLES20.glDeleteBuffers(indexID)
-        GLES30.glDeleteVertexArrays(arrayID)
+        glDeleteBuffers(indexID)
+        glDeleteVertexArrays(arrayID)
     }
 }

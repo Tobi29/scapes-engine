@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import org.lwjgl.opengles.GLES20
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
@@ -47,7 +46,7 @@ internal abstract class TextureFBO(engine: ScapesEngine,
             return
         }
         gl.check()
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureID)
+        glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
     }
 
@@ -80,7 +79,7 @@ internal abstract class TextureFBO(engine: ScapesEngine,
         assert(!isStored)
         isStored = true
         gl.check()
-        textureID = GLES20.glGenTextures()
+        textureID = glGenTextures()
         texture(gl)
         dirtyFilter.set(true)
     }

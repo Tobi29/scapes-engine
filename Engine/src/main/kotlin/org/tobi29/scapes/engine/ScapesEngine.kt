@@ -33,10 +33,10 @@ import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.filesystem.classpath.ClasspathPath
-import org.tobi29.scapes.engine.utils.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
+import org.tobi29.scapes.engine.utils.tag.*
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
@@ -138,8 +138,9 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
                     "Failed to initialize file cache: " + e)
         }
 
-        logger.info { "Creating container" }
+        logger.info { "Creating backend" }
         container = backend(this)
+        sounds = container.sounds
 
         logger.info { "Loading default font" }
         val font = FontRenderer(this, container.loadFont(
@@ -169,9 +170,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         maxMemoryDebug = debugValues["Runtime-Memory-Max"]
         tpsDebug = debugValues["Engine-Tps"]
         logger.info { "Creating graphics system" }
-        graphics = GraphicsSystem(this, container.gl())
-        logger.info { "Creating sound system" }
-        sounds = container.sound()
+        graphics = GraphicsSystem(container.gos)
         logger.info { "Initializing game" }
         this.game.init()
         logger.info { "Engine created" }
@@ -362,7 +361,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
                     ScapesEngineBackendProvider::class.java)) {
                 try {
                     logger.debug { "Loaded backend: ${backend::class.java.name}" }
-                    return { backend.createContainer(it) }
+                    return { backend.create(it) }
                 } catch (e: ServiceConfigurationError) {
                     logger.warn { "Unable to load backend provider: $e" }
                 }
@@ -371,8 +370,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         }
 
         fun emulateTouch(
-                backend: (ScapesEngine) -> Container): (ScapesEngine) -> Container {
-            return { engine -> ContainerEmulateTouch(backend(engine)) }
-        }
+                backend: (ScapesEngine) -> Container
+        ): (ScapesEngine) -> Container = { ContainerEmulateTouch(backend(it)) }
     }
 }

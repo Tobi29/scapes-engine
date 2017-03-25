@@ -28,17 +28,11 @@ class ContainerEmulateTouch(private val container: Container,
 
     private var tracker: ControllerTouch.Tracker? = null
 
-    override fun containerWidth(): Int {
-        return container.containerWidth() / 3
-    }
+    override val containerWidth get() = container.containerWidth / 3
 
-    override fun containerHeight(): Int {
-        return container.containerHeight() / 3
-    }
+    override val containerHeight get() = container.containerHeight / 3
 
-    override fun formFactor(): Container.FormFactor {
-        return Container.FormFactor.PHONE
-    }
+    override val formFactor get() = Container.FormFactor.PHONE
 
     override fun controller(): ControllerDefault? {
         return null

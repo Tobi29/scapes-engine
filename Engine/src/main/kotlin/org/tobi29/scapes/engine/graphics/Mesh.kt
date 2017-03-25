@@ -172,10 +172,10 @@ class Mesh(private val triangles: Boolean = false,
         if (triangles) {
             val model: Model
             if (color) {
-                model = createVCTN(engine, vertexArray, colorArray,
+                model = engine.graphics.createVCTN(vertexArray, colorArray,
                         textureArray, normalArray, RenderType.TRIANGLES)
             } else {
-                model = createVTN(engine, vertexArray, textureArray,
+                model = engine.graphics.createVTN(vertexArray, textureArray,
                         normalArray, RenderType.TRIANGLES)
             }
             return model
@@ -194,11 +194,11 @@ class Mesh(private val triangles: Boolean = false,
             }
             val model: Model
             if (color) {
-                model = createVCTNI(engine, vertexArray, colorArray,
+                model = engine.graphics.createVCTNI(vertexArray, colorArray,
                         textureArray, normalArray, indexArray,
                         RenderType.TRIANGLES)
             } else {
-                model = createVTNI(engine, vertexArray, textureArray,
+                model = engine.graphics.createVTNI(vertexArray, textureArray,
                         normalArray, indexArray, RenderType.TRIANGLES)
             }
             return model

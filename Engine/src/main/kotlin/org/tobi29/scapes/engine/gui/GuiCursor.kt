@@ -21,19 +21,12 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 class GuiCursor {
     private val pos = MutableVector2d()
-    private val guiPos = MutableVector2d()
 
-    fun set(pos: Vector2d,
-            guiPos: Vector2d) {
+    fun set(pos: Vector2d) {
         this.pos.set(pos)
-        this.guiPos.set(guiPos)
     }
 
     fun currentPos(): Vector2d {
         return pos.now()
-    }
-
-    fun currentGuiPos(): Vector2d {
-        return guiPos.now()
     }
 }

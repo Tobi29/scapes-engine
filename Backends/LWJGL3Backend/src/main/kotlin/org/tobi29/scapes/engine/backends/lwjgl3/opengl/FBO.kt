@@ -15,8 +15,6 @@
  */
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL30
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.math.max
@@ -60,7 +58,7 @@ internal class FBO(engine: ScapesEngine,
     }
 
     override fun deactivate(gl: GL) {
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, lastFBO)
+        glBindFramebuffer(GL_FRAMEBUFFER, lastFBO)
         gl.currentFBO = lastFBO
         lastFBO = 0
     }
@@ -118,7 +116,7 @@ internal class FBO(engine: ScapesEngine,
 
     override fun dispose(gl: GL) {
         gl.check()
-        GL30.glDeleteFramebuffers(framebufferID)
+        glDeleteFramebuffers(framebufferID)
         for (textureColor in texturesColor) {
             textureColor.dispose(gl)
         }
@@ -143,7 +141,7 @@ internal class FBO(engine: ScapesEngine,
         assert(!isStored)
         isStored = true
         gl.check()
-        framebufferID = GL30.glGenFramebuffers()
+        framebufferID = glGenFramebuffers()
         bind(gl)
         textureDepth?.attach(gl)
         for (i in texturesColor.indices) {
@@ -155,10 +153,10 @@ internal class FBO(engine: ScapesEngine,
             // TODO: Add error handling
             println(status)
         }
-        GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT or GL11.GL_DEPTH_BUFFER_BIT)
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         deactivate(gl)
-        detach = gl.fboTracker().attach(this)
+        detach = gl.fboTracker.attach(this)
     }
 
     private fun bind(gl: GL) {
@@ -166,6 +164,6 @@ internal class FBO(engine: ScapesEngine,
         gl.check()
         lastFBO = gl.currentFBO()
         gl.currentFBO = framebufferID
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebufferID)
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferID)
     }
 }
