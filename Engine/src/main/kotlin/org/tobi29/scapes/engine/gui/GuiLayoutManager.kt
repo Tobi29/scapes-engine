@@ -15,6 +15,8 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
@@ -59,15 +61,74 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
         return Vector2d(x, y)
     }
 
+    protected fun size(size: MutableVector2d,
+                       preferredSize: MutableVector2d,
+                       maxSize: MutableVector2d): Vector2d {
+        var x = size.x
+        var y = size.y
+        if (x < 0.0) {
+            x = preferredSize.x * -x
+        }
+        x = max(min(x, maxSize.x), 0.0)
+        if (y < 0.0) {
+            y = preferredSize.y * -y
+        }
+        y = max(min(y, maxSize.y), 0.0)
+        return Vector2d(x, y)
+    }
+
+    protected fun size(size: Vector2d,
+                       preferredSize: MutableVector2d,
+                       maxSize: MutableVector2d): Vector2d {
+        var x = size.x
+        var y = size.y
+        if (x < 0.0) {
+            x = preferredSize.x * -x
+        }
+        x = max(min(x, maxSize.x), 0.0)
+        if (y < 0.0) {
+            y = preferredSize.y * -y
+        }
+        y = max(min(y, maxSize.y), 0.0)
+        return Vector2d(x, y)
+    }
+
     protected fun setSize(size: Vector2d,
                           outSize: MutableVector2d) {
-        outSize.set(max(size, outSize.now()))
+        outSize.x = max(size.x, outSize.x)
+        outSize.y = max(size.y, outSize.y)
+    }
+
+    protected fun setSize(size: MutableVector2d,
+                          outSize: MutableVector2d) {
+        outSize.x = max(size.x, outSize.x)
+        outSize.y = max(size.y, outSize.y)
     }
 
     fun size(): Vector2d {
         val size = size ?: throw IllegalStateException(
                 "Size unknown until layout is processed")
         return size - start
+    }
+
+    companion object {
+        val sizeCache = ThreadLocal { Pool { Pool { SizeCacheEntry() } } }
+
+        class SizeCacheEntry {
+            lateinit var component: GuiComponent
+            var size = Vector2d.ZERO
+
+            operator fun component1() = component
+
+            operator fun component2() = size
+
+            fun set(component: GuiComponent,
+                    size: Vector2d): SizeCacheEntry {
+                this.component = component
+                this.size = size
+                return this
+            }
+        }
     }
 }
 

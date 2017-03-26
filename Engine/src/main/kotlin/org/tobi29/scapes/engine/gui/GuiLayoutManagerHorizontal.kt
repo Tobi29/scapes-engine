@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import org.tobi29.scapes.engine.utils.math.vector.plus
 
 class GuiLayoutManagerHorizontal(start: Vector2d,
                                  maxSize: Vector2d,
@@ -29,7 +28,11 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
         var unsized = 0.0
         var usedWidth = 0.0
-        val sizes = HashMap<GuiComponent, Vector2d>()
+        val sizeCache = sizeCache.get()
+        if (sizeCache.isEmpty()) {
+            sizeCache.push()
+        }
+        val sizes = sizeCache.removeAt(sizeCache.size - 1)
         for (component in components) {
             if (!component.visible) {
                 continue
@@ -38,8 +41,9 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
             if (data is GuiLayoutDataFlow) {
                 val marginStart = data.marginStart
                 val marginEnd = data.marginEnd
-                val size = data.calculateSize(maxSize - marginStart - marginEnd)
-                sizes[component] = size
+                val margin = data.margin
+                val size = data.calculateSize(maxSize - margin)
+                sizes.push().set(component, size)
                 if (size.x < 0.0) {
                     unsized -= size.x
                 } else {
@@ -47,39 +51,46 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
                 }
             } else {
                 val size = data.calculateSize(maxSize)
-                sizes[component] = size
+                sizes.push().set(component, size)
             }
         }
+        if (sizes.isEmpty()) {
+            size = Vector2d.ZERO
+            return
+        }
         val pos = MutableVector2d()
+        val posSize = MutableVector2d()
         val offset = MutableVector2d(start)
         val outSize = MutableVector2d()
         val preferredSize = Vector2d((maxSize.x - usedWidth) / unsized,
                 maxSize.y)
-        for (component in components) {
-            if (!component.visible) {
-                continue
-            }
+        val mSize = MutableVector2d()
+        val mPreferredSize = MutableVector2d()
+        for ((component, size) in sizes) {
             val data = component.parent
-            val size = sizes[component]!!
-            pos.set(offset.now())
+            mSize.set(maxSize)
             val asize = if (data is GuiLayoutDataFlow) {
+                pos.set(offset.x, offset.y)
                 val marginStart = data.marginStart
                 val marginEnd = data.marginEnd
+                val margin = data.margin
                 if (size.y >= 0.0) {
                     pos.plusY((maxSize.y - size.y -
                             marginStart.y - marginEnd.y) * 0.5)
                 }
-                val asize = size(size,
-                        preferredSize.minus(marginStart).minus(marginEnd),
-                        maxSize.minus(marginStart).minus(marginEnd))
+                mPreferredSize.set(preferredSize).minus(margin)
+                mSize.minus(margin)
+                val asize = size(size, mPreferredSize, mSize)
                 pos.plus(marginStart)
-                offset.plusX(asize.x + marginStart.x + marginEnd.x)
-                setSize(pos.now().plus(asize).plus(marginEnd), outSize)
+                offset.plusX(asize.x + margin.x)
+                posSize.set(pos.x, pos.y).plus(asize).plus(marginEnd)
+                setSize(posSize, outSize)
                 asize
             } else if (data is GuiLayoutDataAbsolute) {
                 pos.set(data.pos())
-                val asize = size(size, maxSize, maxSize)
-                setSize(pos.now().plus(asize), outSize)
+                val asize = size(size, mSize, mSize)
+                posSize.set(pos.x, pos.y).plus(asize)
+                setSize(posSize, outSize)
                 asize
             } else {
                 throw IllegalStateException(
@@ -88,5 +99,7 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
             output.add(Triple(component, pos.now(), asize))
         }
         this.size = outSize.now()
+        sizes.reset()
+        sizeCache.give(sizes)
     }
 }

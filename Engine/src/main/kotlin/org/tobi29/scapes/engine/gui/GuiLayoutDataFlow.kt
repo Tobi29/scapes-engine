@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.math.vector.plus
 
 open class GuiLayoutDataFlow(parent: GuiComponent,
                              val marginStart: Vector2d,
@@ -24,4 +25,6 @@ open class GuiLayoutDataFlow(parent: GuiComponent,
                              size: Vector2d,
                              priority: Long,
                              blocksEvents: Boolean = false) : GuiLayoutData(
-        parent, size, priority, blocksEvents)
+        parent, size, priority, blocksEvents) {
+    val margin = marginStart + marginEnd
+}
