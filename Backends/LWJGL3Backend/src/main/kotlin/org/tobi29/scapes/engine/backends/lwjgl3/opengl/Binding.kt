@@ -20,7 +20,6 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.lwjgl.opengl.*
 import java.nio.ByteBuffer
-import java.nio.FloatBuffer
 
 const val NOOP = -1
 
