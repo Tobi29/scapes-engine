@@ -63,6 +63,11 @@ fun <R> write(path: FilePath,
 }
 
 @Throws(IOException::class)
+fun createFile(path: FilePath): FilePath {
+    return IMPL.createFile(path)
+}
+
+@Throws(IOException::class)
 fun createDirectories(path: FilePath): FilePath {
     return IMPL.createDirectories(path)
 }

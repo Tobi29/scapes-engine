@@ -51,6 +51,15 @@ internal object IOFileUtilImpl : FileUtilImpl {
         return write(toFile(path), write)
     }
 
+    override fun createFile(path: FilePath): FilePath {
+        toFile(path).let { file ->
+            if (!file.createNewFile()) {
+                throw FileAlreadyExistsException(file)
+            }
+        }
+        return path
+    }
+
     override fun createDirectories(path: FilePath): FilePath {
         toFile(path).mkdirs()
         return path

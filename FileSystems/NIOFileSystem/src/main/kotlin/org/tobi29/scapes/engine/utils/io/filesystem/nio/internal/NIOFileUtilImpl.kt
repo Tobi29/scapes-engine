@@ -18,7 +18,10 @@ package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import org.apache.tika.Tika
 import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
+import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
@@ -51,6 +54,17 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     override fun <R> write(path: FilePath,
                            write: (WritableByteStream) -> R): R {
         return write(toPath(path), write)
+    }
+
+    override fun createFile(path: FilePath): FilePath {
+        toPath(path).let { path ->
+            try {
+                return path(Files.createFile(path))
+            } catch (e: java.nio.file.FileAlreadyExistsException) {
+                throw kotlin.io.FileAlreadyExistsException(path.toFile(),
+                        reason = e.reason)
+            }
+        }
     }
 
     override fun createDirectories(path: FilePath): FilePath {

@@ -33,6 +33,8 @@ interface FileUtilImpl {
     fun <R> write(path: FilePath,
                   write: (WritableByteStream) -> R): R
 
+    fun createFile(path: FilePath): FilePath
+
     fun createDirectories(path: FilePath): FilePath
 
     fun delete(path: FilePath)
