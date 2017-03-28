@@ -28,6 +28,9 @@ class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
 
     @Throws(IOException::class)
     override fun read(dst: ByteBuffer): Int {
+        if (!buffer.hasRemaining()) {
+            return -1
+        }
         val len = dst.remaining()
         val limit = buffer.limit()
         buffer.limit(buffer.position() + len)
