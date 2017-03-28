@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.math.min
 import java.nio.ByteBuffer
 import java.nio.channels.ByteChannel
 
@@ -26,12 +26,11 @@ class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
         return buffer
     }
 
-    @Throws(IOException::class)
     override fun read(dst: ByteBuffer): Int {
         if (!buffer.hasRemaining()) {
             return -1
         }
-        val len = dst.remaining()
+        val len = min(dst.remaining(), buffer.remaining())
         val limit = buffer.limit()
         buffer.limit(buffer.position() + len)
         dst.put(buffer)
@@ -39,10 +38,12 @@ class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
         return len
     }
 
-    @Throws(IOException::class)
     override fun write(src: ByteBuffer): Int {
-        val len = src.remaining()
+        val len = min(src.remaining(), buffer.remaining())
+        val limit = src.limit()
+        src.limit(src.position() + len)
         buffer.put(src)
+        src.limit(limit)
         return len
     }
 
@@ -50,7 +51,6 @@ class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
         return true
     }
 
-    @Throws(IOException::class)
     override fun close() {
     }
 }
