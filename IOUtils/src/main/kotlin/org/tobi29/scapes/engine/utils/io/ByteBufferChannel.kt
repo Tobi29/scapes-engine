@@ -21,11 +21,6 @@ import java.nio.ByteBuffer
 import java.nio.channels.ByteChannel
 
 class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
-
-    fun buffer(): ByteBuffer {
-        return buffer
-    }
-
     override fun read(dst: ByteBuffer): Int {
         if (!buffer.hasRemaining()) {
             return -1

@@ -29,9 +29,10 @@ import org.tobi29.scapes.engine.utils.io.ByteBufferChannel
 object BufferedStreamTests : Spek({
     for (size in (0..15).map { 1 shl 16 }) {
         on("writing to and reading from a buffered stream with buffer size $size") {
-            val channel = ByteBufferChannel(ByteBuffer(1 shl 16))
+            val buffer = ByteBuffer(1 shl 16)
+            val channel = ByteBufferChannel(buffer)
             val arrays = byteArrays(16, 8)
-            channel.buffer().clear()
+            buffer.clear()
             BufferedWriteChannelStream(channel).apply {
                 for (array in arrays) {
                     put(array)
@@ -42,7 +43,7 @@ object BufferedStreamTests : Spek({
                 putLong(123456789101112L)
                 flush()
             }
-            channel.buffer().flip()
+            buffer.flip()
             BufferedReadChannelStream(channel).apply {
                 for (array in arrays) {
                     val check = ByteArray(array.size)
