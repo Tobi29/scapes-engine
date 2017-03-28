@@ -16,15 +16,17 @@
 
 package org.tobi29.scapes.engine.utils
 
+import kotlin.system.exitProcess
+
 /**
- * Runs [System.exit] in a new thread
+ * Runs [exitProcess] in a new thread
  *
- * **Note**: Unlike [System.exit] this function is very likely to return
- * @param status The status code passed to [System.exit]
+ * **Note**: Unlike [exitProcess] this function is very likely to return
+ * @param status The status code passed to [exitProcess]
  */
 fun exitLater(status: Int) {
     val thread = Thread {
-        System.exit(status)
+        exitProcess(status)
     }
     thread.name = "Exit-JVM"
     thread.start()
