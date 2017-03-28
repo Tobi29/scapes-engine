@@ -24,5 +24,5 @@ interface Crashable {
      * Called when an unexpected error happened in execution
      * @param e The [Throwable] that was caught
      */
-    fun crash(e: Throwable)
+    fun crash(e: Throwable): Nothing
 }

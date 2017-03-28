@@ -32,6 +32,7 @@ import org.tobi29.scapes.engine.utils.sleepAtLeast
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.system.exitProcess
 
 abstract class Application : Runnable, Crashable {
 
@@ -118,21 +119,17 @@ abstract class Application : Runnable, Crashable {
         taskExecutor.shutdown()
     }
 
-    override fun crash(e: Throwable) {
+    override fun crash(e: Throwable): Nothing {
         logger.error(e) { "Application crashed:" }
-        val path = writeCrash(e)
-        if (path == null) {
-            System.exit(1)
-            return
-        }
+        val path = writeCrash(e) ?: exitProcess(1)
         if (!Program.launch(path.toString())) {
             display.asyncExec {
                 Program.launch(path.toString())
-                System.exit(1)
+                exitProcess(1)
             }
             sleepAtLeast(1000)
-            System.exit(1)
         }
+        exitProcess(1)
     }
 
     private fun tick(schedule: Long) {

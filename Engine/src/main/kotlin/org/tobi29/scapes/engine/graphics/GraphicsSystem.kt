@@ -21,16 +21,14 @@ import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.graphics.encodePNG
+import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.io.asString
-import org.tobi29.scapes.engine.utils.io.filesystem.write
 import org.tobi29.scapes.engine.utils.io.process
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.ShaderCompileException
 import org.tobi29.scapes.engine.utils.shader.ShaderCompiler
-import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     private val fpsDebug: GuiWidgetDebugValues.Element
@@ -43,7 +41,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
     private val empty: Texture
     private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
     private val shaderFallback = createShader("Engine:shader/Textured")
-    private var triggerScreenshot = false
+    private val queue = ConcurrentLinkedQueue<(GL) -> Unit>()
     private var resolutionMultiplier = 1.0
     private var renderState: GameState? = null
     private var lastContentWidth = 0
@@ -129,30 +127,15 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
             profilerSection("State") {
                 state.renderState(gl, delta, fboSizeDirty)
             }
+            while (queue.isNotEmpty()) {
+                queue.poll()(gl)
+            }
             fpsDebug.setValue(1.0 / delta)
             textureDebug.setValue(gos.textureTracker.count())
             vaoDebug.setValue(gos.vaoTracker.count())
             fboDebug.setValue(gos.fboTracker.count())
             shaderDebug.setValue(gos.shaderTracker.count())
             engine.performance.renderTimestamp(delta)
-            if (triggerScreenshot) {
-                profilerSection("Screenshot") {
-                    triggerScreenshot = false
-                    val width = gl.contentWidth()
-                    val height = gl.contentHeight()
-                    val image = gl.screenShot(0, 0, width, height)
-                    val path = engine.home.resolve(
-                            "screenshots/" + System.currentTimeMillis() +
-                                    ".png")
-                    engine.taskExecutor.runTask({
-                        try {
-                            write(path) { encodePNG(image, it, 9, false) }
-                        } catch (e: IOException) {
-                            logger.error { "Error saving screenshot: $e" }
-                        }
-                    }, "Write-Screenshot")
-                }
-            }
             profilerSection("Cleanup") {
                 gos.vaoTracker.disposeUnused(gl)
                 gos.textureTracker.disposeUnused(gl)
@@ -164,8 +147,11 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
         }
     }
 
-    fun triggerScreenshot() {
-        triggerScreenshot = true
+    fun requestScreenshot(block: (Image) -> Unit) {
+        queue.add { gl ->
+            block(gl.screenShot(0, 0, gl.contentWidth(),
+                    gl.contentHeight()))
+        }
     }
 
     fun loadShader(asset: String,
@@ -191,18 +177,10 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
 
     fun createShader(asset: String,
                      information: ShaderCompileInformation = ShaderCompileInformation()): Shader {
-        try {
-            val program = engine.files[asset + ".program"].get()
-            val source = program.read({ stream -> process(stream, asString()) })
-            val shader = compiled(source)
-            return createShader(shader, information)
-        } catch (e: ShaderCompileException) {
-            engine.crash(e)
-            throw AssertionError()
-        } catch (e: IOException) {
-            engine.crash(e)
-            throw AssertionError()
-        }
+        val program = engine.files[asset + ".program"].get()
+        val source = program.read({ stream -> process(stream, asString()) })
+        val shader = compiled(source)
+        return createShader(shader, information)
     }
 
     private fun compiled(source: String): CompiledShader {

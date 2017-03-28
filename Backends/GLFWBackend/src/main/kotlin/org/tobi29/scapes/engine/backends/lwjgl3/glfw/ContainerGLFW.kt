@@ -36,6 +36,7 @@ import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
+import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
@@ -157,14 +158,12 @@ class ContainerGLFW(engine: ScapesEngine,
     override val formFactor = Container.FormFactor.DESKTOP
 
     override fun update(delta: Double) {
-        if (isPressed(ControllerKey.KEY_F2)) {
-            engine.graphics.triggerScreenshot()
-        }
         if (isPressed(ControllerKey.KEY_F3)) {
             val shift = isDown(ControllerKey.KEY_LEFT_SHIFT)
             val control = isDown(ControllerKey.KEY_LEFT_CONTROL)
             if (shift && control) {
-                engine.writeCrash(Throwable("Debug report"))
+                ScapesEngine.crashReport(path("."), { engine },
+                        Throwable("Debug report"))
             } else if (engine.debug) {
                 if (shift) {
                     engine.profiler.visible = !engine.profiler.visible

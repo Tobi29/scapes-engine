@@ -31,33 +31,33 @@ import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider
 import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
-import org.tobi29.scapes.engine.utils.io.filesystem.*
+import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
+import org.tobi29.scapes.engine.utils.io.filesystem.FileSystemContainer
 import org.tobi29.scapes.engine.utils.io.filesystem.classpath.ClasspathPath
-import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
-import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
+import org.tobi29.scapes.engine.utils.io.filesystem.file
+import org.tobi29.scapes.engine.utils.io.filesystem.writeCrashReport
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.tag.MutableTagMap
+import org.tobi29.scapes.engine.utils.tag.mapMut
+import org.tobi29.scapes.engine.utils.tag.set
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.system.exitProcess
 
 class ScapesEngine(game: (ScapesEngine) -> Game,
                    backend: (ScapesEngine) -> Container,
-                   val home: FilePath,
-                   cache: FilePath,
-                   val debug: Boolean) : Crashable {
+                   val taskExecutor: TaskExecutor,
+                   val configMap: MutableTagMap,
+                   val debug: Boolean) {
     private val runtime = Runtime.getRuntime()
     val files = FileSystemContainer()
     val events = EventDispatcher()
-    val fileCache = FileCache(cache)
-    val taskExecutor = TaskExecutor(this, "Engine")
     val resources = ResourceLoader(taskExecutor)
     val config: ScapesEngineConfig
-    val configMap: MutableTagMap
     val game: Game
     val container: Container
     val graphics: GraphicsSystem
@@ -77,12 +77,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
     private var state: GameState? = null
-
-    constructor(game: (ScapesEngine) -> Game,
-                backend: (ScapesEngine) -> Container,
-                home: FilePath,
-                debug: Boolean) : this(game, backend, home,
-            home.resolve("cache"), debug)
 
     init {
         if (instance != null) {
@@ -105,18 +99,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         logger.info { "Initializing game" }
         this.game.initEarly()
 
-        logger.info { "Reading config" }
-        configMap = try {
-            val configPath = this.home.resolve("ScapesEngine.json")
-            if (exists(configPath)) {
-                read(configPath, ::readJSON)
-            } else {
-                TagMap()
-            }
-        } catch (e: IOException) {
-            logger.warn { "Failed to load config file: $e" }
-            TagMap()
-        }.toMutTag()
+        logger.info { "Initializing engine config" }
         if (configMap.containsKey("Engine")) {
             config = ScapesEngineConfig(configMap.mapMut("Engine"))
         } else {
@@ -129,13 +112,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
             engineTag["SoundVolume"] = 1.0
             engineTag["Fullscreen"] = false
             config = ScapesEngineConfig(engineTag)
-        }
-        try {
-            fileCache.check()
-            createDirectories(this.home.resolve("screenshots"))
-        } catch (e: IOException) {
-            throw ScapesEngineException(
-                    "Failed to initialize file cache: " + e)
         }
 
         logger.info { "Creating backend" }
@@ -188,10 +164,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         }
     }
 
-    fun debug(): Boolean {
-        return debug
-    }
-
     val controller: ControllerDefault?
         get() = container.controller()
 
@@ -217,16 +189,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
                     "Unable to initialize graphics:\n" + e.message)
             halt()
             return 1
-        } catch (e: Throwable) {
-            logger.error(e) { "Scapes engine shutting down because of crash" }
-            writeCrash(e)
-            try {
-                container.message(Container.MessageType.ERROR, game.name,
-                        game.name + " crashed:\n" + e)
-            } catch (e2: Exception) {
-                logger.error(e2) { "Failed to show crash message" }
-            }
-            System.exit(1)
         }
         halt()
         return 0
@@ -235,24 +197,20 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     fun start() {
         val wait = Joiner.BasicJoinable()
         joiner = taskExecutor.runThread({ joiner ->
-            try {
-                game.initLate()
-                var tps = step(0.0001)
-                var sync = Sync(tps, 0L, false, "Engine-Update")
-                sync.init()
-                wait.join()
-                sync.cap()
-                while (!joiner.marked) {
-                    tpsDebug.setValue(sync.tps())
-                    val newTPS = step(sync.delta())
-                    if (tps != newTPS) {
-                        tps = newTPS
-                        sync = Sync(tps, 0L, false, "Engine-Update")
-                    }
-                    sync.cap()
+            game.initLate()
+            var tps = step(0.0001)
+            var sync = Sync(tps, 0L, false, "Engine-Update")
+            sync.init()
+            wait.join()
+            sync.cap()
+            while (!joiner.marked) {
+                tpsDebug.setValue(sync.tps())
+                val newTPS = step(sync.delta())
+                if (tps != newTPS) {
+                    tps = newTPS
+                    sync = Sync(tps, 0L, false, "Engine-Update")
                 }
-            } catch (e: Throwable) {
-                crash(e)
+                sync.cap()
             }
         }, "State", TaskExecutor.Priority.HIGH)
         wait.joiner.join()
@@ -271,39 +229,18 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         sounds.dispose()
         logger.info { "Disposing game" }
         game.dispose()
-        try {
-            write(home.resolve(
-                    "ScapesEngine.json")) { configMap.toTag().writeJSON(it) }
-        } catch (e: IOException) {
-            logger.warn { "Failed to save config file!" }
-        }
-
         logger.info { "Shutting down tasks" }
         taskExecutor.shutdown()
         logger.info { "Stopped Scapes-Engine" }
         instance = null
     }
 
-    override fun crash(e: Throwable) {
-        logger.error(e) { "Scapes engine shutting down because of crash" }
-        writeCrash(e)
-        System.exit(1)
-    }
-
-    fun writeCrash(e: Throwable) {
-        val debugValues = ConcurrentHashMap<String, String>()
+    fun debugMap(): Map<String, String> {
+        val debugValues = HashMap<String, String>()
         for ((key, value) in this.debugValues.elements()) {
             debugValues.put(key, value.toString())
         }
-        try {
-            val crashReportFile = file(home)
-            writeCrashReport(e, crashReportFile, "ScapesEngine",
-                    debugValues)
-            container.openFile(crashReportFile)
-        } catch (e1: IOException) {
-            logger.error { "Failed to write crash report: $e" }
-        }
-
+        return debugValues.readOnly()
     }
 
     fun stop() {
@@ -372,5 +309,33 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         fun emulateTouch(
                 backend: (ScapesEngine) -> Container
         ): (ScapesEngine) -> Container = { ContainerEmulateTouch(backend(it)) }
+
+        fun crashReport(path: FilePath,
+                        engine: () -> ScapesEngine?,
+                        e: Throwable) {
+            val crashReportFile = file(path)
+            val debug = try {
+                engine()?.debugMap()
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                null
+            } ?: emptyMap<String, String>()
+            writeCrashReport(e, crashReportFile, "ScapesEngine",
+                    debug)
+            engine()?.container?.openFile(crashReportFile)
+        }
+
+        fun crashHandler(path: FilePath,
+                         engine: () -> ScapesEngine?) = object : Crashable {
+            override fun crash(e: Throwable): Nothing {
+                try {
+                    System.err.println("Engine crashed: $e")
+                    e.printStackTrace()
+                    crashReport(path, engine, e)
+                } finally {
+                    exitProcess(1)
+                }
+            }
+        }
     }
 }

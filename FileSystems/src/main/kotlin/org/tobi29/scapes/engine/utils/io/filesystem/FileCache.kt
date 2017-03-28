@@ -27,24 +27,15 @@ import org.tobi29.scapes.engine.utils.io.process
 import org.tobi29.scapes.engine.utils.toHexadecimal
 import java.io.IOException
 
-class FileCache(private val root: FilePath,
-                private val time: Duration = Duration.ofDays(
-                        16)) {
-
-    init {
-        createDirectories(root)
+object FileCache : KLogging() {
+    fun store(root: FilePath,
+              resource: ReadSource): Location {
+        return resource.read { stream -> store(root, stream) }
     }
 
-    @Synchronized
-    fun store(resource: ReadSource,
-              type: String): Location {
-        return resource.read { stream -> store(stream, type) }
-    }
-
-    @Synchronized
-    fun store(stream: ReadableByteStream,
-              type: String): Location {
-        val write = createTempFile("CacheWrite", ".jar")
+    fun store(root: FilePath,
+              stream: ReadableByteStream): Location {
+        val write = createTempFile("CacheWrite", ".tmp")
         return tempChannel(write) { channel ->
             val digest = Algorithm.SHA256.digest()
             val streamOut = BufferedWriteChannelStream(channel)
@@ -56,66 +47,56 @@ class FileCache(private val root: FilePath,
             streamOut.flush()
             channel.position(0)
             val checksum = digest.digest()
-            val parent = root.resolve(type)
-            createDirectories(parent)
+            createDirectories(root)
             val name = checksum.toHexadecimal()
             val streamIn = BufferedReadChannelStream(channel)
-            write(parent.resolve(name)) { output ->
-                process(streamIn, { output.put(it) })
+            val destination = root.resolve(name)
+            if (exists(destination)) {
+                setLastModifiedTime(destination, Instant.now())
+            } else {
+                write(destination) { output ->
+                    process(streamIn, { output.put(it) })
+                }
             }
-            Location(type, checksum)
+            Location(checksum)
         }
     }
 
-    @Synchronized
-    fun retrieve(location: Location): FilePath? {
-        val name = location.array.toHexadecimal()
-        val file = file(location.type, name)
+    fun retrieve(root: FilePath,
+                 location: Location): FilePath? {
+        val file = root.resolve(location.array.toHexadecimal())
         if (exists(file)) {
-            setLastModifiedTime(file, Instant.now())
+            try {
+                setLastModifiedTime(file, Instant.now())
+            } catch (e: IOException) {
+            }
             return file
         }
         return null
     }
 
-    @Synchronized
-    fun delete(location: Location) {
-        val name = location.array.toHexadecimal()
-        val file = file(location.type, name)
+    fun delete(root: FilePath,
+               location: Location) {
+        val file = root.resolve(location.array.toHexadecimal())
         deleteIfExists(file)
     }
 
-    @Synchronized
-    fun delete(type: String) {
-        deleteDir(root.resolve(type))
-    }
-
-    @Synchronized
-    fun check() {
+    fun check(root: FilePath,
+              time: Duration = Duration.ofDays(16)) {
         val currentTime = Instant.now().minus(time)
-        for (invalid in listRecursive(root,
-                ::isRegularFile,
-                ::isNotHidden, { file ->
-            try {
-                return@listRecursive getLastModifiedTime(
-                        file).isBefore(
-                        currentTime)
-            } catch (e: IOException) {
-                return@listRecursive false
+        list(root) {
+            filter(::isRegularFile).filter(::isNotHidden).filter { file ->
+                try {
+                    getLastModifiedTime(file).isBefore(currentTime)
+                } catch (e: IOException) {
+                    false
+                }
+            }.forEach { file ->
+                deleteIfExists(file)
+                logger.debug { "Deleted old cache entry: $file" }
             }
-        })) {
-            deleteIfExists(invalid)
-            logger.debug { "Deleted old cache entry: $invalid" }
         }
     }
 
-    private fun file(type: String,
-                     name: String): FilePath {
-        return root.resolve(type).resolve(name)
-    }
-
-    class Location(val type: String,
-                   val array: ByteArray)
-
-    companion object : KLogging()
+    class Location(val array: ByteArray)
 }

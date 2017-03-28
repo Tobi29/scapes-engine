@@ -26,31 +26,31 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 class TaskExecutor {
+    private val parent: TaskExecutor?
     private val tasks = ConcurrentSkipListSet<TaskWorker>()
     private val taskLock = TaskLock()
     private val taskPool: ThreadPoolExecutor
     private val crashHandler: Crashable
     private val name: String
-    private val root: Boolean
     private var eventLoop: Joiner?
 
     constructor(parent: TaskExecutor,
                 name: String,
                 wakeup: Joiner? = null) {
+        this.parent = parent
         crashHandler = parent.crashHandler
         this.name = parent.name + name + '-'
         this.eventLoop = wakeup
-        root = false
         taskPool = parent.taskPool
     }
 
     constructor(crashHandler: Crashable,
                 name: String,
                 wakeup: Joiner? = null) {
+        parent = null
         this.crashHandler = crashHandler
         this.name = name + '-'
         this.eventLoop = wakeup
-        root = true
         val processors = Runtime.getRuntime().availableProcessors()
         val taskPoolSize = max(processors, 1)
         taskPool = ThreadPoolExecutor(taskPoolSize, taskPoolSize, 60L,
@@ -136,7 +136,7 @@ class TaskExecutor {
 
     fun runTask(task: () -> Unit,
                 name: String) {
-        taskLock.increment()
+        thisAndParents { taskLock.increment() }
         taskPool.execute {
             var time = System.nanoTime()
             try {
@@ -148,7 +148,7 @@ class TaskExecutor {
                 if (time > 10000000000L) {
                     logger.warn { "Task took ${time / 1000000000} seconds to complete: $name" }
                 }
-                taskLock.decrement()
+                thisAndParents { taskLock.decrement() }
             }
         }
     }
@@ -187,8 +187,8 @@ class TaskExecutor {
 
     fun shutdown() {
         eventLoop?.join()
-        if (root) {
-            taskLock.lock()
+        taskLock.lock()
+        if (parent == null) {
             taskPool.shutdown()
             try {
                 if (!taskPool.awaitTermination(10, TimeUnit.SECONDS)) {
@@ -196,6 +196,14 @@ class TaskExecutor {
                 }
             } catch (e: InterruptedException) {
             }
+        }
+    }
+
+    private inline fun thisAndParents(block: TaskExecutor.() -> Unit) {
+        var current: TaskExecutor? = this
+        while (current != null) {
+            block(current)
+            current = current.parent
         }
     }
 
@@ -226,7 +234,7 @@ class TaskExecutor {
     private inner class ThreadWrapper(val joinable: Joiner.Joinable,
                                       val task: () -> Unit) : Runnable {
         init {
-            taskLock.increment()
+            thisAndParents { taskLock.increment() }
         }
 
         override fun run() {
@@ -237,7 +245,7 @@ class TaskExecutor {
                 crashHandler.crash(e)
             } finally {
                 joinable.join()
-                taskLock.decrement()
+                thisAndParents { taskLock.decrement() }
             }
         }
     }
