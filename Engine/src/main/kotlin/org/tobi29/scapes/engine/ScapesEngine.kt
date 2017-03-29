@@ -26,7 +26,6 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.spi.ScapesEngineBackendProvider
 import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
@@ -280,23 +279,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
 
     companion object : KLogging() {
         private var instance: ScapesEngine? = null
-
-        fun loadBackend(): (ScapesEngine) -> Container {
-            for (backend in ServiceLoader.load(
-                    ScapesEngineBackendProvider::class.java)) {
-                try {
-                    logger.debug { "Loaded backend: ${backend::class.java.name}" }
-                    return { backend.create(it) }
-                } catch (e: ServiceConfigurationError) {
-                    logger.warn { "Unable to load backend provider: $e" }
-                }
-            }
-            throw ScapesEngineException("No backend found!")
-        }
-
-        fun emulateTouch(
-                backend: (ScapesEngine) -> Container
-        ): (ScapesEngine) -> Container = { ContainerEmulateTouch(backend(it)) }
 
         fun crashReport(path: FilePath,
                         engine: () -> ScapesEngine?,
