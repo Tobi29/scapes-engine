@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine
 
 import mu.KLogging
 import org.tobi29.scapes.engine.graphics.FontRenderer
-import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -179,25 +178,14 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         return container.allocate(capacity)
     }
 
-    fun run(): Int {
-        start()
-        try {
-            container.run()
-        } catch (e: GraphicsCheckException) {
-            logger.error(e) { "Failed to initialize graphics" }
-            container.message(Container.MessageType.ERROR, game.name,
-                    "Unable to initialize graphics:\n" + e.message)
-            halt()
-            return 1
-        }
-        halt()
-        return 0
-    }
-
+    @Synchronized
     fun start() {
+        if (joiner != null) {
+            return
+        }
         val wait = Joiner.BasicJoinable()
         joiner = taskExecutor.runThread({ joiner ->
-            game.initLate()
+            game.start()
             var tps = step(0.0001)
             var sync = Sync(tps, 0L, false, "Engine-Update")
             sync.init()
@@ -212,14 +200,20 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
                 }
                 sync.cap()
             }
+            game.halt()
         }, "State", TaskExecutor.Priority.HIGH)
         wait.joiner.join()
     }
 
+    @Synchronized
     fun halt() {
-        joiner?.join()
+        joiner?.let {
+            it.join()
+            joiner = null
+        }
     }
 
+    @Synchronized
     fun dispose() {
         halt()
         logger.info { "Disposing last state" }
@@ -243,8 +237,11 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         return debugValues.readOnly()
     }
 
-    fun stop() {
-        container.stop()
+    fun isMouseGrabbed(): Boolean {
+        if (container.controller() == null) {
+            return false
+        }
+        return state?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
 
     private fun step(delta: Double): Double {
@@ -281,13 +278,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         heapMemoryDebug.setValue(runtime.totalMemory() / 1048576)
         maxMemoryDebug.setValue(runtime.maxMemory() / 1048576)
         return state.tps
-    }
-
-    fun isMouseGrabbed(): Boolean {
-        if (container.controller() == null) {
-            return false
-        }
-        return state?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
 
     companion object : KLogging() {

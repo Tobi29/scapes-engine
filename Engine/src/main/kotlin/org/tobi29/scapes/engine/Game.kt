@@ -28,7 +28,9 @@ abstract class Game(val engine: ScapesEngine) {
 
     abstract fun init()
 
-    abstract fun initLate()
+    abstract fun start()
+
+    abstract fun halt()
 
     abstract fun step(delta: Double)
 

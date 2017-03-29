@@ -85,7 +85,7 @@ class ContainerGLFW(engine: ScapesEngine,
             containerWidth = width
             containerHeight = height
         }
-        windowCloseFun = GLFWWindowCloseCallback.create { engine.stop() }
+        windowCloseFun = GLFWWindowCloseCallback.create { stop() }
         windowFocusFun = GLFWWindowFocusCallback.create { window, focused -> focus = focused }
         frameBufferSizeFun = GLFWFramebufferSizeCallback.create { window, width, height ->
             contentWidth = width
