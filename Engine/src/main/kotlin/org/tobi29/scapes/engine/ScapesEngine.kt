@@ -77,11 +77,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     private var state: GameState? = null
 
     init {
-        if (instance != null) {
-            throw ScapesEngineException(
-                    "You can only have one engine running at a time!")
-        }
-        instance = this
         this.game = game(this)
         checkSystem()
 
@@ -222,8 +217,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         game.dispose()
         logger.info { "Shutting down tasks" }
         taskExecutor.shutdown()
-        logger.info { "Stopped Scapes-Engine" }
-        instance = null
+    logger.info { "Stopped Scapes-Engine" }
     }
 
     fun debugMap(): Map<String, String> {
@@ -278,8 +272,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     }
 
     companion object : KLogging() {
-        private var instance: ScapesEngine? = null
-
         fun crashReport(path: FilePath,
                         engine: () -> ScapesEngine?,
                         e: Throwable) {
