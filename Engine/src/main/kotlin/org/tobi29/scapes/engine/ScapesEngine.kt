@@ -107,8 +107,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
             engineTag["VSync"] = true
             engineTag["Framerate"] = 60.0
             engineTag["ResolutionMultiplier"] = 1.0
-            engineTag["MusicVolume"] = 1.0
-            engineTag["SoundVolume"] = 1.0
             engineTag["Fullscreen"] = false
             config = ScapesEngineConfig(engineTag)
         }
