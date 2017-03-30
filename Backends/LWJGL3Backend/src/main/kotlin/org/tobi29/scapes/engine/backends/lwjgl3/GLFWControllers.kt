@@ -17,14 +17,15 @@
 package org.tobi29.scapes.engine.backends.lwjgl3
 
 import org.lwjgl.glfw.GLFW
-import org.tobi29.scapes.engine.input.ControllerBasic
-import org.tobi29.scapes.engine.input.ControllerJoystick
-import org.tobi29.scapes.engine.input.ControllerKey
+import org.lwjgl.system.Platform
+import org.tobi29.scapes.engine.input.*
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.util.concurrent.ConcurrentHashMap
 
-class GLFWControllers(private val virtualJoysticks: MutableMap<Int, ControllerJoystick>) {
+class GLFWControllers(private val events: EventDispatcher,
+                      private val virtualJoysticks: MutableMap<Int, ControllerJoystick>) {
     private val handlers = ConcurrentHashMap<Int, (String, FloatBuffer, ByteBuffer) -> Unit>()
 
     fun poll(): Boolean {
@@ -69,13 +70,16 @@ class GLFWControllers(private val virtualJoysticks: MutableMap<Int, ControllerJo
                     }
                     handlers.put(joystick, handler)
                     virtualJoysticks.put(joystick, virtualJoystick)
+                    events.fire(ControllerAddEvent(virtualJoystick))
                     joysticksChanged = true
                     handler
                 }
                 handler(name, axes, buttons)
             } else if (handlers.containsKey(joystick)) {
                 handlers.remove(joystick)
-                virtualJoysticks.remove(joystick)
+                virtualJoysticks.remove(joystick)?.let { virtualJoystick ->
+                    events.fire(ControllerRemoveEvent(virtualJoystick))
+                }
                 joysticksChanged = true
             }
         }
@@ -93,6 +97,20 @@ class GLFWControllers(private val virtualJoysticks: MutableMap<Int, ControllerJo
                 return (value + DEADZONES) / DEADZONES_SCALE
             }
             return 0.0
+        }
+    }
+}
+
+class GLFWControllerDefault : ControllerDefault() {
+    private val superModifier = Platform.get() == Platform.MACOSX
+
+    override val isModifierDown get() = run {
+        if (superModifier) {
+            isDown(ControllerKey.KEY_LEFT_SUPER) || isDown(
+                    ControllerKey.KEY_RIGHT_SUPER)
+        } else {
+            isDown(ControllerKey.KEY_LEFT_CONTROL) || isDown(
+                    ControllerKey.KEY_RIGHT_CONTROL)
         }
     }
 }

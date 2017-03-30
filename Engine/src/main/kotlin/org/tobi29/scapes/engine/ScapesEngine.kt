@@ -23,7 +23,6 @@ import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
-import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.Crashable
@@ -155,9 +154,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         }
     }
 
-    val controller: ControllerDefault?
-        get() = container.controller()
-
     fun getState(): GameState {
         return state ?: throw IllegalStateException("Engine not running")
     }
@@ -217,7 +213,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         game.dispose()
         logger.info { "Shutting down tasks" }
         taskExecutor.shutdown()
-    logger.info { "Stopped Scapes-Engine" }
+        logger.info { "Stopped Scapes-Engine" }
     }
 
     fun debugMap(): Map<String, String> {
@@ -229,9 +225,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     }
 
     fun isMouseGrabbed(): Boolean {
-        if (container.controller() == null) {
-            return false
-        }
         return state?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
 

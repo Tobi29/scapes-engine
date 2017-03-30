@@ -32,8 +32,6 @@ import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
-import org.tobi29.scapes.engine.input.ControllerDefault
-import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
@@ -43,17 +41,14 @@ import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
-                               protected val useGLES: Boolean = false) : ControllerDefault(), Container {
+abstract class ContainerLWJGL3(override val engine: ScapesEngine,
+                               protected val useGLES: Boolean = false) : Container {
     override val gos: GraphicsObjectSupplier
     override val sounds: SoundSystem
     protected val tasks = ConcurrentLinkedQueue<() -> Unit>()
     protected val mainThread: Thread = Thread.currentThread()
     protected val gl: GL
-    protected val superModifier: Boolean
-    protected val joysticksChanged = AtomicBoolean(false)
     protected var focus = true
     protected var valid = false
     protected var visible = false
@@ -74,7 +69,6 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
             gl = GLLWJGL3GL(gos)
         }
         sounds = OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
-        superModifier = Platform.get() == Platform.MACOSX
 
         // It's 2017 and this is still a thing...
         if (Platform.get() == Platform.WINDOWS) {
@@ -93,14 +87,6 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
         valid = false
     }
 
-    override fun controller(): ControllerDefault? {
-        return this
-    }
-
-    override fun joysticksChanged(): Boolean {
-        return joysticksChanged.get()
-    }
-
     override fun loadFont(asset: String): Font? {
         return STBFont.fromFont(this, engine.files[asset + ".ttf"].get())
     }
@@ -115,17 +101,6 @@ abstract class ContainerLWJGL3(protected val engine: ScapesEngine,
         // heap buffers for LWJGL calls (by copying into a shared direct one)
         // return ByteBuffer.allocate(capacity).order(ByteOrder.nativeOrder());
     }
-
-    override val isModifierDown: Boolean
-        get() {
-            if (superModifier) {
-                return isDown(ControllerKey.KEY_LEFT_SUPER) || isDown(
-                        ControllerKey.KEY_RIGHT_SUPER)
-            } else {
-                return isDown(ControllerKey.KEY_LEFT_CONTROL) || isDown(
-                        ControllerKey.KEY_RIGHT_CONTROL)
-            }
-        }
 
     protected fun <R> exec(runnable: () -> R): R {
         val thread = Thread.currentThread()

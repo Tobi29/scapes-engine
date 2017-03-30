@@ -19,9 +19,6 @@ package org.tobi29.scapes.engine
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.scapes.engine.input.ControllerDefault
-import org.tobi29.scapes.engine.input.ControllerJoystick
-import org.tobi29.scapes.engine.input.ControllerTouch
 import org.tobi29.scapes.engine.input.FileType
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
@@ -30,6 +27,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 interface Container {
+    val engine: ScapesEngine
     val gos: GraphicsObjectSupplier
     val sounds: SoundSystem
     val formFactor: FormFactor
@@ -39,14 +37,6 @@ interface Container {
     fun updateContainer()
 
     fun update(delta: Double)
-
-    fun controller(): ControllerDefault?
-
-    fun joysticks(): Collection<ControllerJoystick>
-
-    fun joysticksChanged(): Boolean
-
-    fun touch(): ControllerTouch?
 
     fun loadFont(asset: String): Font?
 

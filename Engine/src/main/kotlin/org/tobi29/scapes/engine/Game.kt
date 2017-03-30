@@ -15,9 +15,15 @@
  */
 package org.tobi29.scapes.engine
 
+import org.tobi29.scapes.engine.utils.ListenerOwner
+import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
 import org.tobi29.scapes.engine.utils.Version
+import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class Game(val engine: ScapesEngine) {
+abstract class Game(val engine: ScapesEngine) : ListenerOwner {
+    private var disposed = AtomicBoolean()
+    override val listenerOwner = ListenerOwnerHandle { !disposed.get() }
+
     abstract val name: String
 
     abstract val id: String
@@ -34,5 +40,7 @@ abstract class Game(val engine: ScapesEngine) {
 
     abstract fun step(delta: Double)
 
-    abstract fun dispose()
+    open fun dispose() {
+        disposed.set(true)
+    }
 }

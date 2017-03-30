@@ -25,30 +25,31 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
-import org.tobi29.scapes.engine.backends.lwjgl3.GLFWControllers
-import org.tobi29.scapes.engine.backends.lwjgl3.GLFWKeyMap
-import org.tobi29.scapes.engine.backends.lwjgl3.push
+import org.tobi29.scapes.engine.backends.lwjgl3.*
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
+import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.tag.toMap
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.LockSupport
 
 class ContainerGLFW(engine: ScapesEngine,
+                    private val emulateTouch: Boolean = false,
+                    private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
                     useGLES: Boolean = false) : ContainerLWJGL3(engine,
         useGLES) {
     private val sync: Sync
+    private val controllerDefault = GLFWControllerDefault()
     private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
     private val errorFun: GLFWErrorCallback
@@ -80,10 +81,10 @@ class ContainerGLFW(engine: ScapesEngine,
         logger.info { "GLFW version: ${GLFW.glfwGetVersionString()}" }
         sync = Sync(engine.config.fps, 5000000000L, false,
                 "Rendering")
-        controllers = GLFWControllers(virtualJoysticks)
+        controllers = GLFWControllers(engine.events, virtualJoysticks)
         windowSizeFun = GLFWWindowSizeCallback.create { window, width, height ->
-            containerWidth = width
-            containerHeight = height
+            containerWidth = round(width * density)
+            containerHeight = round(height * density)
         }
         windowCloseFun = GLFWWindowCloseCallback.create { stop() }
         windowFocusFun = GLFWWindowFocusCallback.create { window, focused -> focus = focused }
@@ -95,15 +96,15 @@ class ContainerGLFW(engine: ScapesEngine,
             val virtualKey = GLFWKeyMap.key(key)
             if (virtualKey != null) {
                 if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW.GLFW_RELEASE) {
-                    addTypeEvent(127.toChar())
+                    controllerDefault.addTypeEvent(127.toChar())
                 }
                 when (action) {
-                    GLFW.GLFW_PRESS -> addPressEvent(virtualKey,
-                            ControllerBasic.PressState.PRESS)
-                    GLFW.GLFW_REPEAT -> addPressEvent(virtualKey,
-                            ControllerBasic.PressState.REPEAT)
-                    GLFW.GLFW_RELEASE -> addPressEvent(virtualKey,
-                            ControllerBasic.PressState.RELEASE)
+                    GLFW.GLFW_PRESS -> controllerDefault.addPressEvent(
+                            virtualKey, ControllerBasic.PressState.PRESS)
+                    GLFW.GLFW_REPEAT -> controllerDefault.addPressEvent(
+                            virtualKey, ControllerBasic.PressState.REPEAT)
+                    GLFW.GLFW_RELEASE -> controllerDefault.addPressEvent(
+                            virtualKey, ControllerBasic.PressState.RELEASE)
                 }
             }
             if (key == GLFW.GLFW_KEY_GRAVE_ACCENT && action == GLFW.GLFW_PRESS) {
@@ -111,16 +112,16 @@ class ContainerGLFW(engine: ScapesEngine,
             }
         }
         charFun = GLFWCharCallback.create { window, codepoint ->
-            addTypeEvent(codepoint.toChar())
+            controllerDefault.addTypeEvent(codepoint.toChar())
         }
         mouseButtonFun = GLFWMouseButtonCallback.create { window, button, action, mods ->
             val virtualKey = ControllerKey.button(button)
             if (virtualKey != null) {
                 when (action) {
-                    GLFW.GLFW_PRESS -> addPressEvent(virtualKey,
-                            ControllerBasic.PressState.PRESS)
-                    GLFW.GLFW_RELEASE -> addPressEvent(virtualKey,
-                            ControllerBasic.PressState.RELEASE)
+                    GLFW.GLFW_PRESS -> controllerDefault.addPressEvent(
+                            virtualKey, ControllerBasic.PressState.PRESS)
+                    GLFW.GLFW_RELEASE -> controllerDefault.addPressEvent(
+                            virtualKey, ControllerBasic.PressState.RELEASE)
                 }
             }
         }
@@ -133,20 +134,20 @@ class ContainerGLFW(engine: ScapesEngine,
                     mouseX = 0.0
                     mouseY = 0.0
                 } else {
-                    set(mouseX, mouseY)
+                    controllerDefault.set(xpos * density, ypos * density)
                     mouseX = xpos
                     mouseY = ypos
                 }
                 if (mouseDeltaSkip) {
                     mouseDeltaSkip = false
                 } else {
-                    addDelta(dx, dy)
+                    controllerDefault.addDelta(dx, dy)
                 }
             }
         }
         scrollFun = GLFWScrollCallback.create { window, xoffset, yoffset ->
             if (xoffset != 0.0 || yoffset != 0.0) {
-                addScroll(xoffset, yoffset)
+                controllerDefault.addScroll(xoffset, yoffset)
             }
         }
         monitorFun = GLFWMonitorCallback.create { monitor, event ->
@@ -158,9 +159,10 @@ class ContainerGLFW(engine: ScapesEngine,
     override val formFactor = Container.FormFactor.DESKTOP
 
     override fun update(delta: Double) {
-        if (isPressed(ControllerKey.KEY_F3)) {
-            val shift = isDown(ControllerKey.KEY_LEFT_SHIFT)
-            val control = isDown(ControllerKey.KEY_LEFT_CONTROL)
+        if (controllerDefault.isPressed(ControllerKey.KEY_F3)) {
+            val shift = controllerDefault.isDown(ControllerKey.KEY_LEFT_SHIFT)
+            val control = controllerDefault.isDown(
+                    ControllerKey.KEY_LEFT_CONTROL)
             if (shift && control) {
                 ScapesEngine.crashReport(path("."), { engine },
                         Throwable("Debug report"))
@@ -176,21 +178,43 @@ class ContainerGLFW(engine: ScapesEngine,
         }
     }
 
-    override fun joysticks(): Collection<ControllerJoystick> {
-        joysticksChanged.set(false)
-        val collection = ArrayList<ControllerJoystick>(virtualJoysticks.size)
-        collection.addAll(virtualJoysticks.values)
-        return collection
-    }
-
-    override fun touch(): ControllerTouch? {
-        return null
-    }
-
     override fun run() {
         val latencyDebug = engine.debugValues["Input-Latency"]
         val plebSyncDebug = engine.debugValues["PlebSync™-Sleep"]
         var plebSync = 0L
+        var controllerEmulateTouch: ControllerTouch? = null
+        if (emulateTouch) {
+            controllerEmulateTouch = object : ControllerTouch {
+                override val events = EventDispatcher()
+                private var tracker: ControllerTouch.Tracker? = null
+
+                override fun fingers(): Sequence<ControllerTouch.Tracker> {
+                    return tracker?.let { sequenceOf(it) } ?: emptySequence()
+                }
+
+                override fun poll() {
+                    controllerDefault.poll()
+                    val tracker = tracker
+                    if (tracker != null) {
+                        if (controllerDefault.isDown(ControllerKey.BUTTON_0)) {
+                            tracker.pos.set(controllerDefault.x(),
+                                    controllerDefault.y())
+                        } else {
+                            this.tracker = null
+                        }
+                    } else if (controllerDefault.isPressed(
+                            ControllerKey.BUTTON_0)) {
+                        val newTracker = ControllerTouch.Tracker()
+                        newTracker.pos.set(controllerDefault.x(),
+                                controllerDefault.y())
+                        this.tracker = newTracker
+                    }
+                }
+            }
+            engine.events.fire(ControllerAddEvent(controllerEmulateTouch))
+        } else {
+            engine.events.fire(ControllerAddEvent(controllerDefault))
+        }
         sync.init()
         while (running) {
             val start = System.nanoTime()
@@ -200,7 +224,7 @@ class ContainerGLFW(engine: ScapesEngine,
             }
             if (!valid) {
                 engine.graphics.reset()
-                clearStates()
+                controllerDefault.clearStates()
                 visible = false
                 if (window != 0L) {
                     GLFW.glfwDestroyWindow(window)
@@ -216,8 +240,8 @@ class ContainerGLFW(engine: ScapesEngine,
                     val widthBuffer = stack.mallocInt(1)
                     val heightBuffer = stack.mallocInt(1)
                     GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer)
-                    containerWidth = widthBuffer.get(0)
-                    containerHeight = heightBuffer.get(0)
+                    containerWidth = round(widthBuffer.get(0) * density)
+                    containerHeight = round(heightBuffer.get(0) * density)
                     GLFW.glfwGetFramebufferSize(window, widthBuffer,
                             heightBuffer)
                     contentWidth = widthBuffer.get(0)
@@ -226,41 +250,38 @@ class ContainerGLFW(engine: ScapesEngine,
                 gl.init()
                 valid = true
                 if (mouseGrabbed) {
-                    mouseX = containerWidth * 0.5
-                    mouseY = containerHeight * 0.5
-                    set(mouseX, mouseY)
+                    mouseX = containerWidth / density * 0.5
+                    mouseY = containerHeight / density * 0.5
+                    controllerDefault.set(mouseX, mouseY)
                 }
-            } else {
             }
             if (plebSync > 0) {
                 LockSupport.parkNanos(plebSync)
             }
             val time = System.nanoTime()
             GLFW.glfwPollEvents()
-            if (controllers.poll()) {
-                joysticksChanged.set(true)
-            }
+            controllers.poll()
             profilerSection("Render") {
                 engine.graphics.render(gl, sync.delta(), contentWidth,
                         contentHeight)
             }
-            val mouseGrabbed = engine.isMouseGrabbed()
+            val mouseGrabbed = !emulateTouch && engine.isMouseGrabbed()
             if (mouseGrabbed != this.mouseGrabbed) {
                 this.mouseGrabbed = mouseGrabbed
-                mouseX = containerWidth * 0.5
-                mouseY = containerHeight * 0.5
+                mouseX = containerWidth / density * 0.5
+                mouseY = containerHeight / density * 0.5
                 if (mouseGrabbed) {
                     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
                             GLFW.GLFW_CURSOR_DISABLED)
                     mouseDeltaSkip = true
                 } else {
-                    mouseX = containerWidth * 0.5
-                    mouseY = containerHeight * 0.5
+                    mouseX = containerWidth / density * 0.5
+                    mouseY = containerHeight / density * 0.5
                     GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
                             GLFW.GLFW_CURSOR_NORMAL)
                     GLFW.glfwSetCursorPos(window, mouseX, mouseY)
                 }
-                set(mouseX, mouseY)
+                controllerDefault.set(mouseX, mouseY)
             }
             if (vSync) {
                 sync.tick()
@@ -284,6 +305,12 @@ class ContainerGLFW(engine: ScapesEngine,
             } else {
                 plebSync = 0L
             }
+        }
+        controllerEmulateTouch?.let {
+            engine.events.fire(ControllerRemoveEvent(it))
+        }
+        if (!emulateTouch) {
+            engine.events.fire(ControllerRemoveEvent(controllerDefault))
         }
         logger.info { "Disposing graphics system" }
         engine.graphics.dispose(gl)

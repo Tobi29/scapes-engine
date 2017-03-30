@@ -16,14 +16,6 @@
 
 package org.tobi29.scapes.engine.input
 
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
+class ControllerAddEvent(val controller: Controller)
 
-interface ControllerTouch : Controller {
-    fun fingers(): Sequence<Tracker>
-
-    override val isActive get() = fingers().any()
-
-    class Tracker {
-        val pos = MutableVector2d()
-    }
-}
+class ControllerRemoveEvent(val controller: Controller)
