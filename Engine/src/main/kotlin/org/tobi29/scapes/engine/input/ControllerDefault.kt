@@ -104,8 +104,8 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
         return typeEvents.asSequence()
     }
 
-    open val isModifierDown get() = isDown(ControllerKey.KEY_LEFT_CONTROL)
-            || isDown(ControllerKey.KEY_RIGHT_CONTROL)
+    open val isModifierDown get() = isDown(ControllerKey.KEY_CONTROL_LEFT) ||
+            isDown(ControllerKey.KEY_CONTROL_RIGHT)
 
     fun x(): Double {
         return x

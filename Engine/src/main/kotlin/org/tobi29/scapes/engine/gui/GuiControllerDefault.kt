@@ -33,9 +33,8 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
     override fun processTextField(data: GuiController.TextFieldData,
                                   multiline: Boolean): Boolean {
         val changed = AtomicBoolean()
-        val shift = controller.isDown(
-                ControllerKey.KEY_LEFT_SHIFT) || controller.isDown(
-                ControllerKey.KEY_RIGHT_SHIFT)
+        val shift = controller.isDown(ControllerKey.KEY_SHIFT_LEFT) ||
+                controller.isDown(ControllerKey.KEY_SHIFT_RIGHT)
         if (controller.isModifierDown) {
             val container = engine.container
             controller.pressEvents().filter { event -> event.state() !== ControllerBasic.PressState.RELEASE }.forEach { event ->

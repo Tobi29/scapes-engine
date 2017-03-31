@@ -17,11 +17,12 @@
 package org.tobi29.scapes.engine.input
 
 import org.tobi29.scapes.engine.utils.computeAbsent
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class ControllerKey private constructor(val name: String,
                                         val humanName: String) {
+    override fun toString() = name
+
     companion object {
         private val keyCache = ConcurrentHashMap<String, ControllerKey>()
 
@@ -69,12 +70,10 @@ class ControllerKey private constructor(val name: String,
         val KEY_X = of("KEY_X", "X")
         val KEY_Y = of("KEY_Y", "Y")
         val KEY_Z = of("KEY_Z", "Z")
-        val KEY_LEFT_BRACKET = of("KEY_LEFT_BRACKET", "Left Bracket")
+        val KEY_BRACKET_LEFT = of("KEY_BRACKET_LEFT", "Left Bracket")
+        val KEY_BRACKET_RIGHT = of("KEY_BRACKET_RIGHT", "Right Bracket")
         val KEY_BACKSLASH = of("KEY_BACKSLASH", "Backslash")
-        val KEY_RIGHT_BRACKET = of("KEY_RIGHT_BRACKET", "Right Bracket")
         val KEY_GRAVE_ACCENT = of("KEY_GRAVE_ACCENT", "Grave Accent")
-        val KEY_WORLD_1 = of("KEY_WORLD_1", "World 1")
-        val KEY_WORLD_2 = of("KEY_WORLD_2", "World 2")
         val KEY_ESCAPE = of("KEY_ESCAPE", "Escape")
         val KEY_ENTER = of("KEY_ENTER", "Enter")
         val KEY_TAB = of("KEY_TAB", "Tab")
@@ -136,19 +135,17 @@ class ControllerKey private constructor(val name: String,
         val KEY_KP_ADD = of("KEY_KP_ADD", "KP Add")
         val KEY_KP_ENTER = of("KEY_KP_ENTER", "KP Enter")
         val KEY_KP_EQUAL = of("KEY_KP_EQUAL", "KP Enter")
-        val KEY_LEFT_SHIFT = of("KEY_LEFT_SHIFT", "Left Shift")
-        val KEY_LEFT_CONTROL = of("KEY_LEFT_CONTROL", "Left Control")
-        val KEY_LEFT_ALT = of("KEY_LEFT_ALT", "Left Alt")
-        val KEY_LEFT_SUPER = of("KEY_LEFT_SUPER", "Left Super")
-        val KEY_RIGHT_SHIFT = of("KEY_RIGHT_SHIFT", "Right Shift")
-        val KEY_RIGHT_CONTROL = of("KEY_RIGHT_CONTROL", "Right Control")
-        val KEY_RIGHT_ALT = of("KEY_RIGHT_ALT", "Right Alt")
-        val KEY_RIGHT_SUPER = of("KEY_RIGHT_SUPER", "Right Super")
+        val KEY_SHIFT_LEFT = of("KEY_SHIFT_LEFT", "Left Shift")
+        val KEY_CONTROL_LEFT = of("KEY_CONTROL_LEFT", "Left Control")
+        val KEY_ALT_LEFT = of("KEY_ALT_LEFT", "Left Alt")
+        val KEY_SUPER_LEFT = of("KEY_SUPER_LEFT", "Left Super")
+        val KEY_SHIFT_RIGHT = of("KEY_SHIFT_RIGHT", "Right Shift")
+        val KEY_CONTROL_RIGHT = of("KEY_CONTROL_RIGHT", "Right Control")
+        val KEY_ALT_RIGHT = of("KEY_ALT_RIGHT", "Right Alt")
+        val KEY_SUPER_RIGHT = of("KEY_SUPER_RIGHT", "Right Super")
         val KEY_MENU = of("KEY_MENU", "Menu")
         val BUTTON_0 = of("BUTTON_0", "Button 0")
-        val BUTTON_LEFT = BUTTON_0
         val BUTTON_1 = of("BUTTON_1", "Button 1")
-        val BUTTON_RIGHT = BUTTON_1
         val BUTTON_2 = of("BUTTON_2", "Button 2")
         val BUTTON_3 = of("BUTTON_3", "Button 3")
         val BUTTON_4 = of("BUTTON_4", "Button 4")
@@ -227,6 +224,34 @@ class ControllerKey private constructor(val name: String,
         val BUTTON_77 = of("BUTTON_77", "Button 77")
         val BUTTON_78 = of("BUTTON_78", "Button 78")
         val BUTTON_79 = of("BUTTON_79", "Button 79")
+        val BUTTON_A = of("BUTTON_A", "Button A")
+        val BUTTON_B = of("BUTTON_B", "Button B")
+        val BUTTON_X = of("BUTTON_X", "Button X")
+        val BUTTON_Y = of("BUTTON_Y", "Button Y")
+        val BUTTON_BUMPER_LEFT = of("BUTTON_BUMPER_LEFT", "Left Bumper")
+        val BUTTON_BUMPER_RIGHT = of("BUTTON_BUMPER_RIGHT", "Right Bumper")
+        val BUTTON_BUMPER2_LEFT = of("BUTTON_BUMPER2_LEFT", "Left Bumper 2")
+        val BUTTON_BUMPER2_RIGHT = of("BUTTON_BUMPER2_RIGHT", "Right Bumper 2")
+        val BUTTON_TRIGGER_LEFT = of("BUTTON_TRIGGER_LEFT", "Left Trigger")
+        val BUTTON_TRIGGER_RIGHT = of("BUTTON_TRIGGER_RIGHT", "Right Trigger")
+        val BUTTON_START = of("BUTTON_START", "Start")
+        val BUTTON_SELECT = of("BUTTON_SELECT", "Select")
+        val BUTTON_OPTIONS = of("BUTTON_OPTIONS", "Options")
+        val BUTTON_SHARE = of("BUTTON_SHARE", "Share")
+        val BUTTON_THUMB_LEFT = of("BUTTON_THUMB_LEFT", "Left Thumb")
+        val BUTTON_THUMB_RIGHT = of("BUTTON_THUMB_RIGHT", "Right Thumb")
+        /**
+         * That button to access the OS menu on consoles
+         */
+        val BUTTON_WHATEVER = of("BUTTON_WHATEVER", "The Whatever Button")
+        /**
+         * Touchpad button (Dualshock 4)
+         */
+        val BUTTON_TOUCHPAD = of("BUTTON_TOUCHPAD", "Touchpad")
+        val BUTTON_DPAD_RIGHT = of("BUTTON_DPAD_RIGHT", "DPad Right")
+        val BUTTON_DPAD_LEFT = of("BUTTON_DPAD_LEFT", "DPad Left")
+        val BUTTON_DPAD_DOWN = of("BUTTON_DPAD_DOWN", "DPad Down")
+        val BUTTON_DPAD_UP = of("BUTTON_DPAD_UP", "DPad Up")
         val SCROLL_DOWN = of("SCROLL_DOWN", "Scroll Down")
         val SCROLL_UP = of("SCROLL_UP", "Scroll Up")
         val SCROLL_LEFT = of("SCROLL_LEFT", "Scroll Left")
@@ -272,39 +297,20 @@ class ControllerKey private constructor(val name: String,
                     ControllerKey(name, humanName)
                 }
 
-        private val BUTTONS = ArrayList<ControllerKey?>()
-        private val AXES = ArrayList<ControllerKey?>()
-        private val AXES_NEG = ArrayList<ControllerKey?>()
-
-        init {
-            for (i in 0..79) {
-                BUTTONS.add(ControllerKey.valueOf("BUTTON_" + i))
-            }
-            for (i in 0..15) {
-                AXES.add(ControllerKey.valueOf("AXIS_" + i))
-                AXES_NEG.add(ControllerKey.valueOf("AXIS_NEG_" + i))
-            }
+        private val BUTTONS = Array(80) {
+            ControllerKey.valueOf("BUTTON_$it")
+        }
+        private val AXES = Array(16) {
+            ControllerKey.valueOf("AXIS_$it")
+        }
+        private val AXES_NEG = Array(16) {
+            ControllerKey.valueOf("AXIS_NEG_$it")
         }
 
-        fun button(i: Int): ControllerKey? {
-            if (i < 0 || i >= BUTTONS.size) {
-                return null
-            }
-            return BUTTONS[i]
-        }
+        fun button(i: Int) = BUTTONS.getOrNull(i)
 
-        fun axis(i: Int): ControllerKey? {
-            if (i < 0 || i >= AXES.size) {
-                return null
-            }
-            return AXES[i]
-        }
+        fun axis(i: Int) = AXES.getOrNull(i)
 
-        fun axisNegative(i: Int): ControllerKey? {
-            if (i < 0 || i >= AXES_NEG.size) {
-                return null
-            }
-            return AXES_NEG[i]
-        }
+        fun axisNegative(i: Int) = AXES_NEG.getOrNull(i)
     }
 }

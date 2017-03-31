@@ -106,11 +106,11 @@ class GLFWControllerDefault : ControllerDefault() {
 
     override val isModifierDown get() = run {
         if (superModifier) {
-            isDown(ControllerKey.KEY_LEFT_SUPER) || isDown(
-                    ControllerKey.KEY_RIGHT_SUPER)
+            isDown(ControllerKey.KEY_SUPER_LEFT) || isDown(
+                    ControllerKey.KEY_SUPER_RIGHT)
         } else {
-            isDown(ControllerKey.KEY_LEFT_CONTROL) || isDown(
-                    ControllerKey.KEY_RIGHT_CONTROL)
+            isDown(ControllerKey.KEY_CONTROL_LEFT) || isDown(
+                    ControllerKey.KEY_CONTROL_RIGHT)
         }
     }
 }

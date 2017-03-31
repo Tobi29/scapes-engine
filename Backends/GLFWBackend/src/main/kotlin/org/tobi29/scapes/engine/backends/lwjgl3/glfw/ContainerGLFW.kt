@@ -25,7 +25,8 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.backends.lwjgl3.*
+import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
+import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
@@ -160,9 +161,9 @@ class ContainerGLFW(engine: ScapesEngine,
 
     override fun update(delta: Double) {
         if (controllerDefault.isPressed(ControllerKey.KEY_F3)) {
-            val shift = controllerDefault.isDown(ControllerKey.KEY_LEFT_SHIFT)
+            val shift = controllerDefault.isDown(ControllerKey.KEY_SHIFT_LEFT)
             val control = controllerDefault.isDown(
-                    ControllerKey.KEY_LEFT_CONTROL)
+                    ControllerKey.KEY_CONTROL_LEFT)
             if (shift && control) {
                 ScapesEngine.crashReport(path("."), { engine },
                         Throwable("Debug report"))

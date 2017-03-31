@@ -20,11 +20,9 @@ import org.lwjgl.glfw.GLFW
 import org.tobi29.scapes.engine.input.ControllerKey
 
 object GLFWKeyMap {
-    private val KEYS: Array<ControllerKey?>
+    private val KEYS = arrayOfNulls<ControllerKey>(GLFW.GLFW_KEY_LAST + 1)
 
     init {
-        // Keyboard mappings
-        KEYS = arrayOfNulls(GLFW.GLFW_KEY_LAST + 1)
         KEYS[GLFW.GLFW_KEY_SPACE] = ControllerKey.KEY_SPACE
         KEYS[GLFW.GLFW_KEY_APOSTROPHE] = ControllerKey.KEY_APOSTROPHE
         KEYS[GLFW.GLFW_KEY_COMMA] = ControllerKey.KEY_COMMA
@@ -69,12 +67,12 @@ object GLFWKeyMap {
         KEYS[GLFW.GLFW_KEY_X] = ControllerKey.KEY_X
         KEYS[GLFW.GLFW_KEY_Y] = ControllerKey.KEY_Y
         KEYS[GLFW.GLFW_KEY_Z] = ControllerKey.KEY_Z
-        KEYS[GLFW.GLFW_KEY_LEFT_BRACKET] = ControllerKey.KEY_LEFT_BRACKET
+        KEYS[GLFW.GLFW_KEY_LEFT_BRACKET] = ControllerKey.KEY_BRACKET_LEFT
         KEYS[GLFW.GLFW_KEY_BACKSLASH] = ControllerKey.KEY_BACKSLASH
-        KEYS[GLFW.GLFW_KEY_RIGHT_BRACKET] = ControllerKey.KEY_RIGHT_BRACKET
+        KEYS[GLFW.GLFW_KEY_RIGHT_BRACKET] = ControllerKey.KEY_BRACKET_RIGHT
         KEYS[GLFW.GLFW_KEY_GRAVE_ACCENT] = ControllerKey.KEY_GRAVE_ACCENT
-        KEYS[GLFW.GLFW_KEY_WORLD_1] = ControllerKey.KEY_WORLD_1
-        KEYS[GLFW.GLFW_KEY_WORLD_2] = ControllerKey.KEY_WORLD_2
+        KEYS[GLFW.GLFW_KEY_WORLD_1] = c("KEY_WORLD_1", "World 1")
+        KEYS[GLFW.GLFW_KEY_WORLD_2] = c("KEY_WORLD_2", "World 2")
         KEYS[GLFW.GLFW_KEY_ESCAPE] = ControllerKey.KEY_ESCAPE
         KEYS[GLFW.GLFW_KEY_ENTER] = ControllerKey.KEY_ENTER
         KEYS[GLFW.GLFW_KEY_TAB] = ControllerKey.KEY_TAB
@@ -135,22 +133,21 @@ object GLFWKeyMap {
         KEYS[GLFW.GLFW_KEY_KP_SUBTRACT] = ControllerKey.KEY_KP_SUBTRACT
         KEYS[GLFW.GLFW_KEY_KP_ADD] = ControllerKey.KEY_KP_ADD
         KEYS[GLFW.GLFW_KEY_KP_ENTER] = ControllerKey.KEY_KP_ENTER
-        KEYS[GLFW.GLFW_KEY_KP_EQUAL] = ControllerKey.KEY_EQUAL
-        KEYS[GLFW.GLFW_KEY_LEFT_SHIFT] = ControllerKey.KEY_LEFT_SHIFT
-        KEYS[GLFW.GLFW_KEY_LEFT_CONTROL] = ControllerKey.KEY_LEFT_CONTROL
-        KEYS[GLFW.GLFW_KEY_LEFT_ALT] = ControllerKey.KEY_LEFT_ALT
-        KEYS[GLFW.GLFW_KEY_LEFT_SUPER] = ControllerKey.KEY_LEFT_SUPER
-        KEYS[GLFW.GLFW_KEY_RIGHT_SHIFT] = ControllerKey.KEY_RIGHT_SHIFT
-        KEYS[GLFW.GLFW_KEY_RIGHT_CONTROL] = ControllerKey.KEY_RIGHT_CONTROL
-        KEYS[GLFW.GLFW_KEY_RIGHT_ALT] = ControllerKey.KEY_RIGHT_ALT
-        KEYS[GLFW.GLFW_KEY_RIGHT_SUPER] = ControllerKey.KEY_RIGHT_SUPER
+        KEYS[GLFW.GLFW_KEY_KP_EQUAL] = ControllerKey.KEY_KP_EQUAL
+        KEYS[GLFW.GLFW_KEY_LEFT_SHIFT] = ControllerKey.KEY_SHIFT_LEFT
+        KEYS[GLFW.GLFW_KEY_LEFT_CONTROL] = ControllerKey.KEY_CONTROL_LEFT
+        KEYS[GLFW.GLFW_KEY_LEFT_ALT] = ControllerKey.KEY_ALT_LEFT
+        KEYS[GLFW.GLFW_KEY_LEFT_SUPER] = ControllerKey.KEY_SUPER_LEFT
+        KEYS[GLFW.GLFW_KEY_RIGHT_SHIFT] = ControllerKey.KEY_SHIFT_RIGHT
+        KEYS[GLFW.GLFW_KEY_RIGHT_CONTROL] = ControllerKey.KEY_CONTROL_RIGHT
+        KEYS[GLFW.GLFW_KEY_RIGHT_ALT] = ControllerKey.KEY_ALT_RIGHT
+        KEYS[GLFW.GLFW_KEY_RIGHT_SUPER] = ControllerKey.KEY_SUPER_RIGHT
         KEYS[GLFW.GLFW_KEY_MENU] = ControllerKey.KEY_MENU
     }
 
-    fun key(id: Int): ControllerKey? {
-        if (id < 0 || id >= KEYS.size) {
-            return null
-        }
-        return KEYS[id]
-    }
+    fun key(id: Int) = KEYS.getOrNull(id)
+
+    private fun c(name: String,
+                  humanName: String) =
+            ControllerKey.of("GLFW_$name", "$humanName (GLFW)")
 }
