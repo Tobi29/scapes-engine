@@ -126,17 +126,19 @@ class ControllerKeyReference {
                     ControllerKey.valueOf(split[0]) ?: return null, modifiers)
         }
 
-        fun isDown(
-                controller: ControllerBasic,
-                vararg references: ControllerKeyReference?): ControllerKeyReference? {
-            return mostSpecific({ it.isDown(controller) }, *references)
-        }
+        fun isDown(controller: ControllerBasic,
+                   vararg references: ControllerKeyReference?) =
+                mostSpecific({ it.isDown(controller) }, *references)
 
-        fun isPressed(
-                controller: ControllerBasic,
-                vararg references: ControllerKeyReference?): ControllerKeyReference? {
-            return mostSpecific({ it.isPressed(controller) }, *references)
-        }
+
+        fun isPressed(controller: ControllerBasic,
+                      vararg references: ControllerKeyReference?) =
+                mostSpecific({ it.isPressed(controller) }, *references)
+
+        fun isPressed(event: ControllerKey,
+                      controller: ControllerBasic,
+                      vararg references: ControllerKeyReference?) =
+                mostSpecific({ it.isPressed(event, controller) }, *references)
 
         private fun mostSpecific(
                 check: (ControllerKeyReference) -> Boolean,
