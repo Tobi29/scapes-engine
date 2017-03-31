@@ -116,7 +116,7 @@ class ControllerKeyReference {
             val split = str.split(',', limit = 2)
             val modifiers: List<ControllerKey>
             if (split.size > 1) {
-                modifiers = split[1].split(';').map {
+                modifiers = split[1].split(',').map {
                     ControllerKey.valueOf(it) ?: return null
                 }
             } else {
