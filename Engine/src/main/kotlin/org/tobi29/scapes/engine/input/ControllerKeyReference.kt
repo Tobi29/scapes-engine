@@ -109,7 +109,7 @@ class ControllerKeyReference {
     }
 
     companion object {
-        fun valueOf(str: String?): ControllerKeyReference {
+        fun valueOf(str: String?): ControllerKeyReference? {
             if (str == null) {
                 return ControllerKeyReference()
             }
@@ -117,33 +117,36 @@ class ControllerKeyReference {
             val modifiers: List<ControllerKey>
             if (split.size > 1) {
                 modifiers = split[1].split(';').map {
-                    ControllerKey.valueOf(it)
+                    ControllerKey.valueOf(it) ?: return null
                 }
             } else {
                 modifiers = emptyList<ControllerKey>()
             }
-            return ControllerKeyReference(ControllerKey.valueOf(split[0]),
-                    modifiers)
+            return ControllerKeyReference(
+                    ControllerKey.valueOf(split[0]) ?: return null, modifiers)
         }
 
         fun isDown(
                 controller: ControllerBasic,
-                vararg references: ControllerKeyReference): ControllerKeyReference? {
+                vararg references: ControllerKeyReference?): ControllerKeyReference? {
             return mostSpecific({ it.isDown(controller) }, *references)
         }
 
         fun isPressed(
                 controller: ControllerBasic,
-                vararg references: ControllerKeyReference): ControllerKeyReference? {
+                vararg references: ControllerKeyReference?): ControllerKeyReference? {
             return mostSpecific({ it.isPressed(controller) }, *references)
         }
 
         private fun mostSpecific(
                 check: (ControllerKeyReference) -> Boolean,
-                vararg references: ControllerKeyReference): ControllerKeyReference? {
+                vararg references: ControllerKeyReference?): ControllerKeyReference? {
             var length = -1
             var key: ControllerKeyReference? = null
             for (reference in references) {
+                if (reference == null) {
+                    continue
+                }
                 if (check(reference) && reference.modifiers.size > length) {
                     key = reference
                     length = reference.modifiers.size
@@ -153,3 +156,16 @@ class ControllerKeyReference {
         }
     }
 }
+
+fun ControllerKeyReference?.isDown(controller: ControllerBasic) =
+        this?.isDown(controller) ?: false
+
+fun ControllerKeyReference?.isPressed(controller: ControllerBasic) =
+        this?.isPressed(controller) ?: false
+
+fun ControllerKeyReference?.isPressed(event: ControllerKey,
+                                      controller: ControllerBasic) =
+        this?.isPressed(event, controller) ?: false
+
+fun ControllerKeyReference?.isReleased(event: ControllerKey) =
+        this?.isReleased(event) ?: true

@@ -19,12 +19,13 @@ package org.tobi29.scapes.engine.input
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 abstract class ControllerDefault protected constructor() : ControllerBasic {
     override val events = EventDispatcher()
 
-    private val states: ByteArray
+    private val states = ConcurrentHashMap<ControllerKey, KeyState>()
     private val pressEventQueue = ConcurrentLinkedQueue<ControllerBasic.PressEvent>()
     private val typeEventQueue = ConcurrentLinkedQueue<KeyTypeEvent>()
     private var pressEvents: Collection<ControllerBasic.PressEvent> = emptyList()
@@ -42,15 +43,13 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
     override var isActive = false
         protected set
 
-    init {
-        states = ByteArray(ControllerKey.values().size)
-    }
-
     @Synchronized override fun poll() {
-        for (i in states.indices) {
-            when (states[i].toInt()) {
-                2 -> states[i] = 1
-                3 -> states[i] = 0
+        states.forEach {
+            when (it.value) {
+                KeyState.PRESSED ->
+                    states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
+                KeyState.RELEASED ->
+                    states.remove(it.key, KeyState.RELEASED)
             }
         }
         val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
@@ -58,13 +57,13 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
         isActive = !pressEventQueue.isEmpty()
         while (!pressEventQueue.isEmpty()) {
             val event = pressEventQueue.poll()
-            val keyID = event.key.id
+            val key = event.key
             when (event.state) {
-                ControllerBasic.PressState.PRESS -> states[keyID] = 2
-                ControllerBasic.PressState.RELEASE -> if (states[keyID].toInt() == 2) {
-                    states[keyID] = 3
-                } else {
-                    states[keyID] = 0
+                ControllerBasic.PressState.PRESS ->
+                    states[key] = KeyState.PRESSED
+                ControllerBasic.PressState.RELEASE -> {
+                    states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
+                    states.remove(key, KeyState.DOWN)
                 }
             }
             newPressEvents.add(event)
@@ -85,11 +84,11 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
     }
 
     override fun isDown(key: ControllerKey): Boolean {
-        return states[key.id] >= 1
+        return states[key] != null
     }
 
     override fun isPressed(key: ControllerKey): Boolean {
-        return states[key.id] >= 2
+        return (states[key] ?: return false) != KeyState.DOWN
     }
 
     override fun pressEvents(): Sequence<ControllerBasic.PressEvent> {
@@ -182,7 +181,7 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
     }
 
     @Synchronized fun clearStates() {
-        Arrays.fill(states, 0.toByte())
+        states.clear()
     }
 
     class KeyTypeEvent(private val character: Char) {
@@ -193,4 +192,10 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
     }
 
     class MouseDeltaSyncEvent(val delta: Vector2d)
+
+    private enum class KeyState {
+        DOWN,
+        PRESSED,
+        RELEASED
+    }
 }

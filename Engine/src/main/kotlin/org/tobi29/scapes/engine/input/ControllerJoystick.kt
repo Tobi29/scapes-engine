@@ -18,13 +18,14 @@ package org.tobi29.scapes.engine.input
 
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 class ControllerJoystick(private val name: String,
                          axisCount: Int) : ControllerBasic {
     override val events = EventDispatcher()
     private val id: String
-    private val states: ByteArray
+    private val states = ConcurrentHashMap<ControllerKey, KeyState>()
     private val axes: DoubleArray
     private val pressEventQueue = ConcurrentLinkedQueue<ControllerBasic.PressEvent>()
     private var pressEvents: Collection<ControllerBasic.PressEvent> = emptyList()
@@ -33,7 +34,6 @@ class ControllerJoystick(private val name: String,
 
     init {
         id = name.replace(REPLACE, "")
-        states = ByteArray(ControllerKey.values().size)
         axes = DoubleArray(axisCount)
     }
 
@@ -50,23 +50,25 @@ class ControllerJoystick(private val name: String,
     }
 
     @Synchronized override fun poll() {
-        for (i in states.indices) {
-            when (states[i].toInt()) {
-                2 -> states[i] = 1
-                3 -> states[i] = 0
+        states.forEach {
+            when (it.value) {
+                KeyState.PRESSED ->
+                    states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
+                KeyState.RELEASED ->
+                    states.remove(it.key, KeyState.RELEASED)
             }
         }
         val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
         isActive = !pressEventQueue.isEmpty()
         while (!pressEventQueue.isEmpty()) {
             val event = pressEventQueue.poll()
-            val keyID = event.key.id
+            val key = event.key
             when (event.state) {
-                ControllerBasic.PressState.PRESS -> states[keyID] = 2
-                ControllerBasic.PressState.RELEASE -> if (states[keyID].toInt() == 2) {
-                    states[keyID] = 3
-                } else {
-                    states[keyID] = 0
+                ControllerBasic.PressState.PRESS ->
+                    states[key] = KeyState.PRESSED
+                ControllerBasic.PressState.RELEASE -> {
+                    states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
+                    states.remove(key, KeyState.DOWN)
                 }
             }
             newPressEvents.add(event)
@@ -75,11 +77,11 @@ class ControllerJoystick(private val name: String,
     }
 
     override fun isDown(key: ControllerKey): Boolean {
-        return states[key.id] >= 1
+        return states[key] != null
     }
 
     override fun isPressed(key: ControllerKey): Boolean {
-        return states[key.id] >= 2
+        return (states[key] ?: return false) != KeyState.DOWN
     }
 
     override fun pressEvents(): Sequence<ControllerBasic.PressEvent> {
@@ -123,5 +125,11 @@ class ControllerJoystick(private val name: String,
 
     companion object {
         private val REPLACE = "[ /-]".toRegex()
+    }
+
+    private enum class KeyState {
+        DOWN,
+        PRESSED,
+        RELEASED
     }
 }
