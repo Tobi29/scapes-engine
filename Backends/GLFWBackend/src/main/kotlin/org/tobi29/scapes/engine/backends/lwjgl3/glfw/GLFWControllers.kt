@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.lwjgl3
+package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.Platform
