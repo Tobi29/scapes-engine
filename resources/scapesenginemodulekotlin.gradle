@@ -26,10 +26,6 @@ kotlin {
     }
 }
 
-compileTestKotlin {
-    kotlinOptions.freeCompilerArgs += "-Xskip-runtime-version-check"
-}
-
 task sourcesJar(type: Jar) {
     classifier = "sources"
     from sourceSets.main.allSource
@@ -40,11 +36,12 @@ artifacts {
 }
 
 dependencies {
-    testCompile rootProject.ext.spekAPI
-    testCompile rootProject.ext.kotlinTest
     testCompile project(":TestAssertions")
 
-    testRuntime rootProject.ext.spekEngine
+    testRuntime(rootProject.ext.spekEngine) {
+        exclude group: "org.junit.platform"
+        exclude group: "org.jetbrains.kotlin"
+    }
 }
 
 eclipse.project {

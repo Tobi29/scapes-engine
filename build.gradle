@@ -67,7 +67,7 @@ ext {
     kotlinxCoroutinesVersion = "0.13"
     kotlinLoggingVersion = "1.4.3"
     slf4jVersion = "1.7.24"
-    spekVersion = "f871624307"
+    spekVersion = "1.1.0"
     junitJupiterVersion = "5.0.0-M3"
     swtVersion = "4.6"
     threetenbpVersion = "1.3.3"
@@ -88,6 +88,7 @@ ext {
     threeten = "org.threeten:threetenbp:$threetenbpVersion"
     base64 = "com.owtelse.codec:base64:$base64Version"
     kotlinSTD = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     javaxJSON = "org.glassfish:javax.json:$javaxJSONVersion"
     kotlinTest = "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
@@ -114,7 +115,6 @@ ext {
     junitJupiterAPI = "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
     junitJupiterEngine =
             "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-    spekAPI = "com.github.JetBrains.spek:spek-api:$spekVersion"
-    spekEngine =
-            "com.github.JetBrains.spek:spek-junit-platform-engine:$spekVersion"
+    spekAPI = "org.jetbrains.spek:spek-api:$spekVersion"
+    spekEngine = "org.jetbrains.spek:spek-junit-platform-engine:$spekVersion"
 }

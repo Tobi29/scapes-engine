@@ -16,12 +16,11 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-compileKotlin {
-    kotlinOptions.freeCompilerArgs += "-Xskip-runtime-version-check"
-}
-
 dependencies {
     compile rootProject.ext.kotlinSTD
+    compile rootProject.ext.kotlinReflect
     compile rootProject.ext.kotlinTest
-    compile rootProject.ext.spekAPI
+    compile(rootProject.ext.spekAPI) {
+        exclude group: "org.jetbrains.kotlin"
+    }
 }
