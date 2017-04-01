@@ -51,6 +51,11 @@ class Pool<E>
     }
 
     /**
+     * Performs the given [action] on each object referenced by the pool
+     */
+    fun forAllObjects(action: (E) -> Unit) = list.forEach(action)
+
+    /**
      * Returns the next object from the pool or creates a new ones if none was
      * available
      * @return A possibly reused object
