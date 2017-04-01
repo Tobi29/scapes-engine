@@ -67,6 +67,9 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
         val mSize = MutableVector2d()
         val mPreferredSize = MutableVector2d()
         for ((component, size) in sizes) {
+            if (component == null) {
+                continue
+            }
             val data = component.parent
             mSize.set(maxSize)
             val asize = if (data is GuiLayoutDataFlow) {
@@ -100,6 +103,7 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
         }
         this.size = outSize.now()
         sizes.reset()
+        sizes.forAllObjects { it.component = null }
         sizeCache.give(sizes)
     }
 }

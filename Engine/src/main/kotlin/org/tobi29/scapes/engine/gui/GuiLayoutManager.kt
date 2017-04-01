@@ -115,7 +115,7 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
         val sizeCache = ThreadLocal { Pool { Pool { SizeCacheEntry() } } }
 
         class SizeCacheEntry {
-            lateinit var component: GuiComponent
+            var component: GuiComponent? = null
             var size = Vector2d.ZERO
 
             operator fun component1() = component
