@@ -37,11 +37,6 @@ artifacts {
 
 dependencies {
     testCompile project(":TestAssertions")
-
-    testRuntime(rootProject.ext.spekEngine) {
-        exclude group: "org.junit.platform"
-        exclude group: "org.jetbrains.kotlin"
-    }
 }
 
 eclipse.project {

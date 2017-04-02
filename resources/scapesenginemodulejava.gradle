@@ -31,5 +31,7 @@ artifacts {
 
 dependencies {
     testCompile rootProject.ext.junitJupiterAPI
+
+    testRuntime rootProject.ext.junitPlatformConsole
     testRuntime rootProject.ext.junitJupiterEngine
 }
