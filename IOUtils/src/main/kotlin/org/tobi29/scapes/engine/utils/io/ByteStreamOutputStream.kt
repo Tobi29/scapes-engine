@@ -23,7 +23,7 @@ class ByteStreamOutputStream(private val stream: WritableByteStream) : OutputStr
 
     @Throws(IOException::class)
     override fun write(b: Int) {
-        stream.put(b)
+        stream.put(b.toByte())
     }
 
     @Throws(IOException::class)

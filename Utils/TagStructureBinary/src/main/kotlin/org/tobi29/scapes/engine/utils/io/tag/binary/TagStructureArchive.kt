@@ -73,22 +73,22 @@ class TagStructureArchive {
     @Throws(IOException::class)
     @Synchronized fun write(stream: WritableByteStream) {
         stream.put(HEADER_MAGIC)
-        stream.put(HEADER_VERSION.toInt())
+        stream.put(HEADER_VERSION)
         val buffers = ArrayList<ByteBuffer>()
         for ((key, value) in tagStructures) {
             val array = key.toByteArray(CHARSET)
             if (array.size >= 254) {
-                stream.put(254)
+                stream.put(254.toByte())
                 stream.putInt(array.size)
             } else {
-                stream.put(array.size)
+                stream.put(array.size.toByte())
             }
             stream.put(array)
             val buffer = value.duplicate()
             stream.putInt(buffer.remaining())
             buffers.add(buffer)
         }
-        stream.put(255)
+        stream.put(255.toByte())
         for (buffer in buffers) {
             stream.put(buffer)
         }
@@ -149,16 +149,16 @@ class TagStructureArchive {
             }
             val entries = ArrayList<Entry>()
             while (true) {
-                var length = stream.uByte.toInt()
+                var length = stream.getUByte().toInt()
                 if (length == 255) {
                     break
                 } else if (length == 254) {
-                    length = stream.int
+                    length = stream.getInt()
                 }
                 val array = ByteArray(length)
                 stream[array]
                 val name = String(array, CHARSET)
-                length = stream.int
+                length = stream.getInt()
                 entries.add(Entry(name, length))
             }
             return entries

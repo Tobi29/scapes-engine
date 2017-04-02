@@ -106,10 +106,10 @@ internal fun writeKey(key: String,
                       dictionary: KeyDictionary) {
     val alias = dictionary.getAlias(key)
     if (alias == null) {
-        stream.put(0xFF)
+        stream.put(0xFF.toByte())
         stream.putString(key)
     } else {
-        stream.put(alias.toInt())
+        stream.put(alias)
     }
 }
 
@@ -127,7 +127,7 @@ internal class KeyDictionary {
             length += 256
         }
         while (length-- > 0) {
-            addKeyAlias(stream.string)
+            addKeyAlias(stream.getString())
         }
     }
 
@@ -180,7 +180,7 @@ internal class KeyDictionary {
     }
 
     fun write(output: WritableByteStream) {
-        output.put(keyAliases.size)
+        output.put(keyAliases.size.toByte())
         for (keyAlias in keyAliases) {
             output.putString(keyAlias)
         }

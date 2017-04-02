@@ -158,7 +158,7 @@ internal class OpenALStreamAudio(engine: ScapesEngine,
 
     private fun store(openAL: OpenAL,
                       buffer: Int) {
-        readBuffer.toPCM16 { streamBuffer.putShort(it.toInt()) }
+        readBuffer.toPCM16 { streamBuffer.putShort(it) }
         streamBuffer.buffer().flip()
         openAL.storeBuffer(buffer,
                 if (readBuffer.channels() > 1)

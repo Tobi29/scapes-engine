@@ -26,20 +26,17 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
         return min(stream.available(), remaining)
     }
 
-    @Throws(IOException::class)
     override fun skip(len: Int) {
         check(len)
         stream.skip(len)
     }
 
-    @Throws(IOException::class)
     override fun get(buffer: ByteBuffer,
                      len: Int): ReadableByteStream {
         check(len)
         return stream[buffer, len]
     }
 
-    @Throws(IOException::class)
     override fun getSome(buffer: ByteBuffer,
                          len: Int): Boolean {
         var len = len
@@ -48,48 +45,36 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
         return stream.getSome(buffer, len) && remaining > 0
     }
 
-    @Throws(IOException::class)
     override fun get(): Byte {
         check(1)
         return stream.get()
     }
 
-    override val short: Short
-        @Throws(IOException::class)
-        get() {
-            check(2)
-            return stream.short
-        }
+    override fun getShort(): Short {
+        check(2)
+        return stream.getShort()
+    }
 
-    override val int: Int
-        @Throws(IOException::class)
-        get() {
-            check(4)
-            return stream.int
-        }
+    override fun getInt(): Int {
+        check(4)
+        return stream.getInt()
+    }
 
-    override val long: Long
-        @Throws(IOException::class)
-        get() {
-            check(8)
-            return stream.long
-        }
+    override fun getLong(): Long {
+        check(8)
+        return stream.getLong()
+    }
 
-    override val float: Float
-        @Throws(IOException::class)
-        get() {
-            check(4)
-            return stream.float
-        }
+    override fun getFloat(): Float {
+        check(4)
+        return stream.getFloat()
+    }
 
-    override val double: Double
-        @Throws(IOException::class)
-        get() {
-            check(8)
-            return stream.double
-        }
+    override fun getDouble(): Double {
+        check(8)
+        return stream.getDouble()
+    }
 
-    @Throws(IOException::class)
     private fun check(len: Int) {
         if (remaining < len) {
             throw IOException("End of stream")

@@ -40,16 +40,16 @@ class BufferedWriteChannelStream(private val channel: WritableByteChannel) : Wri
     }
 
     @Throws(IOException::class)
-    override fun put(b: Int): WritableByteStream {
+    override fun put(b: Byte): WritableByteStream {
         ensure(1)
-        buffer.put(b.toByte())
+        buffer.put(b)
         return this
     }
 
     @Throws(IOException::class)
-    override fun putShort(value: Int): WritableByteStream {
+    override fun putShort(value: Short): WritableByteStream {
         ensure(2)
-        buffer.putShort(value.toShort())
+        buffer.putShort(value)
         return this
     }
 

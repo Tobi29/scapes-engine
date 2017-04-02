@@ -53,9 +53,9 @@ object BufferedStreamTests : Spek({
                     }
                 }
                 val getByte = get()
-                val getShort = short
-                val getInt = int
-                val getLong = long
+                val getShort = getShort()
+                val getInt = getInt()
+                val getLong = getLong()
                 it("should equal the original byte") {
                     getByte shouldEqual 123.toByte()
                 }

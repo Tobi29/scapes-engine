@@ -39,14 +39,14 @@ interface WritableByteStream {
 
     @Throws(IOException::class)
     fun putBoolean(value: Boolean): WritableByteStream {
-        return put(if (value) 1 else 0)
+        return put(if (value) 1.toByte() else 0)
     }
 
     @Throws(IOException::class)
-    fun put(b: Int): WritableByteStream
+    fun put(b: Byte): WritableByteStream
 
     @Throws(IOException::class)
-    fun putShort(value: Int): WritableByteStream
+    fun putShort(value: Short): WritableByteStream
 
     @Throws(IOException::class)
     fun putInt(value: Int): WritableByteStream
@@ -63,9 +63,9 @@ interface WritableByteStream {
     @Throws(IOException::class)
     fun putByteArray(value: ByteArray): WritableByteStream {
         if (value.size < 0xFF) {
-            put(value.size)
+            put(value.size.toByte())
         } else {
-            put(0xFF)
+            put(0xFF.toByte())
             putInt(value.size)
         }
         return put(value)
@@ -74,9 +74,9 @@ interface WritableByteStream {
     @Throws(IOException::class)
     fun putByteArrayLong(value: ByteArray): WritableByteStream {
         if (value.size < 0xFFFF) {
-            putShort(value.size)
+            putShort(value.size.toShort())
         } else {
-            putShort(0xFFFF)
+            putShort(0xFFFF.toShort())
             putInt(value.size)
         }
         return put(value)

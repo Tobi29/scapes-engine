@@ -38,8 +38,8 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
             structureStream = byteStream
         } else {
             stream.put(HEADER_MAGIC)
-            stream.put(HEADER_VERSION.toInt())
-            stream.put(compression.toInt())
+            stream.put(HEADER_VERSION)
+            stream.put(compression)
             structureStream = stream
         }
         if (useDictionary) {
@@ -52,7 +52,7 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
 
     @Throws(IOException::class)
     override fun end() {
-        structureStream.put(ID_STRUCTURE_TERMINATE.toInt())
+        structureStream.put(ID_STRUCTURE_TERMINATE)
         if (compression >= 0) {
             byteStream.buffer().flip()
             compressionStream.buffer().clear()
@@ -61,8 +61,8 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
             compressionStream.buffer().flip()
             byteStream.buffer().clear()
             stream.put(HEADER_MAGIC)
-            stream.put(HEADER_VERSION.toInt())
-            stream.put(compression.toInt())
+            stream.put(HEADER_VERSION)
+            stream.put(compression)
             stream.putInt(compressionStream.buffer().remaining())
             stream.put(compressionStream.buffer())
             compressionStream.buffer().clear()
@@ -75,65 +75,65 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
 
     @Throws(IOException::class)
     override fun beginStructure(key: String) {
-        structureStream.put(ID_STRUCTURE_BEGIN.toInt())
+        structureStream.put(ID_STRUCTURE_BEGIN)
         writeKey(key, structureStream, dictionary)
     }
 
     @Throws(IOException::class)
     override fun endStructure() {
-        structureStream.put(ID_STRUCTURE_TERMINATE.toInt())
+        structureStream.put(ID_STRUCTURE_TERMINATE)
     }
 
     @Throws(IOException::class)
     override fun structureEmpty() {
-        structureStream.put(ID_STRUCTURE_EMPTY.toInt())
+        structureStream.put(ID_STRUCTURE_EMPTY)
     }
 
     @Throws(IOException::class)
     override fun structureEmpty(key: String) {
-        structureStream.put(ID_STRUCTURE_EMPTY.toInt())
+        structureStream.put(ID_STRUCTURE_EMPTY)
         writeKey(key, structureStream, dictionary)
     }
 
     @Throws(IOException::class)
     override fun beginList(key: String) {
-        structureStream.put(ID_LIST_BEGIN.toInt())
+        structureStream.put(ID_LIST_BEGIN)
         writeKey(key, structureStream, dictionary)
     }
 
     @Throws(IOException::class)
     override fun beginList() {
-        structureStream.put(ID_LIST_BEGIN.toInt())
+        structureStream.put(ID_LIST_BEGIN)
     }
 
     override fun beginListStructure() {
-        structureStream.put(ID_STRUCTURE_BEGIN.toInt())
+        structureStream.put(ID_STRUCTURE_BEGIN)
     }
 
     @Throws(IOException::class)
     override fun endListWithTerminate() {
-        structureStream.put(ID_LIST_TERMINATE.toInt())
+        structureStream.put(ID_LIST_TERMINATE)
     }
 
     @Throws(IOException::class)
     override fun endListWithEmpty() {
-        structureStream.put(ID_LIST_TERMINATE.toInt())
+        structureStream.put(ID_LIST_TERMINATE)
     }
 
     @Throws(IOException::class)
     override fun endList() {
-        structureStream.put(ID_LIST_TERMINATE.toInt())
+        structureStream.put(ID_LIST_TERMINATE)
     }
 
     @Throws(IOException::class)
     override fun listEmpty(key: String) {
-        structureStream.put(ID_LIST_EMPTY.toInt())
+        structureStream.put(ID_LIST_EMPTY)
         writeKey(key, structureStream, dictionary)
     }
 
     @Throws(IOException::class)
     override fun listEmpty() {
-        structureStream.put(ID_LIST_EMPTY.toInt())
+        structureStream.put(ID_LIST_EMPTY)
     }
 
     @Throws(IOException::class)
@@ -141,58 +141,57 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
                                    tag: TagPrimitive) {
         when (tag) {
             is TagUnit -> {
-                structureStream.put(ID_TAG_UNIT.toInt())
+                structureStream.put(ID_TAG_UNIT)
                 writeKey(key, structureStream, dictionary)
             }
             is TagBoolean -> {
-                structureStream.put(ID_TAG_BOOLEAN.toInt())
+                structureStream.put(ID_TAG_BOOLEAN)
                 writeKey(key, structureStream, dictionary)
-                structureStream.put(if (tag.value) 1 else 0)
+                structureStream.put(if (tag.value) 1.toByte() else 0)
             }
             is TagByte -> {
-                structureStream.put(ID_TAG_BYTE.toInt())
+                structureStream.put(ID_TAG_BYTE)
                 writeKey(key, structureStream, dictionary)
-                structureStream.put(tag.value.toInt())
+                structureStream.put(tag.value)
             }
             is TagShort -> {
-                structureStream.put(ID_TAG_INT_16.toInt())
+                structureStream.put(ID_TAG_INT_16)
                 writeKey(key, structureStream, dictionary)
-                structureStream.putShort(tag.value.toInt())
+                structureStream.putShort(tag.value)
             }
             is TagInt -> {
-                structureStream.put(ID_TAG_INT_32.toInt())
+                structureStream.put(ID_TAG_INT_32)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putInt(tag.value)
             }
             is TagLong -> {
-                structureStream.put(ID_TAG_INT_64.toInt())
+                structureStream.put(ID_TAG_INT_64)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putLong(tag.value)
             }
             is TagFloat -> {
-                structureStream.put(ID_TAG_FLOAT_32.toInt())
+                structureStream.put(ID_TAG_FLOAT_32)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putFloat(tag.value)
             }
             is TagDouble -> {
-                structureStream.put(ID_TAG_FLOAT_64.toInt())
+                structureStream.put(ID_TAG_FLOAT_64)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putDouble(tag.value)
             }
             is TagNumber -> {
                 // TODO: Support big integer and big decimal natively
-                structureStream.put(ID_TAG_FLOAT_64.toInt())
+                structureStream.put(ID_TAG_FLOAT_64)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putDouble(tag.value.toDouble())
             }
             is TagString -> {
-                structureStream.put(ID_TAG_STRING.toInt())
+                structureStream.put(ID_TAG_STRING)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putString(tag.value)
             }
             is TagByteArray -> {
-                structureStream.put(
-                        ID_TAG_BYTE_ARRAY.toInt())
+                structureStream.put(ID_TAG_BYTE_ARRAY)
                 writeKey(key, structureStream, dictionary)
                 structureStream.putByteArrayLong(tag.value)
             }
@@ -203,48 +202,47 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
     override fun writePrimitiveTag(tag: TagPrimitive) {
         when (tag) {
             is TagUnit -> {
-                structureStream.put(ID_TAG_UNIT.toInt())
+                structureStream.put(ID_TAG_UNIT)
             }
             is TagBoolean -> {
-                structureStream.put(ID_TAG_BOOLEAN.toInt())
-                structureStream.put(if (tag.value) 1 else 0)
+                structureStream.put(ID_TAG_BOOLEAN)
+                structureStream.put(if (tag.value) 1.toByte() else 0)
             }
             is TagByte -> {
-                structureStream.put(ID_TAG_BYTE.toInt())
-                structureStream.put(tag.value.toInt())
+                structureStream.put(ID_TAG_BYTE)
+                structureStream.put(tag.value)
             }
             is TagShort -> {
-                structureStream.put(ID_TAG_INT_16.toInt())
-                structureStream.putShort(tag.value.toInt())
+                structureStream.put(ID_TAG_INT_16)
+                structureStream.putShort(tag.value)
             }
             is TagInt -> {
-                structureStream.put(ID_TAG_INT_32.toInt())
+                structureStream.put(ID_TAG_INT_32)
                 structureStream.putInt(tag.value)
             }
             is TagLong -> {
-                structureStream.put(ID_TAG_INT_64.toInt())
+                structureStream.put(ID_TAG_INT_64)
                 structureStream.putLong(tag.value)
             }
             is TagFloat -> {
-                structureStream.put(ID_TAG_FLOAT_32.toInt())
+                structureStream.put(ID_TAG_FLOAT_32)
                 structureStream.putFloat(tag.value)
             }
             is TagDouble -> {
-                structureStream.put(ID_TAG_FLOAT_64.toInt())
+                structureStream.put(ID_TAG_FLOAT_64)
                 structureStream.putDouble(tag.value)
             }
             is TagNumber -> {
                 // TODO: Support big integer and big decimal natively
-                structureStream.put(ID_TAG_FLOAT_64.toInt())
+                structureStream.put(ID_TAG_FLOAT_64)
                 structureStream.putDouble(tag.value.toDouble())
             }
             is TagString -> {
-                structureStream.put(ID_TAG_STRING.toInt())
+                structureStream.put(ID_TAG_STRING)
                 structureStream.putString(tag.value)
             }
             is TagByteArray -> {
-                structureStream.put(
-                        ID_TAG_BYTE_ARRAY.toInt())
+                structureStream.put(ID_TAG_BYTE_ARRAY)
                 structureStream.putByteArrayLong(tag.value)
             }
             else -> throw IOException("Invalid type: ${tag::class}")

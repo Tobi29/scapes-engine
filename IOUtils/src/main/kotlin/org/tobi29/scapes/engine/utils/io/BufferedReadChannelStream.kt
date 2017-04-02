@@ -87,35 +87,30 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
         return buffer.get()
     }
 
-    override val short: Short
-        get() {
-            ensure(2)
-            return buffer.short
-        }
+    override fun getShort(): Short {
+        ensure(2)
+        return buffer.short
+    }
 
-    override val int: Int
-        get() {
-            ensure(4)
-            return buffer.int
-        }
+    override fun getInt(): Int {
+        ensure(4)
+        return buffer.int
+    }
 
-    override val long: Long
-        get() {
-            ensure(8)
-            return buffer.long
-        }
+    override fun getLong(): Long {
+        ensure(8)
+        return buffer.long
+    }
 
-    override val float: Float
-        get() {
-            ensure(4)
-            return buffer.float
-        }
+    override fun getFloat(): Float {
+        ensure(4)
+        return buffer.float
+    }
 
-    override val double: Double
-        get() {
-            ensure(8)
-            return buffer.double
-        }
+    override fun getDouble(): Double {
+        ensure(8)
+        return buffer.double
+    }
 
     private fun ensure(len: Int): Boolean {
         if (len > buffer.capacity()) {

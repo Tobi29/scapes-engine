@@ -81,62 +81,59 @@ interface ReadableByteStream {
         return position
     }
 
-    val boolean: Boolean
-        @Throws(IOException::class)
-        get() = get().toInt() != 0
+    @Throws(IOException::class)
+    fun getBoolean() = get() != 0.toByte()
 
     @Throws(IOException::class)
     fun get(): Byte
 
-    val uByte: Short
-        @Throws(IOException::class)
-        get() {
-            var value = get().toShort()
-            if (value < 0) {
-                value = (value + 0x100).toShort()
-            }
-            return value
+    @Throws(IOException::class)
+    fun getUByte(): Short {
+        var value = get().toShort()
+        if (value < 0) {
+            value = (value + 0x100).toShort()
         }
-
-    val short: Short
-
-    val uShort: Int
-        @Throws(IOException::class)
-        get() {
-            var value = short.toInt()
-            if (value < 0) {
-                value += 0x10000
-            }
-            return value
-        }
-
-    val int: Int
-
-    val uInt: Long
-        @Throws(IOException::class)
-        get() {
-            var value = int.toLong()
-            if (value < 0) {
-                value += 0x100000000L
-            }
-            return value
-        }
-
-    val long: Long
-
-    val float: Float
-
-    val double: Double
-
-    val byteArray: ByteArray
-        @Throws(IOException::class)
-        get() = getByteArray(Int.MAX_VALUE)
+        return value
+    }
 
     @Throws(IOException::class)
-    fun getByteArray(limit: Int): ByteArray {
-        var len = uByte.toInt()
+    fun getShort(): Short
+
+    @Throws(IOException::class)
+    fun getUShort(): Int {
+        var value = getShort().toInt()
+        if (value < 0) {
+            value += 0x10000
+        }
+        return value
+    }
+
+    @Throws(IOException::class)
+    fun getInt(): Int
+
+    @Throws(IOException::class)
+    fun getUInt(): Long {
+        var value = getInt().toLong()
+        if (value < 0) {
+            value += 0x100000000L
+        }
+        return value
+    }
+
+    @Throws(IOException::class)
+    fun getLong(): Long
+
+    @Throws(IOException::class)
+    fun getFloat(): Float
+
+    @Throws(IOException::class)
+    fun getDouble(): Double
+
+    @Throws(IOException::class)
+    fun getByteArray(limit: Int = Int.MAX_VALUE): ByteArray {
+        var len = getUByte().toInt()
         if (len == 0xFF) {
-            len = int
+            len = getInt()
         }
         if (len < 0 || len > limit) {
             throw IOException(
@@ -147,15 +144,11 @@ interface ReadableByteStream {
         return array
     }
 
-    val byteArrayLong: ByteArray
-        @Throws(IOException::class)
-        get() = getByteArrayLong(Int.MAX_VALUE)
-
     @Throws(IOException::class)
-    fun getByteArrayLong(limit: Int): ByteArray {
-        var len = uShort
+    fun getByteArrayLong(limit: Int = Int.MAX_VALUE): ByteArray {
+        var len = getUShort()
         if (len == 0xFFFF) {
-            len = int
+            len = getInt()
         }
         if (len < 0 || len > limit) {
             throw IOException(
@@ -166,12 +159,8 @@ interface ReadableByteStream {
         return array
     }
 
-    val string: String
-        @Throws(IOException::class)
-        get() = getString(Int.MAX_VALUE)
-
     @Throws(IOException::class)
-    fun getString(limit: Int): String {
+    fun getString(limit: Int = Int.MAX_VALUE): String {
         return String(getByteArray(limit), StandardCharsets.UTF_8)
     }
 }

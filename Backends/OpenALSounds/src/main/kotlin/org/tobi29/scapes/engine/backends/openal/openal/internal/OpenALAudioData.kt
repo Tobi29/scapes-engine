@@ -87,7 +87,7 @@ internal class OpenALAudioData(data: ByteBuffer,
                                 "Sample rate changed in audio file, this is not supported for non-streams")
                     }
                 }
-                buffer.toPCM16 { output.putShort(it.toInt()) }
+                buffer.toPCM16 { output.putShort(it) }
                 buffer.clear()
             }
             output.buffer().flip()

@@ -45,7 +45,7 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
         }
         val compression = stream.get()
         if (compression >= 0) {
-            val len = stream.int
+            val len = stream.getInt()
             compressionStream.buffer().clear()
             CompressionUtil.decompress(LimitedBufferStream(stream, len),
                     compressionStream)
@@ -102,23 +102,23 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
                 }
                 ID_TAG_INT_16 -> {
                     allocate(2)
-                    map[key] = structureBuffer.short
+                    map[key] = structureBuffer.getShort()
                 }
                 ID_TAG_INT_32 -> {
                     allocate(4)
-                    map[key] = structureBuffer.int
+                    map[key] = structureBuffer.getInt()
                 }
                 ID_TAG_INT_64 -> {
                     allocate(8)
-                    map[key] = structureBuffer.long
+                    map[key] = structureBuffer.getLong()
                 }
                 ID_TAG_FLOAT_32 -> {
                     allocate(4)
-                    map[key] = structureBuffer.float
+                    map[key] = structureBuffer.getFloat()
                 }
                 ID_TAG_FLOAT_64 -> {
                     allocate(8)
-                    map[key] = structureBuffer.double
+                    map[key] = structureBuffer.getDouble()
                 }
                 ID_TAG_BYTE_ARRAY -> {
                     map[key] = allocate(
@@ -174,23 +174,23 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
             }
             ID_TAG_INT_16 -> {
                 allocate(2)
-                list.add(structureBuffer.short)
+                list.add(structureBuffer.getShort())
             }
             ID_TAG_INT_32 -> {
                 allocate(4)
-                list.add(structureBuffer.int)
+                list.add(structureBuffer.getInt())
             }
             ID_TAG_INT_64 -> {
                 allocate(8)
-                list.add(structureBuffer.long)
+                list.add(structureBuffer.getLong())
             }
             ID_TAG_FLOAT_32 -> {
                 allocate(4)
-                list.add(structureBuffer.float)
+                list.add(structureBuffer.getFloat())
             }
             ID_TAG_FLOAT_64 -> {
                 allocate(8)
-                list.add(structureBuffer.double)
+                list.add(structureBuffer.getDouble())
             }
             ID_TAG_BYTE_ARRAY -> {
                 list.add(allocate(

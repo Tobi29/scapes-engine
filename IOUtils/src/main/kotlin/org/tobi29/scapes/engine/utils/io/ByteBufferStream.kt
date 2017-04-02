@@ -55,15 +55,15 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
         return this
     }
 
-    override fun put(b: Int): ByteBufferStream {
+    override fun put(b: Byte): ByteBufferStream {
         ensurePut(1)
-        buffer.put(b.toByte())
+        buffer.put(b)
         return this
     }
 
-    override fun putShort(value: Int): ByteBufferStream {
+    override fun putShort(value: Short): ByteBufferStream {
         ensurePut(2)
-        buffer.putShort(value.toShort())
+        buffer.putShort(value)
         return this
     }
 
@@ -155,35 +155,30 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
         return buffer.get()
     }
 
-    override val short: Short
-        get() {
-            ensureGet(2)
-            return buffer.short
-        }
+    override fun getShort(): Short {
+        ensureGet(2)
+        return buffer.short
+    }
 
-    override val int: Int
-        get() {
-            ensureGet(4)
-            return buffer.int
-        }
+    override fun getInt(): Int {
+        ensureGet(4)
+        return buffer.int
+    }
 
-    override val long: Long
-        get() {
-            ensureGet(8)
-            return buffer.long
-        }
+    override fun getLong(): Long {
+        ensureGet(8)
+        return buffer.long
+    }
 
-    override val float: Float
-        get() {
-            ensureGet(4)
-            return buffer.float
-        }
+    override fun getFloat(): Float {
+        ensureGet(4)
+        return buffer.float
+    }
 
-    override val double: Double
-        get() {
-            ensureGet(8)
-            return buffer.double
-        }
+    override fun getDouble(): Double {
+        ensureGet(8)
+        return buffer.double
+    }
 
     private fun ensureGet(len: Int) {
         if (buffer.remaining() < len) {
