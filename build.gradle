@@ -68,7 +68,6 @@ ext {
     kotlinLoggingVersion = "1.4.3"
     slf4jVersion = "1.7.24"
     spekVersion = "1.1.0"
-    junitPlatformVersion = "1.0.0-M3"
     junitJupiterVersion = "5.0.0-M3"
     swtVersion = "4.6"
     threetenbpVersion = "1.3.3"
@@ -116,8 +115,6 @@ ext {
     junitJupiterAPI = "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
     junitJupiterEngine =
             "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-    junitPlatformConsole =
-            "org.junit.platform:junit-platform-console:$junitPlatformVersion"
     spekAPI = "org.jetbrains.spek:spek-api:$spekVersion"
     spekEngine = "org.jetbrains.spek:spek-junit-platform-engine:$spekVersion"
 }

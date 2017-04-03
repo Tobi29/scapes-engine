@@ -32,6 +32,10 @@ artifacts {
 dependencies {
     testCompile rootProject.ext.junitJupiterAPI
 
-    testRuntime rootProject.ext.junitPlatformConsole
     testRuntime rootProject.ext.junitJupiterEngine
+}
+
+// We can probably remove this once using M4 again
+junitPlatform {
+    platformVersion '1.0.0-M3'
 }

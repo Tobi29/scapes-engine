@@ -39,6 +39,11 @@ dependencies {
     testCompile project(":TestAssertions")
 }
 
+// We can probably remove this once using M4 again
+junitPlatform {
+    platformVersion '1.0.0-M3'
+}
+
 eclipse.project {
     natures "org.jetbrains.kotlin.core.kotlinNature"
 }

@@ -27,5 +27,4 @@ dependencies {
     runtime(rootProject.ext.spekEngine) {
         exclude group: "org.jetbrains.kotlin"
     }
-    runtime rootProject.ext.junitPlatformConsole
 }
