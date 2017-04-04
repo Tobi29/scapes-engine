@@ -64,12 +64,12 @@ task wrapper(type: Wrapper) {
 
 ext {
     kotlinVersion = "1.1.1"
-    kotlinxCoroutinesVersion = "0.13"
-    kotlinLoggingVersion = "1.4.3"
-    slf4jVersion = "1.7.24"
+    kotlinxCoroutinesVersion = "0.14"
+    kotlinLoggingVersion = "1.4.4"
+    slf4jVersion = "1.7.25"
     spekVersion = "1.1.0"
     junitJupiterVersion = "5.0.0-M3"
-    swtVersion = "4.6"
+    swtVersion = "4.6.3"
     threetenbpVersion = "1.3.3"
     base64Version = "1.0.6"
     antlrVersion = "4.6"
