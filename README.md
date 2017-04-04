@@ -27,8 +27,8 @@ Should theoretically support API Level 18 and higher, however only 25 is
 actively tested. Also as Java performance varies a lot between older Android
 releases to now, the engine probably will not run smoothly on older devices.
 
-Embedding into existing applications might be possible, but is not supported
-at the moment and requires a custom backend.
+Embedding into existing applications can be achieved using the available classes
+in the backend module.
 
 ### iOS
 The engine can run on the [Multi OS Engine](https://multi-os-engine.org),
