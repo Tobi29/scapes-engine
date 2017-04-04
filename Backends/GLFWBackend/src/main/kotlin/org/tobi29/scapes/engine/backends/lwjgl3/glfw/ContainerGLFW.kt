@@ -35,7 +35,6 @@ import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
@@ -160,23 +159,6 @@ class ContainerGLFW(engine: ScapesEngine,
     override val formFactor = Container.FormFactor.DESKTOP
 
     override fun update(delta: Double) {
-        if (controllerDefault.isPressed(ControllerKey.KEY_F3)) {
-            val shift = controllerDefault.isDown(ControllerKey.KEY_SHIFT_LEFT)
-            val control = controllerDefault.isDown(
-                    ControllerKey.KEY_CONTROL_LEFT)
-            if (shift && control) {
-                ScapesEngine.crashReport(path("."), { engine },
-                        Throwable("Debug report"))
-            } else if (engine.debug) {
-                if (shift) {
-                    engine.profiler.visible = !engine.profiler.visible
-                } else if (control) {
-                    engine.performance.visible = !engine.performance.visible
-                } else {
-                    engine.debugValues.visible = !engine.debugValues.visible
-                }
-            }
-        }
     }
 
     override fun run() {

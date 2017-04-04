@@ -48,8 +48,7 @@ import kotlin.system.exitProcess
 class ScapesEngine(game: (ScapesEngine) -> Game,
                    backend: (ScapesEngine) -> Container,
                    val taskExecutor: TaskExecutor,
-                   val configMap: MutableTagMap,
-                   val debug: Boolean) {
+                   val configMap: MutableTagMap) {
     private val runtime = Runtime.getRuntime()
     val files = FileSystemContainer()
     val events = EventDispatcher()
