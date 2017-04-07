@@ -20,6 +20,8 @@ package org.tobi29.scapes.engine.utils.tag
 
 import org.tobi29.scapes.engine.utils.computeAlways
 import java.io.IOException
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.util.*
 
 inline fun MutableTag.toBoolean() = value as? Boolean
@@ -34,9 +36,17 @@ inline fun MutableTag.toInt() = toNumber()?.toInt()
 
 inline fun MutableTag.toLong() = toNumber()?.toLong()
 
+inline fun MutableTag.toBigInteger() = toNumber()?.let {
+    BigInteger(it.toString())
+}
+
 inline fun MutableTag.toFloat() = toNumber()?.toFloat()
 
 inline fun MutableTag.toDouble() = toNumber()?.toDouble()
+
+inline fun MutableTag.toBigDecimal() = toNumber()?.let {
+    BigDecimal(it.toString())
+}
 
 inline fun TagNumber.toByte() = value.toByte()
 
