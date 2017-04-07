@@ -55,8 +55,8 @@ internal class VAOStatic(private val vbo: VBO,
             return false
         }
         gl.check()
-        glBindVertexArray(arrayID)
         shader(gl, shader)
+        glBindVertexArray(arrayID)
         glDrawElements(GLUtils.renderType(renderType), length,
                 GL_UNSIGNED_SHORT, 0)
         return true
@@ -75,11 +75,6 @@ internal class VAOStatic(private val vbo: VBO,
                                  count: Int): Boolean {
         throw UnsupportedOperationException(
                 "Cannot render indexed VAO with length parameter")
-    }
-
-    override fun reset() {
-        super.reset()
-        vbo.reset()
     }
 
     override fun store(gl: GL): Boolean {
@@ -104,11 +99,20 @@ internal class VAOStatic(private val vbo: VBO,
         return true
     }
 
-    override fun dispose(gl: GL) {
-        assert(isStored)
-        gl.check()
-        vbo.dispose(gl)
-        glDeleteBuffers(indexID)
-        glDeleteVertexArrays(arrayID)
+    override fun dispose(gl: GL?) {
+        if (!isStored) {
+            return
+        }
+        if (gl != null) {
+            gl.check()
+            vbo.dispose(gl)
+            glDeleteBuffers(indexID)
+            glDeleteVertexArrays(arrayID)
+        }
+        isStored = false
+        detach?.invoke()
+        detach = null
+        markAsDisposed = false
+        vbo.reset()
     }
 }

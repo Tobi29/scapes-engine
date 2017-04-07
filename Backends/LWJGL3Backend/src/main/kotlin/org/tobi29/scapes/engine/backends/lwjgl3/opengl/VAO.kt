@@ -51,31 +51,21 @@ internal abstract class VAO(protected val engine: ScapesEngine) : Model {
     override fun ensureStored(gl: GL): Boolean {
         if (!isStored) {
             val success = store(gl)
-            used = System.currentTimeMillis()
+            used = gl.timestamp
             return success
         }
-        used = System.currentTimeMillis()
+        used = gl.timestamp
         return true
     }
 
     override fun ensureDisposed(gl: GL) {
         if (isStored) {
             dispose(gl)
-            reset()
         }
     }
 
-    override fun isUsed(time: Long): Boolean {
-        return time - used < 1000 && !markAsDisposed
-    }
-
-    override fun reset() {
-        assert(isStored)
-        isStored = false
-        detach?.invoke()
-        detach = null
-        markAsDisposed = false
-    }
+    override fun isUsed(time: Long) =
+            time - used < 1000000000L && !markAsDisposed
 
     protected abstract fun store(gl: GL): Boolean
 

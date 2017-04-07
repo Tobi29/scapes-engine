@@ -17,36 +17,12 @@ package org.tobi29.scapes.engine
 
 import org.tobi29.scapes.engine.utils.tag.*
 
-class ScapesEngineConfig(private val tagStructure: MutableTagMap) {
-    var fps = 0.0
-        set(value) {
-            field = value
-            tagStructure["Framerate"] = value
-        }
-    var resolutionMultiplier = 0.0
-        set(value) {
-            field = value
-            tagStructure["ResolutionMultiplier"] = value
-        }
-    var vSync = false
-        set(value) {
-            field = value
-            tagStructure["VSync"] = value
-        }
-    var fullscreen = false
-        set(value) {
-            field = value
-            tagStructure["Fullscreen"] = value
-        }
+class ScapesEngineConfig(private val configMap: MutableTagMap) {
+    var fps by configMap.tagDouble("Framerate", 60.0)
+    var vSync by configMap.tagBoolean("VSync", true)
+    var fullscreen by configMap.tagBoolean("Fullscreen", false)
 
-    init {
-        vSync = tagStructure["VSync"]?.toBoolean() ?: false
-        fps = tagStructure["Framerate"]?.toDouble() ?: 0.0
-        resolutionMultiplier = tagStructure["ResolutionMultiplier"]?.toDouble() ?: 0.0
-        fullscreen = tagStructure["Fullscreen"]?.toBoolean() ?: false
-    }
-
-    fun volume(channel: String) = tagStructure.mapMut(
+    fun volume(channel: String) = configMap.mapMut(
             "Volumes").asSequence().filter {
         channel.startsWith(it.key)
     }.maxBy { it.key.length }?.value?.toDouble() ?: 1.0
@@ -54,6 +30,6 @@ class ScapesEngineConfig(private val tagStructure: MutableTagMap) {
 
     fun setVolume(channel: String,
                   value: Double) {
-        tagStructure.mapMut("Volumes")[channel] = value
+        configMap.mapMut("Volumes")[channel] = value
     }
 }

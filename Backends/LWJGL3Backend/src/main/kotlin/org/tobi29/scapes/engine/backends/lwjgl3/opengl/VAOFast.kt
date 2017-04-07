@@ -46,8 +46,8 @@ internal class VAOFast(private val vbo: VBO,
             return false
         }
         gl.check()
-        glBindVertexArray(arrayID)
         shader(gl, shader)
+        glBindVertexArray(arrayID)
         glDrawArrays(GLUtils.renderType(renderType), 0, length)
         return true
     }
@@ -66,15 +66,10 @@ internal class VAOFast(private val vbo: VBO,
             return false
         }
         gl.check()
-        glBindVertexArray(arrayID)
         shader(gl, shader)
+        glBindVertexArray(arrayID)
         glDrawArraysInstanced(GLUtils.renderType(renderType), 0, length, count)
         return true
-    }
-
-    override fun reset() {
-        super.reset()
-        vbo.reset()
     }
 
     override fun store(gl: GL): Boolean {
@@ -91,10 +86,19 @@ internal class VAOFast(private val vbo: VBO,
         return true
     }
 
-    override fun dispose(gl: GL) {
-        assert(isStored)
-        gl.check()
-        vbo.dispose(gl)
-        glDeleteVertexArrays(arrayID)
+    override fun dispose(gl: GL?) {
+        if (!isStored) {
+            return
+        }
+        if (gl != null) {
+            gl.check()
+            vbo.dispose(gl)
+            glDeleteVertexArrays(arrayID)
+        }
+        isStored = false
+        detach?.invoke()
+        detach = null
+        markAsDisposed = false
+        vbo.reset()
     }
 }

@@ -42,7 +42,6 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
     private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
     private val shaderFallback = createShader("Engine:shader/Textured")
     private val queue = ConcurrentLinkedQueue<(GL) -> Unit>()
-    private var resolutionMultiplier = 1.0
     private var renderState: GameState? = null
     private var lastContentWidth = 0
     private var lastContentHeight = 0
@@ -55,7 +54,6 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
         buffer.put((-1).toByte())
         buffer.rewind()
         empty = createTexture(1, 1, buffer)
-        resolutionMultiplier = engine.config.resolutionMultiplier
         val debugValues = engine.debugValues
         fpsDebug = debugValues["Graphics-Fps"]
         widthDebug = debugValues["Graphics-Width"]
@@ -98,19 +96,15 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
             gl.checkError("Pre-Render")
             gl.step(delta)
             val fboSizeDirty: Boolean
-            val resolutionMultiplier = engine.config.resolutionMultiplier
             if (lastContentWidth != contentWidth ||
-                    lastContentHeight != contentHeight ||
-                    this.resolutionMultiplier != resolutionMultiplier) {
+                    lastContentHeight != contentHeight) {
                 lastContentWidth = contentWidth
                 lastContentHeight = contentHeight
-                this.resolutionMultiplier = resolutionMultiplier
                 fboSizeDirty = true
                 widthDebug.setValue(contentWidth)
                 heightDebug.setValue(contentHeight)
                 profilerSection("Reshape") {
-                    gl.reshape(contentWidth, contentHeight,
-                            resolutionMultiplier)
+                    gl.reshape(contentWidth, contentHeight)
                 }
             } else {
                 fboSizeDirty = false

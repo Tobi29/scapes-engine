@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.tobi29.scapes.engine.ScapesEngine
@@ -156,29 +157,27 @@ internal open class TextureGL(override val engine: ScapesEngine,
         if (!isStored) {
             store(gl)
         }
-        used = System.currentTimeMillis()
+        used = gl.timestamp
         return true
     }
 
     override fun ensureDisposed(gl: GL) {
         if (isStored) {
             dispose(gl)
-            reset()
         }
     }
 
-    override fun isUsed(time: Long): Boolean {
-        return time - used < 1000 && !markAsDisposed
-    }
+    override fun isUsed(time: Long) =
+            time - used < 1000000000L && !markAsDisposed
 
-    override fun dispose(gl: GL) {
-        assert(isStored)
-        gl.check()
-        glDeleteTextures(textureID)
-    }
-
-    override fun reset() {
-        assert(isStored)
+    override fun dispose(gl: GL?) {
+        if (!isStored) {
+            return
+        }
+        if (gl != null) {
+            gl.check()
+            glDeleteTextures(textureID)
+        }
         isStored = false
         detach?.invoke()
         detach = null

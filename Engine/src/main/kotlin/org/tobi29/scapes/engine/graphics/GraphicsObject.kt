@@ -25,7 +25,5 @@ interface GraphicsObject {
 
     fun isUsed(time: Long): Boolean
 
-    fun dispose(gl: GL)
-
-    fun reset()
+    fun dispose(gl: GL?)
 }

@@ -23,10 +23,11 @@ import java.nio.ByteBuffer
 
 abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)
-    protected var resolutionMultiplier = engine.config.resolutionMultiplier
     protected var contentWidth = 1
     protected var contentHeight = 1
     var timer = 0.0
+        private set
+    var timestamp = System.nanoTime()
         private set
     var currentFBO = 0
     private var mainThread: Thread? = null
@@ -36,11 +37,9 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
     }
 
     fun reshape(contentWidth: Int,
-                contentHeight: Int,
-                resolutionMultiplier: Double) {
+                contentHeight: Int) {
         this.contentWidth = contentWidth
         this.contentHeight = contentHeight
-        this.resolutionMultiplier = resolutionMultiplier
         shaderTracker.disposeAll(this)
     }
 
@@ -50,19 +49,11 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         if (timer >= 360000.0) {
             timer -= 360000.0
         }
+        timestamp = System.nanoTime()
     }
 
-    fun sceneWidth(): Int {
-        return (contentWidth * resolutionMultiplier).toInt()
-    }
-
-    fun sceneHeight(): Int {
-        return (contentHeight * resolutionMultiplier).toInt()
-    }
-
-    fun sceneSpace(): Double {
-        return max(contentWidth, contentHeight) * resolutionMultiplier / 1920.0
-    }
+    fun aspectRatio() =
+            engine.container.run { containerWidth.toDouble() / containerHeight }
 
     fun contentWidth(): Int {
         return contentWidth

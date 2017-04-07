@@ -23,14 +23,13 @@ class GraphicsObjectTracker<in O : GraphicsObject> {
     private var disposeOffset = 0
 
     fun disposeUnused(gl: GL) {
-        val time = System.currentTimeMillis()
+        val time = gl.timestamp
         var i = disposeOffset
         while (i < objects.size) {
-            val `object` = objects[i]
-            assert(`object`.isStored)
-            if (!`object`.isUsed(time)) {
-                `object`.dispose(gl)
-                `object`.reset()
+            val go = objects[i]
+            assert(go.isStored)
+            if (!go.isUsed(time)) {
+                go.dispose(gl)
             }
             i += 16
         }
@@ -40,17 +39,14 @@ class GraphicsObjectTracker<in O : GraphicsObject> {
 
     fun disposeAll(gl: GL) {
         while (!objects.isEmpty()) {
-            val `object` = objects[0]
-            `object`.dispose(gl)
-            `object`.reset()
+            objects[0].dispose(gl)
         }
         objects.clear()
     }
 
     fun resetAll() {
         while (!objects.isEmpty()) {
-            val `object` = objects[0]
-            `object`.reset()
+            objects[0].dispose(null)
         }
         objects.clear()
     }
@@ -59,8 +55,8 @@ class GraphicsObjectTracker<in O : GraphicsObject> {
         return objects.size
     }
 
-    fun attach(`object`: O): () -> Unit {
-        objects.add(`object`)
-        return { objects.remove(`object`) }
+    fun attach(go: O): () -> Unit {
+        objects.add(go)
+        return { objects.remove(go) }
     }
 }

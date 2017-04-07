@@ -21,6 +21,7 @@ import org.lwjgl.glfw.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
+import org.lwjgl.opengles.GLESCapabilities
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.Container
@@ -48,11 +49,15 @@ class ContainerGLFW(engine: ScapesEngine,
                     private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
                     useGLES: Boolean = false) : ContainerLWJGL3(engine,
         useGLES) {
+    override var containerWidth = 0
+        private set
+    override var containerHeight = 0
+        private set
     private val sync: Sync
     private val controllerDefault = GLFWControllerDefault()
     private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
-    private val errorFun: GLFWErrorCallback
+    private val errorFun = GLFWErrorCallback.createPrint()
     private val windowSizeFun: GLFWWindowSizeCallback
     private val windowCloseFun: GLFWWindowCloseCallback
     private val windowFocusFun: GLFWWindowFocusCallback
@@ -67,13 +72,17 @@ class ContainerGLFW(engine: ScapesEngine,
     private var refreshRate = 60
     private var contentWidth = 0
     private var contentHeight = 0
+    private var mouseX = 0.0
+    private var mouseY = 0.0
     private var running = true
+    private var valid = false
+    private var visible = false
+    private var focus = true
     private var mouseGrabbed = false
     private var mouseDeltaSkip = true
     private var plebSyncEnable = true
 
     init {
-        errorFun = GLFWErrorCallback.createPrint()
         GLFW.glfwSetErrorCallback(errorFun)
         if (!GLFW.glfwInit()) {
             throw GraphicsException("Unable to initialize GLFW")
@@ -82,17 +91,17 @@ class ContainerGLFW(engine: ScapesEngine,
         sync = Sync(engine.config.fps, 5000000000L, false,
                 "Rendering")
         controllers = GLFWControllers(engine.events, virtualJoysticks)
-        windowSizeFun = GLFWWindowSizeCallback.create { window, width, height ->
+        windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
             containerWidth = round(width * density)
             containerHeight = round(height * density)
         }
         windowCloseFun = GLFWWindowCloseCallback.create { stop() }
-        windowFocusFun = GLFWWindowFocusCallback.create { window, focused -> focus = focused }
-        frameBufferSizeFun = GLFWFramebufferSizeCallback.create { window, width, height ->
+        windowFocusFun = GLFWWindowFocusCallback.create { _, focused -> focus = focused }
+        frameBufferSizeFun = GLFWFramebufferSizeCallback.create { _, width, height ->
             contentWidth = width
             contentHeight = height
         }
-        keyFun = GLFWKeyCallback.create { window, key, scancode, action, mods ->
+        keyFun = GLFWKeyCallback.create { _, key, _, action, _ ->
             val virtualKey = GLFWKeyMap.key(key)
             if (virtualKey != null) {
                 if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW.GLFW_RELEASE) {
@@ -111,10 +120,10 @@ class ContainerGLFW(engine: ScapesEngine,
                 plebSyncEnable = !plebSyncEnable
             }
         }
-        charFun = GLFWCharCallback.create { window, codepoint ->
+        charFun = GLFWCharCallback.create { _, codepoint ->
             controllerDefault.addTypeEvent(codepoint.toChar())
         }
-        mouseButtonFun = GLFWMouseButtonCallback.create { window, button, action, mods ->
+        mouseButtonFun = GLFWMouseButtonCallback.create { _, button, action, _ ->
             val virtualKey = ControllerKey.button(button)
             if (virtualKey != null) {
                 when (action) {
@@ -145,18 +154,22 @@ class ContainerGLFW(engine: ScapesEngine,
                 }
             }
         }
-        scrollFun = GLFWScrollCallback.create { window, xoffset, yoffset ->
+        scrollFun = GLFWScrollCallback.create { _, xoffset, yoffset ->
             if (xoffset != 0.0 || yoffset != 0.0) {
                 controllerDefault.addScroll(xoffset, yoffset)
             }
         }
-        monitorFun = GLFWMonitorCallback.create { monitor, event ->
+        monitorFun = GLFWMonitorCallback.create { _, _ ->
             refreshRate = Companion.refreshRate(window) ?: 60
         }
         GLFW.glfwSetMonitorCallback(monitorFun)
     }
 
     override val formFactor = Container.FormFactor.DESKTOP
+
+    override fun updateContainer() {
+        valid = false
+    }
 
     override fun update(delta: Double) {
     }
@@ -396,11 +409,19 @@ class ContainerGLFW(engine: ScapesEngine,
                             monitorWidth, monitorHeight)
                     GLFW.glfwMakeContextCurrent(window)
                     GLES.createCapabilities()
+
                     // TODO: Remove once fix is released
-                    // https://github.com/LWJGL/lwjgl3/issues/276
-                    // This *can* be worked around, but as this is basically
-                    // useless at the moment leaving it broken
-                    logger.error { "This will not work with LWJGL 3.1.1 due to a bug" }
+                    // Super clean and nice code to avoid effort in not using
+                    // array overloads
+                    val icd = GLES::class.java.getDeclaredField("icd")
+                    icd.isAccessible = true
+                    val icdi = icd.get(null)
+                    val icdc = icdi::class.java
+                    val icdset = icdc.getDeclaredMethod("set",
+                            GLESCapabilities::class.java)
+                    icdset.isAccessible = true
+                    icdset.invoke(icdi, GLES.getCapabilities())
+
                     checkContextGLES()?.let { throw GraphicsCheckException(it) }
                     window
                 } else {

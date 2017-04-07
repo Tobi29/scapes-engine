@@ -23,75 +23,94 @@ interface Shader : GraphicsObject {
 
     fun uniformLocation(uniform: Int): Int
 
-    fun setUniform1f(uniform: Int,
+    fun setUniform1f(gl: GL,
+                     uniform: Int,
                      v0: Float)
 
-    fun setUniform2f(uniform: Int,
+    fun setUniform2f(gl: GL,
+                     uniform: Int,
                      v0: Float,
                      v1: Float)
 
-    fun setUniform3f(uniform: Int,
+    fun setUniform3f(gl: GL,
+                     uniform: Int,
                      v0: Float,
                      v1: Float,
                      v2: Float)
 
-    fun setUniform4f(uniform: Int,
+    fun setUniform4f(gl: GL,
+                     uniform: Int,
                      v0: Float,
                      v1: Float,
                      v2: Float,
                      v3: Float)
 
-    fun setUniform1i(uniform: Int,
+    fun setUniform1i(gl: GL,
+                     uniform: Int,
                      v0: Int)
 
-    fun setUniform2i(uniform: Int,
+    fun setUniform2i(gl: GL,
+                     uniform: Int,
                      v0: Int,
                      v1: Int)
 
-    fun setUniform3i(uniform: Int,
+    fun setUniform3i(gl: GL,
+                     uniform: Int,
                      v0: Int,
                      v1: Int,
                      v2: Int)
 
-    fun setUniform4i(uniform: Int,
+    fun setUniform4i(gl: GL,
+                     uniform: Int,
                      v0: Int,
                      v1: Int,
                      v2: Int,
                      v3: Int)
 
-    fun setUniform1(uniform: Int,
+    fun setUniform1(gl: GL,
+                    uniform: Int,
                     values: FloatArray)
 
-    fun setUniform2(uniform: Int,
+    fun setUniform2(gl: GL,
+                    uniform: Int,
                     values: FloatArray)
 
-    fun setUniform3(uniform: Int,
+    fun setUniform3(gl: GL,
+                    uniform: Int,
                     values: FloatArray)
 
-    fun setUniform4(uniform: Int,
+    fun setUniform4(gl: GL,
+                    uniform: Int,
                     values: FloatArray)
 
-    fun setUniform1(uniform: Int,
+    fun setUniform1(gl: GL,
+                    uniform: Int,
                     values: IntArray)
 
-    fun setUniform2(uniform: Int,
+    fun setUniform2(gl: GL,
+                    uniform: Int,
                     values: IntArray)
 
-    fun setUniform3(uniform: Int,
+    fun setUniform3(gl: GL,
+                    uniform: Int,
                     values: IntArray)
 
-    fun setUniform4(uniform: Int,
+    fun setUniform4(gl: GL,
+                    uniform: Int,
                     values: IntArray)
 
-    fun setUniformMatrix2(uniform: Int,
+    fun setUniformMatrix2(gl: GL,
+                          uniform: Int,
                           transpose: Boolean,
                           matrices: FloatArray)
 
-    fun setUniformMatrix3(uniform: Int,
+    fun setUniformMatrix3(gl: GL,
+                          uniform: Int,
                           transpose: Boolean,
                           matrices: FloatArray)
 
-    fun setUniformMatrix4(uniform: Int,
+    fun setUniformMatrix4(gl: GL,
+                          uniform: Int,
                           transpose: Boolean,
                           matrices: FloatArray)
 }

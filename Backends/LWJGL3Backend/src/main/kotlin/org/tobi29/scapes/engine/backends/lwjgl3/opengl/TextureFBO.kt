@@ -65,15 +65,7 @@ internal abstract class TextureFBO(engine: ScapesEngine,
                 "FBO texture can only be managed by framebuffer")
     }
 
-    override fun isUsed(time: Long): Boolean {
-        return isStored
-    }
-
-    override fun reset() {
-        assert(isStored)
-        isStored = false
-        markAsDisposed = false
-    }
+    override fun isUsed(time: Long) = isStored
 
     override fun store(gl: GL) {
         assert(!isStored)

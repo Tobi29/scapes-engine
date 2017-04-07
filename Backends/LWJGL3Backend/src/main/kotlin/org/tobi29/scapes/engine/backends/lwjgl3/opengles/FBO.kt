@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.ScapesEngine
@@ -99,32 +100,27 @@ internal class FBO(engine: ScapesEngine,
             gl.clear(0.0f, 0.0f, 0.0f, 0.0f)
             deactivate(gl)
         }
-        used = System.currentTimeMillis()
+        used = gl.timestamp
         return true
     }
 
     override fun ensureDisposed(gl: GL) {
         if (isStored) {
             dispose(gl)
-            reset()
         }
     }
 
-    override fun isUsed(time: Long): Boolean {
-        return time - used < 1000 && !markAsDisposed
-    }
+    override fun isUsed(time: Long) =
+            time - used < 1000000000L && !markAsDisposed
 
-    override fun dispose(gl: GL) {
-        gl.check()
-        glDeleteFramebuffers(framebufferID)
-        for (textureColor in texturesColor) {
-            textureColor.dispose(gl)
+    override fun dispose(gl: GL?) {
+        if (!isStored) {
+            return
         }
-        textureDepth?.dispose(gl)
-    }
-
-    override fun reset() {
-        assert(isStored)
+        if (gl != null) {
+            gl.check()
+            glDeleteFramebuffers(framebufferID)
+        }
         isStored = false
         detach?.invoke()
         detach = null
@@ -132,9 +128,9 @@ internal class FBO(engine: ScapesEngine,
         lastFBO = 0
         markAsDisposed = false
         for (textureColor in texturesColor) {
-            textureColor.reset()
+            textureColor.dispose(gl)
         }
-        textureDepth?.reset()
+        textureDepth?.dispose(gl)
     }
 
     private fun store(gl: GL) {

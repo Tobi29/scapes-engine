@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import mu.KLogging
@@ -21,11 +22,9 @@ import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.ShaderCompileInformation
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import java.io.IOException
-import java.util.*
 
 internal class ShaderGL(private val shader: CompiledShader,
                         private val information: ShaderCompileInformation) : Shader {
-    private val uniforms = ArrayDeque<() -> Unit>()
     override var isStored = false
     private var valid = false
     private var markAsDisposed = false
@@ -38,28 +37,27 @@ internal class ShaderGL(private val shader: CompiledShader,
         if (!isStored) {
             store(gl)
         }
-        used = System.currentTimeMillis()
+        used = gl.timestamp
         return valid
     }
 
     override fun ensureDisposed(gl: GL) {
         if (isStored) {
             dispose(gl)
-            reset()
         }
     }
 
-    override fun isUsed(time: Long): Boolean {
-        return time - used < 1000 && !markAsDisposed
-    }
+    override fun isUsed(time: Long) =
+            time - used < 1000000000L && !markAsDisposed
 
-    override fun dispose(gl: GL) {
-        gl.check()
-        glDeleteProgram(program)
-    }
-
-    override fun reset() {
-        assert(isStored)
+    override fun dispose(gl: GL?) {
+        if (!isStored) {
+            return
+        }
+        if (gl != null) {
+            gl.check()
+            glDeleteProgram(program)
+        }
         isStored = false
         detach?.invoke()
         detach = null
@@ -77,9 +75,6 @@ internal class ShaderGL(private val shader: CompiledShader,
 
     override fun updateUniforms(gl: GL) {
         gl.check()
-        while (!uniforms.isEmpty()) {
-            uniforms.poll()()
-        }
     }
 
     override fun uniformLocation(uniform: Int): Int {
@@ -87,120 +82,152 @@ internal class ShaderGL(private val shader: CompiledShader,
         throw IllegalStateException("Shader not stored")
     }
 
-    override fun setUniform1f(uniform: Int,
+    override fun setUniform1f(gl: GL,
+                              uniform: Int,
                               v0: Float) {
-        uniforms.add { glUniform1f(uniformLocation(uniform), v0) }
+        activate(gl)
+        glUniform1f(uniformLocation(uniform), v0)
     }
 
-    override fun setUniform2f(uniform: Int,
+    override fun setUniform2f(gl: GL,
+                              uniform: Int,
                               v0: Float,
                               v1: Float) {
-        uniforms.add { glUniform2f(uniformLocation(uniform), v0, v1) }
+        activate(gl)
+        glUniform2f(uniformLocation(uniform), v0, v1)
     }
 
-    override fun setUniform3f(uniform: Int,
+    override fun setUniform3f(gl: GL,
+                              uniform: Int,
                               v0: Float,
                               v1: Float,
                               v2: Float) {
-        uniforms.add { glUniform3f(uniformLocation(uniform), v0, v1, v2) }
+        activate(gl)
+        glUniform3f(uniformLocation(uniform), v0, v1, v2)
     }
 
-    override fun setUniform4f(uniform: Int,
+    override fun setUniform4f(gl: GL,
+                              uniform: Int,
                               v0: Float,
                               v1: Float,
                               v2: Float,
                               v3: Float) {
-        uniforms.add { glUniform4f(uniformLocation(uniform), v0, v1, v2, v3) }
+        activate(gl)
+        glUniform4f(uniformLocation(uniform), v0, v1, v2, v3)
     }
 
-    override fun setUniform1i(uniform: Int,
+    override fun setUniform1i(gl: GL,
+                              uniform: Int,
                               v0: Int) {
-        uniforms.add { glUniform1i(uniformLocation(uniform), v0) }
+        activate(gl)
+        glUniform1i(uniformLocation(uniform), v0)
     }
 
-    override fun setUniform2i(uniform: Int,
+    override fun setUniform2i(gl: GL,
+                              uniform: Int,
                               v0: Int,
                               v1: Int) {
-        uniforms.add { glUniform2i(uniformLocation(uniform), v0, v1) }
+        activate(gl)
+        glUniform2i(uniformLocation(uniform), v0, v1)
     }
 
-    override fun setUniform3i(uniform: Int,
+    override fun setUniform3i(gl: GL,
+                              uniform: Int,
                               v0: Int,
                               v1: Int,
                               v2: Int) {
-        uniforms.add { glUniform3i(uniformLocation(uniform), v0, v1, v2) }
+        activate(gl)
+        glUniform3i(uniformLocation(uniform), v0, v1, v2)
     }
 
-    override fun setUniform4i(uniform: Int,
+    override fun setUniform4i(gl: GL,
+                              uniform: Int,
                               v0: Int,
                               v1: Int,
                               v2: Int,
                               v3: Int) {
-        uniforms.add { glUniform4i(uniformLocation(uniform), v0, v1, v2, v3) }
+        activate(gl)
+        glUniform4i(uniformLocation(uniform), v0, v1, v2, v3)
     }
 
-    override fun setUniform1(uniform: Int,
+    override fun setUniform1(gl: GL,
+                             uniform: Int,
                              values: FloatArray) {
-        uniforms.add { glUniform1fv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform1fv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform2(uniform: Int,
+    override fun setUniform2(gl: GL,
+                             uniform: Int,
                              values: FloatArray) {
-        uniforms.add { glUniform2fv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform2fv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform3(uniform: Int,
+    override fun setUniform3(gl: GL,
+                             uniform: Int,
                              values: FloatArray) {
-        uniforms.add { glUniform3fv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform3fv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform4(uniform: Int,
+    override fun setUniform4(gl: GL,
+                             uniform: Int,
                              values: FloatArray) {
-        uniforms.add { glUniform4fv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform4fv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform1(uniform: Int,
+    override fun setUniform1(gl: GL,
+                             uniform: Int,
                              values: IntArray) {
-        uniforms.add { glUniform1iv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform1iv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform2(uniform: Int,
+    override fun setUniform2(gl: GL,
+                             uniform: Int,
                              values: IntArray) {
-        uniforms.add { glUniform2iv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform2iv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform3(uniform: Int,
+    override fun setUniform3(gl: GL,
+                             uniform: Int,
                              values: IntArray) {
-        uniforms.add { glUniform3iv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform3iv(uniformLocation(uniform), values)
     }
 
-    override fun setUniform4(uniform: Int,
+    override fun setUniform4(gl: GL,
+                             uniform: Int,
                              values: IntArray) {
-        uniforms.add { glUniform4iv(uniformLocation(uniform), values) }
+        activate(gl)
+        glUniform4iv(uniformLocation(uniform), values)
     }
 
-    override fun setUniformMatrix2(uniform: Int,
+    override fun setUniformMatrix2(gl: GL,
+                                   uniform: Int,
                                    transpose: Boolean,
                                    matrices: FloatArray) {
-        uniforms.add {
-            glUniformMatrix2fv(uniformLocation(uniform), transpose, matrices)
-        }
+        activate(gl)
+        glUniformMatrix2fv(uniformLocation(uniform), transpose, matrices)
     }
 
-    override fun setUniformMatrix3(uniform: Int,
+    override fun setUniformMatrix3(gl: GL,
+                                   uniform: Int,
                                    transpose: Boolean,
                                    matrices: FloatArray) {
-        uniforms.add {
-            glUniformMatrix3fv(uniformLocation(uniform), transpose, matrices)
-        }
+        activate(gl)
+        glUniformMatrix3fv(uniformLocation(uniform), transpose, matrices)
     }
 
-    override fun setUniformMatrix4(uniform: Int,
+    override fun setUniformMatrix4(gl: GL,
+                                   uniform: Int,
                                    transpose: Boolean,
                                    matrices: FloatArray) {
-        uniforms.add {
-            glUniformMatrix4fv(uniformLocation(uniform), transpose, matrices)
-        }
+        activate(gl)
+        glUniformMatrix4fv(uniformLocation(uniform), transpose, matrices)
     }
 
     private fun store(gl: GL) {

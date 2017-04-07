@@ -37,7 +37,6 @@ import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.tag.mapMut
-import org.tobi29.scapes.engine.utils.tag.set
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.nio.ByteBuffer
@@ -50,11 +49,17 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
                    val taskExecutor: TaskExecutor,
                    val configMap: MutableTagMap) {
     private val runtime = Runtime.getRuntime()
+    private val usedMemoryDebug: GuiWidgetDebugValues.Element
+    private val heapMemoryDebug: GuiWidgetDebugValues.Element
+    private val maxMemoryDebug: GuiWidgetDebugValues.Element
+    private val tpsDebug: GuiWidgetDebugValues.Element
+    private val newState = AtomicReference<GameState>()
+    private var joiner: Joiner? = null
+    private var state: GameState? = null
     val files = FileSystemContainer()
     val events = EventDispatcher()
     val resources = ResourceLoader(taskExecutor)
-    val config: ScapesEngineConfig
-    val game: Game
+    val config = ScapesEngineConfig(configMap.mapMut("Engine"))
     val container: Container
     val graphics: GraphicsSystem
     val sounds: SoundSystem
@@ -66,18 +71,10 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
-    private val usedMemoryDebug: GuiWidgetDebugValues.Element
-    private val heapMemoryDebug: GuiWidgetDebugValues.Element
-    private val maxMemoryDebug: GuiWidgetDebugValues.Element
-    private val tpsDebug: GuiWidgetDebugValues.Element
-    private val newState = AtomicReference<GameState>()
-    private var joiner: Joiner? = null
-    private var state: GameState? = null
+    val game = game(this)
 
     init {
-        this.game = game(this)
         checkSystem()
-
         logger.info { "Starting Scapes-Engine: $this (Game: $game)" }
 
         logger.info { "Initializing asset system" }
@@ -89,19 +86,6 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
 
         logger.info { "Initializing game" }
         this.game.initEarly()
-
-        logger.info { "Initializing engine config" }
-        if (configMap.containsKey("Engine")) {
-            config = ScapesEngineConfig(configMap.mapMut("Engine"))
-        } else {
-            logger.info { "Setting defaults to config" }
-            val engineTag = configMap.mapMut("Engine")
-            engineTag["VSync"] = true
-            engineTag["Framerate"] = 60.0
-            engineTag["ResolutionMultiplier"] = 1.0
-            engineTag["Fullscreen"] = false
-            config = ScapesEngineConfig(engineTag)
-        }
 
         logger.info { "Creating backend" }
         container = backend(this)
