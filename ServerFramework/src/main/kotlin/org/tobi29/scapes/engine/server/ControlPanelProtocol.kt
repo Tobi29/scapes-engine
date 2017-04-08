@@ -17,13 +17,10 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
 import mu.KLogging
-import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.ListenerOwner
-import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
-import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
+import org.tobi29.scapes.engine.utils.tag.*
 import java.io.IOException
 import java.nio.channels.SelectionKey
 import java.security.*
@@ -360,7 +357,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         val check = ByteArray(challenge.size)
         channel.inputStream[check]
-        if (!Arrays.equals(check, challenge)) {
+        if (!(check equals challenge)) {
             throw ConnectionCloseException("Failed password authentication")
         }
         idStr = id

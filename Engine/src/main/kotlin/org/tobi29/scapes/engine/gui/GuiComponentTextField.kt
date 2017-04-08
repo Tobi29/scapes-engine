@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.gui
 
-import java.util.*
-
 class GuiComponentTextField(parent: GuiLayoutData,
                             textX: Int,
                             textSize: Int,
@@ -47,9 +45,7 @@ class GuiComponentTextField(parent: GuiLayoutData,
         ) { GuiComponentEditableText(it, text, maxLength) }
         if (hiddenText) {
             this.text.textFilter = { str ->
-                val array = CharArray(str.length)
-                Arrays.fill(array, '*')
-                String(array)
+                String(CharArray(str.length) { '*' })
             }
         } else {
             this.text.textFilter = { str -> str }

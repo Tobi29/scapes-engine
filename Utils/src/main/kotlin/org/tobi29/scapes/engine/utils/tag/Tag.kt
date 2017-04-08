@@ -18,14 +18,14 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
+import org.tobi29.scapes.engine.utils.arrayHashCode
+import org.tobi29.scapes.engine.utils.equals
 import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.synchronized
 import java.math.BigDecimal
 import java.math.BigInteger
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
-import kotlin.collections.ArrayList
 
 /**
  * Type shared by all tags
@@ -237,7 +237,7 @@ class TagByteArray
 
     override fun equals(other: Any?): Boolean {
         if (other is TagByteArray) {
-            return Arrays.equals(valueMut, other.valueMut)
+            return valueMut equals other.valueMut
         } else if (other is TagList) {
             if (valueMut.size != other.value.size) {
                 return false
@@ -255,11 +255,11 @@ class TagByteArray
     }
 
     override fun hashCode(): Int {
-        return Arrays.hashCode(value)
+        return value.arrayHashCode()
     }
 
     override fun toString(): String {
-        return Arrays.toString(value)
+        return value.joinToString(prefix = "[",postfix = "]")
     }
 }
 

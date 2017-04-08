@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.utils
 import org.tobi29.scapes.engine.utils.tag.*
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
-import java.util.*
 
 /**
  * Class representing a checksum hash
@@ -50,7 +49,7 @@ class Checksum
     }
 
     override fun hashCode(): Int {
-        return Arrays.hashCode(array)
+        return array.arrayHashCode()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -60,7 +59,7 @@ class Checksum
         if (other !is Checksum) {
             return false
         }
-        return algorithm == other.algorithm && Arrays.equals(array, other.array)
+        return algorithm == other.algorithm && array equals other.array
     }
 
     override fun toString(): String {

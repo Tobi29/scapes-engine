@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.codec.ogg
 
 import com.jcraft.jogg.Buffer
 import com.jcraft.jogg.Packet
-import java.util.*
+import org.tobi29.scapes.engine.utils.equals
 
 fun decideCodec(op: Packet): OGGCodec? {
     val opb = Buffer()
@@ -26,7 +26,7 @@ fun decideCodec(op: Packet): OGGCodec? {
         opb.readinit(op.packet_base, op.packet, op.bytes)
         val buffer = ByteArray(codec.header.size)
         opb.read(buffer, buffer.size)
-        if (Arrays.equals(codec.header, buffer)) {
+        if (codec.header equals buffer) {
             return codec
         }
     }

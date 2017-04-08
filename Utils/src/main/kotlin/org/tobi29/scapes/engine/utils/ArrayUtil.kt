@@ -22,6 +22,7 @@ import com.owtelse.codec.Base64
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.ByteBuffer
+import java.util.*
 
 /**
  * Converts a byte array into a hexadecimal string
@@ -94,7 +95,6 @@ fun String.fromHexadecimal(): ByteArray {
     } catch (e: NumberFormatException) {
         throw IOException(e)
     }
-
 }
 
 /**
@@ -124,7 +124,6 @@ fun String.fromBase64(): ByteArray {
     } catch (e: UnsupportedEncodingException) {
         throw IOException(e)
     }
-
 }
 
 /**
@@ -239,3 +238,163 @@ inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
     }
     return this
 }
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun BooleanArray.equals(other: BooleanArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun ByteArray.equals(other: ByteArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun ShortArray.equals(other: ShortArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun IntArray.equals(other: IntArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun LongArray.equals(other: LongArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun FloatArray.equals(other: FloatArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun DoubleArray.equals(other: DoubleArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun CharArray.equals(other: CharArray) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun <E> Array<in E>.equals(other: Array<in E>) =
+        Arrays.equals(this, other)
+
+/**
+ * Check if the given array equals [other]
+ * @receiver The first array
+ * @param other The second array
+ * @return `true` the size is equal and all entries are
+ */
+inline infix fun <E> Array<in E>.deepEquals(other: Array<in E>) =
+        Arrays.deepEquals(this, other)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun BooleanArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun ByteArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun ShortArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun IntArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun LongArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun FloatArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun DoubleArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun CharArray.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun <E> Array<in E>.arrayHashCode() = Arrays.hashCode(this)
+
+/**
+ * Calculate a hash code for the given array
+ * @receiver The array
+ * @return A hash code computes alike a list
+ */
+inline fun <E> Array<in E>.deepArrayHashCode() = Arrays.deepHashCode(this)

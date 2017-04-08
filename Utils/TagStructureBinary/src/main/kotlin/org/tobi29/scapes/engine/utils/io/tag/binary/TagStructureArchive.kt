@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.utils.io.tag.binary
 
 import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.equals
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
@@ -136,16 +137,14 @@ class TagStructureArchive {
         fun readHeader(stream: ReadableByteStream): List<Entry> {
             val magic = ByteArray(HEADER_MAGIC.size)
             stream[magic]
-            if (!Arrays.equals(magic, magic)) {
-                throw IOException("Not in tag-archive format! (Magic-Header: " +
-                        Arrays.toString(magic) +
-                        ')')
+            if (!(magic equals magic)) {
+                throw IOException(
+                        "Not in tag-archive format! (Magic-Header: ${magic.joinToString()})")
             }
             val version = stream.get()
             if (version > HEADER_VERSION) {
                 throw IOException(
-                        "Unsupported version or not in tag-container format! (Version: " +
-                                version + ')')
+                        "Unsupported version or not in tag-container format! (Version: $version)")
             }
             val entries = ArrayList<Entry>()
             while (true) {

@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.fill
 import org.tobi29.scapes.engine.utils.fromBase64
 import org.tobi29.scapes.engine.utils.toBase64
 import org.tobi29.scapes.engine.utils.use
@@ -109,7 +110,7 @@ fun writePrivate(key: PrivateKey): String {
     val spec = FACTORY.getKeySpec(key, PKCS8EncodedKeySpec::class.java)
     val packed = spec.encoded
     val key64 = packed.toBase64()
-    Arrays.fill(packed, 0.toByte())
+    packed.fill { 0 }
     return key64
 }
 
