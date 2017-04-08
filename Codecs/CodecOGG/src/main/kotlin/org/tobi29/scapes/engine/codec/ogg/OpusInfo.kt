@@ -57,12 +57,20 @@ class OpusInfo(packet: Packet) {
         gain = buffer.read(16)
         val channelMappingType = buffer.read(8)
         if (channelMappingType != 0) {
-            throw IOException("NYI")
+            streams = buffer.read(8)
+            if (streams <= 0) {
+                throw IOException("Invalid stream amount: $streams")
+            }
+            coupledStreams = buffer.read(8)
+            if (coupledStreams > streams || coupledStreams + streams > 255) {
+                throw IOException(
+                        "Invalid stream and coupled stream amount: $streams + $coupledStreams")
+            }
+            streamMap = ShortArray(channels) { buffer.read(8).toShort() }
         } else {
             streams = 1
             coupledStreams = if (channels > 1) 1 else 0
             streamMap = shortArrayOf(0, 1)
         }
-        // TODO: Verify more
     }
 }
