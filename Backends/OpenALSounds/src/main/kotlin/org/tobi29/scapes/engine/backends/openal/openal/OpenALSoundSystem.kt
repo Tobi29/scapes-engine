@@ -23,7 +23,7 @@ import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.Sync
-import org.tobi29.scapes.engine.utils.codec.AudioStream
+import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 import org.tobi29.scapes.engine.utils.use
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d

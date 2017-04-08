@@ -20,9 +20,9 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.AudioFormat
-import org.tobi29.scapes.engine.utils.codec.AudioBuffer
-import org.tobi29.scapes.engine.utils.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.codec.toPCM16
+import org.tobi29.scapes.engine.codec.AudioBuffer
+import org.tobi29.scapes.engine.codec.ReadableAudioStream
+import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 
 import java.io.IOException
