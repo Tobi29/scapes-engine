@@ -17,8 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":Backends:LWJGL3Backend")
-    compile(rootProject.ext.lwjgl) { transitive = false }
-    compile(rootProject.ext.lwjglGLFW) { transitive = false }
-    compile(rootProject.ext.lwjglTinyFD) { transitive = false }
+    compile project(":Codecs")
+    compile project(":Concentus")
+    compile(rootProject.ext.jorbis) { transitive = false }
 }

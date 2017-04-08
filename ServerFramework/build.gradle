@@ -18,6 +18,6 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":FileSystems")
-    compile(project(":Utils:TagStructureBinary")) { transitive = false }
+    compile(project(":TagStructureBinary")) { transitive = false }
     compile rootProject.ext.kotlinxCoroutines
 }

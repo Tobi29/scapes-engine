@@ -21,6 +21,6 @@ dependencies {
     compile project(":FileSystems")
     compile project(":GraphicsUtils")
     compile project(":ShaderCompiler")
-    compile project(":Utils:TagStructureBinary")
-    compile project(":Utils:TagStructureJSON")
+    compile project(":TagStructureBinary")
+    compile project(":TagStructureJSON")
 }

@@ -14,37 +14,49 @@
  * limitations under the License.
  */
 
-Closure subProjects = { root ->
-    def list = []
-    new File(rootDir, root.replaceAll(":", "/")).eachDir() { dir ->
-        dir.eachFile({
-            if (it.name == "build.gradle") {
-                list += root + ":" + dir.name
-            }
-        })
-    }
-    list.toArray(new String[0])
-}
-
-include "Engine"
+// Codecs
 include "Codecs"
-include "Codecs:CodecMP3"
-include "Codecs:CodecOGG"
-include "Codecs:CodecOGG:Concentus"
-include "Codecs:CodecWAV"
+include "CodecMP3"
+include "CodecOGG"
+include "CodecWAV"
+include "Concentus"
+
+// Engine
+include "Engine"
+include "ShaderCompiler"
+include "ShaderParser"
+
+// Backend
+include "GLFWBackend"
+include "OpenALSounds"
+include "LWJGL3Backend"
+
+// File systems
 include "FileSystems"
+include "NIOFileSystem"
+include "IOFileSystem"
+
+// Server framework
+include "ServerFramework"
+include "JVMSSLProvider"
+
+// SQL
+include "SQLFramework"
+include "MariaDB"
+include "SQLite"
+include "SQLJet"
+
+// SWT
+include "SWTUtils"
+
+// Utils
+include "Utils"
+include "TagStructureBinary"
+include "TagStructureJSON"
+include "MBeansCPUReader"
+include "IOUtils"
 include "GenerationUtils"
 include "GraphicsUtils"
-include "IOUtils"
-include "ServerFramework"
-include "ShaderCompiler"
-include "ShaderCompiler:ShaderParser"
-include "SQLFramework"
-include "SWTUtils"
+
+// Testing
 include "TestAssertions"
-include "Utils"
-include subProjects("Backends")
-include subProjects("Utils")
-include subProjects("FileSystems")
-include subProjects("ServerFramework")
-include subProjects("SQLFramework")

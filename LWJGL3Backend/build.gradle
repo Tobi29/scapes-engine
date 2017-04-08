@@ -17,7 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":Backends:OpenALSounds")
+    compile project(":OpenALSounds")
     compile(rootProject.ext.lwjgl) { transitive = false }
     compile(rootProject.ext.lwjglEGL) { transitive = false }
     compile(rootProject.ext.lwjglOpenAL) { transitive = false }
