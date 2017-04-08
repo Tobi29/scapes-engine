@@ -88,8 +88,10 @@ Audio decoding library that can use mime-types to identify the format
 and load an appropriate decoder through an SPI
 ### Dependencies
   * File system api
-### For OGG Vorbis support
+### For OGG Vorbis and Opus support
   * [JOrbis](http://www.jcraft.com/jorbis)
+  * [Concentus](https://github.com/lostromb/concentus) (Code is currently
+    included in this repo as there is no up-to-data build it seems)
 ### For MP3 support
   * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
 
