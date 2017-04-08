@@ -17,39 +17,26 @@
 package org.tobi29.scapes.engine.codec.mp3
 
 import javazoom.jl.decoder.*
-import org.tobi29.scapes.engine.utils.FloatBuffer
 import org.tobi29.scapes.engine.codec.AudioBuffer
+import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
+import org.tobi29.scapes.engine.utils.FloatBuffer
 import org.tobi29.scapes.engine.utils.math.min
 import java.io.IOException
 import java.nio.FloatBuffer
 import java.nio.channels.Channels
 import java.nio.channels.ReadableByteChannel
 
-class MP3ReadStream @Throws(IOException::class)
-constructor(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    private val decoder: Decoder
-    private val bitstream: Bitstream
-    private val output: OutputBuffer
-    private val channels: Int
+class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
+    private val bitstream = Bitstream(Channels.newInputStream(channel))
+    private val decoder = Decoder()
+    private val output = OutputBuffer()
+    private var channels = 0
+    private var initialized = false
     private var rate = 0
     private var outputRate = 0
     private var eos = false
-
-    init {
-        bitstream = Bitstream(Channels.newInputStream(channel))
-        decoder = Decoder()
-        val header = readFrame()
-        if (header == null) {
-            throw IOException("Unable to read first frame")
-        } else {
-            channels = if (header.mode() == Header.SINGLE_CHANNEL) 1 else 2
-            output = OutputBuffer()
-            decoder.setOutputBuffer(output)
-            decodeFrame(header)
-            outputRate = rate
-        }
-    }
+    override val metaData = AudioMetaData(null, null)
 
     private fun getSampleRate(header: Header): Int {
         val version = header.version()
@@ -82,7 +69,22 @@ constructor(private val channel: ReadableByteChannel) : ReadableAudioStream {
         return 0
     }
 
-    override fun get(buffer: AudioBuffer): Boolean {
+    override fun get(buffer: AudioBuffer?): ReadableAudioStream.Result {
+        if (!initialized) {
+            val header = readFrame()
+            if (header == null) {
+                throw IOException("Unable to read first frame")
+            } else {
+                channels = if (header.mode() == Header.SINGLE_CHANNEL) 1 else 2
+                decoder.setOutputBuffer(output)
+                decodeFrame(header)
+                outputRate = rate
+            }
+            initialized = true
+        }
+        if (buffer == null) {
+            return ReadableAudioStream.Result.BUFFER
+        }
         val pcmBuffer = buffer.buffer(channels, rate)
         while (pcmBuffer.hasRemaining() && !eos) {
             if (!decodeFrame(pcmBuffer)) {
@@ -91,7 +93,8 @@ constructor(private val channel: ReadableByteChannel) : ReadableAudioStream {
         }
         buffer.done()
         outputRate = rate
-        return !eos
+        return if (eos) ReadableAudioStream.Result.EOS else
+            ReadableAudioStream.Result.BUFFER
     }
 
     override fun close() {
@@ -137,7 +140,6 @@ constructor(private val channel: ReadableByteChannel) : ReadableAudioStream {
         } catch (e: BitstreamException) {
             throw IOException(e)
         }
-
     }
 
     private fun decodeFrame(header: Header) {
@@ -150,16 +152,13 @@ constructor(private val channel: ReadableByteChannel) : ReadableAudioStream {
         } catch (e: DecoderException) {
             throw IOException(e)
         }
-
     }
 
     private class OutputBuffer : Obuffer() {
-        val buffer: FloatBuffer
-        val index: IntArray
+        val buffer = FloatBuffer(Obuffer.OBUFFERSIZE * Obuffer.MAXCHANNELS)
+        val index = IntArray(Obuffer.MAXCHANNELS)
 
         init {
-            buffer = FloatBuffer(Obuffer.OBUFFERSIZE * Obuffer.MAXCHANNELS)
-            index = IntArray(Obuffer.MAXCHANNELS)
             clear_buffer()
         }
 

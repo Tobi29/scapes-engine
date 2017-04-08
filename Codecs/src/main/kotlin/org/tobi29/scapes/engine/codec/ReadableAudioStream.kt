@@ -16,12 +16,67 @@
 
 package org.tobi29.scapes.engine.codec
 
+import org.tobi29.scapes.engine.utils.tag.TagMap
 import java.io.IOException
 
+/**
+ * Interface for reading audio data from an encoded source
+ */
 interface ReadableAudioStream : AutoCloseable {
-    @Throws(IOException::class)
-    operator fun get(buffer: AudioBuffer): Boolean
+    /**
+     * Meta data of the stream, may be `null` until data becomes available
+     *
+     * Calling [get] has to eventually reveal it
+     *
+     * **Implementation note:** This really ought to return something non-null
+     * before ever requesting a buffer in [get] to allow scanning files without
+     * fully decoding them
+     */
+    val metaData: AudioMetaData?
 
+    /**
+     * Try filling the [buffer] with data
+     *
+     * Once this returns [Result.EOS] no further calls should be necessary
+     * anymore
+     *
+     * **Note:** Even when this returns [Result.EOS] the [buffer] might still
+     * contain leftover audio data
+     * @param buffer The audio buffer to fill, possibly partially
+     * @return [Result], for info head there
+     * @see [Result]
+     */
+    @Throws(IOException::class)
+    fun get(buffer: AudioBuffer?): Result
+
+    /**
+     * Disposes any resources held by this object, no further calls should be
+     * done on it
+     */
     @Throws(IOException::class)
     override fun close()
+
+    /**
+     * Result type when calling [get] with a possibly `null` [AudioBuffer]
+     */
+    enum class Result {
+        /**
+         * The data source is starved of data and you should wait until the next
+         * call
+         */
+        YIELD,
+        /**
+         * The stream cannot continue without being given an audio buffer with
+         * space in it
+         */
+        BUFFER,
+        /**
+         * The stream cannot return any more data, no further calls to [get]
+         * should be made
+         */
+        EOS
+    }
 }
+
+data class AudioMetaData(val vendor: String?,
+                         val comment: TagMap?)

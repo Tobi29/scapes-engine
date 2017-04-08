@@ -23,7 +23,10 @@ import com.jcraft.jorbis.Comment
 import com.jcraft.jorbis.DspState
 import com.jcraft.jorbis.Info
 import mu.KLogging
+import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.tag.TagMap
+import org.tobi29.scapes.engine.utils.tag.set
 import java.nio.FloatBuffer
 
 class VorbisInitializer(private val info: Info,
@@ -42,7 +45,14 @@ class VorbisInitializer(private val info: Info,
             info.synthesis_headerin(comment, packet)
             dspState.synthesis_init(info)
             block.init(dspState)
-            VorbisReadStream(info, dspState, block)
+            Pair(VorbisReadStream(info, dspState, block), {
+                AudioMetaData(comment.getVendor(),
+                        TagMap {
+                            (0..comment.comments - 1).asSequence().map {
+                                comment.getComment(it).split('=', limit = 2)
+                            }.filter { it.size == 2 }.forEach { this[it[0]] = it[1] }
+                        })
+            })
         }
     }
 
@@ -85,7 +95,7 @@ class VorbisReadStream(info: Info,
     override fun packet(page: Page,
                         packet: Packet) {
         if (block.synthesis(packet) != 0) {
-            logger.warn("Synthesis failed")
+            return
         }
         dspState.synthesis_blockin(block)
     }

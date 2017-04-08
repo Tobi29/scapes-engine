@@ -17,9 +17,10 @@
 // Based on: http://www.labbookpages.co.uk/audio/wavFiles.html
 package org.tobi29.scapes.engine.codec.wav
 
-import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.codec.AudioBuffer
+import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
+import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ChannelUtil
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -38,6 +39,7 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     private var scale = 0.0f
     private var state: (() -> Boolean)? = null
     private var eos = false
+    override val metaData = AudioMetaData(null, null)
 
     init {
         buffer.clear().limit(12)
@@ -183,21 +185,29 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         return false
     }
 
-    override fun get(buffer: AudioBuffer): Boolean {
+    override fun get(buffer: AudioBuffer?): ReadableAudioStream.Result {
         while (state?.invoke() ?: false) {
         }
         if (state != null) {
-            return !eos
+            return if (eos) ReadableAudioStream.Result.EOS else
+                ReadableAudioStream.Result.YIELD
+        }
+        if (buffer == null) {
+            return ReadableAudioStream.Result.BUFFER
         }
         val pcmBuffer = buffer.buffer(channels, rate)
         while (pcmBuffer.hasRemaining() && !eos) {
             if (this.buffer.remaining() < bits shr 3) {
                 this.buffer.compact()
-                if (channel.read(this.buffer) == -1) {
+                val read = channel.read(this.buffer)
+                if (read == -1) {
                     eos = true
                     break
                 }
                 this.buffer.flip()
+                if (read == 0) {
+                    return ReadableAudioStream.Result.YIELD
+                }
             }
             if (!eos) {
                 when (format) {
@@ -229,7 +239,8 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             }
         }
         buffer.done()
-        return !eos
+        return if (eos) ReadableAudioStream.Result.EOS else
+            ReadableAudioStream.Result.BUFFER
     }
 
     override fun close() {

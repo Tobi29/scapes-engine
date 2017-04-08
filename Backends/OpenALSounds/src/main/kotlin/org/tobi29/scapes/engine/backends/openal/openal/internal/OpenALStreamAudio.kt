@@ -20,11 +20,11 @@ import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
+import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 import org.tobi29.scapes.engine.utils.math.abs
@@ -41,15 +41,11 @@ internal class OpenALStreamAudio(engine: ScapesEngine,
                                  private val state: Boolean,
                                  private val hasPosition: Boolean) : OpenALAudio {
     private val streamBuffer = ByteBufferStream({ engine.allocate(it) })
-    private val readBuffer: AudioBuffer
+    private val readBuffer = AudioBuffer(4096)
     private var source = -1
     private var queued = 0
     private var stream: ReadableAudioStream? = null
     private var gainAL = 0.0f
-
-    init {
-        readBuffer = AudioBuffer(4096)
-    }
 
     override fun poll(sounds: OpenALSoundSystem,
                       openAL: OpenAL,
@@ -146,7 +142,7 @@ internal class OpenALStreamAudio(engine: ScapesEngine,
 
     private fun stream() {
         val stream = stream ?: return
-        if (!stream[readBuffer]) {
+        if (stream.get(readBuffer) == ReadableAudioStream.Result.EOS) {
             stream.close()
             if (state) {
                 this.stream = AudioStream.create(asset)

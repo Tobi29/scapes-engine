@@ -18,13 +18,23 @@ package org.tobi29.scapes.engine.codec.ogg
 
 import com.jcraft.jogg.Packet
 import com.jcraft.jogg.Page
+import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.tag.TagMap
+import org.tobi29.scapes.engine.utils.tag.set
 import java.nio.FloatBuffer
 
 class OpusInitializer(private val info: OpusInfo) : CodecInitializer {
-    override fun packet(packet: Packet): CodecDecoder? {
+    override fun packet(packet: Packet) = run {
         val comment = OpusComment(packet)
-        return OpusReadStream(info)
+        Pair(OpusReadStream(info), {
+            AudioMetaData(comment.vendor,
+                    TagMap {
+                        comment.userComments.forEach { (key, value) ->
+                            this[key] = value
+                        }
+                    })
+        })
     }
 }
 

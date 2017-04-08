@@ -19,12 +19,11 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
+import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
-
 import java.io.IOException
 import java.nio.ByteBuffer
 
@@ -63,7 +62,7 @@ internal class OpenALAudioData(data: ByteBuffer,
             var valid = true
             while (valid) {
                 while (!buffer.isDone) {
-                    if (!input[buffer]) {
+                    if (input.get(buffer) == ReadableAudioStream.Result.EOS) {
                         valid = false
                         break
                     }

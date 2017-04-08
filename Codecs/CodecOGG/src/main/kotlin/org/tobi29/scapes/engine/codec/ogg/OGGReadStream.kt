@@ -23,28 +23,32 @@ import com.jcraft.jogg.SyncState
 import com.jcraft.jorbis.Comment
 import com.jcraft.jorbis.Info
 import org.tobi29.scapes.engine.codec.AudioBuffer
+import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
+import org.tobi29.scapes.engine.utils.mutableLazy
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.channels.ReadableByteChannel
 
 class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    internal val packet = Packet()
-    internal val page = Page()
-    internal val streamState = StreamState()
-    internal val syncState = SyncState()
-    internal var initializer: CodecInitializer? = null
-    internal var decoder: CodecDecoder? = null
-    internal var channels = 0
-    internal var rate = 0
-    internal var eos = false
+    private val packet = Packet()
+    private val page = Page()
+    private val streamState = StreamState()
+    private val syncState = SyncState()
+    private var initializer: CodecInitializer? = null
+    private var decoder: CodecDecoder? = null
+    private var channels = 0
+    private var rate = 0
+    private var eos = false
+    private val metaDataLazy = mutableLazy<AudioMetaData?> { null }
+    override val metaData by metaDataLazy
 
     init {
         syncState.init()
     }
 
-    override fun get(buffer: AudioBuffer): Boolean {
+    override fun get(buffer: AudioBuffer?): ReadableAudioStream.Result {
         if (decoder == null) {
             if (initializer == null) {
                 if (readPage()) {
@@ -78,14 +82,18 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             }
             initializer?.let { initializer ->
                 if (readPacket()) {
-                    initializer.packet(packet)?.let {
-                        decoder = it
+                    initializer.packet(packet)?.let { (decoder, metaData) ->
+                        this.decoder = decoder
+                        metaDataLazy.set(metaData)
                         this.initializer = null
                     }
                 }
             }
         }
         decoder?.let { decoder ->
+            if (buffer == null) {
+                return ReadableAudioStream.Result.BUFFER
+            }
             val pcmBuffer = buffer.buffer(channels, rate)
             while (pcmBuffer.hasRemaining()) {
                 if (!decoder.get(pcmBuffer)) {
@@ -101,8 +109,11 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 }
             }
             buffer.done()
+            return if (eos) ReadableAudioStream.Result.EOS else
+                ReadableAudioStream.Result.BUFFER
         }
-        return !eos
+        return if (eos) ReadableAudioStream.Result.EOS else
+            ReadableAudioStream.Result.YIELD
     }
 
     override fun close() {
@@ -157,7 +168,7 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 }
 
 interface CodecInitializer {
-    fun packet(packet: Packet): CodecDecoder?
+    fun packet(packet: Packet): Pair<CodecDecoder, () -> AudioMetaData>?
 }
 
 interface CodecDecoder {
