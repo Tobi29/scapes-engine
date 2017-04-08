@@ -28,6 +28,10 @@ Closure subProjects = { root ->
 
 include "Engine"
 include "Codecs"
+include "Codecs:CodecMP3"
+include "Codecs:CodecOGG"
+include "Codecs:CodecOGG:Concentus"
+include "Codecs:CodecWAV"
 include "FileSystems"
 include "GenerationUtils"
 include "GraphicsUtils"
@@ -40,7 +44,6 @@ include "SWTUtils"
 include "TestAssertions"
 include "Utils"
 include subProjects("Backends")
-include subProjects("Codecs")
 include subProjects("Utils")
 include subProjects("FileSystems")
 include subProjects("ServerFramework")

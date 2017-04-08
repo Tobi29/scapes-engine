@@ -14,10 +14,4 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
-
-dependencies {
-    compile project(":Codecs")
-    compile project(":Codecs:CodecOGG:Concentus")
-    compile(rootProject.ext.jorbis) { transitive = false }
-}
+apply from: "$rootDir/resources/scapesenginemodulejava.gradle"
