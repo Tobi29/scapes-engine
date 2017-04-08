@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.shader.backend.glsl
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.tobi29.scapes.engine.utils.join
 import org.tobi29.scapes.engine.utils.shader.*
 import org.tobi29.scapes.engine.utils.shader.Function
 import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeParser
@@ -42,7 +41,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             if (function.first.parameters.size != args.size) {
                 continue
             }
-            return "${function.second}(${join(*args)})"
+            return "${function.second}(${args.joinToString()})"
         }
         when (args.size) {
             0 -> staticFunction(name)?.let { return it }

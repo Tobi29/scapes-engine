@@ -24,25 +24,9 @@ import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.byteArrays
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.fromHexadecimal
-import org.tobi29.scapes.engine.utils.join
 import org.tobi29.scapes.engine.utils.toHexadecimal
-import java.util.*
 
 object ArrayUtilTests : Spek({
-    describe("join") {
-        given("any byte array") {
-            val arrays by memoized { byteArrays() }
-            on("an array with default arguments and wrapped with []") {
-                for (array in arrays) {
-                    val joined = "[${join(*array)}]"
-                    val arrayStr = Arrays.toString(array)
-                    it("should equal Arrays.toString") {
-                        joined shouldEqual arrayStr
-                    }
-                }
-            }
-        }
-    }
     describe("toHexadecimal and fromHexadecimal") {
         given("any byte array") {
             val arrays by memoized { byteArrays() }

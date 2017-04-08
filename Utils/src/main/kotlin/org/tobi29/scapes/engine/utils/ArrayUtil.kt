@@ -14,145 +14,14 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.utils
 
 import com.owtelse.codec.Base64
 import java.io.IOException
 import java.io.UnsupportedEncodingException
 import java.nio.ByteBuffer
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Byte,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i].toInt()).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length].toInt())
-    }
-    return text.toString()
-}
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Short,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i].toInt()).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length].toInt())
-    }
-    return text.toString()
-}
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Int,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i]).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length])
-    }
-    return text.toString()
-}
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Long,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i]).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length])
-    }
-    return text.toString()
-}
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Float,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i]).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length])
-    }
-    return text.toString()
-}
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Double,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i]).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length])
-    }
-    return text.toString()
-}
-
-/**
- * Joins all values of a given array into a string
- * @param array     Array for values
- * @param delimiter Separator to put between values
- * @return A String containing the joined values
- */
-fun join(vararg array: Any,
-         delimiter: String = ", "): String {
-    val text = StringBuilder(array.size shl 1)
-    val length = array.size - 1
-    for (i in 0..length - 1) {
-        text.append(array[i]).append(delimiter)
-    }
-    if (length >= 0) {
-        text.append(array[length])
-    }
-    return text.toString()
-}
 
 /**
  * Converts a byte array into a hexadecimal string
@@ -263,6 +132,17 @@ fun String.fromBase64(): ByteArray {
  * @receiver Array to fill
  * @param supplier Supplier called for each value written to the array
  */
+inline fun BooleanArray.fill(supplier: (Int) -> Boolean) {
+    for (i in indices) {
+        set(i, supplier(i))
+    }
+}
+
+/**
+ * Fills the given array with values
+ * @receiver Array to fill
+ * @param supplier Supplier called for each value written to the array
+ */
 inline fun ByteArray.fill(supplier: (Int) -> Byte) {
     for (i in indices) {
         set(i, supplier(i))
@@ -319,6 +199,17 @@ inline fun FloatArray.fill(supplier: (Int) -> Float) {
  * @param supplier Supplier called for each value written to the array
  */
 inline fun DoubleArray.fill(supplier: (Int) -> Double) {
+    for (i in indices) {
+        set(i, supplier(i))
+    }
+}
+
+/**
+ * Fills the given array with values
+ * @receiver Array to fill
+ * @param supplier Supplier called for each value written to the array
+ */
+inline fun CharArray.fill(supplier: (Int) -> Char) {
     for (i in indices) {
         set(i, supplier(i))
     }
