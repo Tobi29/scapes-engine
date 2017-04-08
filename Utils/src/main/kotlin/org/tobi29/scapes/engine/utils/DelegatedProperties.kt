@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KProperty
 
 /**
@@ -74,3 +75,77 @@ inline fun <T> property(crossinline get: () -> T,
                                   property: KProperty<*>,
                                   value: T) = set(value)
         }
+
+/**
+ * Alternative implementation of [Lazy] allowing reinitializing the value over
+ * and over
+ */
+class MutableLazy<T> : Lazy<T> {
+    private val initializer = AtomicReference<(() -> T)?>(null)
+    @Volatile private var _value: Any?
+
+    /**
+     * Constructs a lazy value with the given initializer
+     */
+    constructor(initializer: () -> T) {
+        this.initializer.set(initializer)
+        _value = UNINITIALIZED_VALUE
+    }
+
+    /**
+     * Initializes the value to the given one
+     */
+    constructor(value: T) {
+        _value = value
+    }
+
+    override var value: T
+        get() {
+            var value = _value
+            if (value == UNINITIALIZED_VALUE) {
+                synchronized(initializer) {
+                    value = _value
+                    if (value == UNINITIALIZED_VALUE) {
+                        value = (initializer.getAndSet(
+                                null) ?: throw IllegalStateException(
+                                "No initializer and no value"))()
+                        _value = value
+                    }
+                }
+            }
+            @Suppress("UNCHECKED_CAST")
+            return value as T
+        }
+        set(value) {
+            synchronized(initializer) {
+                this.initializer.set(null)
+                _value = value
+            }
+        }
+
+    /**
+     * Drop the value and set a new initializer
+     */
+    fun set(initializer: () -> T) {
+        synchronized(initializer) {
+            this.initializer.set(initializer)
+            _value = UNINITIALIZED_VALUE
+        }
+    }
+
+    override fun isInitialized() = _value !== UNINITIALIZED_VALUE
+
+    override fun toString() = _value.let {
+        if (it === UNINITIALIZED_VALUE) {
+            "Lazy value not initialized yet."
+        } else {
+            it.toString()
+        }
+    }
+
+    private object UNINITIALIZED_VALUE
+}
+
+fun <T> mutableLazy(initializer: () -> T) = MutableLazy(initializer)
+
+fun <T> mutableLazy(value: T) = MutableLazy(value)
