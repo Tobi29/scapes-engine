@@ -14,6 +14,33 @@
  * limitations under the License.
  */
 
+// Utils
+include "Utils"
+include "TagStructureBinary"
+include "TagStructureJSON"
+include "MBeansCPUReader"
+include "IOUtils"
+include "GenerationUtils"
+include "GraphicsUtils"
+
+// Testing
+include "TestAssertions"
+
+// File systems
+include "FileSystems"
+include "NIOFileSystem"
+include "IOFileSystem"
+
+// Server framework
+include "ServerFramework"
+include "JVMSSLProvider"
+
+// SQL
+include "SQLFramework"
+include "MariaDB"
+include "SQLite"
+include "SQLJet"
+
 // Codecs
 include "Codecs"
 include "CodecMP3"
@@ -31,32 +58,5 @@ include "GLFWBackend"
 include "OpenALSounds"
 include "LWJGL3Backend"
 
-// File systems
-include "FileSystems"
-include "NIOFileSystem"
-include "IOFileSystem"
-
-// Server framework
-include "ServerFramework"
-include "JVMSSLProvider"
-
-// SQL
-include "SQLFramework"
-include "MariaDB"
-include "SQLite"
-include "SQLJet"
-
 // SWT
 include "SWTUtils"
-
-// Utils
-include "Utils"
-include "TagStructureBinary"
-include "TagStructureJSON"
-include "MBeansCPUReader"
-include "IOUtils"
-include "GenerationUtils"
-include "GraphicsUtils"
-
-// Testing
-include "TestAssertions"
