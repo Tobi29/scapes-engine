@@ -29,10 +29,6 @@
 /** C 2011 grammar built from the C11 Spec */
 grammar ScapesShader;
 
-@header {
-package org.tobi29.scapes.engine.utils.shader;
-}
-
 primaryExpression
     :   Identifier
     |   constant
