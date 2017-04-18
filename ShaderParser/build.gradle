@@ -27,10 +27,30 @@ dependencies {
 configurations.compile.exclude group: "org.antlr", module: "antlr4"
 configurations.runtime.exclude group: "org.antlr", module: "antlr4"
 
+task antlrJS(type: AntlrTask) {
+    def cmd = new ArrayList<String>()
+    cmd.add("-Dlanguage=JavaScript")
+    arguments = cmd
+    source = sourceSets.main.antlr
+    outputDirectory = file("$buildDir/js")
+}
+
 def cmd = new ArrayList<String>()
 cmd.add("-package")
 cmd.add("org.tobi29.scapes.engine.utils.shader")
 tasks.generateGrammarSource.arguments = cmd
+
+task jsJar(type: Jar, dependsOn: antlrJS) {
+    classifier = "js"
+    from(tasks.antlrJS.outputDirectory) {
+        into "lib"
+    }
+    from(file("js"))
+}
+
+artifacts {
+    archives jsJar
+}
 
 idea {
     module {
