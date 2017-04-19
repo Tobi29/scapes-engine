@@ -16,9 +16,25 @@
 
 package org.tobi29.scapes.engine.utils
 
+/**
+ * Throw [AssertionError] in case [block] returns false
+ *
+ * **Note:** [block] is not guaranteed to run, so there should be no side
+ * effects in it
+ * @param message The message to display in the [AssertionError]
+ * @param block The code to assert
+ */
 inline fun assert(message: String? = null,
                   block: () -> Boolean) = assert({ message }, block)
 
+/**
+ * Throw [AssertionError] in case [block] returns false
+ *
+ * **Note:** [block] is not guaranteed to run, so there should be no side
+ * effects in it
+ * @param message The message to display in the [AssertionError]
+ * @param block The code to assert
+ */
 inline fun assert(message: () -> String?,
                   block: () -> Boolean) {
     if (Assertions.ENABLED && !block()) {
@@ -26,4 +42,11 @@ inline fun assert(message: () -> String?,
     }
 }
 
+/**
+ * Throw [AssertionError] in case [block] returns false
+ *
+ * **Note:** [block] is not guaranteed to run, so there should be no side
+ * effects in it
+ * @param block The code to assert
+ */
 inline fun assert(block: () -> Boolean) = assert(null, block)

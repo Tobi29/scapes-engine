@@ -77,7 +77,6 @@ fun ByteArray.toHexadecimal(groups: Int): String {
  * @return A byte array containing the data
  * @throws IOException Thrown in case of an invalid string
  */
-// TODO: @Throws(IOException::class)
 fun String.fromHexadecimal(): ByteArray {
     try {
         val text = replace(" ", "")
@@ -287,6 +286,14 @@ inline fun <E> Array<in E>.arrayHashCode() = Arrays.hashCode(this)
  */
 inline fun <E> Array<in E>.deepArrayHashCode() = Arrays.deepHashCode(this)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: BooleanArray,
                 dest: BooleanArray,
                 length: Int = min(src.size, dest.size),
@@ -294,6 +301,14 @@ inline fun copy(src: BooleanArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: ByteArray,
                 dest: ByteArray,
                 length: Int = min(src.size, dest.size),
@@ -301,6 +316,14 @@ inline fun copy(src: ByteArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: ShortArray,
                 dest: ShortArray,
                 length: Int = min(src.size, dest.size),
@@ -308,6 +331,14 @@ inline fun copy(src: ShortArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: IntArray,
                 dest: IntArray,
                 length: Int = min(src.size, dest.size),
@@ -315,6 +346,14 @@ inline fun copy(src: IntArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: LongArray,
                 dest: LongArray,
                 length: Int = min(src.size, dest.size),
@@ -322,6 +361,14 @@ inline fun copy(src: LongArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: FloatArray,
                 dest: FloatArray,
                 length: Int = min(src.size, dest.size),
@@ -329,6 +376,14 @@ inline fun copy(src: FloatArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: DoubleArray,
                 dest: DoubleArray,
                 length: Int = min(src.size, dest.size),
@@ -336,6 +391,14 @@ inline fun copy(src: DoubleArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun copy(src: CharArray,
                 dest: CharArray,
                 length: Int = min(src.size, dest.size),
@@ -343,6 +406,14 @@ inline fun copy(src: CharArray,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
 inline fun <E> copy(src: Array<E>,
                     dest: Array<E>,
                     length: Int = min(src.size, dest.size),
