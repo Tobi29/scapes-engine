@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.codec
 
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.FloatBuffer
 
 class AudioBuffer(private val size: Int) {
@@ -37,13 +38,13 @@ class AudioBuffer(private val size: Int) {
             this.channels = channels
             this.rate = rate
         } else {
-            assert(channels == this.channels && rate == this.rate)
+            assert { channels == this.channels && rate == this.rate }
         }
         return buffer
     }
 
     fun done() {
-        assert(buffer.position() % channels == 0)
+        assert { buffer.position() % channels == 0 }
         buffer.flip()
         isDone = true
     }
@@ -57,7 +58,7 @@ class AudioBuffer(private val size: Int) {
     }
 
     fun clear() {
-        assert(isDone)
+        assert { isDone }
         buffer.clear()
         isDone = false
     }

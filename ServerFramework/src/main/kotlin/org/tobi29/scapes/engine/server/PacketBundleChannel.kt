@@ -121,7 +121,7 @@ class PacketBundleChannel(private val address: RemoteAddress,
         if (state != State.OPEN) {
             return
         }
-        assert(!hasBundle)
+        assert { !hasBundle }
         val buffer = spill ?: run { readSSL() ?: return }
         spill = null
         if (buffer.remaining() > input.remaining()) {

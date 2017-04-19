@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
+import org.tobi29.scapes.engine.utils.assert
 
 internal class TextureFBODepth(engine: ScapesEngine,
                                width: Int,
@@ -37,7 +38,7 @@ internal class TextureFBODepth(engine: ScapesEngine,
     }
 
     override fun texture(gl: GL) {
-        assert(isStored)
+        assert { isStored }
         gl.check()
         glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()

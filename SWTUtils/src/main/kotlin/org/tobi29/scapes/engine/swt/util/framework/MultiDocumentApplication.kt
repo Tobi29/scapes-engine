@@ -21,6 +21,7 @@ import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.Version
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 
 abstract class MultiDocumentApplication : Application {
@@ -102,7 +103,7 @@ abstract class MultiDocumentApplication : Application {
     private fun accessDocument(document: Document,
                                consumer: (DocumentComposite) -> Unit): Boolean {
         val composite = composites[document] ?: return false
-        assert(composite.document == document)
+        assert { composite.document == document }
         consumer(composite)
         return true
     }

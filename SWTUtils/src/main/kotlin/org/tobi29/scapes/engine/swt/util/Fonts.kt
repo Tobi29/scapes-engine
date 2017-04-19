@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.swt.util
 
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.FontData
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.toArray
 
@@ -45,7 +46,7 @@ object Fonts : KLogging() {
         val fontDataTexts = fonts.split(';')
         return fontDataTexts.asSequence().map { text ->
             val split = text.split('|', limit = 3)
-            assert(split.size == 3)
+            assert { split.size == 3 }
             val name = split[0]
             val styles = split[1].split(',')
             var style = 0

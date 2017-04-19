@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.createVCI
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.math.ceil
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.pow
@@ -36,11 +37,11 @@ class GuiComponentGraph(parent: GuiLayoutData,
     private var data = Array(graphs) { FloatArray(0) }
 
     init {
-        assert(graphs > 0)
-        assert(r.size == graphs)
-        assert(g.size == graphs)
-        assert(b.size == graphs)
-        assert(a.size == graphs)
+        assert { graphs > 0 }
+        assert { r.size == graphs }
+        assert { g.size == graphs }
+        assert { b.size == graphs }
+        assert { a.size == graphs }
         i = IntArray(graphs)
     }
 

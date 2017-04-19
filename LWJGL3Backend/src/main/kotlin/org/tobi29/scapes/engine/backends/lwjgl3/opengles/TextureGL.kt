@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.generateMipMaps
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.max
@@ -185,7 +186,7 @@ internal open class TextureGL(override val engine: ScapesEngine,
     }
 
     protected open fun store(gl: GL) {
-        assert(!isStored)
+        assert { !isStored }
         isStored = true
         gl.check()
         textureID = glGenTextures()
@@ -195,7 +196,7 @@ internal open class TextureGL(override val engine: ScapesEngine,
     }
 
     protected open fun texture(gl: GL) {
-        assert(isStored)
+        assert { isStored }
         gl.check()
         glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()

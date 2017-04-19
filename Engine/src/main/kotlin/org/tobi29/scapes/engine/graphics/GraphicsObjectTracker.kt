@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.utils.assert
+
 class GraphicsObjectTracker<in O : GraphicsObject> {
     private val objects = ArrayList<O>()
     private var disposeOffset = 0
@@ -25,7 +27,7 @@ class GraphicsObjectTracker<in O : GraphicsObject> {
         var i = disposeOffset
         while (i < objects.size) {
             val go = objects[i]
-            assert(go.isStored)
+            assert { go.isStored }
             if (!go.isUsed(time)) {
                 go.dispose(gl)
             }

@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.ShaderCompileInformation
 import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 
@@ -231,7 +232,7 @@ internal class ShaderGL(private val shader: CompiledShader,
     }
 
     private fun store(gl: GL) {
-        assert(!isStored)
+        assert { !isStored }
         isStored = true
         gl.check()
         val processor = information.preCompile(gl)

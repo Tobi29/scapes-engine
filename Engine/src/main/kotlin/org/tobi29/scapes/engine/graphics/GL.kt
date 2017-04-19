@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.Cam
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
@@ -72,7 +73,7 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
     }
 
     fun check() {
-        assert(Thread.currentThread() == mainThread)
+        assert { Thread.currentThread() == mainThread }
     }
 
     abstract fun checkError(message: String)

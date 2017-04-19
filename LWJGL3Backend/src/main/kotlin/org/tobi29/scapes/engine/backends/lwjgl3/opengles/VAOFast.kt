@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.utils.assert
 
 internal class VAOFast(private val vbo: VBO,
                        private val length: Int,
@@ -73,7 +74,7 @@ internal class VAOFast(private val vbo: VBO,
     }
 
     override fun store(gl: GL): Boolean {
-        assert(!isStored)
+        assert { !isStored }
         if (!vbo.canStore()) {
             return false
         }

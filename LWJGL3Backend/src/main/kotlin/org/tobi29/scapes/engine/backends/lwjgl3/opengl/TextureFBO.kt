@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 internal abstract class TextureFBO(engine: ScapesEngine,
@@ -68,7 +69,7 @@ internal abstract class TextureFBO(engine: ScapesEngine,
     override fun isUsed(time: Long) = isStored
 
     override fun store(gl: GL) {
-        assert(!isStored)
+        assert { !isStored }
         isStored = true
         gl.check()
         textureID = glGenTextures()

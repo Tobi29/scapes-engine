@@ -25,6 +25,7 @@ import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -128,7 +129,7 @@ internal class OpenALStreamAudio(engine: ScapesEngine,
             }
             sounds.releaseSource(openAL, source)
             source = -1
-            assert(this.queued == 0)
+            assert { this.queued == 0 }
         }
         stream?.let {
             try {

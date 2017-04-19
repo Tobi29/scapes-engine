@@ -38,7 +38,7 @@ inline fun assert(message: String? = null,
 inline fun assert(message: () -> String?,
                   block: () -> Boolean) {
     if (Assertions.ENABLED && !block()) {
-        throw  AssertionError(message())
+        throw AssertionError(message())
     }
 }
 

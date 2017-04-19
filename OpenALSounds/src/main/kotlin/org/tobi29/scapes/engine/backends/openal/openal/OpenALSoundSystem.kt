@@ -277,7 +277,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 return
             }
         }
-        assert(false)
+        assert { false }
     }
 
     internal fun removeBufferFromSources(openAL: OpenAL,

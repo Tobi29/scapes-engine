@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 internal class VAOStatic(private val vbo: VBO,
@@ -78,7 +79,7 @@ internal class VAOStatic(private val vbo: VBO,
     }
 
     override fun store(gl: GL): Boolean {
-        assert(!isStored)
+        assert { !isStored }
         val data = data ?: return false
         if (!vbo.canStore()) {
             return false

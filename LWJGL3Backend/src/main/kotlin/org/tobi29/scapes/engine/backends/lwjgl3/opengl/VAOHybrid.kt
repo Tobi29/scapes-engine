@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 internal class VAOHybrid(private val vbo1: VBO,
@@ -69,7 +70,7 @@ internal class VAOHybrid(private val vbo1: VBO,
     }
 
     override fun store(gl: GL): Boolean {
-        assert(!isStored)
+        assert { !isStored }
         if (!vbo1.canStore()) {
             return false
         }

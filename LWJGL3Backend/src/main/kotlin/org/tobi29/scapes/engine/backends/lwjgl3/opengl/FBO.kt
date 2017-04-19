@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.readOnly
 
@@ -134,7 +135,7 @@ internal class FBO(engine: ScapesEngine,
     }
 
     private fun store(gl: GL) {
-        assert(!isStored)
+        assert { !isStored }
         isStored = true
         gl.check()
         framebufferID = glGenFramebuffers()
@@ -156,7 +157,7 @@ internal class FBO(engine: ScapesEngine,
     }
 
     private fun bind(gl: GL) {
-        assert(isStored)
+        assert { isStored }
         gl.check()
         lastFBO = gl.currentFBO()
         gl.currentFBO = framebufferID
