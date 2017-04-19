@@ -25,11 +25,11 @@ import com.jcraft.jorbis.Info
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.FloatBuffer
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 import org.tobi29.scapes.engine.utils.mutableLazy
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.FloatBuffer
-import java.nio.channels.ReadableByteChannel
 
 class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
     private val packet = Packet()

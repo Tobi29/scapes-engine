@@ -17,9 +17,11 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.resource.Resource
+import org.tobi29.scapes.engine.resource.loadString
 import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import java.nio.ByteBuffer
 
 interface GraphicsObjectSupplier {
     val engine: ScapesEngine
@@ -118,6 +120,45 @@ interface GraphicsObjectSupplier {
             attributesStream: List<ModelAttribute>,
             lengthStream: Int,
             renderType: RenderType): ModelHybrid
+
+    fun loadShader(asset: String,
+                   consumer: ShaderCompileInformation.() -> Unit): Resource<Shader> {
+        return loadShader(engine.resources.loadString(
+                engine.files["$asset.program"].get()), consumer)
+    }
+
+    fun loadShader(asset: String,
+                   information: ShaderCompileInformation = ShaderCompileInformation()): Resource<Shader> {
+        return loadShader(engine.resources.loadString(
+                engine.files["$asset.program"].get()), information)
+    }
+
+    fun loadShader(source: Resource<String>,
+                   consumer: ShaderCompileInformation.() -> Unit): Resource<Shader> {
+        return engine.resources.load {
+            createShader(source.getAsync(), consumer)
+        }
+    }
+
+    fun loadShader(source: Resource<String>,
+                   information: ShaderCompileInformation = ShaderCompileInformation()): Resource<Shader> {
+        return engine.resources.load {
+            createShader(source.getAsync(), information)
+        }
+    }
+
+    fun createShader(source: String,
+                     consumer: ShaderCompileInformation.() -> Unit): Shader {
+        val information = ShaderCompileInformation()
+        consumer(information)
+        return createShader(source, information)
+    }
+
+    fun createShader(source: String,
+                     information: ShaderCompileInformation = ShaderCompileInformation()): Shader {
+        val shader = engine.graphics.compileShader(source)
+        return createShader(shader, information)
+    }
 
     fun createShader(shader: CompiledShader,
                      information: ShaderCompileInformation): Shader

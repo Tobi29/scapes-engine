@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.codec.wav
 
 import org.tobi29.scapes.engine.codec.spi.ReadableAudioStreamProvider
-import java.nio.channels.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 
 class WAVInputStreamProvider : ReadableAudioStreamProvider {
     private val mimeTypes = listOf("audio/x-wav")

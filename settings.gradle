@@ -16,12 +16,12 @@
 
 // Utils
 include "Utils"
-include "TagStructureBinary"
 include "TagStructureJSON"
 include "MBeansCPUReader"
 include "IOUtils"
 include "GenerationUtils"
 include "GraphicsUtils"
+include "ThreadUtils"
 
 // Testing
 include "TestAssertions"

@@ -31,12 +31,12 @@ inline fun Maze.drawMazeWalls(roomSizeX: Int,
                               lineV: (Int, Int, Int) -> Unit) {
     val cellSizeX = roomSizeX + 1
     val cellSizeY = roomSizeY + 1
-    val w = width * cellSizeX + 1
-    val h = height * cellSizeY + 1
+    val w = width * roomSizeX + 1
+    val h = height * roomSizeY + 1
     for (y in 0..height - 1) {
-        val yy = y * cellSizeY
+        val yy = y * roomSizeY
         for (x in 0..width - 1) {
-            val xx = x * cellSizeX
+            val xx = x * roomSizeX
             if (isWall(x, y, Face.NORTH)) {
                 lineH(xx, yy, cellSizeX)
             }
@@ -47,11 +47,11 @@ inline fun Maze.drawMazeWalls(roomSizeX: Int,
     }
     val lw = w - 1
     val lh = h - 1
-    for (x in 0..lw step roomSizeX) {
-        lineH(x, lh, roomSizeX)
+    for (x in 0..lw - 1 step roomSizeX) {
+        lineH(x, lh, cellSizeX)
     }
-    for (y in 0..lh step roomSizeY) {
-        lineV(lw, y, roomSizeX)
+    for (y in 0..lh - 1 step roomSizeY) {
+        lineV(lw, y, cellSizeY)
     }
 }
 

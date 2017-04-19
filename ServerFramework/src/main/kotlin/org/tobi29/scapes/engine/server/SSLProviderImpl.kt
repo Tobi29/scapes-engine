@@ -16,12 +16,11 @@
 
 package org.tobi29.scapes.engine.server
 
-import java.io.IOException
 import java.security.cert.X509Certificate
 import javax.net.ssl.KeyManager
 
 interface SSLProviderImpl {
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun sslHandle(keyManagers: Array<KeyManager>?,
                   feedbackPredicate: ((Array<X509Certificate>) -> Boolean)?): SSLHandle
 }

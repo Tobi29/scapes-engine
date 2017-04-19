@@ -23,10 +23,9 @@ import org.tmatesoft.sqljet.core.schema.SqlJetConflictAction
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor
 import org.tmatesoft.sqljet.core.table.SqlJetDb
 import org.tobi29.scapes.engine.sql.*
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.IOException
 import java.security.AccessController
 import java.security.PrivilegedAction
-import java.util.*
 
 class SQLJetDatabase(private val connection: SqlJetDb) : SQLDatabase {
     init {

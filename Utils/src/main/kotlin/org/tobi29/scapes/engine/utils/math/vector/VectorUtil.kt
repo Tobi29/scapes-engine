@@ -19,6 +19,7 @@
 package org.tobi29.scapes.engine.utils.math.vector
 
 import org.tobi29.scapes.engine.utils.math.abs
+import org.tobi29.scapes.engine.utils.math.atan2
 import org.tobi29.scapes.engine.utils.math.sqr
 import org.tobi29.scapes.engine.utils.math.sqrt
 
@@ -310,7 +311,7 @@ inline fun direction(x1: Double,
                      y1: Double,
                      x2: Double,
                      y2: Double): Double {
-    return Math.atan2(y2 - y1, x2 - x1)
+    return atan2(y2 - y1, x2 - x1)
 }
 
 /**
@@ -321,7 +322,7 @@ inline fun direction(x1: Double,
  */
 inline fun direction(x: Double,
                      y: Double): Double {
-    return Math.atan2(y, x)
+    return atan2(y, x)
 }
 
 /**

@@ -16,15 +16,14 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.utils.ByteBuffer
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.TextureAtlas
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.min
-import java.io.IOException
-import java.nio.ByteBuffer
 
 abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: ScapesEngine,
                                                                minSize: Int = 1) : TextureAtlas<T>(

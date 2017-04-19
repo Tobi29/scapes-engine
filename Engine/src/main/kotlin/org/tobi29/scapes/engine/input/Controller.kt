@@ -16,11 +16,7 @@
 
 package org.tobi29.scapes.engine.input
 
-import org.tobi29.scapes.engine.utils.EventDispatcher
-
 interface Controller {
-    val events: EventDispatcher
-
     val isActive: Boolean
 
     fun poll()

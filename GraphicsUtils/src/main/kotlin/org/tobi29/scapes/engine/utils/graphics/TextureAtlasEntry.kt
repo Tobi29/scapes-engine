@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.margin
-import java.nio.ByteBuffer
 
 open class TextureAtlasEntry(var buffer: ByteBuffer?,
                              val width: Int,

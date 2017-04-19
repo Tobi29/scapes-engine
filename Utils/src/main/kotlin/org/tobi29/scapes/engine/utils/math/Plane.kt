@@ -56,7 +56,7 @@ class Plane(p1x: Double = 0.0,
         normalz = e2x * e1y - e2y * e1x
         val l = sqrt(normalx * normalx + normaly * normaly +
                 normalz * normalz)
-        if (abs(l) > java.lang.Float.MIN_NORMAL) {
+        if (abs(l) > 0.0f) {
             normalx /= l
             normaly /= l
             normalz /= l

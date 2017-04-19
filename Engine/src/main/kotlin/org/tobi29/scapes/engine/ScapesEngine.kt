@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine
 
-import mu.KLogging
-import org.tobi29.scapes.engine.graphics.FontRenderer
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -25,24 +23,18 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.Crashable
+import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
-import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.filesystem.FileSystemContainer
-import org.tobi29.scapes.engine.utils.io.filesystem.classpath.ClasspathPath
-import org.tobi29.scapes.engine.utils.io.filesystem.file
-import org.tobi29.scapes.engine.utils.io.filesystem.writeCrashReport
+import org.tobi29.scapes.engine.utils.io.FileSystemContainer
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.tag.mapMut
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.nio.ByteBuffer
-import java.util.*
-import java.util.concurrent.atomic.AtomicReference
-import kotlin.system.exitProcess
+import org.tobi29.scapes.engine.utils.task.UpdateLoop
 
 class ScapesEngine(game: (ScapesEngine) -> Game,
                    backend: (ScapesEngine) -> Container,
@@ -56,6 +48,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
     private var state: GameState? = null
+    val loop = UpdateLoop(taskExecutor)
     val files = FileSystemContainer()
     val events = EventDispatcher()
     val resources = ResourceLoader(taskExecutor)
@@ -77,27 +70,15 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         checkSystem()
         logger.info { "Starting Scapes-Engine: $this (Game: $game)" }
 
-        logger.info { "Initializing asset system" }
-        files.registerFileSystem("Class",
-                ClasspathPath(this::class.java.classLoader, ""))
-        files.registerFileSystem("Engine",
-                ClasspathPath(this::class.java.classLoader,
-                        "assets/scapes/tobi29/engine"))
-
-        logger.info { "Initializing game" }
-        this.game.initEarly()
-
         logger.info { "Creating backend" }
         container = backend(this)
         sounds = container.sounds
 
-        logger.info { "Loading default font" }
-        val font = FontRenderer(this, container.loadFont(
-                "Engine:font/QuicksandPro-Regular") ?: throw IllegalStateException(
-                "Failed to load default font"))
+        logger.info { "Initializing game" }
+        this.game.initEarly()
 
         logger.info { "Setting up GUI" }
-        guiStyle = GuiBasicStyle(this, font)
+        guiStyle = this.game.defaultGuiStyle
         notifications = GuiNotifications(guiStyle)
         guiStack.addUnfocused("90-Notifications", notifications)
         tooltip = GuiTooltip(guiStyle)
@@ -145,9 +126,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         newState.set(state)
     }
 
-    fun allocate(capacity: Int): ByteBuffer {
-        return container.allocate(capacity)
-    }
+    fun allocate(capacity: Int) = container.allocate(capacity)
 
     @Synchronized
     fun start() {
@@ -223,7 +202,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
             currentState = newState
         }
         profilerSection("Tasks") {
-            taskExecutor.tick()
+            loop.tick()
         }
         profilerSection("Game") {
             game.step(delta)
@@ -247,33 +226,5 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         return state.tps
     }
 
-    companion object : KLogging() {
-        fun crashReport(path: FilePath,
-                        engine: () -> ScapesEngine?,
-                        e: Throwable) {
-            val crashReportFile = file(path)
-            val debug = try {
-                engine()?.debugMap()
-            } catch (e: Throwable) {
-                e.printStackTrace()
-                null
-            } ?: emptyMap<String, String>()
-            writeCrashReport(e, crashReportFile, "ScapesEngine",
-                    debug)
-            engine()?.container?.openFile(crashReportFile)
-        }
-
-        fun crashHandler(path: FilePath,
-                         engine: () -> ScapesEngine?) = object : Crashable {
-            override fun crash(e: Throwable): Nothing {
-                try {
-                    System.err.println("Engine crashed: $e")
-                    e.printStackTrace()
-                    crashReport(path, engine, e)
-                } finally {
-                    exitProcess(1)
-                }
-            }
-        }
-    }
+    companion object : KLogging()
 }

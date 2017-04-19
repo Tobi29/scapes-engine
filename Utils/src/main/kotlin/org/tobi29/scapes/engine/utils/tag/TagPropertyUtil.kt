@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import java.math.BigDecimal
-import java.math.BigInteger
+import org.tobi29.scapes.engine.utils.BigDecimal
+import org.tobi29.scapes.engine.utils.BigInteger
 
 // Boolean
 /**

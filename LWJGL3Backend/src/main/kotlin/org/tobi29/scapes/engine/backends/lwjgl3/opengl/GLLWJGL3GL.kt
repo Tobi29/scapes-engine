@@ -18,9 +18,9 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.flipVertical
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.pow
-import java.nio.ByteBuffer
 
 class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
     override fun checkError(message: String) {

@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.server
 
 import org.tobi29.scapes.engine.server.spi.SSLProviderProvider
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException
-import java.io.IOException
 import java.security.cert.X509Certificate
 import java.util.*
 import javax.net.ssl.KeyManager
@@ -41,12 +40,12 @@ object SSLProvider {
                 "No trust manager implementation available")
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun sslHandle(feedback: ((Array<X509Certificate>) -> Boolean)?): SSLHandle {
         return sslHandle(null, feedback)
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun sslHandle(keyManagers: Array<KeyManager>? = null,
                   feedback: ((Array<X509Certificate>) -> Boolean)? = null): SSLHandle {
         return IMPL.sslHandle(keyManagers, feedback)

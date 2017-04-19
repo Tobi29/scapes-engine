@@ -16,12 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.ByteBuffer
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
-
 fun <E> process(input: ReadableByteStream,
                 processor: StreamProcessor<E>,
                 bufferSize: Int = 1024): E {
@@ -36,7 +30,7 @@ fun <E> process(input: ReadableByteStream,
     return processor.result()
 }
 
-@Throws(IOException::class)
+// TODO: @Throws(IOException::class)
 fun process(input: ReadableByteStream,
             processor: (ByteBuffer) -> Unit,
             bufferSize: Int = 1024) {
@@ -84,18 +78,18 @@ fun asBuffer(
     }
 }
 
-fun asString(charset: Charset = StandardCharsets.UTF_8): StreamProcessor<String> {
+fun asString(): StreamProcessor<String> {
     return object : StreamProcessor<String> {
-        private val stream = ByteBufferStream(
-                { ByteBuffer.wrap(ByteArray(it)) }, { it + 1024 })
+        private val stream = ByteBufferStream(growth = { it + 1024 })
 
         override fun process(buffer: ByteBuffer) {
             stream.put(buffer)
         }
 
         override fun result(): String {
-            return String(stream.buffer().array(), 0,
-                    stream.buffer().position(), charset)
+            val buffer = stream.buffer()
+            buffer.flip()
+            return buffer.asString()
         }
     }
 }
@@ -113,7 +107,7 @@ fun put(stream: WritableByteStream): StreamProcessor<Unit?> {
 }
 
 interface StreamProcessor<out E> {
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun process(buffer: ByteBuffer)
 
     fun result(): E

@@ -17,9 +17,9 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.utils.graphics.Cam
 import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 import org.tobi29.scapes.engine.utils.math.max
-import java.nio.ByteBuffer
 
 abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)

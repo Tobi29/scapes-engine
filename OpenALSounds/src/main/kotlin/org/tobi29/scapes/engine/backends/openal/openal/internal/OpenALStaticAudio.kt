@@ -19,10 +19,11 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.abs
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
-internal class OpenALStaticAudio(private val asset: String,
+internal class OpenALStaticAudio(private val asset: ReadSource,
                                  private val channel: String,
                                  private var pitch: Float,
                                  private var gain: Float) : OpenALAudio, StaticAudio {

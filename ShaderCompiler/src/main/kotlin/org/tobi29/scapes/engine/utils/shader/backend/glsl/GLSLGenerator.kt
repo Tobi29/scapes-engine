@@ -16,15 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.shader.backend.glsl
 
-import org.antlr.v4.runtime.misc.ParseCancellationException
+import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.shader.*
 import org.tobi29.scapes.engine.utils.shader.Function
 import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeParser
-import java.math.BigInteger
-import java.util.*
 
 class GLSLGenerator(private val version: GLSLGenerator.Version) {
-    private val output = StringBuilder(1024)
+    private var output = StringBuilder(1024)
     private val identifiers = HashMap<Identifier, Expression>()
     private var properties: Map<String, String>? = null
     private var functionsSignatures = ArrayList<Pair<FunctionExportedSignature, String>>()
@@ -108,7 +106,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return ""
         }
         throw IllegalArgumentException(
-                "Unknown expression: ${expression::class.java}")
+                "Unknown expression: ${expression::class}")
     }
 
     private fun assignmentExpression(expression: AssignmentExpression): String {
@@ -219,7 +217,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                     "Unknown property: ${expression.key}", expression)
         }
         throw IllegalArgumentException(
-                "Unknown integer: ${expression::class.java}")
+                "Unknown integer: ${expression::class}")
     }
 
     private fun floatingExpression(expression: FloatingExpression): String {
@@ -356,7 +354,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             initializer = statement.initializer
         } else {
             throw IllegalArgumentException(
-                    "Unknown array initializer: ${statement::class.java}")
+                    "Unknown array initializer: ${statement::class}")
         }
         identifiers[statement.identifier] = GLSLExpression(
                 statement.identifier.name)
@@ -500,12 +498,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                         "Property has to be a static array expression",
                         expression)
             }
-        } catch (e: ParseCancellationException) {
-            throw ShaderGenerateException(e)
         } catch (e: ShaderCompileException) {
             throw ShaderGenerateException(e)
         }
-
     }
 
     private fun property(name: String): String? {
@@ -807,7 +802,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                        shader: CompiledShader,
                        properties: Map<String, String>): String {
         if (output.isNotEmpty()) {
-            output.delete(0, output.length - 1)
+            // output.delete(0, output.length - 1)
+            output = StringBuilder(1024)
         }
         init(scope)
         this.properties = properties
@@ -836,7 +832,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                          shader: CompiledShader,
                          properties: Map<String, String>): String {
         if (output.isNotEmpty()) {
-            output.delete(0, output.length - 1)
+            // output.delete(0, output.length - 1)
+            output = StringBuilder(1024)
         }
         init(scope)
         this.properties = properties
@@ -877,7 +874,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
         println()
         for (parameter in input.parameters) {
-            if (!expression(parameter.available).toBoolean()) {
+            if (expression(parameter.available) != "true") {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
@@ -894,7 +891,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun signatureIdentifiers(output: ShaderSignature) {
         for (parameter in output.parameters) {
-            if (!expression(parameter.available).toBoolean()) {
+            if (expression(parameter.available) != "true") {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
@@ -904,7 +901,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun header(output: ShaderSignature) {
         for (parameter in output.parameters) {
-            if (!expression(parameter.available).toBoolean()) {
+            if (expression(parameter.available) != "true") {
                 continue
             }
             if (parameter.id == -1) {
@@ -995,7 +992,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                     expression(statement.expression) + ';')
         } else {
             throw IllegalArgumentException(
-                    "Unknown statement: ${statement::class.java}")
+                    "Unknown statement: ${statement::class}")
         }
     }
 

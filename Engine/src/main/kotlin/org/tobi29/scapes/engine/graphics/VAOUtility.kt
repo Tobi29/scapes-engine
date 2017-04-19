@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.util.*
-
 fun GraphicsObjectSupplier.createV(vertex: FloatArray,
                                    renderType: RenderType): Model {
     val attributes = ArrayList<ModelAttribute>()

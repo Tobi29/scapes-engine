@@ -16,13 +16,16 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.resource.Resource
+import org.tobi29.scapes.engine.utils.WeakHashMap
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import java.util.*
+import org.tobi29.scapes.engine.utils.io.readProperties
+import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.tag.TagMap
+import org.tobi29.scapes.engine.utils.tag.toInt
 
 class TextureManager(private val engine: ScapesEngine) {
     private val cache = WeakHashMap<String, Resource<Texture>>()
@@ -37,31 +40,28 @@ class TextureManager(private val engine: ScapesEngine) {
     }
 
     private fun load(asset: String): Resource<Texture> {
-        return engine.resources.load({
-            empty()
-        }) res@ {
-            val properties = Properties()
+        return engine.resources.load res@ {
             val files = engine.files
             val imageResource = files[asset + ".png"].get()
             val propertiesResource = files[asset + ".properties"].get()
-            if (propertiesResource.exists()) {
-                propertiesResource.readIO().use { streamIn ->
-                    properties.load(streamIn)
-                }
+            val properties = if (propertiesResource.exists()) {
+                propertiesResource.read(::readProperties)
+            } else {
+                TagMap()
             }
             imageResource.read { texture(it, properties) }
         }
     }
 
     private fun texture(stream: ReadableByteStream,
-                        properties: Properties): Texture {
+                        properties: TagMap): Texture {
         return engine.graphics.createTexture(decodePNG(stream,
                 { engine.allocate(it) }),
-                properties.getProperty("Mipmaps", "4").toInt(),
-                TextureFilter[properties.getProperty("MinFilter", "Nearest")],
-                TextureFilter[properties.getProperty("MagFilter", "Nearest")],
-                TextureWrap[properties.getProperty("WrapS", "Repeat")],
-                TextureWrap[properties.getProperty("WrapT", "Repeat")])
+                properties["Mipmaps"]?.toInt() ?: 4,
+                properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
+                properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
+                properties["WrapS"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT,
+                properties["WrapT"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT)
     }
 
     fun unbind(gl: GL) {

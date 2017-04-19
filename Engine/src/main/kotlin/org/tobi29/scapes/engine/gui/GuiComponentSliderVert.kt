@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.sound.CLICK
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
@@ -41,8 +42,7 @@ class GuiComponentSliderVert(parent: GuiLayoutData,
             }
         }
         on(GuiEvent.CLICK_LEFT) { event ->
-            engine.sounds.playSound("Engine:sound/Click.ogg", "sound.GUI",
-                    1.0f, 1.0f)
+            engine.sounds.playSound(CLICK, "sound.GUI", 1.0f, 1.0f)
         }
         on(GuiEvent.HOVER_ENTER) { event ->
             hovered = true

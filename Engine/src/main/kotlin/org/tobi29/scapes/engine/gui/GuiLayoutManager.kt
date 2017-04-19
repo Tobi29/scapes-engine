@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import java.util.*
 
 abstract class GuiLayoutManager(protected val start: Vector2d,
                                 protected val maxSize: Vector2d,

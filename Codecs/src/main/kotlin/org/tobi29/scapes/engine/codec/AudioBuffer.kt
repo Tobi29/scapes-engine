@@ -16,8 +16,7 @@
 
 package org.tobi29.scapes.engine.codec
 
-import org.tobi29.scapes.engine.utils.FloatBuffer
-import java.nio.FloatBuffer
+import org.tobi29.scapes.engine.utils.io.FloatBuffer
 
 class AudioBuffer(private val size: Int) {
     private var buffer = FloatBuffer(0)

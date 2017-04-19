@@ -23,12 +23,12 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.test.assertions.shouldThrow
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.Random
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
-import org.tobi29.scapes.engine.utils.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
-import java.io.IOException
-import java.util.*
+import org.tobi29.scapes.engine.utils.tag.*
 
 private fun createTagMap(): TagMap {
     val random = Random()

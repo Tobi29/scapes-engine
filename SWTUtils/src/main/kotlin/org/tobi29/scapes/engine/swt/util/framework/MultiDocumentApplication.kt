@@ -19,10 +19,9 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.Version
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.util.*
-import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class MultiDocumentApplication : Application {
     internal val composites = HashMap<Document, DocumentComposite>()

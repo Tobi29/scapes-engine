@@ -17,8 +17,6 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.math.min
-import java.nio.ByteBuffer
-import java.nio.channels.ByteChannel
 
 class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
     override fun read(dst: ByteBuffer): Int {

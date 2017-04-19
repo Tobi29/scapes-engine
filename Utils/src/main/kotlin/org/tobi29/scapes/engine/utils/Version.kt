@@ -66,7 +66,7 @@ fun version(str: kotlin.String): Version {
     try {
         return versionParse(str)
     } catch (e: VersionException) {
-        throw IllegalArgumentException(e)
+        throw IllegalArgumentException(e.message)
     }
 }
 
@@ -75,7 +75,7 @@ fun version(str: kotlin.String): Version {
  * @param str Version in x.x.x_x format
  * @throws VersionException When the parsing failed
  */
-@Throws(VersionException::class)
+// TODO: @Throws(VersionException::class)
 fun versionParse(str: kotlin.String): Version {
     val split = str.split('.')
     if (split.size > 3) {
@@ -90,19 +90,20 @@ fun versionParse(str: kotlin.String): Version {
     try {
         major = split[0].toInt()
     } catch (e: NumberFormatException) {
-        throw VersionException("Invalid major: ${split[0]}", e)
+        throw VersionException("Invalid major: ${split[0]} (${e.message})")
     }
     if (split.size >= 2) {
         try {
             minor = split[1].toInt()
         } catch (e: NumberFormatException) {
-            throw VersionException("Invalid minor: ${split[1]}", e)
+            throw VersionException("Invalid minor: ${split[1]} (${e.message})")
         }
         if (split.size == 3) {
             try {
                 revision = split[2].toInt()
             } catch (e: NumberFormatException) {
-                throw VersionException("Invalid revision: ${split[2]}", e)
+                throw VersionException(
+                        "Invalid revision: ${split[2]} (${e.message})")
             }
         }
     }
@@ -135,10 +136,4 @@ enum class Comparison constructor(val level: Int) {
     }
 }
 
-class VersionException : Exception {
-    constructor(message: kotlin.String) : super(message)
-
-    constructor(message: kotlin.String,
-                cause: Throwable) : super(message,
-            cause)
-}
+class VersionException(message: String?) : Exception(message)

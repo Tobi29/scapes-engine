@@ -16,25 +16,32 @@
 
 package org.tobi29.scapes.engine.resource
 
+import org.tobi29.scapes.engine.utils.Result
 import org.tobi29.scapes.engine.utils.task.Joiner
 
-class Resource<out T : Any>(
+class Resource<out T : Any> internal constructor(
         private var reference: ResourceReference<T>) {
-    constructor(resource: T) : this(ResourceReference(resource))
 
-    fun tryGet(): T? = reference.value
+    fun tryGet(): T? = reference.value?.get()
 
     fun get(): T {
-        reference.value?.let { return it }
+        tryGet()?.let { return it }
         while (true) {
             reference.joiner.joiner.join()
-            reference.value?.let { return it }
+            tryGet()?.let { return it }
         }
+    }
+
+    suspend fun getAsync(): T {
+        tryGet()?.let { return it }
+        reference.joiner.joiner.joinAsync()
+        tryGet()?.let { return it }
+        throw IllegalStateException("No value after completion")
     }
 }
 
 class ResourceReference<T : Any>(value: T? = null) {
-    var value: T? = value
+    var value: Result<T, Throwable>? = value?.let { Result.Ok(it) }
         set(value) {
             field = value
             value?.let { joiner.join() }
@@ -43,3 +50,5 @@ class ResourceReference<T : Any>(value: T? = null) {
     val resource by lazy { Resource(this) }
     internal val joiner = Joiner.BasicJoinable()
 }
+
+fun <T : Any> Resource(resource: T) = ResourceReference(resource).resource

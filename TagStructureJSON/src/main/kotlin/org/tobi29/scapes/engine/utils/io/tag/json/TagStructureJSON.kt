@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.json
 
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.write
 import org.tobi29.scapes.engine.utils.use
-import java.io.IOException
 import javax.json.JsonException
 
 fun readJSON(stream: ReadableByteStream): TagMap {

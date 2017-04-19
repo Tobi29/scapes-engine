@@ -16,7 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import java.util.*
+import org.tobi29.scapes.engine.utils.readOnly
+
 
 class CompiledShader(declarations: List<Statement>,
                      functions: List<Function>,
@@ -25,15 +26,11 @@ class CompiledShader(declarations: List<Statement>,
                      val outputs: ShaderSignature?,
                      val scope: Scope,
                      private val uniforms: Array<Uniform?>) {
-    val declarations: List<Statement>
-    val functions: List<Function>
+    val declarations = declarations.readOnly()
+    val functions = functions.readOnly()
 
-    init {
-        this.declarations = Collections.unmodifiableList(declarations)
-        this.functions = Collections.unmodifiableList(functions)
-    }
 
     fun uniforms(): Array<Uniform?> {
-        return uniforms.clone()
+        return uniforms.copyOf()
     }
 }

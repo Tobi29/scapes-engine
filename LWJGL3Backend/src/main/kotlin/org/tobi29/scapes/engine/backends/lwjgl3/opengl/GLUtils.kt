@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import mu.KLogging
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
@@ -24,11 +23,12 @@ import org.lwjgl.system.MemoryStack
 import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.graphics.FramebufferStatus
 import org.tobi29.scapes.engine.graphics.RenderType
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.ShaderGenerateException
 import org.tobi29.scapes.engine.utils.shader.backend.glsl.GLSLGenerator
-import java.io.IOException
 
 internal object GLUtils : KLogging() {
     private val SHADER_GENERATOR = ThreadLocal {

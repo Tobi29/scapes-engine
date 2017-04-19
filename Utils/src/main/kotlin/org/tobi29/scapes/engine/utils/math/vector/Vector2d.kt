@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
+import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.tag.ReadWriteTagMap
 import org.tobi29.scapes.engine.utils.tag.TagMapWrite
 import org.tobi29.scapes.engine.utils.tag.set
-import org.tobi29.scapes.engine.utils.math.floor
 
 open class Vector2d(val x: Double,
                     val y: Double) : TagMapWrite {
@@ -46,11 +46,8 @@ open class Vector2d(val x: Double,
     }
 
     override fun hashCode(): Int {
-        var temp: Long
-        temp = java.lang.Double.doubleToLongBits(x)
-        var result = (temp xor temp.ushr(32)).toInt()
-        temp = java.lang.Double.doubleToLongBits(y)
-        result = 31 * result + (temp xor temp.ushr(32)).toInt()
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
         return result
     }
 

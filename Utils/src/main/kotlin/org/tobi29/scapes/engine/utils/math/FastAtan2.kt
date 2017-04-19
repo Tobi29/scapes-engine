@@ -21,7 +21,7 @@ package org.tobi29.scapes.engine.utils.math
 
 object FastAtan2 {
     private val SIZE = 1024
-    private val STRETCH = Math.PI.toFloat()
+    private val STRETCH = PI.toFloat()
     private val EZIS = -SIZE
     private val ATAN2_TABLE_PPY = FloatArray(SIZE + 1)
     private val ATAN2_TABLE_PPX = FloatArray(SIZE + 1)
@@ -35,8 +35,7 @@ object FastAtan2 {
     init {
         for (i in 0..SIZE) {
             val f = i.toFloat() / SIZE
-            ATAN2_TABLE_PPY[i] = (StrictMath.atan(
-                    f.toDouble()) * STRETCH / StrictMath.PI).toFloat()
+            ATAN2_TABLE_PPY[i] = (atan(f.toDouble()) * STRETCH / PI).toFloat()
             ATAN2_TABLE_PPX[i] = STRETCH * 0.5f - ATAN2_TABLE_PPY[i]
             ATAN2_TABLE_PNY[i] = -ATAN2_TABLE_PPY[i]
             ATAN2_TABLE_PNX[i] = ATAN2_TABLE_PPY[i] - STRETCH * 0.5f

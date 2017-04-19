@@ -18,8 +18,8 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import java.nio.ByteBuffer
 
 class GOSLWJGL3GLES(override val engine: ScapesEngine) : GraphicsObjectSupplier {
     override val textures = TextureManager(engine)

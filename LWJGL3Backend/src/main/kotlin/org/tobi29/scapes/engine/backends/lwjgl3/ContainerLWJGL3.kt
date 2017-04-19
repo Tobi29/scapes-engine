@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3
 
-import mu.KLogging
 import org.lwjgl.Version
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
@@ -31,14 +30,13 @@ import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toBoolean
-import org.tobi29.scapes.engine.utils.task.Joiner
-import java.io.IOException
-import java.nio.ByteBuffer
 import java.nio.ByteOrder
-import java.util.concurrent.ConcurrentLinkedQueue
 
 abstract class ContainerLWJGL3(override val engine: ScapesEngine,
                                protected val useGLES: Boolean = false) : Container {
@@ -73,28 +71,12 @@ abstract class ContainerLWJGL3(override val engine: ScapesEngine,
     override fun allocate(capacity: Int): ByteBuffer =
             ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder())
 
-    protected fun <R> exec(runnable: () -> R): R {
+    fun exec(runnable: () -> Unit) {
         val thread = Thread.currentThread()
         if (thread === mainThread) {
             return runnable()
         }
-        val joinable = Joiner.BasicJoinable()
-        var output: R? = null
-        var exception: Throwable? = null
-        tasks.add({
-            try {
-                output = runnable()
-            } catch (e: Throwable) {
-                exception = e
-            }
-
-            joinable.join()
-        })
-        joinable.joiner.join()
-        if (exception != null) {
-            throw IOException(exception)
-        }
-        return output as R
+        tasks.add(runnable)
     }
 
     companion object : KLogging() {

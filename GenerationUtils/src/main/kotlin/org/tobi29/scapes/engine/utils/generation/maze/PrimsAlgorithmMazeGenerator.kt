@@ -15,13 +15,9 @@
  */
 package org.tobi29.scapes.engine.utils.generation.maze
 
-import org.tobi29.scapes.engine.utils.BitFieldGrid
-import org.tobi29.scapes.engine.utils.Pool
-import org.tobi29.scapes.engine.utils.getAt
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
-import org.tobi29.scapes.engine.utils.setAt
-import java.util.*
 
 /**
  * Maze generator using prim's algorithm
@@ -98,7 +94,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
                     maze.setAt(x - 1, y, 3, true)
                 }
             }
-            assert(validDirections > 0)
+            assert { validDirections > 0 }
             val direction = directions[random.nextInt(validDirections)]
             if (direction == Face.NORTH) {
                 maze.setAt(x, y, 0, true)

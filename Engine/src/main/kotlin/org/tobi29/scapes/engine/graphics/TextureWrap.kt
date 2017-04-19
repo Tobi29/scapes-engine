@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.util.*
-
 enum class TextureWrap(private val name2: String) {
     REPEAT("Repeat"),
     CLAMP("Clamp");
@@ -32,9 +30,6 @@ enum class TextureWrap(private val name2: String) {
             }
         }
 
-        operator fun get(name: String): TextureWrap {
-            return BY_NAME[name] ?: throw IllegalArgumentException(
-                    "Invalid texture wrap: $name")
-        }
+        operator fun get(name: String) = BY_NAME[name]
     }
 }

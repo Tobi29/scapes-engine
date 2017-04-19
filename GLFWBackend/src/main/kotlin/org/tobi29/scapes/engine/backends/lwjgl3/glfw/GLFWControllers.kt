@@ -18,11 +18,12 @@ package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.Platform
+import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.*
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.EventDispatcher
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import java.nio.FloatBuffer
-import java.util.concurrent.ConcurrentHashMap
 
 class GLFWControllers(private val events: EventDispatcher,
                       private val virtualJoysticks: MutableMap<Int, ControllerJoystick>) {
@@ -101,7 +102,7 @@ class GLFWControllers(private val events: EventDispatcher,
     }
 }
 
-class GLFWControllerDefault : ControllerDefault() {
+class GLFWControllerDefault(engine: ScapesEngine) : ControllerDefault(engine) {
     private val superModifier = Platform.get() == Platform.MACOSX
 
     override val isModifierDown get() = run {

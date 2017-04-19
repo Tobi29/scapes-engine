@@ -16,30 +16,14 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.antlr.v4.runtime.ParserRuleContext
-import org.antlr.v4.runtime.Token
-import org.antlr.v4.runtime.tree.TerminalNode
+import org.tobi29.scapes.engine.utils.BigDecimal
+import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.toArray
-import java.math.BigDecimal
-import java.math.BigInteger
 
 open class Expression {
     var location: Vector2i? = null
-
-    fun attach(context: ParserRuleContext) {
-        attach(context.start)
-    }
-
-    fun attach(context: TerminalNode) {
-        attach(context.symbol)
-    }
-
-    fun attach(token: Token) {
-        location = Vector2i(
-                token.line, token.charPositionInLine)
-    }
 }
 
 class ShaderProgram(

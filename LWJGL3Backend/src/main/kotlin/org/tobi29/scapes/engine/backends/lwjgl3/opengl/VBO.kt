@@ -20,10 +20,9 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.FastMath
 import org.tobi29.scapes.engine.utils.math.round
-import java.nio.ByteBuffer
-import java.util.*
 
 internal class VBO(val engine: ScapesEngine,
                    attributes: List<ModelAttribute>,

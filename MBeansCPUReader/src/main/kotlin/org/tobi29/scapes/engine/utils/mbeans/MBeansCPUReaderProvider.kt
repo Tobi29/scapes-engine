@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.utils.mbeans
 import org.tobi29.scapes.engine.utils.CPUUtil
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider
 import java.lang.management.ManagementFactory
-import java.util.*
 
 class MBeansCPUReaderProvider : CPUReaderProvider {
 

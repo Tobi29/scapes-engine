@@ -16,35 +16,28 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal
 
-import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.openal.openal.internal.*
+import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
-import org.tobi29.scapes.engine.utils.Sync
-import org.tobi29.scapes.engine.codec.AudioStream
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
-import org.tobi29.scapes.engine.utils.use
+import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.io.IOException
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ThreadLocalRandom
 
-class OpenALSoundSystem(private val engine: ScapesEngine,
+class OpenALSoundSystem(override val engine: ScapesEngine,
                         openAL: OpenAL,
                         maxSources: Int,
                         latency: Double) : SoundSystem {
-    private val cache = ConcurrentHashMap<String, OpenALAudioData>()
+    private val cache = ConcurrentHashMap<ReadSource, OpenALAudioData>()
     private val queue = ConcurrentLinkedQueue<(OpenAL) -> Unit>()
-    private val audios = Collections.newSetFromMap(
-            ConcurrentHashMap<OpenALAudio, Boolean>())
+    private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources: IntArray
     private val joiner: Joiner
     private var origin = Vector3d.ZERO
@@ -128,25 +121,6 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
         }.any()
     }
 
-    override fun playMusic(asset: String,
-                           channel: String,
-                           pitch: Float,
-                           gain: Float,
-                           state: Boolean) {
-        playMusic(engine.files[asset].get(), channel, pitch, gain, state)
-    }
-
-    override fun playMusic(asset: String,
-                           channel: String,
-                           pitch: Float,
-                           gain: Float,
-                           position: Vector3d,
-                           velocity: Vector3d,
-                           state: Boolean) {
-        playMusic(engine.files[asset].get(), channel, pitch, gain, position,
-                velocity, state)
-    }
-
     override fun playMusic(asset: ReadSource,
                            channel: String,
                            pitch: Float,
@@ -171,7 +145,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
         })
     }
 
-    override fun playSound(asset: String,
+    override fun playSound(asset: ReadSource,
                            channel: String,
                            pitch: Float,
                            gain: Float) {
@@ -182,7 +156,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
         })
     }
 
-    override fun playSound(asset: String,
+    override fun playSound(asset: ReadSource,
                            channel: String,
                            position: Vector3d,
                            velocity: Vector3d,
@@ -195,7 +169,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
         })
     }
 
-    override fun playStaticAudio(asset: String,
+    override fun playStaticAudio(asset: ReadSource,
                                  channel: String,
                                  pitch: Float,
                                  gain: Float): StaticAudio {
@@ -268,12 +242,11 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     }
 
     internal operator fun get(openAL: OpenAL,
-                              asset: String): OpenALAudioData? {
+                              asset: ReadSource): OpenALAudioData? {
         if (!cache.containsKey(asset)) {
-            val resource = engine.files[asset].get()
-            if (resource.exists()) {
+            if (asset.exists()) {
                 try {
-                    AudioStream.create(resource).use {
+                    AudioStream.create(asset).use {
                         cache.put(asset,
                                 OpenALAudioData.read(engine, it, openAL))
                     }
@@ -325,7 +298,7 @@ class OpenALSoundSystem(private val engine: ScapesEngine,
     private fun freeSource(openAL: OpenAL,
                            force: Boolean,
                            take: Boolean): Int {
-        val random = ThreadLocalRandom.current()
+        val random = threadLocalRandom()
         val offset = random.nextInt(sources.size)
         for (i in sources.indices) {
             val j = (i + offset) % sources.size

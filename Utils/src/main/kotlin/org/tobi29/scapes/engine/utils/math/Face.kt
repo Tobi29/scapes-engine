@@ -32,25 +32,24 @@ enum class Face(val value: Int,
     WEST(5, -1, 0, 0, 5);
 
     val delta: Vector3i
-    lateinit var opposite: Face
-        private set
+
+    val opposite by lazy {
+        when (this) {
+            NONE -> NONE
+            UP -> DOWN
+            DOWN -> UP
+            NORTH -> SOUTH
+            EAST -> WEST
+            SOUTH -> NORTH
+            WEST -> EAST
+        }
+    }
 
     init {
         delta = Vector3i(x, y, z)
     }
 
     companion object {
-
-        init {
-            NONE.opposite = NONE
-            UP.opposite = DOWN
-            DOWN.opposite = UP
-            NORTH.opposite = SOUTH
-            EAST.opposite = WEST
-            SOUTH.opposite = NORTH
-            WEST.opposite = EAST
-        }
-
         operator fun get(data: Int): Face {
             when (data) {
                 0 -> return UP

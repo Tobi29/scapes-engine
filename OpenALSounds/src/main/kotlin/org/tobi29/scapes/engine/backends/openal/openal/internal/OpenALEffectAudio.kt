@@ -18,10 +18,11 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distance
 
-internal class OpenALEffectAudio(private val asset: String,
+internal class OpenALEffectAudio(private val asset: ReadSource,
                                  private val channel: String,
                                  private val pos: Vector3d,
                                  private val velocity: Vector3d,

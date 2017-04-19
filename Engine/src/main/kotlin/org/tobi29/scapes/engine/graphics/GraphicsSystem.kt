@@ -16,19 +16,16 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import mu.KLogging
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
-import org.tobi29.scapes.engine.resource.Resource
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.io.asString
-import org.tobi29.scapes.engine.utils.io.process
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.ShaderCompiler
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     private val fpsDebug: GuiWidgetDebugValues.Element
@@ -40,7 +37,6 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
     private val shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture
     private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
-    private val shaderFallback = createShader("Engine:shader/Textured")
     private val queue = ConcurrentLinkedQueue<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
@@ -148,36 +144,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
         }
     }
 
-    fun loadShader(asset: String,
-                   consumer: ShaderCompileInformation.() -> Unit): Resource<Shader> {
-        return engine.resources.load({ shaderFallback }) {
-            createShader(asset, consumer)
-        }
-    }
-
-    fun loadShader(asset: String,
-                   information: ShaderCompileInformation = ShaderCompileInformation()): Resource<Shader> {
-        return engine.resources.load({ shaderFallback }) {
-            createShader(asset, information)
-        }
-    }
-
-    fun createShader(asset: String,
-                     consumer: ShaderCompileInformation.() -> Unit): Shader {
-        val information = ShaderCompileInformation()
-        consumer(information)
-        return createShader(asset, information)
-    }
-
-    fun createShader(asset: String,
-                     information: ShaderCompileInformation = ShaderCompileInformation()): Shader {
-        val program = engine.files[asset + ".program"].get()
-        val source = program.read({ stream -> process(stream, asString()) })
-        val shader = compiled(source)
-        return createShader(shader, information)
-    }
-
-    private fun compiled(source: String): CompiledShader {
+    fun compileShader(source: String): CompiledShader {
         return shaderCache[source] ?: run {
             val shader = ShaderCompiler.compile(source)
             shaderCache.put(source, shader)

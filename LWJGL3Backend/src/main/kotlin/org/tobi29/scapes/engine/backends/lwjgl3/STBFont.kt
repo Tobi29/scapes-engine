@@ -19,11 +19,11 @@ import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.asBuffer
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 import org.tobi29.scapes.engine.utils.io.process
-import java.io.IOException
-import java.nio.ByteBuffer
 
 class STBFont(internal val container: ContainerLWJGL3,
               internal val fontBuffer: ByteBuffer,

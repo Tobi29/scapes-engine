@@ -18,6 +18,7 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":FileSystems")
+    compile project(":ThreadUtils")
 
     compileOnly rootProject.ext.swtWindows32
 }

@@ -22,7 +22,7 @@ fun busyPipeline(gl: GL): () -> Unit {
     val mesh = Mesh()
     GuiUtils.busy(mesh, 64.0, 64.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
     val busy = mesh.finish(gl.engine)
-    val shader = gl.engine.graphics.loadShader("Engine:shader/Textured")
+    val shader = gl.engine.graphics.loadShader(SHADER_TEXTURED)
     val width = gl.contentWidth().toFloat()
     val height = gl.contentHeight().toFloat()
     return {

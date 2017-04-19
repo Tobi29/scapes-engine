@@ -22,9 +22,9 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.test.assertions.shouldNotEqual
+import org.tobi29.scapes.engine.utils.BigDecimal
+import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.tag.*
-import java.math.BigDecimal
-import java.math.BigInteger
 
 object TagNumberTests : Spek({
     describe("a number tag") {

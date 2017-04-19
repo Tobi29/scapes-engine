@@ -20,15 +20,14 @@ package org.tobi29.scapes.engine.codec.wav
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ChannelUtil
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferLE
+import org.tobi29.scapes.engine.utils.io.skip
 import java.nio.channels.ReadableByteChannel
 
 class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    private val buffer = ByteBuffer(BUFFER_SIZE).order(ByteOrder.LITTLE_ENDIAN)
+    private val buffer = ByteBufferLE(BUFFER_SIZE)
     private var channels = 0
     private var rate = 0
     private var align = 0
@@ -48,7 +47,7 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 
     private fun skip(skip: Long,
                      next: () -> (() -> Boolean)?): Boolean {
-        val newSkip = ChannelUtil.skip(channel, skip)
+        val newSkip = channel.skip(skip)
         if (newSkip == 0L) {
             state = next()
             return true

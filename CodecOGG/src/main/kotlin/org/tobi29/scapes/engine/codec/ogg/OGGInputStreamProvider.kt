@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.codec.ogg
 
 import org.tobi29.scapes.engine.codec.spi.ReadableAudioStreamProvider
-import java.nio.channels.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 
 class OGGInputStreamProvider : ReadableAudioStreamProvider {
     private val mimeTypes = listOf("audio/ogg", "audio/vorbis", "audio/opus",

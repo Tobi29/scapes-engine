@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeParser
 
 object ShaderCompiler {
@@ -24,13 +23,9 @@ object ShaderCompiler {
         val scope = Scope()
         scope.add("out_Position")
         scope.add("varying_Fragment")
-        val program = try {
-            val parser = CLikeParser.parser(source)
-            CLikeParser.externalDeclaration(
-                    parser.compilationUnit().translationUnit(), scope)
-        } catch (e: ParseCancellationException) {
-            throw ShaderCompileException(e)
-        }
+        val parser = CLikeParser.parser(source)
+        val program = CLikeParser.externalDeclaration(
+                parser.compilationUnit().translationUnit(), scope)
         val shaderFragment = program.shaders["fragment"]?.let { shader ->
             Pair(shader.first, shader.second(scope))
         }

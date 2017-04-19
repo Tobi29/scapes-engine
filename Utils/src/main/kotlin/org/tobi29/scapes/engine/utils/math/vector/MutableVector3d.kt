@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.math.vector
 
+import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toDouble
-import org.tobi29.scapes.engine.utils.math.floor
 
 class MutableVector3d(x: Double = 0.0,
                       y: Double = 0.0,
@@ -257,13 +257,9 @@ class MutableVector3d(x: Double = 0.0,
     }
 
     override fun hashCode(): Int {
-        var temp: Long
-        temp = java.lang.Double.doubleToLongBits(x)
-        var result = (temp xor temp.ushr(32)).toInt()
-        temp = java.lang.Double.doubleToLongBits(y)
-        result = 31 * result + (temp xor temp.ushr(32)).toInt()
-        temp = java.lang.Double.doubleToLongBits(z)
-        result = 31 * result + (temp xor temp.ushr(32)).toInt()
+        var result = x.hashCode()
+        result = 31 * result + y.hashCode()
+        result = 31 * result + z.hashCode()
         return result
     }
 

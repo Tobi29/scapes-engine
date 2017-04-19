@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import java.util.concurrent.atomic.AtomicReference
 
 class GuiTooltip(style: GuiStyle) : Gui(style) {
     private val currentTooltip = AtomicReference<Pair<GuiComponent, GuiCursor>?>()

@@ -15,20 +15,23 @@
  */
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.utils.ListenerOwner
-import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
+import org.tobi29.scapes.engine.gui.GuiStyle
+import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Version
-import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class Game(val engine: ScapesEngine) : ListenerOwner {
+abstract class Game(val engine: ScapesEngine) {
     private var disposed = AtomicBoolean()
-    override val listenerOwner = ListenerOwnerHandle { !disposed.get() }
+
+    abstract val events: EventDispatcher
 
     abstract val name: String
 
     abstract val id: String
 
     abstract val version: Version
+
+    abstract val defaultGuiStyle: GuiStyle
 
     abstract fun initEarly()
 
@@ -41,6 +44,7 @@ abstract class Game(val engine: ScapesEngine) : ListenerOwner {
     abstract fun step(delta: Double)
 
     open fun dispose() {
+        events.disable()
         disposed.set(true)
     }
 }

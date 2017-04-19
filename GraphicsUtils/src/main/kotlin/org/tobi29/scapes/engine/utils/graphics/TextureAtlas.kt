@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import mu.KLogging
+import org.tobi29.scapes.engine.utils.ArrayDeque
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.ceil
 import org.tobi29.scapes.engine.utils.math.nextPowerOfTwo
 import org.tobi29.scapes.engine.utils.math.sqrt
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 abstract class TextureAtlas<T : TextureAtlasEntry>(protected val minSize: Int = 1) {
     protected val textures = ConcurrentHashMap<String, T>()

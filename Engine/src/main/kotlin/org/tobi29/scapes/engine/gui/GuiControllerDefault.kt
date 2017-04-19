@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
-import java.util.concurrent.atomic.AtomicBoolean
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 
 abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
                                                           protected val controller: ControllerDefault) : GuiController(

@@ -22,9 +22,9 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.byteArrays
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
-import java.nio.ByteBuffer
 
 object CompressionUtilTests : Spek({
     given("any byte array") {

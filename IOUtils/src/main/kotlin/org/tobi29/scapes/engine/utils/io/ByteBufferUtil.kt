@@ -16,15 +16,37 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
+import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f
+import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 
-fun ByteBuffer.asString(): String {
-    return String(array(), StandardCharsets.UTF_8)
+fun ByteBuffer.asArray() =
+        ByteArray(remaining()).also {
+            val position = position()
+            get(it)
+            position(position)
+        }
+
+/**
+ * Fills a buffer with the given value
+ * @receiver Buffer to fill
+ * @param supplier Supplier called for each value written to the buffer
+ * @return The given buffer
+ */
+inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
+    while (hasRemaining()) {
+        put(supplier())
+    }
+    return this
 }
 
-fun ByteBuffer.asArray(): ByteArray {
-    val array = ByteArray(remaining())
-    get(array)
-    return array
+fun Matrix3f.putInto(buffer: ByteBuffer) {
+    for (value in values()) {
+        buffer.putFloat(value)
+    }
+}
+
+fun Matrix4f.putInto(buffer: ByteBuffer) {
+    for (value in values()) {
+        buffer.putFloat(value)
+    }
 }

@@ -21,9 +21,9 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.byteArrays
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
 import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteBufferChannel
 
 object BufferedStreamTests : Spek({

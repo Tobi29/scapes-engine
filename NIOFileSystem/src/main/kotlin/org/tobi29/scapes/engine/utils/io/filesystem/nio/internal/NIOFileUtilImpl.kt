@@ -18,20 +18,16 @@ package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import org.apache.tika.Tika
 import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
-import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
 import org.tobi29.scapes.engine.utils.use
-import java.io.IOException
 import java.io.InputStream
 import java.net.URI
 import java.nio.channels.FileChannel
-import java.nio.channels.ReadableByteChannel
 import java.nio.file.*
+import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.util.*

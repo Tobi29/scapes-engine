@@ -16,19 +16,16 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
-import mu.KLogging
 import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.Queue
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.*
-import java.io.IOException
 import java.nio.channels.SelectionKey
 import java.security.*
 import java.security.spec.InvalidKeySpecException
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.crypto.*
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
@@ -38,11 +35,11 @@ import javax.crypto.spec.PBEParameterSpec
  */
 open class ControlPanelProtocol(private val worker: ConnectionWorker,
                                 private val channel: PacketBundleChannel,
-                                events: EventDispatcher?) : ListenerOwner {
+                                listenerParent: EventDispatcher) {
     /**
      * [EventDispatcher] for this object
      */
-    val events = EventDispatcher(events)
+    val events = EventDispatcher(listenerParent) { listeners() }
 
     /**
      * Returns the client ID of this connection
@@ -59,12 +56,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
     private val disconnectHooks = ConcurrentLinkedQueue<(Exception) -> Unit>()
     private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, Queue<(TagMap) -> Unit>>>()
-    private val isClosedMut = AtomicBoolean()
-    val isClosed get() = isClosedMut.get()
     private var pingWait = 0L
     var ping = 0L
         private set
-    override val listenerOwner = ListenerOwnerHandle { !isClosed }
 
     init {
         channel.register(worker.joiner, SelectionKey.OP_READ)
@@ -75,7 +69,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    open fun ListenerRegistrar.listeners() {}
+
+    // TODO: @Throws(IOException::class)
     suspend fun runClient(connection: Connection,
                           client: String,
                           authentication: (String, Int, ByteArray) -> Cipher) {
@@ -99,7 +95,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     suspend fun runClientAsym(connection: Connection,
                               client: String,
                               authentication: (String, Int) -> Cipher) {
@@ -123,7 +119,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     suspend fun runServer(connection: Connection,
                           authentication: (String, Int, ByteArray) -> Cipher?) {
         try {
@@ -145,7 +141,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     suspend fun runServerAsym(connection: Connection,
                               authentication: (String, Int) -> Cipher?) {
         try {
@@ -430,7 +426,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     private fun close() {
         channel.close()
-        isClosedMut.set(true)
+        events.disable()
     }
 
     companion object : KLogging() {

@@ -15,9 +15,8 @@
  */
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.math.min
-import java.io.IOException
-import java.nio.ByteBuffer
 
 class LimitedBufferStream(private val stream: ReadableByteStream,
                           private var remaining: Int) : SizedReadableByteStream {

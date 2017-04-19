@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.codec
 
 import org.tobi29.scapes.engine.utils.tag.TagMap
-import java.io.IOException
 
 /**
  * Interface for reading audio data from an encoded source
@@ -46,14 +45,14 @@ interface ReadableAudioStream : AutoCloseable {
      * @return [Result], for info head there
      * @see [Result]
      */
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun get(buffer: AudioBuffer?): Result
 
     /**
      * Disposes any resources held by this object, no further calls should be
      * done on it
      */
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun close()
 
     /**

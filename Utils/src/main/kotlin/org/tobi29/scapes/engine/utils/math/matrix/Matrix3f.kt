@@ -15,27 +15,19 @@
  */
 package org.tobi29.scapes.engine.utils.math.matrix
 
+import org.tobi29.scapes.engine.utils.copy
 import org.tobi29.scapes.engine.utils.math.*
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
-import java.nio.ByteBuffer
-
 class Matrix3f {
-
     private val values = FloatArray(9)
 
     fun values(): FloatArray {
         return values
     }
 
-    fun putInto(buffer: ByteBuffer) {
-        for (value in values) {
-            buffer.putFloat(value)
-        }
-    }
-
     fun copy(matrix: Matrix3f) {
-        System.arraycopy(matrix.values, 0, values, 0, values.size)
+        copy(matrix.values, values)
     }
 
     fun identity() {

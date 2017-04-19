@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.utils.graphics.TextureAtlasEntry
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 open class TextureAtlasEngineEntry(buffer: ByteBuffer?,
                                    width: Int,

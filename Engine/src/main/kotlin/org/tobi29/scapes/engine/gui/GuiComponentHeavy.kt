@@ -16,20 +16,30 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Model
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class GuiComponentHeavy(parent: GuiLayoutData) : GuiComponent(parent) {
+abstract class GuiComponentHeavy : GuiComponent {
     private val dirty = AtomicBoolean(true)
     protected var meshes: List<Pair<Model, Texture>>? = null
     private var lastSize = Vector2d.ZERO
     private var lastPixelSize = Vector2d.ZERO
     private var hasHeavyChild = false
+
+    constructor(
+            parent: GuiLayoutData
+    ) : super(parent)
+
+    internal constructor(
+            engine: ScapesEngine,
+            parent: GuiLayoutData
+    ) : super(engine, parent)
 
     override fun render(gl: GL,
                         shader: Shader,

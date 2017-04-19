@@ -16,14 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.io.IOException
-
 interface RandomReadableByteStream : SizedReadableByteStream {
     override fun available(): Int {
         return remaining()
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun skip(len: Int) {
         position(position() + len)
     }

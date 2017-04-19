@@ -17,13 +17,11 @@
 package org.tobi29.scapes.engine.codec.spi
 
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-
-import java.io.IOException
-import java.nio.channels.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 
 interface ReadableAudioStreamProvider {
     fun accepts(mime: String): Boolean
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     operator fun get(channel: ReadableByteChannel): ReadableAudioStream
 }

@@ -16,8 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.generation.layer
 
+import org.tobi29.scapes.engine.utils.Random
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.generation.value.ValueNoise
-import java.util.*
 
 typealias RandomPermutation = IntArray
 
@@ -33,7 +34,7 @@ fun RandomPermutation(random: Random) = IntArray(512).apply {
 inline fun RandomPermutation.random(maxRandom: Int,
                                     x: Int,
                                     y: Int): Int {
-    assert(size == 512)
+    assert { size == 512 }
     val xx = x and 255
     val yy = y and 255
     return this[xx + this[yy + this[xx + yy and 255]]] % maxRandom
@@ -43,7 +44,7 @@ inline fun <T> RandomPermutation.randomOffset(factor: Int,
                                               x: Int,
                                               y: Int,
                                               parent: (Int, Int) -> T): T {
-    assert(size == 512)
+    assert { size == 512 }
     val xx = x and 255
     val yy = y and 255
     val dx = this[xx + this[xx + yy and 255 + this[yy]]] % factor

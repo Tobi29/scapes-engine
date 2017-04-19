@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.reflect.KProperty
 
 /**

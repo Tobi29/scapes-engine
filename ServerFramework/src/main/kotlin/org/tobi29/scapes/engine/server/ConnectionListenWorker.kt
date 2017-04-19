@@ -17,9 +17,9 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
-import mu.KLogging
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.equals
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.ServerSocketChannel

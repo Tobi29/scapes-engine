@@ -66,3 +66,39 @@ interface ValueNoise {
               y: Double,
               z: Double): Double
 }
+
+fun Array<out ValueNoise>.noiseOctave(x: Double,
+                                      y: Double,
+                                      frequency: Double,
+                                      amplitude: Double): Double {
+    var out = 0.0
+    var cFrequency = 1.0
+    var cAmplitude = 1.0
+    var normal = 0.0
+    for (noise in this) {
+        out += noise.noise(x * cFrequency, y * cFrequency) * cAmplitude
+        normal += cAmplitude
+        cFrequency *= frequency
+        cAmplitude *= amplitude
+    }
+    return out / normal
+}
+
+fun Array<out ValueNoise>.noiseOctave(x: Double,
+                                      y: Double,
+                                      z: Double,
+                                      frequency: Double,
+                                      amplitude: Double): Double {
+    var out = 0.0
+    var cFrequency = 1.0
+    var cAmplitude = 1.0
+    var normal = 0.0
+    for (noise in this) {
+        out += noise.noise(x * cFrequency, y * cFrequency,
+                z * cFrequency) * cAmplitude
+        normal += cAmplitude
+        cFrequency *= frequency
+        cAmplitude *= amplitude
+    }
+    return out / normal
+}

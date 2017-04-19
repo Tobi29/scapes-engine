@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.div
-import java.util.*
 import java.util.concurrent.ConcurrentSkipListMap
 
 class GuiStack {
@@ -32,11 +31,7 @@ class GuiStack {
 
     @Synchronized fun add(id: String,
                           add: Gui) {
-        val previous = guis.put(id, add)
-        if (previous != null) {
-            removed(previous)
-        }
-        keys.put(add, id)
+        addUnfocused(id, add)
         focus = add
     }
 
@@ -47,6 +42,7 @@ class GuiStack {
             removed(previous)
         }
         keys.put(add, id)
+        add.added()
     }
 
     operator fun get(id: String): Gui? {
@@ -85,6 +81,7 @@ class GuiStack {
     private fun removed(gui: Gui): Boolean {
         guis.values.remove(gui)
         keys.remove(gui)
+        gui.removed()
         val focus = focus
         if (focus != null && focus == gui) {
             this.focus = null

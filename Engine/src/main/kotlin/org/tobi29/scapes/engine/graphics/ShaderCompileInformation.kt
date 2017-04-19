@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.util.*
-
 class ShaderCompileInformation {
     private val preCompileListeners = ArrayList<(ShaderPreprocessor, GL) -> Unit>()
     private val postCompileListeners = ArrayList<(GL, Shader) -> Unit>()

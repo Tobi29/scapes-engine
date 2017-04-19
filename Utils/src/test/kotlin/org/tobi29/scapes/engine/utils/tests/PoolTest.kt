@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.test.assertions.shouldNotContain
 import org.tobi29.scapes.engine.test.assertions.shouldThrow
 import org.tobi29.scapes.engine.utils.Pool
-import java.util.*
 
 object PoolTests : Spek({
     given("a pool with 4 allocated") {

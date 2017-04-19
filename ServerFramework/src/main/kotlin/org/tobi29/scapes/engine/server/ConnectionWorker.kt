@@ -17,18 +17,17 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.*
-import mu.KLogging
-import org.tobi29.scapes.engine.utils.task.Joiner
-import java.io.IOException
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
+import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.AtomicLong
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Class for processing non-blocking connections
  * @param connection The [ConnectionManager] that holds this worker
- * @param joiner The [Joiner.SelectorJoinable] used for idling
+ * @param joiner The [SelectorJoinable] used for idling
  * @param maxWorkerSleep Maximum sleep time in milliseconds
  */
 class ConnectionWorker(
@@ -37,9 +36,9 @@ class ConnectionWorker(
          */
         val connection: ConnectionManager,
         /**
-         * The [Joiner.SelectorJoinable] used for idling
+         * The [SelectorJoinable] used for idling
          */
-        val joiner: Joiner.SelectorJoinable,
+        val joiner: SelectorJoinable,
         private val maxWorkerSleep: Long,
         private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher() {
     private val connectionQueue = ConcurrentLinkedQueue<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()

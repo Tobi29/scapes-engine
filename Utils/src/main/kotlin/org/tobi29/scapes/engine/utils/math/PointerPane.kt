@@ -16,13 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.math
 
-class PointerPane @JvmOverloads constructor(val aabb: AABB = AABB(0.0, 0.0, 0.0,
-        0.0, 0.0,
-        0.0),
-                                            var face: Face = Face.NONE,
-                                            var x: Int = 0,
-                                            var y: Int = 0,
-                                            var z: Int = 0) {
+class PointerPane(val aabb: AABB = AABB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0),
+                  var face: Face = Face.NONE,
+                  var x: Int = 0,
+                  var y: Int = 0,
+                  var z: Int = 0) {
 
     fun set(aabb: AABB,
             face: Face,

@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 interface ModelHybrid : Model {
     fun strideStream(): Int

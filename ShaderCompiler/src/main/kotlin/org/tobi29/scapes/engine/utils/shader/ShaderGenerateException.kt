@@ -21,7 +21,7 @@ class ShaderGenerateException : Exception {
                 expression: Expression) : super(
             message(message, expression))
 
-    constructor(e: Exception) : super(e)
+    constructor(e: Exception) : super(e.toString())
 }
 
 private fun message(message: String,

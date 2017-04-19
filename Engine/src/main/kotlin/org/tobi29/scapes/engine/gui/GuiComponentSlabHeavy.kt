@@ -16,10 +16,18 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
-open class GuiComponentSlabHeavy(parent: GuiLayoutData) : GuiComponentHeavy(
-        parent), GuiContainerColumn {
+open class GuiComponentSlabHeavy : GuiComponentHeavy, GuiContainerColumn {
+    constructor(
+            parent: GuiLayoutData
+    ) : super(parent)
+
+    internal constructor(
+            engine: ScapesEngine,
+            parent: GuiLayoutData
+    ) : super(engine, parent)
 
     fun <T : GuiComponent> add(x: Double,
                                y: Double,

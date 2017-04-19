@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.util.*
-
 class GraphicsObjectTracker<in O : GraphicsObject> {
     private val objects = ArrayList<O>()
     private var disposeOffset = 0

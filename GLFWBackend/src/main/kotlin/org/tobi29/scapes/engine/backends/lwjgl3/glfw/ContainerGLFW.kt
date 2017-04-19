@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
-import mu.KLogging
 import org.lwjgl.glfw.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
@@ -32,17 +31,16 @@ import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.utils.EventDispatcher
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.Sync
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
+import org.tobi29.scapes.engine.utils.sleepNanos
 import org.tobi29.scapes.engine.utils.tag.toMap
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.locks.LockSupport
 
 class ContainerGLFW(engine: ScapesEngine,
                     private val emulateTouch: Boolean = false,
@@ -54,7 +52,7 @@ class ContainerGLFW(engine: ScapesEngine,
     override var containerHeight = 0
         private set
     private val sync: Sync
-    private val controllerDefault = GLFWControllerDefault()
+    private val controllerDefault = GLFWControllerDefault(engine)
     private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
     private val errorFun = GLFWErrorCallback.createPrint()
@@ -68,7 +66,8 @@ class ContainerGLFW(engine: ScapesEngine,
     private val cursorPosFun: GLFWCursorPosCallback
     private val scrollFun: GLFWScrollCallback
     private val monitorFun: GLFWMonitorCallback
-    private var window = 0L
+    internal var window = 0L
+        private set
     private var refreshRate = 60
     private var contentWidth = 0
     private var contentHeight = 0
@@ -181,7 +180,6 @@ class ContainerGLFW(engine: ScapesEngine,
         var controllerEmulateTouch: ControllerTouch? = null
         if (emulateTouch) {
             controllerEmulateTouch = object : ControllerTouch {
-                override val events = EventDispatcher()
                 private var tracker: ControllerTouch.Tracker? = null
 
                 override fun fingers(): Sequence<ControllerTouch.Tracker> {
@@ -252,7 +250,7 @@ class ContainerGLFW(engine: ScapesEngine,
                 }
             }
             if (plebSync > 0) {
-                LockSupport.parkNanos(plebSync)
+                sleepNanos(plebSync)
             }
             val time = System.nanoTime()
             GLFW.glfwPollEvents()
@@ -336,28 +334,11 @@ class ContainerGLFW(engine: ScapesEngine,
         return GLFW.glfwGetClipboardString(window)
     }
 
-    override fun openFileDialog(type: FileType,
-                                title: String,
-                                multiple: Boolean,
-                                result: Function2<String, ReadableByteStream, Unit>) {
-        exec {
-            PlatformDialogs.openFileDialog(window, type.extensions, multiple,
-                    result)
-        }
-    }
-
-    override fun saveFileDialog(extensions: Array<Pair<String, String>>,
-                                title: String): FilePath? {
-        return exec {
-            PlatformDialogs.saveFileDialog(window, extensions)
-        }
-    }
-
     override fun message(messageType: Container.MessageType,
                          title: String,
                          message: String) {
         exec {
-            PlatformDialogs.message(window, messageType, title, message)
+            PlatformDialogs.message(this, messageType, title, message)
         }
     }
 
@@ -365,12 +346,8 @@ class ContainerGLFW(engine: ScapesEngine,
                         text: GuiController.TextFieldData,
                         multiline: Boolean) {
         exec {
-            PlatformDialogs.dialog(window, title, text, multiline)
+            PlatformDialogs.dialog(this, title, text, multiline)
         }
-    }
-
-    override fun openFile(path: FilePath) {
-        PlatformDialogs.openFile(path)
     }
 
     companion object : KLogging() {
@@ -379,6 +356,10 @@ class ContainerGLFW(engine: ScapesEngine,
         // best "gaming" OS
         // Platform.WINDOWS -> 40000L
             else -> 20000L
+        }
+
+        fun openFile(path: FilePath) {
+            PlatformDialogs.openFile(path)
         }
 
         private fun initWindow(engine: ScapesEngine,

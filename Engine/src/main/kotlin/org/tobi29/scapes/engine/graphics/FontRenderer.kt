@@ -15,17 +15,17 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import mu.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.gui.GuiRenderBatch
 import org.tobi29.scapes.engine.gui.GuiUtils
 import org.tobi29.scapes.engine.utils.computeAbsent
+import org.tobi29.scapes.engine.utils.copy
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import java.util.*
 
 class FontRenderer(private val engine: ScapesEngine,
                    private val font: Font) {
@@ -189,7 +189,6 @@ class FontRenderer(private val engine: ScapesEngine,
             if (id < pages.size) {
                 pages[id]?.let { return it }
             }
-            var timestamp = System.currentTimeMillis()
             val pageInfo = renderer.pageInfo(id)
             val imageSize = pageInfo.size
             val texture = engine.graphics.createTexture(1, 1,
@@ -200,11 +199,9 @@ class FontRenderer(private val engine: ScapesEngine,
                 texture.setBuffer(renderer.page(id, { engine.allocate(it) }),
                         imageSize, imageSize)
             }, "Render-Glyph-Page")
-            timestamp = System.currentTimeMillis() - timestamp
-            logger.debug { "Rendered font page in ${timestamp}ms" }
             if (pages.size <= id) {
                 val newPages = arrayOfNulls<GlyphPage>(id + 1)
-                System.arraycopy(pages, 0, newPages, 0, pages.size)
+                copy(pages, newPages)
                 pages = newPages
             }
             val glyphPage = GlyphPage(texture, pageInfo.width, pageInfo.tiles,

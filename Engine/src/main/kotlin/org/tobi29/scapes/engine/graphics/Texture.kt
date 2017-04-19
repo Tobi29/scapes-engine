@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 interface Texture : GraphicsObject {
     val engine: ScapesEngine

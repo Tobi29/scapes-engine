@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import mu.KLogging
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.ShaderCompileInformation
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import java.io.IOException
 
 internal class ShaderGL(private val shader: CompiledShader,
                         private val information: ShaderCompileInformation) : Shader {

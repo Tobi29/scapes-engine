@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 interface GlyphRenderer {
     fun pageInfo(id: Int): GlyphRenderer.GlyphPage

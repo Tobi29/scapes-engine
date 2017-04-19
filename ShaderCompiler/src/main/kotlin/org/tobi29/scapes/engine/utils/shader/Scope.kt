@@ -16,7 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import java.util.*
+import org.tobi29.scapes.engine.utils.assert
+
 
 class Scope(vararg private val parents: Scope) {
     private val map = HashMap<String, Identifier>()
@@ -27,7 +28,7 @@ class Scope(vararg private val parents: Scope) {
         }
         val variable = Identifier(name, this)
         val old = map.put(name, variable)
-        assert(old == null)
+        assert { old == null }
         return variable
     }
 

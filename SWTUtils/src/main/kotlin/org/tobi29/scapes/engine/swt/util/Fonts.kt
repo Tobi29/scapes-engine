@@ -16,16 +16,16 @@
 
 package org.tobi29.scapes.engine.swt.util
 
-import mu.KLogging
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.FontData
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.toArray
 
 object Fonts : KLogging() {
     private val MONOSPACED = fontDatas(monospaceFonts)
 
     val monospace: Array<FontData>
-        get() = MONOSPACED.clone()
+        get() = MONOSPACED.copyOf()
 
     private fun fontDatas(map: Map<String, String>): Array<FontData> {
         val os = identifier(System.getProperty("os.name"))

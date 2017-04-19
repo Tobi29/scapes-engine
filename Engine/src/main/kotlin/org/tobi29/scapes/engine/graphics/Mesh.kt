@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.copy
 
 class Mesh(private val triangles: Boolean = false,
            private val color: Boolean = true) {
@@ -151,16 +151,12 @@ class Mesh(private val triangles: Boolean = false,
         val newColorArray = FloatArray(size shl 2)
         val newTextureArray = FloatArray(size shl 1)
         val newNormalArray = FloatArray(size * 3)
-        System.arraycopy(vertexArray, 0, newVertexArray, 0,
-                min(vertexArray.size, newVertexArray.size))
+        copy(vertexArray, newVertexArray)
         if (color) {
-            System.arraycopy(colorArray, 0, newColorArray, 0,
-                    min(colorArray.size, newColorArray.size))
+            copy(colorArray, newColorArray)
         }
-        System.arraycopy(textureArray, 0, newTextureArray, 0,
-                min(textureArray.size, newTextureArray.size))
-        System.arraycopy(normalArray, 0, newNormalArray, 0,
-                min(normalArray.size, newNormalArray.size))
+        copy(textureArray, newTextureArray)
+        copy(normalArray, newNormalArray)
         vertexArray = newVertexArray
         colorArray = newColorArray
         textureArray = newTextureArray

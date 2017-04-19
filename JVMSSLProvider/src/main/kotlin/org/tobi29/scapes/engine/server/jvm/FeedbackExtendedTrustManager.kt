@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.server.jvm
 import java.net.Socket
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
-import java.util.*
 import javax.net.ssl.SSLEngine
 import javax.net.ssl.X509ExtendedTrustManager
 
@@ -111,7 +110,7 @@ class FeedbackExtendedTrustManager(
     override fun getAcceptedIssuers(): Array<X509Certificate> {
         val issuers = ArrayList<X509Certificate>()
         for (trustManager in trustManagers) {
-            Collections.addAll(issuers, *trustManager.acceptedIssuers)
+            issuers.addAll(trustManager.acceptedIssuers)
         }
         return issuers.toTypedArray()
     }

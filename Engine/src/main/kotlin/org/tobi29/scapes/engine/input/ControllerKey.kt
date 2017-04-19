@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.input
 
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.computeAbsent
-import java.util.concurrent.ConcurrentHashMap
 
 class ControllerKey private constructor(val name: String,
                                         val humanName: String) {

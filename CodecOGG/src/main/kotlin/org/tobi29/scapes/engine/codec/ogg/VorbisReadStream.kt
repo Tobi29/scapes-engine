@@ -22,8 +22,8 @@ import com.jcraft.jorbis.Block
 import com.jcraft.jorbis.Comment
 import com.jcraft.jorbis.DspState
 import com.jcraft.jorbis.Info
-import mu.KLogging
 import org.tobi29.scapes.engine.codec.AudioMetaData
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.set

@@ -27,18 +27,18 @@ import org.eclipse.swt.events.VerifyEvent
 import org.eclipse.swt.events.VerifyListener
 import org.eclipse.swt.graphics.Color
 import org.eclipse.swt.widgets.Display
+import org.tobi29.scapes.engine.utils.ArrayDeque
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.toArray
 import java.io.StringReader
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
 
 class HTMLLineStyler(display: Display) : DisposeListener, LineStyleListener, VerifyListener {
-    private val styles = Collections.newSetFromMap(
-            ConcurrentHashMap<StyleRange, Boolean>())
+    private val styles = ConcurrentHashSet<StyleRange>()
     private val colorTable = ConcurrentHashMap<String, Color>()
 
     constructor(text: StyledText) : this(text.display) {
@@ -136,7 +136,7 @@ class HTMLLineStyler(display: Display) : DisposeListener, LineStyleListener, Ver
             reader: XMLStreamReader): (StyleRange, StringBuilder) -> Unit {
         val type = reader.name.localPart
         val count = reader.attributeCount
-        val style = Properties()
+        val style = HashMap<String, String>()
         for (i in 0..count - 1) {
             if ("style" == reader.getAttributeName(i).localPart) {
                 val attribute = reader.getAttributeValue(i).split(
@@ -145,13 +145,12 @@ class HTMLLineStyler(display: Display) : DisposeListener, LineStyleListener, Ver
                 for (property in attribute) {
                     val split = property.split(":".toRegex(), 2).toTypedArray()
                     if (split.size == 2) {
-                        style.setProperty(split[0].trim { it <= ' ' },
-                                split[1].trim { it <= ' ' })
+                        style[split[0].trim { it <= ' ' }] = split[1].trim { it <= ' ' }
                     }
                 }
             }
         }
-        val colorName = style.getProperty("color")
+        val colorName = style["color"]
         val color = colorName?.let { colorTable[it] }
         when (type) {
             "p", "span" -> return { styleRange, text ->

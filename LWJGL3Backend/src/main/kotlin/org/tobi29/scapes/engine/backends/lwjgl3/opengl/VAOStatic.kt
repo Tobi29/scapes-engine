@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 internal class VAOStatic(private val vbo: VBO,
                          index: IntArray,

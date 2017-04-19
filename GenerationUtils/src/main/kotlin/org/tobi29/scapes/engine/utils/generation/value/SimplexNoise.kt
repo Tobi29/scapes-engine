@@ -15,12 +15,13 @@
  */
 package org.tobi29.scapes.engine.utils.generation.value
 
+import org.tobi29.scapes.engine.utils.Random
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.vector.dot
-import java.util.*
 
 class SimplexNoise(random: Random) : ValueNoise {
     private val perm = IntArray(512)
+    private val grad3= GRAD_3
 
     constructor(seed: Long) : this(Random(seed))
 
@@ -63,9 +64,7 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t0 *= t0
             val gi0 = perm[i2 + perm[j2]] % 12
-            n0 = t0 * t0 *
-                    dot(GRAD_3[gi0][0].toDouble(), GRAD_3[gi0][1].toDouble(),
-                            x0, y0)
+            n0 = t0 * t0 * dot(grad3[gi0][0], grad3[gi0][1], x0, y0)
         }
         var t1 = 0.5 - x1 * x1 - y1 * y1
         val n1: Double
@@ -74,9 +73,7 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t1 *= t1
             val gi1 = perm[i2 + i1 + perm[j2 + j1]] % 12
-            n1 = t1 * t1 *
-                    dot(GRAD_3[gi1][0].toDouble(), GRAD_3[gi1][1].toDouble(),
-                            x1, y1)
+            n1 = t1 * t1 * dot(grad3[gi1][0], grad3[gi1][1], x1, y1)
         }
         var t2 = 0.5 - x2 * x2 - y2 * y2
         val n2: Double
@@ -85,9 +82,7 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t2 *= t2
             val gi2 = perm[i2 + 1 + perm[j2 + 1]] % 12
-            n2 = t2 * t2 *
-                    dot(GRAD_3[gi2][0].toDouble(), GRAD_3[gi2][1].toDouble(),
-                            x2, y2)
+            n2 = t2 * t2 * dot(grad3[gi2][0], grad3[gi2][1], x2, y2)
         }
         return 70.0 * (n0 + n1 + n2)
     }
@@ -181,10 +176,8 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t0 *= t0
             val gi0 = perm[i3 + perm[j3 + perm[k3]]] % 12
-            n0 = t0 * t0 * dot(GRAD_3[gi0][0].toDouble(),
-                    GRAD_3[gi0][1].toDouble(), GRAD_3[gi0][2].toDouble(), x0,
-                    y0,
-                    z0)
+            n0 = t0 * t0 * dot(grad3[gi0][0], grad3[gi0][1], grad3[gi0][2],
+                    x0, y0, z0)
         }
         var t1 = 0.5 - x1 * x1 - y1 * y1 - z1 * z1
         if (t1 < 0) {
@@ -192,10 +185,8 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t1 *= t1
             val gi1 = perm[i3 + i1 + perm[j3 + j1 + perm[k3 + k1]]] % 12
-            n1 = t1 * t1 * dot(GRAD_3[gi1][0].toDouble(),
-                    GRAD_3[gi1][1].toDouble(), GRAD_3[gi1][2].toDouble(), x1,
-                    y1,
-                    z1)
+            n1 = t1 * t1 * dot(grad3[gi1][0], grad3[gi1][1], grad3[gi1][2],
+                    x1, y1, z1)
         }
         var t2 = 0.5 - x2 * x2 - y2 * y2 - z2 * z2
         if (t2 < 0) {
@@ -203,10 +194,8 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t2 *= t2
             val gi2 = perm[i3 + i2 + perm[j3 + j2 + perm[k3 + k2]]] % 12
-            n2 = t2 * t2 * dot(GRAD_3[gi2][0].toDouble(),
-                    GRAD_3[gi2][1].toDouble(), GRAD_3[gi2][2].toDouble(), x2,
-                    y2,
-                    z2)
+            n2 = t2 * t2 * dot(grad3[gi2][0], grad3[gi2][1], grad3[gi2][2],
+                    x2, y2, z2)
         }
         var t3 = 0.5 - x3 * x3 - y3 * y3 - z3 * z3
         if (t3 < 0) {
@@ -214,27 +203,32 @@ class SimplexNoise(random: Random) : ValueNoise {
         } else {
             t3 *= t3
             val gi3 = perm[i3 + 1 + perm[j3 + 1 + perm[k3 + 1]]] % 12
-            n3 = t3 * t3 * dot(GRAD_3[gi3][0].toDouble(),
-                    GRAD_3[gi3][1].toDouble(), GRAD_3[gi3][2].toDouble(), x3,
-                    y3,
-                    z3)
+            n3 = t3 * t3 * dot(grad3[gi3][0], grad3[gi3][1], grad3[gi3][2],
+                    x3, y3, z3)
         }
         return 32.0 * (n0 + n1 + n2 + n3)
     }
 
     companion object {
-        private val F2 = 0.5 * (1.7320508075688772 - 1.0)
-        private val G2 = (3.0 - 1.7320508075688772) / 6.0
-        private val G22 = (3.0 - 1.7320508075688772) / 3.0
-        private val F3 = 1.0 / 3.0
-        private val G3 = 1.0 / 6.0
-        private val G32 = 1.0 / 3.0
-        private val G33 = 0.5
-        private val GRAD_3 = arrayOf(intArrayOf(1, 1, 0), intArrayOf(-1, 1, 0),
-                intArrayOf(1, -1, 0), intArrayOf(-1, -1, 0),
-                intArrayOf(1, 0, 1), intArrayOf(-1, 0, 1), intArrayOf(1, 0, -1),
-                intArrayOf(-1, 0, -1), intArrayOf(0, 1, 1),
-                intArrayOf(0, -1, 1), intArrayOf(0, 1, -1),
-                intArrayOf(0, -1, -1))
+        private const val F2 = 0.5 * (1.7320508075688772 - 1.0)
+        private const val G2 = (3.0 - 1.7320508075688772) / 6.0
+        private const val G22 = (3.0 - 1.7320508075688772) / 3.0
+        private const val F3 = 1.0 / 3.0
+        private const val G3 = 1.0 / 6.0
+        private const val G32 = 1.0 / 3.0
+        private const val G33 = 0.5
+        private val GRAD_3 = arrayOf(
+                doubleArrayOf(1.0, 1.0, 0.0),
+                doubleArrayOf(-1.0, 1.0, 0.0),
+                doubleArrayOf(1.0, -1.0, 0.0),
+                doubleArrayOf(-1.0, -1.0, 0.0),
+                doubleArrayOf(1.0, 0.0, 1.0),
+                doubleArrayOf(-1.0, 0.0, 1.0),
+                doubleArrayOf(1.0, 0.0, -1.0),
+                doubleArrayOf(-1.0, 0.0, -1.0),
+                doubleArrayOf(0.0, 1.0, 1.0),
+                doubleArrayOf(0.0, -1.0, 1.0),
+                doubleArrayOf(0.0, 1.0, -1.0),
+                doubleArrayOf(0.0, -1.0, -1.0))
     }
 }

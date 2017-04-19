@@ -17,8 +17,8 @@
 package org.tobi29.scapes.engine.gui.debug
 
 import org.tobi29.scapes.engine.gui.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicReference
+import org.tobi29.scapes.engine.utils.AtomicReference
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 
 open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         parent, "Debug Values") {

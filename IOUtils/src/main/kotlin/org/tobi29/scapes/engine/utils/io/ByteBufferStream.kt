@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.ByteBuffer
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.min
-import java.io.IOException
-import java.nio.ByteBuffer
 
 class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                        private val growth: (Int) -> Int = { it + 8192 },
@@ -110,7 +110,7 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                             " bytes to " + size)
         }
         val newBuffer = supplier(size)
-        assert(newBuffer.capacity() == size)
+        assert { newBuffer.capacity() == size }
         buffer.flip()
         newBuffer.put(buffer)
         buffer = newBuffer

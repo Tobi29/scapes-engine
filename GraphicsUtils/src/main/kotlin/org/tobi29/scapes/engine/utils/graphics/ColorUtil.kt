@@ -16,6 +16,7 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.math.remP
+import org.tobi29.scapes.engine.utils.math.vector.MutableVector3d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
 fun hsvToRGB(color: Vector3d): Vector3d {
@@ -37,6 +38,26 @@ fun hsvToRGB(h: Double,
         3 -> return Vector3d(p, q, v)
         4 -> return Vector3d(t, p, v)
         5 -> return Vector3d(v, p, q)
-        else -> throw IllegalArgumentException("Invalid hue: " + h)
+        else -> throw IllegalArgumentException("Invalid hue: $h")
+    }
+}
+
+fun hsvToRGB(h: Double,
+             s: Double,
+             v: Double,
+             o: MutableVector3d) {
+    val c = (h * 6.0).toInt() remP 6
+    val f = h * 6.0 - c
+    val p = v * (1.0 - s)
+    val q = v * (1.0 - f * s)
+    val t = v * (1.0 - (1.0 - f) * s)
+    when (c) {
+        0 -> o.set(v, t, p)
+        1 -> o.set(q, v, p)
+        2 -> o.set(p, v, t)
+        3 -> o.set(p, q, v)
+        4 -> o.set(t, p, v)
+        5 -> o.set(v, p, q)
+        else -> throw IllegalArgumentException("Invalid hue: $h")
     }
 }

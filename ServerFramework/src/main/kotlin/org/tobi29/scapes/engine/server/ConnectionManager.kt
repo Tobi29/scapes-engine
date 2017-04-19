@@ -17,12 +17,12 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
-import mu.KLogging
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.io.IOException
 import java.nio.channels.Selector
-import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * Class for processing non-blocking connections asynchronously with possibly
@@ -50,7 +50,7 @@ class ConnectionManager(
         val newWorkers = ConcurrentLinkedQueue<ConnectionWorker>()
         val joiners = ArrayList<Joiner>()
         for (i in 0..workerCount - 1) {
-            val joiner = Joiner.SelectorJoinable(Selector.open())
+            val joiner = SelectorJoinable(Selector.open())
             val startJoiner = Joiner.BasicJoinable()
             this.joiners.add(taskExecutor.runThread({ joiner ->
                 val worker = ConnectionWorker(this, joiner, maxWorkerSleep)

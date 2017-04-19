@@ -27,7 +27,8 @@ object FastAsin {
         VALUE_2_INDEX = (count - 1) * 0.5
         ASIN = FloatArray(count)
         for (i in 0..count - 1) {
-            ASIN[i] = Math.asin(i / VALUE_2_INDEX - 1.0).toFloat()
+            ASIN[i] = org.tobi29.scapes.engine.utils.math.asin(
+                    i / VALUE_2_INDEX - 1.0).toFloat()
         }
     }
 

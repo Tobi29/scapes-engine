@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.input
 
-import java.util.*
-
 class ControllerKeyReference {
     private val key: ControllerKey?
     private val modifiers: List<ControllerKey>

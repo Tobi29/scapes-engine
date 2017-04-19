@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.codec.ogg
 
 import com.jcraft.jogg.Buffer
 import com.jcraft.jogg.Packet
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.IOException
 
 class OpusInfo(packet: Packet) {
     val channels: Int

@@ -31,7 +31,8 @@ object FastSin {
         RAD_2_INDEX = count / TWO_PI
         SIN = FloatArray(count)
         for (i in 0..count - 1) {
-            SIN[i] = Math.sin((i + 0.5f) / count * TWO_PI).toFloat()
+            SIN[i] = org.tobi29.scapes.engine.utils.math.sin(
+                    (i + 0.5f) / count * TWO_PI).toFloat()
         }
         // Set exact values
         SIN[0] = 0.0f

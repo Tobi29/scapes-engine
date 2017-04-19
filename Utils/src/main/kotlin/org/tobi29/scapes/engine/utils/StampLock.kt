@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java.util.concurrent.atomic.AtomicLong
-
 /**
  * Simple stamp lock optimized using Kotlin's inline modifier
  * Writes are always synchronized, whilst reads can happen in parallel as long
@@ -35,15 +33,15 @@ class StampLock {
      * @param block Code block to execute, might be called twice
      * @return The return value of the last call to [block]
      */
-    inline fun <R> read(block: () -> R): R {
+    inline fun <R> read(crossinline block: () -> R): R {
         val stamp = counter.get()
         val output = block()
         val validate = counter.get()
         if (stamp == validate && validate and 1L == 0L) {
             return output
         }
-        synchronized(counter) {
-            return block()
+        return synchronized(counter) {
+            block()
         }
     }
 
@@ -52,11 +50,11 @@ class StampLock {
      * @param block Code to execute
      * @return The return value of [block]
      */
-    inline fun <R> write(block: () -> R): R {
-        synchronized(counter) {
+    inline fun <R> write(crossinline block: () -> R): R {
+        return synchronized(counter) {
             counter.incrementAndGet()
             try {
-                return block()
+                block()
             } finally {
                 counter.incrementAndGet()
             }

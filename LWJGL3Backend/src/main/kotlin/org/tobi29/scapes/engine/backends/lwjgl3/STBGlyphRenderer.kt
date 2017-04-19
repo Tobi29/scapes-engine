@@ -19,11 +19,11 @@ import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.tobi29.scapes.engine.gui.GlyphRenderer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.math.sqr
-import java.nio.ByteBuffer
 
 class STBGlyphRenderer(private val font: STBFont,
                        size: Int) : GlyphRenderer {

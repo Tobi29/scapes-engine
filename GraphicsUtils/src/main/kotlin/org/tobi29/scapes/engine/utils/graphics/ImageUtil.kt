@@ -18,8 +18,7 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.ByteBuffer
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 /**
  * Copies from the receiver at the given coordinates into a new image

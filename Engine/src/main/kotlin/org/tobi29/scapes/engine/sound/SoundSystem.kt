@@ -16,10 +16,13 @@
 
 package org.tobi29.scapes.engine.sound
 
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
 interface SoundSystem {
+    val engine: ScapesEngine
+
     fun setListener(position: Vector3d,
                     orientation: Vector3d,
                     velocity: Vector3d)
@@ -30,6 +33,13 @@ interface SoundSystem {
                   channel: String,
                   pitch: Float,
                   gain: Float,
+                  state: Boolean) =
+            playMusic(engine.files[asset].get(), channel, pitch, gain, state)
+
+    fun playMusic(asset: ReadSource,
+                  channel: String,
+                  pitch: Float,
+                  gain: Float,
                   state: Boolean)
 
     fun playMusic(asset: String,
@@ -38,13 +48,9 @@ interface SoundSystem {
                   gain: Float,
                   position: Vector3d,
                   velocity: Vector3d,
-                  state: Boolean)
-
-    fun playMusic(asset: ReadSource,
-                  channel: String,
-                  pitch: Float,
-                  gain: Float,
-                  state: Boolean)
+                  state: Boolean) =
+            playMusic(engine.files[asset].get(), channel, pitch, gain, position,
+                    velocity, state)
 
     fun playMusic(asset: ReadSource,
                   channel: String,
@@ -57,9 +63,24 @@ interface SoundSystem {
     fun playSound(asset: String,
                   channel: String,
                   pitch: Float,
+                  gain: Float) =
+            playSound(engine.files[asset].get(), channel, pitch, gain)
+
+    fun playSound(asset: ReadSource,
+                  channel: String,
+                  pitch: Float,
                   gain: Float)
 
     fun playSound(asset: String,
+                  channel: String,
+                  position: Vector3d,
+                  velocity: Vector3d,
+                  pitch: Float,
+                  gain: Float) =
+            playSound(engine.files[asset].get(), channel, position, velocity,
+                    pitch, gain)
+
+    fun playSound(asset: ReadSource,
                   channel: String,
                   position: Vector3d,
                   velocity: Vector3d,
@@ -67,6 +88,12 @@ interface SoundSystem {
                   gain: Float)
 
     fun playStaticAudio(asset: String,
+                        channel: String,
+                        pitch: Float,
+                        gain: Float) =
+            playStaticAudio(engine.files[asset].get(), channel, pitch, gain)
+
+    fun playStaticAudio(asset: ReadSource,
                         channel: String,
                         pitch: Float,
                         gain: Float): StaticAudio

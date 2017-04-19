@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
-import mu.KLogging
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.MemoryStack
@@ -24,12 +23,13 @@ import org.lwjgl.system.Platform
 import org.lwjgl.util.tinyfd.TinyFileDialogs
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.gui.GuiController
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.io.filesystem.read
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.use
-import java.io.IOException
 
 object PlatformDialogs : KLogging() {
     private inline fun <R> filter(extensions: Array<Pair<String, String>>,
@@ -45,11 +45,11 @@ object PlatformDialogs : KLogging() {
         }
     }
 
-    fun openFileDialog(window: Long,
+    fun openFileDialog(window: ContainerGLFW,
                        extensions: Array<Pair<String, String>>,
                        multiple: Boolean,
                        result: (String, ReadableByteStream) -> Unit) {
-        iconify(window) {
+        iconify(window.window) {
             filter(extensions) { filters ->
                 TinyFileDialogs.tinyfd_openFileDialog("Open File...", "",
                         filters, null, multiple)?.split(
@@ -63,9 +63,9 @@ object PlatformDialogs : KLogging() {
         }
     }
 
-    fun saveFileDialog(window: Long,
+    fun saveFileDialog(window: ContainerGLFW,
                        extensions: Array<Pair<String, String>>): FilePath? {
-        iconify(window) {
+        iconify(window.window) {
             filter(extensions) { filters ->
                 TinyFileDialogs.tinyfd_saveFileDialog("Save File...", "",
                         filters, null)?.let { filePath ->
@@ -76,11 +76,11 @@ object PlatformDialogs : KLogging() {
         return null
     }
 
-    fun message(window: Long,
+    fun message(window: ContainerGLFW,
                 messageType: Container.MessageType,
                 title: String,
                 message: String) {
-        iconify(window) {
+        iconify(window.window) {
             val type = when (messageType) {
                 Container.MessageType.PLAIN -> "plain"
                 Container.MessageType.INFORMATION -> "plain"
@@ -94,11 +94,11 @@ object PlatformDialogs : KLogging() {
         }
     }
 
-    fun dialog(window: Long,
+    fun dialog(window: ContainerGLFW,
                title: String,
                text: GuiController.TextFieldData,
                multiline: Boolean) {
-        iconify(window) {
+        iconify(window.window) {
             TinyFileDialogs.tinyfd_inputBox(title, "",
                     text.text)?.let { editText ->
                 if (text.text.isNotEmpty()) {

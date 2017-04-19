@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.utils.graphics
 
+import org.tobi29.scapes.engine.utils.PlatformName
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.max
-import java.nio.ByteBuffer
-
 
 /**
  * Creates an array of [ByteBuffer] containing mipmap
@@ -30,7 +30,7 @@ import java.nio.ByteBuffer
  * @param alpha    Whether or not to allow transparent borders or harsh ones
  * @return An array of [ByteBuffer] containing the mipmap textures
  */
-@JvmName("generateMipMapsNullable")
+@PlatformName("generateMipMapsNullable")
 fun generateMipMaps(buffer: ByteBuffer?,
                     supplier: (Int) -> ByteBuffer,
                     width: Int,

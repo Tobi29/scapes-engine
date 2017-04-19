@@ -15,16 +15,16 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.div
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
-abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
+abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         GuiLayoutDataRoot()) {
     private val selections = ArrayList<SelectionEntry>()
     private val actions = ConcurrentHashMap<GuiAction, MutableSet<() -> Unit>>()
@@ -196,9 +196,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(
 
     fun on(action: GuiAction,
            listener: () -> Unit) {
-        val listeners = actions.computeAbsent(action) {
-            Collections.newSetFromMap(ConcurrentHashMap())
-        }
+        val listeners = actions.computeAbsent(action) { ConcurrentHashSet() }
         listeners.add(listener)
     }
 

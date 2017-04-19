@@ -16,19 +16,18 @@
 
 package org.tobi29.scapes.engine.server
 
-import java.io.IOException
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLEngine
 
 interface SSLHandle {
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun newEngine(address: RemoteAddress): SSLEngine
 
     fun certificateFeedback(certificates: Array<X509Certificate>): Boolean
 
     fun requiresVerification(): Boolean
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun verifySession(address: RemoteAddress,
                       engine: SSLEngine,
                       certificates: Array<X509Certificate>)

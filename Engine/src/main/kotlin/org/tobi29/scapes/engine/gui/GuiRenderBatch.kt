@@ -21,12 +21,10 @@ import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
-import java.util.*
-import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.ConcurrentSkipListMap
 
 open class GuiRenderBatch(var pixelSize: Vector2d) {
-    protected val meshes: ConcurrentMap<Int, MutableMap<Texture, Mesh>> = ConcurrentSkipListMap()
+    protected val meshes = ConcurrentSkipListMap<Int, MutableMap<Texture, Mesh>>()
     protected var currentMesh: Mesh? = null
     protected var offset = 0
     protected var count = 0

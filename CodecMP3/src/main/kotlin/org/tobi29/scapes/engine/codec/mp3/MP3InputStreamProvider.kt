@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.codec.mp3
 
 import org.tobi29.scapes.engine.codec.spi.ReadableAudioStreamProvider
-import java.nio.channels.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 
 class MP3InputStreamProvider : ReadableAudioStreamProvider {
     private val mimeTypes = listOf("audio/mpeg")

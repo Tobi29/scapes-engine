@@ -21,10 +21,10 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.graphics.generateMipMaps
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.max
-import java.nio.ByteBuffer
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal open class TextureGL(override val engine: ScapesEngine,
                               width: Int,

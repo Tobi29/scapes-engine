@@ -16,14 +16,13 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.AtomicLong
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.math.max
-import java.io.IOException
 import java.net.SocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Handle to communicate with the worker from a connection job
@@ -72,22 +71,9 @@ class Connection(private val requestClose: AtomicBoolean,
  */
 suspend fun connect(worker: ConnectionWorker,
                     address: RemoteAddress): SocketChannel {
-    val state = AtomicReference<(() -> SocketAddress)?>()
-    AddressResolver.resolve(address,
-            worker.connection.taskExecutor) { socketAddress ->
-        if (socketAddress == null) {
-            state.set { throw UnresolvableAddressException(address.address) }
-            return@resolve
-        }
-        worker.joiner.wake()
-        state.set { socketAddress }
-    }
-    var result: (() -> SocketAddress)? = state.get()
-    while (result == null) {
-        yield()
-        result = state.get()
-    }
-    return connect(worker, result())
+    val socketAddress = address.resolve(worker.connection.taskExecutor)
+            ?: throw UnresolvableAddressException(address.address)
+    return connect(worker, socketAddress)
 }
 
 /**

@@ -16,12 +16,13 @@
 
 package org.tobi29.scapes.engine.sound.dummy
 
+import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
-class DummySoundSystem : SoundSystem {
+class DummySoundSystem(override val engine: ScapesEngine) : SoundSystem {
     override fun setListener(position: Vector3d,
                              orientation: Vector3d,
                              velocity: Vector3d) {
@@ -31,22 +32,6 @@ class DummySoundSystem : SoundSystem {
         return false
     }
 
-    override fun playMusic(asset: String,
-                           channel: String,
-                           pitch: Float,
-                           gain: Float,
-                           state: Boolean) {
-    }
-
-    override fun playMusic(asset: String,
-                           channel: String,
-                           pitch: Float,
-                           gain: Float,
-                           position: Vector3d,
-                           velocity: Vector3d,
-                           state: Boolean) {
-    }
-
     override fun playMusic(asset: ReadSource,
                            channel: String,
                            pitch: Float,
@@ -63,13 +48,13 @@ class DummySoundSystem : SoundSystem {
                            state: Boolean) {
     }
 
-    override fun playSound(asset: String,
+    override fun playSound(asset: ReadSource,
                            channel: String,
                            pitch: Float,
                            gain: Float) {
     }
 
-    override fun playSound(asset: String,
+    override fun playSound(asset: ReadSource,
                            channel: String,
                            position: Vector3d,
                            velocity: Vector3d,
@@ -77,7 +62,7 @@ class DummySoundSystem : SoundSystem {
                            gain: Float) {
     }
 
-    override fun playStaticAudio(asset: String,
+    override fun playStaticAudio(asset: ReadSource,
                                  channel: String,
                                  pitch: Float,
                                  gain: Float): StaticAudio {

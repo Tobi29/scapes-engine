@@ -18,11 +18,7 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.computeAlways
-import java.io.IOException
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.util.*
+import org.tobi29.scapes.engine.utils.*
 
 inline fun MutableTag.toBoolean() = value as? Boolean
 
@@ -105,7 +101,7 @@ fun Sequence<Tag>.toTag() = TagList {
     this@toTag.forEach { add(it) }
 }
 
-@JvmName("toTagMut")
+@PlatformName("toTagMut")
 fun Sequence<MutableTag>.toTag() = TagList {
     this@toTag.forEach { add(it.toTag()) }
 }
@@ -128,10 +124,10 @@ inline fun ReadWriteTagMutableMap.mapMut(key: String): MutableTagMap {
 }
 
 inline fun <R> ReadWriteTagMutableMap.syncMapMut(key: String,
-                                                 block: (MutableTagMap) -> R): R {
+                                                 crossinline block: (MutableTagMap) -> R): R {
     mapMut(key).let { map ->
-        synchronized(map) {
-            return block(map)
+        return synchronized(map) {
+            block(map)
         }
     }
 }

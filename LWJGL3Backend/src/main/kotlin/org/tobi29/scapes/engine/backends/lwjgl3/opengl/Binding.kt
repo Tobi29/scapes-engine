@@ -19,7 +19,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.lwjgl.opengl.*
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 const val NOOP = -1
 

@@ -18,4 +18,13 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Utils")
+    compile(rootProject.ext.tika) { transitive = false }
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDirs = ["src/main/kotlin", "src/jvm/kotlin"]
+        }
+    }
 }

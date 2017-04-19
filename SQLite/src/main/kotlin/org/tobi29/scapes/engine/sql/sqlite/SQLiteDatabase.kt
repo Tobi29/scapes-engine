@@ -17,13 +17,12 @@
 package org.tobi29.scapes.engine.sql.sqlite
 
 import org.tobi29.scapes.engine.sql.*
+import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.use
-import java.io.IOException
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.util.*
 
 class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     override fun createTable(name: String,

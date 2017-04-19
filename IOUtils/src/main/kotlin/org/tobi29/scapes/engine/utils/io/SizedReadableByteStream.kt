@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.io.IOException
-
 interface SizedReadableByteStream : ReadableByteStream {
     fun remaining(): Int
 
@@ -25,7 +23,7 @@ interface SizedReadableByteStream : ReadableByteStream {
         return remaining() > 0
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun consume() {
         while (hasRemaining()) {
             skip(remaining())

@@ -104,7 +104,7 @@ class Frustum() {
         var zy = posy - angy
         var zz = posz - angz
         var l = sqrt(zx * zx + zy * zy + zz * zz)
-        if (abs(l) > java.lang.Float.MIN_NORMAL) {
+        if (abs(l) > 0.0f) {
             zx /= l
             zy /= l
             zz /= l
@@ -113,7 +113,7 @@ class Frustum() {
         var xy = upz * zx - upx * zz
         var xz = upx * zy - upy * zx
         l = sqrt(xx * xx + xy * xy + xz * xz)
-        if (abs(l) > java.lang.Float.MIN_NORMAL) {
+        if (abs(l) > 0.0f) {
             xx /= l
             xy /= l
             xz /= l

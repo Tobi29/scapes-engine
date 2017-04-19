@@ -16,15 +16,12 @@
 
 package org.tobi29.scapes.engine.input
 
-import org.tobi29.scapes.engine.utils.EventDispatcher
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
-abstract class ControllerDefault protected constructor() : ControllerBasic {
-    override val events = EventDispatcher()
-
+abstract class ControllerDefault(private val engine: ScapesEngine) : ControllerBasic {
     private val states = ConcurrentHashMap<ControllerKey, KeyState>()
     private val pressEventQueue = ConcurrentLinkedQueue<ControllerBasic.PressEvent>()
     private val typeEventQueue = ConcurrentLinkedQueue<KeyTypeEvent>()
@@ -149,7 +146,7 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
                  y: Double) {
         deltaXSet += x
         deltaYSet += y
-        events.fire(MouseDeltaSyncEvent(Vector2d(x, y)))
+        engine.events.fire(MouseDeltaSyncEvent(this, Vector2d(x, y)))
     }
 
     fun addScroll(x: Double,
@@ -191,7 +188,8 @@ abstract class ControllerDefault protected constructor() : ControllerBasic {
         }
     }
 
-    class MouseDeltaSyncEvent(val delta: Vector2d)
+    class MouseDeltaSyncEvent(val controller: ControllerDefault,
+                              val delta: Vector2d)
 
     private enum class KeyState {
         DOWN,

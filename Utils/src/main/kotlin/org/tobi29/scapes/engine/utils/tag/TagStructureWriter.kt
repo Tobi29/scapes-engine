@@ -16,59 +16,57 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import java.io.IOException
-
 interface TagStructureWriter {
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun begin(root: TagMap)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun end()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun beginStructure()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun beginStructure(key: String)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun endStructure()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun structureEmpty()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun structureEmpty(key: String)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun beginList(key: String)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun beginList()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun beginListStructure()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun endListWithTerminate()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun endListWithEmpty()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun endList()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun listEmpty(key: String)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun listEmpty()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun writePrimitiveTag(key: String,
                           tag: TagPrimitive)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun writePrimitiveTag(tag: TagPrimitive)
 }

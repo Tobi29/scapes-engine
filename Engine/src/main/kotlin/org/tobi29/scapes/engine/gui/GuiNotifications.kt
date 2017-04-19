@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import java.util.concurrent.atomic.AtomicLong
+import org.tobi29.scapes.engine.utils.AtomicLong
 
 class GuiNotifications(style: GuiStyle) : Gui(style) {
     private val pane: GuiComponentGroup

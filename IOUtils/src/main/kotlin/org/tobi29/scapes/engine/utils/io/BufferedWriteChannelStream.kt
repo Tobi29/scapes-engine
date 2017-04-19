@@ -16,15 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.ByteBuffer
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.channels.WritableByteChannel
+import org.tobi29.scapes.engine.utils.IOException
 
 class BufferedWriteChannelStream(private val channel: WritableByteChannel) : WritableByteStream {
     private val buffer = ByteBuffer(8192)
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun put(buffer: ByteBuffer,
                      len: Int): WritableByteStream {
         val limit = buffer.limit()
@@ -39,56 +36,56 @@ class BufferedWriteChannelStream(private val channel: WritableByteChannel) : Wri
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun put(b: Byte): WritableByteStream {
         ensure(1)
         buffer.put(b)
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun putShort(value: Short): WritableByteStream {
         ensure(2)
         buffer.putShort(value)
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun putInt(value: Int): WritableByteStream {
         ensure(4)
         buffer.putInt(value)
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun putLong(value: Long): WritableByteStream {
         ensure(8)
         buffer.putLong(value)
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun putFloat(value: Float): WritableByteStream {
         ensure(4)
         buffer.putFloat(value)
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     override fun putDouble(value: Double): WritableByteStream {
         ensure(8)
         buffer.putDouble(value)
         return this
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun flush() {
         buffer.flip()
         write(buffer)
         buffer.clear()
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     private fun ensure(len: Int): Boolean {
         if (len > buffer.capacity()) {
             return false
@@ -99,7 +96,7 @@ class BufferedWriteChannelStream(private val channel: WritableByteChannel) : Wri
         return true
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     private fun write(buffer: ByteBuffer) {
         while (buffer.hasRemaining()) {
             val length = channel.write(buffer)

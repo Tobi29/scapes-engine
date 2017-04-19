@@ -19,19 +19,15 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.utils.ListenerOwner
-import org.tobi29.scapes.engine.utils.ListenerOwnerHandle
-import org.tobi29.scapes.engine.utils.computeAbsent
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.times
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentSkipListSet
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
 
-abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent>, ListenerOwner {
+abstract class GuiComponent(val engine: ScapesEngine,
+                            val parent: GuiLayoutData,
+                            listenerParent: EventDispatcher) : Comparable<GuiComponent> {
     @Suppress("LeakingThis")
     val gui = gui(parent) ?: this as Gui
     var visible = true
@@ -39,33 +35,42 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
             field = value
             parent.parent?.dirty()
         }
-    val engine: ScapesEngine
-        get() = gui.style.engine
     protected var hover = false
     protected var hovering = false
     protected var removing = false
     internal var removed = false
     protected val components = ConcurrentSkipListSet<GuiComponent>()
-    private val events = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
+    private val guiEvents = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
     private val uid = UID_COUNTER.andIncrement
     private val hasActiveChild = AtomicBoolean(true)
-    override val listenerOwner = ListenerOwnerHandle { gui.isValid && !removed }
+    val events = EventDispatcher(listenerParent) { listeners() }
+
+    constructor(
+            parent: GuiLayoutData
+    ) : this(parent.parent?.engine ?: throw IllegalStateException(
+            "Non root component without parent"), parent,
+            parent.parent.events)
+
+    internal constructor(
+            engine: ScapesEngine,
+            parent: GuiLayoutData
+    ) : this(engine, parent, engine.events)
 
     init {
         on(GuiEvent.CLICK_LEFT, { gui.lastClicked = this })
     }
 
+    open protected fun ListenerRegistrar.listeners() {}
+
     fun on(event: GuiEvent,
            listener: (GuiComponentEvent) -> Unit) {
-        val listeners = events.computeAbsent(event) {
-            Collections.newSetFromMap(ConcurrentHashMap())
-        }
+        val listeners = guiEvents.computeAbsent(event) { ConcurrentHashSet() }
         listeners.add(listener)
     }
 
     fun fireEvent(type: GuiEvent,
                   event: GuiComponentEvent): Boolean {
-        val listeners = events[type]
+        val listeners = guiEvents[type]
         if (listeners == null || listeners.isEmpty()) {
             return false
         }
@@ -345,6 +350,10 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
         return 0
     }
 
+    internal fun added() {
+        events.enable()
+    }
+
     fun remove() {
         removing = true
     }
@@ -355,8 +364,9 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
         component.removed()
     }
 
-    private fun removed() {
+    internal fun removed() {
         removed = true
+        events.disable()
         components.forEach { it.removed() }
     }
 
@@ -377,6 +387,7 @@ abstract class GuiComponent(val parent: GuiLayoutData) : Comparable<GuiComponent
 
     protected fun append(component: GuiComponent) {
         components.add(component)
+        component.added()
         activeUpdate()
         dirty()
     }

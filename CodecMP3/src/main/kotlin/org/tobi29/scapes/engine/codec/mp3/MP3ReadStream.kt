@@ -20,12 +20,11 @@ import javazoom.jl.decoder.*
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.FloatBuffer
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.Channels
+import org.tobi29.scapes.engine.utils.io.FloatBuffer
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 import org.tobi29.scapes.engine.utils.math.min
-import java.io.IOException
-import java.nio.FloatBuffer
-import java.nio.channels.Channels
-import java.nio.channels.ReadableByteChannel
 
 class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
     private val bitstream = Bitstream(Channels.newInputStream(channel))
@@ -102,7 +101,6 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             channel.close()
         } catch (e: IOException) {
         }
-
     }
 
     private fun decodeFrame(buffer: FloatBuffer): Boolean {
@@ -155,7 +153,7 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     }
 
     private class OutputBuffer : Obuffer() {
-        val buffer = FloatBuffer(Obuffer.OBUFFERSIZE * Obuffer.MAXCHANNELS)
+        val buffer = FloatBuffer(OBUFFERSIZE * MAXCHANNELS)
         val index = IntArray(Obuffer.MAXCHANNELS)
 
         init {

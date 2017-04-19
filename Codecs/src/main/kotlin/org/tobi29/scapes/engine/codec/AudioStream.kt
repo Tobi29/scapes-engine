@@ -16,17 +16,17 @@
 
 package org.tobi29.scapes.engine.codec
 
-import mu.KLogging
 import org.tobi29.scapes.engine.codec.spi.ReadableAudioStreamProvider
-import org.tobi29.scapes.engine.utils.io.filesystem.ReadSource
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 
 object AudioStream : KLogging() {
     private val CODECS = ConcurrentHashMap<String, ReadableAudioStreamProvider>()
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun create(resource: ReadSource): ReadableAudioStream {
         val mime = resource.mimeType()
         val codec = AudioStream[mime]
@@ -36,7 +36,7 @@ object AudioStream : KLogging() {
         throw IOException("No compatible decoder found for type: " + mime)
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun playable(resource: ReadSource): Boolean {
         return AudioStream.playable(resource.mimeType())
     }

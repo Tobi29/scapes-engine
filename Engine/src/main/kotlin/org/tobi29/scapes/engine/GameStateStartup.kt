@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine
 
 import org.tobi29.scapes.engine.graphics.busyPipeline
-import java.util.concurrent.atomic.AtomicReference
+import org.tobi29.scapes.engine.utils.AtomicReference
 
 class GameStateStartup(engine: ScapesEngine,
                        private val switch: () -> GameState) : GameState(

@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import java.util.*
-
 enum class TextureFilter(private val name2: String) {
     NEAREST("Nearest"),
     LINEAR("Linear");
@@ -32,9 +30,7 @@ enum class TextureFilter(private val name2: String) {
             }
         }
 
-        operator fun get(name: String): TextureFilter {
-            return BY_NAME[name] ?: throw IllegalArgumentException(
-                    "Invalid texture filter: $name")
-        }
+
+        operator fun get(name: String) = BY_NAME[name]
     }
 }

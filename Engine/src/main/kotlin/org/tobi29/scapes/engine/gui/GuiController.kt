@@ -19,11 +19,8 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerKey
-import org.tobi29.scapes.engine.utils.EventDispatcher
 
 abstract class GuiController(protected val engine: ScapesEngine) {
-    val events = EventDispatcher(engine.events)
-
     abstract fun update(delta: Double)
 
     abstract fun focusTextField(data: TextFieldData,
@@ -40,7 +37,7 @@ abstract class GuiController(protected val engine: ScapesEngine) {
 
     protected fun firePress(key: ControllerKey): Boolean {
         val event = PressEvent(this, key)
-        events.fire(event)
+        engine.events.fire(event)
         return !event.muted
     }
 

@@ -18,8 +18,9 @@ package org.tobi29.scapes.engine
 
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
+import org.tobi29.scapes.engine.graphics.SHADER_GUI
+import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.AtomicReference
 
 abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0
@@ -97,7 +98,7 @@ abstract class GameState(val engine: ScapesEngine) {
     }
 
     private fun renderGui(gl: GL): (Double) -> Unit {
-        val shader = engine.graphics.loadShader("Engine:shader/Gui")
+        val shader = engine.graphics.loadShader(SHADER_GUI)
         return { delta ->
             gl.clearDepth()
             engine.guiStack.render(gl, shader.get(), delta)

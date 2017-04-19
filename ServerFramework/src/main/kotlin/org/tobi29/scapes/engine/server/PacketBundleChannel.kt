@@ -16,27 +16,14 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.utils.ByteBuffer
-import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.utils.filterMap
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
-import org.tobi29.scapes.engine.utils.io.CompressionUtil
-import org.tobi29.scapes.engine.utils.io.RandomReadableByteStream
-import org.tobi29.scapes.engine.utils.io.RandomWritableByteStream
-import org.tobi29.scapes.engine.utils.task.Joiner
+import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import org.tobi29.scapes.engine.utils.toArray
-import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.InetSocketAddress
-import java.nio.ByteBuffer
 import java.nio.channels.Selector
 import java.nio.channels.SocketChannel
 import java.security.cert.X509Certificate
-import java.util.*
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import javax.net.ssl.SSLEngine
 import javax.net.ssl.SSLEngineResult
 import javax.net.ssl.SSLException
@@ -90,7 +77,7 @@ class PacketBundleChannel(private val address: RemoteAddress,
         return dataStreamOut.buffer().position()
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun queueBundle() {
         dataStreamOut.buffer().flip()
         byteBufferStreamOut.buffer().clear()
@@ -109,7 +96,7 @@ class PacketBundleChannel(private val address: RemoteAddress,
         selector?.wakeup()
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun process(): FetchResult {
         var timeout = if (state == State.OPEN) 0 else -2
         while (timeout < 2) {
@@ -236,20 +223,20 @@ class PacketBundleChannel(private val address: RemoteAddress,
         }
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun register(selector: Selector,
                  opt: Int) {
         channel.register(selector, opt)
         this.selector = selector
     }
 
-    @Throws(IOException::class)
-    fun register(joiner: Joiner.SelectorJoinable,
+    // TODO: @Throws(IOException::class)
+    fun register(joiner: SelectorJoinable,
                  opt: Int) {
         register(joiner.selector, opt)
     }
 
-    @Throws(IOException::class)
+    // TODO: @Throws(IOException::class)
     fun close() {
         channel.close()
         deflater.close()
@@ -455,7 +442,7 @@ suspend fun PacketBundleChannel.receive(): Boolean {
     }
 }
 
-@Throws(IOException::class)
+// TODO: @Throws(IOException::class)
 suspend fun PacketBundleChannel.receiveOrThrow() {
     if (receive()) {
         throw IOException("Connection closed")

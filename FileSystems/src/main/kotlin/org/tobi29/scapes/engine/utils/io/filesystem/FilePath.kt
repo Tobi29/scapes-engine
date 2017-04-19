@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
+import org.tobi29.scapes.engine.utils.io.Path
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import java.net.URI
 
 interface FilePath : Path, Comparable<FilePath> {

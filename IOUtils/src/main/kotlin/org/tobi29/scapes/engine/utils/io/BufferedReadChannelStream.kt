@@ -16,10 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.ByteBuffer
-import java.io.IOException
-import java.nio.ByteBuffer
-import java.nio.channels.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.IOException
 
 class BufferedReadChannelStream(private val channel: ReadableByteChannel,
                                 private val buffer: ByteBuffer = ByteBuffer(
@@ -40,7 +37,7 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
         } else {
             buffer.position(buffer.limit())
             while (skip > 0) {
-                skip = ChannelUtil.skip(channel, skip)
+                skip = channel.skip(skip)
             }
         }
     }
