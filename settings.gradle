@@ -22,6 +22,7 @@ include "IOUtils"
 include "GenerationUtils"
 include "GraphicsUtils"
 include "ThreadUtils"
+include "ArgumentParser"
 
 // Testing
 include "TestAssertions"
@@ -47,6 +48,10 @@ include "CodecMP3"
 include "CodecOGG"
 include "CodecWAV"
 include "Concentus"
+
+// Tiled
+include "LibTiled"
+include "TiledRenderer"
 
 // Engine
 include "Engine"
