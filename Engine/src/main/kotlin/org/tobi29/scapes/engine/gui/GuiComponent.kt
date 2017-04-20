@@ -19,6 +19,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.graphics.push
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
@@ -107,27 +108,25 @@ abstract class GuiComponent(val engine: ScapesEngine,
                     pixelSize: Vector2d,
                     delta: Double) {
         if (visible) {
-            val matrixStack = gl.matrixStack
-            val matrix = matrixStack.push()
-            transform(matrix, size)
-            val layout = layoutManager(size)
-            for (component in layout.layout()) {
-                val pos = applyTransform(-component.second.x,
-                        -component.second.y, size)
-                if (-pos.x >= -component.third.x &&
-                        -pos.y >= -component.third.y &&
-                        -pos.x <= size.x &&
-                        -pos.y <= size.y) {
-                    val childMatrix = matrixStack.push()
-                    childMatrix.translate(component.second.floatX(),
-                            component.second.floatY(), 0.0f)
-                    component.first.render(gl, shader, component.third,
-                            pixelSize,
-                            delta)
-                    matrixStack.pop()
+            gl.matrixStack.push { matrix ->
+                transform(matrix, size)
+                val layout = layoutManager(size)
+                for (component in layout.layout()) {
+                    val pos = applyTransform(-component.second.x,
+                            -component.second.y, size)
+                    if (-pos.x >= -component.third.x &&
+                            -pos.y >= -component.third.y &&
+                            -pos.x <= size.x &&
+                            -pos.y <= size.y) {
+                        gl.matrixStack.push { childMatrix ->
+                            childMatrix.translate(component.second.floatX(),
+                                    component.second.floatY(), 0.0f)
+                            component.first.render(gl, shader, component.third,
+                                    pixelSize, delta)
+                        }
+                    }
                 }
             }
-            matrixStack.pop()
         }
     }
 
@@ -149,22 +148,21 @@ abstract class GuiComponent(val engine: ScapesEngine,
         var hasHeavy = false
         if (visible) {
             val matrixStack = renderer.matrixStack()
-            val matrix = matrixStack.push()
-            renderer.offset(0x10000)
-            transform(matrix, size)
-            updateMesh(renderer, size)
-            val layout = layoutManager(size)
-            for (component in layout.layout()) {
-                val childMatrix = matrixStack.push()
-                childMatrix.translate(component.second.floatX(),
-                        component.second.floatY(),
-                        0.0f)
-                hasHeavy = hasHeavy or component.first.renderLightweight(
-                        renderer,
-                        component.third)
-                matrixStack.pop()
+            matrixStack.push { matrix ->
+                renderer.offset(0x10000)
+                transform(matrix, size)
+                updateMesh(renderer, size)
+                val layout = layoutManager(size)
+                for (component in layout.layout()) {
+                    matrixStack.push { childMatrix ->
+                        childMatrix.translate(component.second.floatX(),
+                                component.second.floatY(), 0.0f)
+                        hasHeavy = hasHeavy or component.first.renderLightweight(
+                                renderer,
+                                component.third)
+                    }
+                }
             }
-            matrixStack.pop()
             renderer.offset(-0x10000)
         }
         return hasHeavy

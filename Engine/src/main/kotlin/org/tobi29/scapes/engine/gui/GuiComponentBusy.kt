@@ -16,10 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.graphics.GL
-import org.tobi29.scapes.engine.graphics.Mesh
-import org.tobi29.scapes.engine.graphics.Model
-import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
@@ -46,12 +43,11 @@ class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
                                         pixelSize: Vector2d,
                                         delta: Double) {
         gl.textures.unbind(gl)
-        val matrixStack = gl.matrixStack
-        val matrix = matrixStack.push()
-        matrix.translate(size.floatX() * 0.5f, size.floatY() * 0.5f, 0.0f)
-        matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
-        model?.render(gl, shader)
-        matrixStack.pop()
+        gl.matrixStack.push { matrix ->
+            matrix.translate(size.floatX() * 0.5f, size.floatY() * 0.5f, 0.0f)
+            matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
+            model?.render(gl, shader)
+        }
     }
 
     override fun updateMesh(renderer: GuiRenderer,

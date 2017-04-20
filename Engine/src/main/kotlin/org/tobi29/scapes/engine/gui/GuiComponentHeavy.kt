@@ -17,10 +17,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.graphics.GL
-import org.tobi29.scapes.engine.graphics.Model
-import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
@@ -47,42 +44,41 @@ abstract class GuiComponentHeavy : GuiComponent {
                         pixelSize: Vector2d,
                         delta: Double) {
         if (visible) {
-            val matrixStack = gl.matrixStack
-            val matrix = matrixStack.push()
-            transform(matrix, size)
-            if (dirty.getAndSet(false) || lastSize != size ||
-                    lastPixelSize != pixelSize) {
-                lastPixelSize = pixelSize
-                val renderer = RENDERER.get()
-                renderer.pixelSize = pixelSize
-                hasHeavyChild = render(renderer, size)
-                meshes = renderer.finish()
-                lastSize = size
-            }
-            meshes?.forEach {
-                it.second.bind(gl)
-                it.first.render(gl, shader)
-            }
-            renderComponent(gl, shader, size, pixelSize, delta)
-            if (hasHeavyChild) {
-                val layout = layoutManager(size)
-                for (component in layout.layout()) {
-                    val pos = applyTransform(-component.second.x,
-                            -component.second.y, size)
-                    if (-pos.x >= -component.third.x &&
-                            -pos.y >= -component.third.y &&
-                            -pos.x <= size.x &&
-                            -pos.y <= size.y) {
-                        val childMatrix = matrixStack.push()
-                        childMatrix.translate(component.second.floatX(),
-                                component.second.floatY(), 0.0f)
-                        component.first.render(gl, shader, component.third,
-                                pixelSize, delta)
-                        matrixStack.pop()
+            gl.matrixStack.push { matrix ->
+                transform(matrix, size)
+                if (dirty.getAndSet(false) || lastSize != size ||
+                        lastPixelSize != pixelSize) {
+                    lastPixelSize = pixelSize
+                    val renderer = RENDERER.get()
+                    renderer.pixelSize = pixelSize
+                    hasHeavyChild = render(renderer, size)
+                    meshes = renderer.finish()
+                    lastSize = size
+                }
+                meshes?.forEach {
+                    it.second.bind(gl)
+                    it.first.render(gl, shader)
+                }
+                renderComponent(gl, shader, size, pixelSize, delta)
+                if (hasHeavyChild) {
+                    val layout = layoutManager(size)
+                    for (component in layout.layout()) {
+                        val pos = applyTransform(-component.second.x,
+                                -component.second.y, size)
+                        if (-pos.x >= -component.third.x &&
+                                -pos.y >= -component.third.y &&
+                                -pos.x <= size.x &&
+                                -pos.y <= size.y) {
+                            gl.matrixStack.push { childMatrix ->
+                                childMatrix.translate(component.second.floatX(),
+                                        component.second.floatY(), 0.0f)
+                                component.first.render(gl, shader,
+                                        component.third, pixelSize, delta)
+                            }
+                        }
                     }
                 }
             }
-            matrixStack.pop()
         }
     }
 
@@ -107,12 +103,12 @@ abstract class GuiComponentHeavy : GuiComponent {
         updateMesh(renderer, size)
         val layout = layoutManager(size)
         for (component in layout.layout()) {
-            val childMatrix = matrixStack.push()
-            childMatrix.translate(component.second.floatX(),
-                    component.second.floatY(), 0.0f)
-            hasHeavy = hasHeavy or component.first.renderLightweight(renderer,
-                    component.third)
-            matrixStack.pop()
+            matrixStack.push { childMatrix ->
+                childMatrix.translate(component.second.floatX(),
+                        component.second.floatY(), 0.0f)
+                hasHeavy = hasHeavy or component.first.renderLightweight(
+                        renderer, component.third)
+            }
         }
         return hasHeavy
     }
