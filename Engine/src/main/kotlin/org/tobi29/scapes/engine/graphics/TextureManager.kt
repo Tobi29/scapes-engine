@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.WeakHashMap
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
@@ -26,6 +25,7 @@ import org.tobi29.scapes.engine.utils.io.readProperties
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toInt
+import java.util.*
 
 class TextureManager(private val engine: ScapesEngine) {
     private val cache = WeakHashMap<String, Resource<Texture>>()
