@@ -151,7 +151,7 @@ fun CommandOption.printUsage(appendable: Appendable) {
             appendable.append(", arg ").append(i.toString())
         }
         appendable.append('>')
-    } else if (args == 0) {
+    } else if (args == 1) {
         appendable.append(" <arg")
         appendable.append('>')
     }
