@@ -16,17 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
-typealias Random = java.util.Random
-
-typealias UUID = java.util.UUID
-
-typealias IOException = java.io.IOException
-
-typealias BigInteger = java.math.BigInteger
-typealias BigDecimal = java.math.BigDecimal
-
-typealias AutoCloseable = java.lang.AutoCloseable
-
-typealias PlatformName = JvmName
-typealias JvmName = kotlin.jvm.JvmName
-annotation class JsName(val name: String)
+typealias AtomicBoolean = java.util.concurrent.atomic.AtomicBoolean
+typealias AtomicInteger = java.util.concurrent.atomic.AtomicInteger
+typealias AtomicLong = java.util.concurrent.atomic.AtomicLong
+typealias AtomicReference<T> = java.util.concurrent.atomic.AtomicReference<T>

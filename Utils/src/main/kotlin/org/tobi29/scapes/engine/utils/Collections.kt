@@ -16,17 +16,13 @@
 
 package org.tobi29.scapes.engine.utils
 
-typealias Random = java.util.Random
+class ConcurrentHashSet<E> : AbstractMutableSet<E>() {
+    val map = ConcurrentHashMap<E, Unit>()
 
-typealias UUID = java.util.UUID
+    override val size get() = map.size
 
-typealias IOException = java.io.IOException
-
-typealias BigInteger = java.math.BigInteger
-typealias BigDecimal = java.math.BigDecimal
-
-typealias AutoCloseable = java.lang.AutoCloseable
-
-typealias PlatformName = JvmName
-typealias JvmName = kotlin.jvm.JvmName
-annotation class JsName(val name: String)
+    override fun add(element: E) = map.put(element, Unit) == null
+    override fun remove(element: E) = map.remove(element) != null
+    override fun clear() = map.clear()
+    override fun iterator(): MutableIterator<E> = map.keys.iterator()
+}
