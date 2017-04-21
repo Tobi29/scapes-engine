@@ -308,7 +308,6 @@ class ContainerGLFW(engine: ScapesEngine,
         }
         logger.info { "Disposing graphics system" }
         engine.graphics.dispose(gl)
-        engine.dispose()
         GLFW.glfwDestroyWindow(window)
         GLFW.glfwTerminate()
         windowSizeFun.close()
