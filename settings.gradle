@@ -49,9 +49,9 @@ include "CodecOGG"
 include "CodecWAV"
 include "Concentus"
 
-// Tiled
-include "LibTiled"
-include "TiledRenderer"
+// Tile maps
+include "TileMaps"
+include "TileMapsRenderer"
 
 // Engine
 include "Engine"
