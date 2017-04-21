@@ -45,8 +45,10 @@ fun CommandLine.get(option: CommandOption) =
  * @param option The [CommandOption] to look for
  * @returns True in case the option was set and either to "true" or nothing
  */
-fun CommandLine.getBoolean(option: CommandOption) =
-        (get(option)?.firstOrNull() ?: "true") == "true"
+fun CommandLine.getBoolean(option: CommandOption): Boolean {
+    val value = get(option) ?: return false
+    return (value.firstOrNull() ?: "true") == "true"
+}
 
 /**
  * Fetches the first argument for the option from the given [CommandLine] and
