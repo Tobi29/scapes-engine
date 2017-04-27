@@ -22,7 +22,6 @@ import kotlinx.coroutines.experimental.newFixedThreadPoolContext
 import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import kotlin.coroutines.experimental.CoroutineContext
 
 class TaskExecutor {
@@ -84,19 +83,14 @@ class TaskExecutor {
     }
 
     fun runTask(task: suspend () -> Unit,
-                name: String) {
+                name: String): Job {
         thisAndParents { taskLock.increment() }
-        launch(taskPool) {
-            var time = System.nanoTime()
+        return launch(taskPool) {
             try {
-                profilerSection(name) {
-                    task()
-                }
+                task()
+            } catch (e: Throwable) {
+                crashHandler.crash(e)
             } finally {
-                time = System.nanoTime() - time
-                if (time > 10000000000L) {
-                    logger.warn { "Task took ${time / 1000000000} seconds to complete: $name" }
-                }
                 thisAndParents { taskLock.decrement() }
             }
         }
