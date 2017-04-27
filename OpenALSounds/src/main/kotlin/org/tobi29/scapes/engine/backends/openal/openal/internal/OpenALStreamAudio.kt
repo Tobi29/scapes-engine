@@ -23,30 +23,45 @@ import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
+import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.abs
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
-internal class OpenALStreamAudio(engine: ScapesEngine,
-                                 private val asset: ReadSource,
-                                 private val channel: String,
-                                 private val pos: Vector3d,
-                                 private val velocity: Vector3d,
-                                 private val pitch: Float,
-                                 private val gain: Float,
-                                 private val state: Boolean,
-                                 private val hasPosition: Boolean) : OpenALAudio {
+internal class OpenALStreamAudio(
+        engine: ScapesEngine,
+        private val asset: ReadSource,
+        private val channel: String,
+        private val pos: Vector3d,
+        private val velocity: Vector3d,
+        private val state: Boolean,
+        private val hasPosition: Boolean,
+        private val controller: OpenALAudioController
+) : OpenALAudio, AudioController by controller {
     private val streamBuffer = ByteBufferStream({ engine.allocate(it) })
     private val readBuffer = AudioBuffer(4096)
     private var source = -1
     private var queued = 0
     private var stream: ReadableAudioStream? = null
-    private var gainAL = 0.0f
+
+    constructor(engine: ScapesEngine,
+                asset: ReadSource,
+                channel: String,
+                pos: Vector3d,
+                velocity: Vector3d,
+                state: Boolean,
+                hasPosition: Boolean,
+                pitch: Double,
+                gain: Double,
+                referenceDistance: Double,
+                rolloffFactor: Double
+    ) : this(engine, asset, channel, pos, velocity, state, hasPosition,
+            OpenALAudioController(pitch, gain, referenceDistance,
+                    rolloffFactor))
 
     override fun poll(sounds: OpenALSoundSystem,
                       openAL: OpenAL,
@@ -57,12 +72,12 @@ internal class OpenALStreamAudio(engine: ScapesEngine,
             if (source == -1) {
                 return true
             }
-            openAL.setPitch(source, pitch)
-            gainAL = gain * sounds.volume(channel)
-            openAL.setGain(source, gainAL)
+            controller.configure(openAL, source, sounds.volume(channel), true)
             openAL.setLooping(source, false)
             sounds.position(openAL, source, pos, hasPosition)
             openAL.setVelocity(source, velocity)
+            openAL.setReferenceDistance(source, 1.0)
+            openAL.setMaxDistance(source, Double.POSITIVE_INFINITY)
             try {
                 stream = AudioStream.create(asset)
             } catch (e: IOException) {
@@ -73,11 +88,7 @@ internal class OpenALStreamAudio(engine: ScapesEngine,
 
         } else if (stream != null) {
             try {
-                val gainAL = gain * sounds.volume(channel)
-                if (abs(gainAL - this.gainAL) > 0.001f) {
-                    openAL.setGain(source, gainAL)
-                    this.gainAL = gainAL
-                }
+                controller.configure(openAL, source, sounds.volume(channel))
                 while (queued < 3) {
                     stream()
                     if (!readBuffer.isDone) {

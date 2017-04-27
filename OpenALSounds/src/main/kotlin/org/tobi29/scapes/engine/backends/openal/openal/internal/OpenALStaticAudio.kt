@@ -18,29 +18,31 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.StaticAudio
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.math.abs
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
-internal class OpenALStaticAudio(private val asset: ReadSource,
-                                 private val channel: String,
-                                 private var pitch: Float,
-                                 private var gain: Float) : OpenALAudio, StaticAudio {
+internal class OpenALStaticAudio(
+        private val asset: ReadSource,
+        private val channel: String,
+        private val controller: OpenALAudioController
+) : OpenALAudio, StaticAudio, AudioController by controller {
     private var buffer = -1
     private var source = -1
-    private var pitchAL = 0.0f
-    private var gainAL = 0.0f
     private var playing = false
     private var dispose = false
 
-    override fun setPitch(pitch: Float) {
-        this.pitch = pitch
-    }
-
-    override fun setGain(gain: Float) {
-        this.gain = gain
-    }
+    constructor(asset: ReadSource,
+                channel: String,
+                pitch: Double,
+                gain: Double,
+                referenceDistance: Double,
+                rolloffFactor: Double
+    ) : this(asset, channel,
+            OpenALAudioController(pitch, gain, referenceDistance,
+                    rolloffFactor))
 
     override fun dispose() {
         dispose = true
@@ -51,39 +53,32 @@ internal class OpenALStaticAudio(private val asset: ReadSource,
                       listenerPosition: Vector3d,
                       delta: Double): Boolean {
         if (buffer == -1) {
-            val audio = sounds[openAL, asset]
-            if (audio != null) {
-                buffer = audio.buffer()
-            }
+            val audio = sounds.getAudioData(openAL, asset) ?: return false
+            buffer = audio.buffer()
         }
-        if (source == -1) {
-            source = sounds.takeSource(openAL)
-        }
+        assert { buffer != -1 }
         if (gain > 0.001f) {
-            val gainAL = gain * sounds.volume(channel)
-            val pitchAL = pitch
             if (playing) {
-                if (abs(gainAL - this.gainAL) > 0.001f) {
-                    openAL.setGain(source, gainAL)
-                    this.gainAL = gainAL
-                }
-                if (abs(pitchAL - this.pitchAL) > 0.001f) {
-                    openAL.setPitch(source, pitchAL)
-                    this.pitchAL = pitchAL
-                }
+                assert { source != -1 }
+                controller.configure(openAL, source, sounds.volume(channel))
             } else {
-                playing = true
-                if (buffer != -1) {
-                    sounds.playSound(openAL, buffer, source, pitchAL, gainAL,
-                            Vector3d.ZERO, Vector3d.ZERO, true, false)
+                if (source == -1) {
+                    source = sounds.takeSource(openAL)
                 }
-                this.gainAL = gainAL
-                this.pitchAL = pitchAL
+                if (source != -1) {
+                    playing = true
+                    openAL.setBuffer(source, buffer)
+                    controller.configure(openAL, source, sounds.volume(channel),
+                            true)
+                    sounds.playSound(openAL, source, Vector3d.ZERO,
+                            Vector3d.ZERO, true, false)
+                }
             }
         } else {
             if (playing) {
+                assert { source != -1 }
                 playing = false
-                openAL.stop(source)
+                stop(sounds, openAL)
             }
         }
         if (dispose) {
@@ -99,6 +94,9 @@ internal class OpenALStaticAudio(private val asset: ReadSource,
 
     override fun stop(sounds: OpenALSoundSystem,
                       openAL: OpenAL) {
-        sounds.releaseSource(openAL, source)
+        if (source != -1) {
+            sounds.releaseSource(openAL, source)
+            source = -1
+        }
     }
 }

@@ -31,72 +31,95 @@ interface SoundSystem {
 
     fun playMusic(asset: String,
                   channel: String,
-                  pitch: Float,
-                  gain: Float,
-                  state: Boolean) =
-            playMusic(engine.files[asset].get(), channel, pitch, gain, state)
-
-    fun playMusic(asset: ReadSource,
-                  channel: String,
-                  pitch: Float,
-                  gain: Float,
-                  state: Boolean)
+                  state: Boolean,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0) =
+            playMusic(engine.files[asset].get(), channel, state, pitch, gain,
+                    referenceDistance, rolloffFactor)
 
     fun playMusic(asset: String,
                   channel: String,
-                  pitch: Float,
-                  gain: Float,
                   position: Vector3d,
                   velocity: Vector3d,
-                  state: Boolean) =
-            playMusic(engine.files[asset].get(), channel, pitch, gain, position,
-                    velocity, state)
+                  state: Boolean,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0) =
+            playMusic(engine.files[asset].get(), channel, position, velocity,
+                    state, pitch, gain, referenceDistance, rolloffFactor)
 
     fun playMusic(asset: ReadSource,
                   channel: String,
-                  pitch: Float,
-                  gain: Float,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  state: Boolean)
+                  state: Boolean,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0)
 
-    fun playSound(asset: String,
-                  channel: String,
-                  pitch: Float,
-                  gain: Float) =
-            playSound(engine.files[asset].get(), channel, pitch, gain)
-
-    fun playSound(asset: ReadSource,
-                  channel: String,
-                  pitch: Float,
-                  gain: Float)
-
-    fun playSound(asset: String,
+    fun playMusic(asset: ReadSource,
                   channel: String,
                   position: Vector3d,
                   velocity: Vector3d,
-                  pitch: Float,
-                  gain: Float) =
+                  state: Boolean,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0)
+
+    fun playSound(asset: String,
+                  channel: String,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0) =
+            playSound(engine.files[asset].get(), channel, pitch, gain,
+                    referenceDistance, rolloffFactor)
+
+    fun playSound(asset: String,
+                  channel: String,
+                  position: Vector3d,
+                  velocity: Vector3d,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0) =
             playSound(engine.files[asset].get(), channel, position, velocity,
-                    pitch, gain)
+                    pitch, gain, referenceDistance, rolloffFactor)
+
+    fun playSound(asset: ReadSource,
+                  channel: String,
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0)
 
     fun playSound(asset: ReadSource,
                   channel: String,
                   position: Vector3d,
                   velocity: Vector3d,
-                  pitch: Float,
-                  gain: Float)
+                  pitch: Double = 1.0,
+                  gain: Double = 1.0,
+                  referenceDistance: Double = 1.0,
+                  rolloffFactor: Double = 1.0)
 
     fun playStaticAudio(asset: String,
                         channel: String,
-                        pitch: Float,
-                        gain: Float) =
-            playStaticAudio(engine.files[asset].get(), channel, pitch, gain)
+                        pitch: Double = 1.0,
+                        gain: Double = 1.0,
+                        referenceDistance: Double = 1.0,
+                        rolloffFactor: Double = 1.0) =
+            playStaticAudio(engine.files[asset].get(), channel, pitch, gain,
+                    referenceDistance, rolloffFactor)
 
     fun playStaticAudio(asset: ReadSource,
                         channel: String,
-                        pitch: Float,
-                        gain: Float): StaticAudio
+                        pitch: Double = 1.0,
+                        gain: Double = 1.0,
+                        referenceDistance: Double = 1.0,
+                        rolloffFactor: Double = 1.0): StaticAudio
 
     fun stop(channel: String)
 

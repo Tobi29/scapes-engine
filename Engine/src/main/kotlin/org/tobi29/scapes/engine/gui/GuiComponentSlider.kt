@@ -43,7 +43,7 @@ class GuiComponentSlider constructor(parent: GuiLayoutData,
             }
         }
         on(GuiEvent.CLICK_LEFT) { event ->
-            engine.sounds.playSound(CLICK, "sound.GUI", 1.0f, 1.0f)
+            engine.sounds.playSound(CLICK, "sound.GUI", 1.0, 1.0)
         }
         on(GuiEvent.HOVER_ENTER) { event ->
             hovered = true

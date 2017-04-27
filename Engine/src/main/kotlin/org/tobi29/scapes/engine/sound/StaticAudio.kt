@@ -16,10 +16,6 @@
 
 package org.tobi29.scapes.engine.sound
 
-interface StaticAudio {
-    fun setPitch(pitch: Float)
-
-    fun setGain(gain: Float)
-
+interface StaticAudio : AudioController {
     fun dispose()
 }

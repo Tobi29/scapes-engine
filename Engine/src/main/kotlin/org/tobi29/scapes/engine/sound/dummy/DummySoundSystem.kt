@@ -34,38 +34,48 @@ class DummySoundSystem(override val engine: ScapesEngine) : SoundSystem {
 
     override fun playMusic(asset: ReadSource,
                            channel: String,
-                           pitch: Float,
-                           gain: Float,
-                           state: Boolean) {
+                           state: Boolean,
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
     }
 
     override fun playMusic(asset: ReadSource,
                            channel: String,
-                           pitch: Float,
-                           gain: Float,
                            position: Vector3d,
                            velocity: Vector3d,
-                           state: Boolean) {
+                           state: Boolean,
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
     }
 
     override fun playSound(asset: ReadSource,
                            channel: String,
-                           pitch: Float,
-                           gain: Float) {
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
     }
 
     override fun playSound(asset: ReadSource,
                            channel: String,
                            position: Vector3d,
                            velocity: Vector3d,
-                           pitch: Float,
-                           gain: Float) {
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
     }
 
     override fun playStaticAudio(asset: ReadSource,
                                  channel: String,
-                                 pitch: Float,
-                                 gain: Float): StaticAudio {
+                                 pitch: Double,
+                                 gain: Double,
+                                 referenceDistance: Double,
+                                 rolloffFactor: Double): StaticAudio {
         return DummyStaticAudio()
     }
 

@@ -23,7 +23,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 interface OpenAL {
     fun checkError(message: String)
 
-    fun create()
+    fun create(speedOfSound: Double)
 
     fun destroy()
 
@@ -39,10 +39,10 @@ interface OpenAL {
                   value: Int)
 
     fun setPitch(id: Int,
-                 value: Float)
+                 value: Double)
 
     fun setGain(id: Int,
-                value: Float)
+                value: Double)
 
     fun setLooping(id: Int,
                    value: Boolean)
@@ -55,6 +55,15 @@ interface OpenAL {
 
     fun setVelocity(id: Int,
                     vel: Vector3d)
+
+    fun setReferenceDistance(id: Int,
+                             value: Double)
+
+    fun setRolloffFactor(id: Int,
+                         value: Double)
+
+    fun setMaxDistance(id: Int,
+                       value: Double)
 
     fun play(id: Int)
 

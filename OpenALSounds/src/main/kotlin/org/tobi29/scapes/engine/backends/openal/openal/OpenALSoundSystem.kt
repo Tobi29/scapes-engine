@@ -35,10 +35,11 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                         openAL: OpenAL,
                         maxSources: Int,
                         latency: Double) : SoundSystem {
+    val speedOfSound = 343.3
     private val cache = ConcurrentHashMap<ReadSource, OpenALAudioData>()
     private val queue = ConcurrentLinkedQueue<(OpenAL) -> Unit>()
     private val audios = ConcurrentHashSet<OpenALAudio>()
-    private val sources: IntArray
+    private val sources = IntArray(maxSources)
     private val joiner: Joiner
     private var origin = Vector3d.ZERO
     private var listenerPosition = Vector3d.ZERO
@@ -46,9 +47,8 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     private var listenerVelocity = Vector3d.ZERO
 
     init {
-        sources = IntArray(maxSources)
         joiner = engine.taskExecutor.runThread({ joiner ->
-            openAL.create()
+            openAL.create(speedOfSound)
             for (i in sources.indices) {
                 sources[i] = openAL.createSource()
             }
@@ -81,7 +81,6 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 } catch (e: SoundException) {
                     logger.warn { "Error polling sound-system: $e" }
                 }
-
                 sync.cap(joiner)
             }
             try {
@@ -101,9 +100,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             } catch (e: SoundException) {
                 logger.warn { "Error disposing sound-system: $e" }
             }
-
             openAL.destroy()
-            Unit
         }, "Sound", TaskExecutor.Priority.HIGH)
     }
 
@@ -123,116 +120,108 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
 
     override fun playMusic(asset: ReadSource,
                            channel: String,
-                           pitch: Float,
-                           gain: Float,
-                           state: Boolean) {
-        queue({ openAL ->
-            audios.add(OpenALStreamAudio(engine, asset, channel,
-                    Vector3d.ZERO, Vector3d.ZERO, pitch, gain, state, false))
-        })
+                           state: Boolean,
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
+        queue {
+            audios.add(OpenALStreamAudio(engine, asset, channel, Vector3d.ZERO,
+                    Vector3d.ZERO, state, false, pitch, gain, referenceDistance,
+                    rolloffFactor))
+        }
     }
 
     override fun playMusic(asset: ReadSource,
                            channel: String,
-                           pitch: Float,
-                           gain: Float,
                            position: Vector3d,
                            velocity: Vector3d,
-                           state: Boolean) {
-        queue({ openAL ->
+                           state: Boolean,
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
+        queue {
             audios.add(OpenALStreamAudio(engine, asset, channel, position,
-                    velocity, pitch, gain, state, true))
-        })
+                    velocity, state, true, pitch, gain, referenceDistance,
+                    rolloffFactor))
+        }
     }
 
     override fun playSound(asset: ReadSource,
                            channel: String,
-                           pitch: Float,
-                           gain: Float) {
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
         val time = System.nanoTime()
-        queue({ openAL ->
+        queue {
             audios.add(OpenALEffectAudio(asset, channel, Vector3d.ZERO,
-                    Vector3d.ZERO, pitch, gain, false, time))
-        })
+                    Vector3d.ZERO, pitch, gain, referenceDistance,
+                    rolloffFactor, false, time))
+        }
     }
 
     override fun playSound(asset: ReadSource,
                            channel: String,
                            position: Vector3d,
                            velocity: Vector3d,
-                           pitch: Float,
-                           gain: Float) {
+                           pitch: Double,
+                           gain: Double,
+                           referenceDistance: Double,
+                           rolloffFactor: Double) {
         val time = System.nanoTime()
-        queue({ openAL ->
+        queue {
             audios.add(OpenALEffectAudio(asset, channel, position, velocity,
-                    pitch, gain, true, time))
-        })
+                    pitch, gain, referenceDistance, rolloffFactor, true, time))
+        }
     }
 
     override fun playStaticAudio(asset: ReadSource,
                                  channel: String,
-                                 pitch: Float,
-                                 gain: Float): StaticAudio {
-        val staticAudio = OpenALStaticAudio(asset, channel, pitch, gain)
-        queue({ openAL -> audios.add(staticAudio) })
+                                 pitch: Double,
+                                 gain: Double,
+                                 referenceDistance: Double,
+                                 rolloffFactor: Double): StaticAudio {
+        val staticAudio = OpenALStaticAudio(asset, channel, pitch, gain,
+                referenceDistance, rolloffFactor)
+        queue { audios.add(staticAudio) }
         return staticAudio
     }
 
     override fun stop(channel: String) {
-        queue({ openAL ->
+        queue { openAL ->
             val stopped = audios.filter { it.isPlaying(channel) }
             stopped.forEach { it.stop(this, openAL) }
             audios.removeAll(stopped)
-        })
+        }
     }
 
     override fun dispose() {
         joiner.join()
     }
 
-    fun volume(channel: String): Float {
-        return engine.config.volume(channel).toFloat()
+    internal fun volume(channel: String): Double {
+        return engine.config.volume(channel)
     }
 
-    fun playSound(openAL: OpenAL,
-                  buffer: Int,
-                  pitch: Float,
-                  gain: Float,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  state: Boolean,
-                  hasPosition: Boolean) {
-        val source = freeSource(openAL, false, false)
-        if (source == -1) {
-            return
-        }
-        playSound(openAL, buffer, source, pitch, gain, position, velocity,
-                state, hasPosition)
-    }
-
-    fun playSound(openAL: OpenAL,
-                  buffer: Int,
-                  source: Int,
-                  pitch: Float,
-                  gain: Float,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  state: Boolean,
-                  hasPosition: Boolean) {
-        openAL.stop(source)
-        openAL.setBuffer(source, buffer)
-        openAL.setGain(source, gain)
-        openAL.setPitch(source, pitch)
+    internal fun playSound(openAL: OpenAL,
+                           source: Int,
+                           position: Vector3d,
+                           velocity: Vector3d,
+                           state: Boolean,
+                           hasPosition: Boolean) {
         openAL.setLooping(source, state)
         position(openAL, source, position, hasPosition)
         openAL.setVelocity(source, velocity)
+        openAL.setMaxDistance(source, Double.POSITIVE_INFINITY)
         openAL.play(source)
     }
 
-    fun position(openAL: OpenAL,
-                 source: Int,
-                 position: Vector3d,
-                 hasPosition: Boolean) {
+    internal fun position(openAL: OpenAL,
+                          source: Int,
+                          position: Vector3d,
+                          hasPosition: Boolean) {
         openAL.setRelative(source, !hasPosition)
         if (hasPosition) {
             openAL.setPosition(source, position.minus(origin))
@@ -241,7 +230,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         }
     }
 
-    internal operator fun get(openAL: OpenAL,
+    internal fun getAudioData(openAL: OpenAL,
                               asset: ReadSource): OpenALAudioData? {
         if (!cache.containsKey(asset)) {
             if (asset.exists()) {
@@ -290,14 +279,9 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         }
     }
 
-    private fun queue(consumer: (OpenAL) -> Unit) {
-        queue.add(consumer)
-        joiner.wake()
-    }
-
-    private fun freeSource(openAL: OpenAL,
-                           force: Boolean,
-                           take: Boolean): Int {
+    internal fun freeSource(openAL: OpenAL,
+                            force: Boolean,
+                            take: Boolean): Int {
         val random = threadLocalRandom()
         val offset = random.nextInt(sources.size)
         for (i in sources.indices) {
@@ -324,6 +308,11 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             }
         }
         return -1
+    }
+
+    private fun queue(consumer: (OpenAL) -> Unit) {
+        queue.add(consumer)
+        joiner.wake()
     }
 
     private fun isSoundPlaying(openAL: OpenAL): Boolean {

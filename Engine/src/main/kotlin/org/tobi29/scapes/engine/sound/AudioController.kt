@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.sound.dummy
+package org.tobi29.scapes.engine.sound
 
-import org.tobi29.scapes.engine.sound.StaticAudio
-
-class DummyStaticAudio : StaticAudio {
-    override var pitch = 1.0
-    override var gain = 1.0
-    override var referenceDistance = 1.0
-    override var rolloffFactor = 1.0
-
-    override fun dispose() {
-    }
+interface AudioController {
+    var pitch: Double
+    var gain: Double
+    var referenceDistance: Double
+    var rolloffFactor: Double
 }

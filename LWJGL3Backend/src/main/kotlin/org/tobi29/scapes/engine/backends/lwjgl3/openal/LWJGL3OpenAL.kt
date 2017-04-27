@@ -41,7 +41,7 @@ class LWJGL3OpenAL : OpenAL {
         }
     }
 
-    override fun create() {
+    override fun create(speedOfSound: Double) {
         val stack = MemoryStack.stackGet()
         device = ALC10.alcOpenDevice(null as ByteBuffer?)
         if (device == 0L) {
@@ -62,7 +62,8 @@ class LWJGL3OpenAL : OpenAL {
                     AL10.AL_VENDOR)}, Renderer: ${AL10.alGetString(
                     AL10.AL_RENDERER)})"
         }
-        AL11.alSpeedOfSound(343.3f)
+        AL11.alSpeedOfSound(speedOfSound.toFloat())
+        AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED)
         stack.push {
             val listenerOrientation = stack.mallocFloat(6)
             listenerOrientation.clear()
@@ -125,13 +126,13 @@ class LWJGL3OpenAL : OpenAL {
     }
 
     override fun setPitch(id: Int,
-                          value: Float) {
-        AL10.alSourcef(id, AL10.AL_PITCH, value)
+                          value: Double) {
+        AL10.alSourcef(id, AL10.AL_PITCH, value.toFloat())
     }
 
     override fun setGain(id: Int,
-                         value: Float) {
-        AL10.alSourcef(id, AL10.AL_GAIN, value)
+                         value: Double) {
+        AL10.alSourcef(id, AL10.AL_GAIN, value.toFloat())
     }
 
     override fun setLooping(id: Int,
@@ -156,6 +157,21 @@ class LWJGL3OpenAL : OpenAL {
                              vel: Vector3d) {
         AL10.alSource3f(id, AL10.AL_VELOCITY, vel.floatX(), vel.floatY(),
                 vel.floatZ())
+    }
+
+    override fun setReferenceDistance(id: Int,
+                                      value: Double) {
+        AL10.alSourcef(id, AL10.AL_REFERENCE_DISTANCE, value.toFloat())
+    }
+
+    override fun setRolloffFactor(id: Int,
+                                  value: Double) {
+        AL10.alSourcef(id, AL10.AL_ROLLOFF_FACTOR, value.toFloat())
+    }
+
+    override fun setMaxDistance(id: Int,
+                                value: Double) {
+        AL10.alSourcef(id, AL10.AL_MAX_DISTANCE, value.toFloat())
     }
 
     override fun play(id: Int) {

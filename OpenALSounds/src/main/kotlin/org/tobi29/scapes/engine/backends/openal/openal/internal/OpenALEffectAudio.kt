@@ -26,8 +26,10 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
                                  private val channel: String,
                                  private val pos: Vector3d,
                                  private val velocity: Vector3d,
-                                 private val pitch: Float,
-                                 private val gain: Float,
+                                 private val pitch: Double,
+                                 private val gain: Double,
+                                 private val referenceDistance: Double,
+                                 private val rolloffFactor: Double,
                                  private val hasPosition: Boolean,
                                  private val time: Long) : OpenALAudio {
 
@@ -35,20 +37,25 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
                       openAL: OpenAL,
                       listenerPosition: Vector3d,
                       delta: Double): Boolean {
-        val flag: Boolean
-        if (hasPosition) {
+        if (!hasPosition || run {
             val diff = (System.nanoTime() - time) / 1000000000.0
-            val delay = listenerPosition.distance(pos) / 343.3 - delta * 0.5
-            flag = diff >= delay
-        } else {
-            flag = true
-        }
-        if (flag) {
-            val audio = sounds[openAL, asset]
+            val delay = listenerPosition.distance(
+                    pos) / sounds.speedOfSound - delta * 0.5
+            diff >= delay
+        }) {
+            val audio = sounds.getAudioData(openAL, asset)
             if (audio != null) {
-                val gain = this.gain * sounds.volume(channel)
-                sounds.playSound(openAL, audio.buffer(), pitch, gain, pos,
-                        velocity, false, hasPosition)
+                val gain = gain * sounds.volume(channel)
+                val source = sounds.freeSource(openAL, false, false)
+                if (source != -1) {
+                    openAL.setBuffer(source, audio.buffer())
+                    openAL.setGain(source, gain)
+                    openAL.setPitch(source, pitch)
+                    openAL.setReferenceDistance(source, referenceDistance)
+                    openAL.setRolloffFactor(source, rolloffFactor)
+                    sounds.playSound(openAL, source, pos, velocity, false,
+                            hasPosition)
+                }
             }
             return true
         }
