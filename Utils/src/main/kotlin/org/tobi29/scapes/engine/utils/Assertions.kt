@@ -25,7 +25,8 @@ package org.tobi29.scapes.engine.utils
  * @param block The code to assert
  */
 inline fun assert(message: String? = null,
-                  block: () -> Boolean) = assert({ message }, block)
+                  block: () -> Boolean) =
+        assert(Assertions.ENABLED, message, block)
 
 /**
  * Throw [AssertionError] in case [block] returns false
@@ -36,11 +37,8 @@ inline fun assert(message: String? = null,
  * @param block The code to assert
  */
 inline fun assert(message: () -> String?,
-                  block: () -> Boolean) {
-    if (Assertions.ENABLED && !block()) {
-        throw AssertionError(message())
-    }
-}
+                  block: () -> Boolean) =
+        assert(Assertions.ENABLED, message, block)
 
 /**
  * Throw [AssertionError] in case [block] returns false
@@ -49,4 +47,40 @@ inline fun assert(message: () -> String?,
  * effects in it
  * @param block The code to assert
  */
-inline fun assert(block: () -> Boolean) = assert(null, block)
+inline fun assert(block: () -> Boolean) = assert(Assertions.ENABLED, block)
+
+/**
+ * Throw [AssertionError] in case [block] returns false
+ * @param enabled Whether or not to actually run the assertion
+ * @param message The message to display in the [AssertionError]
+ * @param block The code to assert
+ */
+inline fun assert(enabled: Boolean,
+                  message: String? = null,
+                  block: () -> Boolean) = assert(enabled, { message }, block)
+
+/**
+ * Throw [AssertionError] in case [block] returns false
+ * @param enabled Whether or not to actually run the assertion
+ * @param message The message to display in the [AssertionError]
+ * @param block The code to assert
+ */
+inline fun assert(enabled: Boolean,
+                  message: () -> String?,
+                  block: () -> Boolean): Boolean {
+    if (enabled) {
+        if (!block()) {
+            throw AssertionError(message())
+        }
+        return true
+    }
+    return false
+}
+
+/**
+ * Throw [AssertionError] in case [block] returns false
+ * @param enabled Whether or not to actually run the assertion
+ * @param block The code to assert
+ */
+inline fun assert(enabled: Boolean,
+                  block: () -> Boolean) = assert(enabled, null, block)
