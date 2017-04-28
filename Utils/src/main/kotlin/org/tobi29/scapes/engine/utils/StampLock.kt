@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.utils
 
+import java.util.concurrent.locks.ReentrantLock
+
 /**
  * Simple stamp lock optimized using Kotlin's inline modifier
  * Writes are always synchronized, whilst reads can happen in parallel as long
@@ -23,10 +25,15 @@ package org.tobi29.scapes.engine.utils
  */
 class StampLock {
     /**
-     * Counter used internally by the lock and for synchronization
-     * Made public for the inline modifier
+     * Returns the current counter value
+     *
+     * **Note:** Exposed to allow inlining
      */
-    val counter = AtomicLong(Long.MIN_VALUE)
+    val counterCurrent get() = counter.get()
+
+    private val counter = AtomicLong(Long.MIN_VALUE)
+
+    private val writeLock = ReentrantLock()
 
     /**
      * Acquire read access of the lock, calling [block] one or two times
@@ -34,14 +41,17 @@ class StampLock {
      * @return The return value of the last call to [block]
      */
     inline fun <R> read(crossinline block: () -> R): R {
-        val stamp = counter.get()
+        val stamp = counterCurrent
         val output = block()
-        val validate = counter.get()
+        val validate = counterCurrent
         if (stamp == validate && validate and 1L == 0L) {
             return output
         }
-        return synchronized(counter) {
-            block()
+        try {
+            lockForceRead()
+            return block()
+        } finally {
+            unlockForceRead()
         }
     }
 
@@ -50,14 +60,56 @@ class StampLock {
      * @param block Code to execute
      * @return The return value of [block]
      */
-    inline fun <R> write(crossinline block: () -> R): R {
-        return synchronized(counter) {
-            counter.incrementAndGet()
-            try {
-                block()
-            } finally {
-                counter.incrementAndGet()
-            }
+    inline fun <R> write(block: () -> R): R {
+        try {
+            lock()
+            return block()
+        } finally {
+            unlock()
         }
+    }
+
+    /**
+     * Returns `true` in case a write lock is held
+     * @returns `true` in case a write lock is held
+     */
+    fun isHeld() = writeLock.isHeldByCurrentThread
+
+    /**
+     * Acquires a write lock
+     */
+    fun lock() {
+        writeLock.lock()
+        if (writeLock.holdCount == 1) {
+            counter.incrementAndGet()
+        }
+    }
+
+    /**
+     * Releases a write lock
+     */
+    fun unlock() {
+        if (writeLock.holdCount == 1) {
+            counter.incrementAndGet()
+        }
+        writeLock.unlock()
+    }
+
+    /**
+     * Returns the current counter value
+     *
+     * **Note:** Exposed to allow inlining
+     */
+    fun lockForceRead() {
+        writeLock.lock()
+    }
+
+    /**
+     * Returns the current counter value
+     *
+     * **Note:** Exposed to allow inlining
+     */
+    fun unlockForceRead() {
+        writeLock.unlock()
     }
 }
