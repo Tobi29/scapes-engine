@@ -57,7 +57,7 @@ internal class OpenALStaticAudio(
             buffer = audio.buffer()
         }
         assert { buffer != -1 }
-        if (gain > 0.001f) {
+        if (gain > 0.001) {
             if (playing) {
                 assert { source != -1 }
                 controller.configure(openAL, source, sounds.volume(channel))
