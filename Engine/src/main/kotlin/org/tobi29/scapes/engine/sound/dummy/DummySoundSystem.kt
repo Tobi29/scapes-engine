@@ -82,6 +82,9 @@ class DummySoundSystem(override val engine: ScapesEngine) : SoundSystem {
     override fun stop(channel: String) {
     }
 
+    override fun clearCache() {
+    }
+
     override fun dispose() {
     }
 }

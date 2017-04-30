@@ -123,5 +123,7 @@ interface SoundSystem {
 
     fun stop(channel: String)
 
+    fun clearCache()
+
     fun dispose()
 }

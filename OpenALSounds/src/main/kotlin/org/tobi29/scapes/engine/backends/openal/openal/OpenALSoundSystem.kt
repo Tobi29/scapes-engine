@@ -197,6 +197,10 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         }
     }
 
+    override fun clearCache() {
+        queue { cache.clear() }
+    }
+
     override fun dispose() {
         joiner.join()
     }
