@@ -36,7 +36,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                         maxSources: Int,
                         latency: Double) : SoundSystem {
     val speedOfSound = 343.3
-    private val cache = ConcurrentHashMap<ReadSource, OpenALAudioData>()
+    private val cache = HashMap<ReadSource, OpenALAudioData>()
     private val queue = ConcurrentLinkedQueue<(OpenAL) -> Unit>()
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
