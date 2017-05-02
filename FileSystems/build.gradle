@@ -19,5 +19,4 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 dependencies {
     compile project(":IOUtils")
     compile rootProject.ext.threeten
-    compile(rootProject.ext.tika) { transitive = false }
 }

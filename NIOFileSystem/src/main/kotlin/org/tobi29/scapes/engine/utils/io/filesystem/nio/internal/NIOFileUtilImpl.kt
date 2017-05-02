@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
-import org.apache.tika.Tika
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.io.*
@@ -295,9 +294,7 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             }
 
             override fun mimeType(): String {
-                readIO().use { streamIn ->
-                    return Tika().detect(streamIn, path.toString())
-                }
+                return readIO().use { detectMimeIO(it, path.toString()) }
             }
         }
     }

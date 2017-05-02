@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.apache.tika.Tika
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.io.*
 
@@ -37,7 +36,7 @@ class TagBundleResource(private val data: ByteBuffer? = null) : ReadSource {
             ?: throw IOException("Entry does not exist")
 
     override fun mimeType(): String {
-        readIO().use { streamIn -> return Tika().detect(streamIn) }
+        return readIO().use { detectMimeIO(it) }
     }
 
     override fun hashCode() = data?.hashCode() ?: 0

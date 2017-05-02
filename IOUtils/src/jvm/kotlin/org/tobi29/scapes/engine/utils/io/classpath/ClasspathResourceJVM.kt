@@ -16,28 +16,27 @@
 
 package org.tobi29.scapes.engine.utils.io.classpath
 
-import org.apache.tika.Tika
 import org.tobi29.scapes.engine.utils.io.*
+import java.io.InputStream
 
 class ClasspathResource(private val classLoader: ClassLoader,
                         private val path: String) : ReadSource {
     override fun <R> read(reader: (ReadableByteStream) -> R): R {
-        readIO().use { streamIn ->
-            return reader(BufferedReadChannelStream(
-                    Channels.newChannel(streamIn)))
+        readIO().use {
+            return reader(BufferedReadChannelStream(Channels.newChannel(it)))
         }
     }
 
     override fun exists() = classLoader.getResource(path) != null
 
-    override fun readIO() = classLoader.getResourceAsStream(path)
+    override fun readIO(): InputStream = classLoader.getResourceAsStream(path)
 
     override fun channel(): ReadableByteChannel {
         return Channels.newChannel(readIO())
     }
 
     override fun mimeType(): String {
-        readIO().use { streamIn -> return Tika().detect(streamIn, path) }
+        return readIO().use { detectMimeIO(it, path) }
     }
 
     override fun hashCode(): Int {
