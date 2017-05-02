@@ -18,6 +18,7 @@
 include "Utils"
 include "TagStructureJSON"
 include "MBeansCPUReader"
+include "MathUtils"
 include "IOUtils"
 include "GenerationUtils"
 include "GraphicsUtils"
