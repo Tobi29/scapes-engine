@@ -16,9 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
-
 fun ByteBuffer.asArray() =
         ByteArray(remaining()).also {
             val position = position()
@@ -37,16 +34,4 @@ inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
         put(supplier())
     }
     return this
-}
-
-fun Matrix3f.putInto(buffer: ByteBuffer) {
-    for (value in values()) {
-        buffer.putFloat(value)
-    }
-}
-
-fun Matrix4f.putInto(buffer: ByteBuffer) {
-    for (value in values()) {
-        buffer.putFloat(value)
-    }
 }

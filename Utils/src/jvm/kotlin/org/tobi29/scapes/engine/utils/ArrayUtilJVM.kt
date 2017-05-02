@@ -19,7 +19,6 @@
 package org.tobi29.scapes.engine.utils
 
 import com.owtelse.codec.Base64
-import org.tobi29.scapes.engine.utils.math.min
 import java.io.UnsupportedEncodingException
 import java.util.*
 import kotlin.experimental.or
@@ -296,7 +295,7 @@ inline fun <E> Array<in E>.deepArrayHashCode() = Arrays.deepHashCode(this)
  */
 inline fun copy(src: BooleanArray,
                 dest: BooleanArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -311,7 +310,7 @@ inline fun copy(src: BooleanArray,
  */
 inline fun copy(src: ByteArray,
                 dest: ByteArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -326,7 +325,7 @@ inline fun copy(src: ByteArray,
  */
 inline fun copy(src: ShortArray,
                 dest: ShortArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -341,7 +340,7 @@ inline fun copy(src: ShortArray,
  */
 inline fun copy(src: IntArray,
                 dest: IntArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -356,7 +355,7 @@ inline fun copy(src: IntArray,
  */
 inline fun copy(src: LongArray,
                 dest: LongArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -371,7 +370,7 @@ inline fun copy(src: LongArray,
  */
 inline fun copy(src: FloatArray,
                 dest: FloatArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -386,7 +385,7 @@ inline fun copy(src: FloatArray,
  */
 inline fun copy(src: DoubleArray,
                 dest: DoubleArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -401,7 +400,7 @@ inline fun copy(src: DoubleArray,
  */
 inline fun copy(src: CharArray,
                 dest: CharArray,
-                length: Int = min(src.size, dest.size),
+                length: Int = src.size.coerceAtMost(dest.size),
                 offsetSrc: Int = 0,
                 offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
@@ -416,7 +415,7 @@ inline fun copy(src: CharArray,
  */
 inline fun <E> copy(src: Array<E>,
                     dest: Array<E>,
-                    length: Int = min(src.size, dest.size),
+                    length: Int = src.size.coerceAtMost(dest.size),
                     offsetSrc: Int = 0,
                     offsetDest: Int = 0) =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)

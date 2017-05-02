@@ -22,11 +22,11 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.Random
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import org.tobi29.scapes.engine.utils.tag.*
+import java.util.*
 
 private fun createTagMap(): TagMap {
     val random = Random()

@@ -16,7 +16,6 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.IOException
-import org.tobi29.scapes.engine.utils.math.min
 import java.nio.channels.FileChannel
 
 // TODO: @Throws(IOException::class)
@@ -25,9 +24,9 @@ fun ReadableByteChannel.skip(skip: Long): Long {
         position(position() + skip)
         return 0
     } else {
-        val buffer = ByteBuffer(min(4096, skip).toInt())
+        val buffer = ByteBuffer((skip.coerceAtMost(4096)).toInt())
         while (skip > 0) {
-            buffer.limit(min(buffer.capacity().toLong(), skip).toInt())
+            buffer.limit(skip.coerceAtMost(buffer.capacity().toLong()).toInt())
             val read = read(buffer)
             if (read == -1) {
                 throw IOException("End of stream")

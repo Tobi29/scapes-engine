@@ -17,9 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":IOUtils")
-    compile project(":MathUtils")
-    compile(rootProject.ext.pngj) { transitive = false }
+    compile project(":Utils")
 }
 
 sourceSets {

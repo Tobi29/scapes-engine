@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import java.util.concurrent.ThreadLocalRandom
-
 /**
  * Constructor for creating a [java.lang.ThreadLocal] from a lambda expression
  * @param supplier: Supplier that will be called once per thread
@@ -31,12 +29,3 @@ inline fun <T> ThreadLocal(crossinline supplier: (Thread) -> T): ThreadLocal<T> 
         }
     }
 }
-
-/**
- * Returns an instance of [Random] local to the current thread
- *
- * One can use this to avoid allocating
- * @return An instance of [Random]
- */
-@Suppress("NOTHING_TO_INLINE")
-inline fun threadLocalRandom(): Random = ThreadLocalRandom.current()

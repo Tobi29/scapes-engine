@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.utils.io
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.math.min
 
 class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                        private val growth: (Int) -> Int = { it + 8192 },
@@ -142,7 +141,7 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
     override fun getSome(buffer: ByteBuffer,
                          len: Int): Boolean {
         var len = len
-        len = min(len, this.buffer.remaining())
+        len = len.coerceAtMost(this.buffer.remaining())
         val limit = this.buffer.limit()
         this.buffer.limit(this.buffer.position() + len)
         buffer.put(this.buffer)

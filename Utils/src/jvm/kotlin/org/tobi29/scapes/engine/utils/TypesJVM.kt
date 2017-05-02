@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-typealias Random = java.util.Random
-
 typealias UUID = java.util.UUID
 
 typealias IOException = java.io.IOException

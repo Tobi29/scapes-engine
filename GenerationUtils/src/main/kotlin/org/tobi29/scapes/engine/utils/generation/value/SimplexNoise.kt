@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.utils.generation.value
 
-import org.tobi29.scapes.engine.utils.Random
+import org.tobi29.scapes.engine.utils.math.Random
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.vector.dot
 

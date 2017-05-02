@@ -16,11 +16,6 @@
 
 package org.tobi29.scapes.engine.args
 
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
-import org.tobi29.scapes.engine.utils.math.vector.Vector3i
-
 /**
  * Fetches the list of arguments from the given [CommandLine]
  * @receiver The [CommandLine] to read
@@ -181,89 +176,3 @@ inline fun CommandLine.requireDouble(option: CommandOption,
                                      block: (Double?) -> Double?) =
         block(getDouble(option)) ?: throw InvalidCommandLineException(
                 "Missing argument: ${option.simpleName}")
-
-/**
- * Reads a 2 dimensional vector from the given strings
- * @param values The string to read from
- * @returns A vector containing the values from the strings
- * @throws InvalidCommandLineException If there were not 2 strings or invalid numbers
- */
-fun getVector2d(values: List<String>): Vector2d {
-    if (values.size != 2) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector2d: ${values.joinToString(
-                        separator = " ")}")
-    }
-    try {
-        return Vector2d(values[0].toDouble(), values[1].toDouble())
-    } catch (e: NumberFormatException) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector2d: ${values.joinToString(
-                        separator = " ")}")
-    }
-}
-
-/**
- * Reads a 3 dimensional vector from the given strings
- * @param values The string to read from
- * @returns A vector containing the values from the strings
- * @throws InvalidCommandLineException If there were not 3 strings or invalid numbers
- */
-fun getVector3d(values: List<String>): Vector3d {
-    if (values.size != 3) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector3d: ${values.joinToString(
-                        separator = " ")}")
-    }
-    try {
-        return Vector3d(values[0].toDouble(), values[1].toDouble(),
-                values[2].toDouble())
-    } catch (e: NumberFormatException) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector3d: ${values.joinToString(
-                        separator = " ")}")
-    }
-}
-
-/**
- * Reads a 2 dimensional vector from the given strings
- * @param values The string to read from
- * @returns A vector containing the values from the strings
- * @throws InvalidCommandLineException If there were not 2 strings or invalid numbers
- */
-fun getVector2i(values: List<String>): Vector2i {
-    if (values.size != 2) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector2i: ${values.joinToString(
-                        separator = " ")}")
-    }
-    try {
-        return Vector2i(values[0].toInt(), values[1].toInt())
-    } catch (e: NumberFormatException) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector2i: ${values.joinToString(
-                        separator = " ")}")
-    }
-}
-
-/**
- * Reads a 3 dimensional vector from the given strings
- * @param values The string to read from
- * @returns A vector containing the values from the strings
- * @throws InvalidCommandLineException If there were not 3 strings or invalid numbers
- */
-fun getVector3i(values: List<String>): Vector3i {
-    if (values.size != 3) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector3i: ${values.joinToString(
-                        separator = " ")}")
-    }
-    try {
-        return Vector3i(values[0].toInt(), values[1].toInt(),
-                values[2].toInt())
-    } catch (e: NumberFormatException) {
-        throw InvalidCommandLineException(
-                "Unable to parse vector3i: ${values.joinToString(
-                        separator = " ")}")
-    }
-}

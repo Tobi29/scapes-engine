@@ -22,9 +22,9 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.BitFieldGrid
-import org.tobi29.scapes.engine.utils.Random
 import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.setAt
+import java.util.*
 
 object BitFieldGridTests : Spek({
     describe("a bit field grid") {

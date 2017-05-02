@@ -17,6 +17,6 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":Utils")
+    compile project(":MathUtils")
     compile rootProject.ext.kotlinxCoroutines
 }

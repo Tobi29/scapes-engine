@@ -16,13 +16,12 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.IOException
-import org.tobi29.scapes.engine.utils.math.min
 
 class LimitedBufferStream(private val stream: ReadableByteStream,
                           private var remaining: Int) : SizedReadableByteStream {
 
     override fun available(): Int {
-        return min(stream.available(), remaining)
+        return stream.available().coerceAtMost(remaining)
     }
 
     override fun skip(len: Int) {
@@ -39,7 +38,7 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
     override fun getSome(buffer: ByteBuffer,
                          len: Int): Boolean {
         var len = len
-        len = min(len, remaining)
+        len = len.coerceAtMost(remaining)
         remaining -= len
         return stream.getSome(buffer, len) && remaining > 0
     }

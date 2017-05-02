@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.generation.maze
 
-import org.tobi29.scapes.engine.utils.Random
+import org.tobi29.scapes.engine.utils.math.Random
 
 /**
  * Generates random mazes

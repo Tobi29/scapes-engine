@@ -16,14 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.math.min
-
 class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
     override fun read(dst: ByteBuffer): Int {
         if (!buffer.hasRemaining()) {
             return -1
         }
-        val len = min(dst.remaining(), buffer.remaining())
+        val len = dst.remaining().coerceAtMost(buffer.remaining())
         val limit = buffer.limit()
         buffer.limit(buffer.position() + len)
         dst.put(buffer)
@@ -32,7 +30,7 @@ class ByteBufferChannel(private val buffer: ByteBuffer) : ByteChannel {
     }
 
     override fun write(src: ByteBuffer): Int {
-        val len = min(src.remaining(), buffer.remaining())
+        val len = src.remaining().coerceAtMost(buffer.remaining())
         val limit = src.limit()
         src.limit(src.position() + len)
         buffer.put(src)
