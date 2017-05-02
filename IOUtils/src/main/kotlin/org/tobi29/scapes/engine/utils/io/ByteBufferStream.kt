@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                        private val growth: (Int) -> Int = { it + 8192 },
