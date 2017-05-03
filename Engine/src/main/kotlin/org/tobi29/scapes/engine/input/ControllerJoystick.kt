@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.input
 
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.EventDispatcher
 
 class ControllerJoystick(private val name: String,
                          axisCount: Int) : ControllerBasic {
@@ -46,7 +47,7 @@ class ControllerJoystick(private val name: String,
         return axes.size
     }
 
-    @Synchronized override fun poll() {
+    @Synchronized override fun poll(events: EventDispatcher) {
         states.forEach {
             when (it.value) {
                 KeyState.PRESSED ->

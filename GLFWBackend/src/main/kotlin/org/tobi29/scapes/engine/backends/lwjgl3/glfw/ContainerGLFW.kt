@@ -32,6 +32,7 @@ import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -186,8 +187,8 @@ class ContainerGLFW(engine: ScapesEngine,
                     return tracker?.let { sequenceOf(it) } ?: emptySequence()
                 }
 
-                override fun poll() {
-                    controllerDefault.poll()
+                override fun poll(events: EventDispatcher) {
+                    controllerDefault.poll(events)
                     val tracker = tracker
                     if (tracker != null) {
                         if (controllerDefault.isDown(ControllerKey.BUTTON_0)) {

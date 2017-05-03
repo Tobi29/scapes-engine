@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.input
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 abstract class ControllerDefault : ControllerBasic {
@@ -35,12 +36,14 @@ abstract class ControllerDefault : ControllerBasic {
     private var scrollY = 0.0
     private var deltaXSet = 0.0
     private var deltaYSet = 0.0
+    private var deltaXEvent = 0.0
+    private var deltaYEvent = 0.0
     private var scrollXSet = 0.0
     private var scrollYSet = 0.0
     override var isActive = false
         protected set
 
-    @Synchronized override fun poll() {
+    @Synchronized override fun poll(events: EventDispatcher) {
         states.forEach {
             when (it.value) {
                 KeyState.PRESSED ->
@@ -78,6 +81,12 @@ abstract class ControllerDefault : ControllerBasic {
         scrollXSet = 0.0
         scrollY = scrollYSet
         scrollYSet = 0.0
+        if (deltaXEvent != 0.0 || deltaYEvent != 0.0) {
+            events.fire(
+                    MouseDeltaEvent(this, Vector2d(deltaXEvent, deltaYEvent)))
+            deltaXEvent = 0.0
+            deltaYEvent = 0.0
+        }
     }
 
     override fun isDown(key: ControllerKey): Boolean {
@@ -147,7 +156,12 @@ abstract class ControllerDefault : ControllerBasic {
                  engine: ScapesEngine? = null) {
         deltaXSet += x
         deltaYSet += y
-        engine?.events?.fire(MouseDeltaSyncEvent(this, Vector2d(x, y)))
+        if (engine == null) {
+            deltaXEvent += x
+            deltaYEvent += y
+        } else {
+            engine.events.fire(MouseDeltaEvent(this, Vector2d(x, y)))
+        }
     }
 
     fun addScroll(x: Double,
@@ -189,8 +203,8 @@ abstract class ControllerDefault : ControllerBasic {
         }
     }
 
-    class MouseDeltaSyncEvent(val controller: ControllerDefault,
-                              val delta: Vector2d)
+    class MouseDeltaEvent(val controller: ControllerDefault,
+                          val delta: Vector2d)
 
     private enum class KeyState {
         DOWN,
