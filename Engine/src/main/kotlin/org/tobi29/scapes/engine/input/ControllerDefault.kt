@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
-abstract class ControllerDefault(private val engine: ScapesEngine) : ControllerBasic {
+abstract class ControllerDefault : ControllerBasic {
     private val states = ConcurrentHashMap<ControllerKey, KeyState>()
     private val pressEventQueue = ConcurrentLinkedQueue<ControllerBasic.PressEvent>()
     private val typeEventQueue = ConcurrentLinkedQueue<KeyTypeEvent>()
@@ -143,10 +143,11 @@ abstract class ControllerDefault(private val engine: ScapesEngine) : ControllerB
     }
 
     fun addDelta(x: Double,
-                 y: Double) {
+                 y: Double,
+                 engine: ScapesEngine? = null) {
         deltaXSet += x
         deltaYSet += y
-        engine.events.fire(MouseDeltaSyncEvent(this, Vector2d(x, y)))
+        engine?.events?.fire(MouseDeltaSyncEvent(this, Vector2d(x, y)))
     }
 
     fun addScroll(x: Double,

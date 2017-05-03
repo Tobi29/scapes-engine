@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.Platform
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.EventDispatcher
@@ -102,7 +101,7 @@ class GLFWControllers(private val events: EventDispatcher,
     }
 }
 
-class GLFWControllerDefault(engine: ScapesEngine) : ControllerDefault(engine) {
+class GLFWControllerDefault : ControllerDefault() {
     private val superModifier = Platform.get() == Platform.MACOSX
 
     override val isModifierDown get() = run {

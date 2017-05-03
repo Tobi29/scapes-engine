@@ -52,7 +52,7 @@ class ContainerGLFW(engine: ScapesEngine,
     override var containerHeight = 0
         private set
     private val sync: Sync
-    private val controllerDefault = GLFWControllerDefault(engine)
+    private val controllerDefault = GLFWControllerDefault()
     private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
     private val errorFun = GLFWErrorCallback.createPrint()
@@ -149,7 +149,7 @@ class ContainerGLFW(engine: ScapesEngine,
                 if (mouseDeltaSkip) {
                     mouseDeltaSkip = false
                 } else {
-                    controllerDefault.addDelta(dx, dy)
+                    controllerDefault.addDelta(dx, dy, engine)
                 }
             }
         }
