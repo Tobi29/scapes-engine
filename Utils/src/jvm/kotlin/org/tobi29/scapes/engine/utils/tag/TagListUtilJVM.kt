@@ -18,8 +18,6 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.BigDecimal
-import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.JvmName
 import org.tobi29.scapes.engine.utils.UUID
 
@@ -185,34 +183,6 @@ inline fun tagListOf(vararg elements: Long) = TagList {
     elements.forEach { add(it) }
 }
 
-// BigInteger
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: BigInteger) = add(
-        element.toTag())
-
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: BigInteger) = add(element.toTag())
-
-/** Returns a new read-only [TagList] of given element */
-inline fun tagListOf(vararg elements: BigInteger) = TagList {
-    elements.forEach { add(it) }
-}
-
 // Float
 /**
  * Adds the specified element to the collection.
@@ -264,34 +234,6 @@ inline fun ReadWriteTagList.add(element: Double) = add(element.toTag())
 
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Double) = TagList {
-    elements.forEach { add(it) }
-}
-
-// BigDecimal
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: BigDecimal) = add(
-        element.toTag())
-
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: BigDecimal) = add(element.toTag())
-
-/** Returns a new read-only [TagList] of given element */
-inline fun tagListOf(vararg elements: BigDecimal) = TagList {
     elements.forEach { add(it) }
 }
 

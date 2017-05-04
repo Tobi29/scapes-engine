@@ -16,9 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.BigDecimal
-import org.tobi29.scapes.engine.utils.BigInteger
-
 // Boolean
 /**
  * Delegates a property to an entry at [key] in the given tag map
@@ -139,30 +136,6 @@ inline fun tagLong(key: String,
                    crossinline access: () -> MutableTagMap) =
         tag(key, { it?.toLong() ?: default }, Long::toTag, access)
 
-// BigInteger
-/**
- * Delegates a property to an entry at [key] in the given tag map
- * @receiver The map to store the property in
- * @param key The key of the entry
- * @param default The default value in case the map does not contain the key
- * @return An object for property delegation
- */
-fun MutableTagMap.tagBigInteger(key: String,
-                                default: BigInteger) =
-        tagBigInteger(key, default) { this }
-
-/**
- * Delegates a property to an entry at [key] in the tag map return from [access]
- * @param key The key of the entry
- * @param default The default value in case the map does not contain the key
- * @param access On each invocation it fetches the backing tag map from this
- * @return An object for property delegation
- */
-inline fun tagBigInteger(key: String,
-                         default: BigInteger,
-                         crossinline access: () -> MutableTagMap) =
-        tag(key, { it?.toBigInteger() ?: default }, BigInteger::toTag, access)
-
 // Float
 /**
  * Delegates a property to an entry at [key] in the given tag map
@@ -210,30 +183,6 @@ inline fun tagDouble(key: String,
                      default: Double,
                      crossinline access: () -> MutableTagMap) =
         tag(key, { it?.toDouble() ?: default }, Double::toTag, access)
-
-// BigDecimal
-/**
- * Delegates a property to an entry at [key] in the given tag map
- * @receiver The map to store the property in
- * @param key The key of the entry
- * @param default The default value in case the map does not contain the key
- * @return An object for property delegation
- */
-fun MutableTagMap.tagBigDecimal(key: String,
-                                default: BigDecimal) =
-        tagBigDecimal(key, default) { this }
-
-/**
- * Delegates a property to an entry at [key] in the tag map return from [access]
- * @param key The key of the entry
- * @param default The default value in case the map does not contain the key
- * @param access On each invocation it fetches the backing tag map from this
- * @return An object for property delegation
- */
-inline fun tagBigDecimal(key: String,
-                         default: BigDecimal,
-                         crossinline access: () -> MutableTagMap) =
-        tag(key, { it?.toBigDecimal() ?: default }, BigDecimal::toTag, access)
 
 // ByteArray
 /**

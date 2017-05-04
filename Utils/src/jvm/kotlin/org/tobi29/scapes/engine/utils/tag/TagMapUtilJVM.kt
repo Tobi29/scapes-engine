@@ -18,8 +18,6 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.BigDecimal
-import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.UUID
 
 // Unit
@@ -220,41 +218,6 @@ inline operator fun ReadWriteTagMutableMap.set(key: String,
 inline operator fun ReadWriteTagMap.set(key: String,
                                         value: Long) = put(key, value)
 
-// BigInteger
-/**
- * Associates the specified [value] with the specified [key] in the map.
- *
- * The [value] gets converted to a tag before inserting it
- *
- * @return the previous value associated with the key, or `null` if the key was not present in the map.
- */
-inline fun ReadWriteTagMutableMap.put(key: String,
-                                      value: BigInteger) = put(key,
-        value.toTag())
-
-/**
- * Associates the specified [value] with the specified [key] in the map.
- *
- * The [value] gets converted to a tag before inserting it
- *
- * @return the previous value associated with the key, or `null` if the key was not present in the map.
- */
-inline fun ReadWriteTagMap.put(key: String,
-                               value: BigInteger) = put(key, value.toTag())
-
-/**
- * Allows to use the index operator for storing values in a mutable map.
- */
-inline operator fun ReadWriteTagMutableMap.set(key: String,
-                                               value: BigInteger) = put(key,
-        value)
-
-/**
- * Allows to use the index operator for storing values in a mutable map.
- */
-inline operator fun ReadWriteTagMap.set(key: String,
-                                        value: BigInteger) = put(key, value)
-
 // Float
 /**
  * Associates the specified [value] with the specified [key] in the map.
@@ -320,41 +283,6 @@ inline operator fun ReadWriteTagMutableMap.set(key: String,
  */
 inline operator fun ReadWriteTagMap.set(key: String,
                                         value: Double) = put(key, value)
-
-// BigDecimal
-/**
- * Associates the specified [value] with the specified [key] in the map.
- *
- * The [value] gets converted to a tag before inserting it
- *
- * @return the previous value associated with the key, or `null` if the key was not present in the map.
- */
-inline fun ReadWriteTagMutableMap.put(key: String,
-                                      value: BigDecimal) = put(key,
-        value.toTag())
-
-/**
- * Associates the specified [value] with the specified [key] in the map.
- *
- * The [value] gets converted to a tag before inserting it
- *
- * @return the previous value associated with the key, or `null` if the key was not present in the map.
- */
-inline fun ReadWriteTagMap.put(key: String,
-                               value: BigDecimal) = put(key, value.toTag())
-
-/**
- * Allows to use the index operator for storing values in a mutable map.
- */
-inline operator fun ReadWriteTagMutableMap.set(key: String,
-                                               value: BigDecimal) = put(key,
-        value)
-
-/**
- * Allows to use the index operator for storing values in a mutable map.
- */
-inline operator fun ReadWriteTagMap.set(key: String,
-                                        value: BigDecimal) = put(key, value)
 
 // ByteArray
 /**

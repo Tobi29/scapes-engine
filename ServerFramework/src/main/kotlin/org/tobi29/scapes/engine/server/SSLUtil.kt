@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.math.BigInteger
 import java.security.*
 import java.security.cert.Certificate
 import java.security.cert.CertificateException

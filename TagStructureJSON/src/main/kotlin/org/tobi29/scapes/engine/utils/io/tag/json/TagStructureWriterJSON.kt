@@ -15,14 +15,14 @@
  */
 package org.tobi29.scapes.engine.utils.io.tag.json
 
-import org.tobi29.scapes.engine.utils.BigDecimal
-import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.io.ByteStreamOutputStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.tag.*
 import java.io.OutputStream
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import javax.json.Json
 import javax.json.stream.JsonGenerator

@@ -32,17 +32,9 @@ inline fun MutableTag.toInt() = toNumber()?.toInt()
 
 inline fun MutableTag.toLong() = toNumber()?.toLong()
 
-inline fun MutableTag.toBigInteger() = toNumber()?.let {
-    BigInteger(it.toString())
-}
-
 inline fun MutableTag.toFloat() = toNumber()?.toFloat()
 
 inline fun MutableTag.toDouble() = toNumber()?.toDouble()
-
-inline fun MutableTag.toBigDecimal() = toNumber()?.let {
-    BigDecimal(it.toString())
-}
 
 inline fun TagNumber.toByte() = value.toByte()
 
