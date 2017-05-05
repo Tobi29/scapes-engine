@@ -25,7 +25,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private var output = StringBuilder(1024)
     private val identifiers = HashMap<Identifier, Expression>()
     private var properties: Map<String, String>? = null
-    private var functionsSignatures = ArrayList<Pair<FunctionExportedSignature, String>>()
+    private var functionsSignatures = ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
 
     private fun staticFunction(expression: FunctionExpression): String {
         val name = expression.name
@@ -39,7 +39,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             if (function.first.parameters.size != args.size) {
                 continue
             }
-            return "${function.second}(${args.joinToString()})"
+            return function.second(args)
         }
         when (args.size) {
             0 -> staticFunction(name)?.let { return it }
@@ -527,7 +527,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 Pair(FunctionExportedSignature("texture", Types.Vector4,
                         TypeExported(Types.Int),
                         TypeExported(Types.Vector2)),
-                        "texture"))
+                        { a -> glslFunction("texture", *a) }))
         for ((type, typeBoolean) in arrayOf(
                 Pair(Types.Float, Types.Boolean),
                 Pair(Types.Vector2, Types.Vector2),
@@ -536,55 +536,66 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "length", type,
-                            TypeExported(type)), "length"))
+                            TypeExported(type)),
+                            { a -> glslFunction("length", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "abs", type,
-                            TypeExported(type)), "abs"))
+                            TypeExported(type)),
+                            { a -> glslFunction("abs", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "floor", type,
-                            TypeExported(type)), "floor"))
+                            TypeExported(type)),
+                            { a -> glslFunction("floor", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "sin", type,
-                            TypeExported(type)), "sin"))
+                            TypeExported(type)),
+                            { a -> glslFunction("sin", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "cos", type,
-                            TypeExported(type)), "cos"))
+                            TypeExported(type)),
+                            { a -> glslFunction("cos", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "min", type,
                             TypeExported(type),
-                            TypeExported(type)), "min"))
+                            TypeExported(type)),
+                            { a -> glslFunction("min", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "max", type,
                             TypeExported(type),
-                            TypeExported(type)), "max"))
+                            TypeExported(type)),
+                            { a -> glslFunction("max", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "clamp", type,
                             TypeExported(type),
                             TypeExported(type),
-                            TypeExported(type)), "clamp"))
+                            TypeExported(type)),
+                            { a -> glslFunction("clamp", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "mix", type,
                             TypeExported(type),
                             TypeExported(type),
-                            TypeExported(type)), "mix"))
+                            TypeExported(type)),
+                            { a -> glslFunction("mix", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "dot", type,
                             TypeExported(type),
-                            TypeExported(type)), "dot"))
+                            TypeExported(type)),
+                            { a -> glslFunction("dot", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "mod", type,
                             TypeExported(type),
-                            TypeExported(type)), "mod"))
+                            TypeExported(type)),
+                            { a -> glslFunction("mod", *a) }))
         }
 
         for ((type, typeBoolean) in arrayOf(
@@ -595,95 +606,116 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                     Pair(FunctionExportedSignature(
                             "greaterThan", typeBoolean,
                             TypeExported(type),
-                            TypeExported(type)), "greaterThan"))
+                            TypeExported(type)),
+                            { a -> glslFunction("greaterThan", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "greaterThanEqual", typeBoolean,
                             TypeExported(type),
-                            TypeExported(type)), "greaterThanEqual"))
+                            TypeExported(type)),
+                            { a -> glslFunction("greaterThanEqual", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "lessThan", typeBoolean,
                             TypeExported(type),
-                            TypeExported(type)), "lessThan"))
+                            TypeExported(type)),
+                            { a -> glslFunction("lessThan", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
                             "lessThanEqual", typeBoolean,
                             TypeExported(type),
-                            TypeExported(type)), "lessThanEqual"))
+                            TypeExported(type)),
+                            { a -> glslFunction("lessThanEqual", *a) }))
         }
 
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("float", Types.Float,
-                        TypeExported(Types.Float)), "float"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("float", *a) }))
 
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Float)), "vec2"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec2", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Vector2)), "vec2"))
+                        TypeExported(Types.Vector2)),
+                        { a -> glslFunction("vec2", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector2", Types.Vector2,
                         TypeExported(Types.Float),
-                        TypeExported(Types.Float)), "vec2"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec2", *a) }))
 
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float)), "vec3"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec3", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector3", Types.Vector3,
                         TypeExported(Types.Float),
                         TypeExported(Types.Float),
-                        TypeExported(Types.Float)), "vec3"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec3", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector3", Types.Vector3,
                         TypeExported(Types.Float),
-                        TypeExported(Types.Vector2)), "vec3"))
+                        TypeExported(Types.Vector2)),
+                        { a -> glslFunction("vec3", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector3", Types.Vector3,
                         TypeExported(Types.Vector2),
-                        TypeExported(Types.Float)), "vec3"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec3", *a) }))
 
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float)), "vec4"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Float),
                         TypeExported(Types.Float),
                         TypeExported(Types.Float),
-                        TypeExported(Types.Float)), "vec4"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Float),
                         TypeExported(Types.Float),
-                        TypeExported(Types.Vector2)), "vec4"))
+                        TypeExported(Types.Vector2)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Float),
                         TypeExported(Types.Vector2),
-                        TypeExported(Types.Float)), "vec4"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Float),
-                        TypeExported(Types.Vector3)), "vec4"))
+                        TypeExported(Types.Vector3)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Vector2),
                         TypeExported(Types.Float),
-                        TypeExported(Types.Float)), "vec4"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Vector2),
-                        TypeExported(Types.Vector2)), "vec4"))
+                        TypeExported(Types.Vector2)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
                         TypeExported(Types.Vector3),
-                        TypeExported(Types.Float)), "vec4"))
+                        TypeExported(Types.Float)),
+                        { a -> glslFunction("vec4", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector4)), "vec4"))
+                        TypeExported(Types.Vector4)),
+                        { a -> glslFunction("vec4", *a) }))
 
         initBuiltIn(scope["discard"]) { GLSLExpression("discard") }
         initBuiltIn(scope["return"]) { GLSLExpression("return") }
@@ -821,7 +853,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             functionsSignatures.add(Pair(
                     FunctionExportedSignature(
                             signature),
-                    signature.name))
+                    { a -> glslFunction(signature.name, *a) }))
             println(0, signature(signature, signature.name))
             statement(function.compound, 0)
         }
@@ -903,6 +935,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             indents--
         }
         output.append(str).append('\n')
+    }
+
+    companion object {
+        private fun glslFunction(name: String,
+                                 vararg args: String) =
+                "$name(${args.joinToString()})"
     }
 
     enum class Version {
