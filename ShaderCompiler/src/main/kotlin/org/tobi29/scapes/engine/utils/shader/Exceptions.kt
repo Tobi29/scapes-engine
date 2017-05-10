@@ -22,7 +22,9 @@ import org.antlr.v4.runtime.TokenStream
 import org.antlr.v4.runtime.tree.ParseTree
 import org.antlr.v4.runtime.tree.TerminalNode
 
-class ShaderCompileException : Exception {
+sealed class ShaderException(message: String) : Exception(message)
+
+class ShaderCompileException : ShaderException {
     constructor(message: String,
                 context: TerminalNode) : super(
             message(message, context.symbol))
@@ -32,12 +34,20 @@ class ShaderCompileException : Exception {
             message(message, context.start))
 
     constructor(message: String) : super(message)
+}
 
-    constructor(e: Exception,
-                context: ParserRuleContext) : super(
-            message(e.message ?: "", context.start), e)
+class ShaderASTException(message: String,
+                         expression: Expression
+) : ShaderException(message(message, expression))
 
-    constructor(e: Exception) : super(e)
+class ShaderGenerateException : Exception {
+    constructor(message: String) : super(message)
+
+    constructor(message: String,
+                expression: Expression) : super(
+            message(message, expression))
+
+    constructor(e: Exception) : super(e.toString())
 }
 
 private fun message(message: String,
@@ -50,4 +60,10 @@ private fun message(message: String,
                     tokens: TokenStream): String {
     val token = tokens[context.sourceInterval.a]
     return message(message, token)
+}
+
+private fun message(message: String,
+                    expression: Expression): String {
+    val location = expression.location ?: return message
+    return "${location.x}:${location.y} -> $message"
 }

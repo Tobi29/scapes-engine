@@ -18,21 +18,29 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.graphics.ShaderCompileInformation
-import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
+import org.tobi29.scapes.engine.utils.shader.Expression
 
-internal class ShaderGL(private val shader: CompiledShader,
-                        private val information: ShaderCompileInformation) : Shader {
+internal class ShaderGL(shader: CompiledShader,
+                        properties: Map<String, Expression>) : Shader {
     override var isStored = false
+    private val vertexSource: String
+    private val fragmentSource: String
+    private val uniforms = shader.uniforms()
     private var valid = false
     private var markAsDisposed = false
     private var uniformLocations: IntArray? = null
     private var program = 0
     private var used: Long = 0
     private var detach: (() -> Unit)? = null
+
+    init {
+        val shaders = GLUtils.compileShader(shader, properties)
+        vertexSource = shaders.first
+        fragmentSource = shaders.second
+    }
 
     override fun ensureStored(gl: GL): Boolean {
         if (!isStored) {
@@ -235,16 +243,10 @@ internal class ShaderGL(private val shader: CompiledShader,
         assert { !isStored }
         isStored = true
         gl.check()
-        val processor = information.preCompile(gl)
-        try {
-            val program = GLUtils.createProgram(shader, processor.properties())
-            this.program = program.first
-            uniformLocations = program.second
-        } catch (e: IOException) {
-            logger.error(e) { "Failed to generate shader" }
-        }
-
-        information.postCompile(gl, this)
+        val program = GLUtils.createProgram(vertexSource, fragmentSource,
+                uniforms)
+        this.program = program.first
+        uniformLocations = program.second
         valid = true
         detach = gl.shaderTracker.attach(this)
     }

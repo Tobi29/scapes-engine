@@ -16,14 +16,19 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.BigDecimal
-import org.tobi29.scapes.engine.utils.BigInteger
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.readOnly
-import org.tobi29.scapes.engine.utils.toArray
+import java.math.BigDecimal
+import java.math.BigInteger
 
-open class Expression {
+abstract class Expression {
     var location: Vector2i? = null
+
+    abstract fun type(context: ShaderContext): TypeExported
+
+    open fun simplify(context: ShaderContext,
+                      identifiers: Map<Identifier, Expression> = emptyMap()) =
+            this
 }
 
 class ShaderProgram(
@@ -31,114 +36,128 @@ class ShaderProgram(
         functions: List<Function>,
         shaders: Map <String, Pair<Scope, (Scope) -> ShaderFunction>>,
         val outputs: ShaderSignature?,
-        uniforms: List<Uniform?>
-) : Expression() {
+        uniforms: List<Uniform?>,
+        properties: List<Property>) {
     val declarations = declarations.readOnly()
     val functions = functions.readOnly()
     val shaders = shaders.readOnly()
     val uniforms = uniforms.readOnly()
+    val properties = properties.readOnly()
 }
 
-sealed class ArrayExpression : Expression() {
-    class Literal(content: List<Expression>) : ArrayExpression() {
-        val content = content.readOnly()
-    }
+class ArrayExpression(content: List<Expression>) : Expression() {
+    val content = content.readOnly()
 
-    class Property(val key: String) : ArrayExpression()
+    constructor(array: IntArray) : this(array.map { IntegerExpression(it) })
+    constructor(array: DoubleArray) : this(array.map { DecimalExpression(it) })
+
+    override fun type(context: ShaderContext) =
+            content.asSequence().map { it.type(context) as TypeExported? }
+                    .reduce { a, b -> a common b }?.type?.exportedArray
+                    ?: throw ShaderASTException("Array contains multiple types",
+                    this)
 }
 
 class ArrayAccessExpression(val name: Expression,
-                            val index: Expression) : Expression()
-
-class ArrayDeclaration(val identifier: Identifier) : Expression()
-
-class ArrayDeclarationStatement(val type: Type,
-                                val length: Expression,
-                                declarations: List<ArrayDeclaration>) : Statement() {
-    val declarations = declarations.readOnly()
+                            val index: Expression) : Expression() {
+    override fun type(context: ShaderContext) =
+            name.type(context).type.exported
 }
 
-class ArrayUnsizedDeclarationStatement(val type: Type,
-                                       val identifier: Identifier,
-                                       val initializer: ArrayExpression) : Statement()
-
-class AssignmentExpression(val type: AssignmentType,
-                           val left: Expression,
-                           val right: Expression) : Expression()
-
-class BooleanExpression(val value: Boolean) : Expression()
-
-class CompoundStatement(val block: StatementBlock) : Statement()
+class AssignmentExpression(val left: Expression,
+                           val right: Expression) : Expression() {
+    override fun type(context: ShaderContext) = left.type(context)
+}
 
 class ConditionExpression(val type: ConditionType,
                           val left: Expression,
-                          val right: Expression) : Expression()
-
-class Declaration(val identifier: Identifier,
-                  val initializer: Expression? = null) : Expression()
-
-class DeclarationStatement(val type: Type,
-                           declarations: List<Declaration>) : Statement() {
-    val declarations = declarations.readOnly()
-}
-
-class ExpressionStatement(val expression: Expression) : Statement()
-
-class FloatingExpression(val value: BigDecimal) : Expression()
-
-class Function(val signature: FunctionSignature,
-               val compound: CompoundStatement)
-
-class FunctionExportedSignature(val name: String,
-                                val returned: Types,
-                                vararg val parameters: TypeExported) : Expression() {
-    constructor(signature: FunctionSignature) : this(signature.name,
-            signature.returned, *convertParameters(
-            signature.parameters))
-
-    companion object {
-        private fun convertParameters(parameters: Array<out Parameter>) = parameters.asSequence().map {
-            TypeExported(it.type.type, it.type.array != null)
-        }.toArray()
-    }
+                          val right: Expression) : Expression() {
+    override fun type(context: ShaderContext) = Types.Boolean.exported
 }
 
 class FunctionExpression(val name: String,
-                         val args: List<Expression>) : Expression()
+                         val args: List<Expression>) : Expression() {
+    constructor(signature: FunctionExportedSignature,
+                args: List<Expression>) : this(signature.name, args)
 
-class FunctionSignature(val name: String,
-                        val returned: Types,
-                        val returnedPrecision: Precision,
-                        vararg val parameters: Parameter)
+    override fun type(context: ShaderContext) =
+            context.functions[FunctionParameterSignature(name, args.map {
+                it.type(context)
+            })]?.returned ?: throw ShaderASTException("Unknown function", this)
+}
 
-class IdentifierExpression(val identifier: Identifier) : Expression()
+class IdentifierExpression(val identifier: Identifier) : Expression() {
+    override fun type(context: ShaderContext) = identifier.type
+
+    override fun simplify(context: ShaderContext,
+                          identifiers: Map<Identifier, Expression>) =
+            identifiers[identifier] ?: this
+}
+
+class BooleanExpression(val value: Boolean) : Expression() {
+    override fun type(context: ShaderContext) = Types.Boolean.exported
+}
+
+class IntegerExpression(val value: BigInteger) : Expression() {
+    constructor(value: Int) : this(BigInteger(value.toString()))
+
+    override fun type(context: ShaderContext) = Types.Int.exported
+}
+
+class DecimalExpression(val value: BigDecimal) : Expression() {
+    constructor(value: Double) : this(BigDecimal(value.toString()))
+
+    override fun type(context: ShaderContext) = Types.Float.exported
+}
+
+class MemberExpression(val name: String,
+                       val member: Expression) : Expression() {
+    override fun type(context: ShaderContext) =
+            member.type(context).memberType(name) ?: throw ShaderASTException(
+                    "Unknown member", this)
+}
+
+class UnaryExpression(val type: UnaryType,
+                      val value: Expression) : Expression() {
+    override fun type(context: ShaderContext) = value.type(context)
+
+    override fun simplify(context: ShaderContext,
+                          identifiers: Map<Identifier, Expression>) =
+            value.simplify(context, identifiers).also { value ->
+                when (type) {
+                    UnaryType.NOT -> when (value) {
+                        is BooleanExpression -> BooleanExpression(!value.value)
+                        else -> UnaryExpression(type, value)
+                    }
+                    else -> UnaryExpression(type, value)
+                }
+            }
+}
+
+class TernaryExpression(val condition: Expression,
+                        val expression: Expression,
+                        val expressionElse: Expression) : Expression() {
+    override fun type(context: ShaderContext) =
+            expression.type(context) common expressionElse.type(context)
+                    ?: throw ShaderASTException("Different result types", this)
+}
+
+class VoidExpression : Expression() {
+    override fun type(context: ShaderContext) = Types.Void.exported
+}
 
 class IfStatement(val condition: Expression,
                   val statement: Statement,
                   val statementElse: Statement? = null) : Statement()
 
-open class IntegerExpression : Expression()
-
-class IntegerLiteralExpression(val value: BigInteger) : IntegerExpression()
-
-class IntegerPropertyExpression(val key: String) : IntegerExpression()
-
 class LoopFixedStatement(val index: Identifier,
-                         val start: IntegerExpression,
-                         val end: IntegerExpression,
+                         val start: Expression,
+                         val end: Expression,
                          val statement: Statement) : Statement()
-
-class MemberExpression(val name: String,
-                       val member: Expression) : Expression()
-
-class OperationExpression(val type: OperationType,
-                          val left: Expression,
-                          val right: Expression) : Expression()
 
 class Parameter(val type: Type,
                 val identifier: Identifier)
 
-class PropertyExpression(val key: String) : Expression()
 class ShaderFunction(val signature: ShaderSignature,
                      val compound: CompoundStatement)
 
@@ -152,14 +171,60 @@ class ShaderSignature(val name: String,
     val parameters = parameters.readOnly()
 }
 
-open class Statement : Expression()
-class StatementBlock(statements: List<Statement>) : Expression() {
+open class Statement : Expression() {
+    override fun type(context: ShaderContext) = Types.Void.exported
+}
+
+class StatementBlock(statements: List<Statement>) : Statement() {
     val statements = statements.readOnly()
 }
 
-class TernaryExpression(val condition: Expression,
-                        val expression: Expression,
-                        val expressionElse: Expression) : Expression()
+class DeclarationStatement(val type: Type,
+                           val identifier: Identifier,
+                           val initializer: Expression? = null) : Statement()
+
+class ArrayDeclarationStatement(val type: Type,
+                                val length: Expression,
+                                val identifier: Identifier,
+                                val initializer: Expression? = null) : Statement()
+
+class CompoundStatement(val block: StatementBlock) : Statement()
+
+class ExpressionStatement(val expression: Expression) : Statement()
+
+class Function(val signature: FunctionSignature,
+               val compound: CompoundStatement)
+
+class FunctionSignature(val name: String,
+                        val returned: TypeExported,
+                        val returnedPrecision: Precision,
+                        vararg val parameters: Parameter) {
+    val exported by lazy {
+        FunctionExportedSignature(name, returned,
+                exportedParameters(parameters))
+    }
+
+    companion object {
+        private fun exportedParameters(parameters: Array<out Parameter>) =
+                parameters.asSequence().map {
+                    it.type.type.exported(it.type.array != null)
+                }.toList()
+    }
+}
+
+data class FunctionExportedSignature(val name: String,
+                                     val returned: TypeExported,
+                                     val parameters: List<TypeExported>) {
+    constructor(name: String,
+                returned: TypeExported,
+                vararg parameters: TypeExported) : this(name, returned,
+            listOf(*parameters))
+
+    val call by lazy { FunctionParameterSignature(name, parameters) }
+}
+
+data class FunctionParameterSignature(val name: String,
+                                      val parameters: List<TypeExported>)
 
 class Type(val type: Types,
            val array: Expression? = null,
@@ -167,58 +232,30 @@ class Type(val type: Types,
            val precision: Precision) {
     constructor(type: Types,
                 constant: Boolean,
-                precision: Precision) : this(
-            type, null, constant, precision)
+                precision: Precision) : this(type, null, constant, precision)
+
+    val exported = type.exported(array != null)
 }
 
-class TypeExported(val type: Types,
-                   val array: Boolean = false)
-
-class UnaryExpression(val type: UnaryType,
-                      val value: Expression) : Expression()
+data class TypeExported(val type: Types,
+                        val array: Boolean = false)
 
 class Uniform(val type: Type,
               val id: Int,
               val identifier: Identifier)
 
-class VoidExpression : Expression()
-
-enum class AssignmentType {
-    ASSIGN,
-    ASSIGN_SHIFT_LEFT,
-    ASSIGN_SHIFT_RIGHT,
-    ASSIGN_PLUS,
-    ASSIGN_MINUS,
-    ASSIGN_MULTIPLY,
-    ASSIGN_DIVIDE,
-    ASSIGN_MODULUS,
-    ASSIGN_AND,
-    ASSIGN_INCLUSIVE_OR,
-    ASSIGN_EXCLUSIVE_OR
-}
+class Property(val type: Type,
+               val identifier: Identifier)
 
 enum class ConditionType {
-    CONDITION_LOGICAL_OR,
-    CONDITION_LOGICAL_AND,
-    CONDITION_INCLUSIVE_OR,
-    CONDITION_EXCLUSIVE_OR,
-    CONDITION_AND,
-    CONDITION_EQUALS,
-    CONDITION_NOT_EQUALS,
-    CONDITION_LESS,
-    CONDITION_GREATER,
-    CONDITION_LESS_EQUAL,
-    CONDITION_GREATER_EQUAL
-}
-
-enum class OperationType {
-    SHIFT_LEFT,
-    SHIFT_RIGHT,
-    PLUS,
-    MINUS,
-    MULTIPLY,
-    DIVIDE,
-    MODULUS
+    OR,
+    AND,
+    EQUALS,
+    NOT_EQUALS,
+    LESS,
+    GREATER,
+    LESS_EQUAL,
+    GREATER_EQUAL
 }
 
 enum class Precision {
@@ -244,7 +281,22 @@ enum class Types {
     Vector4b,
     Vector4i,
     Matrix4,
-    Texture2
+    Texture2;
+
+    val exported = TypeExported(this)
+    val exportedArray = TypeExported(this, true)
+
+    fun exported(array: kotlin.Boolean) = if (array) exportedArray else exported
+}
+
+tailrec fun Expression.isLValue(): Boolean = when (this) {
+    is IdentifierExpression -> true
+    is MemberExpression -> member.isLValue()
+    else -> false
+}
+
+infix fun TypeExported?.common(other: TypeExported?): TypeExported? {
+    return if (this == other) this else null
 }
 
 enum class UnaryType {

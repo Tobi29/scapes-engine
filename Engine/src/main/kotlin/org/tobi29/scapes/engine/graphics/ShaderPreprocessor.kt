@@ -17,21 +17,17 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.shader.Expression
 
 class ShaderPreprocessor {
-    private val properties = ConcurrentHashMap<String, String>()
+    private val properties = ConcurrentHashMap<String, Expression>()
 
     fun supplyProperty(key: String,
-                       value: Any) {
-        supplyProperty(key, value.toString())
-    }
-
-    fun supplyProperty(key: String,
-                       value: String) {
+                       value: Expression) {
         properties.put(key, value)
     }
 
-    fun properties(): Map<String, String> {
+    fun properties(): Map<String, Expression> {
         return properties
     }
 }

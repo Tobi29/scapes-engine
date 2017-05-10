@@ -16,57 +16,38 @@
 
 package org.tobi29.scapes.engine.utils.shader.backend.glsl
 
-import org.tobi29.scapes.engine.utils.BigInteger
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.computeAbsent
+import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.shader.*
 import org.tobi29.scapes.engine.utils.shader.Function
-import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeParser
+import java.math.BigInteger
 
 class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private var output = StringBuilder(1024)
     private val identifiers = HashMap<Identifier, Expression>()
-    private var properties: Map<String, String>? = null
-    private var functionsSignatures = ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
+    private lateinit var context: ShaderContext
+    private var functionImplementations = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
 
     private fun staticFunction(expression: FunctionExpression): String {
         val name = expression.name
         val args = Array(expression.args.size) {
             expression(expression.args[it])
         }
-        for (function in functionsSignatures) {
-            if (function.first.name != name) {
-                continue
-            }
-            if (function.first.parameters.size != args.size) {
-                continue
-            }
-            return function.second(args)
-        }
-        when (args.size) {
-            0 -> staticFunction(name)?.let { return it }
-            1 -> staticFunction(name, args[0])?.let { return it }
+        val signature = FunctionParameterSignature(name,
+                expression.args.map { it.type(context) })
+        val newFunction = context.functions[signature]
+        if (newFunction != null) {
+            functionImplementations[newFunction]?.let { return it(args) }
+            return glslFunction(newFunction.name, *args)
         }
         throw ShaderGenerateException(
-                "No functions for given arguments: $name", expression)
-    }
-
-    private fun staticFunction(name: String): String? {
-        when (name) {
-            "discard" -> return "discard"
-        }
-        return null
-    }
-
-    private fun staticFunction(name: String,
-                               argument0: String): String? {
-        when (name) {
-            "return" -> return "return " + argument0
-        }
-        return null
+                "No functions for given arguments: $signature", expression)
     }
 
     private fun variable(identifier: Identifier): String? {
-        val expression = identifiers[identifier] ?: return null
-        return pack(expression)
+        return identifiers[identifier]?.let { expression(it) } ?: return null
     }
 
     private fun member(field: String): String {
@@ -74,12 +55,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun expression(expression: Expression): String {
-        if (expression is AssignmentExpression) {
+        if (expression is GLSLExpression) {
+            return glslExpression(expression)
+        } else if (expression is AssignmentExpression) {
             return assignmentExpression(expression)
         } else if (expression is ConditionExpression) {
             return conditionExpression(expression)
-        } else if (expression is OperationExpression) {
-            return operationExpression(expression)
         } else if (expression is UnaryExpression) {
             return unaryExpression(expression)
         } else if (expression is TernaryExpression) {
@@ -92,16 +73,14 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return booleanExpression(expression)
         } else if (expression is IntegerExpression) {
             return integerExpression(expression)
-        } else if (expression is FloatingExpression) {
-            return floatingExpression(expression)
+        } else if (expression is DecimalExpression) {
+            return decimalExpression(expression)
+        } else if (expression is ArrayExpression) {
+            return arrayExpression(expression)
         } else if (expression is IdentifierExpression) {
             return variableExpression(expression)
         } else if (expression is MemberExpression) {
             return memberExpression(expression)
-        } else if (expression is PropertyExpression) {
-            return propertyExpression(expression)
-        } else if (expression is GLSLExpression) {
-            return glslExpression(expression)
         } else if (expression is VoidExpression) {
             return ""
         }
@@ -109,27 +88,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 "Unknown expression: ${expression::class}")
     }
 
-    private fun assignmentExpression(expression: AssignmentExpression): String {
-        return combineNotPacked(expression.left, expression.right,
-                assignmentOperator(expression.type))
+    private fun glslExpression(expression: GLSLExpression): String {
+        return expression.code
     }
 
-    private fun assignmentOperator(type: AssignmentType): String {
-        when (type) {
-            AssignmentType.ASSIGN -> return "="
-            AssignmentType.ASSIGN_SHIFT_LEFT -> return "<<="
-            AssignmentType.ASSIGN_SHIFT_RIGHT -> return ">>="
-            AssignmentType.ASSIGN_PLUS -> return "+="
-            AssignmentType.ASSIGN_MINUS -> return "-="
-            AssignmentType.ASSIGN_MULTIPLY -> return "*="
-            AssignmentType.ASSIGN_DIVIDE -> return "/="
-            AssignmentType.ASSIGN_MODULUS -> return "%="
-            AssignmentType.ASSIGN_AND -> return "&="
-            AssignmentType.ASSIGN_INCLUSIVE_OR -> return "|="
-            AssignmentType.ASSIGN_EXCLUSIVE_OR -> return "^="
-            else -> throw IllegalArgumentException(
-                    "Unexpected expression type: $type")
-        }
+    private fun assignmentExpression(expression: AssignmentExpression): String {
+        return combineNotPacked(expression.left, expression.right, "=")
     }
 
     private fun conditionExpression(expression: ConditionExpression): String {
@@ -139,36 +103,14 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun conditionOperator(type: ConditionType): String {
         when (type) {
-            ConditionType.CONDITION_LOGICAL_OR -> return "||"
-            ConditionType.CONDITION_LOGICAL_AND -> return "&&"
-            ConditionType.CONDITION_INCLUSIVE_OR -> return "|"
-            ConditionType.CONDITION_EXCLUSIVE_OR -> return "^"
-            ConditionType.CONDITION_AND -> return "&"
-            ConditionType.CONDITION_EQUALS -> return "=="
-            ConditionType.CONDITION_NOT_EQUALS -> return "!="
-            ConditionType.CONDITION_LESS -> return "<"
-            ConditionType.CONDITION_GREATER -> return ">"
-            ConditionType.CONDITION_LESS_EQUAL -> return "<="
-            ConditionType.CONDITION_GREATER_EQUAL -> return ">="
-            else -> throw IllegalArgumentException(
-                    "Unexpected expression type: $type")
-        }
-    }
-
-    private fun operationExpression(expression: OperationExpression): String {
-        return combine(expression.left, expression.right,
-                operationOperator(expression.type))
-    }
-
-    private fun operationOperator(type: OperationType): String {
-        when (type) {
-            OperationType.SHIFT_LEFT -> return "<<"
-            OperationType.SHIFT_RIGHT -> return ">>"
-            OperationType.PLUS -> return "+"
-            OperationType.MINUS -> return "-"
-            OperationType.MULTIPLY -> return "*"
-            OperationType.DIVIDE -> return "/"
-            OperationType.MODULUS -> return "%"
+            ConditionType.OR -> return "||"
+            ConditionType.AND -> return "&&"
+            ConditionType.EQUALS -> return "=="
+            ConditionType.NOT_EQUALS -> return "!="
+            ConditionType.LESS -> return "<"
+            ConditionType.GREATER -> return ">"
+            ConditionType.LESS_EQUAL -> return "<="
+            ConditionType.GREATER_EQUAL -> return ">="
             else -> throw IllegalArgumentException(
                     "Unexpected expression type: $type")
         }
@@ -210,17 +152,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun integerExpression(expression: IntegerExpression): String {
-        if (expression is IntegerLiteralExpression) {
-            return expression.value.toString()
-        } else if (expression is IntegerPropertyExpression) {
-            return property(expression.key) ?: throw ShaderGenerateException(
-                    "Unknown property: ${expression.key}", expression)
-        }
-        throw IllegalArgumentException(
-                "Unknown integer: ${expression::class}")
+        return expression.value.toString()
     }
 
-    private fun floatingExpression(expression: FloatingExpression): String {
+    private fun decimalExpression(expression: DecimalExpression): String {
         val str = expression.value.toString()
         if (str.indexOf('.') == -1) {
             return str + ".0"
@@ -237,27 +172,17 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         return pack(expression.member) + '.' + member(expression.name)
     }
 
-    private fun propertyExpression(expression: PropertyExpression): String {
-        return property(expression.key) ?: throw ShaderGenerateException(
-                "Unknown property: $expression.key", expression)
-    }
-
-    private fun glslExpression(expression: GLSLExpression): String {
-        return expression.code
-    }
-
     private fun ifStatement(expression: IfStatement,
                             level: Int) {
-        val condition = expression(expression.condition)
-        if ("true" == condition) {
-            statement(expression.statement, level)
-        } else if ("false" == condition) {
-            if (expression.statementElse != null) {
+        val condition = expression.condition.simplify(context, identifiers)
+        if (condition is BooleanExpression) {
+            if (condition.value) {
+                statement(expression.statement, level)
+            } else if (expression.statementElse != null) {
                 statement(expression.statementElse, level)
             }
         } else {
-            println(level, "if(" + condition +
-                    ')')
+            println(level, "if(${expression(condition)})")
             statement(expression.statement, level)
             if (expression.statementElse != null) {
                 println(level, "else")
@@ -268,117 +193,50 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun loopFixedStatement(expression: LoopFixedStatement,
                                    level: Int) {
-        val start = integer(expression(expression.start))
-        val end = integer(expression(expression.end))
-        for (i in start..end - 1) {
-            identifiers[expression.index] = IntegerLiteralExpression(
+        val startInt = integer(
+                expression.start.simplify(context, identifiers)).toInt()
+        val endInt = integer(
+                expression.end.simplify(context, identifiers)).toInt()
+        for (i in startInt..endInt - 1) {
+            identifiers[expression.index] = IntegerExpression(
                     BigInteger(i.toString()))
             statement(expression.statement, level)
         }
     }
 
-    private fun declarationStatement(expression: DeclarationStatement,
-                                     level: Int) {
-        println(level, declarationStatement(expression) + ';')
-    }
-
-    private fun declarationStatement(statement: DeclarationStatement): String {
-        val str = StringBuilder(32)
-        str.append(type(statement.type))
-        str.append(' ')
-        var first = true
-        for (declaration in statement.declarations) {
-            if (first) {
-                first = false
-            } else {
-                str.append(", ")
-            }
-            identifiers[declaration.identifier] = GLSLExpression(
-                    declaration.identifier.name)
-            str.append(declaration(statement.type, declaration))
+    private fun declarationStatement(
+            statement: DeclarationStatement,
+            level: Int) {
+        identifiers[statement.identifier] = GLSLExpression(
+                statement.identifier.type, statement.identifier.name)
+        val declaration = type(statement.type, statement.identifier)
+        if (statement.initializer == null) {
+            println(level, declaration + ';')
+        } else {
+            println(level, declaration + " = " +
+                    expression(statement.initializer) + ';')
         }
-        return str.toString()
-    }
-
-    private fun declaration(type: Type,
-                            declaration: Declaration): String {
-        val str = identifier(type,
-                declaration.identifier) ?: throw ShaderGenerateException(
-                "Unknown identifier: ${declaration.identifier.name}",
-                declaration)
-        if (declaration.initializer != null) {
-            return str + " = " + expression(declaration.initializer)
-        }
-        return str
-    }
-
-    private fun arrayDeclarationStatement(statement: ArrayDeclarationStatement,
-                                          level: Int) {
-        println(level, arrayDeclarationStatement(statement) + ';')
     }
 
     private fun arrayDeclarationStatement(
-            statement: ArrayDeclarationStatement): String {
-        val str = StringBuilder(32)
-        str.append(type(statement.type))
-        str.append(' ')
-        var first = true
-        for (declaration in statement.declarations) {
-            if (first) {
-                first = false
-            } else {
-                str.append(", ")
-            }
-            identifiers[declaration.identifier] = GLSLExpression(
-                    declaration.identifier.name)
-            str.append(arrayDeclaration(statement.type, declaration))
-        }
-        return str.toString()
-    }
-
-    private fun arrayDeclaration(type: Type,
-                                 declaration: ArrayDeclaration): String {
-        return identifier(type,
-                declaration.identifier) ?: throw ShaderGenerateException(
-                "Unknown identifier: ${declaration.identifier.name}",
-                declaration)
-    }
-
-    private fun arrayUnsizedDeclarationStatement(
-            statement: ArrayUnsizedDeclarationStatement,
+            statement: ArrayDeclarationStatement,
             level: Int) {
-        val initializer: ArrayExpression.Literal
-        if (statement.initializer is ArrayExpression.Property) {
-            initializer = property(statement.initializer)
-        } else if (statement.initializer is ArrayExpression.Literal) {
-            initializer = statement.initializer
-        } else {
-            throw IllegalArgumentException(
-                    "Unknown array initializer: ${statement::class}")
-        }
         identifiers[statement.identifier] = GLSLExpression(
-                statement.identifier.name)
-        println(level, type(statement.type, statement.identifier) + '[' +
-                initializer.content.size + "] = " +
-                type(statement.type.type) + "[]" +
-                arrayExpression(initializer) + ';')
+                statement.identifier.type, statement.identifier.name)
+        val declaration = type(statement.type, statement.identifier)
+        if (statement.initializer == null) {
+            println(level, declaration + ';')
+        } else {
+            println(level, declaration + " = " +
+                    type(statement.type.type) + "[]" +
+                    expression(statement.initializer) + ';')
+        }
     }
 
-    private fun arrayExpression(initializer: ArrayExpression.Literal): String {
-        val str = StringBuilder(initializer.content.size * 7)
-        str.append('(')
-        var first = true
-        for (expression in initializer.content) {
-            if (first) {
-                first = false
-            } else {
-                str.append(", ")
-            }
-            str.append(expression(expression))
-        }
-        str.append(')')
-        return str.toString()
-    }
+    private fun arrayExpression(initializer: ArrayExpression) =
+            initializer.content.asSequence().map {
+                expression(it)
+            }.joinToString(prefix = "(", postfix = ")")
 
     private fun combine(a: Expression,
                         b: Expression,
@@ -484,37 +342,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun property(expression: ArrayExpression.Property): ArrayExpression.Literal {
-        val source = property(expression.key) ?: throw ShaderGenerateException(
-                "Unknown property: ${expression.key}", expression)
-        try {
-            val parser = CLikeParser.parser(source)
-            val expression2 = CLikeParser.initializer(
-                    parser.initializerArrayList(), Scope())
-            if (expression2 is ArrayExpression.Literal) {
-                return expression2
-            } else {
-                throw ShaderGenerateException(
-                        "Property has to be a static array expression",
-                        expression)
-            }
-        } catch (e: ShaderCompileException) {
-            throw ShaderGenerateException(e)
-        }
-    }
-
-    private fun property(name: String): String? {
-        val properties = properties ?: throw IllegalStateException(
-                "No shader program")
-        return properties[name]
-    }
-
-    private fun integer(value: String): Int {
-        try {
-            return value.toInt()
-        } catch (e: NumberFormatException) {
-            throw ShaderGenerateException(e)
-        }
+    private fun integer(expression: Expression): BigInteger {
+        val integer = expression.simplify(context,
+                identifiers) as? IntegerExpression
+                ?: throw ShaderGenerateException(
+                "Expression has to be integer on compile time", expression)
+        return integer.value
     }
 
     private inline fun initBuiltIn(identifier: Identifier?,
@@ -523,225 +356,36 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun init(scope: Scope) {
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("texture", Types.Vector4,
-                        TypeExported(Types.Int),
-                        TypeExported(Types.Vector2)),
-                        { a -> glslFunction("texture", *a) }))
-        for ((type, typeBoolean) in arrayOf(
-                Pair(Types.Float, Types.Boolean),
-                Pair(Types.Vector2, Types.Vector2),
-                Pair(Types.Vector3, Types.Vector3),
-                Pair(Types.Vector4, Types.Vector4))) {
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "length", type,
-                            TypeExported(type)),
-                            { a -> glslFunction("length", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "abs", type,
-                            TypeExported(type)),
-                            { a -> glslFunction("abs", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "floor", type,
-                            TypeExported(type)),
-                            { a -> glslFunction("floor", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "sin", type,
-                            TypeExported(type)),
-                            { a -> glslFunction("sin", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "cos", type,
-                            TypeExported(type)),
-                            { a -> glslFunction("cos", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "min", type,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("min", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "max", type,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("max", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "clamp", type,
-                            TypeExported(type),
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("clamp", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "mix", type,
-                            TypeExported(type),
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("mix", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "dot", type,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("dot", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "mod", type,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("mod", *a) }))
+        stdFunctionSignatures.forEach {
+            functionImplementations[it.first] = it.second
         }
-
-        for ((type, typeBoolean) in arrayOf(
-                Pair(Types.Vector2, Types.Vector2),
-                Pair(Types.Vector3, Types.Vector3),
-                Pair(Types.Vector4, Types.Vector4))) {
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "greaterThan", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("greaterThan", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "greaterThanEqual", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("greaterThanEqual", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "lessThan", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("lessThan", *a) }))
-            functionsSignatures.add(
-                    Pair(FunctionExportedSignature(
-                            "lessThanEqual", typeBoolean,
-                            TypeExported(type),
-                            TypeExported(type)),
-                            { a -> glslFunction("lessThanEqual", *a) }))
+        initBuiltIn(scope["out_Position"]) {
+            GLSLExpression(Types.Vector4.exported, "gl_Position")
         }
-
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("float", Types.Float,
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("float", *a) }))
-
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec2", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Vector2)),
-                        { a -> glslFunction("vec2", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector2", Types.Vector2,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec2", *a) }))
-
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec3", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec3", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Vector2)),
-                        { a -> glslFunction("vec3", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector3", Types.Vector3,
-                        TypeExported(Types.Vector2),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec3", *a) }))
-
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Vector2)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Vector2),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Vector3)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector2),
-                        TypeExported(Types.Float),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector2),
-                        TypeExported(Types.Vector2)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector3),
-                        TypeExported(Types.Float)),
-                        { a -> glslFunction("vec4", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature("vector4", Types.Vector4,
-                        TypeExported(Types.Vector4)),
-                        { a -> glslFunction("vec4", *a) }))
-
-        initBuiltIn(scope["discard"]) { GLSLExpression("discard") }
-        initBuiltIn(scope["return"]) { GLSLExpression("return") }
-        initBuiltIn(scope["out_Position"]) { GLSLExpression("gl_Position") }
         initBuiltIn(scope["varying_Fragment"]) {
-            GLSLExpression("gl_FragCoord")
+            GLSLExpression(Types.Vector4.exported, "gl_FragCoord")
         }
     }
 
     fun generateVertex(scope: Scope,
                        shader: CompiledShader,
-                       properties: Map<String, String>): String {
+                       properties: Map<String, Expression>): String {
         if (output.isNotEmpty()) {
             // output.delete(0, output.length - 1)
             output = StringBuilder(1024)
         }
         init(scope)
-        this.properties = properties
+        context = ShaderContext(shader.functionMap + stdFunctionSignatures.map {
+            Pair(it.first.call, it.first)
+        }, properties)
         val shaderVertex = shader.shaderVertex ?: throw IllegalStateException(
                 "No vertex shader")
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
                 "No fragment shader")
-        val uniforms = shader.uniforms()
+        propertyIdentifiers(shader.properties, properties)
         signatureIdentifiers(shaderVertex.signature)
         signatureIdentifiers(shaderFragment.signature)
-        header(uniforms, shaderVertex.signature)
+        header(shader.uniforms(), shaderVertex.signature)
         println()
         header(shaderFragment.signature)
         println()
@@ -751,26 +395,28 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         println()
         shader(shaderVertex)
         identifiers.clear()
-        functionsSignatures.clear()
+        functionImplementations.clear()
         return output.toString()
     }
 
     fun generateFragment(scope: Scope,
                          shader: CompiledShader,
-                         properties: Map<String, String>): String {
+                         properties: Map<String, Expression>): String {
         if (output.isNotEmpty()) {
             // output.delete(0, output.length - 1)
             output = StringBuilder(1024)
         }
         init(scope)
-        this.properties = properties
+        context = ShaderContext(shader.functionMap + stdFunctionSignatures.map {
+            Pair(it.first.call, it.first)
+        }, properties)
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
                 "No fragment shader")
         val outputs = shader.outputs ?: throw IllegalStateException(
                 "No outputs")
-        val uniforms = shader.uniforms()
+        propertyIdentifiers(shader.properties, properties)
         signatureIdentifiers(outputs)
-        header(uniforms, shaderFragment.signature)
+        header(shader.uniforms(), shaderFragment.signature)
         println()
         header(outputs)
         println()
@@ -780,6 +426,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         println()
         shader(shaderFragment)
         identifiers.clear()
+        functionImplementations.clear()
         return output.toString()
     }
 
@@ -793,7 +440,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         for (uniform in uniforms) {
             if (uniform != null) {
                 identifiers[uniform.identifier] = GLSLExpression(
-                        uniform.identifier.name)
+                        uniform.identifier.type, uniform.identifier.name)
                 println(0, "uniform " + type(uniform.type) + ' ' +
                         identifier(uniform.type, uniform.identifier) +
                         ';')
@@ -801,11 +448,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
         println()
         for (parameter in input.parameters) {
-            if (expression(parameter.available) != "true") {
+            val available = expression(parameter.available)
+            if (available != "true" && available != "(true)") {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
-                    parameter.identifier.name)
+                    parameter.identifier.type, parameter.identifier.name)
             if (parameter.id == -1) {
                 println(0, "in " + type(parameter.type, parameter.identifier) +
                         ';')
@@ -818,17 +466,34 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun signatureIdentifiers(output: ShaderSignature) {
         for (parameter in output.parameters) {
-            if (expression(parameter.available) != "true") {
+            val available = expression(parameter.available)
+            if (available != "true" && available != "(true)") {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
-                    parameter.identifier.name)
+                    parameter.identifier.type, parameter.identifier.name)
+        }
+    }
+
+    private fun propertyIdentifiers(properties: List<Property>,
+                                    propertyValues: Map<String, Expression>) {
+        for (property in properties) {
+            val value = propertyValues[property.identifier.name]
+                    ?: throw ShaderGenerateException(
+                    "No value defined for property: ${property.identifier.name}")
+            val valueType = value.type(context)
+            if (property.type.exported != valueType) {
+                throw ShaderGenerateException(
+                        "Property declaration for ${property.identifier.name} and value type conflict: ${property.type.exported} <-> $valueType")
+            }
+            identifiers[property.identifier] = value
         }
     }
 
     private fun header(output: ShaderSignature) {
         for (parameter in output.parameters) {
-            if (expression(parameter.available) != "true") {
+            val available = expression(parameter.available)
+            if (available != "true" && available != "(true)") {
                 continue
             }
             if (parameter.id == -1) {
@@ -850,10 +515,6 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun functions(functions: List<Function>) {
         for (function in functions) {
             val signature = function.signature
-            functionsSignatures.add(Pair(
-                    FunctionExportedSignature(
-                            signature),
-                    { a -> glslFunction(signature.name, *a) }))
             println(0, signature(signature, signature.name))
             statement(function.compound, 0)
         }
@@ -863,19 +524,23 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                           name: String): String {
         val str = StringBuilder(24)
         str.append(precision(signature.returnedPrecision)).append(' ')
-        str.append(type(signature.returned)).append(' ')
+        str.append(type(signature.returned.type))
+        if (signature.returned.array) {
+            str.append("[]")
+        }
+        str.append(' ')
         str.append(name).append('(')
         if (signature.parameters.isNotEmpty()) {
             run {
                 val parameter = signature.parameters[0]
                 identifiers[parameter.identifier] = GLSLExpression(
-                        parameter.identifier.name)
+                        parameter.identifier.type, parameter.identifier.name)
                 str.append(type(parameter.type, parameter.identifier))
             }
             for (i in 1..signature.parameters.lastIndex) {
                 val parameter = signature.parameters[1]
                 identifiers[parameter.identifier] = GLSLExpression(
-                        parameter.identifier.name)
+                        parameter.identifier.type, parameter.identifier.name)
                 str.append(", ").append(
                         type(parameter.type, parameter.identifier))
             }
@@ -909,14 +574,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         } else if (statement is DeclarationStatement) {
             declarationStatement(statement, level)
         } else if (statement is ArrayDeclarationStatement) {
-            arrayDeclarationStatement(statement,
-                    level)
-        } else if (statement is ArrayUnsizedDeclarationStatement) {
-            arrayUnsizedDeclarationStatement(
-                    statement, level)
+            arrayDeclarationStatement(statement, level)
         } else if (statement is ExpressionStatement) {
-            println(level,
-                    expression(statement.expression) + ';')
+            println(level, expression(statement.expression) + ';')
         } else {
             throw IllegalArgumentException(
                     "Unknown statement: ${statement::class}")
@@ -938,13 +598,40 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     companion object {
+        private val stdFunctionSignatures =
+                ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
+                        .also { GLSLSTDLib.functions(it) }.readOnly()
+
         private fun glslFunction(name: String,
                                  vararg args: String) =
                 "$name(${args.joinToString()})"
+
+        fun generate(version: Version,
+                     shader: CompiledShader,
+                     properties: Map<String, Expression>): Pair<String, String> {
+            val generator = generator.computeAbsent(version) {
+                ThreadLocal { GLSLGenerator(version) }
+            }.get()
+            val vertexSource = generator.generateVertex(shader.scope,
+                    shader, properties)
+            val fragmentSource = generator.generateFragment(shader.scope,
+                    shader, properties)
+            return Pair(vertexSource, fragmentSource)
+        }
+
+        private val generator = ConcurrentHashMap<Version, ThreadLocal<GLSLGenerator>>()
     }
 
     enum class Version {
         GL_330,
         GLES_300
     }
+}
+
+class GLSLExpression(val type: TypeExported,
+                     val code: String) : Expression() {
+    override fun type(context: ShaderContext) = type
+
+    override fun simplify(context: ShaderContext,
+                          identifiers: Map<Identifier, Expression>) = this
 }

@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
+import org.tobi29.scapes.engine.utils.shader.Expression
 
 class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
     override val textures = TextureManager(engine)
@@ -79,7 +80,7 @@ class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
     }
 
     override fun createShader(shader: CompiledShader,
-                              information: ShaderCompileInformation): Shader {
-        return ShaderGL(shader, information)
+                              properties: Map<String, Expression>): Shader {
+        return ShaderGL(shader, properties)
     }
 }

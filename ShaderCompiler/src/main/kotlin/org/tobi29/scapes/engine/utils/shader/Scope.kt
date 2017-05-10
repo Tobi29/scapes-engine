@@ -22,11 +22,12 @@ import org.tobi29.scapes.engine.utils.assert
 class Scope(vararg private val parents: Scope) {
     private val map = HashMap<String, Identifier>()
 
-    fun add(name: String): Identifier? {
+    fun add(name: String,
+            type: TypeExported): Identifier? {
         if (map.containsKey(name)) {
             return null
         }
-        val variable = Identifier(name, this)
+        val variable = Identifier(name, type, this)
         val old = map.put(name, variable)
         assert { old == null }
         return variable

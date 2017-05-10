@@ -25,12 +25,32 @@ class CompiledShader(declarations: List<Statement>,
                      val shaderFragment: ShaderFunction?,
                      val outputs: ShaderSignature?,
                      val scope: Scope,
-                     private val uniforms: Array<Uniform?>) {
+                     private val uniforms: Array<Uniform?>,
+                     properties: List<Property>) {
     val declarations = declarations.readOnly()
     val functions = functions.readOnly()
-
+    val functionMap =
+            HashMap<FunctionParameterSignature, FunctionExportedSignature>()
+                    .also { functionMap ->
+                        functions.asSequence().map {
+                            Pair(it.signature.exported.call,
+                                    it.signature.exported)
+                        }.toMap(functionMap)
+                        ArrayList<FunctionExportedSignature>().also {
+                            STDLib.functions(it)
+                        }.forEach {
+                            functionMap[it.call] = it
+                        }
+                    }.readOnly()
+    val properties = properties.readOnly()
 
     fun uniforms(): Array<Uniform?> {
         return uniforms.copyOf()
     }
+}
+
+class ShaderContext(functions: Map<FunctionParameterSignature, FunctionExportedSignature>,
+                    properties: Map<String, Expression>) {
+    val functions = functions.readOnly()
+    val properties = properties.readOnly()
 }

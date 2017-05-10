@@ -19,8 +19,10 @@ package org.tobi29.scapes.engine.graphics
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
+import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
@@ -36,7 +38,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
     private val fboDebug: GuiWidgetDebugValues.Element
     private val shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture
-    private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
+    private val shaderCache = ConcurrentHashMap<String, Resource<CompiledShader>>()
     private val queue = ConcurrentLinkedQueue<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
@@ -144,11 +146,13 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
         }
     }
 
-    fun compileShader(source: String): CompiledShader {
-        return shaderCache[source] ?: run {
-            val shader = ShaderCompiler.compile(source)
-            shaderCache.put(source, shader)
-            shader
+    fun compileShader(source: String): Resource<CompiledShader> {
+        return shaderCache.computeAbsent(source) {
+            engine.resources.load {
+                profilerSection("Shader parse") {
+                    ShaderCompiler.compile(source)
+                }
+            }
         }
     }
 

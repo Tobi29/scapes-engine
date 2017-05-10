@@ -16,331 +16,239 @@
 
 package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
+import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.shader.*
 
-internal object ExpressionParser {
-    fun expression(
-            context: ScapesShaderParser.AssignmentExpressionContext,
-            scope: Scope): Expression {
-        val condition = context.conditionalExpression()
-        if (condition == null) {
-            val type: AssignmentType
-            when (context.assignmentOperator().text) {
-                "=" -> type = AssignmentType.ASSIGN
-                "*=" -> type = AssignmentType.ASSIGN_MULTIPLY
-                "/=" -> type = AssignmentType.ASSIGN_DIVIDE
-                "%=" -> type = AssignmentType.ASSIGN_MODULUS
-                "+=" -> type = AssignmentType.ASSIGN_PLUS
-                "-=" -> type = AssignmentType.ASSIGN_MINUS
-                "<<=" -> type = AssignmentType.ASSIGN_SHIFT_LEFT
-                ">>=" -> type = AssignmentType.ASSIGN_SHIFT_RIGHT
-                "&=" -> type = AssignmentType.ASSIGN_AND
-                "|=" -> type = AssignmentType.ASSIGN_INCLUSIVE_OR
-                "^=" -> type = AssignmentType.ASSIGN_EXCLUSIVE_OR
-                else -> throw ShaderCompileException(
-                        "Invalid assignment operator" + context.assignmentOperator().text,
-                        context.assignmentOperator())
-            }
-            return AssignmentExpression(
-                    type,
-                    expression(context.unaryExpression(), scope),
-                    expression(context.assignmentExpression(), scope))
-        }
-        return expression(condition, scope)
-    }
-
-    fun expression(context: ScapesShaderParser.ConditionalExpressionContext,
-                   scope: Scope): Expression {
-        val condition = context.conditionalExpression() ?: return expression(
-                context.logicalOrExpression(), scope)
-        return TernaryExpression(
-                expression(context.logicalOrExpression(), scope),
-                expression(context.expression(), scope),
-                expression(condition, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.LogicalOrExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.logicalAndExpression()
-        val next = context.logicalOrExpression() ?: return expression(
-                expression, scope)
-        return ConditionExpression(
-                ConditionType.CONDITION_LOGICAL_OR,
-                expression(next, scope), expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.LogicalAndExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.inclusiveOrExpression()
-        val next = context.logicalAndExpression() ?: return expression(
-                expression, scope)
-        return ConditionExpression(
-                ConditionType.CONDITION_LOGICAL_AND,
-                expression(next, scope), expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.InclusiveOrExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.exclusiveOrExpression()
-        val next = context.inclusiveOrExpression() ?: return expression(
-                expression, scope)
-        return ConditionExpression(
-                ConditionType.CONDITION_INCLUSIVE_OR,
-                expression(next, scope), expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.ExclusiveOrExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.andExpression()
-        val next = context.exclusiveOrExpression() ?: return expression(
-                expression, scope)
-        return ConditionExpression(
-                ConditionType.CONDITION_EXCLUSIVE_OR,
-                expression(next, scope), expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.AndExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.equalityExpression()
-        val next = context.andExpression() ?: return expression(expression,
-                scope)
-        return ConditionExpression(
-                ConditionType.CONDITION_AND,
-                expression(next, scope), expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.EqualityExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.relationalExpression()
-        val next = context.equalityExpression() ?: return expression(
-                expression, scope)
-        val type: ConditionType
-        when (context.children[1].text) {
-            "==" -> type = ConditionType.CONDITION_EQUALS
-            "!=" -> type = ConditionType.CONDITION_NOT_EQUALS
-            else -> throw ShaderCompileException(
-                    "Invalid conditional operator: " + context.children[1].text,
-                    context)
-        }
-        return ConditionExpression(
-                type, expression(next, scope),
-                expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.RelationalExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.shiftExpression()
-        val next = context.relationalExpression() ?: return expression(
-                expression, scope)
-        val type: ConditionType
-        when (context.children[1].text) {
-            "<" -> type = ConditionType.CONDITION_LESS
-            ">" -> type = ConditionType.CONDITION_GREATER
-            "<=" -> type = ConditionType.CONDITION_LESS_EQUAL
-            ">=" -> type = ConditionType.CONDITION_GREATER_EQUAL
-            else -> throw ShaderCompileException(
-                    "Invalid conditional operator: " + context.children[1].text,
-                    context)
-        }
-        return ConditionExpression(
-                type, expression(next, scope),
-                expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.ShiftExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.additiveExpression()
-        val next = context.shiftExpression() ?: return expression(
-                expression, scope)
-        val type: OperationType
-        when (context.children[1].text) {
-            "<<" -> type = OperationType.SHIFT_LEFT
-            ">>" -> type = OperationType.SHIFT_RIGHT
-            else -> throw ShaderCompileException(
-                    "Invalid operator: " + context.children[1].text,
-                    context)
-        }
-        return OperationExpression(
-                type, expression(next, scope),
-                expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.AdditiveExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.multiplicativeExpression()
-        val next = context.additiveExpression() ?: return expression(
-                expression, scope)
-        val type: OperationType
-        when (context.children[1].text) {
-            "+" -> type = OperationType.PLUS
-            "-" -> type = OperationType.MINUS
-            else -> throw ShaderCompileException(
-                    "Invalid operator: " + context.children[1].text,
-                    context)
-        }
-        return OperationExpression(
-                type, expression(next, scope),
-                expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.MultiplicativeExpressionContext,
-                   scope: Scope): Expression {
-        val expression = context.unaryExpression()
-        val next = context.multiplicativeExpression() ?: return expression(
-                expression, scope)
-        val type: OperationType
-        when (context.children[1].text) {
-            "*" -> type = OperationType.MULTIPLY
-            "/" -> type = OperationType.DIVIDE
-            "%" -> type = OperationType.MODULUS
-            else -> throw ShaderCompileException(
-                    "Invalid operator: " + context.children[1].text,
-                    context)
-        }
-        return OperationExpression(
-                type, expression(next, scope),
-                expression(expression, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.UnaryExpressionContext,
-                   scope: Scope): Expression {
-        val next = context.unaryExpression() ?: return expression(
-                context.postfixExpression(), scope)
-        val unaryOperator = context.unaryOperator()
-        if (unaryOperator != null) {
-            val type: UnaryType
-            when (unaryOperator.text) {
-                "+" -> type = UnaryType.POSITIVE
-                "-" -> type = UnaryType.NEGATIVE
-                "~" -> type = UnaryType.BIT_NOT
-                "!" -> type = UnaryType.NOT
-                else -> throw ShaderCompileException(
-                        "Invalid operator: " + context.children[0].text,
-                        context)
-            }
-            return UnaryExpression(
-                    type, expression(next, scope))
-        }
-        val type: UnaryType
-        when (context.children[0].text) {
-            "++" -> type = UnaryType.INCREMENT_GET
-            "--" -> type = UnaryType.DECREMENT_GET
-            else -> throw ShaderCompileException(
-                    "Invalid operator: " + context.children[0].text,
-                    context)
-        }
-        return UnaryExpression(
-                type, expression(next, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.PostfixExpressionContext,
-                   scope: Scope): Expression {
-        val function = context.functionExpression()
-        if (function != null) {
-            return function(function, scope)
-        }
-        val next = context.postfixExpression() ?: return expression(
-                context.primaryExpression(), scope)
-        val array = context.expression()
-        if (array != null) {
-            return array(next, array, scope)
-        }
-        val field = context.Identifier()
-        if (field != null) {
-            return field(next, field, scope)
-        }
-        val type: UnaryType
-        when (context.children[1].text) {
-            "++" -> type = UnaryType.GET_INCREMENT
-            "--" -> type = UnaryType.GET_DECREMENT
-            else -> throw ShaderCompileException(
-                    "Invalid operator: " + context.children[1].text,
-                    context)
-        }
-        return UnaryExpression(
-                type, expression(next, scope))
-    }
-
-    fun expression(context: ScapesShaderParser.ExpressionContext,
-                   scope: Scope): Expression {
-        return expression(context.assignmentExpression(), scope)
-    }
-
-    fun expression(context: ScapesShaderParser.IfStatementContext,
-                   scope: Scope): Expression {
-        val expression = context.expression()
-        if (expression != null) {
-            return expression(expression, scope)
-        }
-        throw ShaderCompileException("No expression found", context)
-    }
-
-    fun expression(context: ScapesShaderParser.ExpressionStatementContext,
-                   scope: Scope): Expression {
-        val expression = context.expression() ?: return VoidExpression()
-        return expression(expression, scope)
-    }
-
-    fun array(array: ScapesShaderParser.PostfixExpressionContext,
-              index: ScapesShaderParser.ExpressionContext,
-              scope: Scope): Expression {
-        return ArrayAccessExpression(
-                expression(array, scope),
-                expression(index, scope))
-    }
-
-    fun function(context: ScapesShaderParser.FunctionExpressionContext,
-                 scope: Scope): Expression {
-        val expressions = ArrayList<Expression>()
-        var arguments = context.argumentExpressionList()
-        while (arguments != null) {
-            expressions.add(expression(
-                    arguments.assignmentExpression(), scope))
-            arguments = arguments.argumentExpressionList()
-        }
-        return FunctionExpression(
-                context.Identifier().text,
-                expressions).apply {
-            attach(context)
-        }
-    }
-
-    fun field(context: ScapesShaderParser.PostfixExpressionContext,
-              name: TerminalNode,
-              scope: Scope): Expression {
-        return MemberExpression(
-                name.text,
-                expression(context, scope)).apply {
-            attach(context)
-        }
-    }
-
-    fun expression(context: ScapesShaderParser.PrimaryExpressionContext,
-                   scope: Scope): Expression {
-        val identifier = context.Identifier()
-        if (identifier != null) {
-            val name = identifier.text
-            val variable = scope[name] ?: throw ShaderCompileException(
-                    "Unknown variable: $name", identifier)
-            return IdentifierExpression(
-                    variable).apply {
-                attach(identifier)
+internal fun ScapesShaderParser.ExpressionContext.ast(scope: Scope): Expression {
+    primaryExpression()?.ast(scope)?.let { return it }
+    return when (childCount) {
+        2 -> {
+            val left = children[0]
+            val right = children[1]
+            if (left is ScapesShaderParser.ExpressionContext
+                    && right is TerminalNode) {
+                parseExpression(left.ast(scope), right.symbol)
+            } else if (left is TerminalNode
+                    && right is ScapesShaderParser.ExpressionContext) {
+                parseExpression(left.symbol, right.ast(scope))
+            } else {
+                throw IllegalStateException("Invalid parse tree: $this")
             }
         }
-        val constant = context.constant()
-        if (constant != null) {
-            return LiteralParser.constant(constant).apply {
-                attach(constant)
+        3 -> {
+            val left = children[0]
+            val operator = children[1]
+            val right = children[2]
+            if (left is ScapesShaderParser.ExpressionContext
+                    && right is ScapesShaderParser.ExpressionContext
+                    && operator is TerminalNode) {
+                parseExpression(left.ast(scope), operator.symbol,
+                        right.ast(scope))
+            } else if (left is ScapesShaderParser.ExpressionContext
+                    && right is TerminalNode
+                    && operator is TerminalNode) {
+                parseExpression(left.ast(scope), operator.symbol, right.symbol)
+            } else if (left is TerminalNode
+                    && right is TerminalNode
+                    && operator is TerminalNode) {
+                parseExpression(left.symbol, operator.symbol, right.symbol)
+            } else {
+                throw IllegalStateException("Invalid parse tree: $this")
             }
         }
-        val property = context.property()
-        if (property != null) {
-            return PropertyExpression(
-                    property.Identifier().text).apply {
-                attach(property)
+        4 -> {
+            val left = children[0]
+            val operatorLeft = children[1]
+            val right = children[2]
+            val operatorRight = children[3]
+            if (left is ScapesShaderParser.ExpressionContext
+                    && operatorLeft is TerminalNode
+                    && right is ScapesShaderParser.ExpressionContext
+                    && operatorRight is TerminalNode) {
+                parseExpression(left.ast(scope), operatorLeft.symbol,
+                        right.ast(scope), operatorRight.symbol)
+            } else if (left is TerminalNode
+                    && operatorLeft is TerminalNode
+                    && right is ScapesShaderParser.ExpressionListContext
+                    && operatorRight is TerminalNode) {
+                parseExpression(left.symbol, operatorLeft.symbol,
+                        right.ast(scope), operatorRight.symbol)
+            } else {
+                throw IllegalStateException("Invalid parse tree: $this")
             }
         }
-        return expression(context.expression(), scope)
+        5 -> {
+            val left = children[0]
+            val operatorLeft = children[1]
+            val middle = children[2]
+            val operatorRight = children[3]
+            val right = children[4]
+            if (left is ScapesShaderParser.ExpressionContext
+                    && operatorLeft is TerminalNode
+                    && middle is ScapesShaderParser.ExpressionContext
+                    && operatorRight is TerminalNode
+                    && right is ScapesShaderParser.ExpressionContext) {
+                parseExpression(left.ast(scope), operatorLeft.symbol,
+                        middle.ast(scope), operatorRight.symbol,
+                        right.ast(scope))
+            } else {
+                throw IllegalStateException("Invalid parse tree: $this")
+            }
+        }
+        else -> throw IllegalStateException("Invalid context: $this")
     }
+}
+
+internal fun ScapesShaderParser.ExpressionListContext?.ast(scope: Scope): ArrayList<Expression> {
+    val expressions = ArrayList<Expression>()
+    expression(this, expressions, scope)
+    return expressions
+}
+
+internal fun ScapesShaderParser.IfStatementContext.ast(scope: Scope): Expression {
+    val expression = expression()
+    if (expression != null) {
+        return expression.ast(scope)
+    }
+    throw ShaderCompileException("No expression found", this)
+}
+
+internal fun ScapesShaderParser.ExpressionStatementContext.ast(scope: Scope): Expression {
+    val expression = expression() ?: return VoidExpression()
+    return expression.ast(scope)
+}
+
+internal fun ScapesShaderParser.PrimaryExpressionContext.ast(scope: Scope): Expression {
+    val identifier = Identifier()
+    if (identifier != null) {
+        val name = identifier.text
+        val variable = scope[name] ?: throw ShaderCompileException(
+                "Unknown variable: $name", identifier)
+        return IdentifierExpression(variable).apply { attach(identifier) }
+    }
+    literal()?.ast()?.let { return it }
+    return expression().ast(scope)
+}
+
+private fun parseExpression(left: Expression,
+                            operator: Token) = when (operator.text) {
+    "++" -> UnaryExpression(UnaryType.GET_INCREMENT, left)
+    "--" -> UnaryExpression(UnaryType.GET_DECREMENT, left)
+    else -> throw IllegalStateException("Invalid token: $operator")
+}
+
+private fun parseExpression(operator: Token,
+                            right: Expression) = when (operator.text) {
+    "++" -> UnaryExpression(UnaryType.INCREMENT_GET, right)
+    "--" -> UnaryExpression(UnaryType.DECREMENT_GET, right)
+    "+" -> UnaryExpression(UnaryType.POSITIVE, right)
+    "-" -> UnaryExpression(UnaryType.NEGATIVE, right)
+    "~" -> UnaryExpression(UnaryType.BIT_NOT, right)
+    "!" -> UnaryExpression(UnaryType.NOT, right)
+    else -> throw IllegalStateException("Invalid token: $operator")
+}
+
+private fun parseExpression(left: Expression,
+                            operator: Token,
+                            right: Expression) = when (operator.text) {
+    "+" -> FunctionExpression("plus", listOf(left, right))
+    "-" -> FunctionExpression("minus", listOf(left, right))
+    "*" -> FunctionExpression("times", listOf(left, right))
+    "/" -> FunctionExpression("div", listOf(left, right))
+    "%" -> FunctionExpression("rem", listOf(left, right))
+    "&" -> FunctionExpression("and", listOf(left, right))
+    "|" -> FunctionExpression("or", listOf(left, right))
+    "^" -> FunctionExpression("xor", listOf(left, right))
+    "<<" -> FunctionExpression("shl", listOf(left, right))
+    ">>" -> FunctionExpression("shr", listOf(left, right))
+    "&&" -> ConditionExpression(ConditionType.AND, left, right)
+    "||" -> ConditionExpression(ConditionType.OR, left, right)
+    "==" -> ConditionExpression(ConditionType.EQUALS, left, right)
+    "!=" -> ConditionExpression(ConditionType.NOT_EQUALS, left, right)
+    "<" -> ConditionExpression(ConditionType.LESS, left, right)
+    ">" -> ConditionExpression(ConditionType.GREATER, left, right)
+    "<=" -> ConditionExpression(ConditionType.LESS_EQUAL, left, right)
+    ">=" -> ConditionExpression(ConditionType.GREATER_EQUAL, left, right)
+    "=" -> AssignmentExpression(left, right)
+    "+=" -> AssignmentExpression(left,
+            FunctionExpression("plus", listOf(left, right)))
+    "-=" -> AssignmentExpression(left,
+            FunctionExpression("minus", listOf(left, right)))
+    "*=" -> AssignmentExpression(left,
+            FunctionExpression("times", listOf(left, right)))
+    "/=" -> AssignmentExpression(left,
+            FunctionExpression("div", listOf(left, right)))
+    "%=" -> AssignmentExpression(left,
+            FunctionExpression("rem", listOf(left, right)))
+    "&=" -> AssignmentExpression(left,
+            FunctionExpression("and", listOf(left, right)))
+    "|=" -> AssignmentExpression(left,
+            FunctionExpression("or", listOf(left, right)))
+    "^=" -> AssignmentExpression(left,
+            FunctionExpression("xor", listOf(left, right)))
+    "<<=" -> AssignmentExpression(left,
+            FunctionExpression("shl", listOf(left, right)))
+    ">>=" -> AssignmentExpression(left,
+            FunctionExpression("shr", listOf(left, right)))
+    else -> throw IllegalStateException("Invalid token: $operator")
+}
+
+private fun parseExpression(left: Expression,
+                            operator: Token,
+                            identifier: Token) = when (operator.text) {
+    "." -> MemberExpression(identifier.text, left)
+    else -> throw IllegalStateException("Invalid token: $operator")
+}
+
+private fun parseExpression(identifier: Token,
+                            operatorLeft: Token,
+                            operatorRight: Token) = when (operatorLeft.text) {
+    "(" -> when (operatorRight.text) {
+        ")" -> FunctionExpression(identifier.text, emptyList())
+        else -> throw IllegalStateException("Invalid token: $operatorRight")
+    }
+    else -> throw IllegalStateException("Invalid token: $operatorLeft")
+}
+
+private fun parseExpression(left: Expression,
+                            operatorLeft: Token,
+                            right: Expression,
+                            operatorRight: Token) = when (operatorLeft.text) {
+    "[" -> when (operatorRight.text) {
+        "]" -> ArrayAccessExpression(left, right)
+        else -> throw IllegalStateException("Invalid token: $operatorRight")
+    }
+    else -> throw IllegalStateException("Invalid token: $operatorLeft")
+}
+
+private fun parseExpression(identifier: Token,
+                            operatorLeft: Token,
+                            expressions: List<Expression>,
+                            operatorRight: Token) = when (operatorLeft.text) {
+    "(" -> when (operatorRight.text) {
+        ")" -> FunctionExpression(identifier.text, expressions)
+        else -> throw IllegalStateException("Invalid token: $operatorRight")
+    }
+    else -> throw IllegalStateException("Invalid token: $operatorLeft")
+}
+
+private fun parseExpression(left: Expression,
+                            operatorLeft: Token,
+                            middle: Expression,
+                            operatorRight: Token,
+                            right: Expression) = when (operatorLeft.text) {
+    "?" -> when (operatorRight.text) {
+        ":" -> TernaryExpression(left, middle, right)
+        else -> throw IllegalStateException("Invalid token: $operatorRight")
+    }
+    else -> throw IllegalStateException("Invalid token: $operatorLeft")
+}
+
+private tailrec fun expression(context: ScapesShaderParser.ExpressionListContext?,
+                               expressions: MutableList<Expression>,
+                               scope: Scope) {
+    context ?: return
+    expressions.add(context.expression().ast(scope))
+    expression(context.expressionList(), expressions, scope)
 }

@@ -18,90 +18,52 @@ package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.tobi29.scapes.engine.utils.shader.*
 
-internal object TypeParser {
-    fun type(context: ScapesShaderParser.DeclaratorContext): Type {
-        val field = context.declaratorField()
-        if (field != null) {
-            return type(field)
-        }
-        return type(context.declaratorArray())
-    }
+internal fun ScapesShaderParser.DeclaratorContext.ast(scope: Scope): Type {
+    declaratorField()?.let { return it.ast() }
+    declaratorArray()?.let { return it.ast(scope) }
+    throw IllegalStateException("Invalid parse tree node")
+}
 
-    fun type(context: ScapesShaderParser.DeclaratorFieldContext): Type {
-        var constant = false
-        context.children.forEach { child ->
-            when (child.text) {
-                "const" -> constant = true
-            }
-        }
-        val precisionSpecifier = context.precisionSpecifier()
-        val precision: Precision
-        if (precisionSpecifier == null) {
-            precision = Precision.mediump
-        } else {
-            precision = precision(precisionSpecifier)
-        }
-        return Type(
-                type(context.typeSpecifier()), constant, precision)
-    }
-
-    fun type(context: ScapesShaderParser.DeclaratorArrayContext): Type {
-        var constant = false
-        context.children.forEach { child ->
-            when (child.text) {
-                "const" -> constant = true
-            }
-        }
-        val precisionSpecifier = context.precisionSpecifier()
-        val precision: Precision
-        if (precisionSpecifier == null) {
-            precision = Precision.mediump
-        } else {
-            precision = precision(precisionSpecifier)
-        }
-        return Type(
-                type(context.typeSpecifier()),
-                LiteralParser.integer(context.integerConstant()), constant,
-                precision)
-    }
-
-    fun type(context: ScapesShaderParser.DeclaratorArrayUnsizedContext): Type {
-        var constant = false
-        context.children.forEach { child ->
-            when (child.text) {
-                "const" -> constant = true
-            }
-        }
-        val precisionSpecifier = context.precisionSpecifier()
-        val precision: Precision
-        if (precisionSpecifier == null) {
-            precision = Precision.mediump
-        } else {
-            precision = precision(precisionSpecifier)
-        }
-        return Type(
-                type(context.typeSpecifier()), constant, precision)
-    }
-
-    fun type(context: ScapesShaderParser.TypeContext): TypeExported {
-        val array = context.childCount > 1
-        return TypeExported(
-                type(context.typeSpecifier()), array)
-    }
-
-    fun type(context: ScapesShaderParser.TypeSpecifierContext): Types {
-        try {
-            return Types.valueOf(context.text)
-        } catch (e: IllegalArgumentException) {
-            throw ShaderCompileException(e, context)
+internal fun ScapesShaderParser.DeclaratorFieldContext.ast(): Type {
+    var constant = false
+    children.forEach { child ->
+        when (child.text) {
+            "const" -> constant = true
         }
     }
+    val precision = precisionSpecifier()?.ast() ?: Precision.mediump
+    return Type(typeSpecifier().ast(), constant, precision)
+}
 
-    fun precision(context: ScapesShaderParser.PrecisionSpecifierContext): Precision {
-        try {
-            return Precision.valueOf(context.text)
-        } catch (e: IllegalArgumentException) {
-            throw ShaderCompileException(e, context)
+internal fun ScapesShaderParser.DeclaratorArrayContext.ast(scope: Scope): Type {
+    var constant = false
+    children.forEach { child ->
+        when (child.text) {
+            "const" -> constant = true
         }
+    }
+    val precision = precisionSpecifier()?.ast() ?: Precision.mediump
+    return Type(typeSpecifier().ast(), expression().ast(scope), constant,
+            precision)
+}
+
+internal fun ScapesShaderParser.TypeContext.ast(): TypeExported {
+    val array = childCount > 1
+    return typeSpecifier().ast().exported(array)
+}
+
+internal fun ScapesShaderParser.TypeSpecifierContext.ast(): Types {
+    try {
+        return Types.valueOf(text)
+    } catch (e: IllegalArgumentException) {
+        throw ShaderCompileException("Invalid type: $text", this)
+    }
+}
+
+internal fun ScapesShaderParser.PrecisionSpecifierContext.ast(): Precision {
+    try {
+        return Precision.valueOf(text)
+    } catch (e: IllegalArgumentException) {
+        throw ShaderCompileException("Invalid precision: $text", this)
     }
 }

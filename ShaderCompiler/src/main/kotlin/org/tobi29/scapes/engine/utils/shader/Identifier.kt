@@ -17,4 +17,5 @@
 package org.tobi29.scapes.engine.utils.shader
 
 class Identifier(val name: String,
+                 val type: TypeExported,
                  val scope: Scope)

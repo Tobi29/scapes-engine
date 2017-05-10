@@ -26,118 +26,55 @@
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/** C 2011 grammar built from the C11 Spec */
+/** Grammar based on C and Java grammars from
+ *  https://github.com/antlr/grammars-v4
+ */
 grammar ScapesShader;
 
 primaryExpression
     :   Identifier
-    |   constant
-    |   property
+    |   literal
     |   '(' expression ')'
     ;
 
-postfixExpression
-    :   primaryExpression
-    |   functionExpression
-    |   postfixExpression '[' expression ']'
-    |   postfixExpression '.' Identifier
-    |   postfixExpression '++'
-    |   postfixExpression '--'
-    ;
-
-functionExpression
-    :   Identifier '(' argumentExpressionList? ')'
-    ;
-
-argumentExpressionList
-    :   assignmentExpression
-    |   assignmentExpression ',' argumentExpressionList
-    ;
-
-unaryExpression
-    :   postfixExpression
-    |   '++' unaryExpression
-    |   '--' unaryExpression
-    |   unaryOperator unaryExpression
-    ;
-
-unaryOperator
-    :   '+' | '-' | '~' | '!'
-    ;
-
-multiplicativeExpression
-    :   unaryExpression
-    |   multiplicativeExpression '*' unaryExpression
-    |   multiplicativeExpression '/' unaryExpression
-    |   multiplicativeExpression '%' unaryExpression
-    ;
-
-additiveExpression
-    :   multiplicativeExpression
-    |   additiveExpression '+' multiplicativeExpression
-    |   additiveExpression '-' multiplicativeExpression
-    ;
-
-shiftExpression
-    :   additiveExpression
-    |   shiftExpression '<<' additiveExpression
-    |   shiftExpression '>>' additiveExpression
-    ;
-
-relationalExpression
-    :   shiftExpression
-    |   relationalExpression '<' shiftExpression
-    |   relationalExpression '>' shiftExpression
-    |   relationalExpression '<=' shiftExpression
-    |   relationalExpression '>=' shiftExpression
-    ;
-
-equalityExpression
-    :   relationalExpression
-    |   equalityExpression '==' relationalExpression
-    |   equalityExpression '!=' relationalExpression
-    ;
-
-andExpression
-    :   equalityExpression
-    |   andExpression '&' equalityExpression
-    ;
-
-exclusiveOrExpression
-    :   andExpression
-    |   exclusiveOrExpression '^' andExpression
-    ;
-
-inclusiveOrExpression
-    :   exclusiveOrExpression
-    |   inclusiveOrExpression '|' exclusiveOrExpression
-    ;
-
-logicalAndExpression
-    :   inclusiveOrExpression
-    |   logicalAndExpression '&&' inclusiveOrExpression
-    ;
-
-logicalOrExpression
-    :   logicalAndExpression
-    |   logicalOrExpression '||' logicalAndExpression
-    ;
-
-conditionalExpression
-    :   logicalOrExpression ('?' expression ':' conditionalExpression)?
-    ;
-
-assignmentExpression
-    :   conditionalExpression
-    |   unaryExpression assignmentOperator assignmentExpression
-    ;
-
-assignmentOperator
-    :   '=' | '*=' | '/=' | '%=' | '+=' | '-=' | '<<=' | '>>=' | '&=' | '|=' | '^='
+expressionList
+    :   expression
+    |   expression ',' expressionList
     ;
 
 expression
-    :   assignmentExpression
+    :   primaryExpression
+    |   expression '.' Identifier
+    |   expression '[' expression ']'
+    |   Identifier '(' expressionList? ')'
+    |   expression ('++' | '--')
+    |   ('+'|'-'|'++'|'--') expression
+    |   ('~'|'!') expression
+    |   expression ('*'|'/'|'%') expression
+    |   expression ('+'|'-') expression
+    |   expression ('<<' | '>>') expression
+    |   expression ('<=' | '>=' | '>' | '<') expression
+    |   expression ('==' | '!=') expression
+    |   expression '&' expression
+    |   expression '^' expression
+    |   expression '|' expression
+    |   expression '&&' expression
+    |   expression '||' expression
+    |   expression '?' expression ':' expression
+    |   <assoc=right> expression
+            (   '='
+            |   '+='
+            |   '-='
+            |   '*='
+            |   '/='
+            |   '%='
+            |   '&='
+            |   '|='
+            |   '^='
+            |   '<<='
+            |   '>>='
+            )
+            expression
     ;
 
 declaration
@@ -146,39 +83,28 @@ declaration
     ;
 
 declarationField
-    :   declaratorField initDeclaratorFieldList ';'
+    :   declaratorField Identifier ('=' expression ';')?
     ;
 
 declarationArray
-    :   declaratorArray initDeclaratorArrayList ';'
-    |   declaratorArrayUnsized Identifier '=' initializerArray
+    :   declaratorArray Identifier '=' initializerArray ';'
     ;
 
 uniformDeclaration
     :   'uniform' IntegerLiteral declarator Identifier ';'
     ;
 
-initDeclaratorFieldList
-    :   initDeclaratorField ',' initDeclaratorFieldList
-    |   initDeclaratorField
-    ;
-
-initDeclaratorArrayList
-    :   Identifier
-    |   Identifier ',' initDeclaratorArrayList
-    ;
-
-initDeclaratorField
-    :   Identifier
-    |   Identifier '=' initializerField
+propertyDeclaration
+    :   'property' declarator Identifier ';'
     ;
 
 type
-    :   typeSpecifier '[]'
+    :   typeSpecifier '[]'?
     ;
 
 typeSpecifier
     :   'Void'
+    |   'Boolean'
     |   'Float'
     |   'Int'
     |   'Vector2'
@@ -209,11 +135,7 @@ declaratorField
     ;
 
 declaratorArray
-    :   'const'? precisionSpecifier? typeSpecifier '[' integerConstant ']'
-    ;
-
-declaratorArrayUnsized
-    :   'const'? precisionSpecifier? typeSpecifier '[]'
+    :   'const'? precisionSpecifier? typeSpecifier '[' expression ']'
     ;
 
 parameterList
@@ -231,25 +153,12 @@ shaderParameterList
     ;
 
 shaderParameterDeclaration
-    :   ('if' '(' property ')')? IntegerLiteral? declarator Identifier
-    ;
-
-initializerField
-    :   assignmentExpression
+    :   ('if' '(' expression ')')? IntegerLiteral? declarator Identifier
     ;
 
 initializerArray
-    :   '{' initializerArrayList '}'
-    |   property
-    ;
-
-initializerArrayList
-    :   assignmentExpression
-    |   assignmentExpression ',' initializerArrayList
-    ;
-
-property
-    :   '$' Identifier
+    :   '{' expressionList '}'
+    |   expression
     ;
 
 statement
@@ -273,7 +182,7 @@ elseStatement
     ;
 
 rangeLoopStatement
-    :   'for' '(' Identifier 'in' integerConstant '...' integerConstant ')' statement
+    :   'for' '(' Identifier 'in' expression '...' expression ')' statement
     ;
 
 compoundStatement
@@ -304,6 +213,7 @@ externalDeclaration
     |   functionDefinition
     |   declaration
     |   uniformDeclaration
+    |   propertyDeclaration
     |   ';'
     ;
 
@@ -324,7 +234,7 @@ functionDefinition
     ;
 
 functionSignature
-    :   typeSpecifier precisionSpecifier? Identifier '(' parameterList? ')'
+    :   type precisionSpecifier? Identifier '(' parameterList? ')'
     ;
 
 Identifier
@@ -349,25 +259,10 @@ Digit
     :   [0-9]
     ;
 
-constant
-    :   integerConstant
-    |   floatingConstant
-    |   characterConstant
-    ;
-
-integerConstant
+literal
     :   IntegerLiteral
-    |   property
-    ;
-
-floatingConstant
-    :   FloatingLiteral
-    |   property
-    ;
-
-characterConstant
-    :   CharacterLiteral
-    |   property
+    |   FloatingLiteral
+    |   CharacterLiteral
     ;
 
 IntegerLiteral

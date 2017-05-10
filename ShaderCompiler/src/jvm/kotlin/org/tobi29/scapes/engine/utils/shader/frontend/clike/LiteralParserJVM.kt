@@ -18,46 +18,19 @@ package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.tobi29.scapes.engine.utils.BigDecimal
 import org.tobi29.scapes.engine.utils.BigInteger
-import org.tobi29.scapes.engine.utils.shader.*
+import org.tobi29.scapes.engine.utils.shader.DecimalExpression
+import org.tobi29.scapes.engine.utils.shader.IntegerExpression
+import org.tobi29.scapes.engine.utils.shader.ScapesShaderParser
+import org.tobi29.scapes.engine.utils.shader.attach
 
-internal object LiteralParser {
-    fun integer(context: ScapesShaderParser.IntegerConstantContext): IntegerExpression {
-        val literal = context.IntegerLiteral()
-        if (literal != null) {
-            return IntegerLiteralExpression(
-                    BigInteger(literal.text))
-        }
-        val property = context.property()
-        if (property != null) {
-            return IntegerPropertyExpression(
-                    property.Identifier().text)
-        }
-        throw ShaderCompileException("No constant found", context)
+internal fun ScapesShaderParser.LiteralContext.ast() = run {
+    val integer = IntegerLiteral()
+    if (integer != null) {
+        return@run IntegerExpression(BigInteger(integer.text))
     }
-
-    fun floating(context: ScapesShaderParser.FloatingConstantContext): Expression {
-        val literal = context.FloatingLiteral()
-        if (literal != null) {
-            return FloatingExpression(
-                    BigDecimal(literal.text))
-        }
-        val property = context.property()
-        if (property != null) {
-            return PropertyExpression(
-                    property.Identifier().text)
-        }
-        throw ShaderCompileException("No constant found", context)
+    val floating = FloatingLiteral()
+    if (floating != null) {
+        return@run DecimalExpression(BigDecimal(floating.text))
     }
-
-    fun constant(context: ScapesShaderParser.ConstantContext): Expression {
-        val integer = context.integerConstant()
-        if (integer != null) {
-            return integer(integer)
-        }
-        val floating = context.floatingConstant()
-        if (floating != null) {
-            return floating(floating)
-        }
-        throw ShaderCompileException("No constant found", context)
-    }
-}
+    throw IllegalStateException("Invalid parse tree node")
+}.also { it.attach(this) }
