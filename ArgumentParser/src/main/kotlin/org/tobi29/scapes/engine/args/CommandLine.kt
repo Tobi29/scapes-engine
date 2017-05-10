@@ -53,7 +53,8 @@ fun Sequence<TokenParser.Token>.assemble(): CommandLine {
     val arguments = filterMap<TokenParser.Token.Argument>()
             .map { it.argument }.toList()
     val parameters = filterMap<TokenParser.Token.Parameter>()
-            .map { Pair(it.option, it.value) }.toMap()
+            .groupBy { it.option }.asSequence()
+            .map { Pair(it.key, it.value.flatMap { it.value }) }.toMap()
     return CommandLine(arguments, parameters)
 }
 
