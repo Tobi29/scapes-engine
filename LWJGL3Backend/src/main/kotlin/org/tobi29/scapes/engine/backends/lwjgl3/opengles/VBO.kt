@@ -37,13 +37,13 @@ internal class VBO(val engine: ScapesEngine,
     init {
         var stride = 0
         for (attribute in attributes) {
-            if (attribute.length() != length * attribute.size()) {
+            if (attribute.length != length * attribute.size) {
                 throw IllegalArgumentException(
                         "Inconsistent attribute data length")
             }
             this.attributes.add(ModelAttributeData(attribute, stride))
-            attribute.setOffset(stride)
-            val size = attribute.size() * attribute.vertexType().bytes()
+            attribute.offset = stride
+            val size = attribute.size * attribute.vertexType.bytes()
             stride += (size - 1 or 0x03) + 1
         }
         this.stride = stride
@@ -128,92 +128,92 @@ internal class VBO(val engine: ScapesEngine,
     private fun addToBuffer(attribute: ModelAttribute,
                             vertices: Int,
                             buffer: ByteBuffer) {
-        val floatArray = attribute.floatArray()
+        val floatArray = attribute.floatArray
         if (floatArray == null) {
-            val intArray = attribute.intArray() ?: throw IllegalArgumentException(
+            val byteArray = attribute.byteArray ?: throw IllegalArgumentException(
                     "Attribute contains no data")
-            when (attribute.vertexType()) {
+            when (attribute.vertexType) {
                 VertexType.BYTE, VertexType.UNSIGNED_BYTE -> for (i in 0..vertices - 1) {
-                    val `is` = i * attribute.size()
-                    buffer.position(attribute.offset() + i * stride)
-                    for (j in 0..attribute.size() - 1) {
+                    val `is` = i * attribute.size
+                    buffer.position(attribute.offset + i * stride)
+                    for (j in 0..attribute.size - 1) {
                         val ij = `is` + j
-                        buffer.put(intArray[ij].toByte())
+                        buffer.put(byteArray[ij].toByte())
                     }
                 }
                 VertexType.SHORT, VertexType.UNSIGNED_SHORT -> for (i in 0..vertices - 1) {
-                    val `is` = i * attribute.size()
-                    buffer.position(attribute.offset() + i * stride)
-                    for (j in 0..attribute.size() - 1) {
+                    val `is` = i * attribute.size
+                    buffer.position(attribute.offset + i * stride)
+                    for (j in 0..attribute.size - 1) {
                         val ij = `is` + j
-                        buffer.putShort(intArray[ij].toShort())
+                        buffer.putShort(byteArray[ij].toShort())
                     }
                 }
                 else -> throw IllegalArgumentException(
                         "Invalid array in vao attribute!")
             }
         } else {
-            when (attribute.vertexType()) {
+            when (attribute.vertexType) {
                 VertexType.FLOAT -> for (i in 0..vertices - 1) {
-                    val `is` = i * attribute.size()
-                    buffer.position(attribute.offset() + i * stride)
-                    for (j in 0..attribute.size() - 1) {
+                    val `is` = i * attribute.size
+                    buffer.position(attribute.offset + i * stride)
+                    for (j in 0..attribute.size - 1) {
                         val ij = `is` + j
                         buffer.putFloat(floatArray[ij])
                     }
                 }
                 VertexType.HALF_FLOAT -> for (i in 0..vertices - 1) {
-                    val `is` = i * attribute.size()
-                    buffer.position(attribute.offset() + i * stride)
-                    for (j in 0..attribute.size() - 1) {
+                    val `is` = i * attribute.size
+                    buffer.position(attribute.offset + i * stride)
+                    for (j in 0..attribute.size - 1) {
                         val ij = `is` + j
                         buffer.putShort(FastMath.convertFloatToHalf(
                                 floatArray[ij]))
                     }
                 }
-                VertexType.BYTE -> if (attribute.normalized()) {
+                VertexType.BYTE -> if (attribute.normalized) {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij] * 127.0f).toByte())
                         }
                     }
                 } else {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij]).toByte())
                         }
                     }
                 }
-                VertexType.UNSIGNED_BYTE -> if (attribute.normalized()) {
+                VertexType.UNSIGNED_BYTE -> if (attribute.normalized) {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij] * 255.0f).toByte())
                         }
                     }
                 } else {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij]).toByte())
                         }
                     }
                 }
-                VertexType.SHORT -> if (attribute.normalized()) {
+                VertexType.SHORT -> if (attribute.normalized) {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.putShort(
                                     round(floatArray[ij] * 32768.0f).toShort())
@@ -221,19 +221,19 @@ internal class VBO(val engine: ScapesEngine,
                     }
                 } else {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.putShort(round(floatArray[ij]).toShort())
                         }
                     }
                 }
-                VertexType.UNSIGNED_SHORT -> if (attribute.normalized()) {
+                VertexType.UNSIGNED_SHORT -> if (attribute.normalized) {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.putShort(
                                     round(floatArray[ij] * 65535.0f).toShort())
@@ -241,9 +241,9 @@ internal class VBO(val engine: ScapesEngine,
                     }
                 } else {
                     for (i in 0..vertices - 1) {
-                        val `is` = i * attribute.size()
-                        buffer.position(attribute.offset() + i * stride)
-                        for (j in 0..attribute.size() - 1) {
+                        val `is` = i * attribute.size
+                        buffer.position(attribute.offset + i * stride)
+                        for (j in 0..attribute.size - 1) {
                             val ij = `is` + j
                             buffer.putShort(round(floatArray[ij]).toShort())
                         }
@@ -289,20 +289,11 @@ internal class VBO(val engine: ScapesEngine,
 
     private class ModelAttributeData(attribute: ModelAttribute,
                                      val offset: Int) {
-        val vertexType: VertexType
-        val id: Int
-        val size: Int
-        val divisor: Int
-        val normalized: Boolean
-        val integer: Boolean
-
-        init {
-            vertexType = attribute.vertexType()
-            id = attribute.id()
-            size = attribute.size()
-            normalized = attribute.normalized()
-            divisor = attribute.divisor()
-            integer = attribute.intArray() != null
-        }
+        val vertexType = attribute.vertexType
+        val id = attribute.id
+        val size = attribute.size
+        val divisor = attribute.divisor
+        val normalized = attribute.normalized
+        val integer = attribute.byteArray != null
     }
 }

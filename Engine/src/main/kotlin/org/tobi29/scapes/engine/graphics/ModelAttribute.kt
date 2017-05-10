@@ -17,15 +17,15 @@
 package org.tobi29.scapes.engine.graphics
 
 class ModelAttribute {
-    private val vertexType: VertexType
-    private val id: Int
-    private val length: Int
-    private val size: Int
-    private val divisor: Int
-    private val normalized: Boolean
-    private val floatArray: FloatArray?
-    private val byteArray: IntArray?
-    private var offset = 0
+    val vertexType: VertexType
+    val id: Int
+    val length: Int
+    val size: Int
+    val divisor: Int
+    val normalized: Boolean
+    val floatArray: FloatArray?
+    val byteArray: IntArray?
+    var offset = 0
 
     constructor(id: Int,
                 size: Int,
@@ -73,45 +73,5 @@ class ModelAttribute {
         this.vertexType = vertexType
         floatArray = array
         byteArray = null
-    }
-
-    fun vertexType(): VertexType {
-        return vertexType
-    }
-
-    fun id(): Int {
-        return id
-    }
-
-    fun length(): Int {
-        return length
-    }
-
-    fun size(): Int {
-        return size
-    }
-
-    fun divisor(): Int {
-        return divisor
-    }
-
-    fun normalized(): Boolean {
-        return normalized
-    }
-
-    fun floatArray(): FloatArray? {
-        return floatArray
-    }
-
-    fun intArray(): IntArray? {
-        return byteArray
-    }
-
-    fun setOffset(offset: Int) {
-        this.offset = offset
-    }
-
-    fun offset(): Int {
-        return offset
     }
 }

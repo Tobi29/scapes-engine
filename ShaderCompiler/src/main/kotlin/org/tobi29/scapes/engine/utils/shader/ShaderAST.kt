@@ -52,8 +52,11 @@ class ArrayExpression(content: List<Expression>) : Expression() {
     constructor(array: DoubleArray) : this(array.map { DecimalExpression(it) })
 
     override fun type(context: ShaderContext) =
-            content.asSequence().map { it.type(context) as TypeExported? }
-                    .reduce { a, b -> a common b }?.type?.exportedArray
+            content.asSequence().map {
+                // This fails to compile without the cast
+                @Suppress("USELESS_CAST")
+                it.type(context) as TypeExported?
+            }.reduce { a, b -> a common b }?.type?.exportedArray
                     ?: throw ShaderASTException("Array contains multiple types",
                     this)
 }
