@@ -102,7 +102,7 @@ internal object GLUtils : KLogging() {
     fun compileShader(shader: CompiledShader,
                       properties: Map<String, Expression>) =
             try {
-                GLSLGenerator.generate(GLSLGenerator.Version.GL_330, shader,
+                GLSLGenerator.generate(GLSLGenerator.Version.GLES_300, shader,
                         properties)
             } catch (e: ShaderException) {
                 throw IOException(e)
