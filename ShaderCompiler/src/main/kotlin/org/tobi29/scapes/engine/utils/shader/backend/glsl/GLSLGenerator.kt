@@ -30,22 +30,6 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private lateinit var context: ShaderContext
     private var functionImplementations = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
 
-    private fun staticFunction(expression: FunctionExpression): String {
-        val name = expression.name
-        val args = Array(expression.args.size) {
-            expression(expression.args[it])
-        }
-        val signature = FunctionParameterSignature(name,
-                expression.args.map { it.type(context) })
-        val newFunction = context.functions[signature]
-        if (newFunction != null) {
-            functionImplementations[newFunction]?.let { return it(args) }
-            return glslFunction(newFunction.name, *args)
-        }
-        throw ShaderGenerateException(
-                "No functions for given arguments: $signature", expression)
-    }
-
     private fun variable(identifier: Identifier): String? {
         return identifiers[identifier]?.let { expression(it) } ?: return null
     }
@@ -139,7 +123,19 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun functionExpression(expression: FunctionExpression): String {
-        return staticFunction(expression)
+        val name = expression.name
+        val args = Array(expression.args.size) {
+            expression(expression.args[it])
+        }
+        val signature = FunctionParameterSignature(name,
+                expression.args.map { it.type(context) })
+        val newFunction = context.functions[signature]
+        if (newFunction != null) {
+            functionImplementations[newFunction]?.let { return it(args) }
+            return glslFunction(newFunction.name, *args)
+        }
+        throw ShaderGenerateException(
+                "No functions for given arguments: $signature", expression)
     }
 
     private fun arrayAccessExpression(expression: ArrayAccessExpression): String {

@@ -17,19 +17,20 @@
 package org.tobi29.scapes.engine.utils.shader
 
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeParser
+import org.tobi29.scapes.engine.utils.shader.frontend.clike.externalDeclaration
+import org.tobi29.scapes.engine.utils.shader.frontend.clike.parser
 
 object ShaderCompiler {
     fun compile(source: String): CompiledShader {
         val parser = profilerSection("Parse source") {
-            CLikeParser.parser(source)
+            parser(source)
         }
         val scope = Scope()
         scope.add("out_Position", Types.Vector4.exported)
         scope.add("varying_Fragment", Types.Vector4.exported)
         val program = profilerSection("Parse program") {
-            CLikeParser.externalDeclaration(
-                    parser.compilationUnit().translationUnit(), scope)
+            externalDeclaration(parser.compilationUnit().translationUnit(),
+                    scope)
         }
         val shaderFragment = program.shaders["fragment"]?.let { shader ->
             Pair(shader.first, shader.second(scope))

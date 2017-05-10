@@ -18,16 +18,16 @@ package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.tobi29.scapes.engine.utils.shader.*
 
-tailrec fun parameters(context: ScapesShaderParser.ParameterListContext?,
-                       parameters: MutableList<Parameter>,
-                       scope: Scope) {
+internal tailrec fun parameters(context: ScapesShaderParser.ParameterListContext?,
+                                parameters: MutableList<Parameter>,
+                                scope: Scope) {
     context ?: return
     val parameter = context.parameterDeclaration().ast(scope)
     parameters.add(parameter)
     parameters(context.parameterList(), parameters, scope)
 }
 
-fun ScapesShaderParser.ParameterDeclarationContext.ast(scope: Scope): Parameter {
+internal fun ScapesShaderParser.ParameterDeclarationContext.ast(scope: Scope): Parameter {
     val type = declarator().ast(scope)
     val name = Identifier().text
     val variable = scope.add(name,
@@ -36,16 +36,16 @@ fun ScapesShaderParser.ParameterDeclarationContext.ast(scope: Scope): Parameter 
     return Parameter(type, variable)
 }
 
-tailrec fun parameters(context: ScapesShaderParser.ShaderParameterListContext?,
-                       parameters: MutableList<ShaderParameter>,
-                       scope: Scope) {
+internal tailrec fun parameters(context: ScapesShaderParser.ShaderParameterListContext?,
+                                parameters: MutableList<ShaderParameter>,
+                                scope: Scope) {
     context ?: return
     val parameter = context.shaderParameterDeclaration().ast(scope)
     parameters.add(parameter)
     parameters(context.shaderParameterList(), parameters, scope)
 }
 
-fun ScapesShaderParser.ShaderParameterDeclarationContext.ast(scope: Scope): ShaderParameter {
+internal fun ScapesShaderParser.ShaderParameterDeclarationContext.ast(scope: Scope): ShaderParameter {
     val type = declarator().ast(scope)
     val idConstant = IntegerLiteral()
     val id: Int
