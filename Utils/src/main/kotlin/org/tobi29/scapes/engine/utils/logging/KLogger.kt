@@ -103,8 +103,8 @@ abstract class KLogger {
      * **Note:** The lambda will only get evaluated when log level is enabled
      * @param msg the message string to be logged
      */
-    inline fun trace(msg: () -> Any?) {
-        if (isTraceEnabled) trace(msg.invoke().toString())
+    inline fun trace(msg: () -> String) {
+        if (isTraceEnabled) trace(msg.invoke())
     }
 
     /**
@@ -113,8 +113,8 @@ abstract class KLogger {
      * **Note:** The lambda will only get evaluated when log level is enabled
      * @param msg the message string to be logged
      */
-    inline fun debug(msg: () -> Any?) {
-        if (isDebugEnabled) debug(msg.invoke().toString())
+    inline fun debug(msg: () -> String) {
+        if (isDebugEnabled) debug(msg.invoke())
     }
 
     /**
@@ -123,8 +123,8 @@ abstract class KLogger {
      * **Note:** The lambda will only get evaluated when log level is enabled
      * @param msg the message string to be logged
      */
-    inline fun info(msg: () -> Any?) {
-        if (isInfoEnabled) info(msg.invoke().toString())
+    inline fun info(msg: () -> String) {
+        if (isInfoEnabled) info(msg.invoke())
     }
 
     /**
@@ -133,8 +133,8 @@ abstract class KLogger {
      * **Note:** The lambda will only get evaluated when log level is enabled
      * @param msg the message string to be logged
      */
-    inline fun warn(msg: () -> Any?) {
-        if (isWarnEnabled) warn(msg.invoke().toString())
+    inline fun warn(msg: () -> String) {
+        if (isWarnEnabled) warn(msg.invoke())
     }
 
     /**
@@ -143,8 +143,8 @@ abstract class KLogger {
      * **Note:** The lambda will only get evaluated when log level is enabled
      * @param msg the message string to be logged
      */
-    inline fun error(msg: () -> Any?) {
-        if (isErrorEnabled) error(msg.invoke().toString())
+    inline fun error(msg: () -> String) {
+        if (isErrorEnabled) error(msg.invoke())
     }
 
     /**
@@ -155,8 +155,8 @@ abstract class KLogger {
      * @param msg the message string to be logged
      */
     inline fun trace(t: Throwable,
-                     msg: () -> Any?) {
-        if (isTraceEnabled) trace(msg.invoke().toString(), t)
+                     msg: () -> String) {
+        if (isTraceEnabled) trace(msg.invoke(), t)
     }
 
     /**
@@ -167,8 +167,8 @@ abstract class KLogger {
      * @param msg the message string to be logged
      */
     inline fun debug(t: Throwable,
-                     msg: () -> Any?) {
-        if (isDebugEnabled) debug(msg.invoke().toString(), t)
+                     msg: () -> String) {
+        if (isDebugEnabled) debug(msg.invoke(), t)
     }
 
     /**
@@ -179,8 +179,8 @@ abstract class KLogger {
      * @param msg the message string to be logged
      */
     inline fun info(t: Throwable,
-                    msg: () -> Any?) {
-        if (isInfoEnabled) info(msg.invoke().toString(), t)
+                    msg: () -> String) {
+        if (isInfoEnabled) info(msg.invoke(), t)
     }
 
     /**
@@ -191,8 +191,8 @@ abstract class KLogger {
      * @param msg the message string to be logged
      */
     inline fun warn(t: Throwable,
-                    msg: () -> Any?) {
-        if (isWarnEnabled) warn(msg.invoke().toString(), t)
+                    msg: () -> String) {
+        if (isWarnEnabled) warn(msg.invoke(), t)
     }
 
     /**
@@ -203,8 +203,8 @@ abstract class KLogger {
      * @param msg the message string to be logged
      */
     inline fun error(t: Throwable,
-                     msg: () -> Any?) {
-        if (isErrorEnabled) error(msg.invoke().toString(), t)
+                     msg: () -> String) {
+        if (isErrorEnabled) error(msg.invoke(), t)
     }
 }
 
