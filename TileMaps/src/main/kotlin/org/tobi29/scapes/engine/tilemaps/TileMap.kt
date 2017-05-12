@@ -16,80 +16,33 @@
 
 package org.tobi29.scapes.engine.tilemaps
 
+import org.tobi29.scapes.engine.utils.Array2
+import org.tobi29.scapes.engine.utils.array2OfNulls
 import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.fill
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.tag.*
 
-class TileMap(val tileSets: TileSets,
-              size: Vector2i = Vector2i.ZERO) : TagMapWrite {
-    private val sizeMut = MutableVector2i(size)
-    val size: Vector2i
-        get() = sizeMut.now()
-    private var map = arrayOfNulls<Tile>(size.x * size.y)
-
-    val isEmpty: Boolean
-        get() {
-            for (p in 0..1) {
-                for (y in 0..sizeMut.y - 1) {
-                    var x = p
-                    while (x < sizeMut.x) {
-                        if (tile(x, y) != null) {
-                            return false
-                        }
-                        x += 2
-                    }
-                }
-            }
-            return true
-        }
-
-    fun tile(x: Int,
-             y: Int): Tile? {
-        if (x < 0 || y < 0 || x >= sizeMut.x || y >= sizeMut.y) {
-            return null
-        }
-        return map[y * sizeMut.x + x]
+fun Array2<out Tile?>.write(map: ReadWriteTagMap) {
+    map["Width"] = width
+    map["Height"] = height
+    map["Tiles"] = ByteArray(size shl 2).apply {
+        val buffer = ByteBuffer.wrap(this)
+        this@write.forEach { buffer.putInt(it?.id ?: -1) }
+        assert { !buffer.hasRemaining() }
     }
+}
 
-    fun tile(x: Int,
-             y: Int,
-             tile: Tile?) {
-        if (x < 0 || y < 0 || x >= sizeMut.x || y >= sizeMut.y) {
-            return
+fun TagMap.toTileMap(tileSets: TileSets): Array2<Tile?> {
+    val width = this["Width"]?.toInt() ?: 0
+    val height = this["Height"]?.toInt() ?: 0
+    val array = array2OfNulls<Tile>(width, height)
+    this["Tiles"]?.toByteArray()?.let { tiles ->
+        if (tiles.size != array.size shl 2) {
+            throw IllegalArgumentException("Tile array has invalid size")
         }
-        map[y * sizeMut.x + x] = tile
+        val buffer = ByteBuffer.wrap(tiles)
+        array.fill { _, _ -> tileSets.tile(buffer.int) }
     }
-
-    fun clone(): TileMap {
-        val clone = TileMap(tileSets, size)
-        System.arraycopy(map, 0, clone.map, 0, map.size)
-        return clone
-    }
-
-    override fun write(map: ReadWriteTagMap) {
-        map["Size"] = sizeMut.now()
-        map["Tiles"] = ByteArray(this.map.size shl 2).apply {
-            val buffer = ByteBuffer.wrap(this)
-            this@TileMap.map.forEach { buffer.putInt(it?.id ?: -1) }
-            assert { !buffer.hasRemaining() }
-        }
-    }
-
-    fun read(map: TagMap) {
-        map["Size"]?.toMap()?.let {
-            sizeMut.set(it)
-            this.map = arrayOfNulls<Tile>(sizeMut.x * sizeMut.y)
-        }
-        map["Tiles"]?.toByteArray()?.let { tiles ->
-            if (tiles.size != this.map.size shl 2) {
-                throw IllegalArgumentException("Tile array has invalid size")
-            }
-            val buffer = ByteBuffer.wrap(tiles)
-            for (i in this.map.indices) {
-                this.map[i] = tileSets.tile(buffer.int)
-            }
-        }
-    }
+    return array
 }

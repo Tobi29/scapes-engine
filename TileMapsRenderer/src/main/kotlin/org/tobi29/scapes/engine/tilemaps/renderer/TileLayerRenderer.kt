@@ -18,7 +18,9 @@ package org.tobi29.scapes.engine.tilemaps.renderer
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.tilemaps.TileMap
+import org.tobi29.scapes.engine.tilemaps.Tile
+import org.tobi29.scapes.engine.utils.Array2
+import org.tobi29.scapes.engine.utils.array2OfNulls
 import org.tobi29.scapes.engine.utils.graphics.marginX
 import org.tobi29.scapes.engine.utils.graphics.marginY
 import org.tobi29.scapes.engine.utils.math.ceil
@@ -29,7 +31,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 
 class TileLayerRenderer(val engine: ScapesEngine,
                         val tileDimensions: Vector2i,
-                        val map: TileMap,
+                        val map: Array2<Tile?>,
                         val atlas: TileAtlas,
                         private val cx: Int = 4,
                         private val cy: Int = 4) {
@@ -42,7 +44,7 @@ class TileLayerRenderer(val engine: ScapesEngine,
             (atlas.maxSize.y - 1) / tileDimensions.y)
     private var width = 0
     private var height = 0
-    private lateinit var chunks: Array<TileLayerRendererChunk?>
+    private lateinit var chunks: Array2<TileLayerRendererChunk?>
 
     init {
         resize()
@@ -64,7 +66,7 @@ class TileLayerRenderer(val engine: ScapesEngine,
         for (yy in sy..dy) {
             val yyy = ((yy shl cy) * tileDimensions.y - origin.y).toFloat()
             for (xx in sx..dx) {
-                getChunk(xx, yy)?.model?.let { model ->
+                chunks[xx, yy]?.model?.let { model ->
                     val xxx = ((xx shl cx) * tileDimensions.x - origin.x).toFloat()
                     gl.matrixStack.push { matrix ->
                         matrix.translate(xxx, yyy, 0.0f)
@@ -76,37 +78,18 @@ class TileLayerRenderer(val engine: ScapesEngine,
     }
 
     private fun resize() {
-        width = (map.size.x - 1 shr cx) + 1
-        height = map.size.y
-        chunks = arrayOfNulls<TileLayerRendererChunk>(width * height)
+        width = (map.width - 1 shr cx) + 1
+        height = map.height
+        chunks = array2OfNulls<TileLayerRendererChunk>(width, height)
         for (y in 0..height - 1) {
             val yy = y shl cy
             for (x in 0..width - 1) {
                 val xx = x shl cx
                 val chunk = TileLayerRendererChunk(xx, yy)
                 chunk.prepare()
-                setChunk(x, y, chunk)
+                chunks[x, y] = chunk
             }
         }
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun getChunk(x: Int,
-                                y: Int): TileLayerRendererChunk? {
-        return chunks[index(x, y)]
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun setChunk(x: Int,
-                                y: Int,
-                                chunk: TileLayerRendererChunk?) {
-        chunks[index(x, y)] = chunk
-    }
-
-    @Suppress("NOTHING_TO_INLINE")
-    private inline fun index(x: Int,
-                             y: Int): Int {
-        return y * width + x
     }
 
     private inner class TileLayerRendererChunk(private val x: Int,
@@ -124,7 +107,7 @@ class TileLayerRenderer(val engine: ScapesEngine,
                 for (xx in -addAbove.x..cw) {
                     val xxx = x + xx
 
-                    val tile = map.tile(xxx, yyy) ?: continue
+                    val tile = map.getOrNull(xxx, yyy) ?: continue
                     val entry = atlas.tile(tile.id) ?: continue
 
                     val yo = tileDimensions.y - tile.size.y
