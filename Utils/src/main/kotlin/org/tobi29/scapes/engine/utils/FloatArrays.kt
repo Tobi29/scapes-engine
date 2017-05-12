@@ -319,23 +319,6 @@ inline fun FloatArray3.fill(block: (Int, Int, Int) -> Float) = indices { x, y, z
     this[x, y, z] = block(x, y, z)
 }
 
-/*
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-header infix fun FloatArray.equals(other: FloatArray): Boolean
-
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-header fun FloatArray.arrayHashCode(): Int
-*/
-
 /**
  * Copy data from the [src] array to [dest]
  * @param src The array to copy from

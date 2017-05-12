@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.*
-import org.tobi29.scapes.engine.utils.Queue
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -25,7 +24,6 @@ import org.tobi29.scapes.engine.utils.tag.*
 import java.nio.channels.SelectionKey
 import java.security.*
 import java.security.spec.InvalidKeySpecException
-import java.util.*
 import javax.crypto.*
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.PBEParameterSpec
@@ -353,7 +351,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         val check = ByteArray(challenge.size)
         channel.inputStream[check]
-        if (!(check equals challenge)) {
+        if (!(check contentEquals challenge)) {
             throw ConnectionCloseException("Failed password authentication")
         }
         idStr = id

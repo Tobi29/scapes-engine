@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.IOException
-import org.tobi29.scapes.engine.utils.equals
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
@@ -72,7 +71,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                                 connectionHeader.size)
                                         bundleChannel.inputStream[header]
                                         val id = bundleChannel.inputStream.get()
-                                        if (header equals connectionHeader) {
+                                        if (header contentEquals connectionHeader) {
                                             onConnect(worker, bundleChannel,
                                                     id, connection)
                                         }

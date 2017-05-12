@@ -391,24 +391,6 @@ inline $genericFun ${specializeIn(
     this[x, y, z] = block(x, y, z)
 }
 
-/*
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-header infix $genericFun ${specializeIn("Array")}.equals(other: ${specializeIn(
-        "Array")}): Boolean
-
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-header fun ${specializeAny("Array")}.arrayHashCode(): Int
-*/
-
 /**
  * Copy data from the [src] array to [dest]
  * @param src The array to copy from
@@ -468,25 +450,6 @@ inline $genericFunReified array3OfNulls(width: Int,
                                         depth: Int) =
         ${specializeName(
             "Array3")}(width, height, depth, arrayOfNulls$generic(width * height))
-
-/*
-/**
- * Check if the given array and all its elements equal [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-header infix $genericFun ${specializeIn(
-            "Array")}.equalsDeep(other: ${specializeIn(
-            "Array")}): Boolean
-
-/**
- * Calculate a hash code for the given array and all its elements
- * @receiver The array
- * @return A hash code computes alike a list
- */
-header fun ${specializeAny("Array")}.arrayHashCodeDeep(): Int
-*/
 """)
 } else {
     print("""

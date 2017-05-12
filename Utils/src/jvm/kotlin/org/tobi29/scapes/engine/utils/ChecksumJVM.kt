@@ -49,7 +49,7 @@ class Checksum
     }
 
     override fun hashCode(): Int {
-        return array.arrayHashCode()
+        return array.contentHashCode()
     }
 
     override fun equals(other: Any?): Boolean {
@@ -59,7 +59,7 @@ class Checksum
         if (other !is Checksum) {
             return false
         }
-        return algorithm == other.algorithm && array equals other.array
+        return algorithm == other.algorithm && array contentEquals other.array
     }
 
     override fun toString(): String {

@@ -97,57 +97,6 @@ import kotlin.experimental.or
     }
 }
 
-/* impl */inline infix fun BooleanArray.equals(other: BooleanArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun ByteArray.equals(other: ByteArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun ShortArray.equals(other: ShortArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun IntArray.equals(other: IntArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun LongArray.equals(other: LongArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun FloatArray.equals(other: FloatArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun DoubleArray.equals(other: DoubleArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun CharArray.equals(other: CharArray): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun <T> Array<in T>.equals(other: Array<in T>): Boolean =
-        Arrays.equals(this, other)
-
-/* impl */inline infix fun <T> Array<in T>.equalsDeep(other: Array<in T>): Boolean =
-        Arrays.deepEquals(this, other)
-
-/* impl */inline fun BooleanArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun ByteArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun ShortArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun IntArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun LongArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun FloatArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun DoubleArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun CharArray.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun Array<*>.arrayHashCode(): Int = Arrays.hashCode(this)
-
-/* impl */inline fun Array<*>.arrayHashCodeDeep(): Int = Arrays.deepHashCode(
-        this)
-
 /* impl */inline fun copyArray(src: BooleanArray,
                                dest: BooleanArray,
                                length: Int,

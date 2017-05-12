@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.io.tag.binary
 
 import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.equals
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
 import org.tobi29.scapes.engine.utils.io.LimitedBufferStream
@@ -34,7 +33,7 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
     init {
         val magic = ByteArray(HEADER_MAGIC.size)
         stream[magic]
-        if (!(magic equals magic)) {
+        if (!(magic contentEquals magic)) {
             throw IOException(
                     "Not in tag format! (Magic-Header: ${magic.joinToString()})")
         }

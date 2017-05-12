@@ -18,7 +18,10 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.ConcurrentMap
+import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.synchronized
 
 /**
  * Type shared by all tags
@@ -202,7 +205,7 @@ class TagByteArray
 
     override fun equals(other: Any?): Boolean {
         if (other is TagByteArray) {
-            return valueMut equals other.valueMut
+            return valueMut contentEquals other.valueMut
         } else if (other is TagList) {
             if (valueMut.size != other.value.size) {
                 return false
@@ -220,7 +223,7 @@ class TagByteArray
     }
 
     override fun hashCode(): Int {
-        return value.arrayHashCode()
+        return value.contentHashCode()
     }
 
     override fun toString(): String {

@@ -318,23 +318,6 @@ inline fun <T> Array3<in T>.fill(block: (Int, Int, Int) -> T) = indices { x, y, 
     this[x, y, z] = block(x, y, z)
 }
 
-/*
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-header infix fun <T> Array<in T>.equals(other: Array<in T>): Boolean
-
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-header fun Array<*>.arrayHashCode(): Int
-*/
-
 /**
  * Copy data from the [src] array to [dest]
  * @param src The array to copy from
@@ -389,20 +372,3 @@ inline fun <reified T> array3OfNulls(width: Int,
                                      height: Int,
                                      depth: Int) =
         Array3(width, height, depth, arrayOfNulls<T>(width * height))
-
-/*
-/**
- * Check if the given array and all its elements equal [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-header infix fun <T> Array<in T>.equalsDeep(other: Array<in T>): Boolean
-
-/**
- * Calculate a hash code for the given array and all its elements
- * @receiver The array
- * @return A hash code computes alike a list
- */
-header fun Array<*>.arrayHashCodeDeep(): Int
-*/
