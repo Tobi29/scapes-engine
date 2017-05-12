@@ -23,12 +23,7 @@ import java.io.UnsupportedEncodingException
 import java.util.*
 import kotlin.experimental.or
 
-/**
- * Converts a byte array into a hexadecimal string
- * @receiver Array to convert
- * @return String containing the hexadecimal data
- */
-fun ByteArray.toHexadecimal(): String {
+/* impl */fun ByteArray.toHexadecimal(): String {
     val text = StringBuilder(size shl 1)
     for (value in this) {
         val append = (if (value < 0) value + 256 else value.toInt()).toString(
@@ -42,13 +37,7 @@ fun ByteArray.toHexadecimal(): String {
     return text.toString()
 }
 
-/**
- * Converts a byte array into a hexadecimal string
- * @receiver Array to convert
- * @param groups How many bytes to group until separated by a space
- * @return String containing the hexadecimal data
- */
-fun ByteArray.toHexadecimal(groups: Int): String {
+/* impl */fun ByteArray.toHexadecimal(groups: Int): String {
     val text = StringBuilder((size shl 1) + size / groups)
     var group = 0
     val limit = size - 1
@@ -70,17 +59,11 @@ fun ByteArray.toHexadecimal(groups: Int): String {
     return text.toString()
 }
 
-/**
- * Converts a hexadecimal string to a byte array Silently discards spaces
- * @receiver String to convert
- * @return A byte array containing the data
- * @throws IOException Thrown in case of an invalid string
- */
-fun String.fromHexadecimal(): ByteArray {
+/* impl */fun String.fromHexadecimal(): ByteArray {
     try {
         val text = replace(" ", "")
         if (text.length and 1 == 1) {
-            throw IOException("String has uneven length")
+            throw IllegalArgumentException("String has uneven length")
         }
         val array = ByteArray(text.length shr 1)
         var i = 0
@@ -92,16 +75,11 @@ fun String.fromHexadecimal(): ByteArray {
         }
         return array
     } catch (e: NumberFormatException) {
-        throw IOException(e)
+        throw IllegalArgumentException(e)
     }
 }
 
-/**
- * Converts a byte array to a Base64 string
- * @receiver Array to convert
- * @return String containing the data
- */
-fun ByteArray.toBase64(): String {
+/* impl */fun ByteArray.toBase64(): String {
     try {
         return Base64.encode(this)
     } catch (e: UnsupportedEncodingException) {
@@ -109,313 +87,126 @@ fun ByteArray.toBase64(): String {
     }
 }
 
-/**
- * Converts a Base64 string to a byte array
- * @receiver String to convert
- * @return Byte array containing the data
- * @throws IOException When an invalid base64 was given
- */
-fun String.fromBase64(): ByteArray {
+/* impl */fun String.fromBase64(): ByteArray {
     try {
         return Base64.decode(this)
     } catch (e: IllegalArgumentException) {
-        throw IOException(e)
+        throw IllegalArgumentException(e)
     } catch (e: UnsupportedEncodingException) {
-        throw IOException(e)
+        throw IllegalArgumentException(e)
     }
 }
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun BooleanArray.equals(other: BooleanArray) =
+/* impl */inline infix fun BooleanArray.equals(other: BooleanArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun ByteArray.equals(other: ByteArray) =
+/* impl */inline infix fun ByteArray.equals(other: ByteArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun ShortArray.equals(other: ShortArray) =
+/* impl */inline infix fun ShortArray.equals(other: ShortArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun IntArray.equals(other: IntArray) =
+/* impl */inline infix fun IntArray.equals(other: IntArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun LongArray.equals(other: LongArray) =
+/* impl */inline infix fun LongArray.equals(other: LongArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun FloatArray.equals(other: FloatArray) =
+/* impl */inline infix fun FloatArray.equals(other: FloatArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun DoubleArray.equals(other: DoubleArray) =
+/* impl */inline infix fun DoubleArray.equals(other: DoubleArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun CharArray.equals(other: CharArray) =
+/* impl */inline infix fun CharArray.equals(other: CharArray): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun <E> Array<in E>.equals(other: Array<in E>) =
+/* impl */inline infix fun <T> Array<in T>.equals(other: Array<in T>): Boolean =
         Arrays.equals(this, other)
 
-/**
- * Check if the given array equals [other]
- * @receiver The first array
- * @param other The second array
- * @return `true` the size is equal and all entries are
- */
-inline infix fun <E> Array<in E>.deepEquals(other: Array<in E>) =
+/* impl */inline infix fun <T> Array<in T>.equalsDeep(other: Array<in T>): Boolean =
         Arrays.deepEquals(this, other)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun BooleanArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun BooleanArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun ByteArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun ByteArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun ShortArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun ShortArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun IntArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun IntArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun LongArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun LongArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun FloatArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun FloatArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun DoubleArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun DoubleArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun CharArray.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun CharArray.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun <E> Array<in E>.arrayHashCode() = Arrays.hashCode(this)
+/* impl */inline fun Array<*>.arrayHashCode(): Int = Arrays.hashCode(this)
 
-/**
- * Calculate a hash code for the given array
- * @receiver The array
- * @return A hash code computes alike a list
- */
-inline fun <E> Array<in E>.deepArrayHashCode() = Arrays.deepHashCode(this)
+/* impl */inline fun Array<*>.arrayHashCodeDeep(): Int = Arrays.deepHashCode(
+        this)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: BooleanArray,
-                dest: BooleanArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: BooleanArray,
+                               dest: BooleanArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: ByteArray,
-                dest: ByteArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: ByteArray,
+                               dest: ByteArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: ShortArray,
-                dest: ShortArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: ShortArray,
+                               dest: ShortArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: IntArray,
-                dest: IntArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: IntArray,
+                               dest: IntArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: LongArray,
-                dest: LongArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: LongArray,
+                               dest: LongArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: FloatArray,
-                dest: FloatArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: FloatArray,
+                               dest: FloatArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: DoubleArray,
-                dest: DoubleArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: DoubleArray,
+                               dest: DoubleArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun copy(src: CharArray,
-                dest: CharArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
+/* impl */inline fun copyArray(src: CharArray,
+                               dest: CharArray,
+                               length: Int,
+                               offsetSrc: Int,
+                               offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline fun <E> copy(src: Array<E>,
-                    dest: Array<E>,
-                    length: Int = src.size.coerceAtMost(dest.size),
-                    offsetSrc: Int = 0,
-                    offsetDest: Int = 0) =
+/* impl */inline fun <T> copyArray(src: Array<out T>,
+                                   dest: Array<in T>,
+                                   length: Int,
+                                   offsetSrc: Int,
+                                   offsetDest: Int): Unit =
         System.arraycopy(src, offsetSrc, dest, offsetDest, length)
