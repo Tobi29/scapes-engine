@@ -20,9 +20,6 @@ typealias UUID = java.util.UUID
 
 typealias IOException = java.io.IOException
 
-typealias BigInteger = java.math.BigInteger
-typealias BigDecimal = java.math.BigDecimal
-
 typealias AutoCloseable = java.lang.AutoCloseable
 
 typealias PlatformName = JvmName
