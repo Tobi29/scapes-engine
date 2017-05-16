@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.sql
 
-import org.tobi29.scapes.engine.utils.PlatformName
-
 interface SQLDatabase {
     fun createTable(name: String,
                     primaryKey: Array<out String>,
@@ -92,7 +90,7 @@ typealias SQLDelete = (Array<out Any?>) -> Unit
 inline operator fun ((Array<out Any?>) -> List<Array<Any?>>).invoke(vararg values: Any?) = invoke(
         values)
 
-@PlatformName("supplyAny")
+@JvmName("supplyAny")
 fun ((Array<out Any?>) -> List<Array<Any?>>).supply(vararg values: Any?): ((Array<out Any?>) -> List<Array<Any?>>) = {
     this@supply(*values, *it)
 }
@@ -106,7 +104,7 @@ inline operator fun ((Array<out Any?>, Array<out Any?>) -> Unit).invoke(matches:
 inline operator fun ((Array<out Array<out Any?>>) -> Unit).invoke(vararg values: Array<out Any?>) =
         invoke(values)
 
-@PlatformName("supplyArrayOfAny")
+@JvmName("supplyArrayOfAny")
 fun ((Array<out Array<out Any?>>) -> Unit).supply(vararg values: Any?): ((Array<out Array<out Any?>>) -> Unit) = { postValues ->
     this@supply(Array(postValues.size) { arrayOf(*values, *postValues[it]) })
 }

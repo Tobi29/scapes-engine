@@ -25,7 +25,3 @@ typealias AutoCloseable = java.lang.AutoCloseable
 } catch (e: IllegalArgumentException) {
     null
 }
-
-typealias PlatformName = JvmName
-typealias JvmName = kotlin.jvm.JvmName
-annotation class JsName(val name: String)

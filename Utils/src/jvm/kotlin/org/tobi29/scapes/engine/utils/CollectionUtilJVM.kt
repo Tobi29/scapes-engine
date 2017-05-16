@@ -70,7 +70,7 @@ inline fun <T> Collection<T>.synchronized(): Collection<T> = Collections.synchro
  * @receiver The collection
  * @returns A synchronized view of the collection
  */
-@PlatformName("synchronizedMut")
+@JvmName("synchronizedMut")
 inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> = Collections.synchronizedCollection(
         this)
 
@@ -89,7 +89,7 @@ inline fun <T> List<T>.synchronized(): List<T> = Collections.synchronizedList(
  * @receiver The list
  * @returns A synchronized view of the list
  */
-@PlatformName("synchronizedMut")
+@JvmName("synchronizedMut")
 inline fun <T> MutableList<T>.synchronized(): MutableList<T> = Collections.synchronizedList(
         this)
 
@@ -108,7 +108,7 @@ inline fun <T> Set<T>.synchronized(): Set<T> = Collections.synchronizedSet(
  * @receiver The set
  * @returns A synchronized view of the set
  */
-@PlatformName("synchronizedMut")
+@JvmName("synchronizedMut")
 inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> = Collections.synchronizedSet(
         this)
 
@@ -129,7 +129,7 @@ inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> = Collections.synchronized
  * @receiver The map
  * @returns A synchronized view of the map
  */
-@PlatformName("synchronizedMut")
+@JvmName("synchronizedMut")
 inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> = Collections.synchronizedMap(
         this)
 
@@ -216,7 +216,7 @@ fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value returned from [block]
  */
-@PlatformName("computeAlwaysNullable")
+@JvmName("computeAlwaysNullable")
 fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                           block: (K, V?) -> V?): V? {
     if (this is ConcurrentMap) {
@@ -239,7 +239,7 @@ fun <K, V> MutableMap<K, V>.computeAlways(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value returned from [block]
  */
-@PlatformName("computeAlwaysNullable")
+@JvmName("computeAlwaysNullable")
 fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
                                              block: (K, V?) -> V?): V? {
     while (true) {
@@ -305,7 +305,7 @@ inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value mapped to [key] at the end
  */
-@PlatformName("computeAbsentNullable")
+@JvmName("computeAbsentNullable")
 inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                  block: (K) -> V?): V? {
     if (this is ConcurrentMap) {
@@ -325,7 +325,7 @@ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value mapped to [key] at the end
  */
-@PlatformName("computeAbsentNullable")
+@JvmName("computeAbsentNullable")
 inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
                                                     block: (K) -> V?): V? {
     this[key]?.let { return it }

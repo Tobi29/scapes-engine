@@ -18,7 +18,6 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.JvmName
 import org.tobi29.scapes.engine.utils.UUID
 
 // Unit

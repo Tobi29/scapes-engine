@@ -89,11 +89,6 @@ fun MutableTag.toByteArray() = when (this) {
     else -> null
 }
 
-fun Sequence<Tag>.toTag() = TagList {
-    this@toTag.forEach { add(it) }
-}
-
-@PlatformName("toTagMut")
 fun Sequence<MutableTag>.toTag() = TagList {
     this@toTag.forEach { add(it.toTag()) }
 }
