@@ -16,16 +16,14 @@
 
 package org.tobi29.scapes.engine.utils
 
+/*
 /**
  * Constructor for creating a [ThreadLocal] from a lambda expression
  * @param supplier: Supplier that will be called once per thread
  * @param T: The type of the elements in the [ThreadLocal]
  * @return A new instance of [ThreadLocal]
  */
-inline fun <T> ThreadLocal(crossinline supplier: (Thread) -> T): ThreadLocal<T> {
-    return object : ThreadLocal<T>() {
-        override fun initialValue(): T {
-            return supplier(Thread.currentThread())
-        }
-    }
-}
+header inline fun <T> ThreadLocal(crossinline supplier: () -> T): ThreadLocal<T>
+*/
+
+typealias ThreadLocal<T> = java.lang.ThreadLocal<T>

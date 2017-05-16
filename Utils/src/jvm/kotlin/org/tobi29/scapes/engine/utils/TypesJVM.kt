@@ -16,11 +16,15 @@
 
 package org.tobi29.scapes.engine.utils
 
-typealias UUID = java.util.UUID
-
 typealias IOException = java.io.IOException
 
 typealias AutoCloseable = java.lang.AutoCloseable
+
+/* impl */ fun String.toUUID() = try {
+    UUID.fromString(this)
+} catch (e: IllegalArgumentException) {
+    null
+}
 
 typealias PlatformName = JvmName
 typealias JvmName = kotlin.jvm.JvmName

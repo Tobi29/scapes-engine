@@ -70,7 +70,7 @@ inline fun assert(enabled: Boolean,
                   block: () -> Boolean): Boolean {
     if (enabled) {
         if (!block()) {
-            throw AssertionError(message())
+            throw message()?.let { AssertionError(it) } ?: AssertionError()
         }
         return true
     }
@@ -84,3 +84,9 @@ inline fun assert(enabled: Boolean,
  */
 inline fun assert(enabled: Boolean,
                   block: () -> Boolean) = assert(enabled, null, block)
+
+/*
+header object Assertions {
+    var ENABLED: Boolean
+}
+*/

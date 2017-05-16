@@ -21,15 +21,18 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.scapes.engine.utils.tag.TagMap
+import org.tobi29.scapes.engine.utils.tag.set
+import org.tobi29.scapes.engine.utils.tag.toTag
+import org.tobi29.scapes.engine.utils.tag.toUUID
+import org.tobi29.scapes.engine.utils.toUUID
 
 object TagTests : Spek({
     describe("getting a uuid from a tag") {
         given("a tag with a valid string uuid") {
             val tag = "2e68827e-820c-40bf-8b92-3553bbc62a07".toTag()
             it("should return an uuid") {
-                tag.toUUID() shouldEqual UUID(
-                        "2e68827e-820c-40bf-8b92-3553bbc62a07")
+                tag.toUUID() shouldEqual "2e68827e-820c-40bf-8b92-3553bbc62a07".toUUID()
             }
         }
         given("a tag with a most and least number") {
@@ -38,8 +41,7 @@ object TagTests : Spek({
                 this["Least"] = -8389584522088928761
             }
             it("should return an uuid") {
-                tag.toUUID() shouldEqual UUID(
-                        "2e68827e-820c-40bf-8b92-3553bbc62a07")
+                tag.toUUID() shouldEqual "2e68827e-820c-40bf-8b92-3553bbc62a07".toUUID()
             }
         }
     }

@@ -18,7 +18,6 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.JvmName
 import org.tobi29.scapes.engine.utils.UUID
 
 // Unit
@@ -30,8 +29,12 @@ import org.tobi29.scapes.engine.utils.UUID
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Unit) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Unit) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Unit) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Boolean
 /**
@@ -42,8 +45,12 @@ inline fun ReadWriteTagMutableList.add(element: Unit) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Boolean) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Boolean) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Boolean) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Byte
 /**
@@ -54,8 +61,12 @@ inline fun ReadWriteTagMutableList.add(element: Boolean) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Byte) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Byte) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Byte) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Short
 /**
@@ -66,8 +77,12 @@ inline fun ReadWriteTagMutableList.add(element: Byte) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Short) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Short) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Short) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Int
 /**
@@ -78,8 +93,12 @@ inline fun ReadWriteTagMutableList.add(element: Short) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Int) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Int) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Int) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Long
 /**
@@ -90,8 +109,12 @@ inline fun ReadWriteTagMutableList.add(element: Int) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Long) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Long) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Long) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Float
 /**
@@ -102,8 +125,12 @@ inline fun ReadWriteTagMutableList.add(element: Long) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Float) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Float) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Float) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Double
 /**
@@ -114,8 +141,12 @@ inline fun ReadWriteTagMutableList.add(element: Float) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Double) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: Double) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Double) = TagList {
+    elements.forEach { add(it) }
+}
 
 // ByteArray
 /**
@@ -126,9 +157,13 @@ inline fun ReadWriteTagMutableList.add(element: Double) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: ByteArray) = add(
+inline fun ReadWriteTagList.add(element: ByteArray) = add(
         element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: ByteArray) = TagList {
+    elements.forEach { add(it) }
+}
 
 // String
 /**
@@ -139,8 +174,12 @@ inline fun ReadWriteTagMutableList.add(element: ByteArray) = add(
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: String) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: String) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: String) = TagList {
+    elements.forEach { add(it) }
+}
 
 // ReadTagMap
 /**
@@ -151,9 +190,13 @@ inline fun ReadWriteTagMutableList.add(element: String) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: ReadTagMap) = add(
+inline fun ReadWriteTagList.add(element: ReadTagMap) = add(
         element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: ReadTagMap) = TagList {
+    elements.forEach { add(it) }
+}
 
 // ReadTagList
 /**
@@ -164,9 +207,13 @@ inline fun ReadWriteTagMutableList.add(element: ReadTagMap) = add(
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: ReadTagList) = add(
+inline fun ReadWriteTagList.add(element: ReadTagList) = add(
         element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: ReadTagList) = TagList {
+    elements.forEach { add(it) }
+}
 
 // Sequence<Tag>
 /**
@@ -177,9 +224,13 @@ inline fun ReadWriteTagMutableList.add(element: ReadTagList) = add(
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: Sequence<Tag>) = add(
+inline fun ReadWriteTagList.add(element: Sequence<Tag>) = add(
         element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: Sequence<Tag>) = TagList {
+    elements.forEach { add(it) }
+}
 
 // UUID
 /**
@@ -190,8 +241,12 @@ inline fun ReadWriteTagMutableList.add(element: Sequence<Tag>) = add(
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: UUID) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: UUID) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: UUID) = TagList {
+    elements.forEach { add(it) }
+}
 
 // TagWrite
 /**
@@ -202,5 +257,9 @@ inline fun ReadWriteTagMutableList.add(element: UUID) = add(element.toTag())
  * @return `true` if the element has been added, `false` if the collection does not support duplicates
  * and the element is already contained in the collection.
  */
-@JvmName("addMut")
-inline fun ReadWriteTagMutableList.add(element: TagWrite) = add(element.toTag())
+inline fun ReadWriteTagList.add(element: TagWrite) = add(element.toTag())
+
+/** Returns a new read-only [TagList] of given element */
+inline fun tagListOf(vararg elements: TagWrite) = TagList {
+    elements.forEach { add(it) }
+}

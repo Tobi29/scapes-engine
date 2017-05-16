@@ -99,8 +99,8 @@ fun Sequence<MutableTag>.toTag() = TagList {
 }
 
 fun UUID.toTag() = TagMap {
-    this["Most"] = mostSignificantBits
-    this["Least"] = leastSignificantBits
+    this["Most"] = getMostSignificantBits()
+    this["Least"] = getLeastSignificantBits()
 }
 
 inline fun ReadTagMutableMap.map(key: String) = this[key]?.asMap()
@@ -169,16 +169,8 @@ fun UUID(map: ReadTagMutableMap): UUID? {
     return UUID(most, least)
 }
 
-fun UUID(str: String): UUID? {
-    try {
-        return UUID.fromString(str)
-    } catch (e: IllegalArgumentException) {
-        return null
-    }
-}
-
 inline fun MutableTag.toUUID(): UUID? {
     toMap()?.let(::UUID)?.let { return it }
-    toString().let(::UUID)?.let { return it }
+    toString().toUUID()?.let { return it }
     return null
 }

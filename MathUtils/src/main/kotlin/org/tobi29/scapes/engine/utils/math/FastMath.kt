@@ -66,11 +66,4 @@ object FastMath {
         output = output or (output shr 16)
         return output + 1
     }
-
-    fun lb(bits: Int): Int {
-        if (bits == 0) {
-            throw IllegalArgumentException("Calling lb on 0 is not allowed")
-        }
-        return 31 - Integer.numberOfLeadingZeros(bits)
-    }
 }

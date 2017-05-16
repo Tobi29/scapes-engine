@@ -66,7 +66,7 @@ fun version(str: kotlin.String): Version {
     try {
         return versionParse(str)
     } catch (e: VersionException) {
-        throw IllegalArgumentException(e.message)
+        throw IllegalArgumentException(e.message ?: "")
     }
 }
 
@@ -136,4 +136,4 @@ enum class Comparison constructor(val level: Int) {
     }
 }
 
-class VersionException(message: String?) : Exception(message)
+class VersionException(message: String) : Exception(message)
