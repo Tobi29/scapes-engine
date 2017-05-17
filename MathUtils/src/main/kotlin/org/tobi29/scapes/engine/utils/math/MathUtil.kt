@@ -564,6 +564,20 @@ header fun floor(value: Float): Int
 header fun floor(value: Double): Int
 
 /**
+ * Returns the next integer below [value]
+ * @param value The value
+ * @return Next integer below [value]
+ */
+header fun floorL(value: Double): Long
+
+/**
+ * Returns the next integer below [value]
+ * @param value The value
+ * @return Next integer below [value]
+ */
+header fun floorD(value: Double): Double
+
+/**
  * Returns the nearest integer [value]
  * @param value The value
  * @return Nearest integer below [value]
@@ -578,6 +592,20 @@ header fun round(value: Float): Int
 header fun round(value: Double): Int
 
 /**
+ * Returns the nearest integer [value]
+ * @param value The value
+ * @return Nearest integer below [value]
+ */
+header fun roundL(value: Double): Long
+
+/**
+ * Returns the nearest integer [value]
+ * @param value The value
+ * @return Nearest integer below [value]
+ */
+header fun roundD(value: Double): Double
+
+/**
  * Returns the next integer above [value]
  * @param value The value
  * @return Next integer above [value]
@@ -590,6 +618,20 @@ header fun ceil(value: Float): Int
  * @return Next integer above [value]
  */
 header fun ceil(value: Double): Int
+
+/**
+ * Returns the next integer above [value]
+ * @param value The value
+ * @return Next integer above [value]
+ */
+header fun ceilL(value: Double): Long
+
+/**
+ * Returns the next integer above [value]
+ * @param value The value
+ * @return Next integer above [value]
+ */
+header fun ceilD(value: Double): Double
 */
 
 /**

@@ -63,18 +63,43 @@ package org.tobi29.scapes.engine.utils.math
     return if (value >= 0.0f || int.toFloat() == value) int else int - 1
 }
 
-/* impl */ inline fun floor(value: Double) = Math.floor(value).toInt()
+/* impl */ inline fun floor(value: Double): Int {
+    val int = value.toInt()
+    return if (value >= 0.0 || int.toDouble() == value) int else int - 1
+}
 
-/* impl */ inline fun round(value: Float) = round(value.toDouble())
+/* impl */ inline fun floorL(value: Double): Long {
+    val int = value.toLong()
+    return if (value >= 0.0 || int.toDouble() == value) int else int - 1
+}
 
-/* impl */ inline fun round(value: Double) = Math.round(value).toInt()
+/* impl */ inline fun floorD(value: Double) = Math.floor(value)
+
+/* impl */ inline fun round(value: Float) = floor(value + 0.5f)
+
+/* impl */ inline fun round(value: Double) = floor(value + 0.5)
+
+/* impl */ inline fun roundL(value: Double) = floorL(value + 0.5)
+
+/* impl */ inline fun roundD(value: Double) = Math.round(value).toDouble()
 
 /* impl */ inline fun ceil(value: Float): Int {
     val int = value.toInt()
     return if (value <= 0.0f || int.toFloat() == value) int else int + 1
 }
 
-/* impl */ inline fun ceil(value: Double) = Math.ceil(value).toInt()
+/* impl */ inline fun ceil(value: Double): Int {
+    val int = value.toInt()
+    return if (value <= 0.0 || int.toDouble() == value) int else int + 1
+}
+
+/* impl */ inline fun ceilL(value: Double): Long {
+    val int = value.toLong()
+    return if (value <= 0.0 || int.toDouble() == value) int else int + 1
+}
+
+/* impl */ inline fun ceilD(value: Double) = Math.ceil(value)
+
 
 /* impl */ inline fun sin(value: Float) = sin(value.toDouble()).toFloat()
 
