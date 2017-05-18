@@ -110,15 +110,6 @@ inline fun ReadWriteTagMutableMap.mapMut(key: String): MutableTagMap {
     } as MutableTagMap
 }
 
-inline fun <R> ReadWriteTagMutableMap.syncMapMut(key: String,
-                                                 crossinline block: (MutableTagMap) -> R): R {
-    mapMut(key).let { map ->
-        return synchronized(map) {
-            block(map)
-        }
-    }
-}
-
 inline fun ReadTagMutableMap.list(key: String) = this[key]?.asList()
 
 inline fun ReadWriteTagMutableMap.listMut(key: String): MutableTagList {
@@ -135,7 +126,6 @@ fun MutableTag.toTag(): Tag = when (this) {
     is Tag -> this
     is MutableTagMap -> toTag()
     is MutableTagList -> toTag()
-    else -> throw IOException("Invalid type: ${this::class}")
 }
 
 fun MutableTagMap.toTag() = TagMap {

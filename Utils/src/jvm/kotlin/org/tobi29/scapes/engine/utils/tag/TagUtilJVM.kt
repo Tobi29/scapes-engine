@@ -23,3 +23,12 @@ fun Properties.toTag() = TagMap {
         this[key.toString()] = value.toString()
     }
 }
+
+inline fun <R> ReadWriteTagMutableMap.syncMapMut(key: String,
+                                                 crossinline block: (MutableTagMap) -> R): R {
+    mapMut(key).let { map ->
+        return synchronized(map) {
+            block(map)
+        }
+    }
+}
