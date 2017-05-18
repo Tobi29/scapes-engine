@@ -20,7 +20,6 @@ package org.tobi29.scapes.engine.utils
 
 import com.owtelse.codec.Base64
 import java.io.UnsupportedEncodingException
-import java.util.*
 import kotlin.experimental.or
 
 /* impl */fun ByteArray.toHexadecimal(): String {
