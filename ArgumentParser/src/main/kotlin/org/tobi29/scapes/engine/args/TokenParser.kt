@@ -57,11 +57,8 @@ class TokenParser
      */
     fun append(token: String) {
         val length = token.length
-        if (length == 0) {
-            return
-        }
 
-        if (optionsTerminated || currentOption != null) {
+        if (length == 0 || optionsTerminated || currentOption != null) {
             appendArg(token)
             return
         }
