@@ -16,6 +16,6 @@
 
 package org.tobi29.scapes.engine.server
 
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 
 class UnresolvableAddressException(hostname: String) : IOException(hostname)

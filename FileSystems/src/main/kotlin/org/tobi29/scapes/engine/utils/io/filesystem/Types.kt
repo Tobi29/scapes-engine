@@ -14,24 +14,6 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.io
+package org.tobi29.scapes.engine.utils.io.filesystem
 
-fun ByteBuffer.asArray() =
-        ByteArray(remaining()).also {
-            val position = position()
-            get(it)
-            position(position)
-        }
-
-/**
- * Fills a buffer with the given value
- * @receiver Buffer to fill
- * @param supplier Supplier called for each value written to the buffer
- * @return The given buffer
- */
-inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
-    while (hasRemaining()) {
-        put(supplier())
-    }
-    return this
-}
+typealias FileChannel = java.nio.channels.FileChannel

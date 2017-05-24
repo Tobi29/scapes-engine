@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.server
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.AtomicLong
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.math.max
 import java.net.SocketAddress
 import java.nio.channels.SelectionKey

@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.io
+package org.tobi29.scapes.engine.utils.io.filesystem.spi
 
-fun ByteBuffer.asString() =
-        if (hasArray()) {
-            String(array(), arrayOffset(), remaining())
-        } else {
-            String(asArray())
-        }
+import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
+
+interface FileSystemProvider {
+    fun available(): Boolean
+
+    fun implementation(): FileUtilImpl
+}

@@ -20,7 +20,7 @@ import kotlinx.coroutines.experimental.*
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.AtomicLong
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import kotlin.coroutines.experimental.CoroutineContext
 

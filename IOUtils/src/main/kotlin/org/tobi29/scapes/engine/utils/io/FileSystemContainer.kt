@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.IOException
 
 class FileSystemContainer : Path {
     private val fileSystems = ConcurrentHashMap<String, Path>()

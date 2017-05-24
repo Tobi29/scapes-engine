@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.codec.ogg
 
 import com.jcraft.jogg.Buffer
 import com.jcraft.jogg.Packet
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 
 class OpusComment(packet: Packet) {
     private val userCommentDatas = ArrayList<ByteArray>()

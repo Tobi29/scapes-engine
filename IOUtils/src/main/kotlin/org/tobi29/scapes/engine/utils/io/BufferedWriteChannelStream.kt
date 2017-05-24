@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.IOException
-
 class BufferedWriteChannelStream(private val channel: WritableByteChannel) : WritableByteStream {
     private val buffer = ByteBuffer(8192)
 

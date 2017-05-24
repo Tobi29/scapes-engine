@@ -16,190 +16,82 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.UnsupportedJVMException
-import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
-import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
-import java.nio.channels.FileChannel
-import java.util.*
-import java.util.zip.ZipFile
+/*
+header fun path(path: String): FilePath
 
-private val IMPL = loadService()
-
-private fun loadService(): FileUtilImpl {
-    for (filesystem in ServiceLoader.load(FileSystemProvider::class.java)) {
-        try {
-            if (filesystem.available()) {
-                return filesystem.implementation()
-            }
-        } catch (e: ServiceConfigurationError) {
-        }
-
-    }
-    throw UnsupportedJVMException(
-            "No filesystem implementation available")
-}
-
-fun path(path: String): FilePath {
-    return IMPL.path(path)
-}
-
-fun read(path: FilePath): ReadSource {
-    return IMPL.read(path)
-}
+header fun read(path: FilePath): ReadSource
 
 // TODO: @Throws(IOException::class)
-fun <R> read(path: FilePath,
-             read: (ReadableByteStream) -> R): R {
-    return IMPL.read(path, read)
-}
+header fun <R> read(path: FilePath,
+                    read: (ReadableByteStream) -> R): R
 
 // TODO: @Throws(IOException::class)
-fun <R> write(path: FilePath,
-              write: (WritableByteStream) -> R): R {
-    return IMPL.write(path, write)
-}
+header fun <R> write(path: FilePath,
+                     write: (WritableByteStream) -> R): R
 
 // TODO: @Throws(IOException::class)
-fun createFile(path: FilePath): FilePath {
-    return IMPL.createFile(path)
-}
+header fun createFile(path: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-fun createDirectories(path: FilePath): FilePath {
-    return IMPL.createDirectories(path)
-}
+header fun createDirectories(path: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-fun delete(path: FilePath) {
-    IMPL.delete(path)
-}
+header fun delete(path: FilePath)
 
 // TODO: @Throws(IOException::class)
-fun deleteIfExists(path: FilePath): Boolean {
-    return IMPL.deleteIfExists(path)
-}
+header fun deleteIfExists(path: FilePath): Boolean
 
 // TODO: @Throws(IOException::class)
-fun deleteDir(path: FilePath) {
-    IMPL.deleteDir(path)
-}
+header fun deleteDir(path: FilePath)
 
-fun exists(path: FilePath): Boolean {
-    return IMPL.exists(path)
-}
+header fun exists(path: FilePath): Boolean
 
-fun isRegularFile(path: FilePath): Boolean {
-    return IMPL.isRegularFile(path)
-}
+header fun isRegularFile(path: FilePath): Boolean
 
-fun isDirectory(path: FilePath): Boolean {
-    return IMPL.isDirectory(path)
-}
+header fun isDirectory(path: FilePath): Boolean
 
-fun isHidden(path: FilePath): Boolean {
-    return IMPL.isHidden(path)
-}
+header fun isHidden(path: FilePath): Boolean
 
-fun isNotHidden(path: FilePath): Boolean {
-    return !isHidden(path)
-}
+header fun isNotHidden(path: FilePath): Boolean
 
 // TODO: @Throws(IOException::class)
-fun createTempFile(prefix: String,
-                   suffix: String): FilePath {
-    return IMPL.createTempFile(prefix, suffix)
-}
+header fun createTempFile(prefix: String,
+                          suffix: String): FilePath
 
 // TODO: @Throws(IOException::class)
-fun createTempDir(prefix: String): FilePath {
-    return IMPL.createTempDir(prefix)
-}
+header fun createTempDir(prefix: String): FilePath
 
 // TODO: @Throws(IOException::class)
-fun copy(source: FilePath,
-         target: FilePath): FilePath {
-    return IMPL.copy(source, target)
-}
+header fun copy(source: FilePath,
+                target: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-fun move(source: FilePath,
-         target: FilePath): FilePath {
-    return IMPL.move(source, target)
-}
+header fun move(source: FilePath,
+                target: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-fun list(path: FilePath): List<FilePath> {
-    return list(path) { toList() }
-}
+header fun list(path: FilePath): List<FilePath>
 
 // TODO: @Throws(IOException::class)
-fun <R> list(path: FilePath,
-             consumer: Sequence<FilePath>.() -> R): R {
-    return IMPL.list(path) { consumer(it.asSequence()) }
-}
+header fun <R> list(path: FilePath,
+                    consumer: Sequence<FilePath>.() -> R): R
 
 // TODO: @Throws(IOException::class)
-fun list(path: FilePath,
-         vararg filters: (FilePath) -> Boolean): List<FilePath> {
-    return list(path) {
-        filter {
-            filters.forEach { filter ->
-                if (!filter(it)) {
-                    return@filter false
-                }
-            }
-            true
-        }.toList()
-    }
-}
+header fun list(path: FilePath,
+                vararg filters: (FilePath) -> Boolean): List<FilePath>
 
 // TODO: @Throws(IOException::class)
-fun listRecursive(path: FilePath): List<FilePath> {
-    return listRecursive(path) { toList() }
-}
+header fun listRecursive(path: FilePath): List<FilePath>
 
 // TODO: @Throws(IOException::class)
-fun <R> listRecursive(path: FilePath,
-                      consumer: Sequence<FilePath>.() -> R): R {
-    return IMPL.listRecursive(path) { consumer(it.asSequence()) }
-}
+header fun <R> listRecursive(path: FilePath,
+                             consumer: Sequence<FilePath>.() -> R): R
 
 // TODO: @Throws(IOException::class)
-fun listRecursive(path: FilePath,
-                  vararg filters: (FilePath) -> Boolean): List<FilePath> {
-    return listRecursive(path) {
-        filter {
-            filters.forEach { filter ->
-                if (!filter(it)) {
-                    return@filter false
-                }
-            }
-            true
-        }.toList()
-    }
-}
+header fun listRecursive(path: FilePath,
+                         vararg filters: (FilePath) -> Boolean): List<FilePath>
 
 // TODO: @Throws(IOException::class)
-fun setLastModifiedTime(path: FilePath,
-                        value: Instant) {
-    IMPL.setLastModifiedTime(path, value)
-}
-
-// TODO: @Throws(IOException::class)
-fun getLastModifiedTime(path: FilePath): Instant {
-    return IMPL.getLastModifiedTime(path)
-}
-
-// TODO: @Throws(IOException::class)
-fun <R> tempChannel(path: FilePath,
-                    consumer: (FileChannel) -> R): R {
-    return IMPL.tempChannel(path, consumer)
-}
-
-// TODO: @Throws(IOException::class)
-fun zipFile(path: FilePath): ZipFile {
-    return IMPL.zipFile(path)
-}
+header fun <R> tempChannel(path: FilePath,
+                           consumer: (FileChannel) -> R): R
+*/

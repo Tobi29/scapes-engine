@@ -17,7 +17,7 @@ package org.tobi29.scapes.engine.server.jvm
 
 import org.tobi29.scapes.engine.server.RemoteAddress
 import org.tobi29.scapes.engine.server.SSLHandle
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.filterMap
 import org.tobi29.scapes.engine.utils.toArray
 import java.security.*

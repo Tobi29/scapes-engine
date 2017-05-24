@@ -19,7 +19,7 @@ import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.asBuffer

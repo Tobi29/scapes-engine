@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.IOException
-
 class BufferedReadChannelStream(private val channel: ReadableByteChannel,
                                 private val buffer: ByteBuffer = ByteBuffer(
                                         8192)) : ReadableByteStream {

@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.*
 
 class TagBundleResource(private val data: ByteBuffer? = null) : ReadSource {

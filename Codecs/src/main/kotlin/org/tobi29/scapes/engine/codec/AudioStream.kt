@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.codec
 
 import org.tobi29.scapes.engine.codec.spi.ReadableAudioStreamProvider
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import java.util.*

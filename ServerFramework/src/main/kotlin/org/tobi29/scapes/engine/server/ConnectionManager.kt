@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor

@@ -18,9 +18,7 @@ package org.tobi29.scapes.engine.utils.io
 
 typealias ReadableByteChannel = java.nio.channels.ReadableByteChannel
 typealias WritableByteChannel = java.nio.channels.WritableByteChannel
+typealias SeekableByteChannel = java.nio.channels.SeekableByteChannel
 typealias ByteChannel = java.nio.channels.ByteChannel
 
 typealias Channels = java.nio.channels.Channels
-
-typealias ByteBuffer = java.nio.ByteBuffer
-typealias FloatBuffer = java.nio.FloatBuffer

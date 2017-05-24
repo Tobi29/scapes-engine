@@ -15,8 +15,6 @@
  */
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.IOException
-
 class LimitedBufferStream(private val stream: ReadableByteStream,
                           private var remaining: Int) : SizedReadableByteStream {
 

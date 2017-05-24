@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import org.tobi29.scapes.engine.utils.logging.KLogging

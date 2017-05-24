@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.IOException
 import org.tobi29.scapes.engine.utils.assert
 
 interface ReadableByteStream {

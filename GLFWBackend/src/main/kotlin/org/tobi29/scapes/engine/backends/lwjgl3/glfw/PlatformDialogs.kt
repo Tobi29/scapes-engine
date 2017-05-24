@@ -23,7 +23,7 @@ import org.lwjgl.system.Platform
 import org.lwjgl.util.tinyfd.TinyFileDialogs
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path

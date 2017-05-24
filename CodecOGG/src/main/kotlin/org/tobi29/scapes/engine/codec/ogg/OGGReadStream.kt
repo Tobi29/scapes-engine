@@ -25,7 +25,7 @@ import com.jcraft.jorbis.Info
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.FloatBuffer
 import org.tobi29.scapes.engine.utils.io.ReadableByteChannel

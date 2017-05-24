@@ -21,12 +21,16 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.platform.*
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.Crashable
+import org.tobi29.scapes.engine.utils.Version
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.createTempFile
 import org.tobi29.scapes.engine.utils.io.filesystem.writeCrashReport
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
+import org.tobi29.scapes.engine.utils.sleepAtLeast
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.UpdateLoop
 import kotlin.system.exitProcess

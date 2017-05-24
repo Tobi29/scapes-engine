@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import ar.com.hjg.pngj.*
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.*
 import java.io.InputStream
 import java.io.OutputStream

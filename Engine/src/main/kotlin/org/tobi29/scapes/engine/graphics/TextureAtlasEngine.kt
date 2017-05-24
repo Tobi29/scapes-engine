@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.TextureAtlas
 import org.tobi29.scapes.engine.utils.graphics.decodePNG

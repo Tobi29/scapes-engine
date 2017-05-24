@@ -17,14 +17,14 @@
 package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.filesystem.FileChannel
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
 import org.tobi29.scapes.engine.utils.use
 import java.io.InputStream
 import java.net.URI
-import java.nio.channels.FileChannel
 import java.nio.file.*
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes

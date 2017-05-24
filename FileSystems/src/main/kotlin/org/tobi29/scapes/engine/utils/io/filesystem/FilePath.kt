@@ -16,13 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.tobi29.scapes.engine.utils.io.Path
-import org.tobi29.scapes.engine.utils.io.ReadSource
-import java.net.URI
-
-interface FilePath : Path, Comparable<FilePath> {
-    fun toUri(): URI
-
+/*
+header interface FilePath : Path, Comparable<FilePath> {
     fun normalize(): FilePath
 
     fun resolve(other: String): FilePath
@@ -38,16 +33,5 @@ interface FilePath : Path, Comparable<FilePath> {
     val fileName: FilePath
 
     fun toAbsolutePath(): FilePath
-
-    override fun get(): ReadSource {
-        return read(this)
-    }
-
-    override fun get(path: String): Path {
-        return resolve(path)
-    }
-
-    override fun parent(): FilePath {
-        return resolve("..")
-    }
 }
+*/

@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-typealias IOException = java.io.IOException
-
 typealias AutoCloseable = java.lang.AutoCloseable
 
 /* impl */ fun String.toUUID() = try {

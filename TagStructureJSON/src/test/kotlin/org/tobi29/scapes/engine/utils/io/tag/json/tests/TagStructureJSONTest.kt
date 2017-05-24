@@ -23,7 +23,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.test.assertions.shouldThrow
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON

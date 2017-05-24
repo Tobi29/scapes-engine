@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.utils
 
-fun Float.bits() = java.lang.Float.floatToIntBits(this)
+/* impl */ inline fun Float.bits() = java.lang.Float.floatToIntBits(this)
 
-fun Double.bits() = java.lang.Double.doubleToLongBits(this)
+/* impl */ inline fun Double.bits() = java.lang.Double.doubleToLongBits(this)
+
+/* impl */ inline fun Int.bitsToFloat() = java.lang.Float.intBitsToFloat(this)
+
+/* impl */ inline fun Long.bitsToDouble() = java.lang.Double.longBitsToDouble(
+        this)

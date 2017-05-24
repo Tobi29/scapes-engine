@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.server
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.lang.ref.WeakReference
 import java.net.InetSocketAddress

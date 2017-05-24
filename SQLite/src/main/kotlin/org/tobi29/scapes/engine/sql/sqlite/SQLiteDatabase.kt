@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.sql.sqlite
 
 import org.tobi29.scapes.engine.sql.*
-import org.tobi29.scapes.engine.utils.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.use
 import java.sql.Connection
 import java.sql.PreparedStatement

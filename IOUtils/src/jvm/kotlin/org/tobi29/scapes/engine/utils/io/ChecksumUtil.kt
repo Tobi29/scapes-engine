@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.Algorithm
 import org.tobi29.scapes.engine.utils.Checksum
-import org.tobi29.scapes.engine.utils.IOException
 
 /**
  * Creates a checksum from the given array
