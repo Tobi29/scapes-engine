@@ -22,7 +22,8 @@ Android support is contained in the
 [ScapesEngineAndroid](https://github.com/Tobi29/ScapesEngineAndroid) repository.
 For technical information visit that repository.
 
-Requires OpenGL ES 3.0, making it impossible to run the engine in an emulator.
+Requires OpenGL ES 3.0, should run in an emulator with it enabled, however not
+tested due to rather interesting errors when trying to run it on Mesa Radeonsi.
 Should theoretically support API Level 18 and higher, however only 25 is
 actively tested. Also as Java performance varies a lot between older Android
 releases to now, the engine probably will not run smoothly on older devices.
@@ -34,6 +35,22 @@ in the backend module.
 The engine can run on the [Multi OS Engine](https://multi-os-engine.org),
 however there is no backend for it that is in a usable state. There might be one
 added in the future, but this is rather low priority.
+
+### Kotlin/JS
+Kotlin/JS is not supported at the moment, but various modules have been
+partially ported, waiting for more stable multiplatform support in Kotlin for
+public upload.
+
+Current efforts are targeted at browser support, Node.js not being planned (Use
+JVM for server code).
+
+### Kotlin/Native
+Kotlin/Native is not supported at the moment, using some of the Kotlin/JS code
+and monkey-patching the incomplete stdlib already works fairly well, however
+waiting for multiplatform support for public upload.
+
+Due to the early stage of development of Kotlin/Native, no scope has been
+decided on for future support.
 
 ## Build
 The project uses Gradle to build all modules.
@@ -56,7 +73,6 @@ Depends on various libraries that provide features available in Java 8 to
 allow easier Android support
 ### Dependencies
   * [Kotlin](https://kotlinlang.org)
-  * [Kotlin Logging](https://github.com/MicroUtils/kotlin-logging)
   * [SLF4J](http://www.slf4j.org)
   * [ThreeTen](http://www.threeten.org)
   * [Base64](https://github.com/karlroberts/base64)
@@ -65,23 +81,32 @@ allow easier Android support
 ### For JSON support
   * [JSON Processing](https://jsonp.java.net)
 
+## Math utils
+Various math primitives and utils
+
+Contains concise wrappers for `java.lang.Math` and faster approximations
+(e.g. lookup table based trigonometric functions), simple vectors and matrices
+useful for game development, as well as wrappers around `java.util.Random`.
+### Dependencies
+  * Utils
+
 ## IO utils
 Base library for IO operations using `java.nio`
 
 Contains various interfaces and utilities for doing IO work
+
+Uses Apache Tika for cross-platform mime-type support
 ### Dependencies
   * Utils
+  * [Apache Tika](https://tika.apache.org)
 
 ## File system api
 File system api designed as a basic alternative to `java.nio.file`
 
 Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
 Android or other platforms lacking support for `java.nio.file`
-
-Uses Apache Tika for cross-platform mime-type support
 ### Dependencies
   * IO utils
-  * [Apache Tika](https://tika.apache.org)
 
 ## Audio codecs
 Audio decoding library that can use mime-types to identify the format
