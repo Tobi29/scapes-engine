@@ -115,8 +115,8 @@ and load an appropriate decoder through an SPI
   * File system api
 ### For OGG Vorbis and Opus support
   * [JOrbis](http://www.jcraft.com/jorbis)
-  * [Concentus](https://github.com/lostromb/concentus) (Code is currently
-    included in this repo as there is no up-to-data build it seems)
+  * [Concentus](https://github.com/lostromb/concentus) (Code is currently stored
+    [here](https://github.com/Tobi29/Concentus))
 ### For MP3 support
   * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
 
