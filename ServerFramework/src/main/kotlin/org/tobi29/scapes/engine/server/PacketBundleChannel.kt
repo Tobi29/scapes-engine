@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.server
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.*
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.lang.ref.WeakReference
 import java.net.InetSocketAddress
@@ -59,8 +58,8 @@ class PacketBundleChannel(private val address: RemoteAddress,
     private var state = State.HANDSHAKE
 
     init {
-        deflater = CompressionUtil.ZDeflater(1)
-        inflater = CompressionUtil.ZInflater()
+        deflater = ZDeflater(1)
+        inflater = ZInflater()
         engine = ssl.newEngine(address)
         engine.useClientMode = client
         myNetData.buffer().limit(0)
