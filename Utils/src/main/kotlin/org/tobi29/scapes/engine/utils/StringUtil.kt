@@ -66,3 +66,9 @@ fun replace(vararg array: String): (String) -> String {
         output
     }
 }
+
+/*
+header fun ByteArray.strUTF8(): String
+
+header fun String.bytesUTF8(): ByteArray
+*/

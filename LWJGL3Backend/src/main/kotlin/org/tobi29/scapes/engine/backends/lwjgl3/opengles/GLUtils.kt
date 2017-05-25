@@ -29,6 +29,7 @@ import org.tobi29.scapes.engine.utils.shader.Expression
 import org.tobi29.scapes.engine.utils.shader.ShaderException
 import org.tobi29.scapes.engine.utils.shader.Uniform
 import org.tobi29.scapes.engine.utils.shader.backend.glsl.GLSLGenerator
+import org.tobi29.scapes.engine.utils.strUTF8
 
 internal object GLUtils : KLogging() {
     fun renderType(renderType: RenderType): Int {
@@ -76,7 +77,7 @@ internal object GLUtils : KLogging() {
                 GLES20.glGetShaderInfoLog(id, lengthBuffer, buffer)
                 val infoBytes = ByteArray(length)
                 buffer.get(infoBytes)
-                val out = String(infoBytes)
+                val out = infoBytes.strUTF8()
                 logger.info { "Shader log: $out" }
             }
         }
@@ -93,7 +94,7 @@ internal object GLUtils : KLogging() {
                 GLES20.glGetProgramInfoLog(id, lengthBuffer, buffer)
                 val infoBytes = ByteArray(length)
                 buffer.get(infoBytes)
-                val out = String(infoBytes)
+                val out = infoBytes.strUTF8()
                 logger.info { "Program log: $out" }
             }
         }

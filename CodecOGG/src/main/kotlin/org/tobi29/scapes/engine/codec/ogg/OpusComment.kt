@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.codec.ogg
 import com.jcraft.jogg.Buffer
 import com.jcraft.jogg.Packet
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.strUTF8
 
 class OpusComment(packet: Packet) {
     private val userCommentDatas = ArrayList<ByteArray>()
@@ -68,7 +69,7 @@ class OpusComment(packet: Packet) {
         }
     }
 
-    val vendor by lazy { String(vendorData) }
+    val vendor by lazy { vendorData.strUTF8() }
 
     val userComments by lazy { userCommentSequence.toList() }
 
