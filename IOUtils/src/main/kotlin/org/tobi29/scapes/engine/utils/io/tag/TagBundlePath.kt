@@ -16,14 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.tobi29.scapes.engine.utils.io.Path
-import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.io.*
 
 data class TagBundlePath(private val bundle: TagBundle,
                          private val path: String) : Path {
-    override fun get(): ReadSource {
-        return TagBundleResource(bundle.resolve(path))
-    }
+    private val data by lazy { bundle.resolve(path) }
 
     override fun get(path: String): Path {
         if (this.path.isEmpty()) {
@@ -42,4 +39,15 @@ data class TagBundlePath(private val bundle: TagBundle,
         }
         return TagBundlePath(bundle, path.substring(0, i))
     }
+
+    override fun <R> read(reader: (ReadableByteStream) -> R): R {
+        val stream = data?.asReadOnlyBuffer()?.let(::ByteBufferStream)
+                ?: throw IOException("Entry does not exist")
+        return reader(stream)
+    }
+
+    override fun exists() = data != null
+
+    override fun channel() = data?.asReadOnlyBuffer()?.let(::ByteBufferChannel)
+            ?: throw IOException("Entry does not exist")
 }

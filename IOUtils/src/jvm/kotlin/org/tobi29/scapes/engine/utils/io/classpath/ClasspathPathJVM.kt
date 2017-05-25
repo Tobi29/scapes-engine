@@ -16,15 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.io.classpath
 
-import org.tobi29.scapes.engine.utils.io.Path
-import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.io.*
 
 data class ClasspathPath(private val classLoader: ClassLoader,
                          private val path: String) : Path {
-    override fun get(): ReadSource {
-        return ClasspathResource(classLoader, path)
-    }
-
     override fun get(path: String): Path {
         if (this.path.isEmpty()) {
             return ClasspathPath(classLoader, path)
@@ -41,5 +36,17 @@ data class ClasspathPath(private val classLoader: ClassLoader,
             return ClasspathPath(classLoader, "")
         }
         return ClasspathPath(classLoader, path.substring(0, i))
+    }
+
+    override fun exists() = classLoader.getResource(path) != null
+
+    override fun channel(): ReadableByteChannel {
+        return Channels.newChannel(classLoader.getResourceAsStream(path))
+    }
+
+    override fun mimeType(): String {
+        return classLoader.getResourceAsStream(path).use {
+            detectMimeIO(it, path)
+        }
     }
 }

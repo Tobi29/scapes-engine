@@ -36,7 +36,7 @@ interface SoundSystem {
                   gain: Double = 1.0,
                   referenceDistance: Double = 1.0,
                   rolloffFactor: Double = 1.0) =
-            playMusic(engine.files[asset].get(), channel, state, pitch, gain,
+            playMusic(engine.files[asset], channel, state, pitch, gain,
                     referenceDistance, rolloffFactor)
 
     fun playMusic(asset: String,
@@ -48,7 +48,7 @@ interface SoundSystem {
                   gain: Double = 1.0,
                   referenceDistance: Double = 1.0,
                   rolloffFactor: Double = 1.0) =
-            playMusic(engine.files[asset].get(), channel, position, velocity,
+            playMusic(engine.files[asset], channel, position, velocity,
                     state, pitch, gain, referenceDistance, rolloffFactor)
 
     fun playMusic(asset: ReadSource,
@@ -75,7 +75,7 @@ interface SoundSystem {
                   gain: Double = 1.0,
                   referenceDistance: Double = 1.0,
                   rolloffFactor: Double = 1.0) =
-            playSound(engine.files[asset].get(), channel, pitch, gain,
+            playSound(engine.files[asset], channel, pitch, gain,
                     referenceDistance, rolloffFactor)
 
     fun playSound(asset: String,
@@ -86,8 +86,8 @@ interface SoundSystem {
                   gain: Double = 1.0,
                   referenceDistance: Double = 1.0,
                   rolloffFactor: Double = 1.0) =
-            playSound(engine.files[asset].get(), channel, position, velocity,
-                    pitch, gain, referenceDistance, rolloffFactor)
+            playSound(engine.files[asset], channel, position, velocity, pitch,
+                    gain, referenceDistance, rolloffFactor)
 
     fun playSound(asset: ReadSource,
                   channel: String,
@@ -111,7 +111,7 @@ interface SoundSystem {
                         gain: Double = 1.0,
                         referenceDistance: Double = 1.0,
                         rolloffFactor: Double = 1.0) =
-            playStaticAudio(engine.files[asset].get(), channel, pitch, gain,
+            playStaticAudio(engine.files[asset], channel, pitch, gain,
                     referenceDistance, rolloffFactor)
 
     fun playStaticAudio(asset: ReadSource,

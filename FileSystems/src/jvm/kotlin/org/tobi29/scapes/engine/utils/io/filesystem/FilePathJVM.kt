@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.tobi29.scapes.engine.utils.io.Path
-import org.tobi29.scapes.engine.utils.io.ReadSource
 import java.net.URI
 
 /* impl */ interface FilePath : Path, Comparable<FilePath> {
@@ -38,10 +37,6 @@ import java.net.URI
     /* impl */ val fileName: FilePath
 
     /* impl */ fun toAbsolutePath(): FilePath
-
-    override fun get(): ReadSource {
-        return read(this)
-    }
 
     override fun get(path: String): Path {
         return resolve(path)

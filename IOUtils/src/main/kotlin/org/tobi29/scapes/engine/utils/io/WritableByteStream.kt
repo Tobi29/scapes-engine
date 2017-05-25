@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.bytesUTF8
+
 interface WritableByteStream {
     // TODO: @Throws(IOException::class)
     fun put(buffer: ByteBuffer): WritableByteStream {
@@ -30,7 +32,7 @@ interface WritableByteStream {
     fun put(src: ByteArray,
             off: Int = 0,
             len: Int = src.size): WritableByteStream {
-        return put(ByteBuffer.wrap(src, off, len))
+        return readArray(src, off, len)
     }
 
     // TODO: @Throws(IOException::class)
@@ -79,6 +81,6 @@ interface WritableByteStream {
     }
 
     // TODO: @Throws(IOException::class)
-    fun putString(value: String) = putByteArray(value.toByteArray())
-
+    fun putString(value: String) =
+            putByteArray(value.bytesUTF8())
 }

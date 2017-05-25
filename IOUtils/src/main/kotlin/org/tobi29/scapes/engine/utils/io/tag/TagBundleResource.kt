@@ -16,10 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.*
 
-class TagBundleResource(private val data: ByteBuffer? = null) : ReadSource {
+data class TagBundleResource(private val data: ByteBuffer? = null) : ReadSource {
     override fun <R> read(reader: (ReadableByteStream) -> R): R {
         val stream = data?.asReadOnlyBuffer()?.let(::ByteBufferStream)
                 ?: throw IOException("Entry does not exist")
@@ -28,23 +27,6 @@ class TagBundleResource(private val data: ByteBuffer? = null) : ReadSource {
 
     override fun exists() = data != null
 
-    override fun readIO() = data?.asReadOnlyBuffer()?.let(::ByteBufferStream)
-            ?.let(::ByteStreamInputStream)
-            ?: throw IOException("Entry does not exist")
-
     override fun channel() = data?.asReadOnlyBuffer()?.let(::ByteBufferChannel)
             ?: throw IOException("Entry does not exist")
-
-    override fun mimeType(): String {
-        return readIO().use { detectMimeIO(it) }
-    }
-
-    override fun hashCode() = data?.hashCode() ?: 0
-
-    override fun equals(other: Any?): Boolean {
-        if (other !is TagBundleResource) {
-            return false
-        }
-        return data == other.data
-    }
 }

@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException
-import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
@@ -43,10 +42,6 @@ private fun loadService(): FileUtilImpl {
 
 /* impl */ fun path(path: String): FilePath {
     return IMPL.path(path)
-}
-
-/* impl */ fun read(path: FilePath): ReadSource {
-    return IMPL.read(path)
 }
 
 // TODO: @Throws(IOException::class)

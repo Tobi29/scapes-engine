@@ -17,15 +17,12 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import java.util.zip.ZipFile
 
 interface FileUtilImpl {
     fun path(path: String): FilePath
-
-    fun read(path: FilePath): ReadSource
 
     fun <R> read(path: FilePath,
                  read: (ReadableByteStream) -> R): R

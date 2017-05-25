@@ -16,27 +16,17 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.io.BufferedReader
-import java.io.InputStream
-import java.io.InputStreamReader
-
 interface ReadSource {
     fun exists(): Boolean
-
-    // TODO: @Throws(IOException::class)
-    fun readIO(): InputStream
-
-    // TODO: @Throws(IOException::class)
-    fun <R> read(reader: (ReadableByteStream) -> R): R
 
     // TODO: @Throws(IOException::class)
     fun channel(): ReadableByteChannel
 
     // TODO: @Throws(IOException::class)
-    fun reader(): BufferedReader {
-        return BufferedReader(InputStreamReader(readIO()))
+    fun <R> read(reader: (ReadableByteStream) -> R) = channel().use {
+        reader(BufferedReadChannelStream(it))
     }
 
     // TODO: @Throws(IOException::class)
-    fun mimeType(): String
+    fun mimeType() = read { detectMime(it) }
 }

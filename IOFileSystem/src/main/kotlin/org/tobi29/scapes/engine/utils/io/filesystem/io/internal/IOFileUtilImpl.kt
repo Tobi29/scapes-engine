@@ -22,8 +22,6 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FileChannel
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStream
 import java.io.RandomAccessFile
 import java.net.URI
 import java.util.zip.ZipFile
@@ -31,10 +29,6 @@ import java.util.zip.ZipFile
 internal object IOFileUtilImpl : FileUtilImpl {
     override fun path(path: String): FilePath {
         return path(File(path))
-    }
-
-    override fun read(path: FilePath): ReadSource {
-        return read(toFile(path))
     }
 
     override fun <R> read(path: FilePath,
@@ -210,6 +204,22 @@ internal object IOFileUtilImpl : FileUtilImpl {
         override fun toAbsolutePath(): FilePath {
             return path(file.absoluteFile)
         }
+
+        override fun exists(): Boolean {
+            return file.exists()
+        }
+
+        override fun channel(): ReadableByteChannel {
+            return channelR(file)
+        }
+
+        override fun <R> read(reader: (ReadableByteStream) -> R): R {
+            return read(file, reader)
+        }
+
+        override fun mimeType(): String {
+            return read { detectMime(it, file.toString()) }
+        }
     }
 
     private fun toFile(path: FilePath): File {
@@ -238,30 +248,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     private fun path(file: File): FilePath {
         return FilePathImpl(file)
-    }
-
-    private fun read(file: File): ReadSource {
-        return object : ReadSource {
-            override fun exists(): Boolean {
-                return file.exists()
-            }
-
-            override fun readIO(): InputStream {
-                return FileInputStream(file)
-            }
-
-            override fun channel(): ReadableByteChannel {
-                return channelR(file)
-            }
-
-            override fun <R> read(reader: (ReadableByteStream) -> R): R {
-                return read(file, reader)
-            }
-
-            override fun mimeType(): String {
-                return readIO().use { detectMimeIO(it, file.toString()) }
-            }
-        }
     }
 
     private fun deleteDir(file: File) {

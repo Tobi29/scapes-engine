@@ -19,8 +19,6 @@ package org.tobi29.scapes.engine.utils.io.filesystem
 /*
 header fun path(path: String): FilePath
 
-header fun read(path: FilePath): ReadSource
-
 // TODO: @Throws(IOException::class)
 header fun <R> read(path: FilePath,
                     read: (ReadableByteStream) -> R): R

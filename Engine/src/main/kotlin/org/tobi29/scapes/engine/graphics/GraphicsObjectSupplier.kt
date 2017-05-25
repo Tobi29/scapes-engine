@@ -124,8 +124,9 @@ interface GraphicsObjectSupplier {
 
     fun loadShader(asset: String,
                    properties: Map<String, Expression> = emptyMap()): Resource<Shader> {
-        return loadShader(engine.resources.loadString(
-                engine.files["$asset.program"].get()), properties)
+        return loadShader(
+                engine.resources.loadString(engine.files["$asset.program"]),
+                properties)
     }
 
     fun loadShader(source: Resource<String>,
@@ -137,5 +138,5 @@ interface GraphicsObjectSupplier {
     }
 
     fun createShader(shader: CompiledShader,
-                   properties: Map<String, Expression> = emptyMap()): Shader
+                     properties: Map<String, Expression> = emptyMap()): Shader
 }

@@ -35,15 +35,18 @@ class FileSystemContainer : Path {
         return fileSystem(location.first)[location.second]
     }
 
-    override fun get(): ReadSource {
-        throw IOException("Cannot get read source from container")
-    }
-
     override fun parent(): Path? {
         // This is a container of parent-less roots, having a parent speaks
         // plenty sense
         return null
     }
+
+    override fun exists() = false
+
+    override fun channel() =
+            throw IOException("File system container cannot have data")
+
+    override fun mimeType() = "application/x-empty"
 
     private fun fileSystem(id: String): Path {
         val fileSystem = fileSystems[id] ?: throw IllegalArgumentException(

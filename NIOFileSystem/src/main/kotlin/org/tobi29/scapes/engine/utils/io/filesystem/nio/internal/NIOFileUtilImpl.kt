@@ -17,13 +17,11 @@
 package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FileChannel
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
 import org.tobi29.scapes.engine.utils.use
-import java.io.InputStream
 import java.net.URI
 import java.nio.file.*
 import java.nio.file.Path
@@ -35,10 +33,6 @@ import java.util.zip.ZipFile
 internal object NIOFileUtilImpl : FileUtilImpl {
     override fun path(path: String): FilePath {
         return path(Paths.get(path))
-    }
-
-    override fun read(path: FilePath): ReadSource {
-        return read(toPath(path))
     }
 
     override fun <R> read(path: FilePath,
@@ -231,6 +225,22 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         override fun toAbsolutePath(): FilePath {
             return path(path.toAbsolutePath())
         }
+
+        override fun exists(): Boolean {
+            return Files.exists(path)
+        }
+
+        override fun channel(): ReadableByteChannel {
+            return Files.newByteChannel(path, StandardOpenOption.READ)
+        }
+
+        override fun <R> read(reader: (ReadableByteStream) -> R): R {
+            return read(path, reader)
+        }
+
+        override fun mimeType(): String {
+            return read { detectMime(it, path.toString()) }
+        }
     }
 
     private fun toPath(path: FilePath): Path {
@@ -273,30 +283,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     private fun path(path: Path): FilePath {
         return FilePathImpl(path)
-    }
-
-    private fun read(path: Path): ReadSource {
-        return object : ReadSource {
-            override fun exists(): Boolean {
-                return Files.exists(path)
-            }
-
-            override fun readIO(): InputStream {
-                return Files.newInputStream(path)
-            }
-
-            override fun channel(): ReadableByteChannel {
-                return Files.newByteChannel(path, StandardOpenOption.READ)
-            }
-
-            override fun <R> read(reader: (ReadableByteStream) -> R): R {
-                return read(path, reader)
-            }
-
-            override fun mimeType(): String {
-                return readIO().use { detectMimeIO(it, path.toString()) }
-            }
-        }
     }
 
     private fun deleteDir(path: Path) {

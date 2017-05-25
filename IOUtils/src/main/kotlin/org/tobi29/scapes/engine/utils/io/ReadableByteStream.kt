@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.strUTF8
 
 interface ReadableByteStream {
     fun available(): Int
@@ -57,18 +58,21 @@ interface ReadableByteStream {
                 len: Int): Boolean
 
     // TODO: @Throws(IOException::class)
-    operator fun get(src: ByteArray,
+    operator fun get(dest: ByteArray,
                      off: Int = 0,
-                     len: Int = src.size): ReadableByteStream {
-        return get(ByteBuffer.wrap(src, off, len))
+                     len: Int = dest.size): ReadableByteStream {
+        return writeArray(dest, off, len)
     }
 
     // TODO: @Throws(IOException::class)
-    fun getSome(src: ByteArray,
-                off: Int,
-                len: Int): Int {
-        val buffer = ByteBuffer.wrap(src, off, len)
+    fun getSome(dest: ByteArray,
+                off: Int = 0,
+                len: Int = dest.size): Int {
+        // TODO: Optimize
+        val buffer = ByteBuffer(len)
         val available = getSome(buffer)
+        buffer.flip()
+        buffer.get(dest, off, buffer.remaining())
         var position = buffer.position()
         position -= off
         if (position == 0 && !available) {
@@ -158,6 +162,6 @@ interface ReadableByteStream {
 
     // TODO: @Throws(IOException::class)
     fun getString(limit: Int = Int.MAX_VALUE): String {
-        return String(getByteArray(limit))
+        return getByteArray(limit).strUTF8()
     }
 }

@@ -16,13 +16,14 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.strUTF8
 import java.nio.ByteOrder
 
 /* impl */ fun ByteBuffer.asString(): String =
         if (hasArray()) {
             String(array(), arrayOffset(), remaining())
         } else {
-            String(asArray())
+            asArray().strUTF8()
         }
 
 /* impl */ fun byteBuffer(size: Int): ByteBuffer {
