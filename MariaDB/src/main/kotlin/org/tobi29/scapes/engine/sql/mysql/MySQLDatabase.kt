@@ -19,12 +19,20 @@ package org.tobi29.scapes.engine.sql.mysql
 import org.tobi29.scapes.engine.sql.*
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.use
+import java.security.AccessController
+import java.security.PrivilegedAction
+import java.security.PrivilegedActionException
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 
 class MySQLDatabase(private val connection: Connection) : SQLDatabase {
+    init {
+        val security = System.getSecurityManager()
+        security?.checkPermission(RuntimePermission("scapes.mysql"))
+    }
+
     override fun createTable(name: String,
                              primaryKey: Array<out String>,
                              columns: Array<out SQLColumn>) {
@@ -69,24 +77,20 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         }
         sql.append(");")
         val compiled = sql.toString()
-        try {
-            connection.createStatement().use { statement ->
+        access {
+            createStatement().use { statement ->
                 statement.executeUpdate(compiled)
             }
-        } catch (e: SQLException) {
-            throw IOException(e)
         }
 
     }
 
     override fun dropTable(name: String) {
         val compiled = "DROP TABLE IF EXISTS $name;"
-        try {
-            connection.createStatement().use { statement ->
+        access {
+            createStatement().use { statement ->
                 statement.executeUpdate(compiled)
             }
-        } catch (e: SQLException) {
-            throw IOException(e)
         }
     }
 
@@ -115,8 +119,8 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                 throw IllegalArgumentException(
                         "Amount of query values (${values.size}) does not match amount of matches ($matchesSize)")
             }
-            try {
-                connection.prepareStatement(compiled).use { statement ->
+            access {
+                prepareStatement(compiled).use { statement ->
                     // MariaDB specific optimization
                     statement.fetchSize = Int.MIN_VALUE
                     var i = 1
@@ -128,8 +132,6 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                     }
                     return@use rows
                 }
-            } catch (e: SQLException) {
-                throw IOException(e)
             }
         }
     }
@@ -179,16 +181,14 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             }
             sql.append(compiledSuffix)
             val compiled = sql.toString()
-            try {
-                connection.prepareStatement(compiled).use { statement ->
+            access {
+                prepareStatement(compiled).use { statement ->
                     var i = 1
                     for (row in values) {
                         i = resolveObjects(row, statement, i)
                     }
                     statement.executeUpdate()
                 }
-            } catch (e: SQLException) {
-                throw IOException(e)
             }
         }
     }
@@ -217,15 +217,13 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
                 throw IllegalArgumentException(
                         "Amount of updated values (${updates.size}) does not match amount of columns ($columnsSize)")
             }
-            try {
-                connection.prepareStatement(compiled).use { statement ->
+            access {
+                prepareStatement(compiled).use { statement ->
                     var i = 1
                     i = resolveObjects(updates, statement, i)
                     i = resolveObjects(values, statement, i)
                     statement.executeUpdate()
                 }
-            } catch (e: SQLException) {
-                throw IOException(e)
             }
         }
     }
@@ -287,16 +285,14 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             }
             sql.append(compiledSuffix)
             val compiled = sql.toString()
-            try {
-                connection.prepareStatement(compiled).use { statement ->
+            access {
+                prepareStatement(compiled).use { statement ->
                     var i = 1
                     for (row in values) {
                         i = resolveObjects(row, statement, i)
                     }
                     statement.executeUpdate()
                 }
-            } catch (e: SQLException) {
-                throw IOException(e)
             }
         }
     }
@@ -309,15 +305,30 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
         sql.append(';')
         val compiled = sql.toString()
         return { values ->
-            try {
-                connection.prepareStatement(compiled).use { statement ->
+            access {
+                prepareStatement(compiled).use { statement ->
                     var i = 1
                     i = resolveObjects(values, statement, i)
                     statement.executeUpdate()
                 }
-            } catch (e: SQLException) {
-                throw IOException(e)
             }
+        }
+    }
+
+    private inline fun <R> access(crossinline block: Connection.() -> R): R {
+        try {
+            try {
+                return AccessController.doPrivileged(PrivilegedAction {
+                    synchronized(connection) {
+                        return@PrivilegedAction block(connection)
+                    }
+                })
+            } catch (e: PrivilegedActionException) {
+                e.cause?.let { throw it }
+                throw e
+            }
+        } catch (e: SQLException) {
+            throw IOException(e)
         }
     }
 
