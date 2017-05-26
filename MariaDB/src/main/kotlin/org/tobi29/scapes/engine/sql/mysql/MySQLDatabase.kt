@@ -206,7 +206,7 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             } else {
                 sql.append(',')
             }
-            sql.append(column).append("'=?")
+            sql.append(column).append("=?")
         }
         sql.append(" WHERE ")
         sqlWhere(matches, sql)
