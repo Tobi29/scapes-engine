@@ -80,16 +80,20 @@ open class Joiner {
             thread.mark()
         }
         return suspendCancellableCoroutine { cont ->
-            val counter = AtomicInteger(joinables.size)
-            for (thread in joinables) {
-                if (!thread.onCompletion {
-                    if (counter.decrementAndGet() == 0) {
-                        cont.resume(Unit)
-                    }
-                }) {
-                    if (counter.decrementAndGet() == 0) {
-                        cont.resume(Unit)
-                    }
+            onJoin { cont.resume(Unit) }
+        }
+    }
+
+    fun onJoin(block: () -> Unit) {
+        val counter = AtomicInteger(joinables.size)
+        for (thread in joinables) {
+            if (!thread.onCompletion {
+                if (counter.decrementAndGet() == 0) {
+                    block()
+                }
+            }) {
+                if (counter.decrementAndGet() == 0) {
+                    block()
                 }
             }
         }

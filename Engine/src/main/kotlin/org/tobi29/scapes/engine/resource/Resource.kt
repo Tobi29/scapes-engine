@@ -32,6 +32,10 @@ class Resource<out T : Any> internal constructor(
         }
     }
 
+    fun onLoaded(block: () -> Unit) {
+        reference.joiner.joiner.onJoin(block)
+    }
+
     suspend fun getAsync(): T {
         tryGet()?.let { return it }
         reference.joiner.joiner.joinAsync()
