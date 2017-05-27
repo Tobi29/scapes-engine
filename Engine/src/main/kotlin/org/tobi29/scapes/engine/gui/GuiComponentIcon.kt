@@ -26,12 +26,16 @@ class GuiComponentIcon(parent: GuiLayoutData,
     var texture: Resource<Texture>? = texture
         set(value) {
             field = value
-            dirty()
+            value?.onLoaded { dirty() }
         }
     private var r = 1.0f
     private var g = 1.0f
     private var b = 1.0f
     private var a = 1.0f
+
+    init {
+        texture?.onLoaded { dirty() }
+    }
 
     fun setColor(r: Float,
                  g: Float,
@@ -46,8 +50,8 @@ class GuiComponentIcon(parent: GuiLayoutData,
 
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
-        texture?.let { texture ->
-            renderer.texture(texture.get(), 0)
+        texture?.tryGet()?.let { texture ->
+            renderer.texture(texture, 0)
             GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
                     size.floatY(), r, g, b, a)
         }
