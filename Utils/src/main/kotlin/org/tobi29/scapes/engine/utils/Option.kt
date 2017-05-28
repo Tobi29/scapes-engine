@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.utils
 
-sealed class Option<T> {
-    class Some<T>(val value: T) : Option<T>()
-    object Nothing : Option<Nothing>()
+sealed class Option<out T> {
+    class Some<out T>(val value: T) : Option<T>()
+    object None : Option<Nothing>()
 }
 
 sealed class Either<out L, out R> {
