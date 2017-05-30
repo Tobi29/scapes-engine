@@ -17,9 +17,7 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.*
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.AtomicLong
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import kotlin.coroutines.experimental.CoroutineContext
@@ -43,8 +41,7 @@ class ConnectionWorker(
         private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher() {
     private val connectionQueue = ConcurrentLinkedQueue<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
     private val connections = ArrayList<ConnectionHandle>()
-
-    private val queue = ConcurrentLinkedQueue<() -> Boolean>()
+    private val queue = TaskQueue<() -> Unit>()
 
     /**
      * Returns an estimate for how many connections this worker is processing
@@ -74,7 +71,7 @@ class ConnectionWorker(
      */
     fun run() {
         while (!joiner.marked) {
-            process()
+            queue.processCurrent()
             if (connectionQueue.isNotEmpty()) {
                 while (connectionQueue.isNotEmpty()) {
                     val (initialTimeout, coroutine) = connectionQueue.poll()
@@ -111,25 +108,14 @@ class ConnectionWorker(
         connections.forEach { it.requestClose.set(true) }
         val stopTimeout = System.nanoTime()
         while (connections.isNotEmpty() && System.nanoTime() - stopTimeout < 10000000000L) {
-            process()
+            queue.processCurrent()
             if (!joiner.marked) {
                 joiner.sleep(10)
             }
         }
         connections.forEach { it.job.cancel(IOException("Killing worker")) }
         while (connections.isNotEmpty()) {
-            process()
-        }
-    }
-
-    private fun process() {
-        if (queue.isNotEmpty()) {
-            queue.add { true }
-            while (queue.isNotEmpty()) {
-                if (queue.poll()()) {
-                    break
-                }
-            }
+            queue.processDrain()
         }
     }
 
@@ -141,7 +127,6 @@ class ConnectionWorker(
             } catch (e: CancellationException) {
                 logger.warn { "Job cancelled: ${e.message}" }
             }
-            false
         }
     }
 
