@@ -72,8 +72,10 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         return currentFBO
     }
 
+    fun isRenderCall() = Thread.currentThread() == mainThread
+
     fun check() {
-        assert { Thread.currentThread() == mainThread }
+        assert { isRenderCall() }
     }
 
     abstract fun checkError(message: String)
