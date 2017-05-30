@@ -16,20 +16,21 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import kotlinx.coroutines.experimental.CancellationException
+import kotlinx.coroutines.experimental.CoroutineDispatcher
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.computeAbsent
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.ShaderCompiler
+import kotlin.coroutines.experimental.CoroutineContext
 
-class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
+class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
     private val fpsDebug: GuiWidgetDebugValues.Element
     private val widthDebug: GuiWidgetDebugValues.Element
     private val heightDebug: GuiWidgetDebugValues.Element
@@ -39,7 +40,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
     private val shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture
     private val shaderCache = ConcurrentHashMap<String, Resource<CompiledShader>>()
-    private val queue = ConcurrentLinkedQueue<(GL) -> Unit>()
+    private val queue = TaskQueue<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
     private var lastContentHeight = 0
@@ -119,9 +120,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
             profilerSection("State") {
                 state.renderState(gl, delta, fboSizeDirty)
             }
-            while (queue.isNotEmpty()) {
-                queue.poll()(gl)
-            }
+            executeDispatched(gl)
             fpsDebug.setValue(1.0 / delta)
             textureDebug.setValue(gos.textureTracker.count())
             vaoDebug.setValue(gos.vaoTracker.count())
@@ -141,8 +140,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
 
     fun requestScreenshot(block: (Image) -> Unit) {
         queue.add { gl ->
-            block(gl.screenShot(0, 0, gl.contentWidth(),
-                    gl.contentHeight()))
+            block(gl.screenShot(0, 0, gl.contentWidth(), gl.contentHeight()))
         }
     }
 
@@ -162,6 +160,24 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : GraphicsObjectSu
         gos.fboTracker.resetAll()
         gos.shaderTracker.resetAll()
     }
+
+    fun executeDispatched(gl: GL) {
+        queue.processCurrent { it(gl) }
+    }
+
+    override fun dispatch(context: CoroutineContext,
+                          block: Runnable) {
+        queue.add {
+            try {
+                block.run()
+            } catch (e: CancellationException) {
+                logger.warn { "Job cancelled: ${e.message}" }
+            }
+        }
+    }
+
+    override fun isDispatchNeeded(context: CoroutineContext) =
+            engine.container.isRenderCall()
 
     companion object : KLogging()
 }
