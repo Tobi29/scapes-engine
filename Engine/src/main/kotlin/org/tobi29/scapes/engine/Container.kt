@@ -55,6 +55,8 @@ interface Container {
                text: GuiController.TextFieldData,
                multiline: Boolean)
 
+    fun isRenderCall(): Boolean
+
     enum class MessageType {
         ERROR,
         INFORMATION,

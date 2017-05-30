@@ -350,6 +350,8 @@ class ContainerGLFW(engine: ScapesEngine,
         }
     }
 
+    override fun isRenderCall() = gl.isRenderCall()
+
     companion object : KLogging() {
         private val PLEB_SYNC_GAP = when (Platform.get()) {
         // Causes severe lag on Windows, but obviously Windows is THE
