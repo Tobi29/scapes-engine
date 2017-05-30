@@ -16,24 +16,35 @@
 
 package org.tobi29.scapes.engine.utils.task
 
-import org.tobi29.scapes.engine.utils.AtomicInteger
+import org.tobi29.scapes.engine.utils.AtomicLong
+import org.tobi29.scapes.engine.utils.TaskQueue
+import org.tobi29.scapes.engine.utils.add
+import org.tobi29.scapes.engine.utils.processCurrent
 
 class TaskLock {
-    private val count = AtomicInteger()
+    private val count = AtomicLong()
+    private val onDone = TaskQueue<() -> Unit>()
 
     fun increment() {
         count.incrementAndGet()
     }
 
     fun decrement() {
-        if (count.decrementAndGet() < 0) {
+        val newCount = count.decrementAndGet()
+        if (newCount == 0L) {
+            synchronized(count) {
+                @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                (count as Object).notifyAll()
+            }
+            onDone.processCurrent()
+        } else if (newCount < 0) {
             throw IllegalStateException("Negative task count")
         }
-        synchronized(count) {
-            @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-            (count as Object).notifyAll()
-        }
     }
+
+    fun onDone(block: () -> Unit) = onDone.add(block)
+
+    fun isDone() = count.get() == 0L
 
     fun lock() {
         synchronized(count) {
