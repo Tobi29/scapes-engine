@@ -177,7 +177,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     }
 
     override fun isDispatchNeeded(context: CoroutineContext) =
-            engine.container.isRenderCall()
+            !engine.container.isRenderCall()
 
     companion object : KLogging()
 }
