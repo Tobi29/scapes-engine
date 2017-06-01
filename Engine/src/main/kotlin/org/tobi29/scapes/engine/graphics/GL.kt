@@ -127,13 +127,13 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
     abstract fun screenShotFBO(fbo: Framebuffer): Image
 
     fun into(framebuffer: Framebuffer,
-             block: () -> Unit): () -> Unit {
+             block: (Double) -> Unit): (Double) -> Unit {
         val viewport = IntArray(4)
-        return {
+        return { delta ->
             getViewport(viewport)
             framebuffer.activate(this)
             setViewport(0, 0, framebuffer.width(), framebuffer.height())
-            block()
+            block(delta)
             framebuffer.deactivate(this)
             setViewport(viewport[0], viewport[1], viewport[2], viewport[3])
         }

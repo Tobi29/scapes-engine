@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.gui.GuiUtils
 
-fun busyPipeline(gl: GL): () -> Unit {
+fun busyPipeline(gl: GL): suspend () -> () -> Unit {
     val mesh = Mesh()
     GuiUtils.busy(mesh, 64.0, 64.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
     val busy = mesh.finish(gl.engine)
@@ -26,6 +26,8 @@ fun busyPipeline(gl: GL): () -> Unit {
     val width = gl.contentWidth().toFloat()
     val height = gl.contentHeight().toFloat()
     return {
+        val s = shader.getAsync()
+        ;{
         gl.disableCulling()
         gl.disableDepthTest()
         gl.setBlending(BlendingMode.NORMAL)
@@ -35,7 +37,8 @@ fun busyPipeline(gl: GL): () -> Unit {
                     -height * 0.5f, width, height)
             gl.textures.unbind(gl)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
-            busy.render(gl, shader.get())
+            busy.render(gl, s)
         }
+    }
     }
 }

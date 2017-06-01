@@ -16,14 +16,20 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.resource.Resource
-
 class Pipeline(gl: GL,
-               private val builder: (GL) -> () -> Unit) {
-    private val steps = builder(gl)
+               private val builder: (GL) -> suspend () -> (Double) -> Unit) {
+    private var finisher: (suspend () -> (Double) -> Unit)? = builder(gl)
+    private lateinit var steps: (Double) -> Unit
 
-    fun render() {
-        steps()
+    suspend fun finish() {
+        finisher?.let { finisher ->
+            this.finisher = null
+            steps = finisher()
+        }
+    }
+
+    fun render(delta: Double) {
+        steps(delta)
     }
 
     fun rebuild(gl: GL): Pipeline {
@@ -32,36 +38,38 @@ class Pipeline(gl: GL,
 }
 
 fun renderScene(gl: GL,
-                scene: Scene): () -> Unit {
+                scene: Scene): suspend () -> (Double) -> Unit {
     val render = scene.appendToPipeline(gl)
     return {
-        render()
+        val steps = render()
+        ;{ delta ->
+        steps(delta)
         gl.checkError("Scene-Rendering")
+    }
     }
 }
 
 fun postProcess(gl: GL,
-                shader: Resource<Shader>,
+                shader: Shader,
                 framebuffer: Framebuffer,
-                config: Shader.() -> Unit): () -> Unit {
+                config: Shader.() -> Unit): (Double) -> Unit {
     return postProcess(gl, shader, framebuffer, framebuffer, config)
 }
 
 fun postProcess(gl: GL,
-                shader: Resource<Shader>,
+                shader: Shader,
                 framebuffer: Framebuffer,
                 depthbuffer: Framebuffer = framebuffer,
-                config: Shader.() -> Unit = {}): () -> Unit {
+                config: Shader.() -> Unit = {}): (Double) -> Unit {
     val model = gl.createVTI(
             floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
                     0.0f, 0.0f, 1.0f, 0.0f, 0.0f),
             floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
             intArrayOf(0, 1, 2, 3, 2, 1), RenderType.TRIANGLES)
     return {
-        val s = shader.get()
-        config(s)
+        config(shader)
         gl.clearDepth()
-        renderPostProcess(gl, framebuffer, depthbuffer, model, s)
+        renderPostProcess(gl, framebuffer, depthbuffer, model, shader)
         gl.checkError("Post-Process")
     }
 }

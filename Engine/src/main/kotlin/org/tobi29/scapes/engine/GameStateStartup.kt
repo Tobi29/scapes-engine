@@ -26,17 +26,19 @@ class GameStateStartup(engine: ScapesEngine,
 
     override fun init() {
         switchPipeline { gl ->
-            val busy = busyPipeline(gl);
-            {
-                gl.clear(0.0f, 0.0f, 0.0f, 1.0f)
-                busy()
-            }
+            val busy = busyPipeline(gl)
+            ;{
+            val busyRender = busy()
+            ;{ _ ->
+            gl.clear(0.0f, 0.0f, 0.0f, 1.0f)
+            busyRender()
+        }
+        }
         }
         engine.taskExecutor.runTask({ readySwitch.set(switch()) }, "Load-State")
     }
 
-    override val isMouseGrabbed: Boolean
-        get() = true
+    override val isMouseGrabbed = false
 
     override fun step(delta: Double) {
         readySwitch.get()?.let { switch ->

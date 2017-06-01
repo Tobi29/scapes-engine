@@ -19,5 +19,5 @@ package org.tobi29.scapes.engine.graphics
 import org.tobi29.scapes.engine.ScapesEngine
 
 abstract class Scene(val engine: ScapesEngine) {
-    abstract fun appendToPipeline(gl: GL): () -> Unit
+    abstract fun appendToPipeline(gl: GL): suspend () -> (Double) -> Unit
 }
