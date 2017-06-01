@@ -392,19 +392,6 @@ class ContainerGLFW(engine: ScapesEngine,
                             monitorWidth, monitorHeight)
                     GLFW.glfwMakeContextCurrent(window)
                     GLES.createCapabilities()
-
-                    // TODO: Remove once fix is released
-                    // Super clean and nice code to avoid effort in not using
-                    // array overloads
-                    val icd = GLES::class.java.getDeclaredField("icd")
-                    icd.isAccessible = true
-                    val icdi = icd.get(null)
-                    val icdc = icdi::class.java
-                    val icdset = icdc.getDeclaredMethod("set",
-                            GLESCapabilities::class.java)
-                    icdset.isAccessible = true
-                    icdset.invoke(icdi, GLES.getCapabilities())
-
                     checkContextGLES()?.let { throw GraphicsCheckException(it) }
                     window
                 } else {

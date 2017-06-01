@@ -80,7 +80,7 @@ ext {
     jlayerVersion = "1.0.1"
     concentusVersion = "1.0.0"
     jorbisVersion = "0.0.17"
-    lwjglVersion = "3.1.1"
+    lwjglVersion = "3.1.2"
     javaxJSONVersion = "1.0.4"
 
     slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
