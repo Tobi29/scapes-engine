@@ -20,7 +20,6 @@ import org.lwjgl.glfw.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
-import org.lwjgl.opengles.GLESCapabilities
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.Container
