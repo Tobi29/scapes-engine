@@ -42,7 +42,11 @@ class TaskLock {
         }
     }
 
-    fun onDone(block: () -> Unit) = onDone.add(block)
+    fun onDone(block: () -> Unit) = if (isDone()) {
+        block()
+    } else {
+        onDone.add(block)
+    }
 
     fun isDone() = count.get() == 0L
 
