@@ -16,19 +16,133 @@
 
 package org.tobi29.scapes.engine.server
 
+import org.tobi29.scapes.engine.utils.io.ByteChannel
+import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.io.WritableByteChannel
+import org.tobi29.scapes.engine.utils.isAndroidAPI
+import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import org.tobi29.scapes.engine.utils.toArray
+import java.security.KeyStore
+import java.security.KeyStoreException
+import java.security.NoSuchAlgorithmException
+import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import javax.net.ssl.SSLEngine
+import javax.net.ssl.*
 
-interface SSLHandle {
-    // TODO: @Throws(IOException::class)
-    fun newEngine(address: RemoteAddress): SSLEngine
+class SSLHandle(keyManagers: Array<KeyManager>?,
+                trustManagers: Array<TrustManager>?,
+                private val verifyHostname: Boolean = true) {
+    private val context: SSLContext
 
-    fun certificateFeedback(certificates: Array<X509Certificate>): Boolean
+    init {
+        if (isAndroidAPI(20)) {
+            context = SSLContext.getInstance("TLSv1.2")
+        } else {
+            context = SSLContext.getInstance("TLSv1")
+        }
+        if (trustManagers == null) {
+            context.init(keyManagers, trustManagers(), SecureRandom())
+        } else {
+            context.init(keyManagers, trustManagers, SecureRandom())
+        }
+    }
 
-    fun requiresVerification(): Boolean
+    constructor(verifyHostname: Boolean = true
+    ) : this(null, null, verifyHostname)
 
-    // TODO: @Throws(IOException::class)
+    constructor(keyManagers: Array<KeyManager>,
+                verifyHostname: Boolean = true
+    ) : this(keyManagers, null, verifyHostname)
+
+    constructor(trustManagers: Array<TrustManager>,
+                verifyHostname: Boolean = true
+    ) : this(null, trustManagers, verifyHostname)
+
+    private fun trustManagers(): Array<TrustManager> {
+        try {
+            val trustManagerFactory = TrustManagerFactory.getInstance(
+                    TrustManagerFactory.getDefaultAlgorithm())
+            trustManagerFactory.init(null as KeyStore?)
+            return trustManagerFactory.trustManagers.asSequence().map {
+                when (it) {
+                    is X509ExtendedTrustManager -> SavingExtendedTrustManager(
+                            it)
+                    is X509TrustManager -> SavingTrustManager(it)
+                    else -> it
+                }
+            }.toArray()
+        } catch (e: NoSuchAlgorithmException) {
+            throw IOException(e)
+        } catch (e: KeyStoreException) {
+            throw IOException(e)
+        }
+    }
+
+    fun newSSLChannel(address: RemoteAddress,
+                      channel: ByteChannel,
+                      taskExecutor: TaskExecutor,
+                      client: Boolean) =
+            newSSLChannel(address, channel, channel, taskExecutor, client)
+
+    fun newSSLChannel(address: RemoteAddress,
+                      channelRead: ReadableByteChannel,
+                      channelWrite: WritableByteChannel,
+                      taskExecutor: TaskExecutor,
+                      client: Boolean): SSLChannel {
+        val engine = newEngine(address).apply {
+            needClientAuth = client
+            useClientMode = client
+            beginHandshake()
+        }
+        return SSLChannel(address, channelRead, channelWrite, taskExecutor,
+                this, engine)
+    }
+
+    fun newEngine(address: RemoteAddress): SSLEngine {
+        val engine = context.createSSLEngine(address.address,
+                address.port)
+        val parameters = context.defaultSSLParameters
+        if (verifyHostname && isAndroidAPI(24)) {
+            parameters::class.java
+                    .getMethod("setEndpointIdentificationAlgorithm",
+                            String::class.java)
+                    .invoke(parameters, "HTTPS")
+        }
+        engine.sslParameters = parameters
+        return engine
+    }
+
+    /**
+     * @throws IOException
+     */
     fun verifySession(address: RemoteAddress,
-                      engine: SSLEngine,
-                      certificates: Array<X509Certificate>)
+                      session: SSLSession,
+                      client: Boolean) {
+        try {
+            if (client && verifyHostname) {
+                val verifier = HttpsURLConnection.getDefaultHostnameVerifier()
+                if (!verifier.verify(address.address, session)) {
+                    throw SSLHandshakeException("Hostname verification failed")
+                }
+            }
+        } catch (e: IOException) {
+            throw e
+        } catch (e: Exception) {
+            throw IOException(e)
+        }
+    }
+
+    companion object {
+        fun fromCertificates(certificates: Array<X509Certificate>,
+                             verifyHostname: Boolean = false) =
+                SSLHandle(arrayOf<TrustManager>(
+                        CertificateX509TrustManager(certificates)),
+                        verifyHostname)
+
+        fun insecure(verifyHostname: Boolean = false) =
+                SSLHandle(arrayOf<TrustManager>(DummyX509TrustManager),
+                        verifyHostname)
+    }
 }
+

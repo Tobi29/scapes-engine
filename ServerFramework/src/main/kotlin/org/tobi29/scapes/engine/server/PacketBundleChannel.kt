@@ -16,56 +16,33 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.*
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.lang.ref.WeakReference
-import java.net.InetSocketAddress
 import java.nio.channels.Selector
-import java.nio.channels.SocketChannel
-import java.security.cert.X509Certificate
-import javax.net.ssl.SSLEngine
-import javax.net.ssl.SSLEngineResult
-import javax.net.ssl.SSLException
-import javax.net.ssl.SSLPeerUnverifiedException
 
-class PacketBundleChannel(private val address: RemoteAddress,
-                          private val channel: SocketChannel,
-                          private val taskExecutor: TaskExecutor,
-                          private val ssl: SSLHandle,
-                          client: Boolean) {
-    private val taskCounter = AtomicInteger()
-    private val verified = AtomicBoolean()
+class PacketBundleChannel(private val channelRead: ReadableByteChannel,
+                          private val channelWrite: WritableByteChannel) {
     private val dataStreamOut = ByteBufferStream(growth = { it + 102400 })
     private val byteBufferStreamOut = ByteBufferStream(growth = { it + 102400 })
     private val queue = ConcurrentLinkedQueue<ByteBuffer>()
     private val deflater: CompressionUtil.Filter
     private val inflater: CompressionUtil.Filter
-    private val inRate = AtomicInteger()
-    private val outRate = AtomicInteger()
-    private val engine: SSLEngine
-    private val myNetData = ByteBufferStream(growth = { it + 16384 })
-    private val peerAppData = ByteBufferStream(growth = { it + 16384 })
-    private val peerNetData = ByteBufferStream(growth = { it + 16384 })
     private var output: ByteBuffer? = null
     private var input = ByteBuffer(1024)
-    private var spill: ByteBuffer? = null
     private var selector: Selector? = null
-    private var verifyException: IOException? = null
     private var hasInput: Boolean = false
     private var hasBundle: Boolean = false
-    private var close: Boolean = false
-    private var state = State.HANDSHAKE
 
     init {
         deflater = ZDeflater(1)
         inflater = ZInflater()
-        engine = ssl.newEngine(address)
-        engine.useClientMode = client
-        myNetData.buffer().limit(0)
         input.limit(BUNDLE_HEADER_SIZE)
-        engine.beginHandshake()
     }
+
+    constructor(channel: ByteChannel) : this(channel, channel)
 
     val outputStream: RandomWritableByteStream
         get() = dataStreamOut
@@ -76,6 +53,8 @@ class PacketBundleChannel(private val address: RemoteAddress,
     fun bundleSize(): Int {
         return dataStreamOut.buffer().position()
     }
+
+    val outputFlushed get() = queue.isEmpty() && output == null
 
     // TODO: @Throws(IOException::class)
     fun queueBundle() {
@@ -98,7 +77,7 @@ class PacketBundleChannel(private val address: RemoteAddress,
 
     // TODO: @Throws(IOException::class)
     fun process(): FetchResult {
-        var timeout = if (state == State.OPEN) 0 else -2
+        var timeout = 0
         while (timeout < 2) {
             if (hasBundle) {
                 hasBundle = false
@@ -106,8 +85,7 @@ class PacketBundleChannel(private val address: RemoteAddress,
             } else {
                 timeout++
             }
-            fetch()
-            if (processChannel()) {
+            if (fetch() || write()) {
                 return FetchResult.CLOSED
             }
             if (hasBundle) {
@@ -117,153 +95,35 @@ class PacketBundleChannel(private val address: RemoteAddress,
         return FetchResult.YIELD
     }
 
-    private fun fetch() {
-        if (state != State.OPEN) {
-            return
-        }
-        assert { !hasBundle }
-        val buffer = spill ?: run { readSSL() ?: return }
-        spill = null
-        if (buffer.remaining() > input.remaining()) {
-            val limit = buffer.limit()
-            buffer.limit(buffer.position() + input.remaining())
-            input.put(buffer)
-            buffer.limit(limit)
-            spill = buffer
-        } else {
-            input.put(buffer)
-        }
-        if (input.hasRemaining()) {
-            return
-        }
-        input.flip()
-        if (!hasInput) {
-            if (input.remaining() != BUNDLE_HEADER_SIZE) {
-                throw IOException(
-                        "Invalid bundle header size: " + input.remaining())
-            }
-            val limit = input.int
-            if (limit > BUNDLE_MAX_SIZE) {
-                throw IOException("Bundle size too large: " + limit)
-            }
-            if (input.capacity() < limit) {
-                BUFFER_CACHE.get().add(WeakReference(input))
-                input = buffer(limit)
-            } else {
-                input.clear()
-            }
-            input.limit(limit)
-            hasInput = true
-            return
-        }
-        byteBufferStreamOut.buffer().clear()
-        CompressionUtil.filter(ByteBufferStream(input), byteBufferStreamOut,
-                inflater)
-        byteBufferStreamOut.buffer().flip()
-        hasInput = false
-        input.clear().limit(BUNDLE_HEADER_SIZE)
-        hasBundle = true
-    }
-
-    private fun processChannel(): Boolean {
+    fun write(): Boolean {
         while (true) {
-            // Glorious design on Java's part:
-            // The SSLEngine locks whilst delegated task runs
-            // Solution: No touchy
-            if (taskCounter.get() > 0) {
-                return false
+            var writeOutput = output
+            if (writeOutput == null) {
+                writeOutput = queue.poll()
+                if (writeOutput == null) {
+                    return false
+                }
+                output = writeOutput
             }
-            if (flush()) {
-                return false
-            }
-            if (state == State.CLOSED) {
+            val write = channelWrite.write(writeOutput)
+            if (write < 0) {
                 return true
             }
-            if (state == State.HANDSHAKE) {
-                if (handshake()) {
-                    if (ssl.requiresVerification()) {
-                        state = State.VERIFY
-                        taskExecutor.runTask({ verifySSL() }, "SSL-Verify")
-                    } else {
-                        state = State.OPEN
-                    }
-                } else {
-                    return false
-                }
-            }
-            if (state == State.VERIFY) {
-                verifyException?.let { throw IOException(it) }
-                if (verified.get()) {
-                    state = State.OPEN
-                } else {
-                    return false
-                }
-            }
-            if (state == State.CLOSING && handshake()) {
-                state = State.CLOSED
+            if (!writeOutput.hasRemaining()) {
+                BUFFER_CACHE.get().add(WeakReference(writeOutput))
+                output = null
                 continue
             }
-            val writeOutput = output
-            if (writeOutput != null) {
-                writeSSL(writeOutput)
-                if (writeOutput.hasRemaining()) {
-                    continue
-                }
-                BUFFER_CACHE.get().add(WeakReference(writeOutput))
-            }
-            output = queue.poll()
-            if (output == null) {
-                if (state == State.OPEN && close) {
-                    engine.closeOutbound()
-                    state = State.CLOSING
-                } else {
-                    return false
-                }
-            }
+            return false
         }
-    }
-
-    // TODO: @Throws(IOException::class)
-    fun register(selector: Selector,
-                 opt: Int) {
-        channel.register(selector, opt)
-        this.selector = selector
-    }
-
-    // TODO: @Throws(IOException::class)
-    fun register(joiner: SelectorJoinable,
-                 opt: Int) {
-        register(joiner.selector, opt)
     }
 
     // TODO: @Throws(IOException::class)
     fun close() {
-        channel.close()
+        channelRead.close()
+        channelWrite.close()
         deflater.close()
         inflater.close()
-    }
-
-    fun requestClose() {
-        close = true
-    }
-
-    val outputRate: Int
-        get() = outRate.getAndSet(0)
-
-    val inputRate: Int
-        get() = inRate.getAndSet(0)
-
-    val remoteAddress: InetSocketAddress?
-        get() {
-            val address = channel.socket().remoteSocketAddress
-            if (address is InetSocketAddress) {
-                return address
-            }
-            return null
-        }
-
-    override fun toString(): String {
-        return channel.socket().remoteSocketAddress.toString()
     }
 
     private fun buffer(capacity: Int): ByteBuffer {
@@ -289,142 +149,51 @@ class PacketBundleChannel(private val address: RemoteAddress,
         return bundle
     }
 
-    private fun readSSL(): ByteBuffer? {
-        fill()
-        do {
-            peerAppData.buffer().clear()
-            val result = engine.unwrap(peerNetData.buffer(),
-                    peerAppData.buffer())
-            when (result.status) {
-                SSLEngineResult.Status.OK -> {
-                    peerAppData.buffer().flip()
-                    peerNetData.buffer().compact()
-                    return peerAppData.buffer()
-                }
-                SSLEngineResult.Status.BUFFER_OVERFLOW -> peerAppData.grow()
-                SSLEngineResult.Status.BUFFER_UNDERFLOW -> {
-                    peerNetData.buffer().compact()
-                    if (!peerNetData.hasRemaining()) {
-                        peerNetData.grow()
-                    }
-                    return null
-                }
-                SSLEngineResult.Status.CLOSED -> {
-                    engine.closeOutbound()
-                    state = State.CLOSING
-                    peerNetData.buffer().compact()
-                    return null
-                }
-                else -> throw IllegalStateException(
-                        "Invalid SSL status: " + result.status)
-            }
-        } while (peerNetData.hasRemaining())
-        peerNetData.buffer().compact()
-        return null
-    }
-
-    private fun writeSSL(buffer: ByteBuffer) {
-        while (true) {
-            myNetData.buffer().clear()
-            val result = engine.wrap(buffer, myNetData.buffer())
-            when (result.status) {
-                SSLEngineResult.Status.OK -> {
-                    myNetData.buffer().flip()
-                    return
-                }
-                SSLEngineResult.Status.BUFFER_OVERFLOW -> myNetData.grow()
-                SSLEngineResult.Status.BUFFER_UNDERFLOW -> throw SSLException(
-                        "Buffer underflow occurred after a wrap. I don't think we should ever get here.")
-                SSLEngineResult.Status.CLOSED -> {
-                    engine.closeOutbound()
-                    state = State.CLOSING
-                    myNetData.buffer().flip()
-                    return
-                }
-                else -> throw IllegalStateException(
-                        "Invalid SSL status: " + result.status)
+    private fun fetch(): Boolean {
+        assert { !hasBundle }
+        if (input.hasRemaining()) {
+            val read = channelRead.read(input)
+            if (read < 0) {
+                return true
             }
         }
-    }
-
-    private fun handshake(): Boolean {
-        when (engine.handshakeStatus) {
-            SSLEngineResult.HandshakeStatus.FINISHED, SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING -> return true
-            SSLEngineResult.HandshakeStatus.NEED_UNWRAP -> readSSL()
-            SSLEngineResult.HandshakeStatus.NEED_WRAP -> writeSSL(EMPTY_BUFFER)
-            SSLEngineResult.HandshakeStatus.NEED_TASK -> {
-                val task = engine.delegatedTask
-                if (task != null) {
-                    taskCounter.incrementAndGet()
-                    taskExecutor.runTask({
-                        task.run()
-                        taskCounter.decrementAndGet()
-                    }, "SSLEngine-Task")
-                }
-            }
-            else -> throw IllegalStateException(
-                    "Invalid SSL status: " + engine.handshakeStatus)
-        }
-        return false
-    }
-
-    private fun verifySSL() {
-        try {
-            val certificates = engine.session.peerCertificates
-            val x509Certificates = certificates.asSequence()
-                    .filterMap<X509Certificate>().toArray()
-            try {
-                ssl.verifySession(address, engine, x509Certificates)
-                verified.set(true)
-            } catch (e: IOException) {
-                if (x509Certificates.isEmpty() || !ssl.certificateFeedback(
-                        x509Certificates)) {
-                    verifyException = e
-                } else {
-                    verified.set(true)
-                }
-            }
-        } catch (e: SSLPeerUnverifiedException) {
-            verifyException = e
-        }
-    }
-
-    private fun fill() {
-        val read = channel.read(peerNetData.buffer())
-        peerNetData.buffer().flip()
-        if (read < 0) {
-            engine.closeInbound()
-            state = State.CLOSING
-        }
-        inRate.getAndAdd(read)
-    }
-
-    private fun flush(): Boolean {
-        if (!myNetData.hasRemaining()) {
+        if (input.hasRemaining()) {
             return false
         }
-        val write = channel.write(myNetData.buffer())
-        if (write < 0) {
-            engine.closeOutbound()
-            state = State.CLOSING
+        input.flip()
+        if (!hasInput) {
+            if (input.remaining() != BUNDLE_HEADER_SIZE) {
+                throw IOException(
+                        "Invalid bundle header size: " + input.remaining())
+            }
+            val limit = input.int
+            if (limit > BUNDLE_MAX_SIZE) {
+                throw IOException("Bundle size too large: " + limit)
+            }
+            if (input.capacity() < limit) {
+                BUFFER_CACHE.get().add(WeakReference(input))
+                input = buffer(limit)
+            } else {
+                input.clear()
+            }
+            input.limit(limit)
+            hasInput = true
+            return false
         }
-        outRate.getAndAdd(write)
-        return myNetData.hasRemaining()
-    }
-
-    private enum class State {
-        HANDSHAKE,
-        VERIFY,
-        OPEN,
-        CLOSING,
-        CLOSED
+        byteBufferStreamOut.buffer().clear()
+        CompressionUtil.filter(ByteBufferStream(input), byteBufferStreamOut,
+                inflater)
+        byteBufferStreamOut.buffer().flip()
+        hasInput = false
+        input.clear().limit(BUNDLE_HEADER_SIZE)
+        hasBundle = true
+        return false
     }
 
     companion object {
         private val BUNDLE_HEADER_SIZE = 4
         private val BUNDLE_MAX_SIZE = 1 shl 10 shl 10 shl 6
         private val BUFFER_CACHE = ThreadLocal { ArrayList<WeakReference<ByteBuffer>>() }
-        private val EMPTY_BUFFER = ByteBuffer(0)
     }
 
     enum class FetchResult {
@@ -432,6 +201,7 @@ class PacketBundleChannel(private val address: RemoteAddress,
     }
 }
 
+// TODO: @Throws(IOException::class)
 suspend fun PacketBundleChannel.receive(): Boolean {
     while (true) {
         when (process()) {
@@ -449,12 +219,21 @@ suspend fun PacketBundleChannel.receiveOrThrow() {
     }
 }
 
-suspend fun PacketBundleChannel.aClose() {
+// TODO: @Throws(IOException::class)
+suspend fun PacketBundleChannel.flushAsync() {
     try {
-        requestClose()
-        while (!receive()) {
+        while (!outputFlushed) {
+            if (write()) {
+                break
+            }
             yield()
         }
     } catch (e: Exception) {
+    }
+}
+
+// TODO: @Throws(IOException::class)
+suspend fun PacketBundleChannel.finishAsync() {
+    while (!receive()) {
     }
 }

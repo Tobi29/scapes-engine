@@ -56,27 +56,38 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                 continue
                             }
                             if (!connections.addConnection { worker, connection ->
-                                client.use {
+                                try {
                                     client.register(worker.joiner.selector,
                                             SelectionKey.OP_READ)
-                                    val bundleChannel = PacketBundleChannel(
+                                    val secureChannel = ssl.newSSLChannel(
                                             RemoteAddress(address), client,
-                                            connections.taskExecutor, ssl,
-                                            false)
+                                            connections.taskExecutor, false)
+                                    val bundleChannel = PacketBundleChannel(
+                                            secureChannel)
+                                    if (bundleChannel.receive()) {
+                                        return@addConnection
+                                    }
+                                    val header = ByteArray(
+                                            connectionHeader.size)
+                                    bundleChannel.inputStream[header]
+                                    val id = bundleChannel.inputStream.get()
+                                    if (header contentEquals connectionHeader) {
+                                        client.register(worker.joiner.selector,
+                                                SelectionKey.OP_READ)
+                                        onConnect(worker, bundleChannel, id,
+                                                connection)
+                                    }
+                                    bundleChannel.flushAsync()
+                                    secureChannel.requestClose()
+                                    bundleChannel.finishAsync()
+                                    secureChannel.finishAsync()
+                                } catch (e: IOException) {
+                                    logger.info { "Error in connection: $e" }
+                                } finally {
                                     try {
-                                        if (bundleChannel.receive()) {
-                                            return@addConnection
-                                        }
-                                        val header = ByteArray(
-                                                connectionHeader.size)
-                                        bundleChannel.inputStream[header]
-                                        val id = bundleChannel.inputStream.get()
-                                        if (header contentEquals connectionHeader) {
-                                            onConnect(worker, bundleChannel,
-                                                    id, connection)
-                                        }
+                                        client.close()
                                     } catch (e: IOException) {
-                                        logger.info { "Error in new connection: $e" }
+                                        logger.error { "Failed to close socket: $e" }
                                     }
                                 }
                             }) {

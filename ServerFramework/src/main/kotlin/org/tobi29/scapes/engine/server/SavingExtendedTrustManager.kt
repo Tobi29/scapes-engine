@@ -13,29 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.tobi29.scapes.engine.server.jvm
+package org.tobi29.scapes.engine.server
 
 import java.net.Socket
 import java.security.cert.CertificateException
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLEngine
 import javax.net.ssl.X509ExtendedTrustManager
+import javax.net.ssl.X509TrustManager
 
-class FeedbackExtendedTrustManager(
-        private val trustManagers: Array<X509ExtendedTrustManager>,
-        private val feedbackPredicate: Function1<Array<X509Certificate>, Boolean>) : X509ExtendedTrustManager() {
+class SavingTrustManager(
+        private val trustManager: X509TrustManager
+) : X509TrustManager {
+    override fun checkClientTrusted(x509Certificates: Array<X509Certificate>,
+                                    s: String) {
+        try {
+            trustManager.checkClientTrusted(x509Certificates, s)
+        } catch (e: CertificateException) {
+            throw SavedCertificateException(e, x509Certificates)
+        }
+    }
+
+    override fun checkServerTrusted(x509Certificates: Array<X509Certificate>,
+                                    s: String) {
+        try {
+            trustManager.checkServerTrusted(x509Certificates, s)
+        } catch (e: CertificateException) {
+            throw SavedCertificateException(e, x509Certificates)
+        }
+    }
+
+    override fun getAcceptedIssuers(): Array<X509Certificate> =
+            trustManager.acceptedIssuers
+}
+
+class SavingExtendedTrustManager(
+        private val trustManager: X509ExtendedTrustManager
+) : X509ExtendedTrustManager() {
 
     override fun checkClientTrusted(x509Certificates: Array<X509Certificate>,
                                     s: String,
                                     socket: Socket) {
         try {
-            for (trustManager in trustManagers) {
-                trustManager.checkClientTrusted(x509Certificates, s, socket)
-            }
+            trustManager.checkClientTrusted(x509Certificates, s, socket)
         } catch (e: CertificateException) {
-            if (!feedbackPredicate.invoke(x509Certificates)) {
-                throw e
-            }
+            throw SavedCertificateException(e, x509Certificates)
         }
     }
 
@@ -43,13 +65,9 @@ class FeedbackExtendedTrustManager(
                                     s: String,
                                     socket: Socket) {
         try {
-            for (trustManager in trustManagers) {
-                trustManager.checkServerTrusted(x509Certificates, s, socket)
-            }
+            trustManager.checkServerTrusted(x509Certificates, s, socket)
         } catch (e: CertificateException) {
-            if (!feedbackPredicate.invoke(x509Certificates)) {
-                throw e
-            }
+            throw SavedCertificateException(e, x509Certificates)
         }
     }
 
@@ -57,13 +75,9 @@ class FeedbackExtendedTrustManager(
                                     s: String,
                                     sslEngine: SSLEngine) {
         try {
-            for (trustManager in trustManagers) {
-                trustManager.checkClientTrusted(x509Certificates, s, sslEngine)
-            }
+            trustManager.checkClientTrusted(x509Certificates, s, sslEngine)
         } catch (e: CertificateException) {
-            if (!feedbackPredicate.invoke(x509Certificates)) {
-                throw e
-            }
+            throw SavedCertificateException(e, x509Certificates)
         }
     }
 
@@ -71,47 +85,30 @@ class FeedbackExtendedTrustManager(
                                     s: String,
                                     sslEngine: SSLEngine) {
         try {
-            for (trustManager in trustManagers) {
-                trustManager.checkServerTrusted(x509Certificates, s, sslEngine)
-            }
+            trustManager.checkServerTrusted(x509Certificates, s, sslEngine)
         } catch (e: CertificateException) {
-            if (!feedbackPredicate.invoke(x509Certificates)) {
-                throw e
-            }
+            throw SavedCertificateException(e, x509Certificates)
         }
     }
 
     override fun checkClientTrusted(x509Certificates: Array<X509Certificate>,
                                     s: String) {
         try {
-            for (trustManager in trustManagers) {
-                trustManager.checkClientTrusted(x509Certificates, s)
-            }
+            trustManager.checkClientTrusted(x509Certificates, s)
         } catch (e: CertificateException) {
-            if (!feedbackPredicate.invoke(x509Certificates)) {
-                throw e
-            }
+            throw SavedCertificateException(e, x509Certificates)
         }
     }
 
     override fun checkServerTrusted(x509Certificates: Array<X509Certificate>,
                                     s: String) {
         try {
-            for (trustManager in trustManagers) {
-                trustManager.checkServerTrusted(x509Certificates, s)
-            }
+            trustManager.checkServerTrusted(x509Certificates, s)
         } catch (e: CertificateException) {
-            if (!feedbackPredicate.invoke(x509Certificates)) {
-                throw e
-            }
+            throw SavedCertificateException(e, x509Certificates)
         }
     }
 
-    override fun getAcceptedIssuers(): Array<X509Certificate> {
-        val issuers = ArrayList<X509Certificate>()
-        for (trustManager in trustManagers) {
-            issuers.addAll(trustManager.acceptedIssuers)
-        }
-        return issuers.toTypedArray()
-    }
+    override fun getAcceptedIssuers(): Array<X509Certificate> =
+            trustManager.acceptedIssuers
 }

@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.*
 import org.tobi29.scapes.engine.utils.*
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import kotlin.coroutines.experimental.CoroutineContext
 
@@ -83,14 +82,16 @@ class ConnectionWorker(
                                 System.currentTimeMillis() + initialTimeout)
                     }
                     val connection = Connection(requestClose, timeout)
-                    val job = launch(this) { coroutine(connection) }
+                    val job = launch(this) {
+                        coroutine(connection)
+                    }
                     val close = ConnectionHandle(job, requestClose)
                     connections.add(close)
                     if (timeout != null) {
                         launch(this) {
                             while (job.isActive) {
                                 if (System.currentTimeMillis() > timeout.get()) {
-                                    job.cancel(IOException("Timeout"))
+                                    job.cancel(CancellationException("Timeout"))
                                 }
                                 yield()
                             }
@@ -113,7 +114,11 @@ class ConnectionWorker(
                 joiner.sleep(10)
             }
         }
-        connections.forEach { it.job.cancel(IOException("Killing worker")) }
+        connections.forEach {
+            queue.add {
+                it.job.cancel(CancellationException("Killing worker"))
+            }
+        }
         while (connections.isNotEmpty()) {
             queue.processDrain()
         }

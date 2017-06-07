@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
+package org.tobi29.scapes.engine.server
 
-dependencies {
-    compile project(":ServerFramework")
-}
+import org.tobi29.scapes.engine.utils.io.IOException
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+
+class SavedCertificateException(
+        cause: Exception,
+        val certificates: Array<X509Certificate>
+) : CertificateException(cause)
+
+class InvalidPacketDataException(message: String) : RuntimeException(message)
+
+class UnresolvableAddressException(hostname: String) : IOException(hostname)

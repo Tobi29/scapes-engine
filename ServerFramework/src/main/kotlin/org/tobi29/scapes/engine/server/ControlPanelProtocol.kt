@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.*
-import java.nio.channels.SelectionKey
 import java.security.*
 import java.security.spec.InvalidKeySpecException
 import javax.crypto.*
@@ -53,14 +52,12 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     private var idStr: String? = null
     private val queue = ConcurrentLinkedQueue<TagMap>()
     private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
-    private val disconnectHooks = ConcurrentLinkedQueue<(Exception) -> Unit>()
     private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, Queue<(TagMap) -> Unit>>>()
     private var pingWait = 0L
     var ping = 0L
         private set
 
     init {
-        channel.register(worker.joiner, SelectionKey.OP_READ)
         addCommand("Commands-List") {
             send("Commands-Send", TagMap {
                 this["Commands"] = TagList { commands.keys.forEach { add(it) } }
@@ -80,15 +77,6 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 return
             }
             open(connection)
-        } catch (e: ConnectionCloseException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: InvalidPacketDataException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: IOException) {
-            logger.info { "Control panel disconnected: $e" }
-            while (!disconnectHooks.isEmpty()) {
-                disconnectHooks.poll()(e)
-            }
         } finally {
             close()
         }
@@ -104,15 +92,6 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 return
             }
             open(connection)
-        } catch (e: ConnectionCloseException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: InvalidPacketDataException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: IOException) {
-            logger.info { "Control panel disconnected: $e" }
-            while (!disconnectHooks.isEmpty()) {
-                disconnectHooks.poll()(e)
-            }
         } finally {
             close()
         }
@@ -126,15 +105,6 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 return
             }
             open(connection)
-        } catch (e: ConnectionCloseException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: InvalidPacketDataException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: IOException) {
-            logger.info { "Control panel disconnected: $e" }
-            while (!disconnectHooks.isEmpty()) {
-                disconnectHooks.poll()(e)
-            }
         } finally {
             close()
         }
@@ -148,15 +118,6 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 return
             }
             open(connection)
-        } catch (e: ConnectionCloseException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: InvalidPacketDataException) {
-            logger.info { "Disconnecting control panel: $e" }
-        } catch (e: IOException) {
-            logger.info { "Control panel disconnected: $e" }
-            while (!disconnectHooks.isEmpty()) {
-                disconnectHooks.poll()(e)
-            }
         } finally {
             close()
         }
@@ -209,14 +170,6 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      */
     fun openHook(runnable: () -> Unit) {
         openHooks.add(runnable)
-    }
-
-    /**
-     * Runnable that gets executed in case the connection breaks
-     * @param runnable Callback that gets called with the exception that occurred
-     */
-    fun disconnectHook(runnable: (Exception) -> Unit) {
-        disconnectHooks.add(runnable)
     }
 
     /**
@@ -363,20 +316,24 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     }
 
     private suspend fun open(connection: Connection) {
-        pingWait = System.currentTimeMillis() + 1000
-        while (!connection.shouldClose) {
-            val currentTime = System.currentTimeMillis()
-            if (pingWait < currentTime) {
-                pingWait = currentTime + 1000
-                TagMap { this["Ping"] = currentTime }.writeBinary(
-                        channel.outputStream)
-                channel.queueBundle()
+        try {
+            pingWait = System.currentTimeMillis() + 1000
+            while (!connection.shouldClose) {
+                val currentTime = System.currentTimeMillis()
+                if (pingWait < currentTime) {
+                    pingWait = currentTime + 1000
+                    TagMap { this["Ping"] = currentTime }.writeBinary(
+                            channel.outputStream)
+                    channel.queueBundle()
+                }
+                openSend()
+                if (openReceive(connection)) {
+                    break
+                }
+                yield()
             }
-            openSend()
-            if (openReceive(connection)) {
-                break
-            }
-            yield()
+        } catch(e: ConnectionCloseException) {
+            logger.info { "Disconnecting control panel: ${e.message}" }
         }
     }
 
