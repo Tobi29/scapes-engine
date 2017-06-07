@@ -35,7 +35,6 @@ include "IOFileSystem"
 
 // Server framework
 include "ServerFramework"
-include "JVMSSLProvider"
 
 // SQL
 include "SQLFramework"
@@ -48,7 +47,6 @@ include "Codecs"
 include "CodecMP3"
 include "CodecOGG"
 include "CodecWAV"
-include "Concentus"
 
 // Tile maps
 include "TileMaps"
