@@ -101,10 +101,10 @@ class MutableLazy<T> : Lazy<T> {
     override var value: T
         get() {
             var value = _value
-            if (value == UNINITIALIZED_VALUE) {
+            if (value === UNINITIALIZED_VALUE) {
                 synchronized(initializer) {
                     value = _value
-                    if (value == UNINITIALIZED_VALUE) {
+                    if (value === UNINITIALIZED_VALUE) {
                         value = (initializer.getAndSet(
                                 null) ?: throw IllegalStateException(
                                 "No initializer and no value"))()
