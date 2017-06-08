@@ -18,7 +18,7 @@
 
 package org.tobi29.scapes.engine.utils
 
-val ANDROID_API_LEVEL = run {
+/* impl */ val ANDROID_API_LEVEL = run {
     try {
         Class.forName("android.os.Build.VERSION")
                 .getField("SDK_INT").get(null) as? Int
@@ -27,10 +27,10 @@ val ANDROID_API_LEVEL = run {
     }
 }
 
-const val IS_JVM = true
-val IS_ANDROID = ANDROID_API_LEVEL != null
-const val IS_JS = false
-const val IS_NATIVE = false
+/* impl */ inline val IS_JVM get() = true
+/* impl */ inline val IS_ANDROID get() = ANDROID_API_LEVEL != null
+/* impl */ inline val IS_JS get() = false
+/* impl */ inline val IS_NATIVE get() = false
 
-inline fun isAndroidAPI(level: Int) =
+/* impl */ inline fun isAndroidAPI(level: Int) =
         ANDROID_API_LEVEL ?: Int.MAX_VALUE >= level

@@ -28,23 +28,23 @@ header val ANDROID_API_LEVEL: Int?
 /**
  * `true` if the current application is running on Kotlin/JVM or Android
  */
-header val IS_JVM :Boolean
+header val IS_JVM: Boolean
 
 /**
  * `true` if the current application is running on Android
  * @see [ANDROID_API_LEVEL]
  */
-header val IS_ANDROID:Boolean
+header val IS_ANDROID: Boolean
 
 /**
  * `true` if the current application is running on Kotlin/JS
  */
-header val IS_JS:Boolean
+header val IS_JS: Boolean
 
 /**
  * `true` if the current application is running on Kotlin/Native
  */
-header val IS_NATIVE:Boolean
+header val IS_NATIVE: Boolean
 
 /**
  * Checks if the current application is running on at least the specified
