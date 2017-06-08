@@ -41,29 +41,33 @@ fun wildcard(exp: String) = Regex.escape(exp).replace("?", "\\E.?\\Q").replace(
         "*", "\\E.*\\Q").toRegex()
 
 /**
- * Assembles a list of replace operations
- * @param array Matcher and replacement strings Requires 2 arguments per pattern
- * @return A function that runs the replaces on a string
+ * Assembles a sequence of string replace operations into a function
+ * @receiver List of string patterns and replacements
+ * @return Callable function applying all the replacement on a given string
  */
-fun replace(vararg array: String): (String) -> String {
-    if (array.size % 2 != 0) {
-        throw IllegalArgumentException(
-                "Amount of arguments has to be a multiple of 2")
+fun Collection<Pair<String, String>>.toReplace(): (String) -> String = { str ->
+    fold(str) { str, (pattern, replace) ->
+        str.replace(pattern, replace)
     }
-    val patterns = ArrayList<(String) -> String>(array.size shr 1)
-    var i = 0
-    while (i < array.size) {
-        val pattern = array[i].toRegex()
-        val replace = array[i + 1]
-        patterns.add({ it.replace(pattern, replace) })
-        i += 2
-    }
-    return { str ->
-        var output = str
-        for (pattern in patterns) {
-            output = pattern(output)
-        }
-        output
+}
+
+/**
+ * Assembles a sequence of regex replace operations into a function
+ * @receiver Sequence of regex patterns and replacements
+ * @return Callable function applying all the replacement on a given string
+ */
+fun Sequence<Pair<String, String>>.toRegexReplace() = map { (pattern, replace) ->
+    pattern.toRegex() to replace
+}.toList().toRegexReplace()
+
+/**
+ * Assembles a sequence of regex replace operations into a function
+ * @receiver List of regex patterns and replacements
+ * @return Callable function applying all the replacement on a given string
+ */
+fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str ->
+    fold(str) { str, (regex, replace) ->
+        str.replace(regex, replace)
     }
 }
 
