@@ -26,7 +26,7 @@ import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.tag.TagMap
-import org.tobi29.scapes.engine.utils.tag.set
+import org.tobi29.scapes.engine.utils.tag.toTag
 import java.nio.FloatBuffer
 
 class VorbisInitializer(private val info: Info,
@@ -50,7 +50,9 @@ class VorbisInitializer(private val info: Info,
                         TagMap {
                             (0..comment.comments - 1).asSequence().map {
                                 comment.getComment(it).split('=', limit = 2)
-                            }.filter { it.size == 2 }.forEach { this[it[0]] = it[1] }
+                            }.filter { it.size == 2 }.forEach {
+                                this[it[0]] = it[1].toTag()
+                            }
                         })
             })
         }

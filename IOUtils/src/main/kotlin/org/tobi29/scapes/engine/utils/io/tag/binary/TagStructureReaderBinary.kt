@@ -16,13 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.binary
 
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
-import org.tobi29.scapes.engine.utils.io.CompressionUtil
-import org.tobi29.scapes.engine.utils.io.LimitedBufferStream
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.tag.Tag
+import org.tobi29.scapes.engine.utils.tag.TagList
+import org.tobi29.scapes.engine.utils.tag.TagMap
+import org.tobi29.scapes.engine.utils.tag.toTag
 
 class TagStructureReaderBinary(stream: ReadableByteStream,
                                private var allocationLimit: Int,
@@ -89,43 +88,43 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
                 }
                 ID_TAG_UNIT -> {
                     allocate(1)
-                    map[key] = Unit
+                    map[key] = Unit.toTag()
                 }
                 ID_TAG_BOOLEAN -> {
                     allocate(1)
-                    map[key] = structureBuffer.get() != 0.toByte()
+                    map[key] = (structureBuffer.get() != 0.toByte()).toTag()
                 }
                 ID_TAG_BYTE -> {
                     allocate(1)
-                    map[key] = structureBuffer.get()
+                    map[key] = structureBuffer.get().toTag()
                 }
                 ID_TAG_INT_16 -> {
                     allocate(2)
-                    map[key] = structureBuffer.getShort()
+                    map[key] = structureBuffer.getShort().toTag()
                 }
                 ID_TAG_INT_32 -> {
                     allocate(4)
-                    map[key] = structureBuffer.getInt()
+                    map[key] = structureBuffer.getInt().toTag()
                 }
                 ID_TAG_INT_64 -> {
                     allocate(8)
-                    map[key] = structureBuffer.getLong()
+                    map[key] = structureBuffer.getLong().toTag()
                 }
                 ID_TAG_FLOAT_32 -> {
                     allocate(4)
-                    map[key] = structureBuffer.getFloat()
+                    map[key] = structureBuffer.getFloat().toTag()
                 }
                 ID_TAG_FLOAT_64 -> {
                     allocate(8)
-                    map[key] = structureBuffer.getDouble()
+                    map[key] = structureBuffer.getDouble().toTag()
                 }
                 ID_TAG_BYTE_ARRAY -> {
-                    map[key] = allocate(
-                            structureBuffer.getByteArrayLong(allocationLimit))
+                    map[key] = allocate(structureBuffer.getByteArrayLong(
+                            allocationLimit)).toTag()
                 }
                 ID_TAG_STRING -> {
                     map[key] = allocate(
-                            structureBuffer.getString(allocationLimit))
+                            structureBuffer.getString(allocationLimit)).toTag()
                 }
                 else -> throw IOException(
                         "Not in tag format! (Invalid component-id: $componentID)")
@@ -161,42 +160,44 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
             }
             ID_TAG_UNIT -> {
                 allocate(1)
-                list.add(Unit)
+                list.add(Unit.toTag())
             }
             ID_TAG_BOOLEAN -> {
                 allocate(1)
-                list.add(structureBuffer.get() != 0.toByte())
+                list.add((structureBuffer.get() != 0.toByte()).toTag())
             }
             ID_TAG_BYTE -> {
                 allocate(1)
-                list.add(structureBuffer.get())
+                list.add(structureBuffer.get().toTag())
             }
             ID_TAG_INT_16 -> {
                 allocate(2)
-                list.add(structureBuffer.getShort())
+                list.add(structureBuffer.getShort().toTag())
             }
             ID_TAG_INT_32 -> {
                 allocate(4)
-                list.add(structureBuffer.getInt())
+                list.add(structureBuffer.getInt().toTag())
             }
             ID_TAG_INT_64 -> {
                 allocate(8)
-                list.add(structureBuffer.getLong())
+                list.add(structureBuffer.getLong().toTag())
             }
             ID_TAG_FLOAT_32 -> {
                 allocate(4)
-                list.add(structureBuffer.getFloat())
+                list.add(structureBuffer.getFloat().toTag())
             }
             ID_TAG_FLOAT_64 -> {
                 allocate(8)
-                list.add(structureBuffer.getDouble())
+                list.add(structureBuffer.getDouble().toTag())
             }
             ID_TAG_BYTE_ARRAY -> {
                 list.add(allocate(
-                        structureBuffer.getByteArrayLong(allocationLimit)))
+                        structureBuffer.getByteArrayLong(
+                                allocationLimit)).toTag())
             }
             ID_TAG_STRING -> {
-                list.add(allocate(structureBuffer.getString(allocationLimit)))
+                list.add(allocate(
+                        structureBuffer.getString(allocationLimit)).toTag())
             }
             ID_LIST_TERMINATE -> return true
             else -> {

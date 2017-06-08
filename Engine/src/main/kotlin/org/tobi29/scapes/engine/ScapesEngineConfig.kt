@@ -30,6 +30,6 @@ class ScapesEngineConfig(private val configMap: MutableTagMap) {
 
     fun setVolume(channel: String,
                   value: Double) {
-        configMap.mapMut("Volumes")[channel] = value
+        configMap.mapMut("Volumes")[channel] = value.toTag()
     }
 }

@@ -18,55 +18,10 @@ class TagBigDecimal
  */
 inline fun BigDecimal.toTag() = TagBigDecimal(this)
 
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagMutableList.add(element: BigDecimal) = add(
-        element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: BigDecimal) = TagList {
     elements.forEach { add(it.toTag()) }
 }
-
-/**
- * Associates the specified [value] with the specified [key] in the map.
- *
- * The [value] gets converted to a tag before inserting it
- *
- * @return the previous value associated with the key, or `null` if the key was not present in the map.
- */
-inline fun ReadWriteTagMutableMap.put(key: String,
-                                      value: BigDecimal) = put(key,
-        value.toTag())
-
-/**
- * Associates the specified [value] with the specified [key] in the map.
- *
- * The [value] gets converted to a tag before inserting it
- *
- * @return the previous value associated with the key, or `null` if the key was not present in the map.
- */
-inline fun ReadWriteTagMap.put(key: String,
-                               value: BigDecimal) = put(key, value.toTag())
-
-/**
- * Allows to use the index operator for storing values in a mutable map.
- */
-inline operator fun ReadWriteTagMutableMap.set(key: String,
-                                               value: BigDecimal) = put(key,
-        value)
-
-/**
- * Allows to use the index operator for storing values in a mutable map.
- */
-inline operator fun ReadWriteTagMap.set(key: String,
-                                        value: BigDecimal) = put(key, value)
 
 /**
  * Delegates a property to an entry at [key] in the given tag map

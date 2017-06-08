@@ -23,21 +23,22 @@ import org.tobi29.scapes.engine.utils.fill
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.tag.*
 
-fun Array2<out Tile?>.write(map: ReadWriteTagMap) {
-    map["Width"] = width
-    map["Height"] = height
+fun Array2<out Tile?>.write(map: ReadWriteTagMutableMap) {
+    map["Width"] = width.toTag()
+    map["Height"] = height.toTag()
     map["Tiles"] = ByteArray(size shl 2).apply {
         val buffer = ByteBuffer.wrap(this)
         this@write.forEach { buffer.putInt(it?.id ?: -1) }
         assert { !buffer.hasRemaining() }
-    }
+    }.toTag()
 }
 
-fun TagMap.toTileMap(tileSets: TileSets): Array2<Tile?> {
-    val width = this["Width"]?.toInt() ?: 0
-    val height = this["Height"]?.toInt() ?: 0
+fun MutableTag.toTileMap(tileSets: TileSets): Array2<Tile?>? {
+    val map = toMap() ?: return null
+    val width = map["Width"]?.toInt() ?: return null
+    val height = map["Height"]?.toInt() ?: return null
     val array = array2OfNulls<Tile>(width, height)
-    this["Tiles"]?.toByteArray()?.let { tiles ->
+    map["Tiles"]?.toByteArray()?.let { tiles ->
         if (tiles.size != array.size shl 2) {
             throw IllegalArgumentException("Tile array has invalid size")
         }

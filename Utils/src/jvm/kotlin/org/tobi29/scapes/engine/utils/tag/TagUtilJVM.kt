@@ -20,7 +20,7 @@ import java.util.*
 
 fun Properties.toTag() = TagMap {
     for ((key, value) in this@toTag) {
-        this[key.toString()] = value.toString()
+        this[key.toString()] = value.toString().toTag()
     }
 }
 

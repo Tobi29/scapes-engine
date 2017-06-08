@@ -21,7 +21,7 @@ import com.jcraft.jogg.Page
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.tag.TagMap
-import org.tobi29.scapes.engine.utils.tag.set
+import org.tobi29.scapes.engine.utils.tag.toTag
 import java.nio.FloatBuffer
 
 class OpusInitializer(private val info: OpusInfo) : CodecInitializer {
@@ -31,7 +31,7 @@ class OpusInitializer(private val info: OpusInfo) : CodecInitializer {
             AudioMetaData(comment.vendor,
                     TagMap {
                         comment.userComments.forEach { (key, value) ->
-                            this[key] = value
+                            this[key] = value.toTag()
                         }
                     })
         })

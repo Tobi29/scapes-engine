@@ -36,8 +36,8 @@ class RemoteAddress : TagMapWrite {
     }
 
     override fun write(map: ReadWriteTagMap) {
-        map["Address"] = address
-        map["Port"] = port
+        map["Address"] = address.toTag()
+        map["Port"] = port.toTag()
     }
 }
 

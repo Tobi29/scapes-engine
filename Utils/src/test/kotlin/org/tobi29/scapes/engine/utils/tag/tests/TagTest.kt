@@ -22,10 +22,10 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.tag.TagMap
-import org.tobi29.scapes.engine.utils.tag.set
 import org.tobi29.scapes.engine.utils.tag.toTag
 import org.tobi29.scapes.engine.utils.tag.toUUID
 import org.tobi29.scapes.engine.utils.toUUID
+import kotlin.collections.set
 
 object TagTests : Spek({
     describe("getting a uuid from a tag") {
@@ -37,8 +37,8 @@ object TagTests : Spek({
         }
         given("a tag with a most and least number") {
             val tag = TagMap {
-                this["Most"] = 3344066203181924543
-                this["Least"] = -8389584522088928761
+                this["Most"] = 3344066203181924543.toTag()
+                this["Least"] = (-8389584522088928761).toTag()
             }
             it("should return an uuid") {
                 tag.toUUID() shouldEqual "2e68827e-820c-40bf-8b92-3553bbc62a07".toUUID()

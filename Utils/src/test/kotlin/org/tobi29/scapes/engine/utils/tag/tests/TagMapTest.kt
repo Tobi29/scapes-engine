@@ -27,18 +27,18 @@ object TagMapTests : Spek({
     describe("a tag map") {
         on("remap") {
             val tagStructure = MutableTagMap {
-                this["Replace"] = "Value"
-                this["Keep"] = "Value"
+                this["Replace"] = "Value".toTag()
+                this["Keep"] = "Value".toTag()
                 this["Get"] = TagMap {
-                    this["Check"] = "Value"
+                    this["Check"] = "Value".toTag()
                 }
             }
             val testStructure = TagMap {
                 this["Add"] = TagMap()
                 this["Replace"] = TagMap()
-                this["Keep"] = "Value"
+                this["Keep"] = "Value".toTag()
                 this["Get"] = TagMap {
-                    this["Check"] = "Value"
+                    this["Check"] = "Value".toTag()
                 }
             }
             tagStructure.mapMut("Add")
@@ -50,7 +50,7 @@ object TagMapTests : Spek({
         }
         on("inserting an array and retrieving it as a list") {
             val tagStructure = TagMap {
-                this["Array"] = byteArrayOf(0, 1, 2, 3, 4)
+                this["Array"] = byteArrayOf(0, 1, 2, 3, 4).toTag()
             }
             it("should return an equal list") {
                 tagStructure["Array"]?.toList() shouldEqual tagListOf(0, 1,
@@ -68,11 +68,11 @@ object TagMapTests : Spek({
         }
         on("inserting an array into one tag map and an equal list into another") {
             val tagStructure1 = TagMap {
-                this["Array"] = byteArrayOf(0, 1, 2, 3, 4)
+                this["Array"] = byteArrayOf(0, 1, 2, 3, 4).toTag()
                 this["List"] = tagListOf(0, 1, 2, 3, 4)
             }
             val tagStructure2 = TagMap {
-                this["List"] = byteArrayOf(0, 1, 2, 3, 4)
+                this["List"] = byteArrayOf(0, 1, 2, 3, 4).toTag()
                 this["Array"] = tagListOf(0, 1, 2, 3, 4)
             }
             it("should make equal tag maps") {
@@ -81,7 +81,7 @@ object TagMapTests : Spek({
         }
         val tagsEqual = listOf(
                 Pair(TagMap {
-                    this["Data"] = byteArrayOf(1, 2, 3, 4)
+                    this["Data"] = byteArrayOf(1, 2, 3, 4).toTag()
                 }, TagMap {
                     this["Data"] = tagListOf(1, 2, 3, 4)
                 })

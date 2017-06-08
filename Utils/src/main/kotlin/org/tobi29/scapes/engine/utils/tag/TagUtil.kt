@@ -94,8 +94,8 @@ fun Sequence<MutableTag>.toTag() = TagList {
 }
 
 fun UUID.toTag() = TagMap {
-    this["Most"] = getMostSignificantBits()
-    this["Least"] = getLeastSignificantBits()
+    this["Most"] = getMostSignificantBits().toTag()
+    this["Least"] = getLeastSignificantBits().toTag()
 }
 
 inline fun ReadTagMutableMap.map(key: String) = this[key]?.asMap()

@@ -44,8 +44,8 @@ class Checksum
     }
 
     override fun write(map: ReadWriteTagMap) {
-        map["Algorithm"] = algorithm.toString()
-        map["Array"] = array
+        map["Algorithm"] = algorithm.toString().toTag()
+        map["Array"] = array.toTag()
     }
 
     override fun hashCode(): Int {
@@ -74,16 +74,18 @@ class Checksum
     }
 }
 
-inline fun MutableTag.toChecksum() = toMap()?.let(::Checksum)
-
-fun Checksum(map: ReadTagMutableMap): Checksum? {
+fun MutableTag.toChecksum(): Checksum? {
+    val map = toMap() ?: return null
     val algorithm =
             try {
                 Algorithm.valueOf(map["Algorithm"].toString())
             } catch (e: IllegalArgumentException) {
-                Algorithm.UNKNOWN
+                return null
             }
-    val array = map["Array"]?.toByteArray() ?: ByteArray(algorithm.bytes)
+    val array = map["Array"]?.toByteArray() ?: return null
+    if (array.size != algorithm.bytes) {
+        return null
+    }
     return Checksum(algorithm, array)
 }
 
@@ -102,10 +104,6 @@ enum class Algorithm(private val digestName: String,
      * @return [MessageDigest] using the specified algorithm
      */
     fun digest(): MessageDigest {
-        if (this == UNKNOWN) {
-            throw IllegalStateException(
-                    "Trying to create digest from unknown algorithm")
-        }
         try {
             return MessageDigest.getInstance(digestName)
         } catch (e: NoSuchAlgorithmException) {

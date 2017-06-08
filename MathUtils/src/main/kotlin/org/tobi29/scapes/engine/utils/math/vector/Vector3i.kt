@@ -17,7 +17,8 @@
 package org.tobi29.scapes.engine.utils.math.vector
 
 import org.tobi29.scapes.engine.utils.tag.ReadWriteTagMap
-import org.tobi29.scapes.engine.utils.tag.set
+import org.tobi29.scapes.engine.utils.tag.toTag
+import kotlin.collections.set
 
 class Vector3i(x: Int,
                y: Int,
@@ -51,7 +52,7 @@ class Vector3i(x: Int,
 
     override fun write(map: ReadWriteTagMap) {
         super.write(map)
-        map["Z"] = z
+        map["Z"] = z.toTag()
     }
 
     override fun toString() = "$x $y $z"

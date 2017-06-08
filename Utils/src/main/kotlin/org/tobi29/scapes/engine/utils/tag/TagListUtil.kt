@@ -21,245 +21,91 @@ package org.tobi29.scapes.engine.utils.tag
 import org.tobi29.scapes.engine.utils.UUID
 
 // Unit
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Unit) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Unit) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Boolean
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Boolean) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Boolean) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Byte
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Byte) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Byte) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Short
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Short) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Short) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Int
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Int) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Int) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Long
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Long) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Long) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Float
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Float) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Float) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Double
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Double) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Double) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // ByteArray
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: ByteArray) = add(
-        element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: ByteArray) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // String
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: String) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: String) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // ReadTagMap
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: ReadTagMap) = add(
-        element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: ReadTagMap) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // ReadTagList
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: ReadTagList) = add(
-        element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: ReadTagList) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // Sequence<Tag>
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: Sequence<Tag>) = add(
-        element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: Sequence<Tag>) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // UUID
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: UUID) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: UUID) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }
 
 // TagWrite
-/**
- * Adds the specified element to the collection.
- *
- * The [element] gets converted to a tag before inserting it
- *
- * @return `true` if the element has been added, `false` if the collection does not support duplicates
- * and the element is already contained in the collection.
- */
-inline fun ReadWriteTagList.add(element: TagWrite) = add(element.toTag())
-
 /** Returns a new read-only [TagList] of given element */
 inline fun tagListOf(vararg elements: TagWrite) = TagList {
-    elements.forEach { add(it) }
+    elements.forEach { add(it.toTag()) }
 }

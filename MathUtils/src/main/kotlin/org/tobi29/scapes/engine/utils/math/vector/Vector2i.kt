@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.utils.math.vector
 
 import org.tobi29.scapes.engine.utils.tag.ReadWriteTagMap
 import org.tobi29.scapes.engine.utils.tag.TagMapWrite
-import org.tobi29.scapes.engine.utils.tag.set
+import org.tobi29.scapes.engine.utils.tag.toTag
 
 open class Vector2i(val x: Int,
                     val y: Int) : TagMapWrite {
@@ -48,8 +48,8 @@ open class Vector2i(val x: Int,
     }
 
     override fun write(map: ReadWriteTagMap) {
-        map["X"] = x
-        map["Y"] = y
+        map["X"] = x.toTag()
+        map["Y"] = y.toTag()
     }
 
     override fun toString() = "$x $y"

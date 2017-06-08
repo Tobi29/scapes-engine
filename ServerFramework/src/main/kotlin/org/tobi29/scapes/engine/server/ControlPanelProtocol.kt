@@ -60,7 +60,11 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     init {
         addCommand("Commands-List") {
             send("Commands-Send", TagMap {
-                this["Commands"] = TagList { commands.keys.forEach { add(it) } }
+                this["Commands"] = TagList {
+                    commands.keys.forEach {
+                        add(it.toTag())
+                    }
+                }
             })
         }
     }
@@ -137,7 +141,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     fun send(command: String,
              payload: TagMap) {
         queue.add(TagMap {
-            this["Command"] = command
+            this["Command"] = command.toTag()
             this["Payload"] = payload
         })
         worker.joiner.wake()
@@ -322,7 +326,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 val currentTime = System.currentTimeMillis()
                 if (pingWait < currentTime) {
                     pingWait = currentTime + 1000
-                    TagMap { this["Ping"] = currentTime }.writeBinary(
+                    TagMap { this["Ping"] = currentTime.toTag() }.writeBinary(
                             channel.outputStream)
                     channel.queueBundle()
                 }
@@ -345,7 +349,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                 PacketBundleChannel.FetchResult.BUNDLE -> {
                     val tagStructure = readBinary(channel.inputStream)
                     tagStructure["Ping"]?.toLong()?.let {
-                        TagMap { this["Pong"] = it }.writeBinary(
+                        TagMap { this["Pong"] = it.toTag() }.writeBinary(
                                 channel.outputStream)
                         channel.queueBundle()
                     }
@@ -375,7 +379,8 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             list.add(queue.poll())
         }
         if (!list.isEmpty()) {
-            TagMap { this["Commands"] = list }.writeBinary(channel.outputStream)
+            TagMap { this["Commands"] = list.toTag() }.writeBinary(
+                    channel.outputStream)
             channel.queueBundle()
         }
     }

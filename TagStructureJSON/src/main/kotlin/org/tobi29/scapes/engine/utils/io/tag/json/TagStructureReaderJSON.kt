@@ -16,10 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.json
 
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.scapes.engine.utils.tag.Tag
+import org.tobi29.scapes.engine.utils.tag.TagList
+import org.tobi29.scapes.engine.utils.tag.TagMap
+import org.tobi29.scapes.engine.utils.tag.toTag
 import java.io.InputStream
 import javax.json.Json
 import javax.json.stream.JsonParser
@@ -65,22 +68,22 @@ class TagStructureReaderJSON(streamIn: InputStream) : AutoCloseable {
                 }
                 JsonParser.Event.VALUE_NUMBER -> {
                     if (reader.isIntegralNumber) {
-                        map[key] = reader.bigDecimal.toBigIntegerExact()
+                        map[key] = reader.bigDecimal.toBigIntegerExact().toTag()
                     } else {
-                        map[key] = reader.bigDecimal
+                        map[key] = reader.bigDecimal.toTag()
                     }
                 }
                 JsonParser.Event.VALUE_STRING -> {
-                    map[key] = reader.string
+                    map[key] = reader.string.toTag()
                 }
                 JsonParser.Event.VALUE_NULL -> {
-                    map[key] = Unit
+                    map[key] = Unit.toTag()
                 }
                 JsonParser.Event.VALUE_FALSE -> {
-                    map[key] = false
+                    map[key] = false.toTag()
                 }
                 JsonParser.Event.VALUE_TRUE -> {
-                    map[key] = true
+                    map[key] = true.toTag()
                 }
                 else -> throw IOException("Unexpected event: $event")
             }
