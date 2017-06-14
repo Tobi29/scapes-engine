@@ -18,13 +18,12 @@ package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.tobi29.scapes.engine.utils.shader.*
 
-internal tailrec fun parameters(context: ScapesShaderParser.ParameterListContext?,
-                                parameters: MutableList<Parameter>,
-                                scope: Scope) {
+internal tailrec fun ParameterScope.parameters(
+        context: ScapesShaderParser.ParameterListContext?) {
     context ?: return
     val parameter = context.parameterDeclaration().ast(scope)
-    parameters.add(parameter)
-    parameters(context.parameterList(), parameters, scope)
+    add(parameter)
+    parameters(context.parameterList())
 }
 
 internal fun ScapesShaderParser.ParameterDeclarationContext.ast(scope: Scope): Parameter {
@@ -36,13 +35,11 @@ internal fun ScapesShaderParser.ParameterDeclarationContext.ast(scope: Scope): P
     return Parameter(type, variable)
 }
 
-internal tailrec fun parameters(context: ScapesShaderParser.ShaderParameterListContext?,
-                                parameters: MutableList<ShaderParameter>,
-                                scope: Scope) {
+internal tailrec fun ShaderParameterScope.parameters(
+        context: ScapesShaderParser.ShaderParameterListContext?) {
     context ?: return
-    val parameter = context.shaderParameterDeclaration().ast(scope)
-    parameters.add(parameter)
-    parameters(context.shaderParameterList(), parameters, scope)
+    add(context.shaderParameterDeclaration().ast(scope))
+    parameters(context.shaderParameterList())
 }
 
 internal fun ScapesShaderParser.ShaderParameterDeclarationContext.ast(scope: Scope): ShaderParameter {

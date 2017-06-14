@@ -16,251 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
+import org.tobi29.scapes.engine.utils.readOnly
+
 object STDLib {
-    fun functions(
-            functionsSignatures: MutableList<FunctionExportedSignature>) {
-        functionsSignatures.add(
-                FunctionExportedSignature("texture",
-                        Types.Vector4.exported,
-                        Types.Texture2.exported,
-                        Types.Vector2.exported))
-
-        mathFunctions(functionsSignatures, Types.Float.exported,
-                Types.Boolean.exported, Types.Float.exported)
-        mathFunctions(functionsSignatures, Types.Vector2.exported,
-                Types.Vector2b.exported, Types.Float.exported)
-        mathFunctions(functionsSignatures, Types.Vector3.exported,
-                Types.Vector3b.exported, Types.Float.exported)
-        mathFunctions(functionsSignatures, Types.Vector4.exported,
-                Types.Vector4b.exported, Types.Float.exported)
-
-        mathFunctions(functionsSignatures, Types.Int.exported,
-                Types.Boolean.exported, Types.Int.exported)
-        mathFunctions(functionsSignatures, Types.Vector2i.exported,
-                Types.Vector2b.exported, Types.Int.exported)
-        mathFunctions(functionsSignatures, Types.Vector3i.exported,
-                Types.Vector3b.exported, Types.Int.exported)
-        mathFunctions(functionsSignatures, Types.Vector4i.exported,
-                Types.Vector4b.exported, Types.Int.exported)
-
-        vectorFunctions(functionsSignatures, Types.Vector2.exported,
-                Types.Vector2b.exported, Types.Float.exported)
-        vectorFunctions(functionsSignatures, Types.Vector3.exported,
-                Types.Vector3b.exported, Types.Float.exported)
-        vectorFunctions(functionsSignatures, Types.Vector4.exported,
-                Types.Vector4b.exported, Types.Float.exported)
-
-        matrixFunctions(functionsSignatures, Types.Matrix2.exported,
-                Types.Vector2.exported)
-        matrixFunctions(functionsSignatures, Types.Matrix3.exported,
-                Types.Vector3.exported)
-        matrixFunctions(functionsSignatures, Types.Matrix4.exported,
-                Types.Vector4.exported)
-
-        functionsSignatures.add(
-                FunctionExportedSignature("float", Types.Float.exported,
-                        Types.Float.exported))
-
-        functionsSignatures.add(
-                FunctionExportedSignature("vector2",
-                        Types.Vector2.exported,
-                        Types.Float.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("vector2",
-                        Types.Vector2.exported,
-                        Types.Vector2.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("vector2",
-                        Types.Vector2.exported,
-                        Types.Float.exported,
-                        Types.Float.exported))
-
-        functionsSignatures.add(
-                FunctionExportedSignature("vector3",
-                        Types.Vector3.exported,
-                        Types.Float.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("vector3",
-                        Types.Vector3.exported,
-                        Types.Float.exported,
-                        Types.Float.exported,
-                        Types.Float.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("vector3",
-                        Types.Vector3.exported,
-                        Types.Float.exported,
-                        Types.Vector2.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("vector3",
-                        Types.Vector3.exported,
-                        Types.Vector2.exported,
-                        Types.Float.exported))
-        constructScalar.forEach {
-            functionsSignatures.add(FunctionExportedSignature("float",
-                    Types.Float.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("int",
-                    Types.Int.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("boolean",
-                    Types.Boolean.exported, it))
-        }
-        constructVector2.forEach {
-            functionsSignatures.add(FunctionExportedSignature("vector2",
-                    Types.Vector2.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("vector2i",
-                    Types.Vector2i.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("vector2b",
-                    Types.Vector2b.exported, it))
-        }
-        constructVector3.forEach {
-            functionsSignatures.add(FunctionExportedSignature("vector3",
-                    Types.Vector3.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("vector3i",
-                    Types.Vector3i.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("vector3b",
-                    Types.Vector3b.exported, it))
-        }
-        constructVector4.forEach {
-            functionsSignatures.add(FunctionExportedSignature("vector4",
-                    Types.Vector4.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("vector4i",
-                    Types.Vector4i.exported, it))
-            functionsSignatures.add(FunctionExportedSignature("vector4b",
-                    Types.Vector4b.exported, it))
-        }
-        Types.values().forEach { type ->
-            functionsSignatures.add(FunctionExportedSignature("return",
-                    Types.Void.exported, type.exported))
-            functionsSignatures.add(FunctionExportedSignature("return",
-                    Types.Void.exported, type.exportedArray))
-        }
-        functionsSignatures.add(
-                FunctionExportedSignature("break", Types.Void.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("continue", Types.Void.exported))
-        functionsSignatures.add(
-                FunctionExportedSignature("discard", Types.Void.exported))
-    }
-
-    private fun mathFunctions(
-            functionsSignatures: MutableList<FunctionExportedSignature>,
-            type: TypeExported,
-            typeBoolean: TypeExported,
-            typeScalar: TypeExported) {
-        functionsSignatures.add(FunctionExportedSignature(
-                "plus", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "minus", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "times", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "div", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "rem", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "length", typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "abs", type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "floor", type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "sin", type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "cos", type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "min", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "max", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "clamp", type, type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "mix", type, type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "mix", type, type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "dot", typeScalar, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "mod", type, type, type))
-        if (type == Types.Int.exported) {
-            functionsSignatures.add(FunctionExportedSignature(
-                    "shl", type, type, type))
-            functionsSignatures.add(FunctionExportedSignature(
-                    "shr", type, type, type))
-            functionsSignatures.add(FunctionExportedSignature(
-                    "and", type, type, type))
-            functionsSignatures.add(FunctionExportedSignature(
-                    "or", type, type, type))
-            functionsSignatures.add(FunctionExportedSignature(
-                    "xor", type, type, type))
-        }
-    }
-
-    private fun vectorFunctions(
-            functionsSignatures: MutableList<FunctionExportedSignature>,
-            type: TypeExported,
-            typeBoolean: TypeExported,
-            typeScalar: TypeExported) {
-        functionsSignatures.add(FunctionExportedSignature(
-                "greaterThan", typeBoolean, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "greaterThanEqual", typeBoolean, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "lessThan", typeBoolean, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "lessThanEqual", typeBoolean, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "plus", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "plus", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "minus", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "minus", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "times", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "times", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "div", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "div", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "rem", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "rem", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "min", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "min", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "max", type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "max", type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "clamp", type, type, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "clamp", type, type, typeScalar, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "clamp", type, typeScalar, type, typeScalar))
-        functionsSignatures.add(FunctionExportedSignature(
-                "clamp", type, typeScalar, typeScalar, type))
-    }
-
-    private fun matrixFunctions(
-            functionsSignatures: MutableList<FunctionExportedSignature>,
-            type: TypeExported,
-            typeVector: TypeExported) {
-        functionsSignatures.add(FunctionExportedSignature(
-                "plus", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "minus", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "times", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "div", type, type, type))
-        functionsSignatures.add(FunctionExportedSignature(
-                "times", typeVector, type, typeVector))
-    }
-
     private val scalar = setOf(
             listOf(Types.Float.exported),
             listOf(Types.Int.exported),
@@ -277,20 +35,6 @@ object STDLib {
             listOf(Types.Vector4.exported),
             listOf(Types.Vector4i.exported),
             listOf(Types.Vector4b.exported))
-
-    private fun genT(s: Set<List<TypeExported>>,
-                     level: Int): Set<List<TypeExported>> =
-            if (level <= 1) s else (genT(s, level - 1) joinT s) + s
-
-    private infix fun Set<List<TypeExported>>.joinT(other: Set<List<TypeExported>>): Set<List<TypeExported>> {
-        val set = HashSet<List<TypeExported>>()
-        forEach { a ->
-            other.forEach { b ->
-                set.add(a + b)
-            }
-        }
-        return set
-    }
 
     val constructScalar = scalar
     val constructVector2 = scalar +
@@ -310,6 +54,296 @@ object STDLib {
     private val swizzleRGB = swizzleRG + setOf("b")
     private val swizzleRGBA = swizzleRGB + setOf("a")
 
+    val swizzle2to1 = gen(swizzleXY, 1) + gen(swizzleRG, 1)
+    val swizzle2to2 = gen(swizzleXY, 2) + gen(swizzleRG, 2)
+    val swizzle2to3 = gen(swizzleXY, 3) + gen(swizzleRG, 3)
+    val swizzle2to4 = gen(swizzleXY, 4) + gen(swizzleRG, 4)
+    val swizzle3to1 = gen(swizzleXYZ, 1) + gen(swizzleRGB, 1)
+    val swizzle3to2 = gen(swizzleXYZ, 2) + gen(swizzleRGB, 2)
+    val swizzle3to3 = gen(swizzleXYZ, 3) + gen(swizzleRGB, 3)
+    val swizzle3to4 = gen(swizzleXYZ, 4) + gen(swizzleRGB, 4)
+    val swizzle4to1 = gen(swizzleXYZW, 1) + gen(swizzleRGBA, 1)
+    val swizzle4to2 = gen(swizzleXYZW, 2) + gen(swizzleRGBA, 2)
+    val swizzle4to3 = gen(swizzleXYZW, 3) + gen(swizzleRGBA, 3)
+    val swizzle4to4 = gen(swizzleXYZW, 4) + gen(swizzleRGBA, 4)
+
+    val functions = HashMap<FunctionExportedSignature, (List<Expression>) -> Expression>()
+            .also { functions(it) }.readOnly()
+
+    private fun functions(
+            functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>) {
+        function(functions, FunctionExportedSignature("texture",
+                Types.Vector4.exported,
+                Types.Texture2.exported,
+                Types.Vector2.exported))
+
+        mathFunctions(functions, Types.Float.exported,
+                Types.Boolean.exported, Types.Float.exported)
+        mathFunctions(functions, Types.Vector2.exported,
+                Types.Vector2b.exported, Types.Float.exported)
+        mathFunctions(functions, Types.Vector3.exported,
+                Types.Vector3b.exported, Types.Float.exported)
+        mathFunctions(functions, Types.Vector4.exported,
+                Types.Vector4b.exported, Types.Float.exported)
+
+        mathFunctions(functions, Types.Int.exported,
+                Types.Boolean.exported, Types.Int.exported)
+        mathFunctions(functions, Types.Vector2i.exported,
+                Types.Vector2b.exported, Types.Int.exported)
+        mathFunctions(functions, Types.Vector3i.exported,
+                Types.Vector3b.exported, Types.Int.exported)
+        mathFunctions(functions, Types.Vector4i.exported,
+                Types.Vector4b.exported, Types.Int.exported)
+
+        logicFunctions(functions, Types.Boolean.exported,
+                Types.Boolean.exported)
+        logicFunctions(functions, Types.Vector2b.exported,
+                Types.Vector2b.exported)
+        logicFunctions(functions, Types.Vector3b.exported,
+                Types.Vector3b.exported)
+        logicFunctions(functions, Types.Vector4b.exported,
+                Types.Vector4b.exported)
+
+        vectorFunctions(functions, Types.Vector2.exported,
+                Types.Vector2b.exported, Types.Float.exported)
+        vectorFunctions(functions, Types.Vector3.exported,
+                Types.Vector3b.exported, Types.Float.exported)
+        vectorFunctions(functions, Types.Vector4.exported,
+                Types.Vector4b.exported, Types.Float.exported)
+
+        matrixFunctions(functions, Types.Matrix2.exported,
+                Types.Vector2.exported)
+        matrixFunctions(functions, Types.Matrix3.exported,
+                Types.Vector3.exported)
+        matrixFunctions(functions, Types.Matrix4.exported,
+                Types.Vector4.exported)
+
+        function(functions,
+                FunctionExportedSignature("float", Types.Float.exported,
+                        Types.Float.exported))
+
+        function(functions, FunctionExportedSignature("vector2",
+                Types.Vector2.exported,
+                Types.Float.exported))
+        function(functions, FunctionExportedSignature("vector2",
+                Types.Vector2.exported,
+                Types.Vector2.exported))
+        function(functions, FunctionExportedSignature("vector2",
+                Types.Vector2.exported,
+                Types.Float.exported,
+                Types.Float.exported))
+
+        function(functions, FunctionExportedSignature("vector3",
+                Types.Vector3.exported,
+                Types.Float.exported))
+        function(functions, FunctionExportedSignature("vector3",
+                Types.Vector3.exported,
+                Types.Float.exported,
+                Types.Float.exported,
+                Types.Float.exported))
+        function(functions, FunctionExportedSignature("vector3",
+                Types.Vector3.exported,
+                Types.Float.exported,
+                Types.Vector2.exported))
+        function(functions, FunctionExportedSignature("vector3",
+                Types.Vector3.exported,
+                Types.Vector2.exported,
+                Types.Float.exported))
+        constructScalar.forEach {
+            function(functions, FunctionExportedSignature("float",
+                    Types.Float.exported, it))
+            function(functions, FunctionExportedSignature("int",
+                    Types.Int.exported, it))
+            function(functions, FunctionExportedSignature("boolean",
+                    Types.Boolean.exported, it))
+        }
+        constructVector2.forEach {
+            function(functions, FunctionExportedSignature("vector2",
+                    Types.Vector2.exported, it))
+            function(functions, FunctionExportedSignature("vector2i",
+                    Types.Vector2i.exported, it))
+            function(functions, FunctionExportedSignature("vector2b",
+                    Types.Vector2b.exported, it))
+        }
+        constructVector3.forEach {
+            function(functions, FunctionExportedSignature("vector3",
+                    Types.Vector3.exported, it))
+            function(functions, FunctionExportedSignature("vector3i",
+                    Types.Vector3i.exported, it))
+            function(functions, FunctionExportedSignature("vector3b",
+                    Types.Vector3b.exported, it))
+        }
+        constructVector4.forEach {
+            function(functions, FunctionExportedSignature("vector4",
+                    Types.Vector4.exported, it))
+            function(functions, FunctionExportedSignature("vector4i",
+                    Types.Vector4i.exported, it))
+            function(functions, FunctionExportedSignature("vector4b",
+                    Types.Vector4b.exported, it))
+        }
+        Types.values().forEach { type ->
+            function(functions, FunctionExportedSignature("return",
+                    Types.Void.exported, type.exported))
+            function(functions, FunctionExportedSignature("return",
+                    Types.Void.exported, type.exportedArray))
+        }
+        function(functions,
+                FunctionExportedSignature("break", Types.Void.exported))
+        function(functions,
+                FunctionExportedSignature("continue", Types.Void.exported))
+        function(functions,
+                FunctionExportedSignature("discard", Types.Void.exported))
+    }
+
+    private fun mathFunctions(
+            functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
+            type: TypeExported,
+            typeBoolean: TypeExported,
+            typeScalar: TypeExported) {
+        function(functions,
+                FunctionExportedSignature("plus", type, type, type),
+                { (a, b) -> a + b })
+        function(functions,
+                FunctionExportedSignature("minus", type, type, type),
+                { (a, b) -> a - b })
+        function(functions,
+                FunctionExportedSignature("times", type, type, type),
+                { (a, b) -> a * b })
+        function(functions,
+                FunctionExportedSignature("div", type, type, type),
+                { (a, b) -> a / b })
+        function(functions,
+                FunctionExportedSignature("rem", type, type, type),
+                { (a, b) -> a % b })
+        function(functions, FunctionExportedSignature(
+                "length", typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "abs", type, type))
+        function(functions, FunctionExportedSignature(
+                "floor", type, type))
+        function(functions, FunctionExportedSignature(
+                "sin", type, type))
+        function(functions, FunctionExportedSignature(
+                "cos", type, type))
+        function(functions, FunctionExportedSignature(
+                "min", type, type, type))
+        function(functions, FunctionExportedSignature(
+                "max", type, type, type))
+        function(functions, FunctionExportedSignature(
+                "clamp", type, type, type, type))
+        function(functions, FunctionExportedSignature(
+                "mix", type, type, type, type))
+        function(functions, FunctionExportedSignature(
+                "mix", type, type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "dot", typeScalar, type, type))
+        function(functions, FunctionExportedSignature(
+                "mod", type, type, type))
+        if (type == Types.Int.exported) {
+            function(functions, FunctionExportedSignature(
+                    "shl", type, type, type))
+            function(functions, FunctionExportedSignature(
+                    "shr", type, type, type))
+        }
+        function(functions, FunctionExportedSignature(
+                "greaterThan", typeBoolean, type, type))
+        function(functions, FunctionExportedSignature(
+                "greaterThanEqual", typeBoolean, type, type))
+        function(functions, FunctionExportedSignature(
+                "lessThan", typeBoolean, type, type))
+        function(functions, FunctionExportedSignature(
+                "lessThanEqual", typeBoolean, type, type))
+        logicFunctions(functions, type, typeBoolean)
+    }
+
+    private fun logicFunctions(
+            functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
+            type: TypeExported,
+            typeBoolean: TypeExported) {
+        if (type == Types.Int.exported || type == Types.Boolean.exported) {
+            function(functions,
+                    FunctionExportedSignature("and", type, type, type),
+                    { (a, b) -> a and b })
+            function(functions,
+                    FunctionExportedSignature("or", type, type, type),
+                    { (a, b) -> a or b })
+            function(functions,
+                    FunctionExportedSignature("xor", type, type, type),
+                    { (a, b) -> a xor b })
+        }
+        function(functions,
+                FunctionExportedSignature("equals", typeBoolean, type, type),
+                { (a, b) -> a equals b })
+    }
+
+    private fun vectorFunctions(
+            functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
+            type: TypeExported,
+            typeBoolean: TypeExported,
+            typeScalar: TypeExported) {
+        function(functions, FunctionExportedSignature(
+                "plus", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "plus", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "minus", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "minus", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "times", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "times", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "div", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "div", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "rem", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "rem", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "min", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "min", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "max", type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "max", type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "clamp", type, type, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "clamp", type, type, typeScalar, type))
+        function(functions, FunctionExportedSignature(
+                "clamp", type, typeScalar, type, typeScalar))
+        function(functions, FunctionExportedSignature(
+                "clamp", type, typeScalar, typeScalar, type))
+    }
+
+    private fun matrixFunctions(
+            functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
+            type: TypeExported,
+            typeVector: TypeExported) {
+        function(functions, FunctionExportedSignature(
+                "plus", type, type, type))
+        function(functions, FunctionExportedSignature(
+                "minus", type, type, type))
+        function(functions, FunctionExportedSignature(
+                "times", type, type, type))
+        function(functions, FunctionExportedSignature(
+                "div", type, type, type))
+        function(functions, FunctionExportedSignature(
+                "times", typeVector, type, typeVector))
+    }
+
+    private fun function(
+            functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
+            signature: FunctionExportedSignature,
+            simplification: (List<Expression>) -> Expression = {
+                FunctionExpression(signature, it)
+            }) {
+        functions[signature] = simplification
+    }
+
     private fun gen(s: Set<String>,
                     level: Int): Set<String> =
             if (level <= 1) s else gen(s, level - 1) join s
@@ -324,18 +358,19 @@ object STDLib {
         return set
     }
 
-    val swizzle2to1 = gen(swizzleXY, 1) + gen(swizzleRG, 1)
-    val swizzle2to2 = gen(swizzleXY, 2) + gen(swizzleRG, 2)
-    val swizzle2to3 = gen(swizzleXY, 3) + gen(swizzleRG, 3)
-    val swizzle2to4 = gen(swizzleXY, 4) + gen(swizzleRG, 4)
-    val swizzle3to1 = gen(swizzleXYZ, 1) + gen(swizzleRGB, 1)
-    val swizzle3to2 = gen(swizzleXYZ, 2) + gen(swizzleRGB, 2)
-    val swizzle3to3 = gen(swizzleXYZ, 3) + gen(swizzleRGB, 3)
-    val swizzle3to4 = gen(swizzleXYZ, 4) + gen(swizzleRGB, 4)
-    val swizzle4to1 = gen(swizzleXYZW, 1) + gen(swizzleRGBA, 1)
-    val swizzle4to2 = gen(swizzleXYZW, 2) + gen(swizzleRGBA, 2)
-    val swizzle4to3 = gen(swizzleXYZW, 3) + gen(swizzleRGBA, 3)
-    val swizzle4to4 = gen(swizzleXYZW, 4) + gen(swizzleRGBA, 4)
+    private fun genT(s: Set<List<TypeExported>>,
+                     level: Int): Set<List<TypeExported>> =
+            if (level <= 1) s else (genT(s, level - 1) joinT s) + s
+
+    private infix fun Set<List<TypeExported>>.joinT(other: Set<List<TypeExported>>): Set<List<TypeExported>> {
+        val set = HashSet<List<TypeExported>>()
+        forEach { a ->
+            other.forEach { b ->
+                set.add(a + b)
+            }
+        }
+        return set
+    }
 }
 
 fun TypeExported.memberType(name: String) =

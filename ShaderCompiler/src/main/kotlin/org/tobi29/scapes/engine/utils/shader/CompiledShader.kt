@@ -36,9 +36,7 @@ class CompiledShader(declarations: List<Statement>,
                             Pair(it.signature.exported.call,
                                     it.signature.exported)
                         }.toMap(functionMap)
-                        ArrayList<FunctionExportedSignature>().also {
-                            STDLib.functions(it)
-                        }.forEach {
+                        STDLib.functions.keys.forEach {
                             functionMap[it.call] = it
                         }
                     }.readOnly()
@@ -50,7 +48,9 @@ class CompiledShader(declarations: List<Statement>,
 }
 
 class ShaderContext(functions: Map<FunctionParameterSignature, FunctionExportedSignature>,
+                    functionSimplifications: Map<FunctionExportedSignature, (List<Expression>) -> Expression>,
                     properties: Map<String, Expression>) {
     val functions = functions.readOnly()
+    val functionSimplifications = functionSimplifications.readOnly()
     val properties = properties.readOnly()
 }

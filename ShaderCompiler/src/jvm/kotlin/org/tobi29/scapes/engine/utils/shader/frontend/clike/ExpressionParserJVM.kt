@@ -107,90 +107,81 @@ internal fun ScapesShaderParser.ExpressionListContext?.ast(scope: Scope): ArrayL
 }
 
 internal fun ScapesShaderParser.IfStatementContext.ast(scope: Scope): Expression {
-    val expression = expression()
-    if (expression != null) {
-        return expression.ast(scope)
-    }
+    expression()?.compileContext { return ast(scope) }
     throw ShaderCompileException("No expression found", this)
 }
 
 internal fun ScapesShaderParser.ExpressionStatementContext.ast(scope: Scope): Expression {
-    val expression = expression() ?: return VoidExpression()
-    return expression.ast(scope)
+    expression()?.compileContext { return ast(scope) }
+    return VoidStatement
 }
 
 internal fun ScapesShaderParser.PrimaryExpressionContext.ast(scope: Scope): Expression {
-    val identifier = Identifier()
-    if (identifier != null) {
-        val name = identifier.text
-        val variable = scope[name] ?: throw ShaderCompileException(
-                "Unknown variable: $name", identifier)
-        return IdentifierExpression(variable).apply { attach(identifier) }
+    Identifier()?.compileContext {
+        val name = text
+        if (name == "true") {
+            return BooleanExpression(true)
+        }
+        if (name == "false") {
+            return BooleanExpression(false)
+        }
+        return scope.identifier(name)
     }
-    literal()?.ast()?.let { return it }
-    return expression().ast(scope)
+    literal()?.compileContext { return ast() }
+    expression()?.compileContext { return ast(scope) }
+    throw IllegalStateException("Invalid context: $this")
 }
 
 private fun parseExpression(left: Expression,
                             operator: Token) = when (operator.text) {
-    "++" -> UnaryExpression(UnaryType.GET_INCREMENT, left)
-    "--" -> UnaryExpression(UnaryType.GET_DECREMENT, left)
+    "++" -> left.getIncrement()
+    "--" -> left.getDecrement()
     else -> throw IllegalStateException("Invalid token: $operator")
 }
 
 private fun parseExpression(operator: Token,
                             right: Expression) = when (operator.text) {
-    "++" -> UnaryExpression(UnaryType.INCREMENT_GET, right)
-    "--" -> UnaryExpression(UnaryType.DECREMENT_GET, right)
-    "+" -> UnaryExpression(UnaryType.POSITIVE, right)
-    "-" -> UnaryExpression(UnaryType.NEGATIVE, right)
-    "~" -> UnaryExpression(UnaryType.BIT_NOT, right)
-    "!" -> UnaryExpression(UnaryType.NOT, right)
+    "++" -> right.incrementGet()
+    "--" -> right.decrementGet()
+    "+" -> +right
+    "-" -> -right
+    "~" -> right.inv()
+    "!" -> !right
     else -> throw IllegalStateException("Invalid token: $operator")
 }
 
 private fun parseExpression(left: Expression,
                             operator: Token,
                             right: Expression) = when (operator.text) {
-    "+" -> FunctionExpression("plus", listOf(left, right))
-    "-" -> FunctionExpression("minus", listOf(left, right))
-    "*" -> FunctionExpression("times", listOf(left, right))
-    "/" -> FunctionExpression("div", listOf(left, right))
-    "%" -> FunctionExpression("rem", listOf(left, right))
-    "&" -> FunctionExpression("and", listOf(left, right))
-    "|" -> FunctionExpression("or", listOf(left, right))
-    "^" -> FunctionExpression("xor", listOf(left, right))
-    "<<" -> FunctionExpression("shl", listOf(left, right))
-    ">>" -> FunctionExpression("shr", listOf(left, right))
-    "&&" -> ConditionExpression(ConditionType.AND, left, right)
-    "||" -> ConditionExpression(ConditionType.OR, left, right)
-    "==" -> ConditionExpression(ConditionType.EQUALS, left, right)
-    "!=" -> ConditionExpression(ConditionType.NOT_EQUALS, left, right)
-    "<" -> ConditionExpression(ConditionType.LESS, left, right)
-    ">" -> ConditionExpression(ConditionType.GREATER, left, right)
-    "<=" -> ConditionExpression(ConditionType.LESS_EQUAL, left, right)
-    ">=" -> ConditionExpression(ConditionType.GREATER_EQUAL, left, right)
-    "=" -> AssignmentExpression(left, right)
-    "+=" -> AssignmentExpression(left,
-            FunctionExpression("plus", listOf(left, right)))
-    "-=" -> AssignmentExpression(left,
-            FunctionExpression("minus", listOf(left, right)))
-    "*=" -> AssignmentExpression(left,
-            FunctionExpression("times", listOf(left, right)))
-    "/=" -> AssignmentExpression(left,
-            FunctionExpression("div", listOf(left, right)))
-    "%=" -> AssignmentExpression(left,
-            FunctionExpression("rem", listOf(left, right)))
-    "&=" -> AssignmentExpression(left,
-            FunctionExpression("and", listOf(left, right)))
-    "|=" -> AssignmentExpression(left,
-            FunctionExpression("or", listOf(left, right)))
-    "^=" -> AssignmentExpression(left,
-            FunctionExpression("xor", listOf(left, right)))
-    "<<=" -> AssignmentExpression(left,
-            FunctionExpression("shl", listOf(left, right)))
-    ">>=" -> AssignmentExpression(left,
-            FunctionExpression("shr", listOf(left, right)))
+    "+" -> left + right
+    "-" -> left - right
+    "*" -> left * right
+    "/" -> left / right
+    "%" -> left % right
+    "&" -> left and right
+    "|" -> left or right
+    "^" -> left xor right
+    "<<" -> left shl right
+    ">>" -> left shr right
+    "&&" -> left andAnd right
+    "||" -> left orOr right
+    "==" -> left equals right
+    "!=" -> !(left equals right)
+    "<" -> left lessThan right
+    ">" -> left greaterThan right
+    "<=" -> left lessThanEqual right
+    ">=" -> left greaterThanEqual right
+    "=" -> left assign (right)
+    "+=" -> left assign (left + right)
+    "-=" -> left assign (left - right)
+    "*=" -> left assign (left * right)
+    "/=" -> left assign (left / right)
+    "%=" -> left assign (left % right)
+    "&=" -> left assign (left and right)
+    "|=" -> left assign (left or right)
+    "^=" -> left assign (left xor right)
+    "<<=" -> left assign (left shl right)
+    ">>=" -> left assign (left shr right)
     else -> throw IllegalStateException("Invalid token: $operator")
 }
 
@@ -205,7 +196,7 @@ private fun parseExpression(identifier: Token,
                             operatorLeft: Token,
                             operatorRight: Token) = when (operatorLeft.text) {
     "(" -> when (operatorRight.text) {
-        ")" -> FunctionExpression(identifier.text, emptyList())
+        ")" -> function(identifier.text)
         else -> throw IllegalStateException("Invalid token: $operatorRight")
     }
     else -> throw IllegalStateException("Invalid token: $operatorLeft")
@@ -227,7 +218,7 @@ private fun parseExpression(identifier: Token,
                             expressions: List<Expression>,
                             operatorRight: Token) = when (operatorLeft.text) {
     "(" -> when (operatorRight.text) {
-        ")" -> FunctionExpression(identifier.text, expressions)
+        ")" -> function(identifier.text, expressions)
         else -> throw IllegalStateException("Invalid token: $operatorRight")
     }
     else -> throw IllegalStateException("Invalid token: $operatorLeft")

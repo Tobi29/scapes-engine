@@ -65,7 +65,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return variableExpression(expression)
         } else if (expression is MemberExpression) {
             return memberExpression(expression)
-        } else if (expression is VoidExpression) {
+        } else if (expression is VoidStatement) {
             return ""
         }
         throw IllegalArgumentException(
@@ -89,12 +89,6 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         when (type) {
             ConditionType.OR -> return "||"
             ConditionType.AND -> return "&&"
-            ConditionType.EQUALS -> return "=="
-            ConditionType.NOT_EQUALS -> return "!="
-            ConditionType.LESS -> return "<"
-            ConditionType.GREATER -> return ">"
-            ConditionType.LESS_EQUAL -> return "<="
-            ConditionType.GREATER_EQUAL -> return ">="
             else -> throw IllegalArgumentException(
                     "Unexpected expression type: $type")
         }
@@ -352,9 +346,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun init(scope: Scope) {
-        stdFunctionSignatures.forEach {
-            functionImplementations[it.first] = it.second
-        }
+        functionImplementations.putAll(stdFunctions)
         initBuiltIn(scope["out_Position"]) {
             GLSLExpression(Types.Vector4.exported, "gl_Position")
         }
@@ -371,9 +363,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             output = StringBuilder(1024)
         }
         init(scope)
-        context = ShaderContext(shader.functionMap + stdFunctionSignatures.map {
-            Pair(it.first.call, it.first)
-        }, properties)
+        context = ShaderContext(shader.functionMap + stdFunctions.map {
+            Pair(it.key.call, it.key)
+        }, STDLib.functions, properties)
         val shaderVertex = shader.shaderVertex ?: throw IllegalStateException(
                 "No vertex shader")
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
@@ -403,9 +395,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             output = StringBuilder(1024)
         }
         init(scope)
-        context = ShaderContext(shader.functionMap + stdFunctionSignatures.map {
-            Pair(it.first.call, it.first)
-        }, properties)
+        context = ShaderContext(shader.functionMap + stdFunctions.map {
+            Pair(it.key.call, it.key)
+        }, STDLib.functions, properties)
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
                 "No fragment shader")
         val outputs = shader.outputs ?: throw IllegalStateException(
@@ -571,8 +563,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             declarationStatement(statement, level)
         } else if (statement is ArrayDeclarationStatement) {
             arrayDeclarationStatement(statement, level)
-        } else if (statement is ExpressionStatement) {
-            println(level, expression(statement.expression) + ';')
+        } else if (statement is Expression) {
+            println(level, expression(statement) + ';')
         } else {
             throw IllegalArgumentException(
                     "Unknown statement: ${statement::class}")
@@ -594,9 +586,20 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     companion object {
-        private val stdFunctionSignatures =
-                ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
-                        .also { GLSLSTDLib.functions(it) }.readOnly()
+        private val stdFunctions: Map<FunctionExportedSignature, (Array<String>) -> String>
+
+        init {
+            val implementations = ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
+            GLSLSTDLib.functions(implementations)
+            val functions = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
+            implementations.forEach { functions[it.first] = it.second }
+            STDLib.functions.keys.firstOrNull {
+                !functions.containsKey(it)
+            }?.let {
+                throw IllegalStateException("STD function not implemented: $it")
+            }
+            stdFunctions = functions.readOnly()
+        }
 
         private fun glslFunction(name: String,
                                  vararg args: String) =

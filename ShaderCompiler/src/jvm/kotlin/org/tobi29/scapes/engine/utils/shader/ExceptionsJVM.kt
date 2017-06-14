@@ -28,6 +28,18 @@ fun ShaderCompileException(message: String,
                            context: ParserRuleContext) =
         ShaderCompileException(message(message, context.start))
 
+inline fun <T : TerminalNode, R> T.compileContext(block: T.() -> R) = try {
+    block()
+} catch (e: ShaderCompileException) {
+    throw ShaderCompileException(e.message ?: "", this)
+}
+
+inline fun <C : ParserRuleContext, R> C.compileContext(block: C.() -> R) = try {
+    block()
+} catch (e: ShaderCompileException) {
+    throw ShaderCompileException(e.message ?: "", this)
+}
+
 private fun message(message: String,
                     token: Token): String {
     return "${token.line}:${token.charPositionInLine} -> $message"

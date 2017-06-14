@@ -56,13 +56,14 @@ internal fun externalDeclaration(
                 val name = signature.Identifier().text
                 val parameters = ArrayList<ShaderParameter>()
                 val inputScope = Scope(scope)
-                parameters(signature.shaderParameterList(), parameters,
-                        inputScope)
+                val parameterScope = ShaderParameterScope(inputScope,
+                        parameters)
+                parameterScope.parameters(signature.shaderParameterList())
                 val shaderSignature = ShaderSignature(name, parameters)
                 shaders[name] = Pair(inputScope, { shaderScope ->
-                    val compound = compound(
-                            shader.compoundStatement().blockItemList(),
-                            Scope(inputScope, shaderScope))
+                    val compound = Scope(inputScope, shaderScope).compound {
+                        block(shader.compoundStatement().blockItemList())
+                    }
                     ShaderFunction(shaderSignature, compound)
                 })
             }
@@ -74,7 +75,8 @@ internal fun externalDeclaration(
                             "Multiple output declarations", outputs)
                 }
                 val parameters = ArrayList<ShaderParameter>()
-                parameters(outputs.shaderParameterList(), parameters, scope)
+                val parameterScope = ShaderParameterScope(scope, parameters)
+                parameterScope.parameters(outputs.shaderParameterList())
                 outputSignature = ShaderSignature("outputs", parameters)
             }
         }
@@ -84,8 +86,8 @@ internal fun externalDeclaration(
                 val name = signature.Identifier().text
                 val parameters = ArrayList<Parameter>()
                 val functionScope = Scope(scope)
-                parameters(signature.parameterList(), parameters,
-                        functionScope)
+                val parameterScope = ParameterScope(functionScope, parameters)
+                parameterScope.parameters(signature.parameterList())
                 val returned = signature.type().ast()
                 val precisionSpecifier = signature.precisionSpecifier()
                 val returnedPrecision: Precision
@@ -98,9 +100,9 @@ internal fun externalDeclaration(
                         name, returned,
                         returnedPrecision,
                         *parameters.toTypedArray())
-                val compound = compound(
-                        function.compoundStatement().blockItemList(),
-                        Scope(functionScope))
+                val compound = Scope(functionScope).compound {
+                    block(function.compoundStatement().blockItemList())
+                }
                 functions.add(Function(functionSignature, compound))
             }
         }
@@ -194,7 +196,10 @@ internal fun statement(context: ScapesShaderParser.StatementContext,
                        scope: Scope): Statement {
     val expression = context.expressionStatement()
     if (expression != null) {
-        return ExpressionStatement(expression.ast(scope))
+        return expression.ast(scope) as? Statement
+                ?: throw ShaderCompileException(
+                "Expression cannot be used as statement",
+                context.expressionStatement())
     }
     val declaration = context.declaration()
     if (declaration != null) {
@@ -224,8 +229,7 @@ internal fun statement(context: ScapesShaderParser.StatementContext,
         return LoopFixedStatement(
                 variable, start, end, statement)
     }
-    return compound(context.compoundStatement().blockItemList(),
-            scope)
+    return scope.compound { block(context.compoundStatement().blockItemList()) }
 }
 
 internal fun ScapesShaderParser.DeclarationContext.ast(scope: Scope): Statement {
@@ -241,10 +245,7 @@ internal fun declaration(context: ScapesShaderParser.DeclarationFieldContext,
     val initializer = context.expression()
     val name = context.Identifier().text
     val init = initializer?.ast(scope)
-    val variable = scope.add(name,
-            type.exported) ?: throw ShaderCompileException(
-            "Redeclaring variable: $name", context)
-    return DeclarationStatement(type, variable, init)
+    return scope.declaration(type, name, init)
 }
 
 internal fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
@@ -254,10 +255,7 @@ internal fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
     val initializer = context.initializerArray()
     val name = context.Identifier().text
     val init = initializer(initializer, scope)
-    val variable = scope.add(name,
-            type.exported) ?: throw ShaderCompileException(
-            "Redeclaring variable: $name", context)
-    return ArrayDeclarationStatement(type, type.array!!, variable, init)
+    return scope.arrayDeclaration(type, type.array!!, name, init)
 }
 
 internal fun initializer(context: ScapesShaderParser.InitializerArrayContext,
@@ -269,23 +267,8 @@ internal fun initializer(context: ScapesShaderParser.InitializerArrayContext,
     return context.expression().ast(scope)
 }
 
-internal fun compound(context: ScapesShaderParser.BlockItemListContext,
-                      scope: Scope): CompoundStatement {
-    return CompoundStatement(
-            block(context, Scope(scope)))
-}
-
-internal fun block(context: ScapesShaderParser.BlockItemListContext?,
-                   scope: Scope): StatementBlock {
-    val expressions = ArrayList<Statement>()
-    block(context, expressions, scope)
-    return StatementBlock(expressions)
-}
-
-private tailrec fun block(context: ScapesShaderParser.BlockItemListContext?,
-                          expressions: MutableList<Statement>,
-                          scope: Scope) {
+private tailrec fun StatementScope.block(context: ScapesShaderParser.BlockItemListContext?) {
     context ?: return
-    expressions.add(statement(context.statement(), scope))
-    block(context.blockItemList(), expressions, scope)
+    add(statement(context.statement(), scope))
+    block(context.blockItemList())
 }

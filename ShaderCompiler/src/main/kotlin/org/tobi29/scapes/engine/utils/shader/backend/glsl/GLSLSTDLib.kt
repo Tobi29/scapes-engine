@@ -49,6 +49,15 @@ internal object GLSLSTDLib {
         mathFunctions(functionsSignatures, Types.Vector4i.exported,
                 Types.Vector4b.exported, Types.Int.exported)
 
+        logicFunctions(functionsSignatures, Types.Boolean.exported,
+                Types.Boolean.exported)
+        logicFunctions(functionsSignatures, Types.Vector2b.exported,
+                Types.Vector2b.exported)
+        logicFunctions(functionsSignatures, Types.Vector3b.exported,
+                Types.Vector3b.exported)
+        logicFunctions(functionsSignatures, Types.Vector4b.exported,
+                Types.Vector4b.exported)
+
         vectorFunctions(functionsSignatures, Types.Vector2.exported,
                 Types.Vector2b.exported, Types.Float.exported)
         vectorFunctions(functionsSignatures, Types.Vector3.exported,
@@ -367,25 +376,67 @@ internal object GLSLSTDLib {
                             type,
                             type),
                             { a -> glslOperation(">>", *a) }))
+        }
+        if (type == typeScalar) {
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
-                            "and", type,
-                            type,
-                            type),
+                            "greaterThan", typeBoolean, type, type),
+                            { a -> glslOperation(">", *a) }))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "greaterThanEqual", typeBoolean, type, type),
+                            { a -> glslOperation(">=", *a) }))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "lessThan", typeBoolean, type, type),
+                            { a -> glslOperation("<", *a) }))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "lessThanEqual", typeBoolean, type, type),
+                            { a -> glslOperation("<=", *a) }))
+        } else {
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "greaterThan", typeBoolean, type, type),
+                            { a -> glslFunction("greaterThan", *a) }))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "greaterThanEqual", typeBoolean, type, type),
+                            { a -> glslFunction("greaterThanEqual", *a) }))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "lessThan", typeBoolean, type, type),
+                            { a -> glslFunction("lessThan", *a) }))
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "lessThanEqual", typeBoolean, type, type),
+                            { a -> glslFunction("lessThanEqual", *a) }))
+        }
+        logicFunctions(functionsSignatures, type, typeBoolean)
+    }
+
+    private fun logicFunctions(
+            functionsSignatures: MutableList<Pair<FunctionExportedSignature, (Array<String>) -> String>>,
+            type: TypeExported,
+            typeBoolean: TypeExported) {
+        if (type == Types.Int.exported || type == Types.Boolean.exported) {
+            functionsSignatures.add(
+                    Pair(FunctionExportedSignature(
+                            "and", type, type, type),
                             { a -> glslOperation("&", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
-                            "or", type,
-                            type,
-                            type),
+                            "or", type, type, type),
                             { a -> glslOperation("|", *a) }))
             functionsSignatures.add(
                     Pair(FunctionExportedSignature(
-                            "xor", type,
-                            type,
-                            type),
+                            "xor", type, type, type),
                             { a -> glslOperation("^", *a) }))
         }
+        functionsSignatures.add(
+                Pair(FunctionExportedSignature(
+                        "equals", typeBoolean, type, type),
+                        { a -> glslOperation("==", *a) }))
     }
 
     private fun vectorFunctions(
@@ -393,30 +444,6 @@ internal object GLSLSTDLib {
             type: TypeExported,
             typeBoolean: TypeExported,
             typeScalar: TypeExported) {
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature(
-                        "greaterThan", typeBoolean,
-                        type,
-                        type),
-                        { a -> glslFunction("greaterThan", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature(
-                        "greaterThanEqual", typeBoolean,
-                        type,
-                        type),
-                        { a -> glslFunction("greaterThanEqual", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature(
-                        "lessThan", typeBoolean,
-                        type,
-                        type),
-                        { a -> glslFunction("lessThan", *a) }))
-        functionsSignatures.add(
-                Pair(FunctionExportedSignature(
-                        "lessThanEqual", typeBoolean,
-                        type,
-                        type),
-                        { a -> glslFunction("lessThanEqual", *a) }))
         functionsSignatures.add(
                 Pair(FunctionExportedSignature(
                         "plus", type,
