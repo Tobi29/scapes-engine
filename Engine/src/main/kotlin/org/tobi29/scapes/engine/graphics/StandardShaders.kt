@@ -16,85 +16,49 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.resource.Resource
+import org.tobi29.scapes.engine.utils.shader.*
 
-val SHADER_GUI = Resource("""
-uniform 1 Matrix4 uniform_ModelViewProjectionMatrix;
-uniform 3 Texture2 uniform_Texture;
+val SHADER_TEXTURED = { SHADER_TEXTURED_LAZY }
+private val SHADER_TEXTURED_LAZY by lazy {
+    ShaderProgramScope().apply {
+        uniform(Type(Types.Matrix4), 1, "uniform_ModelViewProjectionMatrix")
+        uniform(Type(Types.Texture2), 3, "uniform_Texture")
 
-shader vertex(0 Vector4 attribute_Position,
-              1 Vector4 attribute_Color,
-              2 Vector2 attribute_Texture) {
-    varying_Texture = attribute_Texture;
-    varying_Color = attribute_Color;
-    out_Position = uniform_ModelViewProjectionMatrix * attribute_Position;
+        shaderFunction("vertex", {
+            add(Type(Types.Vector4), 0, "attribute_Position")
+            add(Type(Types.Vector4), 1, "attribute_Color")
+            add(Type(Types.Vector2), 2, "attribute_Texture")
+        }) {
+            add(identifier("varying_Texture") assign
+                    identifier("attribute_Texture"))
+            add(identifier("varying_Color") assign
+                    identifier("attribute_Color"))
+            add(identifier("out_Position") assign
+                    (identifier("uniform_ModelViewProjectionMatrix")
+                            * identifier("attribute_Position")))
+        }
+
+        shaderFunction("fragment", {
+            add(Type(Types.Vector4), "varying_Color")
+            add(Type(Types.Vector2), "varying_Texture")
+        }) {
+            add(declaration(Type(Types.Vector4), "color",
+                    function("texture", identifier("uniform_Texture"),
+                            identifier("varying_Texture"))))
+            add(identifier("out_Color").member("a") assign
+                    (identifier("color").member("a")
+                            * identifier("varying_Color").member("a")))
+            add(IfStatement(identifier("out_Color").member("a")
+                    lessThan DecimalExpression(0.01), compound {
+                add(function("discard"))
+            }))
+            add(identifier("out_Color").member("rgb") assign
+                    (identifier("color").member("rgb")
+                            * identifier("varying_Color").member("rgb")))
+        }
+
+        outputs {
+            add(Type(Types.Vector4), 0, "out_Color")
+        }
+    }.finish()
 }
-
-shader fragment(Vector4 varying_Color,
-                Vector2 varying_Texture) {
-    Vector4 color = texture(uniform_Texture, varying_Texture);
-    out_Color.a = color.a * varying_Color.a;
-    if (out_Color.a <= 0.01) {
-        discard();
-    }
-    out_Color.rgb = color.rgb * varying_Color.rgb;
-}
-
-outputs(0 Vector4 out_Color);
-""")
-
-val SHADER_TEXTURED = Resource("""
-uniform 1 Matrix4 uniform_ModelViewProjectionMatrix;
-uniform 3 Texture2 uniform_Texture;
-
-shader vertex(0 Vector4 attribute_Position,
-              1 Vector4 attribute_Color,
-              2 Vector2 attribute_Texture) {
-    varying_Texture = attribute_Texture;
-    varying_Color = attribute_Color;
-    out_Position = uniform_ModelViewProjectionMatrix * attribute_Position;
-}
-
-shader fragment(Vector4 varying_Color,
-                Vector2 varying_Texture) {
-    Vector4 color = texture(uniform_Texture, varying_Texture);
-    out_Color.a = color.a * varying_Color.a;
-    if (out_Color.a <= 0.01) {
-        discard();
-    }
-    out_Color.rgb = color.rgb * varying_Color.rgb;
-}
-
-outputs(0 Vector4 out_Color);
-""")
-
-val SHADER_TEXTURED_FOG = Resource("""
-uniform 0 Matrix4 uniform_ModelViewMatrix;
-uniform 1 Matrix4 uniform_ModelViewProjectionMatrix;
-uniform 3 Texture2 uniform_Texture;
-uniform 4 Vector3 uniform_FogColor;
-uniform 5 Float uniform_FogEnd;
-
-shader vertex(0 Vector4 attribute_Position,
-              1 Vector4 attribute_Color,
-              2 Vector2 attribute_Texture) {
-    varying_Texture = attribute_Texture;
-    varying_Color = attribute_Color;
-    varying_Depth = length((uniform_ModelViewMatrix * attribute_Position).xyz);
-    out_Position = uniform_ModelViewProjectionMatrix * attribute_Position;
-}
-
-shader fragment(Vector4 varying_Color,
-                Vector2 varying_Texture,
-                Float varying_Depth) {
-    Vector4 color = texture(uniform_Texture, varying_Texture);
-    Float fog = min(varying_Depth / uniform_FogEnd, 1.0);
-    out_Color.a = color.a * varying_Color.a;
-    if (out_Color.a <= 0.01) {
-        discard();
-    }
-    out_Color.rgb = mix(color.rgb * varying_Color.rgb, uniform_FogColor, fog);
-}
-
-outputs(0 Vector4 out_Color);
-""")

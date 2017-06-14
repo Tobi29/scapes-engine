@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
-import org.tobi29.scapes.engine.graphics.SHADER_GUI
+import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.assert
@@ -144,7 +144,7 @@ abstract class GameState(val engine: ScapesEngine) {
     }
 
     private fun renderGui(gl: GL): suspend () -> (Double) -> Unit {
-        val shader = engine.graphics.loadShader(SHADER_GUI)
+        val shader = engine.graphics.loadShader(SHADER_TEXTURED)
         return render@ {
             val s = shader.getAsync()
             ;{ delta ->
