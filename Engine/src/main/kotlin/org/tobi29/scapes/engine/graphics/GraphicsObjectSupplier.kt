@@ -137,6 +137,14 @@ interface GraphicsObjectSupplier {
         }
     }
 
+    fun loadShader(shader: () -> CompiledShader,
+                   properties: Map<String, Expression> = emptyMap()) =
+            engine.resources.load { createShader(shader(), properties) }
+
+    fun loadShader(shader: CompiledShader,
+                   properties: Map<String, Expression> = emptyMap()) =
+            engine.resources.load { createShader(shader, properties) }
+
     fun createShader(shader: CompiledShader,
                      properties: Map<String, Expression> = emptyMap()): Shader
 }
