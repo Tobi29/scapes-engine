@@ -54,6 +54,7 @@ include "TileMapsRenderer"
 
 // Engine
 include "Engine"
+include "ShaderCLike"
 include "ShaderCompiler"
 include "ShaderParser"
 

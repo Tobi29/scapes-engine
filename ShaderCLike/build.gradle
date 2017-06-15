@@ -17,5 +17,14 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":MathUtils")
+    compile project(":ShaderCompiler")
+    compile project(":ShaderParser")
+}
+
+sourceSets {
+    main {
+        kotlin {
+            srcDirs = ["src/main/kotlin", "src/jvm/kotlin"]
+        }
+    }
 }
