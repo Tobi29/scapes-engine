@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.shader.frontend.clike.externalDeclaration
-import org.tobi29.scapes.engine.utils.shader.frontend.clike.parser
+import org.tobi29.scapes.engine.utils.shader.CompiledShader
+import org.tobi29.scapes.engine.utils.shader.Scope
+import org.tobi29.scapes.engine.utils.shader.Types
 
-object ShaderCompiler {
+object CLikeShader {
     fun compile(source: String): CompiledShader {
         val parser = profilerSection("Parse source") {
             parser(source)
@@ -37,7 +38,7 @@ object ShaderCompiler {
         }
         val shaderVertex = program.shaders["vertex"]?.let { shader ->
             if (shaderFragment == null) {
-                throw ShaderCompileException(
+                throw org.tobi29.scapes.engine.utils.shader.ShaderCompileException(
                         "Vertex shader requires fragment shader!")
             }
             Pair(shader.first, shader.second(shaderFragment.first))

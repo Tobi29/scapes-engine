@@ -27,7 +27,7 @@ import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.ShaderCompiler
+import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeShader
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
@@ -148,7 +148,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
         return shaderCache.computeAbsent(source) {
             engine.resources.load {
                 profilerSection("Shader parse") {
-                    ShaderCompiler.compile(source)
+                    CLikeShader.compile(source)
                 }
             }
         }

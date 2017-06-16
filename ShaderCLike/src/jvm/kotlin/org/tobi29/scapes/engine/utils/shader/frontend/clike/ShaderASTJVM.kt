@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.shader.Expression
 
-fun Expression.attach(context: ParserRuleContext) {
+internal fun Expression.attach(context: ParserRuleContext) {
     attach(context.start)
 }
 
-fun Expression.attach(context: TerminalNode) {
+internal fun Expression.attach(context: TerminalNode) {
     attach(context.symbol)
 }
 
-fun Expression.attach(token: Token) {
-    location = Vector2i(
-            token.line, token.charPositionInLine)
+internal fun Expression.attach(token: Token) {
+    location = Vector2i(token.line, token.charPositionInLine)
 }

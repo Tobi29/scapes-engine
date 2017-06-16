@@ -14,31 +14,34 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader
+package org.tobi29.scapes.engine.utils.shader.frontend.clike
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
+import org.tobi29.scapes.engine.utils.shader.ShaderCompileException
 
-fun ShaderCompileException(message: String,
-                           context: TerminalNode) =
+internal fun ShaderCompileException(message: String,
+                                    context: TerminalNode) =
         ShaderCompileException(message(message, context.symbol))
 
-fun ShaderCompileException(message: String,
-                           context: ParserRuleContext) =
+internal fun ShaderCompileException(message: String,
+                                    context: ParserRuleContext) =
         ShaderCompileException(message(message, context.start))
 
-inline fun <T : TerminalNode, R> T.compileContext(block: T.() -> R) = try {
-    block()
-} catch (e: ShaderCompileException) {
-    throw ShaderCompileException(e.message ?: "", this)
-}
+internal inline fun <T : TerminalNode, R> T.compileContext(block: T.() -> R) =
+        try {
+            block()
+        } catch (e: ShaderCompileException) {
+            throw ShaderCompileException(e.message ?: "", this)
+        }
 
-inline fun <C : ParserRuleContext, R> C.compileContext(block: C.() -> R) = try {
-    block()
-} catch (e: ShaderCompileException) {
-    throw ShaderCompileException(e.message ?: "", this)
-}
+internal inline fun <C : ParserRuleContext, R> C.compileContext(block: C.() -> R) =
+        try {
+            block()
+        } catch (e: ShaderCompileException) {
+            throw ShaderCompileException(e.message ?: "", this)
+        }
 
 private fun message(message: String,
                     token: Token): String {

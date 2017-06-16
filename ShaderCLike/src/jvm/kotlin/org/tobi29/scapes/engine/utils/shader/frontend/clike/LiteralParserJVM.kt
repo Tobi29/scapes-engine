@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.utils.shader.frontend.clike
 import org.tobi29.scapes.engine.utils.shader.DecimalExpression
 import org.tobi29.scapes.engine.utils.shader.IntegerExpression
 import org.tobi29.scapes.engine.utils.shader.ScapesShaderParser
-import org.tobi29.scapes.engine.utils.shader.attach
 import java.math.BigDecimal
 import java.math.BigInteger
 
