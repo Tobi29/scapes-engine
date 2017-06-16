@@ -18,6 +18,6 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Codecs")
-    compile(rootProject.ext.jorbis) { transitive = false }
-    compile(rootProject.ext.concentus) { transitive = false }
+    compile rootProject.ext.jorbis
+    compile rootProject.ext.concentus
 }

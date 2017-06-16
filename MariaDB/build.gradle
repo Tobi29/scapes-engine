@@ -18,5 +18,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":SQLFramework")
-    compile(rootProject.ext.mariaDBJavaClient) { transitive = false }
+    compile rootProject.ext.mariaDBJavaClient
 }

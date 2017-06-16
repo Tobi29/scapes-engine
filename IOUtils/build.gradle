@@ -18,7 +18,7 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Utils")
-    compile(rootProject.ext.tika) { transitive = false }
+    compile rootProject.ext.tika
 }
 
 sourceSets {
