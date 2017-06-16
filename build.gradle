@@ -16,7 +16,7 @@
 
 buildscript {
     def kotlinVersion = "1.1.2-5"
-    def dokkaVersion = "0.9.13"
+    def dokkaVersion = "0.9.14"
     def junitPlatformVersion = "1.0.0-M4"
 
     repositories {
@@ -64,24 +64,24 @@ task wrapper(type: Wrapper) {
 
 ext {
     kotlinVersion = "1.1.2-5"
-    kotlinxCoroutinesVersion = "0.14"
+    kotlinxCoroutinesVersion = "0.16"
     slf4jVersion = "1.7.25"
-    spekVersion = "1.1.1"
+    spekVersion = "1.1.2"
     junitJupiterVersion = "5.0.0-M4"
     swtVersion = "4.6"
     threetenbpVersion = "1.3.3"
     base64Version = "1.0.6"
     antlrVersion = "4.7"
-    mariadbJavaClientVersion = "1.5.9"
-    sqliteJDBCVersion = "3.16.1"
+    mariadbJavaClientVersion = "1.6.1"
+    sqliteJDBCVersion = "3.18.0"
     sqljetVersion = "1.1.10"
     pngjVersion = "2.1.0"
-    tikaVersion = "1.14"
+    tikaVersion = "1.15"
     jlayerVersion = "1.0.1"
     concentusVersion = "1.0.0"
     jorbisVersion = "0.0.17"
     lwjglVersion = "3.1.2"
-    javaxJSONVersion = "1.0.4"
+    javaxJSONVersion = "1.1"
 
     slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
     threeten = "org.threeten:threetenbp:$threetenbpVersion"
