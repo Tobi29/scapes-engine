@@ -23,21 +23,18 @@ data class TagBundlePath(private val bundle: TagBundle,
     private val data by lazy { bundle.resolve(path) }
 
     override fun get(path: String): Path {
-        if (this.path.isEmpty()) {
-            return TagBundlePath(bundle, path)
+        UnixPathEnvironment.run {
+            return TagBundlePath(bundle,
+                    this@TagBundlePath.path.resolve(path))
         }
-        return TagBundlePath(bundle, "${this.path}/$path")
     }
 
     override fun parent(): Path? {
-        if (path.isEmpty()) {
-            return null
+        UnixPathEnvironment.run {
+            return path.resolve("..").normalize().let {
+                TagBundlePath(bundle, it)
+            }
         }
-        val i = path.lastIndexOf('/')
-        if (i < 0) {
-            return TagBundlePath(bundle, "")
-        }
-        return TagBundlePath(bundle, path.substring(0, i))
     }
 
     override fun <R> read(reader: (ReadableByteStream) -> R): R {

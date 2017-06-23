@@ -21,21 +21,18 @@ import org.tobi29.scapes.engine.utils.io.*
 data class ClasspathPath(private val classLoader: ClassLoader,
                          private val path: String) : Path {
     override fun get(path: String): Path {
-        if (this.path.isEmpty()) {
-            return ClasspathPath(classLoader, path)
+        UnixPathEnvironment.run {
+            return ClasspathPath(classLoader,
+                    this@ClasspathPath.path.resolve(path))
         }
-        return ClasspathPath(classLoader, "${this.path}/$path")
     }
 
     override fun parent(): Path? {
-        if (path.isEmpty()) {
-            return null
+        UnixPathEnvironment.run {
+            return path.resolve("..").normalize().let {
+                ClasspathPath(classLoader, it)
+            }
         }
-        val i = path.lastIndexOf('/')
-        if (i < 0) {
-            return ClasspathPath(classLoader, "")
-        }
-        return ClasspathPath(classLoader, path.substring(0, i))
     }
 
     override fun exists() = classLoader.getResource(path) != null
