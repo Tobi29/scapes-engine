@@ -19,10 +19,12 @@ package org.tobi29.scapes.engine.utils.io.filesystem
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
-import java.util.zip.ZipFile
+import java.io.File
 
 interface FileUtilImpl {
     fun path(path: String): FilePath
+
+    fun path(file: File): FilePath
 
     fun <R> read(path: FilePath,
                  read: (ReadableByteStream) -> R): R
@@ -30,9 +32,14 @@ interface FileUtilImpl {
     fun <R> write(path: FilePath,
                   write: (WritableByteStream) -> R): R
 
-    fun createFile(path: FilePath): FilePath
+    fun createFile(path: FilePath,
+                   vararg attributes: FileAttribute<*>): FilePath
 
-    fun createDirectories(path: FilePath): FilePath
+    fun createDirectory(path: FilePath,
+                        vararg attributes: FileAttribute<*>): FilePath
+
+    fun createDirectories(path: FilePath,
+                          vararg attributes: FileAttribute<*>): FilePath
 
     fun delete(path: FilePath)
 
@@ -40,20 +47,25 @@ interface FileUtilImpl {
 
     fun deleteDir(path: FilePath)
 
-    fun exists(path: FilePath): Boolean
+    fun exists(path: FilePath,
+               vararg options: LinkOption): Boolean
 
-    fun isRegularFile(path: FilePath): Boolean
+    fun isRegularFile(path: FilePath,
+                      vararg options: LinkOption): Boolean
 
-    fun isDirectory(path: FilePath): Boolean
+    fun isDirectory(path: FilePath,
+                    vararg options: LinkOption): Boolean
 
     fun isHidden(path: FilePath): Boolean
 
     fun isNotHidden(path: FilePath): Boolean
 
     fun createTempFile(prefix: String,
-                       suffix: String): FilePath
+                       suffix: String,
+                       vararg attributes: FileAttribute<*>): FilePath
 
-    fun createTempDir(prefix: String): FilePath
+    fun createTempDir(prefix: String,
+                      vararg attributes: FileAttribute<*>): FilePath
 
     fun copy(source: FilePath,
              target: FilePath): FilePath
@@ -75,8 +87,6 @@ interface FileUtilImpl {
                             value: Instant)
 
     fun getLastModifiedTime(path: FilePath): Instant
-
-    fun zipFile(path: FilePath): ZipFile
 
     fun <R> tempChannel(path: FilePath,
                         consumer: (FileChannel) -> R): R

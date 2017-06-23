@@ -28,10 +28,16 @@ header fun <R> write(path: FilePath,
                      write: (WritableByteStream) -> R): R
 
 // TODO: @Throws(IOException::class)
-header fun createFile(path: FilePath): FilePath
+header fun createFile(path: FilePath,
+                      vararg attributes: FileAttribute<*>): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun createDirectories(path: FilePath): FilePath
+header fun createDirectory(path: FilePath,
+                           vararg attributes: FileAttribute<*>): FilePath
+
+// TODO: @Throws(IOException::class)
+header fun createDirectories(path: FilePath,
+                             vararg attributes: FileAttribute<*>): FilePath
 
 // TODO: @Throws(IOException::class)
 header fun delete(path: FilePath)
@@ -42,11 +48,14 @@ header fun deleteIfExists(path: FilePath): Boolean
 // TODO: @Throws(IOException::class)
 header fun deleteDir(path: FilePath)
 
-header fun exists(path: FilePath): Boolean
+header fun exists(path: FilePath,
+                  vararg options: LinkOption): Boolean
 
-header fun isRegularFile(path: FilePath): Boolean
+header fun isRegularFile(path: FilePath,
+                         vararg options: LinkOption): Boolean
 
-header fun isDirectory(path: FilePath): Boolean
+header fun isDirectory(path: FilePath,
+                       vararg options: LinkOption): Boolean
 
 header fun isHidden(path: FilePath): Boolean
 
@@ -54,10 +63,12 @@ header fun isNotHidden(path: FilePath): Boolean
 
 // TODO: @Throws(IOException::class)
 header fun createTempFile(prefix: String,
-                          suffix: String): FilePath
+                          suffix: String,
+                          vararg attributes: FileAttribute<*>): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun createTempDir(prefix: String): FilePath
+header fun createTempDir(prefix: String,
+                         vararg attributes: FileAttribute<*>): FilePath
 
 // TODO: @Throws(IOException::class)
 header fun copy(source: FilePath,
@@ -93,3 +104,12 @@ header fun listRecursive(path: FilePath,
 header fun <R> tempChannel(path: FilePath,
                            consumer: (FileChannel) -> R): R
 */
+
+interface FileOption
+interface OpenOption : FileOption
+interface CopyOption : FileOption
+
+interface LinkOption : OpenOption, CopyOption
+val NOFOLLOW_LINKS = object : LinkOption {}
+
+interface FileAttribute<T>

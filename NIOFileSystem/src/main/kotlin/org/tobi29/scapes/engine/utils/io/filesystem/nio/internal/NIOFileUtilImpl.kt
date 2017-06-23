@@ -18,21 +18,25 @@ package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.*
-import org.tobi29.scapes.engine.utils.io.filesystem.FileChannel
-import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
+import org.tobi29.scapes.engine.utils.io.filesystem.*
+import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
 import org.tobi29.scapes.engine.utils.use
+import java.io.File
 import java.net.URI
 import java.nio.file.*
+import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.util.*
-import java.util.zip.ZipFile
 
 internal object NIOFileUtilImpl : FileUtilImpl {
     override fun path(path: String): FilePath {
         return path(Paths.get(path))
+    }
+
+    override fun path(file: File): FilePath {
+        return path(file.toPath())
     }
 
     override fun <R> read(path: FilePath,
@@ -45,10 +49,11 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return write(toPath(path), write)
     }
 
-    override fun createFile(path: FilePath): FilePath {
+    override fun createFile(path: FilePath,
+                            vararg attributes: FileAttribute<*>): FilePath {
         toPath(path).let { path ->
             try {
-                return path(Files.createFile(path))
+                return path(Files.createFile(path, *attributes.toNIO()))
             } catch (e: java.nio.file.FileAlreadyExistsException) {
                 throw kotlin.io.FileAlreadyExistsException(path.toFile(),
                         reason = e.reason)
@@ -56,8 +61,14 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         }
     }
 
-    override fun createDirectories(path: FilePath): FilePath {
-        return path(Files.createDirectories(toPath(path)))
+    override fun createDirectory(path: FilePath,
+                                 vararg attributes: FileAttribute<*>): FilePath {
+        return path(Files.createDirectory(toPath(path), *attributes.toNIO()))
+    }
+
+    override fun createDirectories(path: FilePath,
+                                   vararg attributes: FileAttribute<*>): FilePath {
+        return path(Files.createDirectories(toPath(path), *attributes.toNIO()))
     }
 
     override fun delete(path: FilePath) {
@@ -72,16 +83,19 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         deleteDir(toPath(path))
     }
 
-    override fun exists(path: FilePath): Boolean {
-        return Files.exists(toPath(path))
+    override fun exists(path: FilePath,
+                        vararg options: LinkOption): Boolean {
+        return Files.exists(toPath(path), *options.toNIO())
     }
 
-    override fun isRegularFile(path: FilePath): Boolean {
-        return Files.isRegularFile(toPath(path))
+    override fun isRegularFile(path: FilePath,
+                               vararg options: LinkOption): Boolean {
+        return Files.isRegularFile(toPath(path), *options.toNIO())
     }
 
-    override fun isDirectory(path: FilePath): Boolean {
-        return Files.isDirectory(toPath(path))
+    override fun isDirectory(path: FilePath,
+                             vararg options: LinkOption): Boolean {
+        return Files.isDirectory(toPath(path), *options.toNIO())
     }
 
     override fun isHidden(path: FilePath): Boolean {
@@ -98,12 +112,14 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createTempFile(prefix: String,
-                                suffix: String): FilePath {
-        return path(Files.createTempFile(prefix, suffix))
+                                suffix: String,
+                                vararg attributes: FileAttribute<*>): FilePath {
+        return path(Files.createTempFile(prefix, suffix, *attributes.toNIO()))
     }
 
-    override fun createTempDir(prefix: String): FilePath {
-        return path(Files.createTempDirectory(prefix))
+    override fun createTempDir(prefix: String,
+                               vararg attributes: FileAttribute<*>): FilePath {
+        return path(Files.createTempDirectory(prefix, *attributes.toNIO()))
     }
 
     override fun copy(source: FilePath,
@@ -165,10 +181,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
                 Files.getLastModifiedTime(toPath(path)).toMillis())
     }
 
-    override fun zipFile(path: FilePath): ZipFile {
-        return ZipFile(toPath(path).toFile())
-    }
-
     override fun <R> tempChannel(path: FilePath,
                                  consumer: (FileChannel) -> R): R {
         FileChannel.open(toPath(path), StandardOpenOption.READ,
@@ -190,6 +202,8 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         override fun toUri(): URI {
             return path.toUri()
         }
+
+        override fun toFile(): File = path.toFile()
 
         override fun normalize(): FilePath {
             return path(path.normalize())
@@ -219,8 +233,7 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             }
         }
 
-        override val fileName: FilePath
-            get() = path(path.fileName)
+        override val fileName get() = path.fileName?.let { path(it) }
 
         override fun toAbsolutePath(): FilePath {
             return path(path.toAbsolutePath())
@@ -247,7 +260,7 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         if (path is FilePathImpl) {
             return path.path
         }
-        return Paths.get(path.toUri())
+        return path.toFile().toPath()
     }
 
     private fun <R> read(path: Path,
@@ -300,4 +313,23 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             }
         })
     }
+
+    private fun Array<out LinkOption>.toNIO() =
+            Array(size) { this[it].toNIO() }
+
+    private fun LinkOption.toNIO(): java.nio.file.LinkOption =
+            when (this) {
+                NOFOLLOW_LINKS -> java.nio.file.LinkOption.NOFOLLOW_LINKS
+                else -> throw IllegalArgumentException(
+                        "Unsupported option: $this")
+            }
+
+    private fun Array<out FileAttribute<*>>.toNIO() =
+            Array(size) { this[it].toNIO() }
+
+    private fun FileAttribute<*>.toNIO(): java.nio.file.attribute.FileAttribute<*> =
+            when (this) {
+                else -> throw IllegalArgumentException(
+                        "Unsupported attribute: $this")
+            }
 }

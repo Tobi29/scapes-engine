@@ -21,8 +21,8 @@ import org.tobi29.scapes.engine.utils.UnsupportedJVMException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
+import java.io.File
 import java.util.*
-import java.util.zip.ZipFile
 
 private val IMPL = loadService()
 
@@ -44,6 +44,10 @@ private fun loadService(): FileUtilImpl {
     return IMPL.path(path)
 }
 
+fun path(path: File): FilePath {
+    return IMPL.path(path)
+}
+
 // TODO: @Throws(IOException::class)
 /* impl */ fun <R> read(path: FilePath,
                         read: (ReadableByteStream) -> R): R {
@@ -57,13 +61,21 @@ private fun loadService(): FileUtilImpl {
 }
 
 // TODO: @Throws(IOException::class)
-/* impl */ fun createFile(path: FilePath): FilePath {
-    return IMPL.createFile(path)
+/* impl */ fun createFile(path: FilePath,
+                          vararg attributes: FileAttribute<*>): FilePath {
+    return IMPL.createFile(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-/* impl */ fun createDirectories(path: FilePath): FilePath {
-    return IMPL.createDirectories(path)
+/* impl */ fun createDirectory(path: FilePath,
+                               vararg attributes: FileAttribute<*>): FilePath {
+    return IMPL.createDirectory(path, *attributes)
+}
+
+// TODO: @Throws(IOException::class)
+/* impl */ fun createDirectories(path: FilePath,
+                                 vararg attributes: FileAttribute<*>): FilePath {
+    return IMPL.createDirectories(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
@@ -81,16 +93,19 @@ private fun loadService(): FileUtilImpl {
     IMPL.deleteDir(path)
 }
 
-/* impl */ fun exists(path: FilePath): Boolean {
-    return IMPL.exists(path)
+/* impl */ fun exists(path: FilePath,
+                      vararg options: LinkOption): Boolean {
+    return IMPL.exists(path, *options)
 }
 
-/* impl */ fun isRegularFile(path: FilePath): Boolean {
-    return IMPL.isRegularFile(path)
+/* impl */ fun isRegularFile(path: FilePath,
+                             vararg options: LinkOption): Boolean {
+    return IMPL.isRegularFile(path, *options)
 }
 
-/* impl */ fun isDirectory(path: FilePath): Boolean {
-    return IMPL.isDirectory(path)
+/* impl */ fun isDirectory(path: FilePath,
+                           vararg options: LinkOption): Boolean {
+    return IMPL.isDirectory(path, *options)
 }
 
 /* impl */ fun isHidden(path: FilePath): Boolean {
@@ -103,13 +118,15 @@ private fun loadService(): FileUtilImpl {
 
 // TODO: @Throws(IOException::class)
 /* impl */ fun createTempFile(prefix: String,
-                              suffix: String): FilePath {
-    return IMPL.createTempFile(prefix, suffix)
+                              suffix: String,
+                              vararg attributes: FileAttribute<*>): FilePath {
+    return IMPL.createTempFile(prefix, suffix, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-/* impl */ fun createTempDir(prefix: String): FilePath {
-    return IMPL.createTempDir(prefix)
+/* impl */ fun createTempDir(prefix: String,
+                             vararg attributes: FileAttribute<*>): FilePath {
+    return IMPL.createTempDir(prefix, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
@@ -191,9 +208,4 @@ fun getLastModifiedTime(path: FilePath): Instant {
 /* impl */ fun <R> tempChannel(path: FilePath,
                                consumer: (FileChannel) -> R): R {
     return IMPL.tempChannel(path, consumer)
-}
-
-// TODO: @Throws(IOException::class)
-fun zipFile(path: FilePath): ZipFile {
-    return IMPL.zipFile(path)
 }

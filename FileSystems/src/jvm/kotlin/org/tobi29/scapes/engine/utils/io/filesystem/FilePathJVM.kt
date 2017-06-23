@@ -17,10 +17,13 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.tobi29.scapes.engine.utils.io.Path
+import java.io.File
 import java.net.URI
 
 /* impl */ interface FilePath : Path, Comparable<FilePath> {
     fun toUri(): URI
+
+    fun toFile(): File
 
     /* impl */ fun normalize(): FilePath
 
@@ -34,7 +37,10 @@ import java.net.URI
 
     /* impl */ fun relativize(other: FilePath): FilePath?
 
-    /* impl */ val fileName: FilePath
+    @Deprecated("Use fileName")
+    /* impl */ val fileNameNN get() = fileName!!
+
+    /* impl */ val fileName: FilePath?
 
     /* impl */ fun toAbsolutePath(): FilePath
 

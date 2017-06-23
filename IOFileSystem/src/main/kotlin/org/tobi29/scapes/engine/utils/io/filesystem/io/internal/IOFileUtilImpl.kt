@@ -18,31 +18,33 @@ package org.tobi29.scapes.engine.utils.io.filesystem.io.internal
 
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.*
-import org.tobi29.scapes.engine.utils.io.filesystem.FileChannel
-import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.filesystem.FileUtilImpl
+import org.tobi29.scapes.engine.utils.io.filesystem.*
 import java.io.File
 import java.io.RandomAccessFile
 import java.net.URI
-import java.util.zip.ZipFile
 
 internal object IOFileUtilImpl : FileUtilImpl {
-    override fun path(path: String): FilePath {
-        return path(File(path))
-    }
+    override fun path(path: String) = path(File(path))
+
+    override fun path(file: File): FilePath = FilePathImpl(file)
 
     override fun <R> read(path: FilePath,
                           read: (ReadableByteStream) -> R): R {
-        return read(toFile(path), read)
+        return read(path.toFile(), read)
     }
 
     override fun <R> write(path: FilePath,
                            write: (WritableByteStream) -> R): R {
-        return write(toFile(path), write)
+        return write(path.toFile(), write)
     }
 
-    override fun createFile(path: FilePath): FilePath {
-        toFile(path).let { file ->
+    override fun createFile(path: FilePath,
+                            vararg attributes: FileAttribute<*>): FilePath {
+        if (attributes.isNotEmpty()) {
+            throw UnsupportedOperationException(
+                    "Attributes are not supported on java.io")
+        }
+        path.toFile().let { file ->
             if (!file.createNewFile()) {
                 throw FileAlreadyExistsException(file)
             }
@@ -50,17 +52,38 @@ internal object IOFileUtilImpl : FileUtilImpl {
         return path
     }
 
-    override fun createDirectories(path: FilePath): FilePath {
-        toFile(path).mkdirs()
+    override fun createDirectory(path: FilePath,
+                                 vararg attributes: FileAttribute<*>): FilePath {
+        if (attributes.isNotEmpty()) {
+            throw UnsupportedOperationException(
+                    "Attributes are not supported on java.io")
+        }
+        if (!path.toFile().mkdir()) {
+            throw FileSystemException(path,
+                    reason = "Failed to create directory")
+        }
+        return path
+    }
+
+    override fun createDirectories(path: FilePath,
+                                   vararg attributes: FileAttribute<*>): FilePath {
+        if (attributes.isNotEmpty()) {
+            throw UnsupportedOperationException(
+                    "Attributes are not supported on java.io")
+        }
+        if (!path.toFile().mkdirs()) {
+            throw FileSystemException(path,
+                    reason = "Failed to create directories")
+        }
         return path
     }
 
     override fun delete(path: FilePath) {
-        toFile(path).delete()
+        path.toFile().delete()
     }
 
     override fun deleteIfExists(path: FilePath): Boolean {
-        val file = toFile(path)
+        val file = path.toFile()
         if (file.exists()) {
             file.delete()
             return true
@@ -69,23 +92,41 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun deleteDir(path: FilePath) {
-        deleteDir(toFile(path))
+        deleteDir(path.toFile())
     }
 
-    override fun exists(path: FilePath): Boolean {
-        return toFile(path).exists()
+    override fun exists(path: FilePath,
+                        vararg options: LinkOption): Boolean {
+        val nofollow = options.contains(NOFOLLOW_LINKS)
+        if (nofollow) {
+            throw UnsupportedOperationException(
+                    "NOFOLLOW_LINKS is not supported on java.io")
+        }
+        return path.toFile().exists()
     }
 
-    override fun isRegularFile(path: FilePath): Boolean {
-        return toFile(path).isFile
+    override fun isRegularFile(path: FilePath,
+                               vararg options: LinkOption): Boolean {
+        val nofollow = options.contains(NOFOLLOW_LINKS)
+        if (nofollow) {
+            throw UnsupportedOperationException(
+                    "NOFOLLOW_LINKS is not supported on java.io")
+        }
+        return path.toFile().isFile
     }
 
-    override fun isDirectory(path: FilePath): Boolean {
-        return toFile(path).isDirectory
+    override fun isDirectory(path: FilePath,
+                             vararg options: LinkOption): Boolean {
+        val nofollow = options.contains(NOFOLLOW_LINKS)
+        if (nofollow) {
+            throw UnsupportedOperationException(
+                    "NOFOLLOW_LINKS is not supported on java.io")
+        }
+        return path.toFile().isDirectory
     }
 
     override fun isHidden(path: FilePath): Boolean {
-        return toFile(path).isHidden
+        return path.toFile().isHidden
     }
 
     override fun isNotHidden(path: FilePath): Boolean {
@@ -93,18 +134,28 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createTempFile(prefix: String,
-                                suffix: String): FilePath {
+                                suffix: String,
+                                vararg attributes: FileAttribute<*>): FilePath {
+        if (attributes.isNotEmpty()) {
+            throw UnsupportedOperationException(
+                    "Attributes are not supported on java.io")
+        }
         return path(kotlin.io.createTempFile(prefix, suffix))
     }
 
-    override fun createTempDir(prefix: String): FilePath {
+    override fun createTempDir(prefix: String,
+                               vararg attributes: FileAttribute<*>): FilePath {
+        if (attributes.isNotEmpty()) {
+            throw UnsupportedOperationException(
+                    "Attributes are not supported on java.io")
+        }
         return path(kotlin.io.createTempDir(prefix))
     }
 
     override fun copy(source: FilePath,
                       target: FilePath): FilePath {
-        read(toFile(source), { input ->
-            write(toFile(target),
+        read(source.toFile(), { input ->
+            write(target.toFile(),
                     { output ->
                         process(input, { output.put(it) })
                     })
@@ -114,7 +165,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun move(source: FilePath,
                       target: FilePath): FilePath {
-        toFile(source).renameTo(toFile(target))
+        source.toFile().renameTo(target.toFile())
         return target
     }
 
@@ -124,7 +175,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun list(path: FilePath): List<FilePath> {
-        return toFile(path).listFiles()?.map { path(it) } ?: emptyList()
+        return path.toFile().listFiles()?.map { path(it) } ?: emptyList()
     }
 
     override fun <R> listRecursive(path: FilePath,
@@ -134,26 +185,22 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun listRecursive(path: FilePath): List<FilePath> {
         val files = ArrayList<FilePath>()
-        listRecursive(toFile(path), files)
+        listRecursive(path.toFile(), files)
         return files
     }
 
     override fun setLastModifiedTime(path: FilePath,
                                      value: Instant) {
-        toFile(path).setLastModified(value.toEpochMilli())
+        path.toFile().setLastModified(value.toEpochMilli())
     }
 
     override fun getLastModifiedTime(path: FilePath): Instant {
-        return Instant.ofEpochMilli(toFile(path).lastModified())
-    }
-
-    override fun zipFile(path: FilePath): ZipFile {
-        return ZipFile(toFile(path))
+        return Instant.ofEpochMilli(path.toFile().lastModified())
     }
 
     override fun <R> tempChannel(path: FilePath,
                                  consumer: (FileChannel) -> R): R {
-        val file = toFile(path)
+        val file = path.toFile()
         return try {
             channelRW(file).use { consumer(it) }
         } finally {
@@ -163,7 +210,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     private data class FilePathImpl(val file: File) : FilePath {
         override fun compareTo(other: FilePath): Int {
-            return file.compareTo(toFile(other))
+            return file.compareTo(other.toFile())
         }
 
         override fun toString(): String {
@@ -173,6 +220,8 @@ internal object IOFileUtilImpl : FileUtilImpl {
         override fun toUri(): URI {
             return file.toURI()
         }
+
+        override fun toFile(): File = file
 
         override fun normalize(): FilePath {
             return path(file.normalize())
@@ -191,15 +240,14 @@ internal object IOFileUtilImpl : FileUtilImpl {
         }
 
         override fun startsWith(other: FilePath): Boolean {
-            return file.startsWith(toFile(other))
+            return file.startsWith(other.toFile())
         }
 
         override fun relativize(other: FilePath): FilePath? {
-            return file.relativeToOrNull(toFile(other))?.let { path(it) }
+            return file.relativeToOrNull(other.toFile())?.let { path(it) }
         }
 
-        override val fileName: FilePath
-            get() = path(File(file.name))
+        override val fileName get() = path(File(file.name))
 
         override fun toAbsolutePath(): FilePath {
             return path(file.absoluteFile)
@@ -222,13 +270,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
         }
     }
 
-    private fun toFile(path: FilePath): File {
-        if (path is FilePathImpl) {
-            return path.file
-        }
-        return File(path.toUri())
-    }
-
     private fun <R> read(file: File,
                          read: (ReadableByteStream) -> R): R {
         channelR(file).use { channel ->
@@ -244,10 +285,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
             stream.flush()
             return r
         }
-    }
-
-    private fun path(file: File): FilePath {
-        return FilePathImpl(file)
     }
 
     private fun deleteDir(file: File) {

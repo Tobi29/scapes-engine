@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.utils.io.filesystem
 import org.threeten.bp.Duration
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.Algorithm
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.toHexadecimal
@@ -82,7 +81,7 @@ object FileCache : KLogging() {
               time: Duration = Duration.ofDays(16)) {
         val currentTime = Instant.now().minus(time)
         list(root) {
-            filter(::isRegularFile).filter(::isNotHidden).filter { file ->
+            filter { isRegularFile(it) }.filter(::isNotHidden).filter { file ->
                 try {
                     getLastModifiedTime(file).isBefore(currentTime)
                 } catch (e: IOException) {
