@@ -71,7 +71,8 @@ internal object IOFileUtilImpl : FileUtilImpl {
             throw UnsupportedOperationException(
                     "Attributes are not supported on java.io")
         }
-        if (!path.toFile().mkdirs()) {
+        val file = path.toFile()
+        if (!file.mkdirs() && !file.isDirectory) {
             throw FileSystemException(path,
                     reason = "Failed to create directories")
         }
