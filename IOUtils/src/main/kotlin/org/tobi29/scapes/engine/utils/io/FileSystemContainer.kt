@@ -35,7 +35,7 @@ class FileSystemContainer : Path {
         return fileSystem(location.first)[location.second]
     }
 
-    override fun parent(): Path? {
+    override val parent: Path? get() {
         // This is a container of parent-less roots, having a parent speaks
         // plenty sense
         return null

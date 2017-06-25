@@ -37,18 +37,11 @@ import java.net.URI
 
     /* impl */ fun relativize(other: FilePath): FilePath?
 
-    @Deprecated("Use fileName")
-    /* impl */ val fileNameNN get() = fileName!!
-
     /* impl */ val fileName: FilePath?
 
     /* impl */ fun toAbsolutePath(): FilePath
 
     override fun get(path: String): Path {
         return resolve(path)
-    }
-
-    override fun parent(): FilePath {
-        return resolve("")
     }
 }

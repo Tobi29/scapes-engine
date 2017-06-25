@@ -19,5 +19,5 @@ package org.tobi29.scapes.engine.utils.io
 interface Path : ReadSource {
     operator fun get(path: String): Path
 
-    fun parent(): Path?
+    val parent: Path?
 }

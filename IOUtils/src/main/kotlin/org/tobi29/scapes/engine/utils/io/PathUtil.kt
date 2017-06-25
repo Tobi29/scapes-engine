@@ -38,22 +38,29 @@ interface PathEnvironment {
     fun String.normalize(): String
 
     /**
-     * Attempts to create a relative path between two existing ones
-     * @receiver The base path
-     * @param other The destination path
-     * @return An encoded relative path going from base to destination or ""
-     */
-    fun String.relativize(other: String): String
-
-    /**
      * File name of the given encoded path
      */
     val String.fileName: String?
 
     /**
-     * `true` if the encoded path is absolute or `false` otherwise
+     * `true` if the given encoded path is absolute
      */
     val String.isAbsolute: Boolean
+
+    /**
+     * Parent directory of given path, not taking links into account or `null`
+     * in case no parent is available
+     */
+    val String.parent: String?
+
+    /**
+     * Returns the components of the given encoded path
+     *
+     * **Note:** Absolute and relative paths look identical in this
+     * representation
+     * @receiver The path to get the components from
+     */
+    val String.components: List<String>
 }
 
 /**
@@ -118,7 +125,7 @@ interface StandardPathEnvironment : PathEnvironment {
         }
     }
 
-    override fun String.relativize(other: String): String {
+    fun String.relativize(other: String): String {
         val base = sanitize()
         val destination = other.sanitize()
         if (base == destination) {
@@ -154,6 +161,25 @@ interface StandardPathEnvironment : PathEnvironment {
     }
 
     override val String.isAbsolute get() = startsWith(separator)
+
+    override val String.parent get() = sanitize().let {
+        val index = it.lastIndexOf(separator)
+        if (index < 0 && it.isNotEmpty()) {
+            ""
+        } else if (index < 0 || index == 0) {
+            null
+        } else {
+            it.substring(0, index)
+        }
+    }
+
+    override val String.components get() = sanitize().let {
+        if (it.isAbsolute) {
+            it.substring(separator.length)
+        } else {
+            it
+        }.split(separator)
+    }
 
     private fun findCommonRoot(first: String,
                                second: String): List<String> {

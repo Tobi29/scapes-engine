@@ -249,6 +249,8 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
         override val fileName get() = path(File(file.name))
 
+        override val parent get() = file.parentFile?.let { path(it) }
+
         override fun toAbsolutePath(): FilePath {
             return path(file.absoluteFile)
         }

@@ -29,12 +29,8 @@ data class TagBundlePath(private val bundle: TagBundle,
         }
     }
 
-    override fun parent(): Path? {
-        UnixPathEnvironment.run {
-            return path.resolve("..").normalize().let {
-                TagBundlePath(bundle, it)
-            }
-        }
+    override val parent get() = UnixPathEnvironment.run {
+        path.parent?.let { TagBundlePath(bundle, it) }
     }
 
     override fun <R> read(reader: (ReadableByteStream) -> R): R {

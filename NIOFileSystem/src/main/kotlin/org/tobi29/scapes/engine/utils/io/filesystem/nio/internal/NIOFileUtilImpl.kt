@@ -235,6 +235,8 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
         override val fileName get() = path.fileName?.let { path(it) }
 
+        override val parent get() = path.parent?.let { path(it) }
+
         override fun toAbsolutePath(): FilePath {
             return path(path.toAbsolutePath())
         }

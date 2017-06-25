@@ -27,12 +27,8 @@ data class ClasspathPath(private val classLoader: ClassLoader,
         }
     }
 
-    override fun parent(): Path? {
-        UnixPathEnvironment.run {
-            return path.resolve("..").normalize().let {
-                ClasspathPath(classLoader, it)
-            }
-        }
+    override val parent get() = UnixPathEnvironment.run {
+        path.parent?.let { ClasspathPath(classLoader, it) }
     }
 
     override fun exists() = classLoader.getResource(path) != null
