@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.test.assertions
 
-import kotlin.reflect.KClass
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.asserter
@@ -51,17 +50,14 @@ inline fun <reified E : Throwable> shouldThrow(noinline block: () -> Unit) {
 
 inline fun <reified E : Throwable> shouldThrow(message: String?,
                                                noinline block: () -> Unit) {
-    shouldThrowAndMsg(message, block, E::class)
-}
-
-fun <E : Throwable> shouldThrowAndMsg(message: String?,
-                                      block: () -> Unit,
-                                      clazz: KClass<E>) {
     try {
         block()
         asserter.fail(
-                message ?: "Expected to throw ${clazz.simpleName}, but did not.")
-    } catch (e: E) {
+                message ?: "Expected to throw ${E::class.simpleName}, but did not.")
+    } catch (e: Throwable) {
+        if (e !is E) {
+            throw e
+        }
     }
 }
 
