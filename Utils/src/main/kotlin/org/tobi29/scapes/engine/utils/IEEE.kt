@@ -47,5 +47,5 @@ header fun Int.bitsToFloat(): Float
  * @receiver The data bits to convert
  * @return The floating point containing the value encoded in the integer
  */
-header fun Double.bitsToDouble(): Double
+header fun Long.bitsToDouble(): Double
 */
