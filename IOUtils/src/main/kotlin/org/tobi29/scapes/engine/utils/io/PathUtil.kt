@@ -138,16 +138,10 @@ interface StandardPathEnvironment : PathEnvironment {
             destination
         }.split(separator)
         val common = findCommonRoot(base, destination)
-        val backtrack = (common.size..components.size).asSequence().map { ".." }
+        val backtrack = (components.size..common.size).asSequence().map { ".." }
         val destinationRelative = components.subList(common.size,
                 components.size).asSequence()
-        val relative = (common.asSequence() + backtrack + destinationRelative)
-                .joinToString("..", separator)
-        return if (root) {
-            "$separator$relative"
-        } else {
-            relative
-        }
+        return (backtrack + destinationRelative).joinToString(separator)
     }
 
     override val String.fileName get() = lastIndexOf(separator).let {
