@@ -44,5 +44,7 @@ fun TagMap.writeJSON(stream: WritableByteStream,
         }
     } catch (e: JsonException) {
         throw IOException(e)
+    } catch (e: NumberFormatException) {
+        throw IOException(e)
     }
 }
