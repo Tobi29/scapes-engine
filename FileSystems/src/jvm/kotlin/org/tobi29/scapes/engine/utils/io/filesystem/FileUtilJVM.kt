@@ -18,8 +18,6 @@ package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
 import java.io.File
 import java.util.*
@@ -48,17 +46,10 @@ fun path(path: File): FilePath {
     return IMPL.path(path)
 }
 
-// TODO: @Throws(IOException::class)
-/* impl */ fun <R> read(path: FilePath,
-                        read: (ReadableByteStream) -> R): R {
-    return IMPL.read(path, read)
-}
-
-// TODO: @Throws(IOException::class)
-/* impl */ fun <R> write(path: FilePath,
-                         write: (WritableByteStream) -> R): R {
-    return IMPL.write(path, write)
-}
+/* impl */ fun channel(path: FilePath,
+                       options: Array<out OpenOption> = emptyArray(),
+                       attributes: Array<out FileAttribute<*>> = emptyArray()) =
+        IMPL.channel(path, options, attributes)
 
 // TODO: @Throws(IOException::class)
 /* impl */ fun createFile(path: FilePath,
@@ -202,10 +193,4 @@ fun setLastModifiedTime(path: FilePath,
 // TODO: @Throws(IOException::class)
 fun getLastModifiedTime(path: FilePath): Instant {
     return IMPL.getLastModifiedTime(path)
-}
-
-// TODO: @Throws(IOException::class)
-/* impl */ fun <R> tempChannel(path: FilePath,
-                               consumer: (FileChannel) -> R): R {
-    return IMPL.tempChannel(path, consumer)
 }

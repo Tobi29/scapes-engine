@@ -32,29 +32,34 @@ object FileCache : KLogging() {
     fun store(root: FilePath,
               stream: ReadableByteStream): Location {
         val write = createTempFile("CacheWrite", ".tmp")
-        return tempChannel(write) { channel ->
-            val digest = Algorithm.SHA256.digest()
-            val streamOut = BufferedWriteChannelStream(channel)
-            process(stream, { buffer ->
-                digest.update(buffer)
-                buffer.rewind()
-                streamOut.put(buffer)
-            })
-            streamOut.flush()
-            channel.position(0)
-            val checksum = digest.digest()
-            createDirectories(root)
-            val name = checksum.toHexadecimal()
-            val streamIn = BufferedReadChannelStream(channel)
-            val destination = root.resolve(name)
-            if (exists(destination)) {
-                setLastModifiedTime(destination, Instant.now())
-            } else {
-                write(destination) { output ->
-                    process(streamIn, { output.put(it) })
+        try {
+            channel(write, options = arrayOf(OPEN_READ, OPEN_WRITE, OPEN_CREATE,
+                    OPEN_TRUNCATE_EXISTING)).use { channel ->
+                val digest = Algorithm.SHA256.digest()
+                val streamOut = BufferedWriteChannelStream(channel)
+                process(stream, { buffer ->
+                    digest.update(buffer)
+                    buffer.rewind()
+                    streamOut.put(buffer)
+                })
+                streamOut.flush()
+                channel.position(0)
+                val checksum = digest.digest()
+                createDirectories(root)
+                val name = checksum.toHexadecimal()
+                val streamIn = BufferedReadChannelStream(channel)
+                val destination = root.resolve(name)
+                if (exists(destination)) {
+                    setLastModifiedTime(destination, Instant.now())
+                } else {
+                    write(destination) { output ->
+                        process(streamIn, { output.put(it) })
+                    }
                 }
+                return Location(checksum)
             }
-            Location(checksum)
+        } finally {
+            delete(write)
         }
     }
 

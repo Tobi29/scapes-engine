@@ -19,7 +19,9 @@ package org.tobi29.scapes.engine.utils.io.filesystem.io.internal
 import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
+import org.tobi29.scapes.engine.utils.use
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.net.URI
 
@@ -28,14 +30,57 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun path(file: File): FilePath = FilePathImpl(file)
 
-    override fun <R> read(path: FilePath,
-                          read: (ReadableByteStream) -> R): R {
-        return read(path.toFile(), read)
-    }
-
-    override fun <R> write(path: FilePath,
-                           write: (WritableByteStream) -> R): R {
-        return write(path.toFile(), write)
+    override fun channel(path: FilePath,
+                         options: Array<out OpenOption>,
+                         attributes: Array<out FileAttribute<*>>): FileChannel {
+        var openRead = false
+        var openWrite = false
+        var openCreate = false
+        var openCreateNew = false
+        var openTruncateExisting = false
+        var linkNofollow = false
+        for (option in options) {
+            when (option) {
+                OPEN_READ -> openRead = true
+                OPEN_WRITE -> openWrite = true
+                OPEN_CREATE -> openCreate = true
+                OPEN_CREATE_NEW -> {
+                    openCreate = true
+                    openCreateNew = true
+                }
+                OPEN_TRUNCATE_EXISTING -> openTruncateExisting = true
+                LINK_NOFOLLOW -> linkNofollow = true
+            }
+        }
+        if (linkNofollow) {
+            throw UnsupportedOperationException(
+                    "LINK_NOFOLLOW is not supported on java.io")
+        }
+        val file = path.toFile()
+        if (!openCreate || openCreateNew) {
+            val exists = file.exists()
+            if (!openCreate && !exists) {
+                throw NoSuchFileException(path)
+            } else if (openCreateNew && exists) {
+                throw FileAlreadyExistsException(path)
+            }
+        }
+        val mode = if (openWrite) {
+            "rw"
+        } else if (openRead) {
+            "r"
+        } else {
+            ""
+        }
+        try {
+            val channel = RandomAccessFile(path.toFile(), mode).channel
+            if (openTruncateExisting) {
+                channel.truncate(0L)
+            }
+            return channel
+        } catch (e: FileNotFoundException) {
+            throw NoSuchFileException(path)
+        }
     }
 
     override fun createFile(path: FilePath,
@@ -98,30 +143,30 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun exists(path: FilePath,
                         vararg options: LinkOption): Boolean {
-        val nofollow = options.contains(NOFOLLOW_LINKS)
+        val nofollow = options.contains(LINK_NOFOLLOW)
         if (nofollow) {
             throw UnsupportedOperationException(
-                    "NOFOLLOW_LINKS is not supported on java.io")
+                    "LINK_NOFOLLOW is not supported on java.io")
         }
         return path.toFile().exists()
     }
 
     override fun isRegularFile(path: FilePath,
                                vararg options: LinkOption): Boolean {
-        val nofollow = options.contains(NOFOLLOW_LINKS)
+        val nofollow = options.contains(LINK_NOFOLLOW)
         if (nofollow) {
             throw UnsupportedOperationException(
-                    "NOFOLLOW_LINKS is not supported on java.io")
+                    "LINK_NOFOLLOW is not supported on java.io")
         }
         return path.toFile().isFile
     }
 
     override fun isDirectory(path: FilePath,
                              vararg options: LinkOption): Boolean {
-        val nofollow = options.contains(NOFOLLOW_LINKS)
+        val nofollow = options.contains(LINK_NOFOLLOW)
         if (nofollow) {
             throw UnsupportedOperationException(
-                    "NOFOLLOW_LINKS is not supported on java.io")
+                    "LINK_NOFOLLOW is not supported on java.io")
         }
         return path.toFile().isDirectory
     }
@@ -155,12 +200,21 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun copy(source: FilePath,
                       target: FilePath): FilePath {
-        read(source.toFile(), { input ->
-            write(target.toFile(),
-                    { output ->
-                        process(input, { output.put(it) })
-                    })
-        })
+        channel(source, options = arrayOf(OPEN_READ)).use { channelIn ->
+            channel(target, options = arrayOf(OPEN_WRITE, OPEN_CREATE,
+                    OPEN_TRUNCATE_EXISTING)).use { channelOut ->
+                val buffer = ByteBuffer(1024)
+                while (true) {
+                    val read = channelIn.read(buffer)
+                    if (read == -1) {
+                        break
+                    }
+                    buffer.flip()
+                    channelOut.write(buffer)
+                    buffer.compact()
+                }
+            }
+        }
         return target
     }
 
@@ -197,16 +251,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun getLastModifiedTime(path: FilePath): Instant {
         return Instant.ofEpochMilli(path.toFile().lastModified())
-    }
-
-    override fun <R> tempChannel(path: FilePath,
-                                 consumer: (FileChannel) -> R): R {
-        val file = path.toFile()
-        return try {
-            channelRW(file).use { consumer(it) }
-        } finally {
-            file.delete()
-        }
     }
 
     private data class FilePathImpl(val file: File) : FilePath {
@@ -261,32 +305,17 @@ internal object IOFileUtilImpl : FileUtilImpl {
         }
 
         override fun channel(): ReadableByteChannel {
-            return channelR(file)
+            return channel(this, options = arrayOf(OPEN_READ))
         }
 
         override fun <R> read(reader: (ReadableByteStream) -> R): R {
-            return read(file, reader)
+            channel().use {
+                return reader(BufferedReadChannelStream(it))
+            }
         }
 
         override fun mimeType(): String {
             return read { detectMime(it, file.toString()) }
-        }
-    }
-
-    private fun <R> read(file: File,
-                         read: (ReadableByteStream) -> R): R {
-        channelR(file).use { channel ->
-            return read(BufferedReadChannelStream(channel))
-        }
-    }
-
-    private fun <R> write(file: File,
-                          write: (WritableByteStream) -> R): R {
-        channelDRW(file).use { channel ->
-            val stream = BufferedWriteChannelStream(channel)
-            val r = write(stream)
-            stream.flush()
-            return r
         }
     }
 
@@ -303,19 +332,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
             }
         }
         file.delete()
-    }
-
-    private fun channelR(file: File): FileChannel {
-        return RandomAccessFile(file, "r").channel
-    }
-
-    private fun channelRW(file: File): FileChannel {
-        return RandomAccessFile(file, "rw").channel
-    }
-
-    private fun channelDRW(file: File): FileChannel {
-        file.delete()
-        return RandomAccessFile(file, "rw").channel
     }
 
     private fun listRecursive(file: File,

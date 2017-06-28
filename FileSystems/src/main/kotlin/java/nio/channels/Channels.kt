@@ -19,6 +19,8 @@ package java.nio.channels
 /*
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header abstract class AbstractInterruptibleChannel : Channel, InterruptibleChannel {
+    protected constructor()
+
     /**
      * @throws IOException
      */
@@ -34,6 +36,7 @@ header abstract class AbstractInterruptibleChannel : Channel, InterruptibleChann
 
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteChannel, GatheringByteChannel, ScatteringByteChannel {
+    protected constructor()
 
     /**
      * @throws IOException
@@ -43,7 +46,13 @@ header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteCh
     /**
      * @throws IOException
      */
-    abstract override fun read(dsts: Array<ByteBuffer>,
+    abstract fun read(dst: ByteBuffer,
+                      position: Long): Int
+
+    /**
+     * @throws IOException
+     */
+    abstract override fun read(dsts: Array<out ByteBuffer>,
                                offset: Int,
                                length: Int): Long
 
@@ -55,7 +64,13 @@ header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteCh
     /**
      * @throws IOException
      */
-    abstract override fun write(srcs: Array<ByteBuffer>,
+    abstract fun write(src: ByteBuffer,
+                       position: Long): Int
+
+    /**
+     * @throws IOException
+     */
+    abstract override fun write(srcs: Array<out ByteBuffer>,
                                 offset: Int,
                                 length: Int): Long
 
@@ -97,17 +112,32 @@ header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteCh
     abstract fun transferFrom(src: ReadableByteChannel,
                               position: Long,
                               count: Long): Long
+    /**
+     * @throws IOException
+     */
+    abstract fun lock(position: Long,
+                      size: Long,
+                      shared: Boolean): FileLock
 
     /**
      * @throws IOException
      */
-    abstract fun read(dst: ByteBuffer,
-                      position: Long): Int
+    fun lock(): FileLock {
+        return lock(0L, java.lang.Long.MAX_VALUE, false)
+    }
 
     /**
      * @throws IOException
      */
-    abstract fun write(src: ByteBuffer,
-                       position: Long): Int
+    abstract fun tryLock(position: Long,
+                         size: Long,
+                         shared: Boolean): FileLock
+
+    /**
+     * @throws IOException
+     */
+    fun tryLock(): FileLock {
+        return tryLock(0L, java.lang.Long.MAX_VALUE, false)
+    }
 }
 */

@@ -16,16 +16,18 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
+import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
+import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+import org.tobi29.scapes.engine.utils.io.WritableByteStream
+
 /*
 header fun path(path: String): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun <R> read(path: FilePath,
-                    read: (ReadableByteStream) -> R): R
-
-// TODO: @Throws(IOException::class)
-header fun <R> write(path: FilePath,
-                     write: (WritableByteStream) -> R): R
+header fun channel(path: FilePath,
+                   options: Array<out OpenOption> = emptyArray(),
+                   attributes: Array<out FileAttribute<*>> = emptyArray()): FileChannel
 
 // TODO: @Throws(IOException::class)
 header fun createFile(path: FilePath,
@@ -99,17 +101,38 @@ header fun <R> listRecursive(path: FilePath,
 // TODO: @Throws(IOException::class)
 header fun listRecursive(path: FilePath,
                          vararg filters: (FilePath) -> Boolean): List<FilePath>
+*/
 
 // TODO: @Throws(IOException::class)
-header fun <R> tempChannel(path: FilePath,
-                           consumer: (FileChannel) -> R): R
-*/
+fun <R> read(path: FilePath,
+             read: (ReadableByteStream) -> R): R {
+    channel(path, options = arrayOf(OPEN_READ)).use {
+        return read(BufferedReadChannelStream(it))
+    }
+}
+
+// TODO: @Throws(IOException::class)
+fun <R> write(path: FilePath,
+              write: (WritableByteStream) -> R): R {
+    channel(path, options = arrayOf(OPEN_WRITE, OPEN_CREATE,
+            OPEN_TRUNCATE_EXISTING)).use {
+        val stream = BufferedWriteChannelStream(it)
+        val result = write(stream)
+        stream.flush()
+        return result
+    }
+}
 
 interface FileOption
 interface OpenOption : FileOption
 interface CopyOption : FileOption
-
 interface LinkOption : OpenOption, CopyOption
-val NOFOLLOW_LINKS = object : LinkOption {}
+
+val OPEN_READ = object : OpenOption {}
+val OPEN_WRITE = object : OpenOption {}
+val OPEN_CREATE = object : OpenOption {}
+val OPEN_CREATE_NEW = object : OpenOption {}
+val OPEN_TRUNCATE_EXISTING = object : OpenOption {}
+val LINK_NOFOLLOW = object : LinkOption {}
 
 interface FileAttribute<T>

@@ -17,8 +17,6 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import java.io.File
 
 interface FileUtilImpl {
@@ -26,11 +24,9 @@ interface FileUtilImpl {
 
     fun path(file: File): FilePath
 
-    fun <R> read(path: FilePath,
-                 read: (ReadableByteStream) -> R): R
-
-    fun <R> write(path: FilePath,
-                  write: (WritableByteStream) -> R): R
+    fun channel(path: FilePath,
+                options: Array<out OpenOption> = emptyArray(),
+                attributes: Array<out FileAttribute<*>> = emptyArray()): FileChannel
 
     fun createFile(path: FilePath,
                    vararg attributes: FileAttribute<*>): FilePath
@@ -87,7 +83,4 @@ interface FileUtilImpl {
                             value: Instant)
 
     fun getLastModifiedTime(path: FilePath): Instant
-
-    fun <R> tempChannel(path: FilePath,
-                        consumer: (FileChannel) -> R): R
 }

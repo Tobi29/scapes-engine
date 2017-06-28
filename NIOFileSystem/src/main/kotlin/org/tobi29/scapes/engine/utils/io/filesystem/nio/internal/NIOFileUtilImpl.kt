@@ -20,11 +20,11 @@ import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
+import org.tobi29.scapes.engine.utils.io.filesystem.OpenOption
 import org.tobi29.scapes.engine.utils.use
 import java.io.File
 import java.net.URI
 import java.nio.file.*
-import java.nio.file.OpenOption
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
@@ -39,25 +39,18 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return path(file.toPath())
     }
 
-    override fun <R> read(path: FilePath,
-                          read: (ReadableByteStream) -> R): R {
-        return read(toPath(path), read)
-    }
-
-    override fun <R> write(path: FilePath,
-                           write: (WritableByteStream) -> R): R {
-        return write(toPath(path), write)
-    }
+    override fun channel(path: FilePath,
+                         options: Array<out OpenOption>,
+                         attributes: Array<out FileAttribute<*>>): FileChannel =
+            FileChannel.open(toPath(path), options.toNIOSet(),
+                    *attributes.toNIO())
 
     override fun createFile(path: FilePath,
                             vararg attributes: FileAttribute<*>): FilePath {
-        toPath(path).let { path ->
-            try {
-                return path(Files.createFile(path, *attributes.toNIO()))
-            } catch (e: java.nio.file.FileAlreadyExistsException) {
-                throw kotlin.io.FileAlreadyExistsException(path.toFile(),
-                        reason = e.reason)
-            }
+        try {
+            return path(Files.createFile(toPath(path), *attributes.toNIO()))
+        } catch (e: java.nio.file.FileAlreadyExistsException) {
+            throw FileAlreadyExistsException(path, reason = e.reason)
         }
     }
 
@@ -181,15 +174,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
                 Files.getLastModifiedTime(toPath(path)).toMillis())
     }
 
-    override fun <R> tempChannel(path: FilePath,
-                                 consumer: (FileChannel) -> R): R {
-        FileChannel.open(toPath(path), StandardOpenOption.READ,
-                StandardOpenOption.WRITE,
-                StandardOpenOption.DELETE_ON_CLOSE).use { channel ->
-            return consumer(channel)
-        }
-    }
-
     private data class FilePathImpl(val path: Path) : FilePath {
         override fun compareTo(other: FilePath): Int {
             return path.compareTo(toPath(other))
@@ -246,11 +230,13 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         }
 
         override fun channel(): ReadableByteChannel {
-            return Files.newByteChannel(path, StandardOpenOption.READ)
+            return channel(this, options = arrayOf(OPEN_READ))
         }
 
         override fun <R> read(reader: (ReadableByteStream) -> R): R {
-            return read(path, reader)
+            channel().use {
+                return reader(BufferedReadChannelStream(it))
+            }
         }
 
         override fun mimeType(): String {
@@ -263,37 +249,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             return path.path
         }
         return path.toFile().toPath()
-    }
-
-    private fun <R> read(path: Path,
-                         read: (ReadableByteStream) -> R): R {
-        return read(path, read, StandardOpenOption.READ)
-    }
-
-    private fun <R> read(path: Path,
-                         read: (ReadableByteStream) -> R,
-                         vararg options: OpenOption): R {
-        FileChannel.open(path, *options).use { channel ->
-            return read(BufferedReadChannelStream(channel))
-        }
-    }
-
-    private fun <R> write(path: Path,
-                          write: (WritableByteStream) -> R): R {
-        return write(path, write, StandardOpenOption.WRITE,
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING)
-    }
-
-    private fun <R> write(path: Path,
-                          write: (WritableByteStream) -> R,
-                          vararg options: OpenOption): R {
-        FileChannel.open(path, *options).use { channel ->
-            val stream = BufferedWriteChannelStream(channel)
-            val r = write(stream)
-            stream.flush()
-            return r
-        }
     }
 
     private fun path(path: Path): FilePath {
@@ -321,7 +276,27 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     private fun LinkOption.toNIO(): java.nio.file.LinkOption =
             when (this) {
-                NOFOLLOW_LINKS -> java.nio.file.LinkOption.NOFOLLOW_LINKS
+                LINK_NOFOLLOW -> java.nio.file.LinkOption.NOFOLLOW_LINKS
+                else -> throw IllegalArgumentException(
+                        "Unsupported option: $this")
+            }
+
+    private fun Array<out OpenOption>.toNIO() =
+            Array(size) { this[it].toNIO() }
+
+    private fun Array<out OpenOption>.toNIOSet() =
+            HashSet<java.nio.file.OpenOption>(size).also { set ->
+                forEach { set.add(it.toNIO()) }
+            }
+
+    private fun OpenOption.toNIO(): java.nio.file.OpenOption =
+            when (this) {
+                OPEN_READ -> StandardOpenOption.READ
+                OPEN_WRITE -> StandardOpenOption.WRITE
+                OPEN_CREATE -> StandardOpenOption.CREATE
+                OPEN_CREATE_NEW -> StandardOpenOption.CREATE_NEW
+                OPEN_TRUNCATE_EXISTING -> StandardOpenOption.TRUNCATE_EXISTING
+                is LinkOption -> toNIO()
                 else -> throw IllegalArgumentException(
                         "Unsupported option: $this")
             }
