@@ -96,7 +96,7 @@ class TaskExecutor {
         }
     }
 
-    fun runTask(task: () -> Unit,
+    fun runTask(task: suspend () -> Unit,
                 taskLock: TaskLock,
                 name: String) {
         taskLock.increment()
