@@ -16,15 +16,28 @@
 
 package org.tobi29.scapes.engine.resource
 
+import kotlinx.coroutines.experimental.runBlocking
+import org.tobi29.scapes.engine.utils.AtomicReference
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.Result
 import org.tobi29.scapes.engine.utils.task.Joiner
 
-class Resource<out T : Any> internal constructor(
-        private var reference: ResourceReference<T>) {
+interface Resource<out T : Any> {
+    fun tryGet(): T?
 
-    fun tryGet(): T? = reference.value?.get()
+    fun get(): T
 
-    fun get(): T {
+    fun onLoaded(block: () -> Unit)
+
+    suspend fun getAsync(): T
+}
+
+internal class ThreadedResource<out T : Any>(
+        private var reference: ResourceReference<T>) : Resource<T> {
+
+    override fun tryGet(): T? = reference.value?.get()
+
+    override fun get(): T {
         tryGet()?.let { return it }
         while (true) {
             reference.joiner.joiner.join()
@@ -32,16 +45,61 @@ class Resource<out T : Any> internal constructor(
         }
     }
 
-    fun onLoaded(block: () -> Unit) {
+    override fun onLoaded(block: () -> Unit) {
         reference.joiner.joiner.onJoin(block)
     }
 
-    suspend fun getAsync(): T {
+    override suspend fun getAsync(): T {
         tryGet()?.let { return it }
         reference.joiner.joiner.joinAsync()
         tryGet()?.let { return it }
         throw IllegalStateException("No value after completion")
     }
+}
+
+internal class ImmediateResource<out T : Any>(val loaded: T) : Resource<T> {
+    override fun tryGet(): T? = get()
+
+    override fun get(): T = loaded
+
+    override fun onLoaded(block: () -> Unit) = block()
+
+    override suspend fun getAsync(): T = get()
+}
+
+class LazyResource<out T : Any>(load: suspend () -> T) : Resource<T> {
+    private val completionTasks = ConcurrentLinkedQueue<() -> Unit>()
+    private val load = AtomicReference<(suspend () -> T)?>(load)
+    private val loaded by lazy {
+        val result = this.load.get()!!.let { runBlocking { it() } }
+        synchronized(this) {
+            this.load.set(null)
+            while (completionTasks.isNotEmpty()) {
+                completionTasks.poll()()
+            }
+        }
+        result
+    }
+
+    override fun tryGet(): T? = get()
+
+    override fun get(): T = loaded
+
+    override fun onLoaded(block: () -> Unit) {
+        if (load.get() != null) {
+            block()
+            return
+        }
+        synchronized(this) {
+            if (load.get() != null) {
+                block()
+            } else {
+                completionTasks.add(block)
+            }
+        }
+    }
+
+    override suspend fun getAsync(): T = get()
 }
 
 class ResourceReference<T : Any>(value: T? = null) {
@@ -51,8 +109,8 @@ class ResourceReference<T : Any>(value: T? = null) {
             value?.let { joiner.join() }
         }
 
-    val resource by lazy { Resource(this) }
+    val resource: Resource<T> by lazy { ThreadedResource(this) }
     internal val joiner = Joiner.BasicJoinable()
 }
 
-fun <T : Any> Resource(resource: T) = ResourceReference(resource).resource
+fun <T : Any> Resource(resource: T): Resource<T> = ImmediateResource(resource)
