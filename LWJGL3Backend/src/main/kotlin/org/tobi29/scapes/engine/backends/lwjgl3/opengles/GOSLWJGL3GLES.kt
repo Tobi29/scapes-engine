@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.backends.lwjgl3.opengl.ShaderGL
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
