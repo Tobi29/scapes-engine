@@ -46,7 +46,7 @@ interface Texture : GraphicsObject {
 
 fun Texture?.bind(gl: GL) {
     if (this == null) {
-        gl.textures.unbind(gl)
+        gl.engine.graphics.textureEmpty().bind(gl)
     } else {
         bind(gl)
     }
