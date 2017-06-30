@@ -34,10 +34,6 @@ class TextureManager(private val engine: ScapesEngine) {
         return cache.computeAbsent(asset) { load(asset) }
     }
 
-    fun empty(): Texture {
-        return engine.graphics.textureEmpty()
-    }
-
     private fun load(asset: String): Resource<Texture> {
         return engine.resources.load res@ {
             val files = engine.files
@@ -61,10 +57,6 @@ class TextureManager(private val engine: ScapesEngine) {
                 properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
                 properties["WrapS"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT,
                 properties["WrapT"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT)
-    }
-
-    fun unbind(gl: GL) {
-        empty().bind(gl)
     }
 
     fun clearCache() {
