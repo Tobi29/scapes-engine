@@ -50,8 +50,10 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
         } else {
             val limit = buffer.limit()
             buffer.limit(buffer.position() + len)
-            buffer.put(this.buffer)
-            if (!read(buffer)) {
+            if (this.buffer.hasRemaining()) {
+                buffer.put(this.buffer)
+                read(buffer)
+            } else if (!read(buffer)) {
                 throw IOException("End of stream")
             }
             buffer.limit(limit)
@@ -66,15 +68,18 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
             this.buffer.limit(this.buffer.position() + len)
             buffer.put(this.buffer)
             this.buffer.limit(limit)
-            return true
         } else {
             val limit = buffer.limit()
             buffer.limit(buffer.position() + len)
-            buffer.put(this.buffer)
-            val available = read(buffer)
+            if (this.buffer.hasRemaining()) {
+                buffer.put(this.buffer)
+                read(buffer)
+            } else if (!read(buffer)) {
+                return false
+            }
             buffer.limit(limit)
-            return available
         }
+        return true
     }
 
     override fun get(): Byte {
@@ -124,11 +129,8 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
     }
 
     private fun read(buffer: ByteBuffer): Boolean {
-        while (buffer.hasRemaining()) {
-            val length = channel.read(buffer)
-            if (length == -1) {
-                return false
-            }
+        if (channel.read(buffer) == -1) {
+            return false
         }
         return true
     }

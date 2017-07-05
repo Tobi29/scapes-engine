@@ -70,14 +70,13 @@ interface ReadableByteStream {
                 len: Int = dest.size): Int {
         // TODO: Optimize
         val buffer = ByteBuffer(len)
-        val available = getSome(buffer)
+        if (!getSome(buffer)) {
+            return -1
+        }
         buffer.flip()
         buffer.get(dest, off, buffer.remaining())
         var position = buffer.position()
         position -= off
-        if (position == 0 && !available) {
-            return -1
-        }
         assert { position <= len }
         return position
     }

@@ -35,10 +35,12 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
 
     override fun getSome(buffer: ByteBuffer,
                          len: Int): Boolean {
-        var len = len
-        len = len.coerceAtMost(remaining)
+        if (remaining <= 0) {
+            return false
+        }
+        val len = len.coerceAtMost(remaining)
         remaining -= len
-        return stream.getSome(buffer, len) && remaining > 0
+        return stream.getSome(buffer, len)
     }
 
     override fun get(): Byte {

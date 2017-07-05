@@ -20,9 +20,7 @@ fun <E> process(input: ReadableByteStream,
                 processor: StreamProcessor<E>,
                 bufferSize: Int = 1024): E {
     val buffer = ByteBuffer(bufferSize)
-    var available = true
-    while (available) {
-        available = input.getSome(buffer)
+    while (input.getSome(buffer)) {
         buffer.flip()
         processor.process(buffer)
         buffer.clear()
@@ -35,9 +33,7 @@ fun process(input: ReadableByteStream,
             processor: (ByteBuffer) -> Unit,
             bufferSize: Int = 1024) {
     val buffer = ByteBuffer(bufferSize)
-    var available = true
-    while (available) {
-        available = input.getSome(buffer)
+    while (input.getSome(buffer)) {
         buffer.flip()
         processor(buffer)
         buffer.clear()

@@ -22,27 +22,22 @@ import java.util.zip.Inflater
 
 /* impl */ class ZDeflater(level: Int,
                            buffer: Int = 8192) : CompressionUtil.Filter {
-    private val deflater: Deflater
-    private val output: ByteBuffer
-    private var input: ByteBuffer
+    private val deflater = Deflater(level)
+    private val output = ByteBuffer(buffer)
+    private var input = ByteBuffer(buffer)
 
-    init {
-        deflater = Deflater(level)
-        input = ByteBuffer(buffer)
-        output = ByteBuffer(buffer)
-    }
-
-    /* impl */ override fun input(buffer: ReadableByteStream) {
+    /* impl */ override fun input(buffer: ReadableByteStream): Boolean {
         if (!input.hasRemaining()) {
             val newInput = ByteBuffer(input.capacity() shl 1)
             input.flip()
             newInput.put(input)
             input = newInput
         }
-        buffer.getSome(input)
-        input.flip()
-        deflater.setInput(input.array(), input.arrayOffset(),
-                input.remaining())
+        if (!buffer.getSome(input)) {
+            return false
+        }
+        deflater.setInput(input.array(), input.arrayOffset(), input.position())
+        return true
     }
 
     /* impl */ override fun output(buffer: WritableByteStream): Int {
@@ -50,6 +45,7 @@ import java.util.zip.Inflater
         output.limit(len)
         buffer.put(output)
         output.clear()
+        input.clear()
         return len
     }
 
@@ -76,25 +72,21 @@ import java.util.zip.Inflater
 
 /* impl */ class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
     private val inflater = Inflater()
-    private val output: ByteBuffer
-    private var input: ByteBuffer
+    private val output = ByteBuffer(buffer)
+    private var input = ByteBuffer(buffer)
 
-    init {
-        input = ByteBuffer(buffer)
-        output = ByteBuffer(buffer)
-    }
-
-    /* impl */ override fun input(buffer: ReadableByteStream) {
+    /* impl */ override fun input(buffer: ReadableByteStream): Boolean {
         if (!input.hasRemaining()) {
             val newInput = ByteBuffer(input.capacity() shl 1)
             input.flip()
             newInput.put(input)
             input = newInput
         }
-        buffer.getSome(input)
-        input.flip()
-        inflater.setInput(input.array(), input.arrayOffset(),
-                input.remaining())
+        if (!buffer.getSome(input)) {
+            return false
+        }
+        inflater.setInput(input.array(), input.arrayOffset(), input.position())
+        return true
     }
 
     /* impl */ override fun output(buffer: WritableByteStream): Int {
@@ -103,6 +95,7 @@ import java.util.zip.Inflater
             output.limit(len)
             buffer.put(output)
             output.clear()
+            input.clear()
             return len
         } catch (e: DataFormatException) {
             return -1

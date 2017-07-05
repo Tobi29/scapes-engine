@@ -138,13 +138,16 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
 
     override fun getSome(buffer: ByteBuffer,
                          len: Int): Boolean {
+        if (!hasRemaining()) {
+            return false
+        }
         var len = len
         len = len.coerceAtMost(this.buffer.remaining())
         val limit = this.buffer.limit()
         this.buffer.limit(this.buffer.position() + len)
         buffer.put(this.buffer)
         this.buffer.limit(limit)
-        return this.buffer.remaining() > 0
+        return true
     }
 
     override fun get(): Byte {

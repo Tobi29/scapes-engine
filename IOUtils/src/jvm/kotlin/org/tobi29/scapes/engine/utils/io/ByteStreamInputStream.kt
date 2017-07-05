@@ -24,11 +24,10 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStrea
     // TODO: @Throws(IOException::class)
     override fun read(): Int {
         single.clear()
-        stream.getSome(single)
-        single.flip()
-        if (!single.hasRemaining()) {
+        if (!stream.getSome(single)) {
             return -1
         }
+        single.flip()
         return single.get().toInt()
     }
 

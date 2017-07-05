@@ -57,8 +57,7 @@ object CompressionUtil {
     fun filter(input: ReadableByteStream,
                output: WritableByteStream,
                filter: Filter) {
-        while (input.hasAvailable()) {
-            filter.input(input)
+        while (filter.input(input)) {
             while (!filter.needsInput()) {
                 val len = filter.output(output)
                 if (len <= 0) {
@@ -78,7 +77,7 @@ object CompressionUtil {
 
     interface Filter : AutoCloseable {
         // TODO: @Throws(IOException::class)
-        fun input(buffer: ReadableByteStream)
+        fun input(buffer: ReadableByteStream): Boolean
 
         // TODO: @Throws(IOException::class)
         fun output(buffer: WritableByteStream): Int
