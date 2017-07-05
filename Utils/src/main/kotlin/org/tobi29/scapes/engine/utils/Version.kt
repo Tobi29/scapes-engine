@@ -87,24 +87,14 @@ fun versionParse(str: kotlin.String): Version {
     val major: Int
     var minor = 0
     var revision = 0
-    try {
-        major = split[0].toInt()
-    } catch (e: NumberFormatException) {
-        throw VersionException("Invalid major: ${split[0]} (${e.message})")
-    }
+    major = split[0].toIntOrNull() ?: throw VersionException(
+            "Invalid major: ${split[0]}")
     if (split.size >= 2) {
-        try {
-            minor = split[1].toInt()
-        } catch (e: NumberFormatException) {
-            throw VersionException("Invalid minor: ${split[1]} (${e.message})")
-        }
+        minor = split[1].toIntOrNull() ?: throw VersionException(
+                "Invalid minor: ${split[1]}")
         if (split.size == 3) {
-            try {
-                revision = split[2].toInt()
-            } catch (e: NumberFormatException) {
-                throw VersionException(
-                        "Invalid revision: ${split[2]} (${e.message})")
-            }
+            revision = split[2].toIntOrNull() ?: throw VersionException(
+                    "Invalid revision: ${split[2]}")
         }
     }
     return Version(major, minor, revision)
