@@ -47,7 +47,7 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
-    private var state: GameState? = null
+    private var stateMut: GameState? = null
     val loop = UpdateLoop(taskExecutor)
     val files = FileSystemContainer()
     val events = EventDispatcher()
@@ -118,9 +118,8 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         }
     }
 
-    fun getState(): GameState {
-        return state ?: throw IllegalStateException("Engine not running")
-    }
+    val state get() =
+    stateMut ?: throw IllegalStateException("Engine not running")
 
     fun switchState(state: GameState) {
         newState.set(state)
@@ -167,8 +166,8 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     fun dispose() {
         halt()
         logger.info { "Disposing last state" }
-        state?.disposeState()
-        state = null
+        stateMut?.disposeState()
+        stateMut = null
         logger.info { "Disposing sound system" }
         sounds.dispose()
         logger.info { "Disposing game" }
@@ -187,16 +186,16 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
     }
 
     fun isMouseGrabbed(): Boolean {
-        return state?.isMouseGrabbed ?: false || guiController.captureCursor()
+        return stateMut?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
 
     private fun step(delta: Double): Double {
-        var currentState = this.state
+        var currentState = this.stateMut
         val newState = newState.getAndSet(null)
         if (newState != null) {
             synchronized(graphics) {
-                this.state?.disposeState()
-                this.state = newState
+                this.stateMut?.disposeState()
+                this.stateMut = newState
                 newState.init()
             }
             currentState = newState

@@ -31,10 +31,6 @@ abstract class GameState(val engine: ScapesEngine) {
     private val dirtyPipeline = AtomicBoolean()
     private var pipeline: Pipeline? = null
 
-    fun engine(): ScapesEngine {
-        return engine
-    }
-
     fun disposeState(gl: GL) {
     }
 

@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.graphics
 import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CoroutineDispatcher
 import org.tobi29.scapes.engine.GameState
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.*
@@ -66,21 +65,13 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     fun dispose(gl: GL) {
         engine.halt()
         synchronized(this) {
-            val state = engine.getState()
+            val state = engine.state
             state.disposeState(gl)
             gos.vaoTracker.disposeAll(gl)
             gos.textureTracker.disposeAll(gl)
             gos.fboTracker.disposeAll(gl)
             gos.shaderTracker.disposeAll(gl)
         }
-    }
-
-    fun engine(): ScapesEngine {
-        return engine
-    }
-
-    fun textures(): TextureManager {
-        return textures
     }
 
     fun textureEmpty(): Texture {
@@ -108,7 +99,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
             } else {
                 fboSizeDirty = false
             }
-            val state = engine.getState()
+            val state = engine.state
             val renderState = renderState
             if (renderState !== state) {
                 profilerSection("SwitchState") {
