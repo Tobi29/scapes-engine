@@ -110,55 +110,58 @@ class FontRenderer(private val engine: ScapesEngine,
                 text.length)
     }
 
-    @Synchronized fun render(output: MeshOutput,
-                             text: String?,
-                             width: Float,
-                             height: Float,
-                             line: Float,
-                             limit: Float,
-                             start: Int,
-                             end: Int): TextInfo {
-        if (text == null || start == -1) {
-            return EMPTY_TEXT_INFO
-        }
-        val size = output.size(height.toDouble())
-        if (size <= 0) {
-            return EMPTY_TEXT_INFO
-        }
-        val pages = pageCache.computeAbsent(size) {
-            GlyphPages(font.createGlyphRenderer(size))
-        }
-        val ratio = width / size
-        var textWidth = 0.0
-        var length = 0
-        var xx = 0.0
-        var yy = 0.0
-        for (i in 0..text.length - 1) {
-            val letter = text[i]
-            if (letter == '\n') {
-                xx = 0.0
-                yy += line
-                length++
-            } else {
-                val id = pages.renderer.pageID(letter)
-                val pageLetter = pages.renderer.pageCode(letter)
-                val page = pages[id]
-                val actualWidth = page.width[pageLetter] * ratio
-                if (xx + actualWidth > limit) {
-                    break
-                }
-                if (i in start..(end - 1)) {
-                    output.rectangle(floor(xx).toDouble(), floor(yy).toDouble(),
-                            width.toDouble(),
-                            height.toDouble(), actualWidth.toDouble(), page,
-                            pageLetter)
-                }
-                xx += actualWidth
-                textWidth = max(textWidth, xx)
-                length++
+    fun render(output: MeshOutput,
+               text: String?,
+               width: Float,
+               height: Float,
+               line: Float,
+               limit: Float,
+               start: Int,
+               end: Int): TextInfo {
+        return synchronized(this) {
+            if (text == null || start == -1) {
+                return@synchronized EMPTY_TEXT_INFO
             }
+            val size = output.size(height.toDouble())
+            if (size <= 0) {
+                return@synchronized EMPTY_TEXT_INFO
+            }
+            val pages = pageCache.computeAbsent(size) {
+                GlyphPages(font.createGlyphRenderer(size))
+            }
+            val ratio = width / size
+            var textWidth = 0.0
+            var length = 0
+            var xx = 0.0
+            var yy = 0.0
+            for (i in 0..text.length - 1) {
+                val letter = text[i]
+                if (letter == '\n') {
+                    xx = 0.0
+                    yy += line
+                    length++
+                } else {
+                    val id = pages.renderer.pageID(letter)
+                    val pageLetter = pages.renderer.pageCode(letter)
+                    val page = pages[id]
+                    val actualWidth = page.width[pageLetter] * ratio
+                    if (xx + actualWidth > limit) {
+                        break
+                    }
+                    if (i in start..(end - 1)) {
+                        output.rectangle(floor(xx).toDouble(),
+                                floor(yy).toDouble(),
+                                width.toDouble(),
+                                height.toDouble(), actualWidth.toDouble(), page,
+                                pageLetter)
+                    }
+                    xx += actualWidth
+                    textWidth = max(textWidth, xx)
+                    length++
+                }
+            }
+            TextInfo(text, Vector2d(textWidth, yy + height), length)
         }
-        return TextInfo(text, Vector2d(textWidth, yy + height), length)
     }
 
     interface MeshOutput {
@@ -196,8 +199,8 @@ class FontRenderer(private val engine: ScapesEngine,
                     TextureFilter.LINEAR,
                     TextureWrap.CLAMP, TextureWrap.CLAMP)
             engine.taskExecutor.runTask({
-                texture.setBuffer(renderer.page(id, { engine.allocate(it) }),
-                        imageSize, imageSize)
+                texture.setBuffer(renderer.page(id, engine), imageSize,
+                        imageSize)
             }, "Render-Glyph-Page")
             if (pages.size <= id) {
                 val newPages = arrayOfNulls<GlyphPage>(id + 1)

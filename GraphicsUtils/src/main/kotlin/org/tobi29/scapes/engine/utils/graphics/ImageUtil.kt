@@ -19,6 +19,8 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.DefaultByteBufferProvider
 
 /**
  * Copies from the receiver at the given coordinates into a new image
@@ -27,27 +29,14 @@ import org.tobi29.scapes.engine.utils.io.ByteBuffer
  * @param y y-Coordinate in the source image
  * @param width The width of the new image
  * @param height The height of the new image
- */
-inline fun Image.get(x: Int,
-                     y: Int,
-                     width: Int,
-                     height: Int) = get(x, y, width, height, ::ByteBuffer)
-
-/**
- * Copies from the receiver at the given coordinates into a new image
- * @receiver The image to copy from
- * @param x x-Coordinate in the source image
- * @param y y-Coordinate in the source image
- * @param width The width of the new image
- * @param height The height of the new image
- * @param bufferSupplier Supplier for the new buffer
+ * @param bufferProvider Provider for buffer allocations
  */
 inline fun Image.get(x: Int,
                      y: Int,
                      width: Int,
                      height: Int,
-                     bufferSupplier: (Int) -> ByteBuffer): Image {
-    val buffer = bufferSupplier(width * height shl 2)
+                     bufferProvider: ByteBufferProvider = DefaultByteBufferProvider): Image {
+    val buffer = bufferProvider.allocate(width * height shl 2)
     get(x, y, width, height, buffer)
     return Image(width, height, buffer)
 }

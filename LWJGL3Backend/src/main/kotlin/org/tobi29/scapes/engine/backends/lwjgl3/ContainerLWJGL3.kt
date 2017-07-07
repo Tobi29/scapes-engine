@@ -31,15 +31,17 @@ import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.NativeByteBufferProvider
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toBoolean
-import java.nio.ByteOrder
 
-abstract class ContainerLWJGL3(override val engine: ScapesEngine,
-                               protected val useGLES: Boolean = false) : Container {
+abstract class ContainerLWJGL3(
+        override val engine: ScapesEngine,
+        protected val useGLES: Boolean = false
+) : Container, ByteBufferProvider by NativeByteBufferProvider {
     protected val tasks = ConcurrentLinkedQueue<() -> Unit>()
     protected val mainThread: Thread = Thread.currentThread()
     override val gos = if (useGLES) GOSLWJGL3GLES(engine) else GOSLWJGL3GL(
@@ -67,9 +69,6 @@ abstract class ContainerLWJGL3(override val engine: ScapesEngine,
     override fun loadFont(asset: String): Font? {
         return STBFont.fromFont(this, engine.files[asset + ".ttf"])
     }
-
-    override fun allocate(capacity: Int): ByteBuffer =
-            ByteBuffer.allocateDirect(capacity).order(ByteOrder.nativeOrder())
 
     fun exec(runnable: () -> Unit) {
         val thread = Thread.currentThread()

@@ -20,6 +20,7 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
@@ -81,11 +82,12 @@ class STBGlyphRenderer(private val font: STBFont,
     }
 
     @Synchronized override fun page(id: Int,
-                                    bufferSupplier: (Int) -> ByteBuffer): ByteBuffer {
+                                    bufferProvider: ByteBufferProvider): ByteBuffer {
         val stack = MemoryStack.stackGet()
         stack.push {
             MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
-                val buffer = bufferSupplier(imageSize * imageSize shl 2)
+                val buffer = bufferProvider.allocate(
+                        imageSize * imageSize shl 2)
                 var i = 0
                 val offset = id shl pageTileBits
                 val xb = stack.mallocInt(1)

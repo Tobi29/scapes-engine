@@ -20,9 +20,9 @@ import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 
-interface Container {
+interface Container : ByteBufferProvider {
     val engine: ScapesEngine
     val gos: GraphicsObjectSupplier
     val sounds: SoundSystem
@@ -35,8 +35,6 @@ interface Container {
     fun update(delta: Double)
 
     fun loadFont(asset: String): Font?
-
-    fun allocate(capacity: Int): ByteBuffer
 
     // TODO: @Throws(DesktopException::class)
     fun run()

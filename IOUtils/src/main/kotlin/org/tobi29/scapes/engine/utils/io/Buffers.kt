@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.utils.io
 
 typealias Buffer = java.nio.Buffer
 typealias ByteBuffer = java.nio.ByteBuffer
 typealias FloatBuffer = java.nio.FloatBuffer
+typealias ByteOrder = java.nio.ByteOrder
 
 fun ByteBuffer.asArray() =
         ByteArray(remaining()).also {
@@ -49,36 +52,80 @@ header fun ByteBuffer.asString(): String
  * @param size Capacity of the buffer
  * @return A [ByteBuffer] with big-endian byte-order
  */
-fun ByteBuffer(size: Int): ByteBuffer = byteBuffer(size)
+inline fun ByteBuffer(size: Int): ByteBuffer = byteBuffer(size)
 
 /**
  * Creates a [FloatBuffer]
  * @param size Capacity of the buffer
  * @return A [FloatBuffer]
  */
-fun FloatBuffer(size: Int): FloatBuffer = floatBuffer(size)
+inline fun FloatBuffer(size: Int): FloatBuffer = floatBuffer(size)
 
-/*
 /**
  * Creates a [ByteBuffer] with big-endian byte-order
  * @param size Capacity of the buffer
  * @return A [ByteBuffer] with big-endian byte-order
  */
-header fun byteBuffer(size: Int): ByteBuffer
+inline fun byteBuffer(size: Int): ByteBuffer =
+        DefaultByteBufferProvider.allocate(size)
 
 /**
  * Creates a [ByteBuffer] with little-endian byte-order
  * @param size Capacity of the buffer
  * @return A [ByteBuffer] with little-endian byte-order
  */
-header fun byteBufferLE(size: Int): ByteBuffer
+inline fun byteBufferLE(size: Int): ByteBuffer =
+        DefaultLEByteBufferProvider.allocate(size)
 
+/*
 /**
  * Creates a [FloatBuffer]
  * @param size Capacity of the buffer
  * @return A [FloatBuffer]
  */
 header fun floatBuffer(size: Int): FloatBuffer
+
+
+/**
+ * Big endian byte order
+ */
+header val BIG_ENDIAN: ByteOrder
+
+/**
+ * Little endian byte order
+ */
+header val LITTLE_ENDIAN: ByteOrder
+
+/**
+ * Native endianness depending on current hardware, either [BIG_ENDIAN] or
+ * [LITTLE_ENDIAN]
+ */
+header val NATIVE_ENDIAN: ByteOrder
+*/
+
+interface ByteBufferProvider {
+    fun allocate(capacity: Int): ByteBuffer
+
+    fun reallocate(buffer: ByteBuffer): ByteBuffer =
+            allocate(buffer.capacity()).apply {
+                val position = buffer.position()
+                val limit = buffer.limit()
+                buffer.rewind()
+                put(buffer)
+                buffer.limit(limit)
+                buffer.position(position)
+                clear()
+            }
+}
+
+/*
+header object DefaultByteBufferProvider : ByteBufferProvider {
+    override fun allocate(capacity: Int): ByteBuffer
+}
+
+header object DefaultLEByteBufferProvider : ByteBufferProvider {
+    override fun allocate(capacity: Int): ByteBuffer
+}
 
 header internal fun ReadableByteStream.writeArray(src: ByteArray,
                                                   off: Int,

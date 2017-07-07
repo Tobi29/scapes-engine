@@ -26,6 +26,8 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Sync
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
@@ -39,7 +41,7 @@ import org.tobi29.scapes.engine.utils.task.UpdateLoop
 class ScapesEngine(game: (ScapesEngine) -> Game,
                    backend: (ScapesEngine) -> Container,
                    val taskExecutor: TaskExecutor,
-                   val configMap: MutableTagMap) {
+                   val configMap: MutableTagMap) : ByteBufferProvider {
     private val runtime = Runtime.getRuntime()
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
@@ -125,7 +127,9 @@ class ScapesEngine(game: (ScapesEngine) -> Game,
         newState.set(state)
     }
 
-    fun allocate(capacity: Int) = container.allocate(capacity)
+    override fun allocate(capacity: Int) = container.allocate(capacity)
+
+    override fun reallocate(buffer: ByteBuffer) = container.reallocate(buffer)
 
     @Synchronized
     fun start() {

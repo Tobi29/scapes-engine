@@ -16,26 +16,59 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.strUTF8
 import java.nio.ByteOrder
 
 /* impl */ fun ByteBuffer.asString(): String =
         if (hasArray()) {
             String(array(), arrayOffset(), remaining())
         } else {
-            asArray().strUTF8()
+            String(asArray())
         }
-
-/* impl */ fun byteBuffer(size: Int): ByteBuffer {
-    return java.nio.ByteBuffer.allocate(size).order(ByteOrder.BIG_ENDIAN)
-}
-
-/* impl */ fun byteBufferLE(size: Int): ByteBuffer {
-    return java.nio.ByteBuffer.allocate(size).order(ByteOrder.LITTLE_ENDIAN)
-}
 
 /* impl */ fun floatBuffer(size: Int): FloatBuffer {
     return java.nio.FloatBuffer.allocate(size)
+}
+
+/* impl */ inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
+
+/* impl */ inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
+
+/* impl */ inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
+
+/* impl */ object DefaultByteBufferProvider : ByteBufferProvider {
+    /* impl */ override fun allocate(capacity: Int): ByteBuffer =
+            java.nio.ByteBuffer.allocate(capacity).order(BIG_ENDIAN)
+
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+        if (buffer.hasArray()) {
+            return buffer.order(BIG_ENDIAN)
+        }
+        return super.reallocate(buffer)
+    }
+}
+
+/* impl */ object DefaultLEByteBufferProvider : ByteBufferProvider {
+    /* impl */ override fun allocate(capacity: Int): ByteBuffer =
+            java.nio.ByteBuffer.allocate(capacity).order(LITTLE_ENDIAN)
+
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+        if (buffer.hasArray()) {
+            return buffer.order(LITTLE_ENDIAN)
+        }
+        return super.reallocate(buffer)
+    }
+}
+
+object NativeByteBufferProvider : ByteBufferProvider {
+    override fun allocate(capacity: Int): ByteBuffer =
+            java.nio.ByteBuffer.allocateDirect(capacity).order(NATIVE_ENDIAN)
+
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+        if (buffer.isDirect) {
+            return buffer.order(NATIVE_ENDIAN)
+        }
+        return super.reallocate(buffer)
+    }
 }
 
 /* impl */ internal fun ReadableByteStream.writeArray(src: ByteArray,
