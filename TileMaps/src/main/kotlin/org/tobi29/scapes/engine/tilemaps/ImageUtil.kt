@@ -26,7 +26,7 @@ fun makeTransparent(image: Image,
     } else {
         transStr
     }
-    val colorInt = Integer.parseInt(str, 16)
+    val colorInt = str.toInt(16)
     val transR = (colorInt shr 16 and 0xFF).toByte()
     val transG = (colorInt shr 8 and 0xFF).toByte()
     val transB = (colorInt and 0xFF).toByte()
