@@ -73,7 +73,6 @@ inline fun abs(value: Vector3d): Vector3d {
             abs(value.z))
 }
 
-/*
 /**
  * Returns the absolute value of [value]
  * @param value The value
@@ -101,7 +100,6 @@ header fun abs(value: Float): Float
  * @return Absolute value of [value]
  */
 header fun abs(value: Double): Double
-*/
 
 /**
  * Returns the smallest value in [value]
@@ -137,7 +135,6 @@ inline fun min(value1: Vector3d,
             min(value1.z, value2.z))
 }
 
-/*
 /**
  * Returns the smaller value between [value1] and [value2]
  * @param value1 The first value
@@ -173,7 +170,6 @@ header fun min(value1: Float,
  */
 header fun min(value1: Double,
                value2: Double): Double
-*/
 
 /**
  * Returns the greatest value in [value]
@@ -243,7 +239,6 @@ inline fun max(value1: Vector3i,
             max(value1.z, value2.z))
 }
 
-/*
 /**
  * Returns the greater value between [value1] and [value2]
  * @param value1 The first value
@@ -279,7 +274,6 @@ header fun max(value1: Float,
  */
 header fun max(value1: Double,
                value2: Double): Double
-*/
 
 /**
  * Returns the clamped value of x in [value] between y in [value] and z in
@@ -520,7 +514,6 @@ inline fun cbe(value: Double): Double {
     return value * value * value
 }
 
-/*
 /**
  * Returns the square-root value of [value]
  * @param value The value
@@ -632,7 +625,6 @@ header fun ceilL(value: Double): Long
  * @return Next integer above [value]
  */
 header fun ceilD(value: Double): Double
-*/
 
 /**
  * Converts the [Float] from degrees into radians
@@ -666,7 +658,6 @@ inline fun Double.toDeg(): Double {
     return this * RAD_2_DEG
 }
 
-/*
 /**
  * Computes the sin of [value]
  * @param value Value in radians
@@ -680,7 +671,6 @@ header fun sin(value: Float): Float
  * @return Result between `-1.0` and `1.0`
  */
 header fun sin(value: Double): Double
-*/
 
 /**
  * Computes the sin of [value] using a less accurate table
@@ -700,7 +690,6 @@ inline fun sinTable(value: Double): Double {
     return FastSin.sin(value)
 }
 
-/*
 /**
  * Computes the asin of [value]
  * @param value Value between `-1.0` and `1.0`
@@ -714,7 +703,6 @@ header fun asin(value: Float): Float
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
 header fun asin(value: Double): Double
-*/
 
 /**
  * Computes the asin of [value] using a less accurate table
@@ -734,7 +722,6 @@ inline fun asinTable(value: Double): Double {
     return FastAsin.asin(value)
 }
 
-/*
 /**
  * Computes the cos of [value]
  * @param value Value in radians
@@ -748,7 +735,6 @@ header fun cos(value: Float): Float
  * @return Result between `-1.0` and `1.0`
  */
 header fun cos(value: Double): Double
-*/
 
 /**
  * Computes the cos of [value] using a less accurate table
@@ -768,7 +754,6 @@ inline fun cosTable(value: Double): Double {
     return FastSin.cos(value)
 }
 
-/*
 /**
  * Computes the acos of [value]
  * @param value Value between `-1.0` and `1.0`
@@ -782,7 +767,6 @@ header fun acos(value: Float): Float
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
 header fun acos(value: Double): Double
-*/
 
 /**
  * Computes the acos of [value] using a less accurate table
@@ -802,7 +786,6 @@ inline fun acosTable(value: Double): Double {
     return FastAsin.acos(value)
 }
 
-/*
 /**
  * Computes the tan of [value]
  * @param value Value in radians
@@ -862,7 +845,6 @@ header fun atan2(value1: Float,
  */
 header fun atan2(value1: Double,
                  value2: Double): Double
-*/
 
 /**
  * Computes the atan2 of [value1] and [value2]
@@ -886,7 +868,6 @@ inline fun atan2Fast(value1: Double,
     return FastAtan2.atan2(value1, value2)
 }
 
-/*
 /**
  * Computes [value1] to the power of [value2]
  * @param value1 The base value
@@ -904,7 +885,6 @@ header fun pow(value1: Float,
  */
 header fun pow(value1: Double,
                value2: Double): Double
-*/
 
 /**
  * Computes the difference between the angles [value1] and [value2]
@@ -992,14 +972,12 @@ inline fun nextPowerOfTwo(value: Int): Int {
     return FastMath.nextPowerOfTwo(value)
 }
 
-/*
 /**
  * Computes the logarithm with base 2 of [value]
  * @param value The value
  * @return Returns the logarithm with base 2 of [value]
  */
 header fun lb(value: Int): Int
-*/
 
 /**
  * Computes the modulus of the given number and [value]

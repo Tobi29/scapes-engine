@@ -142,31 +142,31 @@ interface Random {
     fun nextDouble(): Double
 }
 
-/* /**
+/**
  * Create a new pseudo random number generator with a random seed
  *
- * **Note:** The implementation may not be thread-safe nor fit for security
- * related tasks
+ * **Note:** The implementation will probably be not be thread-safe nor fit for
+ * security related tasks
  * @return a new instance of [Random]
  */
-header fun Random(): Random */
+header fun Random(): Random
 
-/* /**
+/**
  * Create a new pseudo random number generator with the given random seed
  *
  * Calling the same sequence of operations on the same seed shall return
  * identical values (besides floating point accuracy) across platforms
  *
- * Reference implementation is based on the `java.util.Random` class in the
+ * Reference implementation is based on the `java.lang.Random` class in the
  * Java Standard Library and describes how the values shall be generated
  *
  * **Note:** The implementation will probably be not be thread-safe nor fit for
  * security related tasks
  * @return a new instance of [Random]
  */
-header fun Random(seed: Long): Random */
+header fun Random(seed: Long): Random
 
-/* /**
+/**
  * Give a pseudo random number generator to use in the current thread
  *
  * As the implementation may not be thread-safe passing the returned object
@@ -176,7 +176,7 @@ header fun Random(seed: Long): Random */
  * related tasks
  * @return a new instance of [Random]
  */
-header fun threadLocalRandom(): Random */
+header fun threadLocalRandom(): Random
 
 /**
  * Returns a value in range `[Byte.MIN_VALUE]..[Byte.MAX_VALUE]`
