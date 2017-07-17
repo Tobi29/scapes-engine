@@ -17,6 +17,6 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":IOUtils")
-    compile project(":MathUtils")
+    compile project(":IOUtilsJVM")
+    compile project(":MathUtilsJVM")
 }

@@ -15,13 +15,13 @@
  */
 
 // Utils
-include "Utils"
+include "UtilsJVM"
 include "TagStructureJSON"
 include "MBeansCPUReaderJVM"
-include "MathUtils"
-include "IOUtils"
+include "MathUtilsJVM"
+include "IOUtilsJVM"
 include "GenerationUtils"
-include "GraphicsUtils"
+include "GraphicsUtilsJVM"
 include "ThreadUtils"
 include "ArgumentParser"
 
@@ -29,7 +29,7 @@ include "ArgumentParser"
 include "TestAssertionsJVM"
 
 // File systems
-include "FileSystems"
+include "FileSystemsJVM"
 include "NIOFileSystemJVM"
 include "IOFileSystemJVM"
 
@@ -54,7 +54,7 @@ include "TileMapsRenderer"
 
 // Engine
 include "Engine"
-include "ShaderCLike"
+include "ShaderCLikeJVM"
 include "ShaderCompiler"
 include "ShaderParser"
 

@@ -17,18 +17,18 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":Utils")
+    compile project(":UtilsJVM")
 }
 
 sourceSets {
     main {
         kotlin {
-            srcDirs += "../MathUtilsJVM/src/main/kotlin"
+            srcDirs += "../MathUtils/src/main/kotlin"
         }
     }
     test {
         kotlin {
-            srcDirs += "../MathUtilsJVM/src/test/kotlin"
+            srcDirs += "../MathUtils/src/test/kotlin"
         }
     }
 }

@@ -17,20 +17,19 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile rootProject.ext.slf4jAPI
-    compile rootProject.ext.base64
-    compile rootProject.ext.kotlinSTD
+    compile project(":IOUtilsJVM")
+    compile rootProject.ext.threeten
 }
 
 sourceSets {
     main {
         kotlin {
-            srcDirs += "../UtilsJVM/src/main/kotlin"
+            srcDirs += "../FileSystems/src/main/kotlin"
         }
     }
     test {
         kotlin {
-            srcDirs += "../UtilsJVM/src/test/kotlin"
+            srcDirs += "../FileSystems/src/test/kotlin"
         }
     }
 }

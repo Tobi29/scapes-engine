@@ -17,5 +17,5 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":GraphicsUtils")
+    compile project(":GraphicsUtilsJVM")
 }

@@ -17,7 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":FileSystems")
+    compile project(":FileSystemsJVM")
     compile project(":ThreadUtils")
 
     compileOnly rootProject.ext.swtWindows32

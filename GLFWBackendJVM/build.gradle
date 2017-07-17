@@ -18,7 +18,7 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
     compile project(":LWJGL3BackendJVM")
-    compile project(":FileSystems")
+    compile project(":FileSystemsJVM")
     compile rootProject.ext.lwjgl
     compile rootProject.ext.lwjglGLFW
     compile rootProject.ext.lwjglTinyFD

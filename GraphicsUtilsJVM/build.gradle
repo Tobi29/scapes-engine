@@ -17,19 +17,20 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":ShaderCompiler")
-    compile project(":ShaderParser")
+    compile project(":IOUtilsJVM")
+    compile project(":MathUtilsJVM")
+    compile rootProject.ext.pngj
 }
 
 sourceSets {
     main {
         kotlin {
-            srcDirs += "../ShaderCLikeJVM/src/main/kotlin"
+            srcDirs += "../GraphicsUtils/src/main/kotlin"
         }
     }
     test {
         kotlin {
-            srcDirs += "../ShaderCLikeJVM/src/test/kotlin"
+            srcDirs += "../GraphicsUtils/src/test/kotlin"
         }
     }
 }
