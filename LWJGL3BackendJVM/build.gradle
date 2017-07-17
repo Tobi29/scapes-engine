@@ -24,4 +24,5 @@ dependencies {
     compile rootProject.ext.lwjglOpenGL
     compile rootProject.ext.lwjglOpenGLES
     compile rootProject.ext.lwjglSTB
+    compileOnly project(":Engine")
 }

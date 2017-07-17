@@ -22,4 +22,6 @@ dependencies {
     compile rootProject.ext.lwjgl
     compile rootProject.ext.lwjglGLFW
     compile rootProject.ext.lwjglTinyFD
+    compileOnly project(":Engine")
+    compileOnly project(":FileSystems")
 }
