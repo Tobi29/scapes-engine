@@ -16,8 +16,4 @@
 
 package org.tobi29.scapes.engine.utils
 
-/* impl */ fun String.toUUID() = try {
-    UUID.fromString(this)
-} catch (e: IllegalArgumentException) {
-    null
-}
+impl fun String.toUUID(): UUID = java.util.UUID.fromString(this)

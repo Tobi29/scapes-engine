@@ -17,3 +17,5 @@
 package org.tobi29.scapes.engine.utils
 
 typealias UUID = java.util.UUID
+
+header fun String.toUUID(): UUID

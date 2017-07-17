@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils
+package org.tobi29.scapes.engine.utils.logging.internal
 
-impl object Assertions {
-    impl var ENABLED: Boolean = Assertions::class.java.desiredAssertionStatus()
+import kotlin.reflect.KClass
+
+header internal object KLoggerNameResolver {
+    fun <T : Any> name(forClass: KClass<T>): String
 }

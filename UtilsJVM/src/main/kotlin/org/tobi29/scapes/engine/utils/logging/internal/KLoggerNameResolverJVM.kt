@@ -5,8 +5,8 @@ import kotlin.reflect.KClass
 
 // Based on https://github.com/MicroUtils/kotlin-logging
 @Suppress("NOTHING_TO_INLINE")
-internal object KLoggerNameResolver {
-    inline internal fun <T : Any> name(forClass: KClass<T>): String =
+impl internal object KLoggerNameResolver {
+    inline impl fun <T : Any> name(forClass: KClass<T>): String =
             unwrapCompanionClass(forClass).java.simpleName ?: "???"
 
     inline private fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {

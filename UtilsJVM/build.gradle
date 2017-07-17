@@ -16,21 +16,10 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
+implementCommon(project(":Utils"))
+
 dependencies {
     compile rootProject.ext.slf4jAPI
     compile rootProject.ext.base64
     compile rootProject.ext.kotlinSTD
-}
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += "../Utils/src/main/kotlin"
-        }
-    }
-    test {
-        kotlin {
-            srcDirs += "../Utils/src/test/kotlin"
-        }
-    }
 }

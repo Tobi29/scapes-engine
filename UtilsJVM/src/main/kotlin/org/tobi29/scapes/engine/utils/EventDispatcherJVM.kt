@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils
 import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.reflect.KClass
 
-class EventDispatcher internal constructor(
+impl class EventDispatcher internal constructor(
         private val parent: EventDispatcher? = null) {
     private val root = findRoot()
     private val children = ConcurrentHashSet<EventDispatcher>()
@@ -28,7 +28,7 @@ class EventDispatcher internal constructor(
     private val enabled = AtomicBoolean(parent == null)
 
     @Synchronized
-    fun enable() {
+    impl fun enable() {
         val parent = parent ?: return
         if (!enabled.getAndSet(true)) {
             parent.children.add(this)
@@ -44,7 +44,7 @@ class EventDispatcher internal constructor(
     }
 
     @Synchronized
-    fun disable() {
+    impl fun disable() {
         val parent = parent ?: return
         if (enabled.getAndSet(false)) {
             parent.children.remove(this)
@@ -68,7 +68,7 @@ class EventDispatcher internal constructor(
         children.forEach { it.deactivate() }
     }
 
-    fun <E : Any> fire(event: E) {
+    impl fun <E : Any> fire(event: E) {
         root.activeListeners[event::class]?.let {
             @Suppress("UNCHECKED_CAST")
             (it as Iterable<Listener<E>>).forEach {
@@ -90,17 +90,8 @@ class EventDispatcher internal constructor(
     }
 }
 
-fun EventDispatcher() = EventDispatcher(null)
-
-fun EventDispatcher(parent: EventDispatcher,
-                    init: ListenerRegistrar.() -> Unit): EventDispatcher {
-    val listener = EventDispatcher(parent)
-    init(ListenerRegistrar(listener))
-    return listener
-}
-
-class ListenerRegistrar internal constructor(val events: EventDispatcher) {
-    fun <E : Any> listen(clazz: KClass<E>,
+impl class ListenerRegistrar internal constructor(impl val events: EventDispatcher) {
+    impl fun <E : Any> listen(clazz: KClass<E>,
                          priority: Int,
                          accepts: (E) -> Boolean,
                          listener: (E) -> Unit) {
@@ -111,24 +102,24 @@ class ListenerRegistrar internal constructor(val events: EventDispatcher) {
         list.add(reference)
     }
 
-    inline fun <reified E : Any> listen(
+    impl inline fun <reified E : Any> listen(
             noinline listener: (E) -> Unit) {
         listen(0, listener)
     }
 
-    inline fun <reified E : Any> listen(
+    impl inline fun <reified E : Any> listen(
             priority: Int,
             noinline listener: (E) -> Unit) {
         listen(priority, { true }, listener)
     }
 
-    inline fun <reified E : Any> listen(
+    impl inline fun <reified E : Any> listen(
             noinline accepts: (E) -> Boolean,
             noinline listener: (E) -> Unit) {
         listen(0, accepts, listener)
     }
 
-    inline fun <reified E : Any> listen(
+    impl inline fun <reified E : Any> listen(
             priority: Int,
             noinline accepts: (E) -> Boolean,
             noinline listener: (E) -> Unit) {

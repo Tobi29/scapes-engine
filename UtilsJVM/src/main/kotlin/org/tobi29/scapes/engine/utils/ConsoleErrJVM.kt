@@ -108,14 +108,14 @@ inline fun printerrln(message: CharArray) {
     System.err.println(message)
 }
 
-/* impl */ inline fun printerr(message: Any?) {
+impl inline fun printerr(message: Any?) {
     System.err.print(message)
 }
 
-/* impl */ inline fun printerrln(message: Any?) {
+impl inline fun printerrln(message: Any?) {
     System.err.println(message)
 }
 
-/* impl */ inline fun printerrln() {
+impl inline fun printerrln() {
     System.err.println()
 }

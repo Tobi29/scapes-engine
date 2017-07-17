@@ -333,7 +333,6 @@ inline fun <T> copy(src: Array<out T>,
                     offsetDest: Int = 0) =
         copyArray(src, dest, length, offsetSrc, offsetDest)
 
-/*
 /**
  * Copy data from the [src] array to [dest]
  * @param src The array to copy from
@@ -343,11 +342,10 @@ inline fun <T> copy(src: Array<out T>,
  * @param offsetDest Offset in the destination array
  */
 header fun <T> copyArray(src: Array<out T>,
-                             dest: Array<in T>,
-                             length: Int,
-                             offsetSrc: Int,
-                             offsetDest: Int)
-*/
+                         dest: Array<in T>,
+                         length: Int,
+                         offsetSrc: Int,
+                         offsetDest: Int)
 
 /**
  * Creates a new array and makes it accessible using a wrapper initialized with

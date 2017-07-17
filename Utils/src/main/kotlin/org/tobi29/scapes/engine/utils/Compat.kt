@@ -18,7 +18,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-/*
 /**
  * Android API Level that the current application is running on or `null`
  * if not running on Android
@@ -55,4 +54,3 @@ header val IS_NATIVE: Boolean
  * @return `true` if specified API Level is available or running on other JVM
  */
 header fun isAndroidAPI(level: Int): Boolean
-*/

@@ -20,7 +20,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.tobi29.scapes.engine.utils.logging.KLogger
 
-internal fun createDefaultLogger(name: String): KLogger = SLF4JKLogger(
+impl internal fun createDefaultLogger(name: String): KLogger = SLF4JKLogger(
         LoggerFactory.getLogger(name))
 
 internal class SLF4JKLogger(private val logger: Logger) : KLogger() {

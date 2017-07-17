@@ -334,7 +334,6 @@ inline fun copy(src: BooleanArray,
                 offsetDest: Int = 0) =
         copyArray(src, dest, length, offsetSrc, offsetDest)
 
-/*
 /**
  * Copy data from the [src] array to [dest]
  * @param src The array to copy from
@@ -344,11 +343,10 @@ inline fun copy(src: BooleanArray,
  * @param offsetDest Offset in the destination array
  */
 header fun copyArray(src: BooleanArray,
-                             dest: BooleanArray,
-                             length: Int,
-                             offsetSrc: Int,
-                             offsetDest: Int)
-*/
+                     dest: BooleanArray,
+                     length: Int,
+                     offsetSrc: Int,
+                     offsetDest: Int)
 
 /**
  * Creates a new array and makes it accessible using a wrapper

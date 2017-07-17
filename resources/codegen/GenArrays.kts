@@ -406,7 +406,6 @@ inline $genericFun copy(src: ${specializeOut("Array")},
                         offsetDest: Int = 0) =
         copyArray(src, dest, length, offsetSrc, offsetDest)
 
-/*
 /**
  * Copy data from the [src] array to [dest]
  * @param src The array to copy from
@@ -420,7 +419,6 @@ header $genericFun copyArray(src: ${specializeOut("Array")},
                              length: Int,
                              offsetSrc: Int,
                              offsetDest: Int)
-*/
 """)
 
 if (isReference) {

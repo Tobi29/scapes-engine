@@ -134,7 +134,6 @@ inline fun <T> Iterator(crossinline block: () -> T?): Iterator<T> {
     }
 }
 
-/*
 /**
  * Returns an unmodifiable version of the given collection
  * @param T The type of elements
@@ -328,7 +327,6 @@ header inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
 
 header fun <K, V> MutableMap<K, V>.remove(key: K,
                                           value: V): Boolean
-*/
 
 fun <T : Comparable<T>> comparator(): Comparator<T> =
         object : Comparator<T> {

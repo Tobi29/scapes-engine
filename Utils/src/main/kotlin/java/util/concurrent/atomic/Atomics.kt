@@ -1,6 +1,5 @@
 package java.util.concurrent.atomic
 
-/*
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header class AtomicBoolean(value: Boolean) {
     fun get(): Boolean
@@ -72,4 +71,3 @@ header class AtomicReference<V>(value: V) {
 
     fun getAndSet(newValue: V): V
 }
-*/

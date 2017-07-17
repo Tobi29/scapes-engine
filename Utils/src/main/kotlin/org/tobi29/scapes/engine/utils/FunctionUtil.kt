@@ -16,16 +16,16 @@
 
 package org.tobi29.scapes.engine.utils
 
+header infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit
+
 /**
  * Chains all given functions into a single function
  * @param functions The functions to use
  * @return A function calling all given functions in order
  */
-fun chain(vararg functions: () -> Unit): () -> Unit {
-    return {
-        functions.forEach { it() }
-    }
-}
+header fun chain(vararg functions: () -> Unit): () -> Unit
+
+header infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit
 
 /**
  * Chains all given functions into a single function
@@ -33,11 +33,9 @@ fun chain(vararg functions: () -> Unit): () -> Unit {
  * @param I First argument type of the functions
  * @return A function calling all given functions in order
  */
-fun <I> chain(vararg functions: (I) -> Unit): (I) -> Unit {
-    return { i ->
-        functions.forEach { it(i) }
-    }
-}
+header fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit
+
+header infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit
 
 /**
  * Chains all given functions into a single function
@@ -45,8 +43,4 @@ fun <I> chain(vararg functions: (I) -> Unit): (I) -> Unit {
  * @param J Second argument type of the functions
  * @return A function calling all given functions in order
  */
-fun <I, J> chain(vararg functions: (I, J) -> Unit): (I, J) -> Unit {
-    return { i, j ->
-        functions.forEach { it(i, j) }
-    }
-}
+header fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit

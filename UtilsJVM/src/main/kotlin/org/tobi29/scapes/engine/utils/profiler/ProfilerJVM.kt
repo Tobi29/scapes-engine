@@ -22,74 +22,50 @@ import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
 import java.util.*
 
-class Profiler private constructor(thread: Thread) {
-    private val rootNode: Node
-    private var node: Node
+impl object Profiler {
+    internal val PROFILERS = WeakHashMap<Thread, ProfilerInstance>()
+    private val INSTANCE = ThreadLocal { ProfilerInstance() }
 
-    init {
-        rootNode = Node({ thread.name })
-        node = rootNode
-        PROFILERS.put(
-                thread, this)
+    impl var enabled = false
+
+    impl fun current() = INSTANCE.get()
+
+    impl fun reset() {
+        PROFILERS.values.forEach { it.resetNodes() }
     }
 
-    fun enterNode(name: String) {
+    fun node(thread: Thread): Node? {
+        return PROFILERS[thread]?.rootNode
+    }
+}
+
+impl class ProfilerInstance(thread: Thread) {
+    internal val rootNode = Node({ thread.name })
+    private var node = rootNode
+
+    init {
+        Profiler.PROFILERS.put(thread, this)
+    }
+
+    internal constructor() : this(Thread.currentThread())
+
+    impl fun enterNode(name: String) {
         node = node.children.computeAbsent(name) { Node({ it }, node) }
         node.lastEnter = System.nanoTime()
         ProfilerDispatch.dispatchers.forEach { it.enterNode(name) }
     }
 
-    fun exitNode(name: String) {
+    impl fun exitNode(name: String) {
         val parentNode = node.parent ?: throw IllegalStateException(
                 "Profiler stack popped on root node")
         assert { name == node.name() }
-        node.time += System.nanoTime() - node.lastEnter
+        node.timeNanos += System.nanoTime() - node.lastEnter
         ProfilerDispatch.dispatchers.forEach { it.exitNode(name) }
         node = parentNode
     }
 
-    private fun resetNodes() {
+    internal fun resetNodes() {
         rootNode.children.clear()
-    }
-
-    companion object {
-        private val PROFILERS = WeakHashMap<Thread, Profiler>()
-        private val INSTANCE = ThreadLocal(::Profiler)
-        var enabled = false
-
-        fun current(): Profiler {
-            return INSTANCE.get()
-        }
-
-        fun node(thread: Thread): Node? {
-            return PROFILERS[thread]?.rootNode
-        }
-
-        fun reset() {
-            PROFILERS.values.forEach { it.resetNodes() }
-        }
-    }
-}
-
-class Node(val name: () -> String,
-           val parent: Node? = null) {
-    val children: MutableMap<String, Node> = HashMap()
-    var lastEnter = 0L
-    var time = 0L
-
-    fun time(): Double {
-        return time / 1000000000.0
-    }
-}
-
-inline fun <R> profilerSection(name: String,
-                               receiver: () -> R): R {
-    val instance = if (Profiler.enabled) Profiler.current() else null
-    instance?.enterNode(name)
-    try {
-        return receiver()
-    } finally {
-        instance?.exitNode(name)
     }
 }
 

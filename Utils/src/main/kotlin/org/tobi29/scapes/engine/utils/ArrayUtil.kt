@@ -18,13 +18,26 @@
 
 package org.tobi29.scapes.engine.utils
 
-/*
+import kotlin.experimental.or
+
 /**
  * Converts a byte array into a hexadecimal string
  * @receiver Array to convert
  * @return String containing the hexadecimal data
  */
-header fun ByteArray.toHexadecimal(): String
+fun ByteArray.toHexadecimal(): String {
+    val text = StringBuilder(size shl 1)
+    for (value in this) {
+        val append = (if (value < 0) value + 256 else value.toInt())
+                .toString(16)
+        if (append.length == 1) {
+            text.append('0').append(append)
+        } else {
+            text.append(append)
+        }
+    }
+    return text.toString()
+}
 
 /**
  * Converts a byte array into a hexadecimal string
@@ -32,7 +45,27 @@ header fun ByteArray.toHexadecimal(): String
  * @param groups How many bytes to group until separated by a space
  * @return String containing the hexadecimal data
  */
-header fun ByteArray.toHexadecimal(groups: Int): String
+fun ByteArray.toHexadecimal(groups: Int): String {
+    val text = StringBuilder((size shl 1) + size / groups)
+    var group = 0
+    val limit = size - 1
+    for (i in indices) {
+        val value = get(i)
+        val append = (if (value < 0) value + 256 else value.toInt())
+                .toString(16)
+        if (append.length == 1) {
+            text.append('0').append(append)
+        } else {
+            text.append(append)
+        }
+        group++
+        if (group >= groups && i < limit) {
+            text.append(' ')
+            group = 0
+        }
+    }
+    return text.toString()
+}
 
 /**
  * Converts a hexadecimal string to a byte array Silently discards spaces
@@ -40,7 +73,27 @@ header fun ByteArray.toHexadecimal(groups: Int): String
  * @return A byte array containing the data
  * @throws IllegalArgumentException Thrown in case of an invalid string
  */
-header fun String.fromHexadecimal(): ByteArray
+fun String.fromHexadecimal(): ByteArray {
+    val text = replace(" ", "")
+    if (text.length and 1 == 1) {
+        throw IllegalArgumentException("String has uneven length")
+    }
+    val array = ByteArray(text.length shr 1)
+    var i = 0
+    while (i < text.length) {
+        val c1 = text.substring(i, i + 1).let {
+            it.toByteOrNull(16)
+                    ?: throw IllegalArgumentException("Invalid hex: $it")
+        }
+        val c2 = text.substring(i + 1, i + 2).let {
+            it.toByteOrNull(16)
+                    ?: throw IllegalArgumentException("Invalid hex: $it")
+        }
+        array[i shr 1] = (c1.toInt() shl 4).toByte() or c2
+        i += 2
+    }
+    return array
+}
 
 /**
  * Converts a byte array to a Base64 string
@@ -56,4 +109,3 @@ header fun ByteArray.toBase64(): String
  * @throws IllegalArgumentException When an invalid base64 was given
  */
 header fun String.fromBase64(): ByteArray
-*/

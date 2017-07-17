@@ -85,8 +85,6 @@ inline fun assert(enabled: Boolean,
 inline fun assert(enabled: Boolean,
                   block: () -> Boolean) = assert(enabled, null, block)
 
-/*
 header object Assertions {
     var ENABLED: Boolean
 }
-*/

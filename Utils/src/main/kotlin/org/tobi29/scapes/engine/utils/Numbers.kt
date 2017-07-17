@@ -1,6 +1,5 @@
 package org.tobi29.scapes.engine.utils
 
-/*
 /**
  * Converts the given number to an integer containing the IEEE 754
  * representation
@@ -34,15 +33,12 @@ header fun Int.bitsToFloat(): Float
 header fun Long.bitsToDouble(): Double
 
 header fun Int.toString(radix: Int): String
-*/
 
 fun Int.toString(radix: Int = 10,
                  length: Int): String =
         toString(radix).forceDigits(length)
 
-/*
 header fun Long.toString(radix: Int): String
-*/
 
 fun Long.toString(radix: Int = 10,
                   length: Int): String =

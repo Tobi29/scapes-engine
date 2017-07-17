@@ -71,8 +71,24 @@ fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str
     }
 }
 
-/*
 header fun ByteArray.strUTF8(): String
 
 header fun String.bytesUTF8(): ByteArray
-*/
+
+fun CharArray.copyToString(offset: Int = 0,
+                           length: Int = size): String =
+        copyToStringImpl(offset, length)
+
+fun String.copyToArray(destination: CharArray = CharArray(length),
+                       offset: Int = 0,
+                       startIndex: Int = 0,
+                       endIndex: Int = length): CharArray =
+        copyToArrayImpl(destination, offset, startIndex, endIndex)
+
+header internal fun CharArray.copyToStringImpl(offset: Int,
+                                               length: Int): String
+
+header internal fun String.copyToArrayImpl(destination: CharArray,
+                                           offset: Int,
+                                           startIndex: Int,
+                                           endIndex: Int): CharArray
