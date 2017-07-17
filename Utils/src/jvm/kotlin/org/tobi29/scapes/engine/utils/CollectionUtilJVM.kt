@@ -20,136 +20,51 @@ package org.tobi29.scapes.engine.utils
 
 import java.util.*
 
-/**
- * Returns an unmodifiable version of the given collection
- * @param T The type of elements
- * @receiver The collection
- * @returns A read only view of the collection
- */
-inline fun <T> Collection<T>.readOnly(): Collection<T> = Collections.unmodifiableCollection(
-        this)
+/* impl */ inline fun <T> Collection<T>.readOnly(): Collection<T> =
+        Collections.unmodifiableCollection(this)
 
-/**
- * Returns an unmodifiable version of the given list
- * @param T The type of elements
- * @receiver The list
- * @returns A read only view of the list
- */
-inline fun <T> List<T>.readOnly(): List<T> = Collections.unmodifiableList(this)
+/* impl */ inline fun <T> List<T>.readOnly(): List<T> =
+        Collections.unmodifiableList(this)
 
-/**
- * Returns an unmodifiable version of the given set
- * @param T The type of elements
- * @receiver The set
- * @returns A read only view of the set
- */
-inline fun <T> Set<T>.readOnly(): Set<T> = Collections.unmodifiableSet(this)
+/* impl */ inline fun <T> Set<T>.readOnly(): Set<T> =
+        Collections.unmodifiableSet(this)
 
-/**
- * Returns an unmodifiable version of the given map
- * @param K The type of keys
- * @param V The type of values
- * @receiver The map
- * @returns A read only view of the map
- */
-inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> = Collections.unmodifiableMap(
-        this)
+/* impl */ inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> =
+        Collections.unmodifiableMap(this)
 
-/**
- * Returns a synchronized version of the given collection
- * @param T The type of elements
- * @receiver The collection
- * @returns A synchronized view of the collection
- */
-inline fun <T> Collection<T>.synchronized(): Collection<T> = Collections.synchronizedCollection(
-        this)
+/* impl */ inline fun <T> Collection<T>.synchronized(): Collection<T> =
+        Collections.synchronizedCollection(this)
 
-/**
- * Returns a synchronized version of the given collection
- * @param T The type of elements
- * @receiver The collection
- * @returns A synchronized view of the collection
- */
 @JvmName("synchronizedMut")
-inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> = Collections.synchronizedCollection(
-        this)
+/* impl */ inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> =
+        Collections.synchronizedCollection(this)
 
-/**
- * Returns a synchronized version of the given list
- * @param T The type of elements
- * @receiver The list
- * @returns A synchronized view of the list
- */
-inline fun <T> List<T>.synchronized(): List<T> = Collections.synchronizedList(
-        this)
+/* impl */ inline fun <T> List<T>.synchronized(): List<T> =
+        Collections.synchronizedList(this)
 
-/**
- * Returns a synchronized version of the given list
- * @param T The type of elements
- * @receiver The list
- * @returns A synchronized view of the list
- */
 @JvmName("synchronizedMut")
-inline fun <T> MutableList<T>.synchronized(): MutableList<T> = Collections.synchronizedList(
-        this)
+/* impl */ inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
+        Collections.synchronizedList(this)
 
-/**
- * Returns a synchronized version of the given set
- * @param T The type of elements
- * @receiver The set
- * @returns A synchronized view of the set
- */
-inline fun <T> Set<T>.synchronized(): Set<T> = Collections.synchronizedSet(
-        this)
+/* impl */ inline fun <T> Set<T>.synchronized(): Set<T> =
+        Collections.synchronizedSet(this)
 
-/**
- * Returns a synchronized version of the given set
- * @param T The type of elements
- * @receiver The set
- * @returns A synchronized view of the set
- */
 @JvmName("synchronizedMut")
-inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> = Collections.synchronizedSet(
-        this)
+/* impl */ inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> =
+        Collections.synchronizedSet(this)
 
-/**
- * Returns a synchronized version of the given map
- * @param K The type of keys
- * @param V The type of values
- * @receiver The map
- * @returns A synchronized view of the map
- */
-inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> = Collections.synchronizedMap(
-        this)
+/* impl */ inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> =
+        Collections.synchronizedMap(this)
 
-/**
- * Returns a synchronized version of the given map
- * @param K The type of keys
- * @param V The type of values
- * @receiver The map
- * @returns A synchronized view of the map
- */
 @JvmName("synchronizedMut")
-inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> = Collections.synchronizedMap(
-        this)
+/* impl */ inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
+        Collections.synchronizedMap(this)
 
-/**
- * Returns a map using the given enum as keys
- *
- * This can provide a performance advantage over normal maps
- * @param E The enum type
- * @param V The value type
- * @returns A map using the given enum as keys
- */
-inline fun <reified E : Enum<E>, V> EnumMap() = java.util.EnumMap<E, V>(
-        E::class.java)
+/* impl */ inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
+        java.util.EnumMap<E, V>(E::class.java)
 
-/**
- * Adds the given [value] if [key] was not already in the map
- * @return The value that was already mapped or `null` if [value] got added
- */
-fun <K, V> MutableMap<K, V>.putAbsent(key: K,
-                                      value: V): V? {
+/* impl */ fun <K, V> MutableMap<K, V>.putAbsent(key: K,
+                                                 value: V): V? {
     if (this is ConcurrentMap) {
         return this.putAbsent(key, value)
     } else {
@@ -159,20 +74,12 @@ fun <K, V> MutableMap<K, V>.putAbsent(key: K,
     }
 }
 
-/**
- * Adds the given [value] if [key] was not already in the map
- * @return The value that was already mapped or `null` if [value] got added
- */
-inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
-                                                value: V) = putIfAbsent(key,
-        value)
+/* impl */ inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
+                                                           value: V): V? =
+        putIfAbsent(key, value)
 
-/**
- * Fetch the value for the [key] and remap it using [block]
- * @return The value returned from [block]
- */
-fun <K, V> MutableMap<K, V>.computeAlways(key: K,
-                                          block: (K, V?) -> V): V {
+/* impl */ fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+                                                     block: (K, V?) -> V): V {
     if (this is ConcurrentMap) {
         return this.computeAlways(key, block)
     } else {
@@ -183,12 +90,8 @@ fun <K, V> MutableMap<K, V>.computeAlways(key: K,
     }
 }
 
-/**
- * Fetch the value for the [key] and remap it using [block]
- * @return The value returned from [block]
- */
-fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
-                                             block: (K, V?) -> V): V {
+/* impl */ fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+                                                        block: (K, V?) -> V): V {
     while (true) {
         var old = this[key]
         while (true) {
@@ -210,15 +113,9 @@ fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
     }
 }
 
-/**
- * Fetch the value for the [key] and remap it using [block]
- *
- * Returning `null` in [block] will remove the value from the map
- * @return The value returned from [block]
- */
 @JvmName("computeAlwaysNullable")
-fun <K, V> MutableMap<K, V>.computeAlways(key: K,
-                                          block: (K, V?) -> V?): V? {
+        /* impl */ fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+                                                             block: (K, V?) -> V?): V? {
     if (this is ConcurrentMap) {
         return this.computeAlways(key, block)
     } else {
@@ -233,15 +130,9 @@ fun <K, V> MutableMap<K, V>.computeAlways(key: K,
     }
 }
 
-/**
- * Fetch the value for the [key] and remap it using [block]
- *
- * Returning `null` in [block] will remove the value from the map
- * @return The value returned from [block]
- */
 @JvmName("computeAlwaysNullable")
-fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
-                                             block: (K, V?) -> V?): V? {
+        /* impl */ fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+                                                                block: (K, V?) -> V?): V? {
     while (true) {
         var old = this[key]
         while (true) {
@@ -269,13 +160,8 @@ fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
     }
 }
 
-/**
- * Fetch the value for the [key], if it is not set, call [block] and add its
- * result
- * @return The value mapped to [key] at the end
- */
-inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
-                                                 block: (K) -> V): V {
+/* impl */ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+                                                            block: (K) -> V): V {
     if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
         return this.computeAbsent(key, block)
@@ -286,28 +172,16 @@ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
     }
 }
 
-/**
- * Fetch the value for the [key], if it is not set, call [block] and add its
- * result
- * @return The value mapped to [key] at the end
- */
-inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
-                                                    block: (K) -> V): V {
+/* impl */ inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+                                                               block: (K) -> V): V {
     this[key]?.let { return it }
     val new = block(key)
     return putAbsent(key, new) ?: new
 }
 
-/**
- * Fetch the value for the [key], if it is not set, call [block] and add its
- * result
- *
- * Returning `null` in [block] will remove the value from the map
- * @return The value mapped to [key] at the end
- */
 @JvmName("computeAbsentNullable")
-inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
-                                                 block: (K) -> V?): V? {
+/* impl */ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+                                                            block: (K) -> V?): V? {
     if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
         return this.computeAbsent(key, block)
@@ -318,17 +192,15 @@ inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
     }
 }
 
-/**
- * Fetch the value for the [key], if it is not set, call [block] and add its
- * result
- *
- * Returning `null` in [block] will remove the value from the map
- * @return The value mapped to [key] at the end
- */
 @JvmName("computeAbsentNullable")
-inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
-                                                    block: (K) -> V?): V? {
+/* impl */ inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+                                                               block: (K) -> V?): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
     return putAbsent(key, new) ?: new
 }
+
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+/* impl */ inline fun <K, V> MutableMap<K, V>.remove(key: K,
+                                                     value: V): Boolean =
+        remove(key, value)
