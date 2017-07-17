@@ -17,5 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":Engine")
+    compile project(":CodecsJVM")
+    compile project(":EngineJVM")
+    compileOnly project(":Engine")
 }

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
     compile project(":Engine")
-    compile project(":TileMapsJVM")
+    compile project(":TileMaps")
 }

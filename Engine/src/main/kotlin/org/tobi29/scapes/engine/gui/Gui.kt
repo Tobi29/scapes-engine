@@ -36,7 +36,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         on(GuiAction.ACTIVATE, {
             synchronized(selections) {
                 if (selection < 0) {
-                    return@on
+                    return@synchronized
                 }
                 val entry = selections[selection]
                 sendNewEvent(GuiEvent.CLICK_LEFT, GuiComponentEvent(),
@@ -187,7 +187,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
             for (i in selections.indices.reversed()) {
                 if (selections[i].priority >= priority) {
                     selections.add(i + 1, entry)
-                    return
+                    return@synchronized
                 }
             }
             selections.add(0, entry)
@@ -261,7 +261,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
                     val componentIterator = entry.components.iterator()
                     while (componentIterator.hasNext()) {
                         val component = componentIterator.next()
-                        if (component.removed) {
+                        if (component.removedMut) {
                             componentIterator.remove()
                         }
                     }
@@ -271,7 +271,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
                     }
                 }
                 if (selection < 0) {
-                    return
+                    return@synchronized
                 }
                 val entry = selections[selection]
                 val component = entry.components[min(selectionColumn,

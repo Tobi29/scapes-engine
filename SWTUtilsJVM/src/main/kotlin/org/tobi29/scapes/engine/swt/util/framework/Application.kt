@@ -48,7 +48,7 @@ abstract class Application : Runnable, Crashable {
         Display.setAppVersion(version.toString())
         display = Display.getDefault()
         taskExecutor = TaskExecutor(this, id)
-        loop = UpdateLoop(taskExecutor)
+        loop = UpdateLoop(taskExecutor, null)
     }
 
     protected constructor(name: String,
@@ -59,7 +59,7 @@ abstract class Application : Runnable, Crashable {
         Display.setAppVersion(version.toString())
         display = Display.getDefault()
         this.taskExecutor = TaskExecutor(taskExecutor, id)
-        loop = UpdateLoop(taskExecutor)
+        loop = UpdateLoop(taskExecutor, null)
     }
 
     fun message(style: Int,

@@ -24,7 +24,7 @@ open class TextureAtlasEngineEntry(buffer: ByteBuffer?,
                                    height: Int,
                                    protected val texture: () -> Texture) : TextureAtlasEntry(
         buffer, width, height) {
-    fun texture(): Texture {
+    fun getTexture(): Texture {
         return texture.invoke()
     }
 }

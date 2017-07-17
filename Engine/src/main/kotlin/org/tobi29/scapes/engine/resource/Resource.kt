@@ -19,8 +19,6 @@ package org.tobi29.scapes.engine.resource
 import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.Result
-import org.tobi29.scapes.engine.utils.task.Joiner
 
 interface Resource<out T : Any> {
     fun tryGet(): T?
@@ -30,31 +28,6 @@ interface Resource<out T : Any> {
     fun onLoaded(block: () -> Unit)
 
     suspend fun getAsync(): T
-}
-
-internal class ThreadedResource<out T : Any>(
-        private var reference: ResourceReference<T>) : Resource<T> {
-
-    override fun tryGet(): T? = reference.value?.get()
-
-    override fun get(): T {
-        tryGet()?.let { return it }
-        while (true) {
-            reference.joiner.joiner.join()
-            tryGet()?.let { return it }
-        }
-    }
-
-    override fun onLoaded(block: () -> Unit) {
-        reference.joiner.joiner.onJoin(block)
-    }
-
-    override suspend fun getAsync(): T {
-        tryGet()?.let { return it }
-        reference.joiner.joiner.joinAsync()
-        tryGet()?.let { return it }
-        throw IllegalStateException("No value after completion")
-    }
 }
 
 internal class ImmediateResource<out T : Any>(val loaded: T) : Resource<T> {
@@ -75,7 +48,7 @@ class LazyResource<out T : Any>(load: suspend () -> T) : Resource<T> {
         synchronized(this) {
             this.load.set(null)
             while (completionTasks.isNotEmpty()) {
-                completionTasks.poll()()
+                completionTasks.poll()?.invoke()
             }
         }
         result
@@ -100,17 +73,6 @@ class LazyResource<out T : Any>(load: suspend () -> T) : Resource<T> {
     }
 
     override suspend fun getAsync(): T = get()
-}
-
-class ResourceReference<T : Any>(value: T? = null) {
-    var value: Result<T, Throwable>? = value?.let { Result.Ok(it) }
-        set(value) {
-            field = value
-            value?.let { joiner.join() }
-        }
-
-    val resource: Resource<T> by lazy { ThreadedResource(this) }
-    internal val joiner = Joiner.BasicJoinable()
 }
 
 fun <T : Any> Resource(resource: T): Resource<T> = ImmediateResource(resource)

@@ -43,10 +43,6 @@ class GuiComponentText constructor(parent: GuiLayoutData,
         this.text = text
     }
 
-    fun text(): String {
-        return text
-    }
-
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
         val font = gui.style.font

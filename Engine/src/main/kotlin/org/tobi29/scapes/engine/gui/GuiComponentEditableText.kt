@@ -71,7 +71,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
 
     fun setText(text: String) {
         if (data.text.toString() != text) {
-            data.text.setLength(0)
+            data.text.clear()
             data.text.append(text)
             dirty()
         }
@@ -124,8 +124,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                             size.floatY(), size.floatX())
                     val maxLengthFont = textInfo.length
                     if (data.text.length > maxLengthFont) {
-                        data.text = data.text.delete(maxLengthFont,
-                                data.text.length)
+                        data.text.delete(maxLengthFont, data.text.length)
                         data.cursor = min(data.cursor, maxLengthFont)
                     }
                     dirty()
@@ -145,7 +144,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                                         delta: Double) {
         super.renderComponent(gl, shader, size, pixelSize, delta)
         if (active2) {
-            if (System.currentTimeMillis() / 600L % 2L == 0L) {
+            if (gl.timestamp / 600L % 2L == 0L) {
                 vaoCursor?.forEach {
                     it.second.bind(gl)
                     it.first.render(gl, shader)

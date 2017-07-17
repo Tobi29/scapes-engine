@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.input
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.EventDispatcher
+import org.tobi29.scapes.engine.utils.remove
 
 class ControllerJoystick(private val name: String,
                          axisCount: Int) : ControllerBasic {
@@ -47,31 +48,33 @@ class ControllerJoystick(private val name: String,
         return axes.size
     }
 
-    @Synchronized override fun poll(events: EventDispatcher) {
-        states.forEach {
-            when (it.value) {
-                KeyState.PRESSED ->
-                    states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
-                KeyState.RELEASED ->
-                    states.remove(it.key, KeyState.RELEASED)
-            }
-        }
-        val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
-        isActive = !pressEventQueue.isEmpty()
-        while (!pressEventQueue.isEmpty()) {
-            val event = pressEventQueue.poll()
-            val key = event.key
-            when (event.state) {
-                ControllerBasic.PressState.PRESS ->
-                    states[key] = KeyState.PRESSED
-                ControllerBasic.PressState.RELEASE -> {
-                    states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
-                    states.remove(key, KeyState.DOWN)
+    override fun poll(events: EventDispatcher) {
+        synchronized(this) {
+            states.forEach {
+                when (it.value) {
+                    KeyState.PRESSED ->
+                        states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
+                    KeyState.RELEASED ->
+                        states.remove(it.key, KeyState.RELEASED)
                 }
             }
-            newPressEvents.add(event)
+            val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
+            isActive = !pressEventQueue.isEmpty()
+            while (!pressEventQueue.isEmpty()) {
+                val event = pressEventQueue.poll()!!
+                val key = event.key
+                when (event.state) {
+                    ControllerBasic.PressState.PRESS ->
+                        states[key] = KeyState.PRESSED
+                    ControllerBasic.PressState.RELEASE -> {
+                        states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
+                        states.remove(key, KeyState.DOWN)
+                    }
+                }
+                newPressEvents.add(event)
+            }
+            pressEvents = newPressEvents
         }
-        pressEvents = newPressEvents
     }
 
     override fun isDown(key: ControllerKey): Boolean {
@@ -98,27 +101,29 @@ class ControllerJoystick(private val name: String,
         return axes[axis]
     }
 
-    @Synchronized fun setAxis(axis: Int,
-                              value: Double) {
-        if (axes[axis] < 0.5 && value >= 0.5) {
-            ControllerKey.axis(axis)?.let {
-                addPressEvent(it, ControllerBasic.PressState.PRESS)
+    fun setAxis(axis: Int,
+                value: Double) {
+        synchronized(this) {
+            if (axes[axis] < 0.5 && value >= 0.5) {
+                ControllerKey.axis(axis)?.let {
+                    addPressEvent(it, ControllerBasic.PressState.PRESS)
+                }
+            } else if (axes[axis] >= 0.5 && value < 0.5) {
+                ControllerKey.axis(axis)?.let {
+                    addPressEvent(it, ControllerBasic.PressState.RELEASE)
+                }
             }
-        } else if (axes[axis] >= 0.5 && value < 0.5) {
-            ControllerKey.axis(axis)?.let {
-                addPressEvent(it, ControllerBasic.PressState.RELEASE)
+            if (axes[axis] > -0.5 && value <= -0.5) {
+                ControllerKey.axisNegative(axis)?.let {
+                    addPressEvent(it, ControllerBasic.PressState.PRESS)
+                }
+            } else if (axes[axis] <= -0.5 && value > -0.5) {
+                ControllerKey.axisNegative(axis)?.let {
+                    addPressEvent(it, ControllerBasic.PressState.RELEASE)
+                }
             }
+            axes[axis] = value
         }
-        if (axes[axis] > -0.5 && value <= -0.5) {
-            ControllerKey.axisNegative(axis)?.let {
-                addPressEvent(it, ControllerBasic.PressState.PRESS)
-            }
-        } else if (axes[axis] <= -0.5 && value > -0.5) {
-            ControllerKey.axisNegative(axis)?.let {
-                addPressEvent(it, ControllerBasic.PressState.RELEASE)
-            }
-        }
-        axes[axis] = value
     }
 
     companion object {

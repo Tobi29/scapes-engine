@@ -20,6 +20,7 @@ import kotlinx.coroutines.experimental.CoroutineScope
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.task.BasicJoinable
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.nio.channels.Selector
@@ -51,7 +52,7 @@ class ConnectionManager(
         val joiners = ArrayList<Joiner>()
         for (i in 0..workerCount - 1) {
             val joiner = SelectorJoinable(Selector.open())
-            val startJoiner = Joiner.BasicJoinable()
+            val startJoiner = BasicJoinable()
             this.joiners.add(taskExecutor.runThread({ joiner ->
                 val worker = ConnectionWorker(this, joiner, maxWorkerSleep)
                 newWorkers.add(worker)
@@ -70,7 +71,7 @@ class ConnectionManager(
         }
         Joiner(joiners).join()
         while (newWorkers.isNotEmpty()) {
-            workers.add(newWorkers.poll())
+            newWorkers.poll()?.let { workers.add(it) }
         }
     }
 

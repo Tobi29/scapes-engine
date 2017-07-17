@@ -22,7 +22,7 @@ import org.tobi29.scapes.engine.utils.AtomicReference
 class GameStateStartup(engine: ScapesEngine,
                        private val switch: () -> GameState) : GameState(
         engine) {
-    val readySwitch = AtomicReference<GameState?>()
+    val readySwitch = AtomicReference<GameState?>(null)
 
     override fun init() {
         switchPipeline { gl ->

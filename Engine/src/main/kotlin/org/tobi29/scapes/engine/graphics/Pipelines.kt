@@ -23,8 +23,6 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
     GuiUtils.busy(mesh, 64.0, 64.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
     val busy = mesh.finish(gl.engine)
     val shader = gl.engine.graphics.loadShader(SHADER_TEXTURED)
-    val width = gl.contentWidth().toFloat()
-    val height = gl.contentHeight().toFloat()
     return {
         val s = shader.getAsync()
         ;{
@@ -32,6 +30,8 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
         gl.disableDepthTest()
         gl.setBlending(BlendingMode.NORMAL)
         gl.matrixStack.push { matrix ->
+            val width = gl.contentWidth.toFloat()
+            val height = gl.contentHeight.toFloat()
             matrix.identity()
             matrix.modelViewProjection().orthogonal(-width * 0.5f,
                     -height * 0.5f, width, height)

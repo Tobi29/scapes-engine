@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.times
-import java.util.concurrent.ConcurrentSkipListSet
 
 abstract class GuiComponent(val engine: ScapesEngine,
                             val parent: GuiLayoutData,
@@ -39,10 +38,10 @@ abstract class GuiComponent(val engine: ScapesEngine,
     protected var hover = false
     protected var hovering = false
     protected var removing = false
-    internal var removed = false
-    protected val components = ConcurrentSkipListSet<GuiComponent>()
+    internal var removedMut = false
+    protected val components =
+            ConcurrentOrderedCollection(comparator<GuiComponent>())
     private val guiEvents = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
-    private val uid = UID_COUNTER.andIncrement
     private val hasActiveChild = AtomicBoolean(true)
     val events = EventDispatcher(listenerParent) { listeners() }
 
@@ -134,7 +133,9 @@ abstract class GuiComponent(val engine: ScapesEngine,
                                       shader: Shader,
                                       pixelSize: Vector2d) {
         if (visible) {
-            components.forEach { it.renderOverlays(gl, shader, pixelSize) }
+            components.forEach {
+                it.renderOverlays(gl, shader, pixelSize)
+            }
         }
     }
 
@@ -324,29 +325,10 @@ abstract class GuiComponent(val engine: ScapesEngine,
                                  size: Vector2d) {
     }
 
-    override fun hashCode(): Int {
-        return uid.toInt()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return other is GuiComponent && uid == other.uid
-    }
-
-    override fun compareTo(other: GuiComponent): Int {
-        if (parent.priority > other.parent.priority) {
-            return -1
-        }
-        if (parent.priority < other.parent.priority) {
-            return 1
-        }
-        if (uid > other.uid) {
-            return 1
-        }
-        if (uid < other.uid) {
-            return -1
-        }
-        return 0
-    }
+    override fun compareTo(other: GuiComponent) =
+            if (parent.priority > other.parent.priority) -1
+            else if (parent.priority < other.parent.priority) 1
+            else 0
 
     internal fun added() {
         events.enable()
@@ -363,7 +345,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
     }
 
     internal fun removed() {
-        removed = true
+        removedMut = true
         events.disable()
         components.forEach { it.removed() }
     }
@@ -391,8 +373,6 @@ abstract class GuiComponent(val engine: ScapesEngine,
     }
 
     companion object {
-        private val UID_COUNTER = AtomicLong(Long.MIN_VALUE)
-
         fun sink(
                 type: GuiEvent): Function2<GuiComponent, GuiComponentEvent, Boolean> {
             return { component, event -> component.fireEvent(type, event) }

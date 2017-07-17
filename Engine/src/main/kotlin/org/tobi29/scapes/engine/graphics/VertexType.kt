@@ -22,9 +22,5 @@ enum class VertexType(val bytes: Int) {
     BYTE(1),
     UNSIGNED_BYTE(1),
     SHORT(2),
-    UNSIGNED_SHORT(2);
-
-    fun bytes(): Int {
-        return bytes
-    }
+    UNSIGNED_SHORT(2)
 }

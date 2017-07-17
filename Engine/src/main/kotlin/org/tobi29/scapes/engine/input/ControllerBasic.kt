@@ -33,14 +33,5 @@ interface ControllerBasic : Controller {
     }
 
     class PressEvent(val key: ControllerKey,
-                     val state: PressState) {
-
-        fun key(): ControllerKey {
-            return key
-        }
-
-        fun state(): PressState {
-            return state
-        }
-    }
+                     val state: PressState)
 }

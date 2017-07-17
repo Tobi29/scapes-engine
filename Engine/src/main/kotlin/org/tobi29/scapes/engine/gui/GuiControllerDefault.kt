@@ -32,13 +32,13 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
 
     override fun processTextField(data: GuiController.TextFieldData,
                                   multiline: Boolean): Boolean {
-        val changed = AtomicBoolean()
+        val changed = AtomicBoolean(false)
         val shift = controller.isDown(ControllerKey.KEY_SHIFT_LEFT) ||
                 controller.isDown(ControllerKey.KEY_SHIFT_RIGHT)
         if (controller.isModifierDown) {
             val container = engine.container
-            controller.pressEvents().filter { event -> event.state() !== ControllerBasic.PressState.RELEASE }.forEach { event ->
-                when (event.key()) {
+            controller.pressEvents().filter { event -> event.state !== ControllerBasic.PressState.RELEASE }.forEach { event ->
+                when (event.key) {
                     ControllerKey.KEY_A -> data.selectAll()
                     ControllerKey.KEY_C -> data.copy()?.let {
                         container.clipboardCopy(it)
@@ -59,13 +59,13 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
         } else {
             controller.typeEvents().forEach { event ->
                 val character = event.character()
-                if (!Character.isISOControl(character)) {
+                if (!character.isISOControl()) {
                     data.insert(character)
                     changed.set(true)
                 }
             }
-            controller.pressEvents().filter { event -> event.state() !== ControllerBasic.PressState.RELEASE }.forEach { event ->
-                when (event.key()) {
+            controller.pressEvents().filter { event -> event.state !== ControllerBasic.PressState.RELEASE }.forEach { event ->
+                when (event.key) {
                     ControllerKey.KEY_LEFT -> data.left(shift)
                     ControllerKey.KEY_RIGHT -> data.right(shift)
                     ControllerKey.KEY_HOME -> data.home(shift)
@@ -77,7 +77,7 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
                         data.deleteSelection()
                     } else {
                         if (data.cursor > 0) {
-                            data.text.deleteCharAt(data.cursor - 1)
+                            data.text.delete(data.cursor - 1)
                             data.cursor--
                         }
                     }
@@ -85,7 +85,7 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
                         data.deleteSelection()
                     } else {
                         if (data.cursor < data.text.length) {
-                            data.text.deleteCharAt(data.cursor)
+                            data.text.delete(data.cursor)
                         }
                     }
                 }
@@ -103,5 +103,11 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
 
     override fun captureCursor(): Boolean {
         return false
+    }
+
+    companion object {
+        fun Char.isISOControl() = toInt().isISOControl()
+        fun Int.isISOControl() = this <= 0x9F && (this >= 0x7F || (this.ushr(
+                5) == 0))
     }
 }

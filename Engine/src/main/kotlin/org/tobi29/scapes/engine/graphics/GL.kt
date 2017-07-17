@@ -21,21 +21,18 @@ import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 import org.tobi29.scapes.engine.utils.math.max
+import org.tobi29.scapes.engine.utils.math.roundL
 
 abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)
-    protected var contentWidth = 1
-    protected var contentHeight = 1
+    var contentWidth = 1
+        protected set
+    var contentHeight = 1
+        protected set
     var timer = 0.0
         private set
-    var timestamp = System.nanoTime()
+    var timestamp = /*System.nanoTime()*/0L
         private set
-    var currentFBO = 0
-    private var mainThread: Thread? = null
-
-    fun init() {
-        mainThread = Thread.currentThread()
-    }
 
     fun reshape(contentWidth: Int,
                 contentHeight: Int) {
@@ -50,29 +47,17 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         if (timer >= 360000.0) {
             timer -= 360000.0
         }
-        timestamp = System.nanoTime()
+        timestamp += max(roundL(1000000000.0 / delta), 1L)
     }
 
     fun aspectRatio() =
             engine.container.run { containerWidth.toDouble() / containerHeight }
 
-    fun contentWidth(): Int {
-        return contentWidth
-    }
-
-    fun contentHeight(): Int {
-        return contentHeight
-    }
-
     fun contentSpace(): Double {
         return max(contentWidth, contentHeight) / 1920.0
     }
 
-    fun currentFBO(): Int {
-        return currentFBO
-    }
-
-    fun isRenderCall() = Thread.currentThread() == mainThread
+    fun isRenderCall() = engine.container.isRenderCall()
 
     fun check() {
         assert { isRenderCall() }

@@ -74,6 +74,7 @@ class ConnectionWorker(
             if (connectionQueue.isNotEmpty()) {
                 while (connectionQueue.isNotEmpty()) {
                     val (initialTimeout, coroutine) = connectionQueue.poll()
+                            ?: continue
                     val requestClose = AtomicBoolean()
                     val timeout = if (initialTimeout < 0) {
                         null

@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.utils.task.Joiner
 import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
 
-
 class SelectorJoinable(val selector: Selector) : Joiner.Joinable {
     override val joiner = Joiner(this)
     private val woken = AtomicBoolean()
@@ -54,7 +53,7 @@ class SelectorJoinable(val selector: Selector) : Joiner.Joinable {
         synchronized(this) {
             joinedMut.set(true)
             while (completionTasks.isNotEmpty()) {
-                completionTasks.poll()()
+                completionTasks.poll()?.invoke()
             }
             @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
             (this as Object).notifyAll()
@@ -85,13 +84,13 @@ class SelectorJoinable(val selector: Selector) : Joiner.Joinable {
         if (joined) {
             return false
         }
-        synchronized(this) {
+        return synchronized(this) {
             if (joined) {
-                return false
+                return@synchronized false
             }
             completionTasks.add(runnable)
+            true
         }
-        return true
     }
 
     companion object : KLogging()

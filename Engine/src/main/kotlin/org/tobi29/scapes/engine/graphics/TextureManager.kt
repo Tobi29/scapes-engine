@@ -22,7 +22,7 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.readProperties
+import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toInt
@@ -37,10 +37,10 @@ class TextureManager(private val engine: ScapesEngine) {
     private fun load(asset: String): Resource<Texture> {
         return engine.resources.load res@ {
             val files = engine.files
-            val imageResource = files[asset + ".png"]
-            val propertiesResource = files[asset + ".properties"]
+            val imageResource = files["$asset.png"]
+            val propertiesResource = files["$asset.json"]
             val properties = if (propertiesResource.exists()) {
-                propertiesResource.read(::readProperties)
+                propertiesResource.read { readJSON(it) }
             } else {
                 TagMap()
             }
@@ -51,7 +51,7 @@ class TextureManager(private val engine: ScapesEngine) {
     private fun texture(stream: ReadableByteStream,
                         properties: TagMap): Texture {
         return engine.graphics.createTexture(decodePNG(stream, engine),
-                properties["Mipmaps"]?.toInt() ?: 4,
+                properties["Mipmaps"]?.toInt() ?: 0,
                 properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
                 properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
                 properties["WrapS"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT,

@@ -33,8 +33,7 @@ abstract class InputManager<M : InputMode>(private val engine: ScapesEngine,
     private var inputModeMut = AtomicReference<M?>(null)
     val inputMode get() = inputModeMut.get() ?: throw IllegalStateException(
             "No input mode is set")
-    // TODO: Implement and use atomic delegated properties
-    private val freezeInputModeMut = AtomicBoolean()
+    private val freezeInputModeMut = AtomicBoolean(false)
     var freezeInputMode get() = freezeInputModeMut.get()
         set(value) = freezeInputModeMut.set(value)
 

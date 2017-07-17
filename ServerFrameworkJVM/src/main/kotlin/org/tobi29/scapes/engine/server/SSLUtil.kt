@@ -16,11 +16,13 @@
 
 package org.tobi29.scapes.engine.server
 
-import org.tobi29.scapes.engine.utils.io.use
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.fromBase64
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+import org.tobi29.scapes.engine.utils.io.use
+import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.toBase64
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -109,7 +111,7 @@ fun writePrivate(key: PrivateKey): String {
     val spec = FACTORY.getKeySpec(key, PKCS8EncodedKeySpec::class.java)
     val packed = spec.encoded
     val key64 = packed.toBase64()
-    packed.fill { 0 }
+    packed.fill(0)
     return key64
 }
 

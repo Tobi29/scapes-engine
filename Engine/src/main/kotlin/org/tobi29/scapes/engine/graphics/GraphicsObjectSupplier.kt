@@ -17,8 +17,6 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.resource.loadString
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
@@ -65,16 +63,12 @@ interface GraphicsObjectSupplier {
                 mipmaps, minFilter, magFilter, wrapS, wrapT)
     }
 
-    fun createTexture(image: Image): Texture {
-        return createTexture(image.width, image.height, image.buffer, 4)
-    }
-
     fun createTexture(image: Image,
-                      mipmaps: Int,
-                      minFilter: TextureFilter,
-                      magFilter: TextureFilter,
-                      wrapS: TextureWrap,
-                      wrapT: TextureWrap): Texture {
+                      mipmaps: Int = 0,
+                      minFilter: TextureFilter = TextureFilter.NEAREST,
+                      magFilter: TextureFilter = TextureFilter.NEAREST,
+                      wrapS: TextureWrap = TextureWrap.REPEAT,
+                      wrapT: TextureWrap = TextureWrap.REPEAT): Texture {
         return createTexture(image.width, image.height, image.buffer,
                 mipmaps, minFilter, magFilter, wrapS, wrapT)
     }
@@ -82,7 +76,7 @@ interface GraphicsObjectSupplier {
     fun createTexture(width: Int,
                       height: Int,
                       buffer: ByteBuffer,
-                      mipmaps: Int = 4,
+                      mipmaps: Int = 0,
                       minFilter: TextureFilter = TextureFilter.NEAREST,
                       magFilter: TextureFilter = TextureFilter.NEAREST,
                       wrapS: TextureWrap = TextureWrap.REPEAT,
@@ -121,21 +115,6 @@ interface GraphicsObjectSupplier {
             attributesStream: List<ModelAttribute>,
             lengthStream: Int,
             renderType: RenderType): ModelHybrid
-
-    fun loadShader(asset: String,
-                   properties: Map<String, Expression> = emptyMap()): Resource<Shader> {
-        return loadShader(
-                engine.resources.loadString(engine.files["$asset.program"]),
-                properties)
-    }
-
-    fun loadShader(source: Resource<String>,
-                   properties: Map<String, Expression> = emptyMap()): Resource<Shader> {
-        return engine.resources.load {
-            val shader = engine.graphics.compileShader(source.getAsync())
-            createShader(shader.getAsync(), properties)
-        }
-    }
 
     fun loadShader(shader: () -> CompiledShader,
                    properties: Map<String, Expression> = emptyMap()) =

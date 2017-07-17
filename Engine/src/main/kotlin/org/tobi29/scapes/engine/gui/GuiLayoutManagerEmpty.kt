@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 object GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
         emptySet<GuiComponent>()) {
     init {
-        size = Vector2d.ZERO
+        sizeMut = Vector2d.ZERO
     }
 
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {}

@@ -20,29 +20,33 @@ import org.tobi29.scapes.engine.graphics.BlendingMode
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
+import org.tobi29.scapes.engine.utils.ConcurrentSortedMap
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.div
-import java.util.concurrent.ConcurrentSkipListMap
 
 class GuiStack {
-    private val guis = ConcurrentSkipListMap<String, Gui>()
+    private val guis = ConcurrentSortedMap<String, Gui>()
     private val keys = HashMap<Gui, String>()
     private var focus: Gui? = null
 
-    @Synchronized fun add(id: String,
-                          add: Gui) {
-        addUnfocused(id, add)
-        focus = add
+    fun add(id: String,
+            add: Gui) {
+        synchronized(this) {
+            addUnfocused(id, add)
+            focus = add
+        }
     }
 
-    @Synchronized fun addUnfocused(id: String,
-                                   add: Gui) {
-        val previous = guis.put(id, add)
-        if (previous != null) {
-            removed(previous)
+    fun addUnfocused(id: String,
+                     add: Gui) {
+        synchronized(this) {
+            val previous = guis.put(id, add)
+            if (previous != null) {
+                removed(previous)
+            }
+            keys.put(add, id)
+            add.added()
         }
-        keys.put(add, id)
-        add.added()
     }
 
     operator fun get(id: String): Gui? {
@@ -53,29 +57,35 @@ class GuiStack {
         return guis.containsKey(id)
     }
 
-    @Synchronized fun remove(id: String): Gui? {
-        val previous = guis.remove(id) ?: return null
-        removed(previous)
-        return previous
+    fun remove(id: String): Gui? {
+        return synchronized(this) {
+            val previous = guis.remove(id) ?: return@synchronized null
+            removed(previous)
+            previous
+        }
     }
 
-    @Synchronized fun remove(previous: Gui): Boolean {
-        if (!guis.values.remove(previous)) {
-            return false
+    fun remove(previous: Gui): Boolean {
+        return synchronized(this) {
+            if (!guis.values.remove(previous)) {
+                return@synchronized false
+            }
+            removed(previous)
+            return@synchronized true
         }
-        removed(previous)
-        return true
     }
 
-    @Synchronized fun swap(remove: Gui,
-                           add: Gui): Boolean {
-        val id = keys[remove] ?: return false
-        guis.put(id, add)
-        keys.put(add, id)
-        if (removed(remove)) {
-            focus = add
+    fun swap(remove: Gui,
+             add: Gui): Boolean {
+        return synchronized(this) {
+            val id = keys[remove] ?: return@synchronized false
+            guis.put(id, add)
+            keys.put(add, id)
+            if (removed(remove)) {
+                focus = add
+            }
+            return@synchronized true
         }
-        return true
     }
 
     private fun removed(gui: Gui): Boolean {
@@ -126,7 +136,7 @@ class GuiStack {
     fun fireRecursiveEvent(event: GuiComponentEvent,
                            listener: (GuiComponent, GuiComponentEvent) -> Boolean): Set<GuiComponent> {
         val guis = ArrayList<Gui>(this.guis.size)
-        guis.addAll(this.guis.values)
+        guis.addAll(this.guis.map { it.value })
         for (i in guis.indices.reversed()) {
             val sink = guis[i].fireNewRecursiveEvent(event, listener)
             if (!sink.isEmpty()) {
@@ -144,9 +154,9 @@ class GuiStack {
     fun render(gl: GL,
                shader: Shader,
                delta: Double) {
-        val framebufferSize = Vector2d(gl.contentWidth().toDouble(),
-                gl.contentHeight().toDouble())
-        guis.values.forEach {
+        val framebufferSize = Vector2d(gl.contentWidth.toDouble(),
+                gl.contentHeight.toDouble())
+        guis.forEach { (_, it) ->
             val size = it.baseSize()
             val pixelSize = size / framebufferSize
             gl.disableCulling()
@@ -159,7 +169,7 @@ class GuiStack {
                 it.render(gl, shader, size, pixelSize, delta)
             }
         }
-        guis.values.forEach {
+        guis.forEach { (_, it) ->
             val size = it.baseSize()
             val pixelSize = size / framebufferSize
             it.renderOverlays(gl, shader, pixelSize)

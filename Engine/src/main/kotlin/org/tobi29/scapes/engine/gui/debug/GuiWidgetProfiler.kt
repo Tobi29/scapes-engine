@@ -57,47 +57,53 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         nodes()
     }
 
-    @Synchronized fun nodes() {
-        val node = node
-        if (node == null) {
-            threads()
-            return
-        }
-        scrollPane.removeAll()
-        scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
-            Element(it, node, node.parent)
-        }
-        for (child in node.children.values) {
-            scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
-                Element(it, child, child)
+    fun nodes() {
+        synchronized(this) {
+            val node = node
+            if (node == null) {
+                threads()
+                return@synchronized
             }
-        }
-    }
-
-    @Synchronized fun threads() {
-        scrollPane.removeAll()
-        node = null
-        var threads: Array<Thread?>
-        var count = Thread.activeCount()
-        do {
-            threads = arrayOfNulls(count)
-            count = Thread.enumerate(threads)
-        } while (threads.size < count)
-        for (i in 0..count - 1) {
-            threads[i]?.let { thread ->
-                val node = Profiler.node(thread)
-                if (node != null) {
-                    scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
-                        ElementThread(it, node, node)
-                    }
+            scrollPane.removeAll()
+            scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
+                Element(it, node, node.parent)
+            }
+            for (child in node.children.values) {
+                scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
+                    Element(it, child, child)
                 }
             }
         }
     }
 
-    @Synchronized fun nodes(node: Node?) {
-        this.node = node
-        nodes()
+    fun threads() {
+        synchronized(this) {
+            scrollPane.removeAll()
+            node = null
+            /*var threads: Array<Thread?>
+            var count = Thread.activeCount()
+            do {
+                threads = arrayOfNulls(count)
+                count = Thread.enumerate(threads)
+            } while (threads.size < count)
+            for (i in 0..count - 1) {
+                threads[i]?.let { thread ->
+                    val node = Profiler.node(thread)
+                    if (node != null) {
+                        scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
+                            ElementThread(it, node, node)
+                        }
+                    }
+                }
+            }*/
+        }
+    }
+
+    fun nodes(node: Node?) {
+        synchronized(this) {
+            this.node = node
+            nodes()
+        }
     }
 
     private inner class ElementThread(parent: GuiLayoutData,
@@ -132,7 +138,7 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
 
         public override fun updateComponent(delta: Double) {
-            value.text = node.time().toString()
+            //value.text = node.time().toString()
         }
     }
 }

@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Version
 
 abstract class Game(val engine: ScapesEngine) {
-    private var disposed = AtomicBoolean()
+    private var disposed = AtomicBoolean(false)
 
     abstract val events: EventDispatcher
 

@@ -25,6 +25,7 @@ import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.test.assertions.shouldThrow
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.classpath.ClasspathPath
 import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
 import org.tobi29.scapes.engine.utils.tag.TagList
@@ -56,7 +57,7 @@ private fun createTagMap(): TagMap {
         val array = ByteArray(1024)
         random.nextBytes(array)
         this["Byte[]"] = array.toTag()
-        this["String"] = "◊Blah blah blah◊".toTag()
+        this["String"] = "◊Blah \u000c\t\n\r\u0000 blah◊".toTag()
         // Filled structure and list
         this["Map"] = TagMap {
             for (i in 0..255) {
@@ -99,9 +100,10 @@ private fun createTagMap(): TagMap {
     }
 }
 
-private fun checkWriteAndRead(map: TagMap): TagMap {
+private fun checkWriteAndRead(map: TagMap,
+                              pretty: Boolean): TagMap {
     val channel = ByteBufferStream()
-    map.writeJSON(channel)
+    map.writeJSON(channel, pretty)
     channel.buffer().flip()
     return readJSON(ByteBufferStream(channel.buffer()))
 }
@@ -110,9 +112,16 @@ object TagStructureJSONTests : Spek({
     describe("serialization for tag map") {
         given("any tag map") {
             val tagMapComplex by memoized { createTagMap() }
-            on("writing and reading") {
+            on("writing and reading, pretty") {
                 val tagMap = tagMapComplex
-                val read = checkWriteAndRead(tagMap)
+                val read = checkWriteAndRead(tagMap, true)
+                it("should return an equal tag map") {
+                    read shouldEqual tagMap
+                }
+            }
+            on("writing and reading, ugly") {
+                val tagMap = tagMapComplex
+                val read = checkWriteAndRead(tagMap, false)
                 it("should return an equal tag map") {
                     read shouldEqual tagMap
                 }
@@ -126,6 +135,28 @@ object TagStructureJSONTests : Spek({
                         val channel = ByteBufferStream()
                         invalidTag.writeJSON(channel)
                     }
+                }
+            }
+        }
+    }
+    describe("parsing json") {
+        given("any valid json input") {
+            val sample by memoized {
+                ClasspathPath(this::class.java.classLoader, "sample.json")
+            }
+            on("parsing the input") {
+                it("should succeed") {
+                    sample.read { readJSON(it) }
+                }
+            }
+        }
+        given("overly deep json input") {
+            val sample by memoized {
+                ClasspathPath(this::class.java.classLoader, "overflow.json")
+            }
+            on("parsing the input") {
+                it("should fail") {
+                    shouldThrow<IOException> { sample.read { readJSON(it) } }
                 }
             }
         }

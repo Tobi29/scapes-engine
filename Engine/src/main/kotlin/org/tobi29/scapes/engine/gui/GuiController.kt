@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerKey
+import org.tobi29.scapes.engine.utils.MutableString
 
 abstract class GuiController(protected val engine: ScapesEngine) {
     abstract fun update(delta: Double)
@@ -42,7 +43,7 @@ abstract class GuiController(protected val engine: ScapesEngine) {
     }
 
     class TextFieldData {
-        var text = StringBuilder(100)
+        var text = MutableString(100)
         var cursor = 0
         var selectionStart = -1
         var selectionEnd = 0

@@ -199,7 +199,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         val consumer = commands[command]
         if (consumer != null) {
             while (!consumer.second.isEmpty()) {
-                consumer.second.poll()(payload)
+                consumer.second.poll()?.invoke(payload)
             }
             synchronized(consumer.first) {
                 consumer.first.forEach { it(payload) }
@@ -228,7 +228,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         channel.queueBundle()
         while (!openHooks.isEmpty()) {
-            openHooks.poll()()
+            openHooks.poll()?.invoke()
         }
         return false
     }
@@ -276,7 +276,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         channel.queueBundle()
         while (!openHooks.isEmpty()) {
-            openHooks.poll()()
+            openHooks.poll()?.invoke()
         }
         return false
     }
@@ -314,7 +314,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         idStr = id
         while (!openHooks.isEmpty()) {
-            openHooks.poll()()
+            openHooks.poll()?.invoke()
         }
         return false
     }
@@ -376,7 +376,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     private suspend fun openSend() {
         val list = ArrayList<TagMap>(0)
         while (!queue.isEmpty()) {
-            list.add(queue.poll())
+            queue.poll()?.let { list.add(it) }
         }
         if (!list.isEmpty()) {
             TagMap { this["Commands"] = list.toTag() }.writeBinary(

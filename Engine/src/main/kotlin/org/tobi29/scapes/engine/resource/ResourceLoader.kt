@@ -17,31 +17,14 @@
 package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
-import org.tobi29.scapes.engine.utils.Result
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import org.tobi29.scapes.engine.utils.task.TaskLock
 
-class ResourceLoader(private val taskExecutor: TaskExecutor) {
-    private val tasks = TaskLock()
+header class ResourceLoader(taskExecutor: TaskExecutor) {
+    fun <T : Any> load(supplier: suspend () -> T): Resource<T>
 
-    fun <T : Any> load(supplier: suspend () -> T): Resource<T> {
-        val reference = ResourceReference<T>()
-        tasks.increment()
-        taskExecutor.runTask({
-            try {
-                reference.value = Result.Ok(supplier())
-            } catch(e: Throwable) {
-                reference.value = Result.Error(e)
-            } finally {
-                tasks.decrement()
-            }
-        }, "Load-Resource")
-        return reference.resource
-    }
+    fun onDone(block: () -> Unit)
 
-    fun onDone(block: () -> Unit) = tasks.onDone(block)
-
-    fun isDone() = tasks.isDone()
+    fun isDone(): Boolean
 }
 
 suspend fun ResourceLoader.awaitDone() {

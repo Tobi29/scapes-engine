@@ -69,10 +69,10 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                 GuiComponent::hover)
         engine.tooltip.setTooltip(hover?.let { Pair(it, cursor) })
         controller.pressEvents().forEach { event ->
-            when (event.state()) {
+            when (event.state) {
                 ControllerBasic.PressState.PRESS, ControllerBasic.PressState.REPEAT -> handlePress(
-                        event.key(), componentEvent)
-                ControllerBasic.PressState.RELEASE -> handleRelease(event.key(),
+                        event.key, componentEvent)
+                ControllerBasic.PressState.RELEASE -> handleRelease(event.key,
                         componentEvent)
             }
         }

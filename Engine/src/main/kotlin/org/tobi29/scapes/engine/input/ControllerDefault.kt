@@ -21,6 +21,7 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.remove
 
 abstract class ControllerDefault : ControllerBasic {
     private val states = ConcurrentHashMap<ControllerKey, KeyState>()
@@ -43,49 +44,52 @@ abstract class ControllerDefault : ControllerBasic {
     override var isActive = false
         protected set
 
-    @Synchronized override fun poll(events: EventDispatcher) {
-        states.forEach {
-            when (it.value) {
-                KeyState.PRESSED ->
-                    states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
-                KeyState.RELEASED ->
-                    states.remove(it.key, KeyState.RELEASED)
-            }
-        }
-        val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
-        val newTypeEvents = ArrayList<KeyTypeEvent>()
-        isActive = !pressEventQueue.isEmpty()
-        while (!pressEventQueue.isEmpty()) {
-            val event = pressEventQueue.poll()
-            val key = event.key
-            when (event.state) {
-                ControllerBasic.PressState.PRESS ->
-                    states[key] = KeyState.PRESSED
-                ControllerBasic.PressState.RELEASE -> {
-                    states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
-                    states.remove(key, KeyState.DOWN)
+    override fun poll(events: EventDispatcher) {
+        synchronized(this) {
+            states.forEach {
+                when (it.value) {
+                    KeyState.PRESSED ->
+                        states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
+                    KeyState.RELEASED ->
+                        states.remove(it.key, KeyState.RELEASED)
                 }
             }
-            newPressEvents.add(event)
-        }
-        while (!typeEventQueue.isEmpty()) {
-            newTypeEvents.add(typeEventQueue.poll())
-        }
-        pressEvents = newPressEvents
-        typeEvents = newTypeEvents
-        deltaX = deltaXSet
-        deltaXSet = 0.0
-        deltaY = deltaYSet
-        deltaYSet = 0.0
-        scrollX = scrollXSet
-        scrollXSet = 0.0
-        scrollY = scrollYSet
-        scrollYSet = 0.0
-        if (deltaXEvent != 0.0 || deltaYEvent != 0.0) {
-            events.fire(
-                    MouseDeltaEvent(this, Vector2d(deltaXEvent, deltaYEvent)))
-            deltaXEvent = 0.0
-            deltaYEvent = 0.0
+            val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
+            val newTypeEvents = ArrayList<KeyTypeEvent>()
+            isActive = !pressEventQueue.isEmpty()
+            while (!pressEventQueue.isEmpty()) {
+                val event = pressEventQueue.poll()!!
+                val key = event.key
+                when (event.state) {
+                    ControllerBasic.PressState.PRESS ->
+                        states[key] = KeyState.PRESSED
+                    ControllerBasic.PressState.RELEASE -> {
+                        states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
+                        states.remove(key, KeyState.DOWN)
+                    }
+                }
+                newPressEvents.add(event)
+            }
+            while (!typeEventQueue.isEmpty()) {
+                newTypeEvents.add(typeEventQueue.poll()!!)
+            }
+            pressEvents = newPressEvents
+            typeEvents = newTypeEvents
+            deltaX = deltaXSet
+            deltaXSet = 0.0
+            deltaY = deltaYSet
+            deltaYSet = 0.0
+            scrollX = scrollXSet
+            scrollXSet = 0.0
+            scrollY = scrollYSet
+            scrollYSet = 0.0
+            if (deltaXEvent != 0.0 || deltaYEvent != 0.0) {
+                events.fire(
+                        MouseDeltaEvent(this,
+                                Vector2d(deltaXEvent, deltaYEvent)))
+                deltaXEvent = 0.0
+                deltaYEvent = 0.0
+            }
         }
     }
 
@@ -192,8 +196,10 @@ abstract class ControllerDefault : ControllerBasic {
         }
     }
 
-    @Synchronized fun clearStates() {
-        states.clear()
+    fun clearStates() {
+        synchronized(this) {
+            states.clear()
+        }
     }
 
     class KeyTypeEvent(private val character: Char) {

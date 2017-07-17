@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":CodecsJVM")
-    compile project(":GraphicsUtilsJVM")
-    compile project(":ShaderCLikeJVM")
+    compile project(":IOUtils")
+    compile project(":GraphicsUtils")
+    compile project(":ShaderCompiler")
+    compile project(":TagStructureJSON")
     compile project(":ThreadUtils")
 }

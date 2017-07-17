@@ -60,11 +60,11 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                 scrollY -= event.relativeY * scrollStep
             }
             scrollX = clamp(scrollX, 0.0,
-                    Math.max(0.0, max.x - event.size.x))
+                    max(0.0, max.x - event.size.x))
             scrollY = clamp(scrollY, 0.0,
-                    Math.max(0.0, max.y - event.size.y))
+                    max(0.0, max.y - event.size.y))
             sliderX?.let { slider ->
-                val limit = Math.max(0.0, max.x - event.size.y)
+                val limit = max(0.0, max.x - event.size.y)
                 if (limit > 0.0) {
                     slider.setValue(scrollX / limit)
                 } else {
@@ -72,7 +72,7 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                 }
             }
             sliderY?.let { slider ->
-                val limit = Math.max(0.0, max.y - event.size.y)
+                val limit = max(0.0, max.y - event.size.y)
                 if (limit > 0.0) {
                     slider.setValue(scrollY / limit)
                 } else {
@@ -93,10 +93,10 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
             val start = matrix.modelViewProjection().multiply(Vector3d.ZERO)
             val end = matrix.modelViewProjection().multiply(
                     Vector3d(size.x, size.y, 0.0))
-            val xx = floor((start.x * 0.5 + 0.5) * gl.contentWidth())
-            val yy = floor((0.5 - start.y * 0.5) * gl.contentHeight())
-            val xx2 = floor((end.x * 0.5 + 0.5) * gl.contentWidth())
-            val yy2 = floor((0.5 - end.y * 0.5) * gl.contentHeight())
+            val xx = floor((start.x * 0.5 + 0.5) * gl.contentWidth)
+            val yy = floor((0.5 - start.y * 0.5) * gl.contentHeight)
+            val xx2 = floor((end.x * 0.5 + 0.5) * gl.contentWidth)
+            val yy2 = floor((0.5 - end.y * 0.5) * gl.contentHeight)
             gl.enableScissor(min(xx, xx2), min(yy, yy2) + 1, abs(xx - xx2),
                     abs(yy - yy2))
             super.render(gl, shader, size, pixelSize, delta)
@@ -122,8 +122,8 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
         if (this.size != size || this.max != max) {
             this.size = size
             this.max = max
-            scrollX = clamp(scrollX, 0.0, Math.max(0.0, max.x - size.x))
-            scrollY = clamp(scrollY, 0.0, Math.max(0.0, max.y - size.y))
+            scrollX = clamp(scrollX, 0.0, max(0.0, max.x - size.x))
+            scrollY = clamp(scrollY, 0.0, max(0.0, max.y - size.y))
             sliderX?.let { slider ->
                 if (max.y <= 0) {
                     slider.setSliderHeight(size.x)

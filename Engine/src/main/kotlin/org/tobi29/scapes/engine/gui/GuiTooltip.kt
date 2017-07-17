@@ -20,7 +20,8 @@ import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 class GuiTooltip(style: GuiStyle) : Gui(style) {
-    private val currentTooltip = AtomicReference<Pair<GuiComponent, GuiCursor>?>()
+    private val currentTooltip = AtomicReference<Pair<GuiComponent, GuiCursor>?>(
+            null)
     private var lastTooltip: Pair<GuiComponent, GuiCursor>? = null
     private var currentPane: Pair<GuiComponent, () -> Unit>? = null
 

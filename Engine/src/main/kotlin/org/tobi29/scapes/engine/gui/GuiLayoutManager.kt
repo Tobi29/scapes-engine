@@ -25,12 +25,12 @@ import org.tobi29.scapes.engine.utils.math.vector.minus
 
 abstract class GuiLayoutManager(protected val start: Vector2d,
                                 protected val maxSize: Vector2d,
-                                components: Set<GuiComponent>) {
+                                components: Collection<GuiComponent>) {
     protected val components: MutableList<GuiComponent>
-    protected var size: Vector2d? = null
+    protected var sizeMut: Vector2d? = null
 
     init {
-        this.components = ArrayList<GuiComponent>(components.size)
+        this.components = ArrayList(components.size)
         this.components.addAll(components)
     }
 
@@ -105,7 +105,7 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
     }
 
     fun size(): Vector2d {
-        val size = size ?: throw IllegalStateException(
+        val size = sizeMut ?: throw IllegalStateException(
                 "Size unknown until layout is processed")
         return size - start
     }

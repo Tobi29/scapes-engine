@@ -28,7 +28,7 @@ abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0
     private val newPipeline = ConcurrentLinkedQueue<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>()
     private var newPipelineLoaded: (() -> (() -> Unit)?)? = null
-    private val dirtyPipeline = AtomicBoolean()
+    private val dirtyPipeline = AtomicBoolean(false)
     private var pipeline: Pipeline? = null
 
     fun disposeState(gl: GL) {

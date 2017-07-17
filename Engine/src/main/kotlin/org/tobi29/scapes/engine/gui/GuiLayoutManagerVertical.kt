@@ -22,7 +22,7 @@ import org.tobi29.scapes.engine.utils.math.vector.minus
 
 class GuiLayoutManagerVertical(start: Vector2d,
                                maxSize: Vector2d,
-                               components: Set<GuiComponent>) : GuiLayoutManager(
+                               components: Collection<GuiComponent>) : GuiLayoutManager(
         start, maxSize, components) {
 
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
@@ -55,7 +55,7 @@ class GuiLayoutManagerVertical(start: Vector2d,
             }
         }
         if (sizes.isEmpty()) {
-            size = Vector2d.ZERO
+            sizeMut = Vector2d.ZERO
             return
         }
         val pos = MutableVector2d()
@@ -96,12 +96,11 @@ class GuiLayoutManagerVertical(start: Vector2d,
                 setSize(posSize, outSize)
                 asize
             } else {
-                throw IllegalStateException(
-                        "Invalid layout node: " + data::class.java)
+                throw IllegalStateException("Invalid layout node: $data")
             }
             output.add(Triple(component, pos.now(), asize))
         }
-        this.size = outSize.now()
+        this.sizeMut = outSize.now()
         sizes.reset()
         sizes.forAllObjects { it.component = null }
         sizeCache.give(sizes)

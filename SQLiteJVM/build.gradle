@@ -19,4 +19,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 dependencies {
     compile project(":SQLFrameworkJVM")
     compile rootProject.ext.sqliteJDBC
+    compileOnly project(":IOUtils")
 }

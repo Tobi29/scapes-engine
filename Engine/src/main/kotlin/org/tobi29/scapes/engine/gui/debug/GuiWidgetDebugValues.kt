@@ -30,22 +30,26 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
                 -1.0) { GuiComponentScrollPane(it, 20) }.viewport
     }
 
-    @Synchronized operator fun get(key: String): Element {
-        var element: Element? = elements[key]
-        if (element == null) {
-            element = scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
-                Element(it, key)
+    operator fun get(key: String): Element {
+        return synchronized(this) {
+            var element: Element? = elements[key]
+            if (element == null) {
+                element = scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
+                    Element(it, key)
+                }
+                elements.put(key, element)
             }
-            elements.put(key, element)
+            return@synchronized element
         }
-        return element
     }
 
-    @Synchronized fun clear() {
-        val iterator = elements.entries.iterator()
-        while (iterator.hasNext()) {
-            scrollPane.remove(iterator.next().value)
-            iterator.remove()
+    fun clear() {
+        synchronized(this) {
+            val iterator = elements.entries.iterator()
+            while (iterator.hasNext()) {
+                scrollPane.remove(iterator.next().value)
+                iterator.remove()
+            }
         }
     }
 
@@ -57,7 +61,7 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
                   key: String) : GuiComponentGroupSlabHeavy(
             parent) {
         private val value: GuiComponentText
-        private val text = AtomicReference<String>()
+        private val text = AtomicReference<String?>(null)
 
         init {
             addHori(2.0, 2.0, -1.0, -1.0) {
@@ -69,7 +73,7 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         }
 
         fun setValue(value: String) {
-            text.lazySet(value)
+            text.set(value)
         }
 
         fun setValue(value: Boolean) {
@@ -116,7 +120,7 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
             if (text != null) {
                 return text
             }
-            return value.text()
+            return value.text
         }
     }
 }

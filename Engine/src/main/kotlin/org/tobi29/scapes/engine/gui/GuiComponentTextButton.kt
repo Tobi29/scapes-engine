@@ -32,7 +32,7 @@ class GuiComponentTextButton(parent: GuiLayoutData,
     }
 
     fun text(): String {
-        return text.text()
+        return text.text
     }
 
     fun setText(text: String) {

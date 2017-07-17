@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.utils.math.max
+
 class GuiComponentScrollPaneHidden(parent: GuiLayoutData,
                                    scrollStep: Int) : GuiComponentSlabHeavy(
         parent) {
@@ -29,11 +31,11 @@ class GuiComponentScrollPaneHidden(parent: GuiLayoutData,
             GuiComponentSliderVert(it, 0.0)
         }
         slider.on(GuiEvent.CHANGE) { event ->
-            viewport.scrollY = slider.value() * Math.max(0.0,
+            viewport.scrollY = slider.value() * max(0.0,
                     viewport.max.y - event.size.y)
         }
         slider.on(GuiEvent.SCROLL) { event ->
-            viewport.scrollY = slider.value() * Math.max(0.0,
+            viewport.scrollY = slider.value() * max(0.0,
                     viewport.max.y - event.size.y)
         }
         viewport.sliderY = slider

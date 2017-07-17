@@ -18,18 +18,15 @@ package org.tobi29.scapes.engine.graphics
 
 import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
-import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.TaskQueue
 import org.tobi29.scapes.engine.utils.add
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.processCurrent
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeShader
-import org.tobi29.scapes.engine.utils.shader.frontend.clike.compileCached
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
@@ -53,7 +50,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
         buffer.put((-1).toByte())
         buffer.put((-1).toByte())
         buffer.rewind()
-        empty = createTexture(1, 1, buffer)
+        empty = createTexture(1, 1, buffer, 0)
         val debugValues = engine.debugValues
         fpsDebug = debugValues["Graphics-Fps"]
         widthDebug = debugValues["Graphics-Width"]
@@ -80,66 +77,62 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
         return empty
     }
 
-    @Synchronized fun render(gl: GL,
-                             delta: Double,
-                             contentWidth: Int = 0,
-                             contentHeight: Int = 0) {
-        try {
-            gl.checkError("Pre-Render")
-            gl.step(delta)
-            val fboSizeDirty: Boolean
-            if (lastContentWidth != contentWidth ||
-                    lastContentHeight != contentHeight) {
-                lastContentWidth = contentWidth
-                lastContentHeight = contentHeight
-                fboSizeDirty = true
-                widthDebug.setValue(contentWidth)
-                heightDebug.setValue(contentHeight)
-                profilerSection("Reshape") {
-                    gl.reshape(contentWidth, contentHeight)
+    fun render(gl: GL,
+               delta: Double,
+               contentWidth: Int = 0,
+               contentHeight: Int = 0) {
+        synchronized(this) {
+            try {
+                gl.checkError("Pre-Render")
+                gl.step(delta)
+                val fboSizeDirty: Boolean
+                if (lastContentWidth != contentWidth ||
+                        lastContentHeight != contentHeight) {
+                    lastContentWidth = contentWidth
+                    lastContentHeight = contentHeight
+                    fboSizeDirty = true
+                    widthDebug.setValue(contentWidth)
+                    heightDebug.setValue(contentHeight)
+                    profilerSection("Reshape") {
+                        gl.reshape(contentWidth, contentHeight)
+                    }
+                } else {
+                    fboSizeDirty = false
                 }
-            } else {
-                fboSizeDirty = false
-            }
-            val state = engine.state
-            val renderState = renderState
-            if (renderState !== state) {
-                profilerSection("SwitchState") {
-                    renderState?.disposeState(gl)
-                    this.renderState = state
+                val state = engine.state
+                val renderState = renderState
+                if (renderState !== state) {
+                    profilerSection("SwitchState") {
+                        renderState?.disposeState(gl)
+                        this.renderState = state
+                    }
                 }
+                gl.setViewport(0, 0, gl.contentWidth, gl.contentHeight)
+                profilerSection("State") {
+                    state.renderState(gl, delta, fboSizeDirty)
+                }
+                executeDispatched(gl)
+                fpsDebug.setValue(1.0 / delta)
+                textureDebug.setValue(gos.textureTracker.count())
+                vaoDebug.setValue(gos.vaoTracker.count())
+                fboDebug.setValue(gos.fboTracker.count())
+                shaderDebug.setValue(gos.shaderTracker.count())
+                engine.performance.renderTimestamp(delta)
+                profilerSection("Cleanup") {
+                    gos.vaoTracker.disposeUnused(gl)
+                    gos.textureTracker.disposeUnused(gl)
+                    gos.fboTracker.disposeUnused(gl)
+                    gos.shaderTracker.disposeUnused(gl)
+                }
+            } catch (e: GraphicsException) {
+                logger.warn { "Graphics error during rendering: $e" }
             }
-            gl.setViewport(0, 0, gl.contentWidth(), gl.contentHeight())
-            profilerSection("State") {
-                state.renderState(gl, delta, fboSizeDirty)
-            }
-            executeDispatched(gl)
-            fpsDebug.setValue(1.0 / delta)
-            textureDebug.setValue(gos.textureTracker.count())
-            vaoDebug.setValue(gos.vaoTracker.count())
-            fboDebug.setValue(gos.fboTracker.count())
-            shaderDebug.setValue(gos.shaderTracker.count())
-            engine.performance.renderTimestamp(delta)
-            profilerSection("Cleanup") {
-                gos.vaoTracker.disposeUnused(gl)
-                gos.textureTracker.disposeUnused(gl)
-                gos.fboTracker.disposeUnused(gl)
-                gos.shaderTracker.disposeUnused(gl)
-            }
-        } catch (e: GraphicsException) {
-            logger.warn { "Graphics error during rendering: $e" }
         }
     }
 
     fun requestScreenshot(block: (Image) -> Unit) {
         queue.add { gl ->
-            block(gl.screenShot(0, 0, gl.contentWidth(), gl.contentHeight()))
-        }
-    }
-
-    fun compileShader(source: String): Resource<CompiledShader> {
-        return engine.resources.load {
-            CLikeShader.compileCached(source)
+            block(gl.screenShot(0, 0, gl.contentWidth, gl.contentHeight))
         }
     }
 
