@@ -28,8 +28,8 @@ import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.path
 import org.tobi29.scapes.engine.utils.io.filesystem.read
+import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.use
 
 object PlatformDialogs : KLogging() {
     private inline fun <R> filter(extensions: Array<Pair<String, String>>,

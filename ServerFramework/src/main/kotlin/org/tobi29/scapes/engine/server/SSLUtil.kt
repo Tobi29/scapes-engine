@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.server
 
+import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
 import org.tobi29.scapes.engine.utils.io.IOException

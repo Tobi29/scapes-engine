@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.sql.mysql
 
 import org.tobi29.scapes.engine.sql.*
 import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.use
+import org.tobi29.scapes.engine.utils.io.use
 import java.security.AccessController
 import java.security.PrivilegedAction
 import java.security.PrivilegedActionException

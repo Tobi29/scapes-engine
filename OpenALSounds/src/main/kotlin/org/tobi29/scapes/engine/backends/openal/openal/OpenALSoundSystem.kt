@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
+import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource

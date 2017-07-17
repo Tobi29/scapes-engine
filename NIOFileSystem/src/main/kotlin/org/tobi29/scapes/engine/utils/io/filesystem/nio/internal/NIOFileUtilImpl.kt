@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
 import org.tobi29.scapes.engine.utils.io.filesystem.OpenOption
-import org.tobi29.scapes.engine.utils.use
 import java.io.File
 import java.net.URI
 import java.nio.file.*
