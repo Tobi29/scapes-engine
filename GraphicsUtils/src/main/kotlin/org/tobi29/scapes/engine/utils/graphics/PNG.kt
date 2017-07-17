@@ -16,11 +16,14 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-/*
+import org.tobi29.scapes.engine.utils.io.DefaultByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+
 // TODO: @Throws(IOException::class)
 fun decodePNG(stream: ReadableByteStream) =
         decodePNG(stream, DefaultByteBufferProvider)
 
+/*
 // TODO: @Throws(IOException::class)
 header fun decodePNG(stream: ReadableByteStream,
                      bufferProvider: ByteBufferProvider): Image
