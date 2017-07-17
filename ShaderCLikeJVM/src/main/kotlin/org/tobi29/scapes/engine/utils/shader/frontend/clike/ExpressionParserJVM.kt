@@ -188,7 +188,7 @@ private fun parseExpression(left: Expression,
 private fun parseExpression(left: Expression,
                             operator: Token,
                             identifier: Token) = when (operator.text) {
-    "." -> MemberExpression(identifier.text, left)
+    "" -> MemberExpression(identifier.text, left)
     else -> throw IllegalStateException("Invalid token: $operator")
 }
 

@@ -24,7 +24,12 @@ dependencies {
 sourceSets {
     main {
         kotlin {
-            srcDirs = ["src/main/kotlin", "src/jvm/kotlin"]
+            srcDirs += "../ShaderCLikeJVM/src/main/kotlin"
+        }
+    }
+    test {
+        kotlin {
+            srcDirs += "../ShaderCLikeJVM/src/test/kotlin"
         }
     }
 }
