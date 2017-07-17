@@ -21,8 +21,8 @@ import org.apache.tika.metadata.Metadata
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import java.io.InputStream
 
-/* impl */ internal fun detectMimeImpl(stream: ReadableByteStream?,
-                                       name: String?) =
+impl internal fun detectMimeImpl(stream: ReadableByteStream?,
+                                 name: String?) =
         detectMimeIO(stream?.let { ByteStreamInputStream(it) }, name)
 
 /**

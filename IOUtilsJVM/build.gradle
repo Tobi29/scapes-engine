@@ -16,20 +16,9 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
+implementCommon(project(":IOUtils"))
+
 dependencies {
     compile project(":UtilsJVM")
     compile rootProject.ext.tika
-}
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += "../IOUtils/src/main/kotlin"
-        }
-    }
-    test {
-        kotlin {
-            srcDirs += "../IOUtils/src/test/kotlin"
-        }
-    }
 }

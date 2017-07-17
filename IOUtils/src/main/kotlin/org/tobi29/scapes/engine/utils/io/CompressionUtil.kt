@@ -24,9 +24,9 @@ object CompressionUtil {
     // TODO: @Throws(IOException::class)
     fun compress(input: ReadableByteStream,
                  level: Int = -1,
-                 supplier: (Int) -> ByteBuffer = ::ByteBuffer,
-                 growth: (Int) -> Int = { length -> length + 1024 }): ByteBuffer {
-        val stream = ByteBufferStream(supplier, growth)
+                 bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
+                 growth: (Int) -> Int = { it + 8192 }): ByteBuffer {
+        val stream = ByteBufferStream(bufferProvider, growth)
         compress(input, stream, level)
         return stream.buffer()
     }
@@ -40,9 +40,9 @@ object CompressionUtil {
 
     // TODO: @Throws(IOException::class)
     fun decompress(input: ReadableByteStream,
-                   supplier: (Int) -> ByteBuffer = ::ByteBuffer,
-                   growth: (Int) -> Int = { length -> length + 1024 }): ByteBuffer {
-        val output = ByteBufferStream(supplier, growth)
+                   bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
+                   growth: (Int) -> Int = { it + 8192 }): ByteBuffer {
+        val output = ByteBufferStream(bufferProvider, growth)
         decompress(input, output)
         return output.buffer()
     }
@@ -94,10 +94,9 @@ object CompressionUtil {
     }
 }
 
-/*
 header class ZDeflater(level: Int,
                        buffer: Int = 8192) : CompressionUtil.Filter {
-    override fun input(buffer: ReadableByteStream)
+    override fun input(buffer: ReadableByteStream): Boolean
     override fun output(buffer: WritableByteStream): Int
     override fun finish()
     override fun needsInput(): Boolean
@@ -107,7 +106,7 @@ header class ZDeflater(level: Int,
 }
 
 header class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
-    override fun input(buffer: ReadableByteStream)
+    override fun input(buffer: ReadableByteStream): Boolean
     override fun output(buffer: WritableByteStream): Int
     override fun finish()
     override fun needsInput(): Boolean
@@ -115,4 +114,3 @@ header class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
     override fun reset()
     override fun close()
 }
-*/

@@ -18,15 +18,13 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.assert
 
-class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
-                       private val growth: (Int) -> Int = { it + 8192 },
-                       private var buffer: ByteBuffer = supplier(
-                               growth(0))) : RandomWritableByteStream, RandomReadableByteStream {
-
-    constructor(buffer: ByteBuffer) : this(::ByteBuffer, buffer)
-
-    constructor(supplier: (Int) -> ByteBuffer,
-                buffer: ByteBuffer) : this(supplier, { it + 8192 }, buffer)
+class ByteBufferStream(
+        private val bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
+        private val growth: (Int) -> Int = { it + 8192 },
+        private var buffer: ByteBuffer = bufferProvider.allocate(growth(0))
+) : RandomWritableByteStream, RandomReadableByteStream {
+    constructor(buffer: ByteBuffer) : this(DefaultByteBufferProvider,
+            buffer = buffer)
 
     fun buffer(): ByteBuffer {
         return buffer
@@ -106,7 +104,7 @@ class ByteBufferStream(private val supplier: (Int) -> ByteBuffer = ::ByteBuffer,
                     "Tried to shrink buffer with " + buffer.capacity() +
                             " bytes to " + size)
         }
-        val newBuffer = supplier(size)
+        val newBuffer = bufferProvider.allocate(size)
         assert { newBuffer.capacity() == size }
         buffer.flip()
         newBuffer.put(buffer)

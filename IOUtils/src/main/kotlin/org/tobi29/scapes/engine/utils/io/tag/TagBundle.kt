@@ -17,13 +17,15 @@
 package org.tobi29.scapes.engine.utils.io.tag
 
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.UnixPathEnvironment
+import org.tobi29.scapes.engine.utils.io.asByteBuffer
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toByteArray
 import org.tobi29.scapes.engine.utils.tag.toMap
 
 class TagBundle(private val map: TagMap) {
     fun resolve(path: String): ByteBuffer? {
-        val segments = path.split('/')
+        val segments = UnixPathEnvironment.run { path.components }
         if (segments.isEmpty()) {
             return null
         }
@@ -46,6 +48,6 @@ class TagBundle(private val map: TagMap) {
         if (this["Type"].toString() != "File") {
             return null
         }
-        return this["Contents"]?.toByteArray()?.let { ByteBuffer.wrap(it) }
+        return this["Contents"]?.toByteArray()?.asByteBuffer()
     }
 }

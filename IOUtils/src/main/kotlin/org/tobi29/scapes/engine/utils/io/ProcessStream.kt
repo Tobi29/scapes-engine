@@ -57,11 +57,10 @@ fun asArray(): StreamProcessor<ByteArray> {
     }
 }
 
-fun asBuffer(
-        supplier: (Int) -> ByteBuffer = ::ByteBuffer,
-        growth: (Int) -> Int = { it + 8192 }): StreamProcessor<ByteBuffer> {
+fun asBuffer(bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
+             growth: (Int) -> Int = { it + 8192 }): StreamProcessor<ByteBuffer> {
     return object : StreamProcessor<ByteBuffer> {
-        private val stream = ByteBufferStream(supplier, growth)
+        private val stream = ByteBufferStream(bufferProvider, growth)
 
         override fun process(buffer: ByteBuffer) {
             stream.put(buffer)

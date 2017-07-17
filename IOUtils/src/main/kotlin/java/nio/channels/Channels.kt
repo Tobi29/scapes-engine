@@ -1,6 +1,9 @@
 package java.nio.channels
 
-/*
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.Closeable
+import org.tobi29.scapes.engine.utils.io.IOException
+
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header interface Channel : Closeable {
     fun isOpen(): Boolean
@@ -58,14 +61,14 @@ header interface GatheringByteChannel : WritableByteChannel {
     /**
      * @throws IOException
      */
-    fun write(srcs: Array<java.nio.ByteBuffer>,
+    fun write(srcs: Array<out ByteBuffer>,
               offset: Int,
               length: Int): Long
 
     /**
      * @throws IOException
      */
-    fun write(srcs: Array<java.nio.ByteBuffer>): Long
+    fun write(srcs: Array<out ByteBuffer>): Long
 }
 
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
@@ -73,16 +76,15 @@ header interface ScatteringByteChannel : ReadableByteChannel {
     /**
      * @throws IOException
      */
-    fun read(dsts: Array<java.nio.ByteBuffer>,
+    fun read(dsts: Array<out ByteBuffer>,
              offset: Int,
              length: Int): Long
 
     /**
      * @throws IOException
      */
-    fun read(dsts: Array<java.nio.ByteBuffer>): Long
+    fun read(dsts: Array<out ByteBuffer>): Long
 }
 
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header interface InterruptibleChannel : Channel
-*/

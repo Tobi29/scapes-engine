@@ -18,28 +18,28 @@ package org.tobi29.scapes.engine.utils.io
 
 import java.nio.ByteOrder
 
-/* impl */ fun ByteBuffer.asString(): String =
+impl fun ByteBuffer.asString(): String =
         if (hasArray()) {
             String(array(), arrayOffset(), remaining())
         } else {
             String(asArray())
         }
 
-/* impl */ inline fun ByteArray.asByteBuffer(offset: Int,
-                                             length: Int): ByteBuffer =
+impl inline fun ByteArray.asByteBuffer(offset: Int,
+                                       length: Int): ByteBuffer =
         java.nio.ByteBuffer.wrap(this, offset, length)
 
-/* impl */ inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
+impl inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
 
-/* impl */ inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
+impl inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
 
-/* impl */ inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
+impl inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
 
-/* impl */ object DefaultByteBufferProvider : ByteBufferProvider {
-    /* impl */ override fun allocate(capacity: Int): ByteBuffer =
+impl object DefaultByteBufferProvider : ByteBufferProvider {
+    impl override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocate(capacity).order(BIG_ENDIAN)
 
-    /* impl */ override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+    impl override fun reallocate(buffer: ByteBuffer): ByteBuffer {
         if (buffer.hasArray()) {
             return buffer.order(BIG_ENDIAN)
         }
@@ -47,11 +47,11 @@ import java.nio.ByteOrder
     }
 }
 
-/* impl */ object DefaultLEByteBufferProvider : ByteBufferProvider {
-    /* impl */ override fun allocate(capacity: Int): ByteBuffer =
+impl object DefaultLEByteBufferProvider : ByteBufferProvider {
+    impl override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocate(capacity).order(LITTLE_ENDIAN)
 
-    /* impl */ override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+    impl override fun reallocate(buffer: ByteBuffer): ByteBuffer {
         if (buffer.hasArray()) {
             return buffer.order(LITTLE_ENDIAN)
         }
@@ -71,11 +71,11 @@ object NativeByteBufferProvider : ByteBufferProvider {
     }
 }
 
-/* impl */ object DefaultFloatBufferProvider : FloatBufferProvider {
-    /* impl */ override fun allocate(capacity: Int): FloatBuffer =
+impl object DefaultFloatBufferProvider : FloatBufferProvider {
+    impl override fun allocate(capacity: Int): FloatBuffer =
             java.nio.FloatBuffer.allocate(capacity)
 
-    /* impl */ override fun reallocate(buffer: FloatBuffer): FloatBuffer {
+    impl override fun reallocate(buffer: FloatBuffer): FloatBuffer {
         if (buffer.hasArray()) {
             return buffer
         }
@@ -83,11 +83,11 @@ object NativeByteBufferProvider : ByteBufferProvider {
     }
 }
 
-/* impl */ object DefaultCharBufferProvider : CharBufferProvider {
-    /* impl */ override fun allocate(capacity: Int): CharBuffer =
+impl object DefaultCharBufferProvider : CharBufferProvider {
+    impl override fun allocate(capacity: Int): CharBuffer =
             java.nio.CharBuffer.allocate(capacity)
 
-    /* impl */ override fun reallocate(buffer: CharBuffer): CharBuffer {
+    impl override fun reallocate(buffer: CharBuffer): CharBuffer {
         if (buffer.hasArray()) {
             return buffer
         }

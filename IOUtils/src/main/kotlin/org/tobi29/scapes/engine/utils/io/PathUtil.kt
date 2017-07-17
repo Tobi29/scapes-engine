@@ -66,11 +66,11 @@ interface PathEnvironment {
 /**
  * Sane default path environment supporting `.` and `..` as used in unix paths
  */
-interface StandardPathEnvironment : PathEnvironment {
+abstract class StandardPathEnvironment : PathEnvironment {
     /**
      * Separator between path components
      */
-    val separator: String
+    abstract val separator: String
 
     private tailrec fun String.sanitize(): String {
         val sanitized = replace("$separator$separator", separator)
@@ -204,6 +204,6 @@ interface StandardPathEnvironment : PathEnvironment {
 /**
  * Path environment that emulates unix paths
  */
-object UnixPathEnvironment : StandardPathEnvironment {
+object UnixPathEnvironment : StandardPathEnvironment() {
     override val separator get() = "/"
 }

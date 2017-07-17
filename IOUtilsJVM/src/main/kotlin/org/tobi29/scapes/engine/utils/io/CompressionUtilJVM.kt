@@ -20,13 +20,13 @@ import java.util.zip.DataFormatException
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
-/* impl */ class ZDeflater(level: Int,
+impl class ZDeflater(level: Int,
                            buffer: Int = 8192) : CompressionUtil.Filter {
     private val deflater = Deflater(level)
     private val output = ByteBuffer(buffer)
     private var input = ByteBuffer(buffer)
 
-    /* impl */ override fun input(buffer: ReadableByteStream): Boolean {
+    impl override fun input(buffer: ReadableByteStream): Boolean {
         if (!input.hasRemaining()) {
             val newInput = ByteBuffer(input.capacity() shl 1)
             input.flip()
@@ -40,7 +40,7 @@ import java.util.zip.Inflater
         return true
     }
 
-    /* impl */ override fun output(buffer: WritableByteStream): Int {
+    impl override fun output(buffer: WritableByteStream): Int {
         val len = deflater.deflate(output.array())
         output.limit(len)
         buffer.put(output)
@@ -49,33 +49,33 @@ import java.util.zip.Inflater
         return len
     }
 
-    /* impl */ override fun finish() {
+    impl override fun finish() {
         deflater.finish()
     }
 
-    /* impl */ override fun needsInput(): Boolean {
+    impl override fun needsInput(): Boolean {
         return deflater.needsInput()
     }
 
-    /* impl */ override fun finished(): Boolean {
+    impl override fun finished(): Boolean {
         return deflater.finished()
     }
 
-    /* impl */ override fun reset() {
+    impl override fun reset() {
         deflater.reset()
     }
 
-    /* impl */ override fun close() {
+    impl override fun close() {
         deflater.end()
     }
 }
 
-/* impl */ class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
+impl class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
     private val inflater = Inflater()
     private val output = ByteBuffer(buffer)
     private var input = ByteBuffer(buffer)
 
-    /* impl */ override fun input(buffer: ReadableByteStream): Boolean {
+    impl override fun input(buffer: ReadableByteStream): Boolean {
         if (!input.hasRemaining()) {
             val newInput = ByteBuffer(input.capacity() shl 1)
             input.flip()
@@ -89,7 +89,7 @@ import java.util.zip.Inflater
         return true
     }
 
-    /* impl */ override fun output(buffer: WritableByteStream): Int {
+    impl override fun output(buffer: WritableByteStream): Int {
         try {
             val len = inflater.inflate(output.array())
             output.limit(len)
@@ -103,22 +103,22 @@ import java.util.zip.Inflater
 
     }
 
-    /* impl */ override fun finish() {
+    impl override fun finish() {
     }
 
-    /* impl */ override fun needsInput(): Boolean {
+    impl override fun needsInput(): Boolean {
         return inflater.needsInput()
     }
 
-    /* impl */ override fun finished(): Boolean {
+    impl override fun finished(): Boolean {
         return inflater.finished()
     }
 
-    /* impl */ override fun reset() {
+    impl override fun reset() {
         inflater.reset()
     }
 
-    /* impl */ override fun close() {
+    impl override fun close() {
         inflater.end()
     }
 }

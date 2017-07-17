@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.io
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-typealias Channels = java.nio.channels.Channels
+dependencies {
+    compile project(":Utils")
+}

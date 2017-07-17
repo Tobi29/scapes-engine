@@ -15,9 +15,11 @@
  */
 package org.tobi29.scapes.engine.utils.io
 
+import java.nio.channels.FileChannel
+
 // TODO: @Throws(IOException::class)
-fun ReadableByteChannel.skip(skip: Long): Long {
-    if (this is java.nio.channels.FileChannel) {
+impl fun ReadableByteChannel.skip(skip: Long): Long {
+    if (this is FileChannel) {
         position(position() + skip)
         return 0
     } else {
