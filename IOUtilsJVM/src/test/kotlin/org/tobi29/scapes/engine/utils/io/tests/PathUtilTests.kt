@@ -33,7 +33,7 @@ object PathUtilTests : Spek({
                     Pair("a/", "b") to "a/b",
                     Pair("a", "b/") to "a/b",
                     Pair("a/b", ".") to "a/b/.",
-                    Pair("a/b", "") to "a/b/..",
+                    Pair("a/b", "..") to "a/b/..",
                     Pair("a/b", "./c") to "a/b/./c",
                     Pair("a/b", "../c") to "a/b/../c",
                     Pair("", "a") to "a",
@@ -56,7 +56,7 @@ object PathUtilTests : Spek({
             val paths = listOf(
                     Pair("a/b", "a/b") to "",
                     Pair("a/b", "a/c") to "../c",
-                    Pair("a/b", "a") to "",
+                    Pair("a/b", "a") to "..",
                     Pair("a", "a/b") to "b",
                     Pair("a/.", "a/b") to "b"
             )
@@ -83,7 +83,7 @@ object PathUtilTests : Spek({
                     "a/b" to "a/b",
                     "a/b/." to "a/b",
                     "a/b/.." to "a",
-                    "a/../../.." to "src",
+                    "a/../../.." to "../..",
                     "/a/../../.." to "/"
             )
             for ((operand, expected) in paths) {
