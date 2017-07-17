@@ -89,6 +89,7 @@ ext {
     threeten = "org.threeten:threetenbp:$threetenbpVersion"
     base64 = "com.owtelse.codec:base64:$base64Version"
     kotlinSTD = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    kotlinSTDCommon = "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
     kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     kotlinTest = "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
@@ -98,8 +99,6 @@ ext {
     sqljet = "org.tmatesoft.sqljet:sqljet:$sqljetVersion"
     antlr = "org.antlr:antlr4:$antlrVersion"
     antlrRuntime = "org.antlr:antlr4-runtime:$antlrVersion"
-    kotlinxCoroutines =
-            "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
     pngj = "ar.com.hjg:pngj:$pngjVersion"
     tika = "org.apache.tika:tika-core:$tikaVersion"
     jorbis = "org.jcraft:jorbis:$jorbisVersion"

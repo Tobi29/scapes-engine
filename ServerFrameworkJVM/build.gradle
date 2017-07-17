@@ -19,5 +19,5 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 dependencies {
     compile project(":FileSystemsJVM")
     compile project(":ThreadUtils")
-    compile rootProject.ext.kotlinxCoroutines
+    compile project(":KotlinxCoroutinesCoreJVM")
 }

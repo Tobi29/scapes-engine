@@ -65,3 +65,7 @@ include "LWJGL3BackendJVM"
 
 // SWT
 include "SWTUtilsJVM"
+
+// Included Dependencies
+include "KotlinxCoroutinesCore"
+include "KotlinxCoroutinesCoreJVM"

@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2016-2017 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,9 +14,26 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
+package kotlinx.coroutines.experimental.selects
 
-dependencies {
-    compile project(":MathUtilsJVM")
-    compile project(":KotlinxCoroutinesCoreJVM")
+/**
+ * Loops while [select] expression returns `true`.
+ *
+ * The statement of the form:
+ *
+ * ```
+ * whileSelect {
+ *     /*body*/
+ * }
+ * ```
+ *
+ * is a shortcut for:
+ *
+ * ```
+ * while(select<Boolean> {
+ *    /*body*/
+ * }) {}
+ */
+suspend fun whileSelect(builder: SelectBuilder<Boolean>.() -> Unit) {
+    while(select<Boolean>(builder)) {}
 }

@@ -16,7 +16,9 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
+implementCommon(project(":KotlinxCoroutinesCore"))
+
 dependencies {
-    compile project(":MathUtilsJVM")
-    compile project(":KotlinxCoroutinesCoreJVM")
+    compile rootProject.ext.kotlinSTD
+    testCompile "junit:junit:4.12"
 }
