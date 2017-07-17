@@ -21,13 +21,14 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
+import org.tobi29.scapes.engine.utils.generation.maze.RecursiveBacktrackerMazeGenerator
 import org.tobi29.scapes.engine.utils.math.Random
-import org.tobi29.scapes.engine.utils.generation.maze.PrimsAlgorithmMazeGenerator
 
-object PrimsAlgorithmMazeTests : Spek({
+object RecursiveBacktrackerMazeTests : Spek({
     describe("generating a maze") {
         on("generating a maze") {
-            val maze = PrimsAlgorithmMazeGenerator.generate(64, 32, Random(0))
+            val maze = RecursiveBacktrackerMazeGenerator.generate(64, 32,
+                    Random(0))
             it("should have the correct width") {
                 maze.width shouldEqual 64
             }

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
+
+implementCommon(project(":GenerationUtils"))
 
 dependencies {
-    compile project(":MathUtils")
+    compile project(":MathUtilsJVM")
 }

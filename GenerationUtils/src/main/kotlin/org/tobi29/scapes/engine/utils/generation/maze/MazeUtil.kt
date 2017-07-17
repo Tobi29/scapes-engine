@@ -37,10 +37,10 @@ inline fun Maze.drawMazeWalls(roomSizeX: Int,
         val yy = y * roomSizeY
         for (x in 0..width - 1) {
             val xx = x * roomSizeX
-            if (isWall(x, y, Face.NORTH)) {
+            if (isWall(x, y, MazeUtilWorkaround.FACE_NORTH)) {
                 lineH(xx, yy, cellSizeX)
             }
-            if (isWall(x, y, Face.WEST)) {
+            if (isWall(x, y, MazeUtilWorkaround.FACE_WEST)) {
                 lineV(xx, yy, cellSizeY)
             }
         }
@@ -59,11 +59,11 @@ inline fun Maze.drawMazeWalls(roomSizeX: Int,
                               roomSizeY: Int,
                               pixel: (Int, Int) -> Unit) {
     drawMazeWalls(roomSizeX, roomSizeY, { x, y, l ->
-        for (xx in x..x + l) {
+        for (xx in x..x + l - 1) {
             pixel(xx, y)
         }
     }, { x, y, l ->
-        for (yy in y..y + l) {
+        for (yy in y..y + l - 1) {
             pixel(x, yy)
         }
     })
@@ -115,4 +115,10 @@ private fun BitFieldGrid.findPath(from: Vector2i,
         }
     }
     return null
+}
+
+// The inlined reference to [Face] breaks the resulting JavaScript code
+object MazeUtilWorkaround {
+    val FACE_NORTH = Face.NORTH
+    val FACE_WEST = Face.WEST
 }
