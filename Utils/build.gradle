@@ -25,7 +25,12 @@ dependencies {
 sourceSets {
     main {
         kotlin {
-            srcDirs = ["src/main/kotlin", "src/jvm/kotlin"]
+            srcDirs += "../UtilsJVM/src/main/kotlin"
+        }
+    }
+    test {
+        kotlin {
+            srcDirs += "../UtilsJVM/src/test/kotlin"
         }
     }
 }
