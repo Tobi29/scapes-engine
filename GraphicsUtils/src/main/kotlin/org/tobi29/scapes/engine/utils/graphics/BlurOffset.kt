@@ -27,8 +27,8 @@ import org.tobi29.scapes.engine.utils.math.abs
  * @return An array with a length of `samples`
  */
 inline fun gaussianBlurOffset(samples: Int,
-                               magnitude: Double): DoubleArray {
-    val sampleMagnitude = magnitude / samples.toFloat()
+                              magnitude: Double): DoubleArray {
+    val sampleMagnitude = magnitude / samples.toDouble()
     val offset = samples shr 1
     val array = DoubleArray(samples)
     for (sample in 0..samples - 1) {
@@ -44,18 +44,18 @@ inline fun gaussianBlurOffset(samples: Int,
  * @return An array with a length of `samples`
  */
 inline fun gaussianBlurWeight(samples: Int,
-                               curve: (Double) -> Double): DoubleArray {
+                              curve: (Double) -> Double): DoubleArray {
     val scale = 1.0 / samples
     var magnitude = 0.0
     val offset = samples shr 1
     val array = DoubleArray(samples)
     for (sample in 0..samples - 1) {
         val weight = curve.invoke(abs(sample - offset) * scale)
-        array[sample] = weight
+        array[sample] = weight.toDouble()
         magnitude += weight
     }
     for (sample in 0..samples - 1) {
-        array[sample] /= magnitude
+        array[sample] /= magnitude.toDouble()
     }
     return array
 }

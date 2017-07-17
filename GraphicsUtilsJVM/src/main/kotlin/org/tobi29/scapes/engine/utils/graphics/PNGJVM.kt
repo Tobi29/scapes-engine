@@ -16,17 +16,14 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import ar.com.hjg.pngj.PngReaderByte
-import ar.com.hjg.pngj.PngjException
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
-import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+import ar.com.hjg.pngj.*
+import org.tobi29.scapes.engine.utils.io.*
 import java.io.InputStream
+import java.io.OutputStream
 
 // TODO: @Throws(IOException::class)
-/* impl */ fun decodePNG(stream: ReadableByteStream,
-                         bufferProvider: ByteBufferProvider): Image {
+impl fun decodePNG(stream: ReadableByteStream,
+                   bufferProvider: ByteBufferProvider): Image {
     return decodePNG(ByteStreamInputStream(stream), bufferProvider)
 }
 

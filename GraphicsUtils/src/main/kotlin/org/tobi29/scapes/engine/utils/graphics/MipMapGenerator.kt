@@ -16,35 +16,43 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.math.max
 
 /**
  * Creates an array of [ByteBuffer] containing mipmap
  * textures from the given source texture
  * @param buffer   [ByteBuffer] containing texture data in RGBA format
- * @param supplier Supplier for [ByteBuffer] instances
+ * @param bufferProvider Provider for buffer allocations
  * @param width    Width of source texture in pixels
  * @param height   Height of source texture in pixels
  * @param mipmaps  Amount of mipmap levels, resulting array will be n + 1 in size
  * @param alpha    Whether or not to allow transparent borders or harsh ones
  * @return An array of [ByteBuffer] containing the mipmap textures
  */
-@JvmName("generateMipMapsNullable")
-fun generateMipMaps(buffer: ByteBuffer?,
-                    supplier: (Int) -> ByteBuffer,
-                    width: Int,
-                    height: Int,
-                    mipmaps: Int,
-                    alpha: Boolean): Array<ByteBuffer?> {
+fun generateMipMapsNullable(buffer: ByteBuffer?,
+                            bufferProvider: ByteBufferProvider,
+                            width: Int,
+                            height: Int,
+                            mipmaps: Int,
+                            alpha: Boolean): Array<ByteBuffer?> {
     val buffers = arrayOfNulls<ByteBuffer>(mipmaps + 1)
     if (buffer == null) {
         return buffers
     }
-    buffers[mipmaps] = generateMipMap(buffer, supplier, width, height, mipmaps,
-            alpha)
-    for (i in mipmaps - 1 downTo 0) {
-        buffers[i] = generateMipMap(buffer, supplier, width, height, i, alpha,
-                buffers[i + 1], 1)
+    if (mipmaps == 0) {
+        buffers[0] = bufferProvider.allocate(width * height shl 2).apply {
+            put(buffer)
+            buffer.flip()
+            flip()
+        }
+    } else {
+        buffers[mipmaps] = generateMipMap(buffer, bufferProvider, width, height,
+                mipmaps, alpha, null, 1)
+        for (i in mipmaps - 1 downTo 0) {
+            buffers[i] = generateMipMap(buffer, bufferProvider, width, height,
+                    i, alpha, buffers[i + 1], 1)
+        }
     }
     return buffers
 }
@@ -53,7 +61,7 @@ fun generateMipMaps(buffer: ByteBuffer?,
  * Creates an array of [ByteBuffer] containing mipmap
  * textures from the given source texture
  * @param buffer   [ByteBuffer] containing texture data in RGBA format
- * @param supplier Supplier for [ByteBuffer] instances
+ * @param bufferProvider Provider for buffer allocations
  * @param width    Width of source texture in pixels
  * @param height   Height of source texture in pixels
  * @param mipmaps  Amount of mipmap levels, resulting array will be n + 1 in size
@@ -61,25 +69,20 @@ fun generateMipMaps(buffer: ByteBuffer?,
  * @return An array of [ByteBuffer] containing the mipmap textures
  */
 fun generateMipMaps(buffer: ByteBuffer,
-                    supplier: (Int) -> ByteBuffer,
+                    bufferProvider: ByteBufferProvider,
                     width: Int,
                     height: Int,
                     mipmaps: Int,
                     alpha: Boolean): Array<ByteBuffer> {
-    val buffers = arrayOfNulls<ByteBuffer>(mipmaps + 1)
-    buffers[mipmaps] = generateMipMap(buffer, supplier, width, height, mipmaps,
-            alpha)
-    for (i in mipmaps - 1 downTo 0) {
-        buffers[i] = generateMipMap(buffer, supplier, width, height, i, alpha,
-                buffers[i + 1], 1)
-    }
     @Suppress("UNCHECKED_CAST")
-    return buffers as Array<ByteBuffer>
+    return generateMipMapsNullable(buffer, bufferProvider, width, height,
+            mipmaps, alpha) as Array<ByteBuffer>
 }
 
 /**
  * Creates a mipmap of given level from the given texture
  * @param buffer         [ByteBuffer] containing texture data in RGBA format
+ * @param bufferProvider Provider for buffer allocations
  * @param width          Width of source texture in pixels
  * @param height         Height of source texture in pixels
  * @param scaleBits      Scale for the mipmap texture given as bit-shift value
@@ -89,7 +92,7 @@ fun generateMipMaps(buffer: ByteBuffer,
  * @return A [ByteBuffer] containing the mipmap texture
  */
 fun generateMipMap(buffer: ByteBuffer,
-                   supplier: (Int) -> ByteBuffer,
+                   bufferProvider: ByteBufferProvider,
                    width: Int,
                    height: Int,
                    scaleBits: Int,
@@ -106,7 +109,8 @@ fun generateMipMap(buffer: ByteBuffer,
     val scale = 1 shl scaleBits
     val widthScaled = width shr scaleBits
     val heightScaled = height shr scaleBits
-    val mipmap = supplier(max(widthScaled, 1) * max(heightScaled, 1) shl 2)
+    val mipmap = bufferProvider.allocate(
+            max(widthScaled, 1) * max(heightScaled, 1) shl 2)
     val samples = 1 shl (scaleBits shl 1)
     val minVisible = samples shr 1
     val lowerWidth = widthScaled shr lowerScaleBits

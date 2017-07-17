@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
-
-implementCommon(project(":GraphicsUtils"))
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile project(":IOUtilsJVM")
-    compile project(":MathUtilsJVM")
-    compile(rootProject.ext.pngj) { transitive = false }
+    compile project(":IOUtils")
+    compile project(":MathUtils")
 }
