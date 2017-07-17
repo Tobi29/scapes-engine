@@ -21,8 +21,6 @@ import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.shader.*
-import org.tobi29.scapes.engine.utils.shader.Function
-import java.math.BigInteger
 
 class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private var output = StringBuilder(1024)
@@ -188,8 +186,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         val endInt = integer(
                 expression.end.simplify(context, identifiers)).toInt()
         for (i in startInt..endInt - 1) {
-            identifiers[expression.index] = IntegerExpression(
-                    BigInteger(i.toString()))
+            identifiers[expression.index] = IntegerExpression(i)
             statement(expression.statement, level)
         }
     }
@@ -201,10 +198,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 statement.identifier.type, statement.identifier.name)
         val declaration = type(statement.type, statement.identifier)
         if (statement.initializer == null) {
-            println(level, declaration + ';')
+            println(level, "$declaration;")
         } else {
-            println(level, declaration + " = " +
-                    expression(statement.initializer) + ';')
+            println(level,
+                    "$declaration = ${expression(statement.initializer)};")
         }
     }
 
@@ -332,7 +329,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun integer(expression: Expression): BigInteger {
+    private fun integer(expression: Expression): Int {
         val integer = expression.simplify(context,
                 identifiers) as? IntegerExpression
                 ?: throw ShaderGenerateException(
@@ -500,7 +497,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun functions(functions: List<Function>) {
+    private fun functions(functions: List<CallFunction>) {
         for (function in functions) {
             val signature = function.signature
             println(0, signature(signature, signature.name))

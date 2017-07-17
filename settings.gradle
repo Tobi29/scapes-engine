@@ -64,6 +64,7 @@ include "TileMapsRenderer"
 include "Engine"
 include "ShaderCLikeJVM"
 include "ShaderCompiler"
+include "ShaderCompilerJVM"
 include "ShaderParser"
 
 // Backend

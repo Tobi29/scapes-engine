@@ -230,7 +230,7 @@ class ShaderParameterScope(val scope: Scope,
 
 class ShaderProgramScope(val scope: Scope = Scope()) {
     private val declarations = ArrayList<Statement>()
-    private val functions = ArrayList<Function>()
+    private val functions = ArrayList<CallFunction>()
     private val shaders = HashMap <String, Pair<Scope, (Scope) -> ShaderFunction>>()
     private var outputs: ShaderSignature? = null
     private val uniforms = ArrayList<Uniform?>()

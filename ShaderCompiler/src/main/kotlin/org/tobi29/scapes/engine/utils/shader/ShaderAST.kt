@@ -18,8 +18,6 @@ package org.tobi29.scapes.engine.utils.shader
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.readOnly
-import java.math.BigDecimal
-import java.math.BigInteger
 
 abstract class Expression {
     var location: Vector2i? = null
@@ -33,7 +31,7 @@ abstract class Expression {
 
 class ShaderProgram(
         declarations: List<Statement>,
-        functions: List<Function>,
+        functions: List<CallFunction>,
         shaders: Map <String, Pair<Scope, (Scope) -> ShaderFunction>>,
         val outputs: ShaderSignature?,
         uniforms: List<Uniform?>,
@@ -132,15 +130,11 @@ data class BooleanExpression(val value: Boolean) : Expression() {
     override fun type(context: ShaderContext) = Types.Boolean.exported
 }
 
-data class IntegerExpression(val value: BigInteger) : Expression() {
-    constructor(value: Int) : this(BigInteger(value.toString()))
-
+data class IntegerExpression(val value: Int) : Expression() {
     override fun type(context: ShaderContext) = Types.Int.exported
 }
 
-data class DecimalExpression(val value: BigDecimal) : Expression() {
-    constructor(value: Double) : this(BigDecimal(value.toString()))
-
+data class DecimalExpression(val value: Double) : Expression() {
     override fun type(context: ShaderContext) = Types.Float.exported
 }
 
@@ -229,8 +223,8 @@ data class CompoundStatement(val block: StatementBlock) : Statement() {
     override fun type(context: ShaderContext) = Types.Void.exported
 }
 
-class Function(val signature: FunctionSignature,
-               val compound: CompoundStatement)
+class CallFunction(val signature: FunctionSignature,
+                   val compound: CompoundStatement)
 
 class FunctionSignature(val name: String,
                         val returned: TypeExported,
@@ -350,8 +344,8 @@ inline fun arithmeticOperation(
         a: Expression,
         b: Expression,
         functionName: String,
-        combineInteger: (BigInteger, BigInteger) -> BigInteger,
-        combineDecimal: (BigDecimal, BigDecimal) -> BigDecimal) =
+        combineInteger: (Int, Int) -> Int,
+        combineDecimal: (Double, Double) -> Double) =
         if (a is IntegerExpression && b is IntegerExpression) {
             IntegerExpression(combineInteger(a.value, b.value))
         } else if (a is DecimalExpression && b is DecimalExpression) {
@@ -365,7 +359,7 @@ inline fun logicOperation(
         b: Expression,
         functionName: String,
         combineBoolean: (Boolean, Boolean) -> Boolean,
-        combineInteger: (BigInteger, BigInteger) -> BigInteger) =
+        combineInteger: (Int, Int) -> Int) =
         if (a is BooleanExpression && b is BooleanExpression) {
             BooleanExpression(combineBoolean(a.value, b.value))
         } else if (a is IntegerExpression && b is IntegerExpression) {
@@ -379,8 +373,8 @@ inline fun comparisonOperation(
         b: Expression,
         functionName: String,
         combineBoolean: (Boolean, Boolean) -> Boolean,
-        combineInteger: (BigInteger, BigInteger) -> Boolean,
-        combineDecimal: (BigDecimal, BigDecimal) -> Boolean) =
+        combineInteger: (Int, Int) -> Boolean,
+        combineDecimal: (Double, Double) -> Boolean) =
         if (a is BooleanExpression && b is BooleanExpression) {
             BooleanExpression(combineBoolean(a.value, b.value))
         } else if (a is IntegerExpression && b is IntegerExpression) {

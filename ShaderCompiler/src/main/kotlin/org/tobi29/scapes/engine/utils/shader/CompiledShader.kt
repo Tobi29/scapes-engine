@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.readOnly
 
 
 class CompiledShader(declarations: List<Statement>,
-                     functions: List<Function>,
+                     functions: List<CallFunction>,
                      val shaderVertex: ShaderFunction?,
                      val shaderFragment: ShaderFunction?,
                      val outputs: ShaderSignature?,

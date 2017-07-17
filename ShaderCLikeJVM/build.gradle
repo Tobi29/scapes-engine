@@ -17,7 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":ShaderCompiler")
+    compile project(":ShaderCompilerJVM")
     compile project(":ShaderParser")
 }
 
