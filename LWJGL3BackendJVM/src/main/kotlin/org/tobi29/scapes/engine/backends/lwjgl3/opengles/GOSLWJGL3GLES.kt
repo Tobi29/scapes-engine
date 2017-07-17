@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
@@ -28,6 +29,7 @@ class GOSLWJGL3GLES(override val engine: ScapesEngine) : GraphicsObjectSupplier 
     override val textureTracker = GraphicsObjectTracker<Texture>()
     override val fboTracker = GraphicsObjectTracker<Framebuffer>()
     override val shaderTracker = GraphicsObjectTracker<Shader>()
+    private val currentFBO = CurrentFBO()
 
     override fun createTexture(width: Int,
                                height: Int,
@@ -49,8 +51,8 @@ class GOSLWJGL3GLES(override val engine: ScapesEngine) : GraphicsObjectSupplier 
                                    alpha: Boolean,
                                    minFilter: TextureFilter,
                                    magFilter: TextureFilter): Framebuffer {
-        return FBO(engine, width, height, colorAttachments, depth, hdr,
-                alpha, minFilter, magFilter)
+        return FBO(engine, currentFBO, width, height, colorAttachments, depth,
+                hdr, alpha, minFilter, magFilter)
     }
 
     override fun createModelFast(attributes: List<ModelAttribute>,

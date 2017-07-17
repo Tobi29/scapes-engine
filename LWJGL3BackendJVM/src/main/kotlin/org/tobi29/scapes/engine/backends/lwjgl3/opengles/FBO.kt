@@ -17,12 +17,14 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.readOnly
 
 internal class FBO(engine: ScapesEngine,
+                   private val currentFBO: CurrentFBO,
                    width: Int,
                    height: Int,
                    colorAttachments: Int,
@@ -61,7 +63,7 @@ internal class FBO(engine: ScapesEngine,
 
     override fun deactivate(gl: GL) {
         glBindFramebuffer(GL_FRAMEBUFFER, lastFBO)
-        gl.currentFBO = lastFBO
+        currentFBO.current = lastFBO
         lastFBO = 0
     }
 
@@ -159,8 +161,8 @@ internal class FBO(engine: ScapesEngine,
     private fun bind(gl: GL) {
         assert { isStored }
         gl.check()
-        lastFBO = gl.currentFBO()
-        gl.currentFBO = framebufferID
+        lastFBO = currentFBO.current
+        currentFBO.current = framebufferID
         glBindFramebuffer(GL_FRAMEBUFFER, framebufferID)
     }
 }

@@ -25,9 +25,9 @@ import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
@@ -42,7 +42,7 @@ internal class OpenALStreamAudio(
         private val hasPosition: Boolean,
         private val controller: OpenALAudioController
 ) : OpenALAudio, AudioController by controller {
-    private val streamBuffer = ByteBufferStream({ engine.allocate(it) })
+    private val streamBuffer = ByteBufferStream(engine)
     private val readBuffer = AudioBuffer(4096)
     private var source = -1
     private var queued = 0

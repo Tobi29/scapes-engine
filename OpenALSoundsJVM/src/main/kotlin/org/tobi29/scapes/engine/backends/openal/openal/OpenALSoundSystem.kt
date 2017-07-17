@@ -22,10 +22,13 @@ import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
-import org.tobi29.scapes.engine.utils.io.use
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ConcurrentHashSet
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.Sync
+import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.threadLocalRandom
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
@@ -62,7 +65,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 try {
                     val delta = sync.delta()
                     while (!queue.isEmpty()) {
-                        queue.poll()(openAL)
+                        queue.poll()?.invoke(openAL)
                     }
                     val iterator = audios.iterator()
                     while (iterator.hasNext()) {

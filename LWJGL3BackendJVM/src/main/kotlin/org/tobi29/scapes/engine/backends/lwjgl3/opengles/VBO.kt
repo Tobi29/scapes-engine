@@ -43,7 +43,7 @@ internal class VBO(val engine: ScapesEngine,
             }
             this.attributes.add(ModelAttributeData(attribute, stride))
             attribute.offset = stride
-            val size = attribute.size * attribute.vertexType.bytes()
+            val size = attribute.size * attribute.vertexType.bytes
             stride += (size - 1 or 0x03) + 1
         }
         this.stride = stride

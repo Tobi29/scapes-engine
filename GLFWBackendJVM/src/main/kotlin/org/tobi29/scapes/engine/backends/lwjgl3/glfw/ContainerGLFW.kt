@@ -214,7 +214,7 @@ class ContainerGLFW(engine: ScapesEngine,
             val start = System.nanoTime()
             val vSync = engine.config.vSync
             while (!tasks.isEmpty()) {
-                tasks.poll()()
+                tasks.poll()?.invoke()
             }
             if (!valid) {
                 engine.graphics.reset()
@@ -241,7 +241,6 @@ class ContainerGLFW(engine: ScapesEngine,
                     contentWidth = widthBuffer.get(0)
                     contentHeight = heightBuffer.get(0)
                 }
-                gl.init()
                 valid = true
                 if (mouseGrabbed) {
                     mouseX = containerWidth / density * 0.5
@@ -349,7 +348,7 @@ class ContainerGLFW(engine: ScapesEngine,
         }
     }
 
-    override fun isRenderCall() = gl.isRenderCall()
+    override fun isRenderCall() = Thread.currentThread() == mainThread
 
     companion object : KLogging() {
         private val PLEB_SYNC_GAP = when (Platform.get()) {

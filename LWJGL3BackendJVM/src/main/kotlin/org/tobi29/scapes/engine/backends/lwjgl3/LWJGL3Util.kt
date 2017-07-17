@@ -36,3 +36,7 @@ inline fun <R> ByteBuffer.use(block: (ByteBuffer) -> R): R {
         MemoryUtil.memFree(this)
     }
 }
+
+internal class CurrentFBO {
+    var current: Int = 0
+}

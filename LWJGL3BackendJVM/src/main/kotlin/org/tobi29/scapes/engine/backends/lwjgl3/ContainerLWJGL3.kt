@@ -33,6 +33,7 @@ import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.NativeByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
@@ -66,8 +67,8 @@ abstract class ContainerLWJGL3(
         }
     }
 
-    override fun loadFont(asset: String): Font? {
-        return STBFont.fromFont(this, engine.files[asset + ".ttf"])
+    override fun loadFont(asset: ReadSource): Font? {
+        return STBFont.fromFont(this, asset)
     }
 
     fun exec(runnable: () -> Unit) {

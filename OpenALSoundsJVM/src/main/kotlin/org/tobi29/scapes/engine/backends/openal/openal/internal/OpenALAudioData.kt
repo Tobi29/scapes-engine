@@ -23,9 +23,9 @@ import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.sound.AudioFormat
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
+import org.tobi29.scapes.engine.utils.io.IOException
 
 internal class OpenALAudioData(data: ByteBuffer,
                                channels: Int,
@@ -54,8 +54,7 @@ internal class OpenALAudioData(data: ByteBuffer,
         fun read(engine: ScapesEngine,
                  input: ReadableAudioStream,
                  openAL: OpenAL): OpenALAudioData {
-            val output = ByteBufferStream({ engine.allocate(it) },
-                    { it + 409600 })
+            val output = ByteBufferStream(engine, { it + 409600 })
             val buffer = AudioBuffer(4096)
             var channels = -1
             var rate = -1

@@ -23,7 +23,7 @@ import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.graphics.generateMipMaps
+import org.tobi29.scapes.engine.utils.graphics.generateMipMapsNullable
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.max
 
@@ -223,9 +223,8 @@ internal open class TextureGL(override val engine: ScapesEngine,
                        width: Int,
                        height: Int): TextureBuffer {
         return TextureBuffer(
-                generateMipMaps(buffer, { engine.allocate(it) }, width,
-                        height, mipmaps, minFilter == TextureFilter.LINEAR),
-                width, height)
+                generateMipMapsNullable(buffer, engine, width, height, mipmaps,
+                        minFilter == TextureFilter.LINEAR), width, height)
     }
 
     protected class TextureBuffer(val buffers: Array<ByteBuffer?>,
