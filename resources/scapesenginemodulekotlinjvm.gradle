@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-apply plugin: "kotlin-platform-common"
+apply plugin: "kotlin-platform-jvm"
+apply plugin: "maven"
+apply plugin: "org.junit.platform.gradle.plugin"
+apply plugin: "org.jetbrains.dokka"
 apply plugin: "eclipse"
 
 kotlin {
@@ -26,6 +29,21 @@ kotlin {
 task sourcesJar(type: Jar) {
     classifier = "sources"
     from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+ext.implementCommon = { Project project ->
+    dependencies.implement project
+    dependencies.compileOnly project
+    dependencies.testCompileOnly project
+    tasks.sourcesJar.from project.sourceSets.main.allSource
+}
+
+dependencies {
+    testCompile project(":TestAssertions")
 }
 
 eclipse.project {
