@@ -17,9 +17,7 @@
 package org.tobi29.scapes.engine.utils.task
 
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
-import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.AtomicInteger
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.Queue
 import org.tobi29.scapes.engine.utils.logging.KLogging
 
@@ -65,7 +63,7 @@ open class Joiner {
         }
         for (thread in joinables) {
             while (!thread.joined) {
-                thread.wake {
+                thread.wake() {
                     if (!supplier()) {
                         return
                     }
@@ -112,96 +110,15 @@ open class Joiner {
         fun onCompletion(runnable: () -> Unit): Boolean
     }
 
-    open class BasicJoinable : Joinable {
-        override val joiner = Joiner(this)
-        private val woken = AtomicBoolean()
-        private val joinedMut = AtomicBoolean()
-        private val markedMut = AtomicBoolean()
-        private val completionTasks = ConcurrentLinkedQueue<() -> Unit>()
-        override val joined: Boolean
-            get() = joinedMut.get()
-        override val marked: Boolean
-            get() = markedMut.get()
-
-        override fun mark() {
-            markedMut.set(true)
-        }
-
-        override fun joinWait(time: Long) {
-            synchronized(this) {
-                try {
-                    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-                    (this as Object).wait(time)
-                } catch (e: InterruptedException) {
-                }
-            }
-        }
-
-        override fun join() {
-            synchronized(this) {
-                joinedMut.set(true)
-                while (completionTasks.isNotEmpty()) {
-                    completionTasks.poll()()
-                }
-                @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-                (this as Object).notifyAll()
-            }
-        }
-
-        override fun wake() {
-            woken.set(true)
-            synchronized(this) {
-                @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-                (this as Object).notifyAll()
-            }
-        }
-
-        override fun sleep(time: Long) {
-            if (!woken.getAndSet(false)) {
-                synchronized(this) {
-                    try {
-                        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-                        (this as Object).wait(time)
-                    } catch (e: InterruptedException) {
-                    }
-                }
-            }
-        }
-
-        override fun onCompletion(runnable: () -> Unit): Boolean {
-            if (joined) {
-                return false
-            }
-            synchronized(this) {
-                if (joined) {
-                    return false
-                }
-                completionTasks.add(runnable)
-            }
-            return true
-        }
-    }
-
-    class ThreadJoinable : BasicJoinable() {
-        lateinit var thread: Thread
-            internal set
-        override val joiner = ThreadJoiner(this)
-    }
-
     companion object : KLogging() {
         private fun <E> collectQueue(queue: Queue<E>): ArrayList<E> {
             val list = ArrayList<E>()
             while (queue.isNotEmpty()) {
-                list.add(queue.poll())
+                list.add(queue.poll()!!)
             }
             return list
         }
     }
-}
-
-class ThreadJoiner(private val joinable: ThreadJoinable) : Joiner(joinable) {
-    val thread: Thread
-        get() = joinable.thread
 }
 
 inline fun Joiner.Joinable.wake(block: () -> Unit) {

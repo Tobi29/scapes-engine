@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.task
+apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
-header class TaskLock {
-    fun increment(): Unit
+implementCommon(project(":ThreadUtils"))
 
-    fun decrement(): Unit
-
-    fun onDone(block: () -> Unit): Unit
-
-    fun isDone(): Boolean
+dependencies {
+    compile project(":MathUtilsJVM")
+    compile project(":KotlinxCoroutinesCoreJVM")
 }

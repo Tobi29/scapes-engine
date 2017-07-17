@@ -28,6 +28,7 @@ include "GenerationUtilsJVM"
 include "GraphicsUtils"
 include "GraphicsUtilsJVM"
 include "ThreadUtils"
+include "ThreadUtilsJVM"
 include "ArgumentParser"
 include "ArgumentParserJVM"
 

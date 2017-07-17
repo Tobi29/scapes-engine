@@ -16,101 +16,18 @@
 
 package org.tobi29.scapes.engine.utils.task
 
-import org.tobi29.scapes.engine.utils.AtomicLong
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.min
-import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import java.util.concurrent.ConcurrentSkipListSet
-
-class UpdateLoop(val executor: TaskExecutor,
-                 private val wakeup: Joiner? = null) {
-    private val tasks = ConcurrentSkipListSet<TaskWorker>()
-
-    fun tick(): Long {
-        val time = System.currentTimeMillis()
-        var earliestTask = Long.MAX_VALUE
-        val iterator = tasks.iterator()
-        while (iterator.hasNext()) {
-            val task = iterator.next()
-            if (time >= task.delay) {
-                try {
-                    if (task.async) {
-                        executor.runTask({
-                            val delay = task.task()
-                            if (delay < 0) {
-                                task.stopped = true
-                            } else {
-                                // TODO: Use task.delay instead of time
-                                // FIXME: Warn about slow tasks
-                                task.delay = time + delay
-                                wakeup?.wake()
-                            }
-                        }, task.name)
-                    } else {
-                        val delay = profilerSection(task.name) {
-                            task.task()
-                        }
-                        if (delay < 0) {
-                            task.stopped = true
-                        } else {
-                            // TODO: Use task.delay instead of time
-                            // FIXME: Warn about slow tasks
-                            task.delay = time + delay
-                            earliestTask = min(earliestTask, delay)
-                        }
-                    }
-                } catch (e: Throwable) {
-                    task.stopped = true
-                }
-            } else {
-                earliestTask = min(earliestTask, task.delay)
-            }
-            if (task.stopped) {
-                iterator.remove()
-            }
-        }
-        return max(earliestTask - System.currentTimeMillis(), 1)
-    }
+header class UpdateLoop(executor: TaskExecutor,
+                        wakeup: Joiner?) {
+    val executor: TaskExecutor
+    fun tick(): Long
 
     fun addTaskOnce(task: () -> Unit,
                     name: String,
-                    delay: Long = 0,
-                    async: Boolean = false) {
-        addTask({
-            task()
-            -1
-        }, name, delay, async)
-    }
+                    delay: Long,
+                    async: Boolean)
 
     fun addTask(task: () -> Long,
                 name: String,
-                delay: Long = 0,
-                async: Boolean = false) {
-        val time = delay + System.currentTimeMillis()
-        tasks.add(TaskWorker(task, name, time, async))
-        wakeup?.wake()
-    }
-
-    private class TaskWorker(val task: () -> Long,
-                             val name: String,
-                             var delay: Long,
-                             val async: Boolean) : Comparable<TaskWorker> {
-        var stopped = false
-        private val uid = UID_COUNTER.andIncrement
-
-        override fun compareTo(other: TaskWorker): Int {
-            if (uid > other.uid) {
-                return 1
-            }
-            if (uid < other.uid) {
-                return -1
-            }
-            return 0
-        }
-    }
-
-    companion object : KLogging() {
-        private val UID_COUNTER = AtomicLong(Long.MIN_VALUE)
-    }
+                delay: Long,
+                async: Boolean)
 }
