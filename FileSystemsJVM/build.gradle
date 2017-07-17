@@ -16,20 +16,9 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
+implementCommon(project(":FileSystems"))
+
 dependencies {
     compile project(":IOUtilsJVM")
     compile rootProject.ext.threeten
-}
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += "../FileSystems/src/main/kotlin"
-        }
-    }
-    test {
-        kotlin {
-            srcDirs += "../FileSystems/src/test/kotlin"
-        }
-    }
 }

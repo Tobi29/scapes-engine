@@ -16,7 +16,8 @@
 
 package java.nio.channels
 
-/*
+import java.lang.AutoCloseable
+
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header abstract class FileLock : AutoCloseable {
     protected constructor(channel: FileChannel,
@@ -40,4 +41,3 @@ header abstract class FileLock : AutoCloseable {
      */
     abstract fun release()
 }
-*/

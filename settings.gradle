@@ -33,6 +33,7 @@ include "ArgumentParser"
 include "TestAssertionsJVM"
 
 // File systems
+include "FileSystems"
 include "FileSystemsJVM"
 include "NIOFileSystemJVM"
 include "IOFileSystemJVM"

@@ -16,7 +16,8 @@
 
 package java.nio.channels
 
-/*
+import java.nio.ByteBuffer
+
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header abstract class AbstractInterruptibleChannel : Channel, InterruptibleChannel {
     protected constructor()
@@ -112,6 +113,7 @@ header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteCh
     abstract fun transferFrom(src: ReadableByteChannel,
                               position: Long,
                               count: Long): Long
+
     /**
      * @throws IOException
      */
@@ -122,9 +124,7 @@ header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteCh
     /**
      * @throws IOException
      */
-    fun lock(): FileLock {
-        return lock(0L, java.lang.Long.MAX_VALUE, false)
-    }
+    fun lock(): FileLock
 
     /**
      * @throws IOException
@@ -136,8 +136,5 @@ header abstract class FileChannel : AbstractInterruptibleChannel, SeekableByteCh
     /**
      * @throws IOException
      */
-    fun tryLock(): FileLock {
-        return tryLock(0L, java.lang.Long.MAX_VALUE, false)
-    }
+    fun tryLock(): FileLock
 }
-*/

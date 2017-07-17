@@ -14,24 +14,8 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.io.filesystem
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-import org.tobi29.scapes.engine.utils.io.Path
-
-header interface FilePath : Path, Comparable<FilePath> {
-    fun normalize(): FilePath
-
-    fun resolve(other: String): FilePath
-
-    fun resolve(other: FilePath): FilePath
-
-    fun startsWith(other: String): Boolean
-
-    fun startsWith(other: FilePath): Boolean
-
-    fun relativize(other: FilePath): FilePath?
-
-    val fileName: FilePath?
-
-    fun toAbsolutePath(): FilePath
+dependencies {
+    compile project(":IOUtils")
 }

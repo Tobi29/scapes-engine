@@ -20,26 +20,26 @@ import org.tobi29.scapes.engine.utils.io.Path
 import java.io.File
 import java.net.URI
 
-/* impl */ interface FilePath : Path, Comparable<FilePath> {
+impl interface FilePath : Path, Comparable<FilePath> {
     fun toUri(): URI
 
     fun toFile(): File
 
-    /* impl */ fun normalize(): FilePath
+    impl fun normalize(): FilePath
 
-    /* impl */ fun resolve(other: String): FilePath
+    impl fun resolve(other: String): FilePath
 
-    /* impl */ fun resolve(other: FilePath): FilePath
+    impl fun resolve(other: FilePath): FilePath
 
-    /* impl */ fun startsWith(other: String): Boolean
+    impl fun startsWith(other: String): Boolean
 
-    /* impl */ fun startsWith(other: FilePath): Boolean
+    impl fun startsWith(other: FilePath): Boolean
 
-    /* impl */ fun relativize(other: FilePath): FilePath?
+    impl fun relativize(other: FilePath): FilePath?
 
-    /* impl */ val fileName: FilePath?
+    impl val fileName: FilePath?
 
-    /* impl */ fun toAbsolutePath(): FilePath
+    impl fun toAbsolutePath(): FilePath
 
     override fun get(path: String): Path {
         return resolve(path)

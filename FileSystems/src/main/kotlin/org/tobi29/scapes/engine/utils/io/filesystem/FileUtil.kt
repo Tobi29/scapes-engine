@@ -16,18 +16,20 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
-import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
+import org.tobi29.scapes.engine.utils.io.*
 
-/*
 header fun path(path: String): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun channel(path: FilePath,
-                   options: Array<out OpenOption> = emptyArray(),
-                   attributes: Array<out FileAttribute<*>> = emptyArray()): FileChannel
+fun channel(path: FilePath,
+            options: Array<out OpenOption> = emptyArray(),
+            attributes: Array<out FileAttribute<*>> = emptyArray()): FileChannel =
+        channelImpl(path, options, attributes)
+
+// TODO: @Throws(IOException::class)
+header internal fun channelImpl(path: FilePath,
+                                options: Array<out OpenOption>,
+                                attributes: Array<out FileAttribute<*>>): FileChannel
 
 // TODO: @Throws(IOException::class)
 header fun createFile(path: FilePath,
@@ -61,7 +63,7 @@ header fun isDirectory(path: FilePath,
 
 header fun isHidden(path: FilePath): Boolean
 
-header fun isNotHidden(path: FilePath): Boolean
+inline fun isNotHidden(path: FilePath): Boolean = !isHidden(path)
 
 // TODO: @Throws(IOException::class)
 header fun createTempFile(prefix: String,
@@ -101,7 +103,6 @@ header fun <R> listRecursive(path: FilePath,
 // TODO: @Throws(IOException::class)
 header fun listRecursive(path: FilePath,
                          vararg filters: (FilePath) -> Boolean): List<FilePath>
-*/
 
 // TODO: @Throws(IOException::class)
 fun <R> read(path: FilePath,
