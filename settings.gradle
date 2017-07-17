@@ -29,6 +29,7 @@ include "GraphicsUtils"
 include "GraphicsUtilsJVM"
 include "ThreadUtils"
 include "ArgumentParser"
+include "ArgumentParserJVM"
 
 // Testing
 include "TestAssertionsJVM"

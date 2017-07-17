@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
+apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
+
+implementCommon(project(":ArgumentParser"))
 
 dependencies {
-    compile project(":Utils")
+    compile project(":UtilsJVM")
 }
