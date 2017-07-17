@@ -16,7 +16,8 @@
 
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
+implementCommon(project(":TileMaps"))
+
 dependencies {
-    compile project(":Engine")
-    compile project(":TileMapsJVM")
+    compile project(":GraphicsUtilsJVM")
 }

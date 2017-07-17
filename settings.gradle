@@ -57,6 +57,7 @@ include "CodecWAVJVM"
 
 // Tile maps
 include "TileMaps"
+include "TileMapsJVM"
 include "TileMapsRenderer"
 
 // Engine

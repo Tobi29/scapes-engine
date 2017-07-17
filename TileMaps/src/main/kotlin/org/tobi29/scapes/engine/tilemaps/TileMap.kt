@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.utils.Array2
 import org.tobi29.scapes.engine.utils.array2OfNulls
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.fill
+import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.asByteBuffer
 import org.tobi29.scapes.engine.utils.tag.*
 
