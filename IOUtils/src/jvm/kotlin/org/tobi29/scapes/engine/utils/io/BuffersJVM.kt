@@ -25,9 +25,9 @@ import java.nio.ByteOrder
             String(asArray())
         }
 
-/* impl */ fun floatBuffer(size: Int): FloatBuffer {
-    return java.nio.FloatBuffer.allocate(size)
-}
+/* impl */ inline fun ByteArray.asByteBuffer(offset: Int,
+                                             length: Int): ByteBuffer =
+        java.nio.ByteBuffer.wrap(this, offset, length)
 
 /* impl */ inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
 
@@ -39,11 +39,11 @@ import java.nio.ByteOrder
     /* impl */ override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocate(capacity).order(BIG_ENDIAN)
 
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+    /* impl */ override fun reallocate(buffer: ByteBuffer): ByteBuffer {
         if (buffer.hasArray()) {
             return buffer.order(BIG_ENDIAN)
         }
-        return super.reallocate(buffer)
+        return forceReallocate(buffer, this)
     }
 }
 
@@ -51,11 +51,11 @@ import java.nio.ByteOrder
     /* impl */ override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocate(capacity).order(LITTLE_ENDIAN)
 
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer {
+    /* impl */ override fun reallocate(buffer: ByteBuffer): ByteBuffer {
         if (buffer.hasArray()) {
             return buffer.order(LITTLE_ENDIAN)
         }
-        return super.reallocate(buffer)
+        return forceReallocate(buffer, this)
     }
 }
 
@@ -67,16 +67,18 @@ object NativeByteBufferProvider : ByteBufferProvider {
         if (buffer.isDirect) {
             return buffer.order(NATIVE_ENDIAN)
         }
-        return super.reallocate(buffer)
+        return forceReallocate(buffer, this)
     }
 }
 
-/* impl */ internal fun ReadableByteStream.writeArray(src: ByteArray,
-                                                      off: Int,
-                                                      len: Int): ReadableByteStream =
-        get(ByteBuffer.wrap(src, off, len))
+/* impl */ object DefaultFloatBufferProvider : FloatBufferProvider {
+    /* impl */ override fun allocate(capacity: Int): FloatBuffer =
+            java.nio.FloatBuffer.allocate(capacity)
 
-/* impl */ internal fun WritableByteStream.readArray(dest: ByteArray,
-                                                     off: Int,
-                                                     len: Int): WritableByteStream =
-        put(ByteBuffer.wrap(dest, off, len))
+    /* impl */ override fun reallocate(buffer: FloatBuffer): FloatBuffer {
+        if (buffer.hasArray()) {
+            return buffer
+        }
+        return forceReallocate(buffer, this)
+    }
+}

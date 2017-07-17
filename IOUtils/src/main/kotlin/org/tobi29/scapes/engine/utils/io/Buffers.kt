@@ -52,39 +52,34 @@ header fun ByteBuffer.asString(): String
  * @param size Capacity of the buffer
  * @return A [ByteBuffer] with big-endian byte-order
  */
-inline fun ByteBuffer(size: Int): ByteBuffer = byteBuffer(size)
-
-/**
- * Creates a [FloatBuffer]
- * @param size Capacity of the buffer
- * @return A [FloatBuffer]
- */
-inline fun FloatBuffer(size: Int): FloatBuffer = floatBuffer(size)
-
-/**
- * Creates a [ByteBuffer] with big-endian byte-order
- * @param size Capacity of the buffer
- * @return A [ByteBuffer] with big-endian byte-order
- */
-inline fun byteBuffer(size: Int): ByteBuffer =
+inline fun ByteBuffer(size: Int): ByteBuffer =
         DefaultByteBufferProvider.allocate(size)
 
 /**
- * Creates a [ByteBuffer] with little-endian byte-order
- * @param size Capacity of the buffer
- * @return A [ByteBuffer] with little-endian byte-order
- */
-inline fun byteBufferLE(size: Int): ByteBuffer =
-        DefaultLEByteBufferProvider.allocate(size)
-
-/*
-/**
  * Creates a [FloatBuffer]
  * @param size Capacity of the buffer
  * @return A [FloatBuffer]
  */
-header fun floatBuffer(size: Int): FloatBuffer
+inline fun FloatBuffer(size: Int): FloatBuffer =
+        DefaultFloatBufferProvider.allocate(size)
 
+/**
+ * Returns a view on the given array
+ * @receiver The array to back into
+ * @returns A [ByteBuffer] using the array for storage
+ */
+inline fun ByteArray.asByteBuffer(): ByteBuffer = asByteBuffer(0, size)
+
+/*
+/**
+ * Returns a view on the given array
+ * @param offset Offset in the array
+ * @param length Length in the array
+ * @receiver The array to back into
+ * @returns A [ByteBuffer] using the array for storage
+ */
+header fun ByteArray.asByteBuffer(offset: Int,
+                                  length: Int): ByteBuffer
 
 /**
  * Big endian byte order
@@ -103,35 +98,58 @@ header val LITTLE_ENDIAN: ByteOrder
 header val NATIVE_ENDIAN: ByteOrder
 */
 
-interface ByteBufferProvider {
-    fun allocate(capacity: Int): ByteBuffer
+interface BufferProvider<T : Buffer> {
+    fun allocate(capacity: Int): T
 
-    fun reallocate(buffer: ByteBuffer): ByteBuffer =
-            allocate(buffer.capacity()).apply {
-                val position = buffer.position()
-                val limit = buffer.limit()
-                buffer.rewind()
-                put(buffer)
-                buffer.limit(limit)
-                buffer.position(position)
-                clear()
-            }
+    fun reallocate(buffer: T): T
 }
+
+typealias ByteBufferProvider = BufferProvider<ByteBuffer>
+
+fun forceReallocate(buffer: ByteBuffer,
+                    bufferProvider: ByteBufferProvider): ByteBuffer =
+        bufferProvider.allocate(buffer.capacity()).apply {
+            val position = buffer.position()
+            val limit = buffer.limit()
+            buffer.rewind()
+            put(buffer)
+            buffer.limit(limit)
+            buffer.position(position)
+            clear()
+        }
 
 /*
 header object DefaultByteBufferProvider : ByteBufferProvider {
     override fun allocate(capacity: Int): ByteBuffer
+
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer
 }
 
 header object DefaultLEByteBufferProvider : ByteBufferProvider {
     override fun allocate(capacity: Int): ByteBuffer
+
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer
 }
+*/
 
-header internal fun ReadableByteStream.writeArray(src: ByteArray,
-                                                  off: Int,
-                                                  len: Int): ReadableByteStream
+typealias FloatBufferProvider = BufferProvider<FloatBuffer>
 
-header internal fun WritableByteStream.readArray(dest: ByteArray,
-                                                 off: Int,
-                                                 len: Int): WritableByteStream
+fun forceReallocate(buffer: FloatBuffer,
+                    bufferProvider: FloatBufferProvider): FloatBuffer =
+        bufferProvider.allocate(buffer.capacity()).apply {
+            val position = buffer.position()
+            val limit = buffer.limit()
+            buffer.rewind()
+            put(buffer)
+            buffer.limit(limit)
+            buffer.position(position)
+            clear()
+        }
+
+/*
+header object DefaultFloatBufferProvider : FloatBufferProvider {
+    override fun allocate(capacity: Int): FloatBuffer
+
+    override fun reallocate(buffer: FloatBuffer): FloatBuffer
+}
 */

@@ -20,14 +20,10 @@ package org.tobi29.scapes.engine.codec.wav
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
-import org.tobi29.scapes.engine.utils.io.byteBufferLE
-import org.tobi29.scapes.engine.utils.io.skip
+import org.tobi29.scapes.engine.utils.io.*
 
 class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    private val buffer = byteBufferLE(BUFFER_SIZE)
+    private val buffer = DefaultLEByteBufferProvider.allocate(BUFFER_SIZE)
     private var channels = 0
     private var rate = 0
     private var align = 0

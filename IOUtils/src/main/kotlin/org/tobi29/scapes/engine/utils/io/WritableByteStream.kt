@@ -32,7 +32,7 @@ interface WritableByteStream {
     fun put(src: ByteArray,
             off: Int = 0,
             len: Int = src.size): WritableByteStream {
-        return readArray(src, off, len)
+        return put(src.asByteBuffer(off, len))
     }
 
     // TODO: @Throws(IOException::class)

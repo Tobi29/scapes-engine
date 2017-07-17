@@ -61,7 +61,7 @@ interface ReadableByteStream {
     operator fun get(dest: ByteArray,
                      off: Int = 0,
                      len: Int = dest.size): ReadableByteStream {
-        return writeArray(dest, off, len)
+        return get(dest.asByteBuffer(off, len))
     }
 
     // TODO: @Throws(IOException::class)
