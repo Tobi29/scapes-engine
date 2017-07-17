@@ -21,12 +21,15 @@ import kotlinx.coroutines.experimental.CoroutineDispatcher
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.TaskQueue
+import org.tobi29.scapes.engine.utils.add
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.processCurrent
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.frontend.clike.CLikeShader
+import org.tobi29.scapes.engine.utils.shader.frontend.clike.compileCached
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
@@ -38,7 +41,6 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     private val fboDebug: GuiWidgetDebugValues.Element
     private val shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture
-    private val shaderCache = ConcurrentHashMap<String, Resource<CompiledShader>>()
     private val queue = TaskQueue<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
@@ -136,12 +138,8 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     }
 
     fun compileShader(source: String): Resource<CompiledShader> {
-        return shaderCache.computeAbsent(source) {
-            engine.resources.load {
-                profilerSection("Shader parse") {
-                    CLikeShader.compile(source)
-                }
-            }
+        return engine.resources.load {
+            CLikeShader.compileCached(source)
         }
     }
 
