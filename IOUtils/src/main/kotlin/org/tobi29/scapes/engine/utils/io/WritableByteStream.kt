@@ -18,7 +18,24 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.bytesUTF8
 
-interface WritableByteStream {
+interface WritableByteStream : Appendable {
+    override fun append(c: Char): Appendable {
+        put(c.toString().bytesUTF8())
+        return this
+    }
+
+    override fun append(csq: CharSequence?): Appendable {
+        return append(csq, 0, csq?.length ?: 4) // "null" is of length 4
+    }
+
+    override fun append(csq: CharSequence?,
+                        start: Int,
+                        end: Int): Appendable {
+        val str = csq?.toString() ?: "null"
+        put(str.bytesUTF8())
+        return this
+    }
+
     // TODO: @Throws(IOException::class)
     fun put(buffer: ByteBuffer): WritableByteStream {
         return put(buffer, buffer.remaining())

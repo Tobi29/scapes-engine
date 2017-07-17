@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.strUTF8
+import kotlin.experimental.and
 
-interface ReadableByteStream {
+interface ReadableByteStream : Readable {
     fun available(): Int
 
     fun hasAvailable(): Boolean {
@@ -68,17 +68,11 @@ interface ReadableByteStream {
     fun getSome(dest: ByteArray,
                 off: Int = 0,
                 len: Int = dest.size): Int {
-        // TODO: Optimize
-        val buffer = ByteBuffer(len)
+        val buffer = dest.asByteBuffer(off, len)
         if (!getSome(buffer)) {
             return -1
         }
-        buffer.flip()
-        buffer.get(dest, off, buffer.remaining())
-        var position = buffer.position()
-        position -= off
-        assert { position <= len }
-        return position
+        return buffer.position() - off
     }
 
     // TODO: @Throws(IOException::class)
@@ -162,5 +156,51 @@ interface ReadableByteStream {
     // TODO: @Throws(IOException::class)
     fun getString(limit: Int = Int.MAX_VALUE): String {
         return getByteArray(limit).strUTF8()
+    }
+
+    // TODO: @Throws(IOException::class)
+    override fun read(): Char {
+        val initial = get()
+        if (initial and 0b10000000.toByte() == 0b00000000.toByte()) {
+            return initial.toChar()
+        } else if (initial and 0b11100000.toByte() == 0b11000000.toByte()) {
+            val extra1 = get()
+            if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
+                throw IOException("Invalid UTF-8 byte: $extra1")
+            }
+            val c = ((initial.toInt() and 0b00011111) shl 6) or
+                    ((extra1.toInt() and 0b00111111) shl 0)
+            return c.toChar()
+        } else if (initial and 0b11110000.toByte() == 0b11100000.toByte()) {
+            val extra1 = get()
+            val extra2 = get()
+            if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
+                throw IOException("Invalid UTF-8 byte: $extra1")
+            } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
+                throw IOException("Invalid UTF-8 byte: $extra2")
+            }
+            val c = ((initial.toInt() and 0b00011111) shl 12) or
+                    ((extra1.toInt() and 0b00111111) shl 6) or
+                    ((extra2.toInt() and 0b00111111) shl 0)
+            return c.toChar()
+        } else if (initial and 0b11111000.toByte() == 0b11110000.toByte()) {
+            val extra1 = get()
+            val extra2 = get()
+            val extra3 = get()
+            if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
+                throw IOException("Invalid UTF-8 byte: $extra1")
+            } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
+                throw IOException("Invalid UTF-8 byte: $extra2")
+            } else if (extra3 and 0b11000000.toByte() != 0b10000000.toByte()) {
+                throw IOException("Invalid UTF-8 byte: $extra3")
+            }
+            val c = ((initial.toInt() and 0b00011111) shl 18) or
+                    ((extra1.toInt() and 0b00111111) shl 12) or
+                    ((extra2.toInt() and 0b00111111) shl 6) or
+                    ((extra2.toInt() and 0b00111111) shl 0)
+            return c.toChar()
+        } else {
+            throw IOException("Invalid UTF-8 byte: $initial")
+        }
     }
 }
