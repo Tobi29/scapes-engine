@@ -16,35 +16,26 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.json
 
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import org.tobi29.scapes.engine.utils.io.WritableByteStream
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.write
-import org.tobi29.scapes.engine.utils.use
-import javax.json.JsonException
 
-fun readJSON(stream: ReadableByteStream): TagMap {
-    try {
-        TagStructureReaderJSON(stream).use { reader ->
-            return TagMap { reader.readMap(this) }
-        }
-    } catch (e: JsonException) {
-        throw IOException(e)
-    }
-}
+fun readJSON(stream: ReadableByteStream): TagMap = JSONTokenizer(stream).read()
 
 fun TagMap.writeJSON(stream: WritableByteStream,
                      pretty: Boolean = true) {
-    try {
-        TagStructureWriterJSON(stream, pretty).let { writer ->
+    if (pretty) {
+        TagStructureWriterPrettyJSON(stream).let { writer ->
             writer.begin(this)
             write(writer)
             writer.end()
         }
-    } catch (e: JsonException) {
-        throw IOException(e)
-    } catch (e: NumberFormatException) {
-        throw IOException(e)
+    } else {
+        TagStructureWriterMiniJSON(stream).let { writer ->
+            writer.begin(this)
+            write(writer)
+            writer.end()
+        }
     }
 }
