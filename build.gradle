@@ -22,9 +22,6 @@ buildscript {
     repositories {
         jcenter()
         maven {
-            url "https://dl.bintray.com/kotlin/kotlin-eap"
-        }
-        maven {
             url "https://dl.bintray.com/kotlin/kotlin-dev"
         }
     }
@@ -48,7 +45,7 @@ allprojects {
     repositories {
         jcenter()
         maven {
-            url "https://dl.bintray.com/kotlin/kotlin-eap-1.1"
+            url "https://dl.bintray.com/kotlin/kotlin-dev"
         }
         maven {
             url "https://dl.bintray.com/jetbrains/spek"
