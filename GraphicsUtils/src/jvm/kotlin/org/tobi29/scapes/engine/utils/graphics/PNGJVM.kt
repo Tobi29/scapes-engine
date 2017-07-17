@@ -16,27 +16,29 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import ar.com.hjg.pngj.*
+import ar.com.hjg.pngj.PngReaderByte
+import ar.com.hjg.pngj.PngjException
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
 import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 import java.io.InputStream
-import java.io.OutputStream
 
 // TODO: @Throws(IOException::class)
-fun decodePNG(stream: ReadableByteStream,
-              supplier: (Int) -> ByteBuffer = ::ByteBuffer): Image {
-    return decodePNG(ByteStreamInputStream(stream), supplier)
+/* impl */ fun decodePNG(stream: ReadableByteStream,
+                         bufferProvider: ByteBufferProvider): Image {
+    return decodePNG(ByteStreamInputStream(stream), bufferProvider)
 }
 
 // TODO: @Throws(IOException::class)
 fun decodePNG(streamIn: InputStream,
-              supplier: (Int) -> ByteBuffer = ::ByteBuffer): Image {
+              bufferProvider: ByteBufferProvider): Image {
     try {
         val reader = PngReaderByte(streamIn)
         val width = reader.imgInfo.cols
         val height = reader.imgInfo.rows
         val fillAlpha = !reader.imgInfo.alpha
-        val buffer = supplier(width * height shl 2)
+        val buffer = bufferProvider.allocate(width * height shl 2)
         if (fillAlpha) {
             for (i in 0..height - 1) {
                 val line = reader.readRowByte()
@@ -58,59 +60,6 @@ fun decodePNG(streamIn: InputStream,
         reader.end()
         buffer.rewind()
         return Image(width, height, buffer)
-    } catch (e: PngjException) {
-        throw IOException(e)
-    }
-}
-
-// TODO: @Throws(IOException::class)
-fun encodePNG(image: Image,
-              stream: WritableByteStream,
-              level: Int,
-              alpha: Boolean) {
-    encodePNG(image, ByteStreamOutputStream(stream), level, alpha)
-}
-
-// TODO: @Throws(IOException::class)
-fun encodePNG(image: Image,
-              streamOut: OutputStream,
-              level: Int,
-              alpha: Boolean) {
-    try {
-        val width = image.width
-        val height = image.height
-        val buffer = image.buffer
-        val info = ImageInfo(width, height, 8, alpha)
-        val writer = PngWriter(streamOut, info)
-        writer.setCompLevel(level)
-        val line = ImageLineByte(info)
-        val scanline = line.scanline
-        if (alpha) {
-            for (y in 0..height - 1) {
-                buffer.position(y * width shl 2)
-                var x = 0
-                while (x < scanline.size) {
-                    scanline[x++] = buffer.get()
-                    scanline[x++] = buffer.get()
-                    scanline[x++] = buffer.get()
-                    scanline[x++] = buffer.get()
-                }
-                writer.writeRow(line)
-            }
-        } else {
-            for (y in 0..height - 1) {
-                buffer.position(y * width shl 2)
-                var x = 0
-                while (x < scanline.size) {
-                    scanline[x++] = buffer.get()
-                    scanline[x++] = buffer.get()
-                    scanline[x++] = buffer.get()
-                    buffer.get()
-                }
-                writer.writeRow(line)
-            }
-        }
-        writer.end()
     } catch (e: PngjException) {
         throw IOException(e)
     }
