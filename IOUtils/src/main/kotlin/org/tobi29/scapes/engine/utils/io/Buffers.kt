@@ -21,6 +21,7 @@ package org.tobi29.scapes.engine.utils.io
 typealias Buffer = java.nio.Buffer
 typealias ByteBuffer = java.nio.ByteBuffer
 typealias FloatBuffer = java.nio.FloatBuffer
+typealias CharBuffer = java.nio.CharBuffer
 typealias ByteOrder = java.nio.ByteOrder
 
 fun ByteBuffer.asArray() =
@@ -62,6 +63,14 @@ inline fun ByteBuffer(size: Int): ByteBuffer =
  */
 inline fun FloatBuffer(size: Int): FloatBuffer =
         DefaultFloatBufferProvider.allocate(size)
+
+/**
+ * Creates a [CharBuffer]
+ * @param size Capacity of the buffer
+ * @return A [CharBuffer]
+ */
+inline fun CharBuffer(size: Int): CharBuffer =
+        DefaultCharBufferProvider.allocate(size)
 
 /**
  * Returns a view on the given array
@@ -151,5 +160,27 @@ header object DefaultFloatBufferProvider : FloatBufferProvider {
     override fun allocate(capacity: Int): FloatBuffer
 
     override fun reallocate(buffer: FloatBuffer): FloatBuffer
+}
+*/
+
+typealias CharBufferProvider = BufferProvider<CharBuffer>
+
+fun forceReallocate(buffer: CharBuffer,
+                    bufferProvider: CharBufferProvider): CharBuffer =
+        bufferProvider.allocate(buffer.capacity()).apply {
+            val position = buffer.position()
+            val limit = buffer.limit()
+            buffer.rewind()
+            put(buffer)
+            buffer.limit(limit)
+            buffer.position(position)
+            clear()
+        }
+
+/*
+header object DefaultCharBufferProvider : CharBufferProvider {
+    override fun allocate(capacity: Int): CharBuffer
+
+    override fun reallocate(buffer: CharBuffer): CharBuffer
 }
 */
