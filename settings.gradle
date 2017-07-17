@@ -66,6 +66,7 @@ include "TileMapsRendererJVM"
 // Engine
 include "Engine"
 include "EngineJVM"
+include "ShaderCLike"
 include "ShaderCLikeJVM"
 include "ShaderCompiler"
 include "ShaderCompilerJVM"

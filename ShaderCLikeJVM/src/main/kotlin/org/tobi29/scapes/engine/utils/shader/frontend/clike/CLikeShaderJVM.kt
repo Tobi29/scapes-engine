@@ -6,8 +6,8 @@ import org.tobi29.scapes.engine.utils.shader.Scope
 import org.tobi29.scapes.engine.utils.shader.ShaderCompileException
 import org.tobi29.scapes.engine.utils.shader.Types
 
-/* impl */ object CLikeShader {
-    /* impl */ fun compile(source: String): CompiledShader {
+impl object CLikeShader {
+    impl fun compile(source: String): CompiledShader {
         val parser = profilerSection("Parse source") {
             parser(source)
         }

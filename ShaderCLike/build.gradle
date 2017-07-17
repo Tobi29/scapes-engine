@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.shader.frontend.clike
+apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-
-header object CLikeShader {
-    fun compile(source: String): CompiledShader
+dependencies {
+    compile project(":ShaderCompiler")
 }
-
-private val shaderCache = ConcurrentHashMap<String, CompiledShader>()
-
-fun CLikeShader.compileCached(source: String): CompiledShader =
-        shaderCache.computeAbsent(source) { compile(it) }

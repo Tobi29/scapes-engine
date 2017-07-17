@@ -20,13 +20,13 @@ import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.shader.*
-import org.tobi29.scapes.engine.utils.shader.Function
+import org.tobi29.scapes.engine.utils.shader.CallFunction
 
 internal fun externalDeclaration(
         context: ScapesShaderParser.TranslationUnitContext,
         scope: Scope): ShaderProgram {
     val declarations = ArrayList<Statement>()
-    val functions = ArrayList<Function>()
+    val functions = ArrayList<CallFunction>()
     val shaders = HashMap <String, Pair<Scope, (Scope) -> ShaderFunction>>()
     var outputSignature: ShaderSignature? = null
     val uniforms = ArrayList<Uniform?>()
@@ -103,7 +103,7 @@ internal fun externalDeclaration(
                 val compound = Scope(functionScope).compound {
                     block(function.compoundStatement().blockItemList())
                 }
-                functions.add(Function(functionSignature, compound))
+                functions.add(CallFunction(functionSignature, compound))
             }
         }
         current = current.translationUnit()
