@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine.utils.tag
 
 interface TagStructureWriter {
-
     // TODO: @Throws(IOException::class)
     fun begin(root: TagMap)
 
@@ -46,13 +45,21 @@ interface TagStructureWriter {
     fun beginList()
 
     // TODO: @Throws(IOException::class)
-    fun beginListStructure()
+    fun beginListStructure() {
+        beginStructure()
+    }
 
     // TODO: @Throws(IOException::class)
-    fun endListWithTerminate()
+    fun endListWithTerminate() {
+        endStructure()
+        endList()
+    }
 
     // TODO: @Throws(IOException::class)
-    fun endListWithEmpty()
+    fun endListWithEmpty() {
+        structureEmpty()
+        endList()
+    }
 
     // TODO: @Throws(IOException::class)
     fun endList()
