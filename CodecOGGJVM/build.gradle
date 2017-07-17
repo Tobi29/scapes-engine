@@ -17,6 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":SQLFramework")
-    compile rootProject.ext.sqljet
+    compile project(":CodecsJVM")
+    compile rootProject.ext.jorbis
+    compile rootProject.ext.concentus
 }

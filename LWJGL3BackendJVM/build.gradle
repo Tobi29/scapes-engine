@@ -17,9 +17,11 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":LWJGL3Backend")
-    compile project(":FileSystems")
+    compile project(":OpenALSoundsJVM")
     compile rootProject.ext.lwjgl
-    compile rootProject.ext.lwjglGLFW
-    compile rootProject.ext.lwjglTinyFD
+    compile rootProject.ext.lwjglEGL
+    compile rootProject.ext.lwjglOpenAL
+    compile rootProject.ext.lwjglOpenGL
+    compile rootProject.ext.lwjglOpenGLES
+    compile rootProject.ext.lwjglSTB
 }

@@ -17,7 +17,7 @@
 // Utils
 include "Utils"
 include "TagStructureJSON"
-include "MBeansCPUReader"
+include "MBeansCPUReaderJVM"
 include "MathUtils"
 include "IOUtils"
 include "GenerationUtils"
@@ -26,27 +26,27 @@ include "ThreadUtils"
 include "ArgumentParser"
 
 // Testing
-include "TestAssertions"
+include "TestAssertionsJVM"
 
 // File systems
 include "FileSystems"
-include "NIOFileSystem"
-include "IOFileSystem"
+include "NIOFileSystemJVM"
+include "IOFileSystemJVM"
 
 // Server framework
-include "ServerFramework"
+include "ServerFrameworkJVM"
 
 // SQL
-include "SQLFramework"
-include "MariaDB"
-include "SQLite"
-include "SQLJet"
+include "SQLFrameworkJVM"
+include "MariaDBJVM"
+include "SQLiteJVM"
+include "SQLJetJVM"
 
 // Codecs
-include "Codecs"
-include "CodecMP3"
-include "CodecOGG"
-include "CodecWAV"
+include "CodecsJVM"
+include "CodecMP3JVM"
+include "CodecOGGJVM"
+include "CodecWAVJVM"
 
 // Tile maps
 include "TileMaps"
@@ -59,9 +59,9 @@ include "ShaderCompiler"
 include "ShaderParser"
 
 // Backend
-include "GLFWBackend"
-include "OpenALSounds"
-include "LWJGL3Backend"
+include "GLFWBackendJVM"
+include "OpenALSoundsJVM"
+include "LWJGL3BackendJVM"
 
 // SWT
-include "SWTUtils"
+include "SWTUtilsJVM"

@@ -43,7 +43,7 @@ ext.implementCommon = { Project project ->
 }
 
 dependencies {
-    testCompile project(":TestAssertions")
+    testCompile project(":TestAssertionsJVM")
 }
 
 eclipse.project {

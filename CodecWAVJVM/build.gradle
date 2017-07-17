@@ -17,11 +17,5 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile project(":OpenALSounds")
-    compile rootProject.ext.lwjgl
-    compile rootProject.ext.lwjglEGL
-    compile rootProject.ext.lwjglOpenAL
-    compile rootProject.ext.lwjglOpenGL
-    compile rootProject.ext.lwjglOpenGLES
-    compile rootProject.ext.lwjglSTB
+    compile project(":CodecsJVM")
 }
