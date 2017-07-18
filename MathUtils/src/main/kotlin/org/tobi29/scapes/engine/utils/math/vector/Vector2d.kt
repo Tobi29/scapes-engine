@@ -17,9 +17,7 @@
 package org.tobi29.scapes.engine.utils.math.vector
 
 import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.tag.ReadWriteTagMap
-import org.tobi29.scapes.engine.utils.tag.TagMapWrite
-import org.tobi29.scapes.engine.utils.tag.toTag
+import org.tobi29.scapes.engine.utils.tag.*
 
 open class Vector2d(val x: Double,
                     val y: Double) : TagMapWrite {
@@ -77,4 +75,11 @@ open class Vector2d(val x: Double,
     companion object {
         val ZERO = Vector2d(0.0, 0.0)
     }
+}
+
+fun MutableTag.toVector2d(): Vector2d? {
+    val map = toMap() ?: return null
+    val x = map["X"]?.toDouble() ?: return null
+    val y = map["Y"]?.toDouble() ?: return null
+    return Vector2d(x, y)
 }

@@ -17,8 +17,7 @@
 package org.tobi29.scapes.engine.utils.math.vector
 
 import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.tag.ReadWriteTagMap
-import org.tobi29.scapes.engine.utils.tag.toTag
+import org.tobi29.scapes.engine.utils.tag.*
 import kotlin.collections.set
 
 class Vector3d(x: Double,
@@ -74,4 +73,12 @@ class Vector3d(x: Double,
     companion object {
         val ZERO = Vector3d(0.0, 0.0, 0.0)
     }
+}
+
+fun MutableTag.toVector3d(): Vector3d? {
+    val map = toMap() ?: return null
+    val x = map["X"]?.toDouble() ?: return null
+    val y = map["Y"]?.toDouble() ?: return null
+    val z = map["Z"]?.toDouble() ?: return null
+    return Vector3d(x, y, z)
 }
