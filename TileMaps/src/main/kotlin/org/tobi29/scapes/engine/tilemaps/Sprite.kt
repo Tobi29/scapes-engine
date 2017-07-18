@@ -17,13 +17,37 @@
 package org.tobi29.scapes.engine.tilemaps
 
 import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.graphics.toImage
 import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.tag.*
 
-class Sprite(frames: List<Frame>) {
+class Sprite(frames: List<Frame>) : TagMapWrite {
     val frames = frames.readOnly()
 
     constructor(vararg frames: Frame) : this(frames.toList())
+
+    override fun write(map: ReadWriteTagMap) {
+        map["Frames"] = TagList(frames.asSequence().map { it.toTag() })
+    }
+}
+
+fun MutableTag.toSprite(): Sprite? {
+    val map = toMap() ?: return null
+    val frames = map["Frames"]?.toList() ?: return null
+    return Sprite(frames.mapNotNull { it.toFrame() })
 }
 
 data class Frame(val duration: Double,
-                 val image: Image)
+                 val image: Image) : TagMapWrite {
+    override fun write(map: ReadWriteTagMap) {
+        map["Duration"] = duration.toTag()
+        map["Image"] = image.toTag()
+    }
+}
+
+fun MutableTag.toFrame(): Frame? {
+    val map = toMap() ?: return null
+    val duration = map["Duration"]?.toDouble() ?: return null
+    val image = map["Image"]?.toImage() ?: return null
+    return Frame(duration, image)
+}

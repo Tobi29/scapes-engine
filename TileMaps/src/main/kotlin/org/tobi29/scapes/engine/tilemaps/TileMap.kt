@@ -20,11 +20,10 @@ import org.tobi29.scapes.engine.utils.Array2
 import org.tobi29.scapes.engine.utils.array2OfNulls
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.fill
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.asByteBuffer
 import org.tobi29.scapes.engine.utils.tag.*
 
-fun Array2<out Tile?>.write(map: ReadWriteTagMutableMap) {
+fun Array2<out Tile?>.write(map: ReadWriteTagMap) {
     map["Width"] = width.toTag()
     map["Height"] = height.toTag()
     map["Tiles"] = ByteArray(size shl 2).apply {

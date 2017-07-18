@@ -17,8 +17,9 @@
 package org.tobi29.scapes.engine.tilemaps
 
 import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.tag.*
 
-class TileSets(private val tilesMap: Map<Int, Tile>) {
+class TileSets(private val tilesMap: Map<Int, Tile>) : TagMapWrite {
     val tiles = tilesMap.values.readOnly()
 
     fun tile(id: Int): Tile? {
@@ -27,4 +28,16 @@ class TileSets(private val tilesMap: Map<Int, Tile>) {
         }
         return tilesMap[id]
     }
+
+    override fun write(map: ReadWriteTagMap) {
+        map["Tiles"] = TagList(tiles.asSequence().map { it.toTag() })
+    }
+}
+
+fun MutableTag.toTileSets(): TileSets? {
+    val map = toMap() ?: return null
+    val tiles = map["Tiles"]?.toList() ?: return null
+    return TileSets(tiles.asSequence()
+            .mapNotNull { it.toTile() }
+            .map { it.id to it }.toMap())
 }

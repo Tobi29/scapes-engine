@@ -17,12 +17,35 @@
 package org.tobi29.scapes.engine.tilemaps
 
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.math.vector.toVector2i
 import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.tag.*
 
 class Tile(val sprite: Sprite,
            val size: Vector2i,
            val id: Int,
-           val tileset: String,
-           properties: Map<String, String> = emptyMap()) {
+           val tileSet: String,
+           properties: Map<String, String> = emptyMap()) : TagMapWrite {
     val properties = properties.readOnly()
+
+    override fun write(map: ReadWriteTagMap) {
+        map["Sprite"] = sprite.toTag()
+        map["Size"] = size.toTag()
+        map["ID"] = id.toTag()
+        map["TileSet"] = tileSet.toTag()
+        map["Properties"] = TagMap {
+            properties.forEach { this[it.key] = it.value.toTag() }
+        }
+    }
+}
+
+fun MutableTag.toTile(): Tile? {
+    val map = toMap() ?: return null
+    val sprite = map["Sprite"]?.toSprite() ?: return null
+    val size = map["Size"]?.toVector2i() ?: return null
+    val id = map["ID"]?.toInt() ?: return null
+    val tileSet = map["TileSet"]?.toString() ?: return null
+    val properties = map["Properties"]?.toMap() ?: return null
+    return Tile(sprite, size, id, tileSet,
+            properties.mapValues { it.value.toString() })
 }
