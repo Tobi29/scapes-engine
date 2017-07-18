@@ -15,6 +15,7 @@
  */
 
 apply plugin: "kotlin-platform-common"
+apply plugin: "maven"
 apply plugin: "eclipse"
 
 kotlin {
