@@ -153,9 +153,9 @@ abstract class TextureAtlas<T : TextureAtlasEntry>(protected val minSize: Int = 
                         }
                         break@current
                     }
-                    is TextureNode.Branch -> current.run {
-                        current = left
-                        deque.addLast(right)
+                    is TextureNode.Branch -> {
+                        deque.addLast(current.right)
+                        current = current.left
                     }
                     else -> break@current
                 }
