@@ -37,11 +37,11 @@ fun sleep(time: Long) {
  * @param time The time to sleep in milliseconds
  */
 fun sleepAtLeast(time: Long) {
-    val end = System.currentTimeMillis() + time
+    val end = systemClock() + time
     var delta = time
     do {
         sleep(delta)
-        delta = end - System.currentTimeMillis()
+        delta = end - systemClock()
     } while (delta > 0)
 }
 

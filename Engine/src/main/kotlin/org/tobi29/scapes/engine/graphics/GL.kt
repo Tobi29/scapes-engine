@@ -31,7 +31,7 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         protected set
     var timer = 0.0
         private set
-    var timestamp = /*System.nanoTime()*/0L
+    var timestamp = 0L
         private set
 
     fun reshape(contentWidth: Int,

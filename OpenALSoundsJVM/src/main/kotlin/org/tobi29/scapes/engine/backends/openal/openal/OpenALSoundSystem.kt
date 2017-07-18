@@ -22,10 +22,7 @@ import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
-import org.tobi29.scapes.engine.utils.ConcurrentHashSet
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.Sync
-import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
@@ -160,7 +157,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                            gain: Double,
                            referenceDistance: Double,
                            rolloffFactor: Double) {
-        val time = System.nanoTime()
+        val time = systemClock.timeNanos()
         queue {
             audios.add(OpenALEffectAudio(asset, channel, Vector3d.ZERO,
                     Vector3d.ZERO, pitch, gain, referenceDistance,
@@ -176,7 +173,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                            gain: Double,
                            referenceDistance: Double,
                            rolloffFactor: Double) {
-        val time = System.nanoTime()
+        val time = systemClock.timeNanos()
         queue {
             audios.add(OpenALEffectAudio(asset, channel, position, velocity,
                     pitch, gain, referenceDistance, rolloffFactor, true, time))

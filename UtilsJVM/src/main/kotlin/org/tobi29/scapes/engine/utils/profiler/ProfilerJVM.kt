@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
+import org.tobi29.scapes.engine.utils.systemClock
 import java.util.*
 
 impl object Profiler {
@@ -51,7 +52,7 @@ impl class ProfilerInstance(thread: Thread) {
 
     impl fun enterNode(name: String) {
         node = node.children.computeAbsent(name) { Node({ it }, node) }
-        node.lastEnter = System.nanoTime()
+        node.lastEnter = systemClock.timeNanos()
         ProfilerDispatch.dispatchers.forEach { it.enterNode(name) }
     }
 
@@ -59,7 +60,7 @@ impl class ProfilerInstance(thread: Thread) {
         val parentNode = node.parent ?: throw IllegalStateException(
                 "Profiler stack popped on root node")
         assert { name == node.name() }
-        node.timeNanos += System.nanoTime() - node.lastEnter
+        node.timeNanos += systemClock.timeNanos() - node.lastEnter
         ProfilerDispatch.dispatchers.forEach { it.exitNode(name) }
         node = parentNode
     }

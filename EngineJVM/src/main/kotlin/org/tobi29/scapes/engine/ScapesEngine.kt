@@ -66,7 +66,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
     override val debugValues: GuiWidgetDebugValues
     override val profiler: GuiWidgetProfiler
     override val performance: GuiWidgetPerformance
-    override val game = game(this)
+    override val game: Game
 
     init {
         checkSystem()
@@ -77,6 +77,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         sounds = container.sounds
 
         logger.info { "Initializing game" }
+        this.game = game(this)
         this.game.initEarly()
 
         logger.info { "Setting up GUI" }

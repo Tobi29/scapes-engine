@@ -30,16 +30,13 @@ import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.Sync
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.sleepNanos
 import org.tobi29.scapes.engine.utils.tag.toMap
 
 class ContainerGLFW(engine: ScapesEngine,
@@ -211,7 +208,7 @@ class ContainerGLFW(engine: ScapesEngine,
         }
         sync.init()
         while (running) {
-            val start = System.nanoTime()
+            val start = systemClock.timeNanos()
             val vSync = engine.config.vSync
             while (!tasks.isEmpty()) {
                 tasks.poll()?.invoke()
@@ -251,7 +248,7 @@ class ContainerGLFW(engine: ScapesEngine,
             if (plebSync > 0) {
                 sleepNanos(plebSync)
             }
-            val time = System.nanoTime()
+            val time = systemClock.timeNanos()
             GLFW.glfwPollEvents()
             controllers.poll()
             profilerSection("Render") {
@@ -288,8 +285,8 @@ class ContainerGLFW(engine: ScapesEngine,
             }
             if (vSync && plebSyncEnable) {
                 val maxDiff = 1000000000L / refreshRate
-                val latency = System.nanoTime() - time
-                val delta = System.nanoTime() - start
+                val latency = systemClock.timeNanos() - time
+                val delta = systemClock.timeNanos() - start
                 val targetDelta = max(maxDiff - latency - PLEB_SYNC_GAP, 0L)
                 val diff = delta - targetDelta
                 plebSync = clamp(plebSync + diff, 0L, targetDelta)

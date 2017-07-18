@@ -20,6 +20,7 @@ import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.AtomicLong
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.math.max
+import org.tobi29.scapes.engine.utils.systemClock
 import java.net.SocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
@@ -41,7 +42,7 @@ class Connection(private val requestClose: AtomicBoolean,
         if (this.timeout == null) {
             return
         }
-        val nextTime = System.currentTimeMillis() + timeout
+        val nextTime = systemClock() + timeout
         while (true) {
             val prev = this.timeout.get()
             val next = max(prev, nextTime)

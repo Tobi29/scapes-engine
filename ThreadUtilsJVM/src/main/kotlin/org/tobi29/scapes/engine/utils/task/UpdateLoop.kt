@@ -21,6 +21,7 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
+import org.tobi29.scapes.engine.utils.systemClock
 import java.util.concurrent.ConcurrentSkipListSet
 
 impl class UpdateLoop(impl val executor: TaskExecutor,
@@ -28,7 +29,7 @@ impl class UpdateLoop(impl val executor: TaskExecutor,
     private val tasks = ConcurrentSkipListSet<TaskWorker>()
 
     impl fun tick(): Long {
-        val time = System.currentTimeMillis()
+        val time = systemClock()
         var earliestTask = Long.MAX_VALUE
         val iterator = tasks.iterator()
         while (iterator.hasNext()) {
@@ -70,7 +71,7 @@ impl class UpdateLoop(impl val executor: TaskExecutor,
                 iterator.remove()
             }
         }
-        return max(earliestTask - System.currentTimeMillis(), 1)
+        return max(earliestTask - systemClock(), 1)
     }
 
     impl fun addTaskOnce(task: () -> Unit,
@@ -87,7 +88,7 @@ impl class UpdateLoop(impl val executor: TaskExecutor,
                      name: String,
                      delay: Long,
                      async: Boolean) {
-        val time = delay + System.currentTimeMillis()
+        val time = delay + systemClock()
         tasks.add(TaskWorker(task, name, time, async))
         wakeup?.wake()
     }

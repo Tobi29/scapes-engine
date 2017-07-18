@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.utils.mbeans
 
 import org.tobi29.scapes.engine.utils.CPUUtil
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider
+import org.tobi29.scapes.engine.utils.systemClock
 import java.lang.management.ManagementFactory
 
 class MBeansCPUReaderProvider : CPUReaderProvider {
@@ -42,7 +43,7 @@ class MBeansCPUReaderProvider : CPUReaderProvider {
                     if (!THREADS.isThreadCpuTimeEnabled) {
                         THREADS.isThreadCpuTimeEnabled = true
                     }
-                    val time = System.nanoTime()
+                    val time = systemClock.timeNanos()
                     val delta = (time - lastTime).toDouble()
                     for (thread in threads) {
                         val threadTime = THREADS.getThreadCpuTime(thread)
