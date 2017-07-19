@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.input
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.remove
+import org.tobi29.scapes.engine.utils.removeEqual
 
 class ControllerJoystick(private val name: String,
                          axisCount: Int) : ControllerBasic {
@@ -55,7 +55,7 @@ class ControllerJoystick(private val name: String,
                     KeyState.PRESSED ->
                         states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
                     KeyState.RELEASED ->
-                        states.remove(it.key, KeyState.RELEASED)
+                        states.removeEqual(it.key, KeyState.RELEASED)
                 }
             }
             val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
@@ -68,7 +68,7 @@ class ControllerJoystick(private val name: String,
                         states[key] = KeyState.PRESSED
                     ControllerBasic.PressState.RELEASE -> {
                         states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
-                        states.remove(key, KeyState.DOWN)
+                        states.removeEqual(key, KeyState.DOWN)
                     }
                 }
                 newPressEvents.add(event)

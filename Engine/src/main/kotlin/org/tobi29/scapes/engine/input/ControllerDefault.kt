@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.remove
+import org.tobi29.scapes.engine.utils.removeEqual
 
 abstract class ControllerDefault : ControllerBasic {
     private val states = ConcurrentHashMap<ControllerKey, KeyState>()
@@ -51,7 +51,7 @@ abstract class ControllerDefault : ControllerBasic {
                     KeyState.PRESSED ->
                         states.replace(it.key, KeyState.PRESSED, KeyState.DOWN)
                     KeyState.RELEASED ->
-                        states.remove(it.key, KeyState.RELEASED)
+                        states.removeEqual(it.key, KeyState.RELEASED)
                 }
             }
             val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
@@ -65,7 +65,7 @@ abstract class ControllerDefault : ControllerBasic {
                         states[key] = KeyState.PRESSED
                     ControllerBasic.PressState.RELEASE -> {
                         states.replace(key, KeyState.PRESSED, KeyState.RELEASED)
-                        states.remove(key, KeyState.DOWN)
+                        states.removeEqual(key, KeyState.DOWN)
                     }
                 }
                 newPressEvents.add(event)

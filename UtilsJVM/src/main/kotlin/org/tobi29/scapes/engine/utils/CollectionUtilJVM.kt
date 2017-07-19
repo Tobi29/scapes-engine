@@ -201,6 +201,6 @@ impl inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
 }
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-impl inline fun <K, V> MutableMap<K, V>.remove(key: K,
-                                               value: V): Boolean =
+impl inline fun <K, V> MutableMap<K, V>.removeEqual(key: K,
+                                                    value: V): Boolean =
         remove(key, value)

@@ -325,8 +325,8 @@ header inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
 header inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
                                                            block: (K) -> V?): V?
 
-header fun <K, V> MutableMap<K, V>.remove(key: K,
-                                          value: V): Boolean
+header fun <K, V> MutableMap<K, V>.removeEqual(key: K,
+                                               value: V): Boolean
 
 fun <T : Comparable<T>> comparator(): Comparator<T> =
         object : Comparator<T> {
