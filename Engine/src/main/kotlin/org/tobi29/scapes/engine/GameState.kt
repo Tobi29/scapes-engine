@@ -70,7 +70,6 @@ abstract class GameState(val engine: ScapesEngine) {
                 while (!done) {
                     engine.graphics.executeDispatched(gl)
                 }
-                updateLoadedPipeline()
                 this.pipeline = rebuiltPipeline
             }
             renderStep(delta)
