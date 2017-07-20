@@ -79,8 +79,8 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
 
     fun render(gl: GL,
                delta: Double,
-               contentWidth: Int = 0,
-               contentHeight: Int = 0) {
+               contentWidth: Int,
+               contentHeight: Int) {
         synchronized(this) {
             try {
                 gl.checkError("Pre-Render")
