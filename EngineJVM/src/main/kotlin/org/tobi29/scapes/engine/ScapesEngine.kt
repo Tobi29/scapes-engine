@@ -23,14 +23,11 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.AtomicReference
-import org.tobi29.scapes.engine.utils.Sync
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.newEventDispatcher
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.tag.mapMut
 import org.tobi29.scapes.engine.utils.task.BasicJoinable
@@ -40,8 +37,10 @@ import org.tobi29.scapes.engine.utils.task.UpdateLoop
 
 class ScapesEngineImpl(game: (ScapesEngine) -> Game,
                        backend: (ScapesEngine) -> Container,
+                       defaultGuiStyle: (ScapesEngine) -> GuiStyle,
                        override val taskExecutor: TaskExecutor,
                        override val configMap: MutableTagMap) : ScapesEngine {
+    override val componentStorage = ComponentStorage<Any>()
     private val runtime = Runtime.getRuntime()
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
@@ -78,10 +77,10 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
 
         logger.info { "Initializing game" }
         this.game = game(this)
-        this.game.initEarly()
+        registerComponent(GAME_COMPONENT, this.game)
 
         logger.info { "Setting up GUI" }
-        guiStyle = this.game.defaultGuiStyle
+        guiStyle = defaultGuiStyle(this)
         notifications = GuiNotifications(guiStyle)
         guiStack.addUnfocused("90-Notifications", notifications)
         tooltip = GuiTooltip(guiStyle)
@@ -105,7 +104,6 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         logger.info { "Creating graphics system" }
         graphics = GraphicsSystem(container.gos)
         logger.info { "Initializing game" }
-        this.game.init()
         logger.info { "Engine created" }
     }
 
@@ -139,7 +137,8 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         }
         val wait = BasicJoinable()
         joiner = taskExecutor.runThread({ joiner ->
-            game.start()
+            components.asSequence().filterMap<ComponentLifecycle>()
+                    .forEach { it.start() }
             var tps = step(0.0001)
             var sync = Sync(tps, 0L, false, "Engine-Update")
             sync.init()
@@ -154,7 +153,8 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
                 }
                 sync.cap()
             }
-            game.halt()
+            components.asSequence().filterMap<ComponentLifecycle>()
+                    .forEach { it.halt() }
         }, "State", TaskExecutor.Priority.HIGH)
         wait.joiner.join()
     }
@@ -176,7 +176,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         logger.info { "Disposing sound system" }
         sounds.dispose()
         logger.info { "Disposing game" }
-        game.dispose()
+        clearComponents()
         logger.info { "Shutting down tasks" }
         taskExecutor.shutdown()
         logger.info { "Stopped Scapes-Engine" }
@@ -209,7 +209,8 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
             loop.tick()
         }
         profilerSection("Game") {
-            game.step(delta)
+            components.asSequence().filterMap<ComponentStep>()
+                    .forEach { it.step(delta) }
         }
         profilerSection("Gui") {
             guiStack.step(delta)
@@ -230,5 +231,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         return state.tps
     }
 
-    companion object : KLogging()
+    companion object : KLogging() {
+        private val GAME_COMPONENT = ComponentTypeRegistered<Game>()
+    }
 }

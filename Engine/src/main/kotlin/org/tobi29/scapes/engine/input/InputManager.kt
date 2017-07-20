@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.input
 
+import org.tobi29.scapes.engine.ComponentStep
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.gui.GuiControllerDummy
@@ -24,15 +25,17 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.tag.mapMut
 
-abstract class InputManager<M : InputMode>(private val engine: ScapesEngine,
-                                           private val configMap: MutableTagMap) {
+abstract class InputManager<M : InputMode>(
+        val engine: ScapesEngine,
+        private val configMap: MutableTagMap,
+        private val inputModeDummy: M
+) : ComponentRegistered, ComponentStep {
     private val inputModesMut =
             ConcurrentHashMap<Controller, (MutableTagMap) -> M>()
     var inputModes = emptyList<M>()
         private set
-    private var inputModeMut = AtomicReference<M?>(null)
-    val inputMode get() = inputModeMut.get() ?: throw IllegalStateException(
-            "No input mode is set")
+    private var inputModeMut = AtomicReference<M>(inputModeDummy)
+    val inputMode get() = inputModeMut.get()
     private val freezeInputModeMut = AtomicBoolean(false)
     var freezeInputMode get() = freezeInputModeMut.get()
         set(value) = freezeInputModeMut.set(value)
@@ -50,7 +53,17 @@ abstract class InputManager<M : InputMode>(private val engine: ScapesEngine,
         }
     }.apply { enable() }
 
-    fun step(delta: Double) {
+    override fun init() {
+        events.enable()
+        reloadInput()
+    }
+
+    override fun dispose() {
+        events.disable()
+        changeInput(null)
+    }
+
+    override fun step(delta: Double) {
         var newInputMode: M? = null
         for (inputMode in inputModes) {
             if (inputMode.poll(delta)) {
@@ -71,16 +84,6 @@ abstract class InputManager<M : InputMode>(private val engine: ScapesEngine,
         changeInput(inputModes.firstOrNull())
     }
 
-    fun enable() {
-        events.enable()
-        reloadInput()
-    }
-
-    fun disable() {
-        events.disable()
-        changeInput(null)
-    }
-
     abstract protected fun inputMode(controller: Controller): ((MutableTagMap) -> M)?
 
     abstract protected fun inputModeChanged(inputMode: M)
@@ -90,13 +93,13 @@ abstract class InputManager<M : InputMode>(private val engine: ScapesEngine,
             inputMode?.let { "Setting input mode to $it" }
                     ?: "Disabling input mode"
         }
+        val newInputMode = inputMode ?: inputModeDummy
         synchronized(inputModesMut) {
-            inputModeMut.get()?.disabled()
-            inputModeMut.set(inputMode)
-            engine.guiController = inputMode?.guiController()
-                    ?: GuiControllerDummy(engine)
-            inputMode?.let { inputModeChanged(it) }
-            inputMode?.enabled()
+            inputModeMut.get().disabled()
+            inputModeMut.set(newInputMode)
+            engine.guiController = newInputMode.guiController()
+            newInputMode.let { inputModeChanged(it) }
+            newInputMode.enabled()
         }
     }
 

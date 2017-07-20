@@ -15,36 +15,10 @@
  */
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.gui.GuiStyle
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.Version
 
-abstract class Game(val engine: ScapesEngine) {
-    private var disposed = AtomicBoolean(false)
-
-    abstract val events: EventDispatcher
-
-    abstract val name: String
-
-    abstract val id: String
-
-    abstract val version: Version
-
-    abstract val defaultGuiStyle: GuiStyle
-
-    abstract fun initEarly()
-
-    abstract fun init()
-
-    abstract fun start()
-
-    abstract fun halt()
-
-    abstract fun step(delta: Double)
-
-    open fun dispose() {
-        events.disable()
-        disposed.set(true)
-    }
+interface Game : ComponentLifecycle, ComponentStep {
+    val name: String
+    val id: String
+    val version: Version
 }

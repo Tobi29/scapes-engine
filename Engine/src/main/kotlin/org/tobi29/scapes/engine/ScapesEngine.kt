@@ -23,6 +23,8 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
+import org.tobi29.scapes.engine.utils.ComponentHolder
+import org.tobi29.scapes.engine.utils.ComponentRegistered
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
@@ -31,7 +33,7 @@ import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.UpdateLoop
 
-interface ScapesEngine : ByteBufferProvider {
+interface ScapesEngine : ComponentHolder<Any>, ByteBufferProvider {
     val taskExecutor: TaskExecutor
     val configMap: MutableTagMap
     val loop: UpdateLoop
@@ -69,4 +71,13 @@ interface ScapesEngine : ByteBufferProvider {
     fun debugMap(): Map<String, String>
 
     fun isMouseGrabbed(): Boolean
+}
+
+interface ComponentLifecycle : ComponentRegistered {
+    fun start() {}
+    fun halt() {}
+}
+
+interface ComponentStep {
+    fun step(delta: Double) {}
 }
