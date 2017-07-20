@@ -31,7 +31,7 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 
 class TileLayerRenderer(val engine: ScapesEngine,
                         val tileDimensions: Vector2i,
-                        val map: Array2<Tile?>,
+                        val map: Array2<out Tile?>,
                         val atlas: TileAtlas,
                         private val cx: Int = 4,
                         private val cy: Int = 4) {

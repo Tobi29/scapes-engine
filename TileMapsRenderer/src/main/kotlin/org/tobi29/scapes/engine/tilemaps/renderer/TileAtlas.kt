@@ -24,14 +24,13 @@ import org.tobi29.scapes.engine.graphics.TextureAtlasEngineEntry
 import org.tobi29.scapes.engine.tilemaps.Sprite
 import org.tobi29.scapes.engine.tilemaps.Tile
 import org.tobi29.scapes.engine.tilemaps.TileSets
+import org.tobi29.scapes.engine.utils.AtomicInteger
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.remP
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.toArray
-import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.set
 
 class TileAtlas(engine: ScapesEngine) : TextureAtlasEngine<TileAtlasEntry>(
@@ -114,7 +113,7 @@ open class TileAtlasEntry(sprite: Sprite,
 }
 
 fun atlas(engine: ScapesEngine,
-          tileSets: TileSets): TileAtlas {
+          tileSets: TileSets<*>): TileAtlas {
     val atlas = TileAtlas(engine)
     tileSets.tiles.forEach { atlas.registerTile(it) }
     atlas.init()

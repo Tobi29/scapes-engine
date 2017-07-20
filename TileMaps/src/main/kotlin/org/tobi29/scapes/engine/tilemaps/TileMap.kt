@@ -33,11 +33,16 @@ fun Array2<out Tile?>.write(map: ReadWriteTagMap) {
     }.toTag()
 }
 
-fun MutableTag.toTileMap(tileSets: TileSets): Array2<Tile?>? {
+inline fun <reified T : Tile> MutableTag.toTileMap(tileSets: TileSets<T>): Array2<T?>? {
+    return toTileMap(tileSets) { width, height -> array2OfNulls(width, height) }
+}
+
+fun <T : Tile> MutableTag.toTileMap(tileSets: TileSets<T>,
+                                    arraySupplier: (Int, Int) -> Array2<T?>): Array2<T?>? {
     val map = toMap() ?: return null
     val width = map["Width"]?.toInt() ?: return null
     val height = map["Height"]?.toInt() ?: return null
-    val array = array2OfNulls<Tile>(width, height)
+    val array = arraySupplier(width, height)
     map["Tiles"]?.toByteArray()?.let { tiles ->
         if (tiles.size != array.size shl 2) {
             throw IllegalArgumentException("Tile array has invalid size")
