@@ -213,11 +213,7 @@ public interface CompletionHandlerI {
 /**
  * Thrown by cancellable suspending functions if the [Job] of the coroutine is cancelled while it is suspending.
  */
-header open class CancellationException : IllegalStateException {
-    constructor()
-
-    constructor(message: String)
-}
+typealias CancellationException = java.util.concurrent.CancellationException
 
 /**
  * Unregisters a specified [registration] when this job is complete.
