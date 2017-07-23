@@ -25,6 +25,7 @@ import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.ComponentHolder
 import org.tobi29.scapes.engine.utils.ComponentRegistered
+import org.tobi29.scapes.engine.utils.ComponentStorage
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
@@ -33,7 +34,14 @@ import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.UpdateLoop
 
-interface ScapesEngine : ComponentHolder<Any>, ByteBufferProvider {
+header class ScapesEngine(
+        game: (ScapesEngine) -> Game,
+        backend: (ScapesEngine) -> Container,
+        defaultGuiStyle: (ScapesEngine) -> GuiStyle,
+        taskExecutor: TaskExecutor,
+        configMap: MutableTagMap
+) : ComponentHolder<Any>, ByteBufferProvider {
+    override val componentStorage: ComponentStorage<Any>
     val taskExecutor: TaskExecutor
     val configMap: MutableTagMap
     val loop: UpdateLoop
@@ -53,24 +61,17 @@ interface ScapesEngine : ComponentHolder<Any>, ByteBufferProvider {
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
     val game: Game
-
     val state: GameState
 
     fun switchState(state: GameState)
-
-    override fun allocate(capacity: Int) = container.allocate(capacity)
-
-    override fun reallocate(buffer: ByteBuffer) = container.reallocate(buffer)
-
     fun start()
-
     fun halt()
-
     fun dispose()
-
     fun debugMap(): Map<String, String>
-
     fun isMouseGrabbed(): Boolean
+
+    override fun allocate(capacity: Int): ByteBuffer
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer
 }
 
 interface ComponentLifecycle : ComponentRegistered {

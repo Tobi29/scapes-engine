@@ -25,6 +25,7 @@ import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
@@ -35,12 +36,14 @@ import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.UpdateLoop
 
-class ScapesEngineImpl(game: (ScapesEngine) -> Game,
-                       backend: (ScapesEngine) -> Container,
-                       defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-                       override val taskExecutor: TaskExecutor,
-                       override val configMap: MutableTagMap) : ScapesEngine {
-    override val componentStorage = ComponentStorage<Any>()
+impl class ScapesEngine(
+        game: (ScapesEngine) -> Game,
+        backend: (ScapesEngine) -> Container,
+        defaultGuiStyle: (ScapesEngine) -> GuiStyle,
+        impl val taskExecutor: TaskExecutor,
+        impl val configMap: MutableTagMap
+) : ComponentHolder<Any>, ByteBufferProvider {
+    impl override val componentStorage = ComponentStorage<Any>()
     private val runtime = Runtime.getRuntime()
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
@@ -49,23 +52,23 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
     private var stateMut: GameState? = null
-    override val loop = UpdateLoop(taskExecutor, null)
-    override val files = FileSystemContainer()
-    override val events = newEventDispatcher()
-    override val resources = ResourceLoader(taskExecutor)
-    override val config = ScapesEngineConfig(configMap.mapMut("Engine"))
-    override val container: Container
-    override val graphics: GraphicsSystem
-    override val sounds: SoundSystem
-    override val guiStyle: GuiStyle
-    override val guiStack = GuiStack()
-    override var guiController: GuiController = GuiControllerDummy(this)
-    override val notifications: GuiNotifications
-    override val tooltip: GuiTooltip
-    override val debugValues: GuiWidgetDebugValues
-    override val profiler: GuiWidgetProfiler
-    override val performance: GuiWidgetPerformance
-    override val game: Game
+    impl val loop = UpdateLoop(taskExecutor, null)
+    impl val files = FileSystemContainer()
+    impl val events = newEventDispatcher()
+    impl val resources = ResourceLoader(taskExecutor)
+    impl val config = ScapesEngineConfig(configMap.mapMut("Engine"))
+    impl val container: Container
+    impl val graphics: GraphicsSystem
+    impl val sounds: SoundSystem
+    impl val guiStyle: GuiStyle
+    impl val guiStack = GuiStack()
+    impl var guiController: GuiController = GuiControllerDummy(this)
+    impl val notifications: GuiNotifications
+    impl val tooltip: GuiTooltip
+    impl val debugValues: GuiWidgetDebugValues
+    impl val profiler: GuiWidgetProfiler
+    impl val performance: GuiWidgetPerformance
+    impl val game: Game
 
     init {
         checkSystem()
@@ -119,19 +122,15 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         }
     }
 
-    override val state get() =
+    impl val state get() =
     stateMut ?: throw IllegalStateException("Engine not running")
 
-    override fun switchState(state: GameState) {
+    impl fun switchState(state: GameState) {
         newState.set(state)
     }
 
-    override fun allocate(capacity: Int) = container.allocate(capacity)
-
-    override fun reallocate(buffer: ByteBuffer) = container.reallocate(buffer)
-
     @Synchronized
-    override fun start() {
+    impl fun start() {
         if (joiner != null) {
             return
         }
@@ -150,6 +149,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
                 if (tps != newTPS) {
                     tps = newTPS
                     sync = Sync(tps, 0L, false, "Engine-Update")
+                    sync.init()
                 }
                 sync.cap()
             }
@@ -160,7 +160,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
     }
 
     @Synchronized
-    override fun halt() {
+    impl fun halt() {
         joiner?.let {
             it.join()
             joiner = null
@@ -168,7 +168,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
     }
 
     @Synchronized
-    override fun dispose() {
+    impl fun dispose() {
         halt()
         logger.info { "Disposing last state" }
         stateMut?.disposeState()
@@ -182,7 +182,7 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         logger.info { "Stopped Scapes-Engine" }
     }
 
-    override fun debugMap(): Map<String, String> {
+    impl fun debugMap(): Map<String, String> {
         val debugValues = HashMap<String, String>()
         for ((key, value) in this.debugValues.elements()) {
             debugValues.put(key, value.toString())
@@ -190,9 +190,13 @@ class ScapesEngineImpl(game: (ScapesEngine) -> Game,
         return debugValues.readOnly()
     }
 
-    override fun isMouseGrabbed(): Boolean {
+    impl fun isMouseGrabbed(): Boolean {
         return stateMut?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
+
+    impl override fun allocate(capacity: Int) = container.allocate(capacity)
+
+    impl override fun reallocate(buffer: ByteBuffer) = container.reallocate(buffer)
 
     private fun step(delta: Double): Double {
         var currentState = this.stateMut
