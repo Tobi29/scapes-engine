@@ -92,7 +92,7 @@ abstract class Application : Runnable, Crashable {
 
     override fun run() {
         try {
-            init()
+            initApplication()
             tick(timerSchedule)
             while (!done()) {
                 if (!display.readAndDispatch()) {
@@ -100,17 +100,15 @@ abstract class Application : Runnable, Crashable {
                     display.sleep()
                 }
             }
-            dispose()
-            taskExecutor.shutdown()
+            display.dispose()
+            disposeApplication()
         } catch (e: Throwable) {
             crash(e)
         }
-
-        display.dispose()
     }
 
     fun done(): Boolean {
-        return display.shells.isEmpty()
+        return display.isDisposed || display.shells.isEmpty()
     }
 
     fun initApplication() {
