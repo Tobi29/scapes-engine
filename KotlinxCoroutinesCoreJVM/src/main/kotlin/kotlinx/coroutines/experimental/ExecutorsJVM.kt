@@ -66,14 +66,6 @@ internal abstract class ExecutorCoroutineDispatcherBase : CoroutineDispatcher(),
     override fun hashCode(): Int = System.identityHashCode(executor)
 }
 
-internal class ResumeRunnable(
-    private val continuation: Continuation<Unit>
-) : Runnable {
-    override fun run() {
-        continuation.resume(Unit)
-    }
-}
-
 private class ResumeUndispatchedRunnable(
         private val dispatcher: CoroutineDispatcher,
         private val continuation: CancellableContinuation<Unit>

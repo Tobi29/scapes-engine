@@ -35,8 +35,6 @@ import kotlin.coroutines.experimental.Continuation
 public fun Job.cancelFutureOnCompletion(future: Future<*>): DisposableHandle =
         invokeOnCompletion(CancelFutureOnCompletion(this, future))
 
-impl public typealias CancellationException = java.util.concurrent.CancellationException
-
 private class CancelFutureOnCompletion(
         job: Job,
         private val future: Future<*>
