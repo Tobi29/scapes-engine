@@ -19,6 +19,6 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvmnotest.gradle"
 implementCommon(project(":KotlinxCoroutinesCore"))
 
 dependencies {
-    compile rootProject.ext.kotlinSTD
+    compile rootProject.ext.kotlinSTDJVM
     testCompile "junit:junit:4.12"
 }

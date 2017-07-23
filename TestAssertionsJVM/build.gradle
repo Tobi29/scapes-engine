@@ -17,7 +17,7 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
-    compile rootProject.ext.kotlinSTD
+    compile rootProject.ext.kotlinSTDJVM
     compile rootProject.ext.kotlinReflect
     compile rootProject.ext.kotlinTest
     compile(rootProject.ext.spekAPI) {

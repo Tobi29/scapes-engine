@@ -17,5 +17,5 @@
 apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 
 dependencies {
-    compile rootProject.ext.kotlinSTDCommon
+    compile rootProject.ext.kotlinSTD
 }
