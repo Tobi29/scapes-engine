@@ -16,20 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.profiler
 
-header object Profiler {
-    var enabled: Boolean
-
-    fun current(): ProfilerInstance
-
-    fun reset()
-}
-
-header class ProfilerInstance internal constructor() {
-    fun enterNode(name: String)
-
-    fun exitNode(name: String)
-}
-
 class Node(val name: () -> String,
            val parent: Node? = null) {
     val children: MutableMap<String, Node> = HashMap()

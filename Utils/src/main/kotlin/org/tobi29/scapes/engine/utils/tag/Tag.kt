@@ -382,6 +382,3 @@ private fun compareNumbersSameType(first: Number,
     }
     return first == second
 }
-
-header internal fun convertNumberToType(type: Number,
-                                        convert: Number): Number

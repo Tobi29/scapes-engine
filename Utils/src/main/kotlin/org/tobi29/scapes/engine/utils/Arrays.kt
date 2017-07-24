@@ -334,20 +334,6 @@ inline fun <T> copy(src: Array<out T>,
         copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-header fun <T> copyArray(src: Array<out T>,
-                         dest: Array<in T>,
-                         length: Int,
-                         offsetSrc: Int,
-                         offsetDest: Int)
-
-/**
  * Creates a new array and makes it accessible using a wrapper initialized with
  * nulls
  * @param width Width of the wrapper

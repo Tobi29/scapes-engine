@@ -31,8 +31,7 @@ fun TagMap.write(writer: TagStructureWriter) {
         } else if (value is TagPrimitive) {
             writer.writePrimitiveTag(key, value)
         } else {
-            throw IllegalArgumentException(
-                    "Invalid value: ${value::class}")
+            throw IllegalArgumentException("Invalid value: $value")
         }
     }
 }
@@ -58,8 +57,7 @@ fun TagList.write(writer: TagStructureWriter,
             } else if (element is TagPrimitive) {
                 writer.writePrimitiveTag(element)
             } else {
-                throw IllegalArgumentException(
-                        "Invalid element: ${element::class}")
+                throw IllegalArgumentException("Invalid element: $element")
             }
         }
         val element = this[size]
@@ -78,8 +76,7 @@ fun TagList.write(writer: TagStructureWriter,
             writer.writePrimitiveTag(element)
             writer.endList()
         } else {
-            throw IllegalArgumentException(
-                    "Invalid element: ${element::class}")
+            throw IllegalArgumentException("Invalid element: $element")
         }
     } else {
         writer.listEmpty(key)
@@ -106,8 +103,7 @@ fun TagList.write(writer: TagStructureWriter) {
             } else if (element is TagPrimitive) {
                 writer.writePrimitiveTag(element)
             } else {
-                throw IllegalArgumentException(
-                        "Invalid element: ${element::class}")
+                throw IllegalArgumentException("Invalid element: $element")
             }
         }
         val element = this[size]
@@ -126,8 +122,7 @@ fun TagList.write(writer: TagStructureWriter) {
             writer.writePrimitiveTag(element)
             writer.endList()
         } else {
-            throw IllegalArgumentException(
-                    "Invalid element: ${element::class}")
+            throw IllegalArgumentException("Invalid element: $element")
         }
     } else {
         writer.listEmpty()

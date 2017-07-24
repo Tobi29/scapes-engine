@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils
+package org.tobi29.scapes.engine.utils.logging.internal
 
-typealias UUID = java.util.UUID
+import org.tobi29.scapes.engine.utils.logging.KLoggable
 
-header fun String.toUUID(): UUID
+header internal object KLoggerNameResolver {
+    fun name(loggable: KLoggable): String
+}

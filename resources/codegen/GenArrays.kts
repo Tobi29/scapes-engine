@@ -15,54 +15,48 @@
  * limitations under the License.
  */
 
-val isReference: Boolean
-val type: String
-val generic: String
-val genericOut: String
-val genericIn: String
-val genericReified: String
-val genericReifiedOut: String
-val genericReifiedIn: String
-val genericFun: String
-val genericFunReified: String
-val specialize: (String) -> String
-val specializeOut: (String) -> String
-val specializeIn: (String) -> String
-val specializeAny: (String) -> String
-val specializeName: (String) -> String
-if (args.isEmpty()) {
-    isReference = true
-    type = "T"
-    generic = "<$type>"
-    genericOut = "<out $type>"
-    genericIn = "<in $type>"
-    genericReified = "<reified $type>"
-    genericReifiedOut = "<reified out $type>"
-    genericReifiedIn = "<reified in $type>"
-    genericFun = "fun $generic"
-    genericFunReified = "fun $genericReified"
-    specialize = { "$it<$type>" }
-    specializeOut = { "$it<out $type>" }
-    specializeIn = { "$it<in $type>" }
-    specializeAny = { "$it<*>" }
-    specializeName = { it }
-} else {
-    isReference = false
-    type = args[0]
-    generic = ""
-    genericOut = generic
-    genericIn = generic
-    genericReified = generic
-    genericReifiedOut = generic
-    genericReifiedIn = generic
-    genericFun = "fun"
-    genericFunReified = genericFun
-    specialize = { "$type$it" }
-    specializeOut = specialize
-    specializeIn = specialize
-    specializeAny = specialize
-    specializeName = specialize
-}
+val isReference =
+        if (args.isEmpty()) true else false
+val type =
+        if (args.isEmpty()) "T" else args[0]
+val generic =
+        if (args.isEmpty()) "<$type>" else ""
+val genericOut =
+        if (args.isEmpty()) "<out $type>" else generic
+val genericIn =
+        if (args.isEmpty()) "<in $type>" else generic
+val genericReified =
+        if (args.isEmpty()) "<reified $type>" else generic
+val genericReifiedOut =
+        if (args.isEmpty()) "<reified out $type>" else generic
+val genericReifiedIn =
+        if (args.isEmpty()) "<reified in $type>" else generic
+val genericFun =
+        if (args.isEmpty()) "fun $generic" else "fun"
+val genericFunReified =
+        if (args.isEmpty()) "fun $genericReified" else genericFun
+val specialize: (String) -> String =
+        if (args.isEmpty()) {
+            { "$it<$type>" }
+        } else {
+            { "$type$it" }
+        }
+val specializeOut: (String) -> String =
+        if (args.isEmpty()) {
+            { "$it<out $type>" }
+        } else specialize
+val specializeIn: (String) -> String =
+        if (args.isEmpty()) {
+            { "$it<in $type>" }
+        } else specialize
+val specializeAny: (String) -> String =
+        if (args.isEmpty()) {
+            { "$it<*>" }
+        } else specialize
+val specializeName: (String) -> String =
+        if (args.isEmpty()) {
+            { it }
+        } else specialize
 
 print("""@file:Suppress("NOTHING_TO_INLINE")
 
@@ -405,20 +399,6 @@ inline $genericFun copy(src: ${specializeOut("Array")},
                         offsetSrc: Int = 0,
                         offsetDest: Int = 0) =
         copyArray(src, dest, length, offsetSrc, offsetDest)
-
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-header $genericFun copyArray(src: ${specializeOut("Array")},
-                             dest: ${specializeIn("Array")},
-                             length: Int,
-                             offsetSrc: Int,
-                             offsetDest: Int)
 """)
 
 if (isReference) {

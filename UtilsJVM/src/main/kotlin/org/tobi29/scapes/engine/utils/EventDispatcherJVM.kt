@@ -91,7 +91,7 @@ impl class EventDispatcher internal constructor(
 }
 
 impl class ListenerRegistrar internal constructor(impl val events: EventDispatcher) {
-    impl fun <E : Any> listen(clazz: KClass<E>,
+    fun <E : Any> listen(clazz: KClass<E>,
                          priority: Int,
                          accepts: (E) -> Boolean,
                          listener: (E) -> Unit) {

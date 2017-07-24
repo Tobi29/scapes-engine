@@ -16,11 +16,4 @@
 
 package org.tobi29.scapes.engine.utils
 
-fun newEventDispatcher() = EventDispatcher(null)
-
-fun EventDispatcher(parent: EventDispatcher,
-                    init: ListenerRegistrar.() -> Unit): EventDispatcher {
-    val listener = EventDispatcher(parent)
-    init(ListenerRegistrar(listener))
-    return listener
-}
+typealias UUID = java.util.UUID

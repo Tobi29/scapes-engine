@@ -19,3 +19,11 @@ apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
 dependencies {
     compile rootProject.ext.kotlinSTD
 }
+
+sourceSets {
+    main {
+        kotlin {
+            srcDirs += ["src/headers/kotlin"]
+        }
+    }
+}

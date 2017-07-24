@@ -43,5 +43,3 @@ interface Clock {
      */
     operator fun invoke(): InstantMillis = timeMillis()
 }
-
-header val systemClock: Clock

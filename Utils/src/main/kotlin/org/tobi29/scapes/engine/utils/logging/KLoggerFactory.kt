@@ -30,7 +30,7 @@ object KLoggerFactory {
      */
     fun logger(loggable: KLoggable,
                name: String? = null): KLogger =
-            logger(name ?: KLoggerNameResolver.name(loggable::class))
+            logger(name ?: KLoggerNameResolver.name(loggable))
 
     /**
      * Returns a logger named using [name]

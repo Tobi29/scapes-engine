@@ -1,13 +1,14 @@
 package org.tobi29.scapes.engine.utils.logging.internal
 
+import org.tobi29.scapes.engine.utils.logging.KLoggable
 import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
 
 // Based on https://github.com/MicroUtils/kotlin-logging
 @Suppress("NOTHING_TO_INLINE")
 impl internal object KLoggerNameResolver {
-    inline impl fun <T : Any> name(forClass: KClass<T>): String =
-            unwrapCompanionClass(forClass).java.simpleName ?: "???"
+    inline impl fun name(loggable: KLoggable): String =
+            unwrapCompanionClass(loggable::class).java.simpleName ?: "???"
 
     inline private fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {
         if (clazz.java.enclosingClass != null) {
