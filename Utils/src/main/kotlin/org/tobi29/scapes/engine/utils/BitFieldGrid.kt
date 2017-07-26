@@ -16,10 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import kotlin.experimental.and
-import kotlin.experimental.inv
-import kotlin.experimental.or
-
 /**
  * Class for conveniently managing an 8-bit bit field mapped as a 2d grid
  */
@@ -151,8 +147,7 @@ inline fun BitFieldGrid.getAt(x: Int,
     if (i < 0 || i >= 8) {
         throw IllegalArgumentException("Invalid flag index: $i")
     }
-    val mask = (1 shl i).toByte()
-    return getAt(x, y) and mask == mask
+    return getAt(x, y).maskAt(i)
 }
 
 /**
@@ -167,12 +162,5 @@ fun BitFieldGrid.setAt(x: Int,
                        y: Int,
                        i: Int,
                        value: Boolean) {
-    val mask = (1 shl i).toByte()
-    changeAt(x, y) {
-        if (value) {
-            it or mask
-        } else {
-            it and mask.inv()
-        }
-    }
+    changeAt(x, y) { if (value) it.setAt(i) else it.unsetAt(i) }
 }
