@@ -21,12 +21,14 @@ import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
 import org.tobi29.scapes.engine.utils.io.filesystem.OpenOption
+import org.tobi29.scapes.engine.utils.readOnly
 import java.io.File
 import java.net.URI
 import java.nio.file.*
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import java.nio.file.attribute.PosixFilePermission
 import java.util.*
 
 internal object NIOFileUtilImpl : FileUtilImpl {
@@ -305,7 +307,42 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     private fun FileAttribute.toNIO(): java.nio.file.attribute.FileAttribute<*> =
             when (this) {
+                is UnixPermissionMode -> toNIO()
                 else -> throw IllegalArgumentException(
                         "Unsupported attribute: $this")
             }
+
+
+    private fun UnixPermissionMode.toNIO(
+    ): java.nio.file.attribute.FileAttribute<Set<java.nio.file.attribute.PosixFilePermission>> {
+        val value = HashSet<java.nio.file.attribute.PosixFilePermission>().apply {
+            if (owner.isExecute) add(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)
+            if (owner.isWrite) add(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE)
+            if (owner.isRead) add(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_READ)
+            if (group.isExecute) add(
+                    java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE)
+            if (group.isWrite) add(
+                    java.nio.file.attribute.PosixFilePermission.GROUP_WRITE)
+            if (group.isRead) add(
+                    java.nio.file.attribute.PosixFilePermission.GROUP_READ)
+            if (others.isExecute) add(
+                    java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE)
+            if (others.isWrite) add(
+                    java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE)
+            if (others.isRead) add(
+                    java.nio.file.attribute.PosixFilePermission.OTHERS_READ)
+        }
+        return object : java.nio.file.attribute.FileAttribute<Set<PosixFilePermission>> {
+            override fun name(): String {
+                return "posix:permissions"
+            }
+
+            override fun value(): Set<PosixFilePermission> {
+                return value.readOnly()
+            }
+        }
+    }
 }
