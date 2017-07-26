@@ -26,16 +26,16 @@ interface FileUtilImpl {
 
     fun channel(path: FilePath,
                 options: Array<out OpenOption> = emptyArray(),
-                attributes: Array<out FileAttribute<*>> = emptyArray()): FileChannel
+                attributes: Array<out FileAttribute> = emptyArray()): FileChannel
 
     fun createFile(path: FilePath,
-                   vararg attributes: FileAttribute<*>): FilePath
+                   vararg attributes: FileAttribute): FilePath
 
     fun createDirectory(path: FilePath,
-                        vararg attributes: FileAttribute<*>): FilePath
+                        vararg attributes: FileAttribute): FilePath
 
     fun createDirectories(path: FilePath,
-                          vararg attributes: FileAttribute<*>): FilePath
+                          vararg attributes: FileAttribute): FilePath
 
     fun delete(path: FilePath)
 
@@ -58,10 +58,10 @@ interface FileUtilImpl {
 
     fun createTempFile(prefix: String,
                        suffix: String,
-                       vararg attributes: FileAttribute<*>): FilePath
+                       vararg attributes: FileAttribute): FilePath
 
     fun createTempDir(prefix: String,
-                      vararg attributes: FileAttribute<*>): FilePath
+                      vararg attributes: FileAttribute): FilePath
 
     fun copy(source: FilePath,
              target: FilePath): FilePath

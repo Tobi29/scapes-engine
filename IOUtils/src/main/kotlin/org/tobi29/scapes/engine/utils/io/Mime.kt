@@ -37,6 +37,3 @@ fun detectMime(name: String? = null) =
 fun detectMime(stream: ReadableByteStream? = null,
                name: String? = null) =
         detectMimeImpl(stream, name)
-
-header internal fun detectMimeImpl(stream: ReadableByteStream?,
-                                   name: String?): String

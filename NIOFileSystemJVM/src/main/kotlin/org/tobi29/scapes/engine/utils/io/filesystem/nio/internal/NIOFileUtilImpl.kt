@@ -40,12 +40,12 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     override fun channel(path: FilePath,
                          options: Array<out OpenOption>,
-                         attributes: Array<out FileAttribute<*>>): FileChannel =
+                         attributes: Array<out FileAttribute>): FileChannel =
             FileChannel.open(toPath(path), options.toNIOSet(),
                     *attributes.toNIO())
 
     override fun createFile(path: FilePath,
-                            vararg attributes: FileAttribute<*>): FilePath {
+                            vararg attributes: FileAttribute): FilePath {
         try {
             return path(Files.createFile(toPath(path), *attributes.toNIO()))
         } catch (e: java.nio.file.FileAlreadyExistsException) {
@@ -54,12 +54,12 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createDirectory(path: FilePath,
-                                 vararg attributes: FileAttribute<*>): FilePath {
+                                 vararg attributes: FileAttribute): FilePath {
         return path(Files.createDirectory(toPath(path), *attributes.toNIO()))
     }
 
     override fun createDirectories(path: FilePath,
-                                   vararg attributes: FileAttribute<*>): FilePath {
+                                   vararg attributes: FileAttribute): FilePath {
         return path(Files.createDirectories(toPath(path), *attributes.toNIO()))
     }
 
@@ -105,12 +105,12 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     override fun createTempFile(prefix: String,
                                 suffix: String,
-                                vararg attributes: FileAttribute<*>): FilePath {
+                                vararg attributes: FileAttribute): FilePath {
         return path(Files.createTempFile(prefix, suffix, *attributes.toNIO()))
     }
 
     override fun createTempDir(prefix: String,
-                               vararg attributes: FileAttribute<*>): FilePath {
+                               vararg attributes: FileAttribute): FilePath {
         return path(Files.createTempDirectory(prefix, *attributes.toNIO()))
     }
 
@@ -300,10 +300,10 @@ internal object NIOFileUtilImpl : FileUtilImpl {
                         "Unsupported option: $this")
             }
 
-    private fun Array<out FileAttribute<*>>.toNIO() =
+    private fun Array<out FileAttribute>.toNIO() =
             Array(size) { this[it].toNIO() }
 
-    private fun FileAttribute<*>.toNIO(): java.nio.file.attribute.FileAttribute<*> =
+    private fun FileAttribute.toNIO(): java.nio.file.attribute.FileAttribute<*> =
             when (this) {
                 else -> throw IllegalArgumentException(
                         "Unsupported attribute: $this")

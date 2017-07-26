@@ -18,8 +18,6 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.nio.CharBuffer
-
 typealias Buffer = java.nio.Buffer
 typealias ByteBuffer = java.nio.ByteBuffer
 typealias FloatBuffer = java.nio.FloatBuffer
@@ -45,8 +43,6 @@ inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
     }
     return this
 }
-
-header fun ByteBuffer.asString(): String
 
 /**
  * Creates a [ByteBuffer] with big-endian byte-order
@@ -79,32 +75,6 @@ inline fun CharBuffer(size: Int): CharBuffer =
  */
 inline fun ByteArray.asByteBuffer(): ByteBuffer = asByteBuffer(0, size)
 
-/**
- * Returns a view on the given array
- * @param offset Offset in the array
- * @param length Length in the array
- * @receiver The array to back into
- * @returns A [ByteBuffer] using the array for storage
- */
-header fun ByteArray.asByteBuffer(offset: Int,
-                                  length: Int): ByteBuffer
-
-/**
- * Big endian byte order
- */
-header val BIG_ENDIAN: ByteOrder
-
-/**
- * Little endian byte order
- */
-header val LITTLE_ENDIAN: ByteOrder
-
-/**
- * Native endianness depending on current hardware, either [BIG_ENDIAN] or
- * [LITTLE_ENDIAN]
- */
-header val NATIVE_ENDIAN: ByteOrder
-
 interface BufferProvider<T : Buffer> {
     fun allocate(capacity: Int): T
 
@@ -125,18 +95,6 @@ fun forceReallocate(buffer: ByteBuffer,
             clear()
         }
 
-header object DefaultByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer
-
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer
-}
-
-header object DefaultLEByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer
-
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer
-}
-
 typealias FloatBufferProvider = BufferProvider<FloatBuffer>
 
 fun forceReallocate(buffer: FloatBuffer,
@@ -151,12 +109,6 @@ fun forceReallocate(buffer: FloatBuffer,
             clear()
         }
 
-header object DefaultFloatBufferProvider : FloatBufferProvider {
-    override fun allocate(capacity: Int): FloatBuffer
-
-    override fun reallocate(buffer: FloatBuffer): FloatBuffer
-}
-
 typealias CharBufferProvider = BufferProvider<CharBuffer>
 
 fun forceReallocate(buffer: CharBuffer,
@@ -170,9 +122,3 @@ fun forceReallocate(buffer: CharBuffer,
             buffer.position(position)
             clear()
         }
-
-header object DefaultCharBufferProvider : CharBufferProvider {
-    override fun allocate(capacity: Int): CharBuffer
-
-    override fun reallocate(buffer: CharBuffer): CharBuffer
-}

@@ -1,7 +1,8 @@
 package java.io
 
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION")
-header class IOException : Exception {
-    constructor(message: Any)
+header open class IOException : Exception {
+    constructor()
+    constructor(message: String)
     constructor(cause: Throwable)
 }

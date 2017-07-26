@@ -48,24 +48,24 @@ fun path(path: File): FilePath {
 
 impl internal fun channelImpl(path: FilePath,
                               options: Array<out OpenOption>,
-                              attributes: Array<out FileAttribute<*>>) =
+                              attributes: Array<out FileAttribute>) =
         IMPL.channel(path, options, attributes)
 
 // TODO: @Throws(IOException::class)
 impl fun createFile(path: FilePath,
-                    vararg attributes: FileAttribute<*>): FilePath {
+                    vararg attributes: FileAttribute): FilePath {
     return IMPL.createFile(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
 impl fun createDirectory(path: FilePath,
-                         vararg attributes: FileAttribute<*>): FilePath {
+                         vararg attributes: FileAttribute): FilePath {
     return IMPL.createDirectory(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
 impl fun createDirectories(path: FilePath,
-                           vararg attributes: FileAttribute<*>): FilePath {
+                           vararg attributes: FileAttribute): FilePath {
     return IMPL.createDirectories(path, *attributes)
 }
 
@@ -106,13 +106,13 @@ impl fun isHidden(path: FilePath): Boolean {
 // TODO: @Throws(IOException::class)
 impl fun createTempFile(prefix: String,
                         suffix: String,
-                        vararg attributes: FileAttribute<*>): FilePath {
+                        vararg attributes: FileAttribute): FilePath {
     return IMPL.createTempFile(prefix, suffix, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
 impl fun createTempDir(prefix: String,
-                       vararg attributes: FileAttribute<*>): FilePath {
+                       vararg attributes: FileAttribute): FilePath {
     return IMPL.createTempDir(prefix, *attributes)
 }
 

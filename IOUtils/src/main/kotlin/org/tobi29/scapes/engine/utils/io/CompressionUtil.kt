@@ -93,24 +93,3 @@ object CompressionUtil {
         override fun close()
     }
 }
-
-header class ZDeflater(level: Int,
-                       buffer: Int = 8192) : CompressionUtil.Filter {
-    override fun input(buffer: ReadableByteStream): Boolean
-    override fun output(buffer: WritableByteStream): Int
-    override fun finish()
-    override fun needsInput(): Boolean
-    override fun finished(): Boolean
-    override fun reset()
-    override fun close()
-}
-
-header class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
-    override fun input(buffer: ReadableByteStream): Boolean
-    override fun output(buffer: WritableByteStream): Int
-    override fun finish()
-    override fun needsInput(): Boolean
-    override fun finished(): Boolean
-    override fun reset()
-    override fun close()
-}

@@ -194,7 +194,7 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
                 writeKey(key, structureStream, dictionary)
                 structureStream.putByteArrayLong(tag.value)
             }
-            else -> throw IOException("Invalid type: ${tag::class}")
+            else -> throw IOException("Invalid type: $tag")
         }
     }
 
@@ -244,7 +244,7 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
                 structureStream.put(ID_TAG_BYTE_ARRAY)
                 structureStream.putByteArrayLong(tag.value)
             }
-            else -> throw IOException("Invalid type: ${tag::class}")
+            else -> throw IOException("Invalid type: $tag")
         }
     }
 }

@@ -31,7 +31,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun channel(path: FilePath,
                          options: Array<out OpenOption>,
-                         attributes: Array<out FileAttribute<*>>): FileChannel {
+                         attributes: Array<out FileAttribute>): FileChannel {
         var openRead = false
         var openWrite = false
         var openCreate = false
@@ -83,7 +83,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createFile(path: FilePath,
-                            vararg attributes: FileAttribute<*>): FilePath {
+                            vararg attributes: FileAttribute): FilePath {
         if (attributes.isNotEmpty()) {
             throw UnsupportedOperationException(
                     "Attributes are not supported on java.io")
@@ -97,7 +97,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createDirectory(path: FilePath,
-                                 vararg attributes: FileAttribute<*>): FilePath {
+                                 vararg attributes: FileAttribute): FilePath {
         if (attributes.isNotEmpty()) {
             throw UnsupportedOperationException(
                     "Attributes are not supported on java.io")
@@ -110,7 +110,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createDirectories(path: FilePath,
-                                   vararg attributes: FileAttribute<*>): FilePath {
+                                   vararg attributes: FileAttribute): FilePath {
         if (attributes.isNotEmpty()) {
             throw UnsupportedOperationException(
                     "Attributes are not supported on java.io")
@@ -180,7 +180,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun createTempFile(prefix: String,
                                 suffix: String,
-                                vararg attributes: FileAttribute<*>): FilePath {
+                                vararg attributes: FileAttribute): FilePath {
         if (attributes.isNotEmpty()) {
             throw UnsupportedOperationException(
                     "Attributes are not supported on java.io")
@@ -189,7 +189,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun createTempDir(prefix: String,
-                               vararg attributes: FileAttribute<*>): FilePath {
+                               vararg attributes: FileAttribute): FilePath {
         if (attributes.isNotEmpty()) {
             throw UnsupportedOperationException(
                     "Attributes are not supported on java.io")

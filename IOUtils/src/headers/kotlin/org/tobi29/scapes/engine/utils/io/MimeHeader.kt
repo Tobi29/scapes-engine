@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlin.gradle"
+package org.tobi29.scapes.engine.utils.io
 
-dependencies {
-    compile project(":Utils")
-}
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += ["src/headers/kotlin"]
-        }
-    }
-}
+header internal fun detectMimeImpl(stream: ReadableByteStream?,
+                                   name: String?): String
