@@ -68,7 +68,7 @@ internal class OpenALStreamAudio(
                       listenerPosition: Vector3d,
                       delta: Double): Boolean {
         if (source == -1) {
-            source = sounds.takeSource(openAL)
+            source = openAL.createSource()
             if (source == -1) {
                 return true
             }
@@ -85,8 +85,8 @@ internal class OpenALStreamAudio(
                 stop(sounds, openAL)
                 return true
             }
-
-        } else if (stream != null) {
+        }
+        if (stream != null) {
             try {
                 controller.configure(openAL, source, sounds.volume(channel))
                 while (queued < 3) {
@@ -138,7 +138,7 @@ internal class OpenALStreamAudio(
                 openAL.deleteBuffer(openAL.unqueue(source))
                 this.queued--
             }
-            sounds.releaseSource(openAL, source)
+            openAL.deleteSource(source)
             source = -1
             assert { this.queued == 0 }
         }
@@ -153,13 +153,18 @@ internal class OpenALStreamAudio(
     }
 
     private fun stream() {
-        val stream = stream ?: return
-        if (stream.get(readBuffer) == ReadableAudioStream.Result.EOS) {
-            stream.close()
-            if (state) {
-                this.stream = AudioStream.create(asset)
-            } else {
-                this.stream = null
+        while (!readBuffer.isDone) {
+            val stream = stream ?: return
+            when (stream.get(readBuffer)) {
+                ReadableAudioStream.Result.YIELD -> return
+                ReadableAudioStream.Result.EOS -> {
+                    stream.close()
+                    if (state) {
+                        this.stream = AudioStream.create(asset)
+                    } else {
+                        this.stream = null
+                    }
+                }
             }
         }
     }

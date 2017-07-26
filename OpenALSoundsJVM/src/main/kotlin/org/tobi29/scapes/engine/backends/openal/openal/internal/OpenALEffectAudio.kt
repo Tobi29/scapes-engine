@@ -47,7 +47,7 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
             val audio = sounds.getAudioData(openAL, asset)
             if (audio != null) {
                 val gain = gain * sounds.volume(channel)
-                val source = sounds.freeSource(openAL, false, false)
+                val source = sounds.freeSource(openAL)
                 if (source != -1) {
                     openAL.setBuffer(source, audio.buffer())
                     openAL.setGain(source, gain)

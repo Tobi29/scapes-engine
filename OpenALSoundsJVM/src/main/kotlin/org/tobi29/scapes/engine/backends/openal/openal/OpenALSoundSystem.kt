@@ -22,7 +22,9 @@ import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ConcurrentHashSet
+import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
+import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
@@ -31,6 +33,7 @@ import org.tobi29.scapes.engine.utils.math.threadLocalRandom
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
+import org.tobi29.scapes.engine.utils.systemClock
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 
@@ -89,15 +92,15 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             try {
                 audios.forEach { it.stop(this, openAL) }
                 audios.clear()
+                for (audioData in cache.values) {
+                    audioData.dispose(this, openAL)
+                }
                 for (i in sources.indices) {
                     val source = sources[i]
                     openAL.stop(source)
                     openAL.setBuffer(source, 0)
                     openAL.deleteSource(source)
                     sources[i] = -1
-                }
-                for (audioData in cache.values) {
-                    audioData.dispose(this, openAL)
                 }
                 openAL.checkError("Disposing")
             } catch (e: SoundException) {
@@ -254,64 +257,24 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         return cache[asset]
     }
 
-    internal fun takeSource(openAL: OpenAL): Int {
-        val source = freeSource(openAL, true, true)
-        if (source == -1) {
-            return -1
-        }
-        openAL.setBuffer(source, 0)
-        return source
-    }
-
-    internal fun releaseSource(openAL: OpenAL,
-                               source: Int) {
-        openAL.stop(source)
-        openAL.setBuffer(source, 0)
-        for (i in sources.indices) {
-            if (sources[i] == -1) {
-                sources[i] = source
-                return
-            }
-        }
-        assert { false }
-    }
-
     internal fun removeBufferFromSources(openAL: OpenAL,
                                          buffer: Int) {
         for (source in sources) {
-            if (source != -1 && openAL.getBuffer(source) == buffer) {
+            if (openAL.getBuffer(source) == buffer) {
                 openAL.stop(source)
                 openAL.setBuffer(source, 0)
             }
         }
     }
 
-    internal fun freeSource(openAL: OpenAL,
-                            force: Boolean,
-                            take: Boolean): Int {
+    internal fun freeSource(openAL: OpenAL): Int {
         val random = threadLocalRandom()
         val offset = random.nextInt(sources.size)
         for (i in sources.indices) {
             val j = (i + offset) % sources.size
             val source = sources[j]
-            if (source != -1 && openAL.isStopped(source)) {
-                if (take) {
-                    sources[j] = -1
-                }
+            if (openAL.isStopped(source)) {
                 return source
-            }
-        }
-        if (force) {
-            for (i in sources.indices) {
-                val j = (i + offset) % sources.size
-                val source = sources[j]
-                if (source != -1) {
-                    openAL.stop(source)
-                    if (take) {
-                        sources[j] = -1
-                    }
-                    return source
-                }
             }
         }
         return -1

@@ -63,7 +63,7 @@ internal class OpenALStaticAudio(
                 controller.configure(openAL, source, sounds.volume(channel))
             } else {
                 if (source == -1) {
-                    source = sounds.takeSource(openAL)
+                    source = openAL.createSource()
                 }
                 if (source != -1) {
                     playing = true
@@ -95,7 +95,7 @@ internal class OpenALStaticAudio(
     override fun stop(sounds: OpenALSoundSystem,
                       openAL: OpenAL) {
         if (source != -1) {
-            sounds.releaseSource(openAL, source)
+            openAL.deleteSource(source)
             source = -1
         }
     }
