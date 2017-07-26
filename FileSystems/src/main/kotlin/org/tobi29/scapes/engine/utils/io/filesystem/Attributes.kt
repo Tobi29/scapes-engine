@@ -15,25 +15,28 @@ sealed class FileAttribute
 
 data class UnixPermissionMode(val owner: UnixPermissionModeLevel,
                               val group: UnixPermissionModeLevel,
-                              val everyone: UnixPermissionModeLevel) : FileAttribute() {
+                              val others: UnixPermissionModeLevel) : FileAttribute() {
     constructor(value: Int) : this(
             ((value ushr 6) and 7).toUnixPermissionModeLevel(),
             ((value ushr 3) and 7).toUnixPermissionModeLevel(),
             ((value ushr 0) and 7).toUnixPermissionModeLevel())
 
     val value: Int get() =
-    (((owner.value shl 3) or group.value) shl 3) or everyone.value
+    (((owner.value shl 3) or group.value) shl 3) or others.value
 }
 
-enum class UnixPermissionModeLevel(val value: Int) {
-    NONE(0),
-    EXECUTE(1),
-    WRITE(2),
-    WRITE_EXECUTE(3),
-    READ(4),
-    READ_EXECUTE(5),
-    READ_WRITE(6),
-    READ_WRITE_EXECUTE(7);
+enum class UnixPermissionModeLevel(val value: Int,
+                                   val isExecute: Boolean,
+                                   val isWrite: Boolean,
+                                   val isRead: Boolean) {
+    NONE(0, false, false, false),
+    EXECUTE(1, true, false, false),
+    WRITE(2, false, true, false),
+    WRITE_EXECUTE(3, true, true, false),
+    READ(4, false, false, true),
+    READ_EXECUTE(5, true, false, true),
+    READ_WRITE(6, false, true, true),
+    READ_WRITE_EXECUTE(7, true, true, true);
 
 }
 
