@@ -42,7 +42,12 @@ header fun delete(path: FilePath)
 header fun deleteIfExists(path: FilePath): Boolean
 
 // TODO: @Throws(IOException::class)
-header fun deleteDir(path: FilePath)
+header fun metadata(path: FilePath,
+                    vararg options: LinkOption): Array<FileMetadata>
+
+// TODO: @Throws(IOException::class)
+header fun attributes(path: FilePath,
+                      vararg options: LinkOption): Array<FileAttribute>
 
 header fun exists(path: FilePath,
                   vararg options: LinkOption): Boolean
@@ -54,6 +59,8 @@ header fun isDirectory(path: FilePath,
                        vararg options: LinkOption): Boolean
 
 header fun isHidden(path: FilePath): Boolean
+
+header fun fileUID(path: FilePath): Any?
 
 // TODO: @Throws(IOException::class)
 header fun createTempFile(prefix: String,
@@ -73,23 +80,4 @@ header fun move(source: FilePath,
                 target: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun list(path: FilePath): List<FilePath>
-
-// TODO: @Throws(IOException::class)
-header fun <R> list(path: FilePath,
-                    consumer: Sequence<FilePath>.() -> R): R
-
-// TODO: @Throws(IOException::class)
-header fun list(path: FilePath,
-                vararg filters: (FilePath) -> Boolean): List<FilePath>
-
-// TODO: @Throws(IOException::class)
-header fun listRecursive(path: FilePath): List<FilePath>
-
-// TODO: @Throws(IOException::class)
-header fun <R> listRecursive(path: FilePath,
-                             consumer: Sequence<FilePath>.() -> R): R
-
-// TODO: @Throws(IOException::class)
-header fun listRecursive(path: FilePath,
-                         vararg filters: (FilePath) -> Boolean): List<FilePath>
+header fun directoryStream(path: FilePath): DirectoryStream

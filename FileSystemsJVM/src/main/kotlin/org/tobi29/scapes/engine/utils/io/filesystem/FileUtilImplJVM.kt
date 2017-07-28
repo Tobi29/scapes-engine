@@ -41,7 +41,11 @@ interface FileUtilImpl {
 
     fun deleteIfExists(path: FilePath): Boolean
 
-    fun deleteDir(path: FilePath)
+    fun metadata(path: FilePath,
+                 vararg options: LinkOption): Array<FileMetadata>
+
+    fun attributes(path: FilePath,
+                   vararg options: LinkOption): Array<FileAttribute>
 
     fun exists(path: FilePath,
                vararg options: LinkOption): Boolean
@@ -54,7 +58,7 @@ interface FileUtilImpl {
 
     fun isHidden(path: FilePath): Boolean
 
-    fun isNotHidden(path: FilePath): Boolean
+    fun fileUID(path: FilePath): Any?
 
     fun createTempFile(prefix: String,
                        suffix: String,
@@ -69,15 +73,7 @@ interface FileUtilImpl {
     fun move(source: FilePath,
              target: FilePath): FilePath
 
-    fun <R> list(path: FilePath,
-                 consumer: (Sequence<FilePath>) -> R): R
-
-    fun list(path: FilePath): List<FilePath>
-
-    fun <R> listRecursive(path: FilePath,
-                          consumer: (Sequence<FilePath>) -> R): R
-
-    fun listRecursive(path: FilePath): List<FilePath>
+    fun directoryStream(path: FilePath): DirectoryStream
 
     fun setLastModifiedTime(path: FilePath,
                             value: Instant)

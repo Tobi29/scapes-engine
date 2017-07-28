@@ -1,5 +1,30 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
+interface FileMetadata
+
+interface FileAttribute : FileMetadata
+
+data class FileBasicMetadata(val type: FileType,
+                             val size: Long,
+                             val uid: Any) : FileMetadata
+
+data class FileUID(val high: Long,
+                   val low: Long)
+
+data class FileVisibility(val hidden: Boolean) : FileAttribute
+
+data class UnixPermissionMode(val owner: UnixPermissionModeLevel,
+                              val group: UnixPermissionModeLevel,
+                              val others: UnixPermissionModeLevel) : FileAttribute {
+    constructor(value: Int) : this(
+            ((value ushr 6) and 7).toUnixPermissionModeLevel(),
+            ((value ushr 3) and 7).toUnixPermissionModeLevel(),
+            ((value ushr 0) and 7).toUnixPermissionModeLevel())
+
+    val value: Int get() =
+    (((owner.value shl 3) or group.value) shl 3) or others.value
+}
+
 enum class FileType(val value: Int) {
     TYPE_UNKNOWN(0),
     TYPE_REGULAR_FILE(1),
@@ -11,19 +36,19 @@ enum class FileType(val value: Int) {
     TYPE_SOCKET(7)
 }
 
-sealed class FileAttribute
-
-data class UnixPermissionMode(val owner: UnixPermissionModeLevel,
-                              val group: UnixPermissionModeLevel,
-                              val others: UnixPermissionModeLevel) : FileAttribute() {
-    constructor(value: Int) : this(
-            ((value ushr 6) and 7).toUnixPermissionModeLevel(),
-            ((value ushr 3) and 7).toUnixPermissionModeLevel(),
-            ((value ushr 0) and 7).toUnixPermissionModeLevel())
-
-    val value: Int get() =
-    (((owner.value shl 3) or group.value) shl 3) or others.value
-}
+fun Int.toFileType(): FileType =
+        when (this) {
+            0 -> FileType.TYPE_UNKNOWN
+            1 -> FileType.TYPE_REGULAR_FILE
+            2 -> FileType.TYPE_DIRECTORY
+            3 -> FileType.TYPE_CHARDEV
+            4 -> FileType.TYPE_BLOCKDEV
+            5 -> FileType.TYPE_FIFO
+            6 -> FileType.TYPE_SYMLINK
+            7 -> FileType.TYPE_SOCKET
+            else -> throw IllegalArgumentException(
+                    "Invalid file type: $this")
+        }
 
 enum class UnixPermissionModeLevel(val value: Int,
                                    val isExecute: Boolean,

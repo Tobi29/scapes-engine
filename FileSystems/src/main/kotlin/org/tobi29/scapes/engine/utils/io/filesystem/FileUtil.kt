@@ -44,6 +44,33 @@ fun <R> write(path: FilePath,
             result
         }
 
+// TODO: @Throws(IOException::class)
+fun deleteDir(path: FilePath) {
+    walk(path, order = FileTreeOrder.POST_ORDER).use {
+        it.forEach { delete(it) }
+    }
+}
+
+// TODO: @Throws(IOException::class)
+fun list(path: FilePath): List<FilePath> =
+        directoryStream(path).use { it.asSequence().toList() }
+
+// TODO: @Throws(IOException::class)
+fun <R> list(path: FilePath,
+             consumer: Sequence<FilePath>.() -> R): R =
+        directoryStream(path).use { consumer(it.asSequence()) }
+
+// TODO: @Throws(IOException::class)
+fun listRecursive(path: FilePath): List<FilePath> =
+        walk(path).use { it.asSequence().toList() }
+
+// TODO: @Throws(IOException::class)
+fun <R> listRecursive(path: FilePath,
+                      consumer: Sequence<FilePath>.() -> R): R =
+        walk(path).use { consumer(it.asSequence()) }
+
+interface DirectoryStream : Iterator<FilePath>, AutoCloseable
+
 interface FileOption
 interface OpenOption : FileOption
 interface CopyOption : FileOption

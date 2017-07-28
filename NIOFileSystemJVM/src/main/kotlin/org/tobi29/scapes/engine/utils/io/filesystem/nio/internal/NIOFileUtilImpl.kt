@@ -17,18 +17,21 @@
 package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
 import org.threeten.bp.Instant
+import org.tobi29.scapes.engine.utils.filterMap
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
+import org.tobi29.scapes.engine.utils.io.filesystem.DirectoryStream
+import org.tobi29.scapes.engine.utils.io.filesystem.FileAttribute
 import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
 import org.tobi29.scapes.engine.utils.io.filesystem.OpenOption
 import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.setAt
+import org.tobi29.scapes.engine.utils.toArray
 import java.io.File
 import java.net.URI
 import java.nio.file.*
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.attribute.FileTime
-import java.nio.file.attribute.PosixFilePermission
+import java.nio.file.attribute.*
 import java.util.*
 
 internal object NIOFileUtilImpl : FileUtilImpl {
@@ -73,9 +76,45 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return Files.deleteIfExists(toPath(path))
     }
 
-    override fun deleteDir(path: FilePath) {
-        deleteDir(toPath(path))
+    override fun metadata(path: FilePath,
+                          vararg options: LinkOption): Array<FileMetadata> {
+        val list = ArrayList<FileMetadata>()
+        val optionsNIO = options.toNIO()
+        val posix = try {
+            Files.readAttributes(toPath(path),
+                    PosixFileAttributes::class.java,
+                    *optionsNIO)
+        } catch(e: UnsupportedOperationException) {
+            null
+        }
+        val dos = try {
+            Files.readAttributes(toPath(path),
+                    DosFileAttributes::class.java,
+                    *optionsNIO)
+        } catch(e: UnsupportedOperationException) {
+            null
+        }
+        val basic=posix?:dos?:Files.readAttributes(toPath(path),
+                BasicFileAttributes::class.java,
+                *optionsNIO)
+
+        list.add(FileBasicMetadata(basic.fileType(), basic.size(),
+                basic.fileKey()))
+        if (posix!=null) {
+            list.add(posix.permissions().toUnixPermissionMode())
+        }
+        if (dos!=null) {
+            list.add(FileVisibility(dos.isHidden()))
+        }else{
+            list.add(FileVisibility(path.fileName?.startsWith(".") ?: false))
+        }
+        return list.toTypedArray()
     }
+
+    override fun attributes(path: FilePath,
+                            vararg options: LinkOption): Array<FileAttribute> =
+            metadata(path, *options).asSequence()
+                    .filterMap<FileAttribute>().toArray()
 
     override fun exists(path: FilePath,
                         vararg options: LinkOption): Boolean {
@@ -101,8 +140,10 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     }
 
-    override fun isNotHidden(path: FilePath): Boolean {
-        return !isHidden(path)
+    override fun fileUID(path: FilePath): Any? {
+        val attributes = Files.readAttributes(toPath(path),
+                BasicFileAttributes::class.java)
+        return attributes.fileKey()
     }
 
     override fun createTempFile(prefix: String,
@@ -126,42 +167,12 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return path(Files.move(toPath(source), toPath(target)))
     }
 
-    override fun <R> list(path: FilePath,
-                          consumer: (Sequence<FilePath>) -> R): R {
-        Files.newDirectoryStream(toPath(path)).use { stream ->
-            return consumer(stream.asSequence().map { path(it) })
+    override fun directoryStream(path: FilePath): DirectoryStream {
+        val stream = Files.newDirectoryStream(toPath(path))
+        val iterator = stream.asSequence().map { path(it) }.iterator()
+        return object : DirectoryStream, Iterator<FilePath> by iterator {
+            override fun close() = stream.close()
         }
-    }
-
-    override fun list(path: FilePath): List<FilePath> {
-        val files = ArrayList<FilePath>()
-        list(path) { it.forEach { files.add(it) } }
-        return files
-    }
-
-    override fun <R> listRecursive(path: FilePath,
-                                   consumer: (Sequence<FilePath>) -> R): R {
-        return consumer(listRecursive(path).asSequence())
-    }
-
-    override fun listRecursive(path: FilePath): List<FilePath> {
-        val files = ArrayList<FilePath>()
-        Files.walkFileTree(toPath(path),
-                EnumSet.of(FileVisitOption.FOLLOW_LINKS), Int.MAX_VALUE,
-                object : SimpleFileVisitor<Path>() {
-                    override fun preVisitDirectory(dir: Path,
-                                                   attrs: BasicFileAttributes): FileVisitResult {
-                        files.add(path(dir))
-                        return FileVisitResult.CONTINUE
-                    }
-
-                    override fun visitFile(file: Path,
-                                           attrs: BasicFileAttributes): FileVisitResult {
-                        files.add(path(file))
-                        return FileVisitResult.CONTINUE
-                    }
-                })
-        return files
     }
 
     override fun setLastModifiedTime(path: FilePath,
@@ -312,7 +323,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
                         "Unsupported attribute: $this")
             }
 
-
     private fun UnixPermissionMode.toNIO(
     ): java.nio.file.attribute.FileAttribute<Set<java.nio.file.attribute.PosixFilePermission>> {
         val value = HashSet<java.nio.file.attribute.PosixFilePermission>().apply {
@@ -345,4 +355,32 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             }
         }
     }
+
+    private fun Set<java.nio.file.attribute.PosixFilePermission>.toUnixPermissionMode(): UnixPermissionMode {
+        var owner: Int = 0
+        var group: Int = 0
+        var others: Int = 0
+        for (element in this) {
+            when (element) {
+                PosixFilePermission.OWNER_EXECUTE -> owner = owner.setAt(0)
+                PosixFilePermission.OWNER_WRITE -> owner = owner.setAt(1)
+                PosixFilePermission.OWNER_READ -> owner = owner.setAt(2)
+                PosixFilePermission.GROUP_EXECUTE -> group = group.setAt(0)
+                PosixFilePermission.GROUP_WRITE -> group = group.setAt(1)
+                PosixFilePermission.GROUP_READ -> group = group.setAt(2)
+                PosixFilePermission.OTHERS_EXECUTE -> others = others.setAt(0)
+                PosixFilePermission.OTHERS_WRITE -> others = others.setAt(1)
+                PosixFilePermission.OTHERS_READ -> others = others.setAt(2)
+            }
+        }
+        return UnixPermissionMode(owner.toUnixPermissionModeLevel(),
+                group.toUnixPermissionModeLevel(),
+                others.toUnixPermissionModeLevel())
+    }
+
+    private fun BasicFileAttributes.fileType() =
+            if (isRegularFile) FileType.TYPE_REGULAR_FILE
+            else if (isDirectory) FileType.TYPE_DIRECTORY
+            else if (isSymbolicLink) FileType.TYPE_SYMLINK
+            else FileType.TYPE_UNKNOWN
 }

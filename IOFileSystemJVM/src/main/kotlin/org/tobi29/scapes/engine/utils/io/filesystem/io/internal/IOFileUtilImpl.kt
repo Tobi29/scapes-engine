@@ -17,12 +17,15 @@
 package org.tobi29.scapes.engine.utils.io.filesystem.io.internal
 
 import org.threeten.bp.Instant
+import org.tobi29.scapes.engine.utils.filterMap
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
+import org.tobi29.scapes.engine.utils.toArray
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.net.URI
+import java.util.*
 
 internal object IOFileUtilImpl : FileUtilImpl {
     override fun path(path: String) = path(File(path))
@@ -124,21 +127,34 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun delete(path: FilePath) {
-        path.toFile().delete()
+        if (!deleteIfExists(path)) {
+            throw FileSystemException(path, reason = "Failed to delete")
+        }
     }
 
     override fun deleteIfExists(path: FilePath): Boolean {
-        val file = path.toFile()
-        if (file.exists()) {
-            file.delete()
-            return true
-        }
-        return false
+        return path.toFile().delete()
     }
 
-    override fun deleteDir(path: FilePath) {
-        deleteDir(path.toFile())
+    override fun metadata(path: FilePath,
+                          vararg options: LinkOption): Array<FileMetadata> {
+        val list = ArrayList<FileMetadata>()
+        val nofollow = options.contains(LINK_NOFOLLOW)
+        if (nofollow) {
+            throw UnsupportedOperationException(
+                    "LINK_NOFOLLOW is not supported on java.io")
+        }
+        val file = path.toFile()
+        list.add(FileBasicMetadata(file.fileType(), file.length(),
+                file.canonicalPath))
+        list.add(FileVisibility(file.isHidden))
+        return list.toTypedArray()
     }
+
+    override fun attributes(path: FilePath,
+                            vararg options: LinkOption): Array<FileAttribute> =
+            metadata(path, *options).asSequence()
+                    .filterMap<FileAttribute>().toArray()
 
     override fun exists(path: FilePath,
                         vararg options: LinkOption): Boolean {
@@ -174,8 +190,8 @@ internal object IOFileUtilImpl : FileUtilImpl {
         return path.toFile().isHidden
     }
 
-    override fun isNotHidden(path: FilePath): Boolean {
-        return !isHidden(path)
+    override fun fileUID(path: FilePath): Any? {
+        return null
     }
 
     override fun createTempFile(prefix: String,
@@ -223,24 +239,12 @@ internal object IOFileUtilImpl : FileUtilImpl {
         return target
     }
 
-    override fun <R> list(path: FilePath,
-                          consumer: (Sequence<FilePath>) -> R): R {
-        return consumer(list(path).asSequence())
-    }
-
-    override fun list(path: FilePath): List<FilePath> {
-        return path.toFile().listFiles()?.map { path(it) } ?: emptyList()
-    }
-
-    override fun <R> listRecursive(path: FilePath,
-                                   consumer: (Sequence<FilePath>) -> R): R {
-        return consumer(listRecursive(path).asSequence())
-    }
-
-    override fun listRecursive(path: FilePath): List<FilePath> {
-        val files = ArrayList<FilePath>()
-        listRecursive(path.toFile(), files)
-        return files
+    override fun directoryStream(path: FilePath): DirectoryStream {
+        val iterator = (path.toFile().listFiles() ?: emptyArray<File>())
+                .asSequence().map { path(it) }.iterator()
+        return object : DirectoryStream, Iterator<FilePath> by iterator {
+            override fun close() {}
+        }
     }
 
     override fun setLastModifiedTime(path: FilePath,
@@ -318,31 +322,8 @@ internal object IOFileUtilImpl : FileUtilImpl {
         }
     }
 
-    private fun deleteDir(file: File) {
-        // TODO: Add loop check
-        val files = file.listFiles()
-        if (files != null) {
-            for (child in files) {
-                if (child.isFile) {
-                    child.delete()
-                } else if (child.isDirectory) {
-                    deleteDir(child)
-                }
-            }
-        }
-        file.delete()
-    }
-
-    private fun listRecursive(file: File,
-                              list: MutableList<FilePath>) {
-        val files = file.listFiles()
-        if (files != null) {
-            for (child in files) {
-                list.add(path(child))
-                if (child.isDirectory) {
-                    listRecursive(child, list)
-                }
-            }
-        }
-    }
+    private fun File.fileType() =
+            if (isFile) FileType.TYPE_REGULAR_FILE
+            else if (isDirectory) FileType.TYPE_DIRECTORY
+            else FileType.TYPE_UNKNOWN
 }

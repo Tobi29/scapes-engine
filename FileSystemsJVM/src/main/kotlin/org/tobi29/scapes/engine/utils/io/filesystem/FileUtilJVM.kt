@@ -79,9 +79,14 @@ impl fun deleteIfExists(path: FilePath): Boolean {
     return IMPL.deleteIfExists(path)
 }
 
-// TODO: @Throws(IOException::class)
-impl fun deleteDir(path: FilePath) {
-    IMPL.deleteDir(path)
+impl fun metadata(path: FilePath,
+                  vararg options: LinkOption): Array<FileMetadata> {
+    return IMPL.metadata(path, *options)
+}
+
+impl fun attributes(path: FilePath,
+                    vararg options: LinkOption): Array<FileAttribute> {
+    return IMPL.attributes(path, *options)
 }
 
 impl fun exists(path: FilePath,
@@ -101,6 +106,10 @@ impl fun isDirectory(path: FilePath,
 
 impl fun isHidden(path: FilePath): Boolean {
     return IMPL.isHidden(path)
+}
+
+impl fun fileUID(path: FilePath): Any? {
+    return IMPL.fileUID(path)
 }
 
 // TODO: @Throws(IOException::class)
@@ -129,55 +138,8 @@ impl fun move(source: FilePath,
 }
 
 // TODO: @Throws(IOException::class)
-impl fun list(path: FilePath): List<FilePath> {
-    return list(path) { toList() }
-}
-
-// TODO: @Throws(IOException::class)
-impl fun <R> list(path: FilePath,
-                  consumer: Sequence<FilePath>.() -> R): R {
-    return IMPL.list(path) { consumer(it.asSequence()) }
-}
-
-// TODO: @Throws(IOException::class)
-impl fun list(path: FilePath,
-              vararg filters: (FilePath) -> Boolean): List<FilePath> {
-    return list(path) {
-        filter {
-            filters.forEach { filter ->
-                if (!filter(it)) {
-                    return@filter false
-                }
-            }
-            true
-        }.toList()
-    }
-}
-
-// TODO: @Throws(IOException::class)
-impl fun listRecursive(path: FilePath): List<FilePath> {
-    return listRecursive(path) { toList() }
-}
-
-// TODO: @Throws(IOException::class)
-impl fun <R> listRecursive(path: FilePath,
-                           consumer: Sequence<FilePath>.() -> R): R {
-    return IMPL.listRecursive(path) { consumer(it.asSequence()) }
-}
-
-// TODO: @Throws(IOException::class)
-impl fun listRecursive(path: FilePath,
-                       vararg filters: (FilePath) -> Boolean): List<FilePath> {
-    return listRecursive(path) {
-        filter {
-            filters.forEach { filter ->
-                if (!filter(it)) {
-                    return@filter false
-                }
-            }
-            true
-        }.toList()
-    }
+impl fun directoryStream(path: FilePath): DirectoryStream {
+    return IMPL.directoryStream(path)
 }
 
 // TODO: @Throws(IOException::class)
