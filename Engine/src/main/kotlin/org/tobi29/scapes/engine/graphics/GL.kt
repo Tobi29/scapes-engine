@@ -47,7 +47,7 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         if (timer >= 360000.0) {
             timer -= 360000.0
         }
-        timestamp += max(roundL(1000000000.0 / delta), 1L)
+        timestamp += max(roundL(1000000000.0 * delta), 1L)
     }
 
     fun aspectRatio() =
