@@ -144,7 +144,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                                         delta: Double) {
         super.renderComponent(gl, shader, size, pixelSize, delta)
         if (active2) {
-            if (gl.timestamp / 600L % 2L == 0L) {
+            if (gl.timestamp / 600000000L % 2L == 0L) {
                 vaoCursor?.forEach {
                     it.second.bind(gl)
                     it.first.render(gl, shader)
