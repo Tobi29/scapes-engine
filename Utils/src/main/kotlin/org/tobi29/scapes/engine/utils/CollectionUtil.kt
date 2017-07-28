@@ -29,6 +29,36 @@ inline fun <reified T : Any> Sequence<*>.filterMap(): Sequence<T> {
 }
 
 /**
+ * Find the first element of correct type and casts it
+ * @param T The type to cast to
+ * @receiver The elements to search in
+ * @returns The first casted element or `null`
+ */
+inline fun <reified T : Any> Sequence<*>.findMap(): T? {
+    return find { it is T } as? T
+}
+
+/**
+ * Find the first element of correct type and casts it
+ * @param T The type to cast to
+ * @receiver The elements to search in
+ * @returns The first casted element or `null`
+ */
+inline fun <reified T : Any> Iterable<*>.findMap(): T? {
+    return find { it is T } as? T
+}
+
+/**
+ * Find the first element of correct type and casts it
+ * @param T The type to cast to
+ * @receiver The elements to search in
+ * @returns The first casted element or `null`
+ */
+inline fun <reified T : Any> Array<*>.findMap(): T? {
+    return find { it is T } as? T
+}
+
+/**
  * Takes all elements of a sequence and puts them into an array
  * @param T The type of elements
  * @receiver The sequence of elements to collect
