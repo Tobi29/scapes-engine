@@ -21,13 +21,12 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.platform.*
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.Version
-import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.createTempFile
-import org.tobi29.scapes.engine.utils.io.filesystem.writeCrashReport
+import org.tobi29.scapes.engine.utils.io.filesystem.write
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.sleepAtLeast
@@ -148,8 +147,12 @@ abstract class Application : Runnable, Crashable {
     private fun writeCrash(e: Throwable): FilePath? {
         try {
             val path = createTempFile("CrashReport", ".txt")
-            val debugValues = ConcurrentHashMap<String, String>()
-            writeCrashReport(e, path, "ScapesEngine", debugValues)
+            write(path) {
+                it.writeCrashReport(e, "SWT Application",
+                        crashReportSectionStacktrace(e),
+                        crashReportSectionActiveThreads(),
+                        crashReportSectionSystemProperties())
+            }
             return path
         } catch (e1: IOException) {
         }

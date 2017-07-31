@@ -20,5 +20,4 @@ implementCommon(project(":FileSystems"))
 
 dependencies {
     compile project(":IOUtilsJVM")
-    compile rootProject.ext.threeten
 }
