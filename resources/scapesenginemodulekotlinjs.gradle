@@ -41,7 +41,7 @@ ext.implementCommon = { Project project ->
 }
 
 compileKotlin2Js {
-    kotlinOptions.freeCompilerArgs += "-Xtyped-arrays"
+    kotlinOptions.typedArrays = true
     kotlinOptions.metaInfo = true
     kotlinOptions.sourceMap = true
     kotlinOptions.moduleKind = "umd"
