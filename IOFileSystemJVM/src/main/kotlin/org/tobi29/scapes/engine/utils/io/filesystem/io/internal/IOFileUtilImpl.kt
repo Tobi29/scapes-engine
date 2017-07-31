@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem.io.internal
 
-import org.threeten.bp.Instant
+import org.tobi29.scapes.engine.utils.InstantMillis
 import org.tobi29.scapes.engine.utils.filterMap
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
@@ -248,12 +248,12 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun setLastModifiedTime(path: FilePath,
-                                     value: Instant) {
-        path.toFile().setLastModified(value.toEpochMilli())
+                                     value: InstantMillis) {
+        path.toFile().setLastModified(value)
     }
 
-    override fun getLastModifiedTime(path: FilePath): Instant {
-        return Instant.ofEpochMilli(path.toFile().lastModified())
+    override fun getLastModifiedTime(path: FilePath): InstantMillis {
+        return path.toFile().lastModified()
     }
 
     private data class FilePathImpl(val file: File) : FilePath {

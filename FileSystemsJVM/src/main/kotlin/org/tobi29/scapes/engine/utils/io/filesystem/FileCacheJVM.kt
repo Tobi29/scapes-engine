@@ -16,11 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.threeten.bp.Duration
-import org.threeten.bp.Instant
 import org.tobi29.scapes.engine.utils.Algorithm
+import org.tobi29.scapes.engine.utils.InstantMillis
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.systemClock
 import org.tobi29.scapes.engine.utils.toHexadecimal
 
 object FileCache : KLogging() {
@@ -50,7 +50,7 @@ object FileCache : KLogging() {
                 val streamIn = BufferedReadChannelStream(channel)
                 val destination = root.resolve(name)
                 if (exists(destination)) {
-                    setLastModifiedTime(destination, Instant.now())
+                    setLastModifiedTime(destination, systemClock())
                 } else {
                     write(destination) { output ->
                         process(streamIn, { output.put(it) })
@@ -68,7 +68,7 @@ object FileCache : KLogging() {
         val file = root.resolve(location.array.toHexadecimal())
         if (exists(file)) {
             try {
-                setLastModifiedTime(file, Instant.now())
+                setLastModifiedTime(file, systemClock())
             } catch (e: IOException) {
             }
             return file
@@ -83,12 +83,12 @@ object FileCache : KLogging() {
     }
 
     fun check(root: FilePath,
-              time: Duration = Duration.ofDays(16)) {
-        val currentTime = Instant.now().minus(time)
+              time: InstantMillis) {
+        val currentTime = systemClock() - time
         list(root) {
             filter { isRegularFile(it) }.filter(::isNotHidden).filter { file ->
                 try {
-                    getLastModifiedTime(file).isBefore(currentTime)
+                    getLastModifiedTime(file) < currentTime
                 } catch (e: IOException) {
                     false
                 }

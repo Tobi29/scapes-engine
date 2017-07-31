@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.threeten.bp.Instant
+import org.tobi29.scapes.engine.utils.InstantMillis
 import java.io.File
 
 interface FileUtilImpl {
@@ -76,7 +76,7 @@ interface FileUtilImpl {
     fun directoryStream(path: FilePath): DirectoryStream
 
     fun setLastModifiedTime(path: FilePath,
-                            value: Instant)
+                            value: InstantMillis)
 
-    fun getLastModifiedTime(path: FilePath): Instant
+    fun getLastModifiedTime(path: FilePath): InstantMillis
 }

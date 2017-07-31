@@ -16,17 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem.nio.internal
 
-import org.threeten.bp.Instant
-import org.tobi29.scapes.engine.utils.filterMap
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.filesystem.DirectoryStream
 import org.tobi29.scapes.engine.utils.io.filesystem.FileAttribute
 import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
 import org.tobi29.scapes.engine.utils.io.filesystem.OpenOption
-import org.tobi29.scapes.engine.utils.readOnly
-import org.tobi29.scapes.engine.utils.setAt
-import org.tobi29.scapes.engine.utils.toArray
 import java.io.File
 import java.net.URI
 import java.nio.file.*
@@ -176,14 +172,12 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     override fun setLastModifiedTime(path: FilePath,
-                                     value: Instant) {
-        Files.setLastModifiedTime(toPath(path),
-                FileTime.fromMillis(value.toEpochMilli()))
+                                     value: InstantMillis) {
+        Files.setLastModifiedTime(toPath(path), FileTime.fromMillis(value))
     }
 
-    override fun getLastModifiedTime(path: FilePath): Instant {
-        return Instant.ofEpochMilli(
-                Files.getLastModifiedTime(toPath(path)).toMillis())
+    override fun getLastModifiedTime(path: FilePath): InstantMillis {
+        return Files.getLastModifiedTime(toPath(path)).toMillis()
     }
 
     private data class FilePathImpl(val path: Path) : FilePath {
