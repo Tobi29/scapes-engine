@@ -83,7 +83,7 @@ object FileCache : KLogging() {
     }
 
     fun check(root: FilePath,
-              time: InstantMillis) {
+              time: InstantMillis = 16L * 24L * 60L * 60L * 1000L) {
         val currentTime = systemClock() - time
         list(root) {
             filter { isRegularFile(it) }.filter(::isNotHidden).filter { file ->
