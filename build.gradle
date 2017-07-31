@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.1.5-dev-172"
+    def kotlinVersion = "1.1.4-eap-54"
     def dokkaVersion = "0.9.14"
     def junitPlatformVersion = "1.0.0-M4"
 
@@ -60,13 +60,13 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "4.0"
+    gradleVersion = "4.0.2"
     distributionUrl =
             "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 ext {
-    kotlinVersion = "1.1.5-dev-172"
+    kotlinVersion = "1.1.4-eap-54"
     kotlinxCoroutinesVersion = "0.16"
     slf4jVersion = "1.7.25"
     spekVersion = "1.1.2"
