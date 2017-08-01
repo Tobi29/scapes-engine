@@ -18,6 +18,10 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 implementCommon(project(":FileSystems"))
 
+compileKotlin {
+    kotlinOptions.freeCompilerArgs += "-Xallow-kotlin-package"
+}
+
 dependencies {
     compile project(":IOUtilsJVM")
 }

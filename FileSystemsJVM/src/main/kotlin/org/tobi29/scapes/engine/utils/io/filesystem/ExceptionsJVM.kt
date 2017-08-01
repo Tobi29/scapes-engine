@@ -16,45 +16,26 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-/**
- * A base exception class for file system exceptions.
- */
-fun FileSystemException(path: FilePath,
-                        otherPath: FilePath? = null,
-                        reason: String? = null): FileSystemException =
+impl internal fun FileSystemExceptionImpl(path: FilePath,
+                                          otherPath: FilePath?,
+                                          reason: String?): FileSystemException =
         FileSystemException(path.toFile(), otherPath?.toFile(), reason)
 
-/**
- * An exception class which is used when some file to create or copy to already exists.
- */
-fun FileAlreadyExistsException(path: FilePath,
-                               otherPath: FilePath? = null,
-                               reason: String? = null): FileSystemException =
+impl internal fun FileAlreadyExistsExceptionImpl(path: FilePath,
+                                                 otherPath: FilePath?,
+                                                 reason: String?): FileAlreadyExistsException =
         FileAlreadyExistsException(path.toFile(), otherPath?.toFile(), reason)
 
-/**
- * An exception class which is used when we have not enough access for some operation.
- */
-fun AccessDeniedException(path: FilePath,
-                          otherPath: FilePath? = null,
-                          reason: String? = null): FileSystemException =
+impl internal fun AccessDeniedExceptionImpl(path: FilePath,
+                                            otherPath: FilePath?,
+                                            reason: String?): AccessDeniedException =
         AccessDeniedException(path.toFile(), otherPath?.toFile(), reason)
 
-/**
- * An exception class which is used when file to copy does not exist.
- */
-fun NoSuchFileException(path: FilePath,
-                        otherPath: FilePath? = null,
-                        reason: String? = null): FileSystemException =
+impl internal fun NoSuchFileExceptionImpl(path: FilePath,
+                                          otherPath: FilePath?,
+                                          reason: String?): NoSuchFileException =
         NoSuchFileException(path.toFile(), otherPath?.toFile(), reason)
 
-/**
- * the path on which the failed operation was performed.
- */
-val FileSystemException.path get() = path(file)
+impl val FileSystemException.path get() = path(file)
 
-/**
- * the second path involved in the operation, if any (for example, the target of
- * a copy or move)
- */
-val FileSystemException.otherPath get() = other?.let { path(it) }
+impl val FileSystemException.otherPath get() = other?.let { path(it) }
