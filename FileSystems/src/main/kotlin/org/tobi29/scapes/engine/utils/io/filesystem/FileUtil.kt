@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
+import org.tobi29.scapes.engine.utils.findMap
 import org.tobi29.scapes.engine.utils.io.*
 
 // TODO: @Throws(IOException::class)
@@ -42,6 +43,60 @@ fun <R> write(path: FilePath,
             val result = write(stream)
             stream.flush()
             result
+        }
+
+fun exists(path: FilePath,
+           vararg options: LinkOption): Boolean =
+        try {
+            metadata(path, *options)
+            true
+        } catch (e: IOException) {
+            false
+        }
+
+fun notExists(path: FilePath,
+              vararg options: LinkOption): Boolean =
+        try {
+            metadata(path, *options)
+            false
+        } catch (e: NoSuchFileException) {
+            true
+        } catch (e: IOException) {
+            false
+        }
+
+fun isRegularFile(path: FilePath,
+                  vararg options: LinkOption): Boolean =
+        try {
+            metadata(path, *options).findMap<FileBasicMetadata>()
+                    ?.type == FileType.TYPE_REGULAR_FILE
+        } catch (e: IOException) {
+            false
+        }
+
+fun isDirectory(path: FilePath,
+                vararg options: LinkOption): Boolean =
+        try {
+            metadata(path, *options).findMap<FileBasicMetadata>()
+                    ?.type == FileType.TYPE_DIRECTORY
+        } catch (e: IOException) {
+            false
+        }
+
+fun isHidden(path: FilePath,
+             vararg options: LinkOption): Boolean =
+        try {
+            metadata(path, *options).findMap<FileVisibility>()?.hidden ?: false
+        } catch (e: IOException) {
+            false
+        }
+
+fun fileUID(path: FilePath,
+            vararg options: LinkOption): Any? =
+        try {
+            metadata(path, *options).findMap<FileBasicMetadata>()?.uid
+        } catch (e: IOException) {
+            null
         }
 
 // TODO: @Throws(IOException::class)

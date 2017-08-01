@@ -166,34 +166,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
         return path.toFile().exists()
     }
 
-    override fun isRegularFile(path: FilePath,
-                               vararg options: LinkOption): Boolean {
-        val nofollow = options.contains(LINK_NOFOLLOW)
-        if (nofollow) {
-            throw UnsupportedOperationException(
-                    "LINK_NOFOLLOW is not supported on java.io")
-        }
-        return path.toFile().isFile
-    }
-
-    override fun isDirectory(path: FilePath,
-                             vararg options: LinkOption): Boolean {
-        val nofollow = options.contains(LINK_NOFOLLOW)
-        if (nofollow) {
-            throw UnsupportedOperationException(
-                    "LINK_NOFOLLOW is not supported on java.io")
-        }
-        return path.toFile().isDirectory
-    }
-
-    override fun isHidden(path: FilePath): Boolean {
-        return path.toFile().isHidden
-    }
-
-    override fun fileUID(path: FilePath): Any? {
-        return null
-    }
-
     override fun createTempFile(prefix: String,
                                 suffix: String,
                                 vararg attributes: FileAttribute): FilePath {

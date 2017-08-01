@@ -89,29 +89,6 @@ impl fun attributes(path: FilePath,
     return IMPL.attributes(path, *options)
 }
 
-impl fun exists(path: FilePath,
-                vararg options: LinkOption): Boolean {
-    return IMPL.exists(path, *options)
-}
-
-impl fun isRegularFile(path: FilePath,
-                       vararg options: LinkOption): Boolean {
-    return IMPL.isRegularFile(path, *options)
-}
-
-impl fun isDirectory(path: FilePath,
-                     vararg options: LinkOption): Boolean {
-    return IMPL.isDirectory(path, *options)
-}
-
-impl fun isHidden(path: FilePath): Boolean {
-    return IMPL.isHidden(path)
-}
-
-impl fun fileUID(path: FilePath): Any? {
-    return IMPL.fileUID(path)
-}
-
 // TODO: @Throws(IOException::class)
 impl fun createTempFile(prefix: String,
                         suffix: String,

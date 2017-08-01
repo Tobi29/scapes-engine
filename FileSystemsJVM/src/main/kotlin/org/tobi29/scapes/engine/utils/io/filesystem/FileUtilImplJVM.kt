@@ -50,16 +50,6 @@ interface FileUtilImpl {
     fun exists(path: FilePath,
                vararg options: LinkOption): Boolean
 
-    fun isRegularFile(path: FilePath,
-                      vararg options: LinkOption): Boolean
-
-    fun isDirectory(path: FilePath,
-                    vararg options: LinkOption): Boolean
-
-    fun isHidden(path: FilePath): Boolean
-
-    fun fileUID(path: FilePath): Any?
-
     fun createTempFile(prefix: String,
                        suffix: String,
                        vararg attributes: FileAttribute): FilePath

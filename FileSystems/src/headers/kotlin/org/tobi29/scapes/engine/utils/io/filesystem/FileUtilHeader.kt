@@ -49,19 +49,6 @@ header fun metadata(path: FilePath,
 header fun attributes(path: FilePath,
                       vararg options: LinkOption): Array<FileAttribute>
 
-header fun exists(path: FilePath,
-                  vararg options: LinkOption): Boolean
-
-header fun isRegularFile(path: FilePath,
-                         vararg options: LinkOption): Boolean
-
-header fun isDirectory(path: FilePath,
-                       vararg options: LinkOption): Boolean
-
-header fun isHidden(path: FilePath): Boolean
-
-header fun fileUID(path: FilePath): Any?
-
 // TODO: @Throws(IOException::class)
 header fun createTempFile(prefix: String,
                           suffix: String,

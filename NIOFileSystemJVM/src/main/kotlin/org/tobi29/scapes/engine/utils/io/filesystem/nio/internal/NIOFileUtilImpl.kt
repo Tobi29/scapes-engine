@@ -117,31 +117,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return Files.exists(toPath(path), *options.toNIO())
     }
 
-    override fun isRegularFile(path: FilePath,
-                               vararg options: LinkOption): Boolean {
-        return Files.isRegularFile(toPath(path), *options.toNIO())
-    }
-
-    override fun isDirectory(path: FilePath,
-                             vararg options: LinkOption): Boolean {
-        return Files.isDirectory(toPath(path), *options.toNIO())
-    }
-
-    override fun isHidden(path: FilePath): Boolean {
-        try {
-            return Files.isHidden(toPath(path))
-        } catch (e: IOException) {
-            return false
-        }
-
-    }
-
-    override fun fileUID(path: FilePath): Any? {
-        val attributes = Files.readAttributes(toPath(path),
-                BasicFileAttributes::class.java)
-        return attributes.fileKey()
-    }
-
     override fun createTempFile(prefix: String,
                                 suffix: String,
                                 vararg attributes: FileAttribute): FilePath {
