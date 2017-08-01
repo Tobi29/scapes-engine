@@ -18,4 +18,6 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 
 dependencies {
     compile project(":CodecsJVM")
+    compileOnly project(":IOUtils")
+    compileOnly project(":MathUtils")
 }

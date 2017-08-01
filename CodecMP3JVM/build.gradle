@@ -19,4 +19,6 @@ apply from: "$rootDir/resources/scapesenginemodulekotlinjvm.gradle"
 dependencies {
     compile project(":CodecsJVM")
     compile rootProject.ext.jlayer
+    compileOnly project(":IOUtils")
+    compileOnly project(":MathUtils")
 }
