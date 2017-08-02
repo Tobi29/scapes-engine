@@ -26,7 +26,7 @@ fun hash(value: String,
          h: Long = 0L): Long {
     var h = h
     val length = value.length
-    for (i in 0..length - 1) {
+    for (i in 0 until length) {
         h = 31 * h + value[i].toLong()
     }
     return h
@@ -80,3 +80,31 @@ fun String.copyToArray(destination: CharArray = CharArray(length),
                        startIndex: Int = 0,
                        endIndex: Int = length): CharArray =
         copyToArrayImpl(destination, offset, startIndex, endIndex)
+
+fun String.prefixToLength(char: Char,
+                          minLength: Int,
+                          maxLength: Int = Int.MAX_VALUE): String {
+    if (length > maxLength) throw IllegalArgumentException(
+            "String already too long")
+    if (length >= minLength) return this
+    val output = StringBuilder(minLength)
+    repeat(minLength - length) {
+        output.append(char)
+    }
+    output.append(this)
+    return output.toString()
+}
+
+fun String.suffixToLength(char: Char,
+                          minLength: Int,
+                          maxLength: Int = Int.MAX_VALUE): String {
+    if (length > maxLength) throw IllegalArgumentException(
+            "String already too long")
+    if (length >= minLength) return this
+    val output = StringBuilder(minLength)
+    output.append(this)
+    repeat(minLength - length) {
+        output.append(char)
+    }
+    return output.toString()
+}
