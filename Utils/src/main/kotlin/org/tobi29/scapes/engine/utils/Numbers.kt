@@ -10,17 +10,8 @@ fun Long.toString(radix: Int = 10,
 
 private fun String.forceDigits(length: Int,
                                zero: Char = '0'): String {
-    val d = length - this.length
-    if (d < 0) {
-        throw IllegalArgumentException(
-                "Number results in string longer than $length digits")
-    } else if (d == 0) {
-        return this
-    }
-    val output = StringBuilder(length)
-    repeat(d) {
-        output.append(zero)
-    }
-    output.append(this)
-    return output.toString()
+    val negative = getOrNull(0) == '-'
+    val str = if (negative) substring(1) else this
+    val output = str.prefixToLength(zero, length, length)
+    return if (negative) "-$output" else output
 }
