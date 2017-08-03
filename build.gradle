@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.1.4-eap-54"
+    def kotlinVersion = "1.1.4-eap-69"
     def dokkaVersion = "0.9.14"
     def junitPlatformVersion = "1.0.0-M4"
 
@@ -66,20 +66,20 @@ task wrapper(type: Wrapper) {
 }
 
 ext {
-    kotlinVersion = "1.1.4-eap-54"
+    kotlinVersion = "1.1.4-eap-69"
     kotlinxCoroutinesVersion = "0.16"
     slf4jVersion = "1.7.25"
     spekVersion = "1.1.2"
     junitJupiterVersion = "5.0.0-M4"
     swtVersion = "4.6"
-    threetenbpVersion = "1.3.3"
+    threetenbpVersion = "1.3.6"
     base64Version = "1.0.6"
     antlrVersion = "4.7"
-    mariadbJavaClientVersion = "1.6.1"
-    sqliteJDBCVersion = "3.18.0"
+    mariadbJavaClientVersion = "1.6.3"
+    sqliteJDBCVersion = "3.19.3"
     sqljetVersion = "1.1.10"
     pngjVersion = "2.1.0"
-    tikaVersion = "1.15"
+    tikaVersion = "1.16"
     jlayerVersion = "1.0.1"
     concentusVersion = "1.0.0"
     jorbisVersion = "0.0.17"
