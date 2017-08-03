@@ -39,6 +39,8 @@ impl interface FilePath : Path, Comparable<FilePath> {
 
     impl val fileName: FilePath?
 
+    impl override val parent: FilePath?
+
     impl fun toAbsolutePath(): FilePath
 
     override fun get(path: String): Path {

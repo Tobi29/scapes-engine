@@ -33,5 +33,7 @@ header interface FilePath : Path, Comparable<FilePath> {
 
     val fileName: FilePath?
 
+    override val parent: FilePath?
+
     fun toAbsolutePath(): FilePath
 }
