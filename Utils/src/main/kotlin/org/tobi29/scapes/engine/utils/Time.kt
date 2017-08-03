@@ -9,6 +9,11 @@ package org.tobi29.scapes.engine.utils
 typealias InstantMillis = Long
 
 /**
+ * Time duration using milliseconds as unit
+ */
+typealias DurationMillis = Long
+
+/**
  * Time instant using nanoseconds as unit
  *
  * **Note:** The origin and exact resolution may differ based on implementation,
@@ -17,6 +22,11 @@ typealias InstantMillis = Long
  * meaning across multiple processes
  */
 typealias InstantNanos = Long
+
+/**
+ * Time duration using nanoseconds as unit
+ */
+typealias DurationNanos = Long
 
 /**
  * Source of time instants
