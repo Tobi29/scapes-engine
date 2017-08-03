@@ -95,11 +95,7 @@ abstract class StandardPathEnvironment : PathEnvironment {
     override fun String.normalize(): String {
         val path = sanitize()
         val root = path.startsWith(separator)
-        val components = if (root) {
-            path.substring(separator.length)
-        } else {
-            path
-        }.split(separator)
+        val components = path.components
         val stack = ArrayDeque<String>(components.size)
         for (component in components) {
             when (component) {
@@ -125,22 +121,23 @@ abstract class StandardPathEnvironment : PathEnvironment {
         }
     }
 
-    fun String.relativize(other: String): String {
+    fun String.relativize(other: String): String? {
         val base = sanitize()
         val destination = other.sanitize()
         if (base == destination) {
             return ""
         }
-        val root = destination.isAbsolute
-        val components = if (root) {
-            destination.substring(separator.length)
-        } else {
-            destination
-        }.split(separator)
+        val rootBase = base.isAbsolute
+        val rootDestination = destination.isAbsolute
+        if (rootBase != rootDestination) {
+            return null
+        }
         val common = findCommonRoot(base, destination)
-        val backtrack = (components.size..common.size).asSequence().map { ".." }
-        val destinationRelative = components.subList(common.size,
-                components.size).asSequence()
+        val componentsBase = base.components
+        val componentsDestination = destination.components
+        val backtrack = (common.size until componentsBase.size).asSequence().map { ".." }
+        val destinationRelative = componentsDestination.subList(common.size,
+                componentsDestination.size).asSequence()
         return (backtrack + destinationRelative).joinToString(separator)
     }
 
@@ -168,11 +165,15 @@ abstract class StandardPathEnvironment : PathEnvironment {
     }
 
     override val String.components get() = sanitize().let {
-        if (it.isAbsolute) {
-            it.substring(separator.length)
+        if (isEmpty()) {
+            emptyList()
         } else {
-            it
-        }.split(separator)
+            if (it.isAbsolute) {
+                it.substring(separator.length)
+            } else {
+                it
+            }.split(separator)
+        }
     }
 
     private fun findCommonRoot(first: String,
