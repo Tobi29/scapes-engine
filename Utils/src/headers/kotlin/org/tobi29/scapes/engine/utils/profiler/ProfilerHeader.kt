@@ -1,15 +1,15 @@
 package org.tobi29.scapes.engine.utils.profiler
 
-header object Profiler {
-    var enabled: Boolean
+header class Profiler {
+    val root: Node
 
-    fun current(): ProfilerInstance
-
-    fun reset()
+    fun current(): ProfilerHandle
 }
 
-header class ProfilerInstance internal constructor() {
+header class ProfilerHandle internal constructor(node: Node) {
     fun enterNode(name: String)
 
     fun exitNode(name: String)
 }
+
+header internal val dispatchers: List<ProfilerDispatcher>

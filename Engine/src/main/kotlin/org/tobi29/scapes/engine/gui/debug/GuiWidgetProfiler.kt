@@ -16,13 +16,12 @@
 package org.tobi29.scapes.engine.gui.debug
 
 import org.tobi29.scapes.engine.gui.*
-import org.tobi29.scapes.engine.utils.profiler.Node
-import org.tobi29.scapes.engine.utils.profiler.Profiler
+import org.tobi29.scapes.engine.utils.profiler.*
 
 class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         "Profiler") {
     private val scrollPane: GuiComponentScrollPaneViewport
-    private var node: Node? = null
+    private var node: Node? = PROFILER.get()?.root
 
     init {
         val slab = addVert(2.0, 2.0, -1.0, 20.0, ::GuiComponentGroupSlab)
@@ -39,32 +38,39 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
             GuiComponentScrollPane(it, 20)
         }.viewport
 
-        toggle.on(GuiEvent.CLICK_LEFT, { event ->
-            if (Profiler.enabled) {
+        toggle.on(GuiEvent.CLICK_LEFT) {
+            if (PROFILER_ENABLED) {
                 toggle.setText("Enable")
-                Profiler.enabled = false
+                profilerDisable()
             } else {
                 toggle.setText("Disable")
-                Profiler.enabled = true
+                profilerEnable()
             }
+            node = PROFILER.get()?.root
             nodes()
-        })
-        refresh.on(GuiEvent.CLICK_LEFT, { event -> nodes() })
-        reset.on(GuiEvent.CLICK_LEFT, { event ->
-            Profiler.reset()
-            threads()
-        })
+        }
+        refresh.on(GuiEvent.CLICK_LEFT) {
+            node = PROFILER.get()?.root
+            nodes()
+        }
+        reset.on(GuiEvent.CLICK_LEFT) {
+            profilerReset()
+            node = PROFILER.get()?.root
+            nodes()
+        }
         nodes()
     }
 
     fun nodes() {
         synchronized(this) {
             val node = node
+            scrollPane.removeAll()
             if (node == null) {
-                threads()
+                scrollPane.addVert(0.0, 0.0, -1.0, 24.0) {
+                    GuiComponentText(it, "Profiler not enabled")
+                }
                 return@synchronized
             }
-            scrollPane.removeAll()
             scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
                 Element(it, node, node.parent)
             }
@@ -76,47 +82,10 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
     }
 
-    fun threads() {
-        synchronized(this) {
-            scrollPane.removeAll()
-            node = null
-            /*var threads: Array<Thread?>
-            var count = Thread.activeCount()
-            do {
-                threads = arrayOfNulls(count)
-                count = Thread.enumerate(threads)
-            } while (threads.size < count)
-            for (i in 0..count - 1) {
-                threads[i]?.let { thread ->
-                    val node = Profiler.node(thread)
-                    if (node != null) {
-                        scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
-                            ElementThread(it, node, node)
-                        }
-                    }
-                }
-            }*/
-        }
-    }
-
-    fun nodes(node: Node?) {
+    fun nodes(node: Node) {
         synchronized(this) {
             this.node = node
             nodes()
-        }
-    }
-
-    private inner class ElementThread(parent: GuiLayoutData,
-                                      private val node: Node,
-                                      go: Node?) : GuiComponentGroupSlabHeavy(
-            parent) {
-        private val key: GuiComponentTextButton
-
-        init {
-            key = addHori(2.0, 2.0, -1.0, -1.0) {
-                GuiComponentTextButton(it, 12, node.name.invoke())
-            }
-            key.on(GuiEvent.CLICK_LEFT, { event -> nodes(go) })
         }
     }
 
@@ -134,11 +103,11 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
             value = addHori(4.0, 4.0, -1.0, -1.0) {
                 GuiComponentText(it, "")
             }
-            key.on(GuiEvent.CLICK_LEFT, { event -> nodes(go) })
+            if (go != null) key.on(GuiEvent.CLICK_LEFT) { nodes(go) }
         }
 
         public override fun updateComponent(delta: Double) {
-            //value.text = node.time().toString()
+            value.text = node.time.toString()
         }
     }
 }

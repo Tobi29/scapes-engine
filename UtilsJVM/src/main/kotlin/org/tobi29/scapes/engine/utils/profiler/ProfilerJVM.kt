@@ -23,37 +23,30 @@ import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
 import org.tobi29.scapes.engine.utils.systemClock
 import java.util.*
 
-impl object Profiler {
-    internal val PROFILERS = WeakHashMap<Thread, ProfilerInstance>()
-    private val INSTANCE = ThreadLocal { ProfilerInstance() }
+impl class Profiler {
+    private val INSTANCE = ThreadLocal {
+        val thread = Thread.currentThread()
+        val node = Node({ "${thread.id}-${thread.name}" }, root)
+        ProfilerHandle(node, thread).also {
+            root.children[node.name()] = node
+        }
+    }
 
-    impl var enabled = false
+    impl val root = Node("Threads")
 
     impl fun current() = INSTANCE.get()
-
-    impl fun reset() {
-        PROFILERS.values.forEach { it.resetNodes() }
-    }
-
-    fun node(thread: Thread): Node? {
-        return PROFILERS[thread]?.rootNode
-    }
 }
 
-impl class ProfilerInstance(thread: Thread) {
-    internal val rootNode = Node({ thread.name })
-    private var node = rootNode
+impl class ProfilerHandle internal constructor(
+        private var node: Node,
+        internal val thread: Thread) {
 
-    init {
-        Profiler.PROFILERS.put(thread, this)
-    }
-
-    internal constructor() : this(Thread.currentThread())
+    impl internal constructor(node: Node) : this(node, Thread.currentThread())
 
     impl fun enterNode(name: String) {
-        node = node.children.computeAbsent(name) { Node({ it }, node) }
+        node = node.children.computeAbsent(name) { Node(it, node) }
         node.lastEnter = systemClock.timeNanos()
-        ProfilerDispatch.dispatchers.forEach { it.enterNode(name) }
+        dispatchers.forEach { it.enterNode(name) }
     }
 
     impl fun exitNode(name: String) {
@@ -61,27 +54,19 @@ impl class ProfilerInstance(thread: Thread) {
                 "Profiler stack popped on root node")
         assert { name == node.name() }
         node.timeNanos += systemClock.timeNanos() - node.lastEnter
-        ProfilerDispatch.dispatchers.forEach { it.exitNode(name) }
+        dispatchers.forEach { it.exitNode(name) }
         node = parentNode
-    }
-
-    internal fun resetNodes() {
-        rootNode.children.clear()
     }
 }
 
-private object ProfilerDispatch {
-    val dispatchers = loadService()
-
-    private fun loadService(): List<ProfilerDispatcher> {
-        val dispatchers = ArrayList<ProfilerDispatcher>()
-        for (dispatcher in ServiceLoader.load(
-                ProfilerDispatcherProvider::class.java)) {
-            try {
-                dispatcher.dispatcher()?.let { dispatchers.add(it) }
-            } catch (e: ServiceConfigurationError) {
-            }
+impl internal val dispatchers: List<ProfilerDispatcher> = run {
+    val dispatchers = ArrayList<ProfilerDispatcher>()
+    for (dispatcher in ServiceLoader.load(
+            ProfilerDispatcherProvider::class.java)) {
+        try {
+            dispatcher.dispatcher()?.let { dispatchers.add(it) }
+        } catch (e: ServiceConfigurationError) {
         }
-        return dispatchers
     }
+    dispatchers
 }

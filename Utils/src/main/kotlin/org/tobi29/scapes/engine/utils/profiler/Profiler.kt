@@ -16,9 +16,33 @@
 
 package org.tobi29.scapes.engine.utils.profiler
 
+import org.tobi29.scapes.engine.utils.AtomicReference
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+
+val PROFILER: AtomicReference<Profiler?> = AtomicReference(null)
+
+inline val PROFILER_ENABLED: Boolean get() = PROFILER.get() != null
+
+fun profilerEnable() {
+    PROFILER.compareAndSet(null, Profiler())
+}
+
+fun profilerDisable() {
+    PROFILER.set(null)
+}
+
+fun profilerReset() {
+    PROFILER.getAndSet(null)?.let {
+        profilerEnable()
+    }
+}
+
 class Node(val name: () -> String,
            val parent: Node? = null) {
-    val children: MutableMap<String, Node> = HashMap()
+    constructor(name: String,
+                parent: Node? = null) : this({ name }, parent)
+
+    val children = ConcurrentHashMap<String, Node>()
     var lastEnter = 0L
     var timeNanos = 0L
 
@@ -27,11 +51,17 @@ class Node(val name: () -> String,
 
 inline fun <R> profilerSection(name: String,
                                receiver: () -> R): R {
-    val instance = if (Profiler.enabled) Profiler.current() else null
+    val instance = PROFILER.get()?.current()
     instance?.enterNode(name)
     try {
         return receiver()
     } finally {
         instance?.exitNode(name)
     }
+}
+
+interface ProfilerDispatcher {
+    fun enterNode(name: String)
+
+    fun exitNode(name: String)
 }
