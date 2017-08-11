@@ -91,6 +91,12 @@ fun String.toInt128OrNull(radix: Int = 10): Int128? =
                 ?.let { -Int128(it.high, it.low) }
         else toUInt128OrNull(radix)?.let { Int128(it.high, it.low) }
 
+fun Int128.toInt128(): Int128 = this
+
+fun Byte.toInt128(): Int128 = toLong().toInt128()
+
+fun Short.toInt128(): Int128 = toLong().toInt128()
+
 fun Int.toInt128(): Int128 = toLong().toInt128()
 
 fun Long.toInt128(): Int128 = if (this < 0) Int128(-1L, this)
@@ -99,3 +105,5 @@ else Int128(0L, this)
 fun Double.toInt128(): Int128 =
         Int128((this / (256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong(),
                 (rem(256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong())
+
+fun Int128.toUInt128(): UInt128 = UInt128(high, low)

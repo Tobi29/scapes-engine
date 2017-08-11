@@ -18,3 +18,4 @@ for arrayType in Boolean Byte Short Int Long Float Double Char; do
     "$CODEGEN_HOME/GenArrays.kts" "$arrayType" > "$ENGINE_HOME/Utils/src/main/kotlin/org/tobi29/scapes/engine/utils/${arrayType}Arrays.kt"
 done
 
+"$CODEGEN_HOME/GenNumberConversions.kts" > "$ENGINE_HOME/Utils/src/main/kotlin/org/tobi29/scapes/engine/utils/NumberConversions.kt"

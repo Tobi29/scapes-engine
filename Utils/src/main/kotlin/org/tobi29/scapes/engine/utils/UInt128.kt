@@ -93,10 +93,19 @@ fun String.toUInt128OrNull(radix: Int = 10): UInt128? {
     return UInt128(oh, ol)
 }
 
+fun UInt128.toUInt128(): UInt128 = this
+
+fun Byte.toUInt128(): UInt128 = toLong().toUInt128()
+
+fun Short.toUInt128(): UInt128 = toLong().toUInt128()
+
 fun Int.toUInt128(): UInt128 = toLong().toUInt128()
+
 fun Long.toUInt128(): UInt128 = if (this < 0) UInt128(-1L, this)
 else UInt128(0L, this)
 
 fun Double.toUInt128(): UInt128 =
         UInt128((this / (256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong(),
                 (rem(256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong())
+
+fun UInt128.toInt128(): Int128 = Int128(high, low)
