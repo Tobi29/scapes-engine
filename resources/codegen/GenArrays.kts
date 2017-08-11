@@ -58,7 +58,11 @@ val specializeName: (String) -> String =
             { it }
         } else specialize
 
-print("""@file:Suppress("NOTHING_TO_INLINE")
+print("""// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
+// Generation script can be found in `resources/codegen/GenArrays.kts`.
+// Run `resources/codegen/codegen.sh` to update sources.
+
+@file:Suppress("NOTHING_TO_INLINE")
 
 package org.tobi29.scapes.engine.utils
 
