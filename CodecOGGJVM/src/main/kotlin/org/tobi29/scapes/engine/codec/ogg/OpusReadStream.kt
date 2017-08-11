@@ -70,7 +70,7 @@ class OpusReadStream(info: OpusInfo) : CodecDecoder {
             val limit = min(granuleLimit,
                     (pcmLength - pcmOffset).toLong()).toInt()
             val size = min(buffer.remaining() / channels, limit)
-            for (i in pcmOffset * channels..(pcmOffset + size) * channels - 1) {
+            for (i in pcmOffset * channels until (pcmOffset + size) * channels) {
                 buffer.put(pcm[i] / Short.MAX_VALUE.toFloat())
             }
             out += size

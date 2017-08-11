@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 object GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
-        emptySet<GuiComponent>()) {
+        emptySet()) {
     init {
         sizeMut = Vector2d.ZERO
     }

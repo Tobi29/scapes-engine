@@ -42,7 +42,7 @@ fun TagList.write(writer: TagStructureWriter,
     if (size > 0) {
         size--
         writer.beginList(key)
-        for (i in 0..size - 1) {
+        for (i in 0 until size) {
             val element = this[i]
             if (element is TagMap) {
                 if (element.isEmpty()) {
@@ -88,7 +88,7 @@ fun TagList.write(writer: TagStructureWriter) {
     if (size > 0) {
         size--
         writer.beginList()
-        for (i in 0..size - 1) {
+        for (i in 0 until size) {
             val element = this[i]
             if (element is TagMap) {
                 if (element.isEmpty()) {

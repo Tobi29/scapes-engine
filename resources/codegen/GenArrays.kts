@@ -160,8 +160,8 @@ class ${specialize("Array2")}
  * @param block Called with x and y coords of the element
  */
 inline fun ${specializeAny("Array2")}.indices(block: (Int, Int) -> Unit) {
-    for (y in 0..height - 1) {
-        for (x in 0..width - 1) {
+    for (y in 0 until height) {
+        for (x in 0 until width) {
             block(x, y)
         }
     }
@@ -307,9 +307,9 @@ class ${specialize("Array3")}
  * @param block Called with x, y and z coords of the element
  */
 inline fun ${specializeAny("Array3")}.indices(block: (Int, Int, Int) -> Unit) {
-    for (z in 0..depth - 1) {
-        for (y in 0..height - 1) {
-            for (x in 0..width - 1) {
+    for (z in 0 until depth) {
+        for (y in 0 until height) {
+            for (x in 0 until width) {
                 block(x, y, z)
             }
         }

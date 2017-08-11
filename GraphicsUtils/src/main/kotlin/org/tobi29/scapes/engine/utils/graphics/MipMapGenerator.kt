@@ -114,9 +114,9 @@ fun generateMipMap(buffer: ByteBuffer,
     val samples = 1 shl (scaleBits shl 1)
     val minVisible = samples shr 1
     val lowerWidth = widthScaled shr lowerScaleBits
-    for (y in 0..heightScaled - 1) {
+    for (y in 0 until heightScaled) {
         val yy = y shl scaleBits
-        for (x in 0..widthScaled - 1) {
+        for (x in 0 until widthScaled) {
             val xx = x shl scaleBits
             var r = 0
             var g = 0
@@ -124,9 +124,9 @@ fun generateMipMap(buffer: ByteBuffer,
             var a = 0
             var visible = 0
             var div = 0
-            for (yyy in 0..scale - 1) {
+            for (yyy in 0 until scale) {
                 var i = ((yy + yyy) * width + xx shl 2) + offset
-                for (xxx in 0..scale - 1) {
+                for (xxx in 0 until scale) {
                     val sampleR = buffer.get(i++).toInt() and 0xFF
                     val sampleG = buffer.get(i++).toInt() and 0xFF
                     val sampleB = buffer.get(i++).toInt() and 0xFF

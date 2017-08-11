@@ -48,7 +48,7 @@ class VorbisInitializer(private val info: Info,
             Pair(VorbisReadStream(info, dspState, block), {
                 AudioMetaData(comment.getVendor(),
                         TagMap {
-                            (0..comment.comments - 1).asSequence().map {
+                            (0 until comment.comments).asSequence().map {
                                 comment.getComment(it).split('=', limit = 2)
                             }.filter { it.size == 2 }.forEach {
                                 this[it[0]] = it[1].toTag()
@@ -80,11 +80,11 @@ class VorbisReadStream(info: Info,
                 "Null in pcm array, JOrbis bug?")
         val length = min(samples, buffer.remaining() / channels)
         val offset = buffer.position()
-        for (i in 0..channels - 1) {
+        for (i in 0 until channels) {
             val channel = pcmSamples[i]
             val location = index[i]
             var position = offset + i
-            for (j in 0..length - 1) {
+            for (j in 0 until length) {
                 buffer.put(position, channel[location + j])
                 position += channels
             }

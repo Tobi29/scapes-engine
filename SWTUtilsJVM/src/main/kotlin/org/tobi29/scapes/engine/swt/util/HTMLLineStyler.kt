@@ -137,7 +137,7 @@ class HTMLLineStyler(display: Display) : DisposeListener, LineStyleListener, Ver
         val type = reader.name.localPart
         val count = reader.attributeCount
         val style = HashMap<String, String>()
-        for (i in 0..count - 1) {
+        for (i in 0 until count) {
             if ("style" == reader.getAttributeName(i).localPart) {
                 val attribute = reader.getAttributeValue(i).split(
                         ";".toRegex()).dropLastWhile(

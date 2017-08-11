@@ -29,7 +29,7 @@ class FileType(val extensions: Array<Pair<String, String>>) {
                 throw IllegalArgumentException("Array has to have even length")
             }
             val extensions = ArrayList<Pair<String, String>>(array.size shr 1)
-            for (i in 0..(array.size shr 1) - 1) {
+            for (i in 0 until (array.size shr 1)) {
                 val j = i shl 1
                 extensions += Pair(array[j], array[j + 1])
             }

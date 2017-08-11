@@ -30,7 +30,7 @@ object FastSin {
         val count = MASK + 1
         RAD_2_INDEX = count / TWO_PI
         SIN = FloatArray(count)
-        for (i in 0..count - 1) {
+        for (i in 0 until count) {
             SIN[i] = org.tobi29.scapes.engine.utils.math.sin(
                     (i + 0.5f) / count * TWO_PI).toFloat()
         }

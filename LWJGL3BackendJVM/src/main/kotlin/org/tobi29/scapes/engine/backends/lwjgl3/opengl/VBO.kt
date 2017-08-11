@@ -133,18 +133,18 @@ internal class VBO(val engine: ScapesEngine,
             val byteArray = attribute.byteArray ?: throw IllegalArgumentException(
                     "Attribute contains no data")
             when (attribute.vertexType) {
-                VertexType.BYTE, VertexType.UNSIGNED_BYTE -> for (i in 0..vertices - 1) {
+                VertexType.BYTE, VertexType.UNSIGNED_BYTE -> for (i in 0 until vertices) {
                     val `is` = i * attribute.size
                     buffer.position(attribute.offset + i * stride)
-                    for (j in 0..attribute.size - 1) {
+                    for (j in 0 until attribute.size) {
                         val ij = `is` + j
                         buffer.put(byteArray[ij].toByte())
                     }
                 }
-                VertexType.SHORT, VertexType.UNSIGNED_SHORT -> for (i in 0..vertices - 1) {
+                VertexType.SHORT, VertexType.UNSIGNED_SHORT -> for (i in 0 until vertices) {
                     val `is` = i * attribute.size
                     buffer.position(attribute.offset + i * stride)
-                    for (j in 0..attribute.size - 1) {
+                    for (j in 0 until attribute.size) {
                         val ij = `is` + j
                         buffer.putShort(byteArray[ij].toShort())
                     }
@@ -154,96 +154,96 @@ internal class VBO(val engine: ScapesEngine,
             }
         } else {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> for (i in 0..vertices - 1) {
+                VertexType.FLOAT -> for (i in 0 until vertices) {
                     val `is` = i * attribute.size
                     buffer.position(attribute.offset + i * stride)
-                    for (j in 0..attribute.size - 1) {
+                    for (j in 0 until attribute.size) {
                         val ij = `is` + j
                         buffer.putFloat(floatArray[ij])
                     }
                 }
-                VertexType.HALF_FLOAT -> for (i in 0..vertices - 1) {
+                VertexType.HALF_FLOAT -> for (i in 0 until vertices) {
                     val `is` = i * attribute.size
                     buffer.position(attribute.offset + i * stride)
-                    for (j in 0..attribute.size - 1) {
+                    for (j in 0 until attribute.size) {
                         val ij = `is` + j
                         buffer.putShort(FastMath.convertFloatToHalf(
                                 floatArray[ij]))
                     }
                 }
                 VertexType.BYTE -> if (attribute.normalized) {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij] * 127.0f).toByte())
                         }
                     }
                 } else {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij]).toByte())
                         }
                     }
                 }
                 VertexType.UNSIGNED_BYTE -> if (attribute.normalized) {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij] * 255.0f).toByte())
                         }
                     }
                 } else {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.put(round(floatArray[ij]).toByte())
                         }
                     }
                 }
                 VertexType.SHORT -> if (attribute.normalized) {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.putShort(
                                     round(floatArray[ij] * 32768.0f).toShort())
                         }
                     }
                 } else {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.putShort(round(floatArray[ij]).toShort())
                         }
                     }
                 }
                 VertexType.UNSIGNED_SHORT -> if (attribute.normalized) {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.putShort(
                                     round(floatArray[ij] * 65535.0f).toShort())
                         }
                     }
                 } else {
-                    for (i in 0..vertices - 1) {
+                    for (i in 0 until vertices) {
                         val `is` = i * attribute.size
                         buffer.position(attribute.offset + i * stride)
-                        for (j in 0..attribute.size - 1) {
+                        for (j in 0 until attribute.size) {
                             val ij = `is` + j
                             buffer.putShort(round(floatArray[ij]).toShort())
                         }

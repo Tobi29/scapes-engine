@@ -36,7 +36,7 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
 
     protected fun path(paths: Array<out String>): String {
         val pathBuilder = StringBuilder(paths[0])
-        for (i in 1..paths.size - 1) {
+        for (i in 1 until paths.size) {
             pathBuilder.append('\n').append(paths[i])
         }
         return pathBuilder.toString()
@@ -66,7 +66,7 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
                 buffer.put(source.buffer)
                 buffer.rewind()
                 source.buffer.rewind()
-                for (i in 1..paths.size - 1) {
+                for (i in 1 until paths.size) {
                     val layer2 = sources[paths[i]]
                     val layer: Image
                     if (layer2 == null) {

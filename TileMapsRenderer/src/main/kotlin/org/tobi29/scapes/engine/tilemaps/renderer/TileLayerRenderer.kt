@@ -80,10 +80,10 @@ class TileLayerRenderer(val engine: ScapesEngine,
     private fun resize() {
         width = (map.width - 1 shr cx) + 1
         height = map.height
-        chunks = array2OfNulls<TileLayerRendererChunk>(width, height)
-        for (y in 0..height - 1) {
+        chunks = array2OfNulls(width, height)
+        for (y in 0 until height) {
             val yy = y shl cy
-            for (x in 0..width - 1) {
+            for (x in 0 until width) {
                 val xx = x shl cx
                 val chunk = TileLayerRendererChunk(xx, yy)
                 chunk.prepare()

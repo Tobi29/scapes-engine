@@ -60,7 +60,7 @@ class GuiComponentGraph(parent: GuiLayoutData,
         val index = IntArray(w * (limit shl 1))
         for (i in data.indices) {
             val offset = i * w
-            for (j in 0..w - 1) {
+            for (j in 0 until w) {
                 var x = j + this.i[i]
                 if (x >= w) {
                     x -= w
@@ -76,7 +76,7 @@ class GuiComponentGraph(parent: GuiLayoutData,
                 color[k++] = b[i]
                 color[k] = a[i]
             }
-            for (j in 0..limit - 1) {
+            for (j in 0 until limit) {
                 val k = offset + j
                 var l = k shl 1
                 index[l++] = k

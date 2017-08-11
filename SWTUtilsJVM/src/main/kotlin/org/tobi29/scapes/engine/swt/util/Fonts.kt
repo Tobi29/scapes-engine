@@ -65,7 +65,7 @@ object Fonts : KLogging() {
     private fun identifier(str: String): String {
         val characters = CharArray(str.length)
         var i = 0
-        for (j in 0..str.length - 1) {
+        for (j in 0 until str.length) {
             val character = str[j]
             if (!Character.isWhitespace(character)) {
                 characters[i++] = Character.toLowerCase(character)

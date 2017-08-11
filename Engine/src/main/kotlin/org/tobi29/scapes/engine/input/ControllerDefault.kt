@@ -146,7 +146,7 @@ abstract class ControllerDefault : ControllerBasic {
     }
 
     fun clearTypeEvents() {
-        typeEvents = emptyList<KeyTypeEvent>()
+        typeEvents = emptyList()
     }
 
     fun set(x: Double,

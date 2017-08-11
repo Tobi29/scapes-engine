@@ -176,7 +176,7 @@ fun copy(srcX: Int,
     val destScanSize = destWidth shl 2
     val destScanOffset = (destX shl 2) + oldDestPosition
     val scanSize = width shl 2
-    for (row in 0..height - 1) {
+    for (row in 0 until height) {
         val srcPos = (srcY + row) * srcScanSize + srcScanOffset
         srcBuffer.limit(srcPos + scanSize)
         srcBuffer.position(srcPos)
@@ -209,7 +209,7 @@ fun flipVertical(width: Int,
     val swap = ByteBuffer(scanline)
     val offset = oldPosition
     val offsetInv = offset + limit - scanline
-    for (yy in 0..(height shr 1) - 1) {
+    for (yy in 0 until (height shr 1)) {
         buffer.limit((yy + 1) * scanline)
         buffer.position(offset + yy * scanline)
         swap.put(buffer)

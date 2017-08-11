@@ -49,7 +49,7 @@ internal class FBO(engine: ScapesEngine,
     init {
         this.width = max(width, 1)
         this.height = max(height, 1)
-        texturesColor = (0..colorAttachments - 1).map {
+        texturesColor = (0 until colorAttachments).map {
             TextureFBOColor(engine, width, height, minFilter, magFilter,
                     TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr)
         }.readOnly()

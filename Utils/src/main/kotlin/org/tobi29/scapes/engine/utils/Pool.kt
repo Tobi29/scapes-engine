@@ -179,13 +179,13 @@ class Pool<E>
      */
     override operator fun contains(element: E): Boolean {
         if (element == null) {
-            for (i in 0..size - 1) {
+            for (i in 0 until size) {
                 if (list[i] == null) {
                     return true
                 }
             }
         } else {
-            for (i in 0..size - 1) {
+            for (i in 0 until size) {
                 if (element == list[i]) {
                     return true
                 }

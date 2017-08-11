@@ -206,7 +206,7 @@ internal open class TextureGL(override val engine: ScapesEngine,
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, buffer.width,
                     buffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                     buffer.buffers[0])
-            for (i in 1..buffer.buffers.size - 1) {
+            for (i in 1 until buffer.buffers.size) {
                 glTexImage2D(GL_TEXTURE_2D, i, GL_RGBA,
                         max(buffer.width shr i, 1),
                         max(buffer.height shr i, 1), 0, GL_RGBA,

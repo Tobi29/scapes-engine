@@ -26,7 +26,7 @@ object FastAsin {
         val count = MASK + 1
         VALUE_2_INDEX = (count - 1) * 0.5
         ASIN = FloatArray(count)
-        for (i in 0..count - 1) {
+        for (i in 0 until count) {
             ASIN[i] = org.tobi29.scapes.engine.utils.math.asin(
                     i / VALUE_2_INDEX - 1.0).toFloat()
         }

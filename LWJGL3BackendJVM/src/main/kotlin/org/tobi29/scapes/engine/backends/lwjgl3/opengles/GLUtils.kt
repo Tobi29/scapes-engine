@@ -58,7 +58,7 @@ internal object GLUtils : KLogging() {
         val stack = MemoryStack.stackGet()
         stack.push {
             val attachBuffer = stack.mallocInt(attachments)
-            for (i in 0..attachments - 1) {
+            for (i in 0 until attachments) {
                 attachBuffer.put(GLES20.GL_COLOR_ATTACHMENT0 + i)
             }
             attachBuffer.rewind()

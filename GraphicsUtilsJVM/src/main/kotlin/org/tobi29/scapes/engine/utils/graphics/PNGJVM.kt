@@ -37,7 +37,7 @@ fun decodePNG(streamIn: InputStream,
         val fillAlpha = !reader.imgInfo.alpha
         val buffer = bufferProvider.allocate(width * height shl 2)
         if (fillAlpha) {
-            for (i in 0..height - 1) {
+            for (i in 0 until height) {
                 val line = reader.readRowByte()
                 val array = line.scanlineByte
                 var j = 0
@@ -49,7 +49,7 @@ fun decodePNG(streamIn: InputStream,
                 }
             }
         } else {
-            for (i in 0..height - 1) {
+            for (i in 0 until height) {
                 val line = reader.readRowByte()
                 buffer.put(line.scanlineByte)
             }

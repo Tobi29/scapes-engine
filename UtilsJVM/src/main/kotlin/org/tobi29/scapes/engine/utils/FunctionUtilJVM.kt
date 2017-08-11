@@ -1,19 +1,13 @@
 package org.tobi29.scapes.engine.utils
 
 impl infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit =
-        if (this is ChainedFunction0) {
-            append(other)
-        } else if (other is ChainedFunction0) {
-            other.prepend(this)
-        } else {
-            ChainedFunction0(arrayOf(this, other))
-        }
+        (this as? ChainedFunction0)?.append(other)
+                ?: (other as? ChainedFunction0)?.prepend(this)
+                ?: ChainedFunction0(arrayOf(this, other))
 
 impl fun chain(vararg functions: () -> Unit): () -> Unit =
         ChainedFunction0(functions.flatMap {
-            if (it is ChainedFunction0) {
-                it.functions.asIterable()
-            } else listOf(it)
+            (it as? ChainedFunction0)?.functions?.asIterable() ?: listOf(it)
         }.toTypedArray())
 
 impl infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =

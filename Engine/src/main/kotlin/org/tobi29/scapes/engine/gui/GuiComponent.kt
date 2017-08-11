@@ -110,18 +110,15 @@ abstract class GuiComponent(val engine: ScapesEngine,
             gl.matrixStack.push { matrix ->
                 transform(matrix, size)
                 val layout = layoutManager(size)
-                for (component in layout.layout()) {
-                    val pos = applyTransform(-component.second.x,
-                            -component.second.y, size)
-                    if (-pos.x >= -component.third.x &&
-                            -pos.y >= -component.third.y &&
-                            -pos.x <= size.x &&
-                            -pos.y <= size.y) {
+                for ((component, position, childSize) in layout.layout()) {
+                    val pos = applyTransform(-position.x, -position.y, size)
+                    if (-pos.x >= -childSize.x && -pos.y >= -childSize.y
+                            && -pos.x <= size.x && -pos.y <= size.y) {
                         gl.matrixStack.push { childMatrix ->
-                            childMatrix.translate(component.second.floatX(),
-                                    component.second.floatY(), 0.0f)
-                            component.first.render(gl, shader, component.third,
-                                    pixelSize, delta)
+                            childMatrix.translate(position.floatX(),
+                                    position.floatY(), 0.0f)
+                            component.render(gl, shader, childSize, pixelSize,
+                                    delta)
                         }
                     }
                 }
@@ -154,13 +151,12 @@ abstract class GuiComponent(val engine: ScapesEngine,
                 transform(matrix, size)
                 updateMesh(renderer, size)
                 val layout = layoutManager(size)
-                for (component in layout.layout()) {
+                for ((component, position, childSize) in layout.layout()) {
                     matrixStack.push { childMatrix ->
-                        childMatrix.translate(component.second.floatX(),
-                                component.second.floatY(), 0.0f)
-                        hasHeavy = hasHeavy or component.first.renderLightweight(
-                                renderer,
-                                component.third)
+                        childMatrix.translate(position.floatX(),
+                                position.floatY(), 0.0f)
+                        hasHeavy = hasHeavy or component.renderLightweight(
+                                renderer, childSize)
                     }
                 }
             }
@@ -287,9 +283,8 @@ abstract class GuiComponent(val engine: ScapesEngine,
                 return size
             }
             val layout = layoutManager(size)
-            for (component in layout.layout()) {
-                component.first.calculateSize(component.third,
-                        destination)?.let { return it }
+            for ((component, _, size) in layout.layout()) {
+                component.calculateSize(size, destination)?.let { return it }
             }
         }
         return null

@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.input
 import org.tobi29.scapes.engine.ComponentStep
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.scapes.engine.gui.GuiControllerDummy
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
@@ -34,7 +33,7 @@ abstract class InputManager<M : InputMode>(
             ConcurrentHashMap<Controller, (MutableTagMap) -> M>()
     var inputModes = emptyList<M>()
         private set
-    private var inputModeMut = AtomicReference<M>(inputModeDummy)
+    private var inputModeMut = AtomicReference(inputModeDummy)
     val inputMode get() = inputModeMut.get()
     private val freezeInputModeMut = AtomicBoolean(false)
     var freezeInputMode get() = freezeInputModeMut.get()

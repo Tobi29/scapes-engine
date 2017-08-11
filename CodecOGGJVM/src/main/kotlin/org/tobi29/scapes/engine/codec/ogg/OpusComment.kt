@@ -58,7 +58,7 @@ class OpusComment(packet: Packet) {
         if (comments < 0) {
             throw IOException("Invalid comment count: $vendorLength")
         }
-        for (i in 0..comments - 1) {
+        for (i in 0 until comments) {
             val len = buffer.read(32)
             if (len < 0) {
                 throw IOException("Invalid comment length: $vendorLength")

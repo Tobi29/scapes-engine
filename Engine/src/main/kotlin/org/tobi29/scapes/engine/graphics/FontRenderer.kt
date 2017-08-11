@@ -134,7 +134,7 @@ class FontRenderer(private val engine: ScapesEngine,
             var length = 0
             var xx = 0.0
             var yy = 0.0
-            for (i in 0..text.length - 1) {
+            for (i in 0 until text.length) {
                 val letter = text[i]
                 if (letter == '\n') {
                     xx = 0.0

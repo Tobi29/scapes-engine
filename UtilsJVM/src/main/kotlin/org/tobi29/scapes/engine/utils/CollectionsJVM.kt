@@ -76,32 +76,33 @@ impl class ArrayDeque<E>(size: Int) : Deque<E> {
             elements)
 
     impl override fun offer(element: E) = deque.offer(element)
-    impl override fun remove() = deque.remove()
-    impl override fun poll() = deque.poll()
-    impl override fun element() = deque.element()
-    impl override fun peek() = deque.peek()
+    impl override fun remove(): E = deque.remove()
+    impl override fun poll(): E? = deque.poll()
+    impl override fun element(): E = deque.element()
+    impl override fun peek(): E = deque.peek()
 
     impl override fun addFirst(element: E) = deque.addFirst(element)
     impl override fun addLast(element: E) = deque.addLast(element)
     impl override fun offerFirst(element: E) = deque.offerFirst(element)
     impl override fun offerLast(element: E) = deque.offerLast(element)
-    impl override fun removeFirst() = deque.removeFirst()
-    impl override fun removeLast() = deque.removeLast()
-    impl override fun pollFirst() = deque.pollFirst()
-    impl override fun pollLast() = deque.pollLast()
-    impl override fun getFirst() = deque.first
-    impl override fun getLast() = deque.last
-    impl override fun peekFirst() = deque.peekFirst()
-    impl override fun peekLast() = deque.peekLast()
-    impl override fun removeFirstOccurrence(element: E) = deque.removeFirstOccurrence(
-            element)
+    impl override fun removeFirst(): E = deque.removeFirst()
+    impl override fun removeLast(): E = deque.removeLast()
+    impl override fun pollFirst(): E? = deque.pollFirst()
+    impl override fun pollLast(): E? = deque.pollLast()
+    impl override fun getFirst(): E = deque.first
+    impl override fun getLast(): E = deque.last
+    impl override fun peekFirst(): E = deque.peekFirst()
+    impl override fun peekLast(): E = deque.peekLast()
+    impl override fun removeFirstOccurrence(element: E) =
+            deque.removeFirstOccurrence(element)
 
-    impl override fun removeLastOccurrence(element: E) = deque.removeLastOccurrence(
-            element)
+    impl override fun removeLastOccurrence(element: E) =
+            deque.removeLastOccurrence(element)
 
     impl override fun push(element: E) = deque.push(element)
     impl override fun pop(): E = deque.pop()
-    impl override fun descendingIterator() = deque.descendingIterator()
+    impl override fun descendingIterator(): MutableIterator<E> =
+            deque.descendingIterator()
 
     override fun equals(other: Any?) = deque == other
     override fun hashCode() = deque.hashCode()
@@ -132,7 +133,7 @@ impl class ConcurrentHashMap<K, V> : ConcurrentMap<K, V>, java.util.concurrent.C
     override fun remove(key: K,
                         value: V) = map.remove(key, value)
 
-    impl override fun get(key: K): V? = map.get(key)
+    impl override fun get(key: K): V? = map[key]
 
     override fun putIfAbsent(key: K,
                              value: V): V? = map.putIfAbsent(key, value)

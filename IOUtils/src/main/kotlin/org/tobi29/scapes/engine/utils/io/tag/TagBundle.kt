@@ -30,7 +30,7 @@ class TagBundle(private val map: TagMap) {
             return null
         }
         var directory = map
-        for (i in 0..segments.lastIndex - 1) {
+        for (i in 0 until segments.lastIndex) {
             directory = directory[segments[i]]?.toMap()
                     ?.toDirectory() ?: return null
         }

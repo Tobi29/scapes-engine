@@ -31,7 +31,7 @@ object RandomTests : Spek({
                     val counts = IntArray(max - min + 1)
                     val random = Random(12345L + max * 10000L + min)
                     val count = counts.size * 100
-                    for (i in 0..count - 1) {
+                    for (i in 0 until count) {
                         val r = random.nextInt(min, max)
                         if (r in min..max) {
                             counts[r - min]++
@@ -54,7 +54,7 @@ object RandomTests : Spek({
                     val counts = IntArray(max - min + 1)
                     val random = Random(12345L + max * 10000L + min)
                     val count = counts.size * 100
-                    for (i in 0..count - 1) {
+                    for (i in 0 until count) {
                         val r = random.nextLong(min.toLong(),
                                 max.toLong()).toInt()
                         if (r in min..max) {

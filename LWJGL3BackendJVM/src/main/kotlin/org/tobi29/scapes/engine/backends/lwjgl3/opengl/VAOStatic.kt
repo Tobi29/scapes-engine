@@ -38,7 +38,7 @@ internal class VAOStatic(private val vbo: VBO,
             throw IllegalArgumentException("Length not multiply of 2")
         }
         val indexBuffer = engine.allocate(length shl 1)
-        for (i in 0..length - 1) {
+        for (i in 0 until length) {
             indexBuffer.putShort(index[i].toShort())
         }
         data = indexBuffer

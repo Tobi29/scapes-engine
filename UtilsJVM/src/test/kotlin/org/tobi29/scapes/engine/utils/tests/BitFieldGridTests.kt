@@ -31,8 +31,8 @@ object BitFieldGridTests : Spek({
         given("an instance filled with random data") {
             val random = Random(0)
             val chunkData = BitFieldGrid(15, 7)
-            for (y in 0..chunkData.height - 1) {
-                for (x in 0..chunkData.width - 1) {
+            for (y in 0 until chunkData.height) {
+                for (x in 0 until chunkData.width) {
                     for (i in 0..7) {
                         chunkData.setAt(x, y, i, random.nextBoolean())
                     }
@@ -40,8 +40,8 @@ object BitFieldGridTests : Spek({
             }
             it("should contain the same values") {
                 val random = Random(0)
-                for (y in 0..chunkData.height - 1) {
-                    for (x in 0..chunkData.width - 1) {
+                for (y in 0 until chunkData.height) {
+                    for (x in 0 until chunkData.width) {
                         for (i in 0..7) {
                             chunkData.getAt(x, y,
                                     i) shouldEqual random.nextBoolean()

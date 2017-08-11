@@ -326,7 +326,7 @@ class SQLiteDatabase(private val connection: Connection) : SQLDatabase {
     private fun resolveResult(result: ResultSet,
                               columns: Int): Array<Any?> {
         val row = arrayOfNulls<Any>(columns)
-        for (i in 0..columns - 1) {
+        for (i in 0 until columns) {
             val j = i + 1
             row[i] = result.getObject(j)
         }

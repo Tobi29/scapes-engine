@@ -208,7 +208,7 @@ class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
                                       vararg buffers: ByteBuffer) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
                 GL_RGBA, GL_UNSIGNED_BYTE, buffers[0])
-        for (i in 1..buffers.size - 1) {
+        for (i in 1 until buffers.size) {
             val scale = pow(2f, i.toFloat()).toInt()
             glTexSubImage2D(GL_TEXTURE_2D, i, x / scale, y / scale,
                     max(width / scale, 1),

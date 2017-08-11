@@ -43,8 +43,8 @@ class ControllerKeyReference {
                     "List requires at least one key")
         }
         key = keys[keys.size - 1]
-        modifiers = ArrayList<ControllerKey>(keys.size - 1)
-        for (i in 0..keys.size - 1 - 1) {
+        modifiers = ArrayList(keys.size - 1)
+        for (i in 0 until keys.size - 1) {
             modifiers.add(keys[i])
         }
     }
@@ -118,7 +118,7 @@ class ControllerKeyReference {
                     ControllerKey.valueOf(it) ?: return null
                 }
             } else {
-                modifiers = emptyList<ControllerKey>()
+                modifiers = emptyList()
             }
             return ControllerKeyReference(
                     ControllerKey.valueOf(split[0]) ?: return null, modifiers)

@@ -22,7 +22,6 @@ import kotlinx.coroutines.experimental.newFixedThreadPoolContext
 import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.sleep
 import kotlin.coroutines.experimental.CoroutineContext
 
 impl class TaskExecutor {

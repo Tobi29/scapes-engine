@@ -182,10 +182,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun loopFixedStatement(expression: LoopFixedStatement,
                                    level: Int) {
         val startInt = integer(
-                expression.start.simplify(context, identifiers)).toInt()
+                expression.start.simplify(context, identifiers))
         val endInt = integer(
-                expression.end.simplify(context, identifiers)).toInt()
-        for (i in startInt..endInt - 1) {
+                expression.end.simplify(context, identifiers))
+        for (i in startInt until endInt) {
             identifiers[expression.index] = IntegerExpression(i)
             statement(expression.statement, level)
         }

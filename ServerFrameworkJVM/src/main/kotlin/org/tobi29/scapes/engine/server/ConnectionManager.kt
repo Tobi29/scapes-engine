@@ -50,7 +50,7 @@ class ConnectionManager(
         logger.info { "Starting worker $workerCount threads..." }
         val newWorkers = ConcurrentLinkedQueue<ConnectionWorker>()
         val joiners = ArrayList<Joiner>()
-        for (i in 0..workerCount - 1) {
+        for (i in 0 until workerCount) {
             val joiner = SelectorJoinable(Selector.open())
             val startJoiner = BasicJoinable()
             this.joiners.add(taskExecutor.runThread({ joiner ->

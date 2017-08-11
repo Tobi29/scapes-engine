@@ -24,7 +24,7 @@ fun byteArrays(amount: Int = 64,
                seed: Long = 0L): Sequence<ByteArray> {
     return buildSequence {
         val random = Random(seed)
-        for (it in 0..amount - 1) {
+        for (it in 0 until amount) {
             val array = ByteArray(it shl sizeBits)
             random.nextBytes(array)
             yield(array)

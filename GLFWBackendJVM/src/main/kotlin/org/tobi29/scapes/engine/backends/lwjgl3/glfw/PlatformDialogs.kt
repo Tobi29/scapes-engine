@@ -36,8 +36,7 @@ object PlatformDialogs : KLogging() {
                                   block: (PointerBuffer) -> R): R {
         MemoryStack.stackPush().use { stack ->
             val buffer = stack.mallocPointer(extensions.size)
-            extensions.forEach { extension ->
-                val filter = extension.first
+            extensions.forEach { (filter) ->
                 buffer.put(stack.UTF8(filter))
             }
             buffer.flip()

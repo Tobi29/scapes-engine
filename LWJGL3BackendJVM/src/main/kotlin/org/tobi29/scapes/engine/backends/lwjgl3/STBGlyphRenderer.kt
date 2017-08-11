@@ -70,7 +70,7 @@ class STBGlyphRenderer(private val font: STBFont,
                 val offset = id shl pageTileBits
                 val xb = stack.mallocInt(1)
                 val yb = stack.mallocInt(1)
-                for (i in 0..pageTiles - 1) {
+                for (i in 0 until pageTiles) {
                     val c = i + offset
                     STBTruetype.stbtt_GetCodepointHMetrics(font.info, c, xb, yb)
                     width[i] = round(xb.get(0) * scale)
@@ -94,9 +94,9 @@ class STBGlyphRenderer(private val font: STBFont,
                 val yb = stack.mallocInt(1)
                 val wb = stack.mallocInt(1)
                 val hb = stack.mallocInt(1)
-                for (y in 0..tiles - 1) {
+                for (y in 0 until tiles) {
                     val yy = y * glyphSize
-                    for (x in 0..tiles - 1) {
+                    for (x in 0 until tiles) {
                         val xx = x * glyphSize
                         val c = i + offset
                         if (!Character.isISOControl(c)) {
@@ -116,11 +116,11 @@ class STBGlyphRenderer(private val font: STBFont,
                                     glyphBuffer, glyphSize, glyphSize,
                                     glyphSize, scale.toFloat(), scale.toFloat(),
                                     c)
-                            for (yyy in 0..sizeY - 1) {
+                            for (yyy in 0 until sizeY) {
                                 buffer.position(
                                         (renderY + yyy) * imageSize + renderX shl 2)
                                 glyphBuffer.position(yyy * glyphSize)
-                                for (xxx in 0..sizeX - 1) {
+                                for (xxx in 0 until sizeX) {
                                     val value = glyphBuffer.get()
                                     buffer.put(0xFF.toByte())
                                     buffer.put(0xFF.toByte())
