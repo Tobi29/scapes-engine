@@ -21,5 +21,8 @@ dependencies {
     compile project(":ThreadUtilsJVM")
     compileOnly project(":FileSystems")
     compileOnly project(":ThreadUtils")
-    compileOnly project(":KotlinxCoroutinesCore")
+    compileOnly rootProject.ext.kotlinxCoroutinesCore
+    testCompileOnly project(":FileSystems")
+    testCompileOnly project(":ThreadUtils")
+    testCompileOnly rootProject.ext.kotlinxCoroutinesCore
 }
