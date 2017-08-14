@@ -30,14 +30,18 @@ import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
+import org.tobi29.scapes.engine.utils.sleepNanos
+import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.tag.toMap
+import org.tobi29.scapes.engine.utils.task.Timer
 
 class ContainerGLFW(engine: ScapesEngine,
                     private val emulateTouch: Boolean = false,
@@ -48,7 +52,6 @@ class ContainerGLFW(engine: ScapesEngine,
         private set
     override var containerHeight = 0
         private set
-    private val sync: Sync
     private val controllerDefault = GLFWControllerDefault()
     private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
@@ -84,8 +87,6 @@ class ContainerGLFW(engine: ScapesEngine,
             throw GraphicsException("Unable to initialize GLFW")
         }
         logger.info { "GLFW version: ${GLFW.glfwGetVersionString()}" }
-        sync = Sync(engine.config.fps, 5000000000L, false,
-                "Rendering")
         controllers = GLFWControllers(engine.events, virtualJoysticks)
         windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
             containerWidth = round(width * density)
@@ -206,7 +207,9 @@ class ContainerGLFW(engine: ScapesEngine,
         } else {
             engine.events.fire(ControllerAddEvent(controllerDefault))
         }
-        sync.init()
+        val timer = Timer()
+        timer.init()
+        var tickDiff = 0L
         while (running) {
             val start = steadyClock.timeSteadyNanos()
             val vSync = engine.config.vSync
@@ -252,8 +255,9 @@ class ContainerGLFW(engine: ScapesEngine,
             GLFW.glfwPollEvents()
             controllers.poll()
             profilerSection("Render") {
-                engine.graphics.render(gl, sync.delta(), contentWidth,
-                        contentHeight)
+                engine.graphics.render(gl,
+                        Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
+                        contentWidth, contentHeight)
             }
             val mouseGrabbed = !emulateTouch && engine.isMouseGrabbed()
             if (mouseGrabbed != this.mouseGrabbed) {
@@ -274,9 +278,10 @@ class ContainerGLFW(engine: ScapesEngine,
                 controllerDefault.set(mouseX, mouseY)
             }
             if (vSync) {
-                sync.tick()
+                tickDiff = timer.tick()
             } else {
-                sync.cap()
+                tickDiff = timer.cap(Timer.toDiff(engine.config.fps),
+                        ::sleepNanos)
             }
             GLFW.glfwSwapBuffers(window)
             if (!visible) {

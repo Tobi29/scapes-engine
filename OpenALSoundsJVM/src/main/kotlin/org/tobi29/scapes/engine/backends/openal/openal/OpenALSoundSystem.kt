@@ -24,18 +24,20 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.Sync
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.math.roundL
 import org.tobi29.scapes.engine.utils.math.threadLocalRandom
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
+import org.tobi29.scapes.engine.utils.sleepNanos
 import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import org.tobi29.scapes.engine.utils.task.Timer
 
 class OpenALSoundSystem(override val engine: ScapesEngine,
                         openAL: OpenAL,
@@ -59,11 +61,13 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 sources[i] = openAL.createSource()
             }
             openAL.checkError("Initializing")
-            val sync = Sync(1000.0 / latency, 0, false, "Sound")
-            sync.init()
+            val timer = Timer()
+            val maxDiff = roundL(latency * 1000000.0)
+            timer.init()
             while (!joiner.marked) {
+                val tickDiff = timer.cap(maxDiff, ::sleepNanos)
                 try {
-                    val delta = sync.delta()
+                    val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
                     while (!queue.isEmpty()) {
                         queue.poll()?.invoke(openAL)
                     }
@@ -87,7 +91,6 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 } catch (e: SoundException) {
                     logger.warn { "Error polling sound-system: $e" }
                 }
-                sync.cap(joiner)
             }
             try {
                 audios.forEach { it.stop(this, openAL) }

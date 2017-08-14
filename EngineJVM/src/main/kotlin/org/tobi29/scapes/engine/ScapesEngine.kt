@@ -31,10 +31,7 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.tag.mapMut
-import org.tobi29.scapes.engine.utils.task.BasicJoinable
-import org.tobi29.scapes.engine.utils.task.Joiner
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import org.tobi29.scapes.engine.utils.task.UpdateLoop
+import org.tobi29.scapes.engine.utils.task.*
 
 impl class ScapesEngine(
         game: (ScapesEngine) -> Game,
@@ -122,8 +119,8 @@ impl class ScapesEngine(
         }
     }
 
-    impl val state get() =
-    stateMut ?: throw IllegalStateException("Engine not running")
+    impl val state
+        get() = stateMut ?: throw IllegalStateException("Engine not running")
 
     impl fun switchState(state: GameState) {
         newState.set(state)
@@ -139,19 +136,14 @@ impl class ScapesEngine(
             components.asSequence().filterMap<ComponentLifecycle>()
                     .forEach { it.start() }
             var tps = step(0.0001)
-            var sync = Sync(tps, 0L, false, "Engine-Update")
-            sync.init()
+            val timer = Timer()
+            timer.init()
             wait.join()
-            sync.cap()
             while (!joiner.marked) {
-                tpsDebug.setValue(sync.tps())
-                val newTPS = step(sync.delta())
-                if (tps != newTPS) {
-                    tps = newTPS
-                    sync = Sync(tps, 0L, false, "Engine-Update")
-                    sync.init()
-                }
-                sync.cap()
+                val tickDiff = timer.cap(Timer.toDiff(tps), ::sleepNanos)
+                tpsDebug.setValue(Timer.toTps(tickDiff))
+                val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
+                tps = step(delta)
             }
             components.asSequence().filterMap<ComponentLifecycle>()
                     .forEach { it.halt() }
@@ -196,7 +188,8 @@ impl class ScapesEngine(
 
     impl override fun allocate(capacity: Int) = container.allocate(capacity)
 
-    impl override fun reallocate(buffer: ByteBuffer) = container.reallocate(buffer)
+    impl override fun reallocate(buffer: ByteBuffer) =
+            container.reallocate(buffer)
 
     private fun step(delta: Double): Double {
         var currentState = this.stateMut
