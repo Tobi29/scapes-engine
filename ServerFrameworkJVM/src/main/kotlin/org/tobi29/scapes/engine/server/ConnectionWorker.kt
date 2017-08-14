@@ -79,7 +79,7 @@ class ConnectionWorker(
                     val timeout = if (initialTimeout < 0) {
                         null
                     } else {
-                        AtomicLong(systemClock() + initialTimeout)
+                        AtomicLong(systemClock.timeMillis() + initialTimeout)
                     }
                     val connection = Connection(requestClose, timeout)
                     val job = launch(this) {
@@ -90,7 +90,7 @@ class ConnectionWorker(
                     if (timeout != null) {
                         launch(this) {
                             while (job.isActive) {
-                                if (systemClock() > timeout.get()) {
+                                if (systemClock.timeMillis() > timeout.get()) {
                                     job.cancel(CancellationException("Timeout"))
                                 }
                                 yield()

@@ -80,28 +80,29 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             Files.readAttributes(toPath(path),
                     PosixFileAttributes::class.java,
                     *optionsNIO)
-        } catch(e: UnsupportedOperationException) {
+        } catch (e: UnsupportedOperationException) {
             null
         }
         val dos = try {
             Files.readAttributes(toPath(path),
                     DosFileAttributes::class.java,
                     *optionsNIO)
-        } catch(e: UnsupportedOperationException) {
+        } catch (e: UnsupportedOperationException) {
             null
         }
-        val basic=posix?:dos?:Files.readAttributes(toPath(path),
+        val basic = posix ?: dos ?: Files.readAttributes(toPath(path),
                 BasicFileAttributes::class.java,
                 *optionsNIO)
 
         list.add(FileBasicMetadata(basic.fileType(), basic.size(),
                 basic.fileKey()))
-        if (posix!=null) {
+        list.add(FileModificationTime(basic.lastModifiedTime().toMillis()))
+        if (posix != null) {
             list.add(posix.permissions().toUnixPermissionMode())
         }
-        if (dos!=null) {
-            list.add(FileVisibility(dos.isHidden()))
-        }else{
+        if (dos != null) {
+            list.add(FileVisibility(dos.isHidden))
+        } else {
             list.add(FileVisibility(path.fileName?.startsWith(".") ?: false))
         }
         return list.toTypedArray()
@@ -147,12 +148,15 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     override fun setLastModifiedTime(path: FilePath,
-                                     value: InstantMillis) {
-        Files.setLastModifiedTime(toPath(path), FileTime.fromMillis(value))
+                                     value: InstantNanos) {
+        Files.setLastModifiedTime(toPath(path),
+                FileTime.fromMillis(value.millis.toLongClamped()))
     }
 
-    override fun getLastModifiedTime(path: FilePath): InstantMillis {
-        return Files.getLastModifiedTime(toPath(path)).toMillis()
+    override fun getLastModifiedTime(path: FilePath): InstantNanos {
+        // TODO: Add .fromMillis function
+        return Instant.fromMillis(
+                Files.getLastModifiedTime(toPath(path)).toMillis())
     }
 
     private data class FilePathImpl(val path: Path) : FilePath {

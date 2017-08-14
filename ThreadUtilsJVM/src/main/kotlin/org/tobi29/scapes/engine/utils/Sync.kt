@@ -46,7 +46,7 @@ class Sync(private var currentTPS: Double,
      * This method should be called right before the first iteration starts
      */
     fun init() {
-        sync = systemClock.timeNanos()
+        sync = steadyClock.timeSteadyNanos()
         lastSync = sync
     }
 
@@ -121,7 +121,7 @@ class Sync(private var currentTPS: Double,
      * @see .tick
      */
     fun cap(park: (Long) -> Unit = ::sleepNanos) {
-        val current = systemClock.timeNanos()
+        val current = steadyClock.timeSteadyNanos()
         diff = current - lastSync
         sync += maxDiff
         val sleep = sync - current
@@ -138,7 +138,7 @@ class Sync(private var currentTPS: Double,
         } else {
             park(sleep)
         }
-        val newSync = systemClock.timeNanos()
+        val newSync = steadyClock.timeSteadyNanos()
         tickDiff = newSync - lastSync
         currentTPS = 1000000000.0 / tickDiff
         val delta = tickDiff / 1000000000.0
@@ -156,7 +156,7 @@ class Sync(private var currentTPS: Double,
      * @see .cap
      */
     fun tick() {
-        val newSync = systemClock.timeNanos()
+        val newSync = steadyClock.timeSteadyNanos()
         diff = newSync - lastSync
         tickDiff = diff
         currentTPS = 1000000000.0 / tickDiff

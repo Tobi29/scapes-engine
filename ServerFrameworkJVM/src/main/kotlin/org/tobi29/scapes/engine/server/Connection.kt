@@ -42,7 +42,7 @@ class Connection(private val requestClose: AtomicBoolean,
         if (this.timeout == null) {
             return
         }
-        val nextTime = systemClock() + timeout
+        val nextTime = systemClock.timeMillis() + timeout
         while (true) {
             val prev = this.timeout.get()
             val next = max(prev, nextTime)

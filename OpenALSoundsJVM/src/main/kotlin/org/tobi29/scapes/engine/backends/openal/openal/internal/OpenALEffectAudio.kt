@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distance
-import org.tobi29.scapes.engine.utils.systemClock
+import org.tobi29.scapes.engine.utils.steadyClock
 
 internal class OpenALEffectAudio(private val asset: ReadSource,
                                  private val channel: String,
@@ -39,7 +39,7 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
                       listenerPosition: Vector3d,
                       delta: Double): Boolean {
         if (!hasPosition || run {
-            val diff = (systemClock.timeNanos() - time) / 1000000000.0
+            val diff = (steadyClock.timeSteadyNanos() - time) / 1000000000.0
             val delay = listenerPosition.distance(
                     pos) / sounds.speedOfSound - delta * 0.5
             diff >= delay

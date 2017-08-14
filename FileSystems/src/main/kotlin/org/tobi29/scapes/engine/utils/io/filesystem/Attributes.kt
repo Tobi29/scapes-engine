@@ -1,5 +1,7 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
+import org.tobi29.scapes.engine.utils.InstantMillis
+
 interface FileMetadata
 
 interface FileAttribute : FileMetadata
@@ -11,6 +13,8 @@ data class FileBasicMetadata(val type: FileType,
 data class FileUID(val high: Long,
                    val low: Long)
 
+data class FileModificationTime(val time: InstantMillis) : FileAttribute
+
 data class FileVisibility(val hidden: Boolean) : FileAttribute
 
 data class UnixPermissionMode(val owner: UnixPermissionModeLevel,
@@ -21,8 +25,9 @@ data class UnixPermissionMode(val owner: UnixPermissionModeLevel,
             ((value ushr 3) and 7).toUnixPermissionModeLevel(),
             ((value ushr 0) and 7).toUnixPermissionModeLevel())
 
-    val value: Int get() =
-    (((owner.value shl 3) or group.value) shl 3) or others.value
+    val value: Int
+        get() =
+            (((owner.value shl 3) or group.value) shl 3) or others.value
 }
 
 enum class FileType(val value: Int) {

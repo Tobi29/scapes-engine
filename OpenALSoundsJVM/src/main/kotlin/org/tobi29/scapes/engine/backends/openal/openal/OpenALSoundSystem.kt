@@ -33,7 +33,7 @@ import org.tobi29.scapes.engine.utils.math.threadLocalRandom
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import org.tobi29.scapes.engine.utils.systemClock
+import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 
@@ -160,7 +160,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                            gain: Double,
                            referenceDistance: Double,
                            rolloffFactor: Double) {
-        val time = systemClock.timeNanos()
+        val time = steadyClock.timeSteadyNanos()
         queue {
             audios.add(OpenALEffectAudio(asset, channel, Vector3d.ZERO,
                     Vector3d.ZERO, pitch, gain, referenceDistance,
@@ -176,7 +176,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                            gain: Double,
                            referenceDistance: Double,
                            rolloffFactor: Double) {
-        val time = systemClock.timeNanos()
+        val time = steadyClock.timeSteadyNanos()
         queue {
             audios.add(OpenALEffectAudio(asset, channel, position, velocity,
                     pitch, gain, referenceDistance, rolloffFactor, true, time))

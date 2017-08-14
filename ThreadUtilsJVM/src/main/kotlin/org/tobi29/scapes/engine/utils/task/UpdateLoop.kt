@@ -29,7 +29,7 @@ impl class UpdateLoop(impl val executor: TaskExecutor,
     private val tasks = ConcurrentSkipListSet<TaskWorker>()
 
     impl fun tick(): Long {
-        val time = systemClock()
+        val time = systemClock.timeMillis()
         var earliestTask = Long.MAX_VALUE
         val iterator = tasks.iterator()
         while (iterator.hasNext()) {
@@ -71,7 +71,7 @@ impl class UpdateLoop(impl val executor: TaskExecutor,
                 iterator.remove()
             }
         }
-        return max(earliestTask - systemClock(), 1)
+        return max(earliestTask - systemClock.timeMillis(), 1)
     }
 
     impl fun addTaskOnce(task: () -> Unit,
@@ -88,7 +88,7 @@ impl class UpdateLoop(impl val executor: TaskExecutor,
                      name: String,
                      delay: Long,
                      async: Boolean) {
-        val time = delay + systemClock()
+        val time = delay + systemClock.timeMillis()
         tasks.add(TaskWorker(task, name, time, async))
         wakeup?.wake()
     }

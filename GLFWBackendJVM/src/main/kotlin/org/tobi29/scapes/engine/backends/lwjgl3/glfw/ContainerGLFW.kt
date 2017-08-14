@@ -208,7 +208,7 @@ class ContainerGLFW(engine: ScapesEngine,
         }
         sync.init()
         while (running) {
-            val start = systemClock.timeNanos()
+            val start = steadyClock.timeSteadyNanos()
             val vSync = engine.config.vSync
             while (!tasks.isEmpty()) {
                 tasks.poll()?.invoke()
@@ -248,7 +248,7 @@ class ContainerGLFW(engine: ScapesEngine,
             if (plebSync > 0) {
                 sleepNanos(plebSync)
             }
-            val time = systemClock.timeNanos()
+            val time = steadyClock.timeSteadyNanos()
             GLFW.glfwPollEvents()
             controllers.poll()
             profilerSection("Render") {
@@ -285,8 +285,8 @@ class ContainerGLFW(engine: ScapesEngine,
             }
             if (vSync && plebSyncEnable) {
                 val maxDiff = 1000000000L / refreshRate
-                val latency = systemClock.timeNanos() - time
-                val delta = systemClock.timeNanos() - start
+                val latency = steadyClock.timeSteadyNanos() - time
+                val delta = steadyClock.timeSteadyNanos() - start
                 val targetDelta = max(maxDiff - latency - PLEB_SYNC_GAP, 0L)
                 val diff = delta - targetDelta
                 plebSync = clamp(plebSync + diff, 0L, targetDelta)

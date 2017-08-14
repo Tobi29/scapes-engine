@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.tobi29.scapes.engine.utils.InstantMillis
+import org.tobi29.scapes.engine.utils.InstantNanos
 import org.tobi29.scapes.engine.utils.UnsupportedJVMException
 import org.tobi29.scapes.engine.utils.io.filesystem.spi.FileSystemProvider
 import java.io.File
@@ -121,11 +121,11 @@ impl fun directoryStream(path: FilePath): DirectoryStream {
 
 // TODO: @Throws(IOException::class)
 fun setLastModifiedTime(path: FilePath,
-                        value: InstantMillis) {
+                        value: InstantNanos) {
     IMPL.setLastModifiedTime(path, value)
 }
 
 // TODO: @Throws(IOException::class)
-fun getLastModifiedTime(path: FilePath): InstantMillis {
+fun getLastModifiedTime(path: FilePath): InstantNanos {
     return IMPL.getLastModifiedTime(path)
 }

@@ -20,8 +20,9 @@ import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
-import org.tobi29.scapes.engine.utils.systemClock
+import org.tobi29.scapes.engine.utils.steadyClock
 import java.util.*
+import kotlin.collections.set
 
 impl class Profiler {
     private val INSTANCE = ThreadLocal {
@@ -45,7 +46,7 @@ impl class ProfilerHandle internal constructor(
 
     impl fun enterNode(name: String) {
         node = node.children.computeAbsent(name) { Node(it, node) }
-        node.lastEnter = systemClock.timeNanos()
+        node.lastEnter = steadyClock.timeSteadyNanos()
         dispatchers.forEach { it.enterNode(name) }
     }
 
@@ -53,7 +54,7 @@ impl class ProfilerHandle internal constructor(
         val parentNode = node.parent ?: throw IllegalStateException(
                 "Profiler stack popped on root node")
         assert { name == node.name() }
-        node.timeNanos += systemClock.timeNanos() - node.lastEnter
+        node.timeNanos += steadyClock.timeSteadyNanos() - node.lastEnter
         dispatchers.forEach { it.exitNode(name) }
         node = parentNode
     }

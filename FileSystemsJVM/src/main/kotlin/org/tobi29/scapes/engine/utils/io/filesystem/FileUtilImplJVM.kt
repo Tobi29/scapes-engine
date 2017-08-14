@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.tobi29.scapes.engine.utils.InstantMillis
+import org.tobi29.scapes.engine.utils.InstantNanos
 import java.io.File
 
 interface FileUtilImpl {
@@ -66,7 +66,7 @@ interface FileUtilImpl {
     fun directoryStream(path: FilePath): DirectoryStream
 
     fun setLastModifiedTime(path: FilePath,
-                            value: InstantMillis)
+                            value: InstantNanos)
 
-    fun getLastModifiedTime(path: FilePath): InstantMillis
+    fun getLastModifiedTime(path: FilePath): InstantNanos
 }

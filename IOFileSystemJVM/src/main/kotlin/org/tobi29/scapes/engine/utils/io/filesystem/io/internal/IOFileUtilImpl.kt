@@ -16,11 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem.io.internal
 
-import org.tobi29.scapes.engine.utils.InstantMillis
-import org.tobi29.scapes.engine.utils.filterMap
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.*
-import org.tobi29.scapes.engine.utils.toArray
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
@@ -220,12 +218,14 @@ internal object IOFileUtilImpl : FileUtilImpl {
     }
 
     override fun setLastModifiedTime(path: FilePath,
-                                     value: InstantMillis) {
-        path.toFile().setLastModified(value)
+                                     value: InstantNanos) {
+        // TODO: Add .millis property
+        path.toFile().setLastModified(value.millis.toLongClamped())
     }
 
-    override fun getLastModifiedTime(path: FilePath): InstantMillis {
-        return path.toFile().lastModified()
+    override fun getLastModifiedTime(path: FilePath): InstantNanos {
+        // TODO: Add .fromMillis function
+        return Instant.fromMillis(path.toFile().lastModified())
     }
 
     private data class FilePathImpl(val file: File) : FilePath {

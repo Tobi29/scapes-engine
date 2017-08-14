@@ -321,9 +321,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     private suspend fun open(connection: Connection) {
         try {
-            pingWait = systemClock() + 1000
+            pingWait = systemClock.timeMillis() + 1000
             while (!connection.shouldClose) {
-                val currentTime = systemClock()
+                val currentTime = systemClock.timeMillis()
                 if (pingWait < currentTime) {
                     pingWait = currentTime + 1000
                     TagMap { this["Ping"] = currentTime.toTag() }.writeBinary(
@@ -354,7 +354,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                         channel.queueBundle()
                     }
                     tagStructure["Pong"]?.toLong()?.let {
-                        val ping = systemClock()- it
+                        val ping = systemClock.timeMillis() - it
                         this.ping = ping
                         connection.increaseTimeout(10000 - ping)
                     }

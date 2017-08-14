@@ -16,12 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-import org.tobi29.scapes.engine.utils.Algorithm
-import org.tobi29.scapes.engine.utils.InstantMillis
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.systemClock
-import org.tobi29.scapes.engine.utils.toHexadecimal
 
 object FileCache : KLogging() {
     fun store(root: FilePath,
@@ -83,7 +80,7 @@ object FileCache : KLogging() {
     }
 
     fun check(root: FilePath,
-              time: InstantMillis = 16L * 24L * 60L * 60L * 1000L) {
+              time: DurationNanos = (16L * 24L * 60L * 60L * 1000L).toInt128()) {
         val currentTime = systemClock() - time
         list(root) {
             filter { isRegularFile(it) }.filter(::isNotHidden).filter { file ->
