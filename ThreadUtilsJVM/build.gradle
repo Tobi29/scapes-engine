@@ -20,5 +20,5 @@ implementCommon(project(":ThreadUtils"))
 
 dependencies {
     compile project(":MathUtilsJVM")
-    compile project(":KotlinxCoroutinesCoreJVM")
+    compile rootProject.ext.kotlinxCoroutinesCoreJVM
 }

@@ -67,6 +67,7 @@ task wrapper(type: Wrapper) {
 
 ext {
     kotlinVersion = "1.1.4-eap-76"
+    kotlinxCoroutinesVersion = "0e62b7e3de"
     slf4jVersion = "1.7.25"
     spekVersion = "1.1.2"
     junitJupiterVersion = "5.0.0-M4"
@@ -91,6 +92,8 @@ ext {
     kotlinSTDJVM = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
     kotlinTest = "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
+    kotlinxCoroutinesCore = "com.github.Tobi29.kotlinx~coroutines:kotlinx-coroutines-core-common:$kotlinxCoroutinesVersion"
+    kotlinxCoroutinesCoreJVM = "com.github.Tobi29.kotlinx~coroutines:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
     mariaDBJavaClient =
             "org.mariadb.jdbc:mariadb-java-client:$mariadbJavaClientVersion"
