@@ -225,6 +225,5 @@ impl class ScapesEngine(
 
     impl companion object : KLogging() {
         impl val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<MutableTagMap>()
-        impl val GAME_COMPONENT = ComponentTypeRegistered<Game>()
     }
 }

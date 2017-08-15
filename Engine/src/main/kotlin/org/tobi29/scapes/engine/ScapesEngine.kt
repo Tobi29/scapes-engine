@@ -69,7 +69,6 @@ header class ScapesEngine(
 
     header companion object : KLogging {
         val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<MutableTagMap>
-        val GAME_COMPONENT: ComponentTypeRegistered<Game>
     }
 }
 
