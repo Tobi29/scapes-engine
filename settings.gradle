@@ -30,6 +30,8 @@ include "GraphicsUtils"
 include "GraphicsUtilsJVM"
 include "ThreadUtils"
 include "ThreadUtilsJVM"
+include "ChronoUtils"
+include "ChronoUtilsJVM"
 include "ArgumentParser"
 include "ArgumentParserJVM"
 
