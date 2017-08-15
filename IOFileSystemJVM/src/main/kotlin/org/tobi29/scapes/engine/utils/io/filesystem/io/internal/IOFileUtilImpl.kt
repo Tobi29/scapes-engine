@@ -154,16 +154,6 @@ internal object IOFileUtilImpl : FileUtilImpl {
             metadata(path, *options).asSequence()
                     .filterMap<FileAttribute>().toArray()
 
-    override fun exists(path: FilePath,
-                        vararg options: LinkOption): Boolean {
-        val nofollow = options.contains(LINK_NOFOLLOW)
-        if (nofollow) {
-            throw UnsupportedOperationException(
-                    "LINK_NOFOLLOW is not supported on java.io")
-        }
-        return path.toFile().exists()
-    }
-
     override fun createTempFile(prefix: String,
                                 suffix: String,
                                 vararg attributes: FileAttribute): FilePath {
@@ -219,12 +209,10 @@ internal object IOFileUtilImpl : FileUtilImpl {
 
     override fun setLastModifiedTime(path: FilePath,
                                      value: InstantNanos) {
-        // TODO: Add .millis property
         path.toFile().setLastModified(value.millis.toLongClamped())
     }
 
     override fun getLastModifiedTime(path: FilePath): InstantNanos {
-        // TODO: Add .fromMillis function
         return Instant.fromMillis(path.toFile().lastModified())
     }
 

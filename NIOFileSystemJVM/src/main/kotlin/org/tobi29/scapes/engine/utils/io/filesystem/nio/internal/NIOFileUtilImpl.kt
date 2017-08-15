@@ -113,11 +113,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             metadata(path, *options).asSequence()
                     .filterMap<FileAttribute>().toArray()
 
-    override fun exists(path: FilePath,
-                        vararg options: LinkOption): Boolean {
-        return Files.exists(toPath(path), *options.toNIO())
-    }
-
     override fun createTempFile(prefix: String,
                                 suffix: String,
                                 vararg attributes: FileAttribute): FilePath {
@@ -154,7 +149,6 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     override fun getLastModifiedTime(path: FilePath): InstantNanos {
-        // TODO: Add .fromMillis function
         return Instant.fromMillis(
                 Files.getLastModifiedTime(toPath(path)).toMillis())
     }

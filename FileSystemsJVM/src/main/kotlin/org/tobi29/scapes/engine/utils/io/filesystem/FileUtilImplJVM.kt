@@ -47,9 +47,6 @@ interface FileUtilImpl {
     fun attributes(path: FilePath,
                    vararg options: LinkOption): Array<FileAttribute>
 
-    fun exists(path: FilePath,
-               vararg options: LinkOption): Boolean
-
     fun createTempFile(prefix: String,
                        suffix: String,
                        vararg attributes: FileAttribute): FilePath
