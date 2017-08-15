@@ -103,3 +103,16 @@ inline fun <T> tag(
                                   value: T) =
                     setTag(key, { doAccess() }, unmap(value))
         }
+
+fun MutableTagMap.tagMap(key: String) =
+        object : DelegatedMutableProperty<Any?, MutableTagMap> {
+            override fun getValue(thisRef: Any?,
+                                  property: KProperty<*>) =
+                    mapMut(key)
+
+            override fun setValue(thisRef: Any?,
+                                  property: KProperty<*>,
+                                  value: MutableTagMap) {
+                this@tagMap[key] = value
+            }
+        }
