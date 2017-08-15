@@ -30,15 +30,13 @@ import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
-import org.tobi29.scapes.engine.utils.tag.mapMut
 import org.tobi29.scapes.engine.utils.task.*
 
 impl class ScapesEngine(
-        game: (ScapesEngine) -> Game,
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         impl val taskExecutor: TaskExecutor,
-        impl val configMap: MutableTagMap
+        configMap: MutableTagMap
 ) : ComponentHolder<Any>, ByteBufferProvider {
     impl override val componentStorage = ComponentStorage<Any>()
     private val runtime = Runtime.getRuntime()
@@ -53,7 +51,6 @@ impl class ScapesEngine(
     impl val files = FileSystemContainer()
     impl val events = newEventDispatcher()
     impl val resources = ResourceLoader(taskExecutor)
-    impl val config = ScapesEngineConfig(configMap.mapMut("Engine"))
     impl val container: Container
     impl val graphics: GraphicsSystem
     impl val sounds: SoundSystem
@@ -65,19 +62,16 @@ impl class ScapesEngine(
     impl val debugValues: GuiWidgetDebugValues
     impl val profiler: GuiWidgetProfiler
     impl val performance: GuiWidgetPerformance
-    impl val game: Game
 
     init {
+        registerComponent(CONFIG_MAP_COMPONENT, configMap)
+
         checkSystem()
-        logger.info { "Starting Scapes-Engine: $this (Game: $game)" }
+        logger.info { "Starting Scapes-Engine: $this" }
 
         logger.info { "Creating backend" }
         container = backend(this)
         sounds = container.sounds
-
-        logger.info { "Initializing game" }
-        this.game = game(this)
-        registerComponent(GAME_COMPONENT, this.game)
 
         logger.info { "Setting up GUI" }
         guiStyle = defaultGuiStyle(this)
@@ -213,7 +207,8 @@ impl class ScapesEngine(
             guiStack.step(delta)
             guiController.update(delta)
         }
-        val state = currentState ?: return config.fps
+        val state = currentState
+                ?: return this[ScapesEngineConfig.COMPONENT].fps
         profilerSection("Container") {
             container.update(delta)
         }
@@ -228,7 +223,8 @@ impl class ScapesEngine(
         return state.tps
     }
 
-    companion object : KLogging() {
-        private val GAME_COMPONENT = ComponentTypeRegistered<Game>()
+    impl companion object : KLogging() {
+        impl val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<MutableTagMap>()
+        impl val GAME_COMPONENT = ComponentTypeRegistered<Game>()
     }
 }

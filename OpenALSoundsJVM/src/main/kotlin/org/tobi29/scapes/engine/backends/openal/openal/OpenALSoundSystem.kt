@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.backends.openal.openal
 
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.ScapesEngineConfig
 import org.tobi29.scapes.engine.backends.openal.openal.internal.*
 import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
@@ -38,6 +39,7 @@ import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.task.Joiner
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.Timer
+import org.tobi29.scapes.engine.volume
 
 class OpenALSoundSystem(override val engine: ScapesEngine,
                         openAL: OpenAL,
@@ -215,7 +217,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     internal fun volume(channel: String): Double {
-        return engine.config.volume(channel)
+        return engine[ScapesEngineConfig.COMPONENT].volume(channel)
     }
 
     internal fun playSound(openAL: OpenAL,

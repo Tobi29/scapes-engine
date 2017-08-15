@@ -22,8 +22,7 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
-import org.tobi29.scapes.engine.Container
-import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.*
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
 import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
@@ -44,6 +43,7 @@ import org.tobi29.scapes.engine.utils.tag.toMap
 import org.tobi29.scapes.engine.utils.task.Timer
 
 class ContainerGLFW(engine: ScapesEngine,
+                    private val title: String,
                     private val emulateTouch: Boolean = false,
                     private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
                     useGLES: Boolean = false) : ContainerLWJGL3(engine,
@@ -212,7 +212,8 @@ class ContainerGLFW(engine: ScapesEngine,
         var tickDiff = 0L
         while (running) {
             val start = steadyClock.timeSteadyNanos()
-            val vSync = engine.config.vSync
+            val engineConfig = engine[ScapesEngineConfig.COMPONENT]
+            val vSync = engineConfig.vSync
             while (!tasks.isEmpty()) {
                 tasks.poll()?.invoke()
             }
@@ -223,8 +224,8 @@ class ContainerGLFW(engine: ScapesEngine,
                 if (window != 0L) {
                     GLFW.glfwDestroyWindow(window)
                 }
-                window = initWindow(engine, engine.config.fullscreen,
-                        engine.config.vSync, useGLES, windowSizeFun,
+                window = initWindow(engine, title, engineConfig.fullscreen,
+                        engineConfig.vSync, useGLES, windowSizeFun,
                         windowCloseFun, windowFocusFun, frameBufferSizeFun,
                         keyFun, charFun, mouseButtonFun, cursorPosFun,
                         scrollFun)
@@ -280,7 +281,7 @@ class ContainerGLFW(engine: ScapesEngine,
             if (vSync) {
                 tickDiff = timer.tick()
             } else {
-                tickDiff = timer.cap(Timer.toDiff(engine.config.fps),
+                tickDiff = timer.cap(Timer.toDiff(engineConfig.fps),
                         ::sleepNanos)
             }
             GLFW.glfwSwapBuffers(window)
@@ -365,6 +366,7 @@ class ContainerGLFW(engine: ScapesEngine,
         }
 
         private fun initWindow(engine: ScapesEngine,
+                               title: String,
                                fullscreen: Boolean,
                                vSync: Boolean,
                                useGLES: Boolean,
@@ -380,7 +382,6 @@ class ContainerGLFW(engine: ScapesEngine,
             val stack = MemoryStack.stackGet()
             stack.push {
                 logger.info { "Creating GLFW window..." }
-                val title = engine.game.name
                 val monitor = GLFW.glfwGetPrimaryMonitor()
                 val videoMode = GLFW.glfwGetVideoMode(monitor)
                 val monitorWidth = videoMode.width()
@@ -401,7 +402,7 @@ class ContainerGLFW(engine: ScapesEngine,
                             monitorWidth, monitorHeight)
                     GLFW.glfwMakeContextCurrent(window)
                     GL.createCapabilities()
-                    val tagMap = engine.configMap["Compatibility"]?.toMap()
+                    val tagMap = engine[ScapesEngine.CONFIG_MAP_COMPONENT]["Compatibility"]?.toMap()
                     workaroundLegacyProfile(tagMap)?.let {
                         logger.warn { "Detected problem with using a core profile on this driver: $it" }
                         logger.warn { "Recreating window with legacy context..." }

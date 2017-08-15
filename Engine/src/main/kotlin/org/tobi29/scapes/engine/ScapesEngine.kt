@@ -23,19 +23,16 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.ComponentHolder
-import org.tobi29.scapes.engine.utils.ComponentRegistered
-import org.tobi29.scapes.engine.utils.ComponentStorage
-import org.tobi29.scapes.engine.utils.EventDispatcher
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.UpdateLoop
 
 header class ScapesEngine(
-        game: (ScapesEngine) -> Game,
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         taskExecutor: TaskExecutor,
@@ -43,12 +40,10 @@ header class ScapesEngine(
 ) : ComponentHolder<Any>, ByteBufferProvider {
     override val componentStorage: ComponentStorage<Any>
     val taskExecutor: TaskExecutor
-    val configMap: MutableTagMap
     val loop: UpdateLoop
     val files: FileSystemContainer
     val events: EventDispatcher
     val resources: ResourceLoader
-    val config: ScapesEngineConfig
     val container: Container
     val graphics: GraphicsSystem
     val sounds: SoundSystem
@@ -60,7 +55,6 @@ header class ScapesEngine(
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
-    val game: Game
     val state: GameState
 
     fun switchState(state: GameState)
@@ -72,6 +66,11 @@ header class ScapesEngine(
 
     override fun allocate(capacity: Int): ByteBuffer
     override fun reallocate(buffer: ByteBuffer): ByteBuffer
+
+    header companion object : KLogging {
+        val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<MutableTagMap>
+        val GAME_COMPONENT: ComponentTypeRegistered<Game>
+    }
 }
 
 interface ComponentLifecycle : ComponentRegistered {
