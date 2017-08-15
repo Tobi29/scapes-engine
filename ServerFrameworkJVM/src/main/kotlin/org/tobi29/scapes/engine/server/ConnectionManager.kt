@@ -38,7 +38,7 @@ class ConnectionManager(
         val taskExecutor: TaskExecutor,
         private val maxWorkerSleep: Long = 1000) {
     private val workers = ArrayList<ConnectionWorker>()
-    private val joiners = ArrayList<Joiner>()
+    private val joiners = ConcurrentLinkedQueue<Joiner>()
 
     /**
      * Starts a specified number of threads for processing connections
@@ -111,7 +111,9 @@ class ConnectionManager(
      * Stops all worker threads and blocks until they shut down
      */
     fun stop() {
-        Joiner(joiners).join()
+        val list = ArrayList<Joiner>()
+        while (joiners.isEmpty()) joiners.poll()?.let { list.add(it) }
+        Joiner(list).join()
         logger.info { "Closed connection workers" }
     }
 
