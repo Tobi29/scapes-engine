@@ -143,6 +143,9 @@ internal object IOFileUtilImpl : FileUtilImpl {
                     "LINK_NOFOLLOW is not supported on java.io")
         }
         val file = path.toFile()
+        if (!file.exists()) {
+            throw NoSuchFileException(file)
+        }
         list.add(FileBasicMetadata(file.fileType(), file.length(),
                 file.canonicalPath))
         list.add(FileVisibility(file.isHidden))
