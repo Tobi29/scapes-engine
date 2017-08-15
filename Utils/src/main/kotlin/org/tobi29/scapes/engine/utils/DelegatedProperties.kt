@@ -148,3 +148,33 @@ class MutableLazy<T> : Lazy<T> {
 fun <T> mutableLazy(initializer: () -> T) = MutableLazy(initializer)
 
 fun <T> mutableLazy(value: T) = MutableLazy(value)
+
+inline fun <R1, R2, V> access(property: DelegatedMutableProperty<R2, V>,
+                              crossinline map: R1.() -> R2) = property.let { p ->
+    object : DelegatedMutableProperty<R1, V> {
+        private fun m(thisRef: R1) = map(thisRef)
+
+        override fun getValue(thisRef: R1,
+                              property: KProperty<*>) =
+                p.getValue(m(thisRef), property)
+
+        override fun setValue(thisRef: R1,
+                              property: KProperty<*>,
+                              value: V) {
+            p.setValue(m(thisRef), property, value)
+        }
+    }
+}
+
+fun <R, V> access(accessor: R.() -> DelegatedMutableProperty<Any?, V>) =
+        object : DelegatedMutableProperty<R, V> {
+            override fun getValue(thisRef: R,
+                                  property: KProperty<*>) =
+                    accessor(thisRef).getValue(thisRef, property)
+
+            override fun setValue(thisRef: R,
+                                  property: KProperty<*>,
+                                  value: V) {
+                accessor(thisRef).setValue(thisRef, property, value)
+            }
+        }
