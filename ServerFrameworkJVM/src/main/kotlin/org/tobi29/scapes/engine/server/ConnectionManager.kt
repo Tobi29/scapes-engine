@@ -17,6 +17,8 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
+import org.tobi29.scapes.engine.utils.ComponentRegistered
+import org.tobi29.scapes.engine.utils.ComponentTypeRegistered
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -36,7 +38,7 @@ class ConnectionManager(
          * The [TaskExecutor] to start threads with
          */
         val taskExecutor: TaskExecutor,
-        private val maxWorkerSleep: Long = 1000) {
+        private val maxWorkerSleep: Long = 1000) : ComponentRegistered {
     private val workers = ArrayList<ConnectionWorker>()
     private val joiners = ConcurrentLinkedQueue<Joiner>()
 
@@ -110,12 +112,14 @@ class ConnectionManager(
     /**
      * Stops all worker threads and blocks until they shut down
      */
-    fun stop() {
-        val list = ArrayList<Joiner>()
-        while (joiners.isEmpty()) joiners.poll()?.let { list.add(it) }
-        Joiner(list).join()
+    override fun dispose() {
+        val wait = ArrayList<Joiner>()
+        while (joiners.isEmpty()) joiners.poll()?.let { wait.add(it) }
+        Joiner(wait).join()
         logger.info { "Closed connection workers" }
     }
 
-    companion object : KLogging()
+    companion object : KLogging() {
+        val COMPONENT = ComponentTypeRegistered<ConnectionManager>()
+    }
 }
