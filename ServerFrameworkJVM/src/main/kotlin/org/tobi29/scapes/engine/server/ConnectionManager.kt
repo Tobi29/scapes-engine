@@ -114,7 +114,7 @@ class ConnectionManager(
      */
     override fun dispose() {
         val wait = ArrayList<Joiner>()
-        while (joiners.isEmpty()) joiners.poll()?.let { wait.add(it) }
+        while (joiners.isNotEmpty()) joiners.poll()?.let { wait.add(it) }
         Joiner(wait).join()
         logger.info { "Closed connection workers" }
     }
