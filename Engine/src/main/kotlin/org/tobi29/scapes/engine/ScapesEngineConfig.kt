@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.tag.*
 
 class ScapesEngineConfig(val configMap: MutableTagMap) {
     companion object {
-        val COMPONENT = ComponentType.of<Any, ScapesEngineConfig> {
+        val COMPONENT = ComponentType.of<ScapesEngine, ScapesEngineConfig, Any> {
             ScapesEngineConfig(it[ScapesEngine.CONFIG_MAP_COMPONENT])
         }
     }
@@ -54,6 +54,6 @@ fun ScapesEngineConfig.volume(channel: String) = configMap.mapMut(
 
 
 fun ScapesEngineConfig.setVolume(channel: String,
-              value: Double) {
+                                 value: Double) {
     configMap.mapMut("Volumes")[channel] = value.toTag()
 }

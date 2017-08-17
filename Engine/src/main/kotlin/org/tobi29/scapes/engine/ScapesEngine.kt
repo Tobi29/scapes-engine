@@ -38,7 +38,7 @@ header class ScapesEngine(
         taskExecutor: TaskExecutor,
         configMap: MutableTagMap
 ) : ComponentHolder<Any>, ByteBufferProvider {
-    override val componentStorage: ComponentStorage<Any>
+    override val componentStorage: ComponentStorage<ScapesEngine, Any>
     val taskExecutor: TaskExecutor
     val loop: UpdateLoop
     val files: FileSystemContainer
@@ -68,7 +68,7 @@ header class ScapesEngine(
     override fun reallocate(buffer: ByteBuffer): ByteBuffer
 
     header companion object : KLogging {
-        val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<MutableTagMap>
+        val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>
     }
 }
 

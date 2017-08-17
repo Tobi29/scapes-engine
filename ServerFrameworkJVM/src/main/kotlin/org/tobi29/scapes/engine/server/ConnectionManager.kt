@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
 import org.tobi29.scapes.engine.utils.ComponentRegistered
-import org.tobi29.scapes.engine.utils.ComponentTypeRegistered
+import org.tobi29.scapes.engine.utils.ComponentTypeRegisteredUniversal
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -120,6 +120,6 @@ class ConnectionManager(
     }
 
     companion object : KLogging() {
-        val COMPONENT = ComponentTypeRegistered<ConnectionManager>()
+        val COMPONENT = ComponentTypeRegisteredUniversal<ConnectionManager>()
     }
 }

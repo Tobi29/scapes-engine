@@ -38,7 +38,7 @@ impl class ScapesEngine(
         impl val taskExecutor: TaskExecutor,
         configMap: MutableTagMap
 ) : ComponentHolder<Any>, ByteBufferProvider {
-    impl override val componentStorage = ComponentStorage<Any>()
+    impl override val componentStorage = ComponentStorage<ScapesEngine, Any>()
     private val runtime = Runtime.getRuntime()
     private val usedMemoryDebug: GuiWidgetDebugValues.Element
     private val heapMemoryDebug: GuiWidgetDebugValues.Element
@@ -224,6 +224,6 @@ impl class ScapesEngine(
     }
 
     impl companion object : KLogging() {
-        impl val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<MutableTagMap>()
+        impl val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
     }
 }
