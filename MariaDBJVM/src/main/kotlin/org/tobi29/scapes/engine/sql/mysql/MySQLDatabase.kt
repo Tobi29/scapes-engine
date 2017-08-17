@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.sql.mysql
 
 import org.tobi29.scapes.engine.sql.*
+import org.tobi29.scapes.engine.utils.checkPermission
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.use
 import java.security.AccessController
@@ -29,8 +30,7 @@ import java.sql.SQLException
 
 class MySQLDatabase(private val connection: Connection) : SQLDatabase {
     init {
-        val security = System.getSecurityManager()
-        security?.checkPermission(RuntimePermission("scapes.mysql"))
+        checkPermission("scapes.mysql")
     }
 
     override fun createTable(name: String,

@@ -23,14 +23,14 @@ import org.tmatesoft.sqljet.core.schema.SqlJetConflictAction
 import org.tmatesoft.sqljet.core.table.ISqlJetCursor
 import org.tmatesoft.sqljet.core.table.SqlJetDb
 import org.tobi29.scapes.engine.sql.*
+import org.tobi29.scapes.engine.utils.checkPermission
 import org.tobi29.scapes.engine.utils.io.IOException
 import java.security.AccessController
 import java.security.PrivilegedAction
 
 class SQLJetDatabase(private val connection: SqlJetDb) : SQLDatabase {
     init {
-        val security = System.getSecurityManager()
-        security?.checkPermission(RuntimePermission("scapes.sqljet"))
+        checkPermission("scapes.sqljet")
     }
 
     override fun createTable(name: String,
