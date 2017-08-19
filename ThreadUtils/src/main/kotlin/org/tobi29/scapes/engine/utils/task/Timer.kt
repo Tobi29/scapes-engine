@@ -92,3 +92,25 @@ class Timer(val clock: SteadyClock = steadyClock) {
         fun toDelta(diff: Long) = diff / 1000000000.0
     }
 }
+
+inline fun Timer.loop(maxDiff: Long,
+                      park: (Long) -> Unit,
+                      step: (Double) -> Boolean) =
+        loop(maxDiff, park, 0L, {}, step)
+
+inline fun Timer.loop(maxDiff: Long,
+                      park: (Long) -> Unit,
+                      minSkipDelay: Long,
+                      step: (Double) -> Boolean) =
+        loop(maxDiff, park, minSkipDelay, {}, step)
+
+inline fun Timer.loop(maxDiff: Long,
+                      park: (Long) -> Unit,
+                      minSkipDelay: Long = 0L,
+                      logSkip: (Long) -> Unit,
+                      step: (Double) -> Boolean) {
+    while (true) {
+        val tickDiff = cap(maxDiff, park, minSkipDelay, logSkip)
+        if (!step(Timer.toDelta(tickDiff))) break
+    }
+}

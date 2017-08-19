@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine
 
+import kotlinx.coroutines.experimental.CancellationException
+import kotlinx.coroutines.experimental.CoroutineDispatcher
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -31,18 +33,16 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.*
+import kotlin.coroutines.experimental.CoroutineContext
 
 impl class ScapesEngine(
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         impl val taskExecutor: TaskExecutor,
         configMap: MutableTagMap
-) : ComponentHolder<Any>, ByteBufferProvider {
-    impl override val componentStorage = ComponentStorage<ScapesEngine, Any>()
-    private val runtime = Runtime.getRuntime()
-    private val usedMemoryDebug: GuiWidgetDebugValues.Element
-    private val heapMemoryDebug: GuiWidgetDebugValues.Element
-    private val maxMemoryDebug: GuiWidgetDebugValues.Element
+) : CoroutineDispatcher(), ComponentHolder<Any>, ByteBufferProvider {
+    impl override val componentStorage = ComponentStorage<Any>()
+    private val queue = TaskQueue<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
     private var joiner: Joiner? = null
@@ -91,17 +91,19 @@ impl class ScapesEngine(
                 ::GuiWidgetPerformance)
         performance.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
-        usedMemoryDebug = debugValues["Runtime-Memory-Used"]
-        heapMemoryDebug = debugValues["Runtime-Memory-Heap"]
-        maxMemoryDebug = debugValues["Runtime-Memory-Max"]
         tpsDebug = debugValues["Engine-Tps"]
         logger.info { "Creating graphics system" }
         graphics = GraphicsSystem(container.gos)
-        logger.info { "Initializing game" }
+        logger.info { "Initializing engine" }
+        registerComponent(DeltaProfilerComponent.COMPONENT,
+                DeltaProfilerComponent(performance))
+        registerComponent(MemoryProfilerComponent.COMPONENT,
+                MemoryProfilerComponent(debugValues))
         logger.info { "Engine created" }
     }
 
     private fun checkSystem() {
+        val runtime = Runtime.getRuntime()
         logger.info {
             "Operating system: ${System.getProperty(
                     "os.name")} ${System.getProperty(
@@ -115,6 +117,17 @@ impl class ScapesEngine(
 
     impl val state
         get() = stateMut ?: throw IllegalStateException("Engine not running")
+
+    impl override fun dispatch(context: CoroutineContext,
+                               block: Runnable) {
+        queue.add {
+            try {
+                block.run()
+            } catch (e: CancellationException) {
+                logger.warn { "Job cancelled: ${e.message}" }
+            }
+        }
+    }
 
     impl fun switchState(state: GameState) {
         newState.set(state)
@@ -199,7 +212,7 @@ impl class ScapesEngine(
         profilerSection("Tasks") {
             loop.tick()
         }
-        profilerSection("Game") {
+        profilerSection("Components") {
             components.asSequence().filterMap<ComponentStep>()
                     .forEach { it.step(delta) }
         }
@@ -215,11 +228,9 @@ impl class ScapesEngine(
         profilerSection("State") {
             state.step(delta)
         }
-        performance.updateTimestamp(delta)
-        usedMemoryDebug.setValue(
-                (runtime.totalMemory() - runtime.freeMemory()) / 1048576)
-        heapMemoryDebug.setValue(runtime.totalMemory() / 1048576)
-        maxMemoryDebug.setValue(runtime.maxMemory() / 1048576)
+        profilerSection("Queue") {
+            queue.processCurrent { it(delta) }
+        }
         return state.tps
     }
 

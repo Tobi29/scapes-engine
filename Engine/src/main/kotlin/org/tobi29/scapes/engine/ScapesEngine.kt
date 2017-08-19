@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine
 
+import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -31,14 +33,15 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.UpdateLoop
+import kotlin.coroutines.experimental.CoroutineContext
 
 header class ScapesEngine(
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         taskExecutor: TaskExecutor,
         configMap: MutableTagMap
-) : ComponentHolder<Any>, ByteBufferProvider {
-    override val componentStorage: ComponentStorage<ScapesEngine, Any>
+) : CoroutineDispatcher, ComponentHolder<Any>, ByteBufferProvider {
+    override val componentStorage: ComponentStorage<Any>
     val taskExecutor: TaskExecutor
     val loop: UpdateLoop
     val files: FileSystemContainer
@@ -56,6 +59,9 @@ header class ScapesEngine(
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
     val state: GameState
+
+    override fun dispatch(context: CoroutineContext,
+                          block: Runnable)
 
     fun switchState(state: GameState)
     fun start()

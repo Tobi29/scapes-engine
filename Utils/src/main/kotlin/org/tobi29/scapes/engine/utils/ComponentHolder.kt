@@ -1,14 +1,15 @@
 package org.tobi29.scapes.engine.utils
 
 interface ComponentHolder<T : Any> {
-    val componentStorage: ComponentStorage<ComponentHolder<T>, T>
+    val componentStorage: ComponentStorage<T>
 
     val components: Collection<T> get() = componentStorage.componentsCollection
 
+    @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> registerComponent(
             type: ComponentTypeRegistered<H, C, T>,
             component: C
-    ): C = componentStorage.registerComponent(type, component)
+    ): C = componentStorage.registerComponent(this as H, type, component)
 
     @Suppress("UNCHECKED_CAST")
     operator fun <H : ComponentHolder<out T>, C : T> get(
@@ -26,24 +27,30 @@ interface ComponentHolder<T : Any> {
     fun clearComponents() = componentStorage.clearComponents()
 }
 
-class ComponentStorage<out H : ComponentHolder<out T>, T : Any> {
-    private val components = ConcurrentHashMap<ComponentType<H, T, T>, T>()
+class ComponentStorage<T : Any>(
+        private val verifyAdd: (ComponentType<*, T, T>) -> Unit = {},
+        private val verifyRemove: (ComponentType<*, T, T>) -> Unit = verifyAdd
+) {
+    private val components = ConcurrentHashMap<ComponentType<*, T, T>, T>()
     internal val componentsCollection = components.values.readOnly()
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> registerComponent(
+            holder: H,
             type: ComponentTypeRegistered<H, C, T>,
             component: C
     ): C {
         type.permission?.let { checkPermission(it) }
+        verifyAdd(type as ComponentType<H, T, T>)
 
         components as ConcurrentHashMap<ComponentType<H, C, T>, C>
 
         if (components.putAbsent(type, component) != null) {
             throw IllegalStateException("Component already registered")
         }
-        if (component is ComponentRegistered) {
-            component.init()
+        if (component is ComponentRegisteredHolder<*>) {
+            component as ComponentRegisteredHolder<H>
+            component.init(holder)
         }
         return component
     }
@@ -57,7 +64,9 @@ class ComponentStorage<out H : ComponentHolder<out T>, T : Any> {
 
         components as ConcurrentHashMap<ComponentType<H, C, T>, C>
 
-        return components.computeAbsent(type) { type.create(holder) }
+        return components.computeAbsent(type) {
+            type.create(holder).also { verifyAdd(type) }
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -76,11 +85,12 @@ class ComponentStorage<out H : ComponentHolder<out T>, T : Any> {
             type: ComponentType<H, C, T>
     ): Boolean {
         type.permission?.let { checkPermission(it) }
+        verifyRemove(type)
 
         components as ConcurrentHashMap<ComponentType<H, C, T>, C>
 
         val component = components.remove(type) ?: return false
-        if (component is ComponentRegistered) {
+        if (component is ComponentRegisteredHolder<*>) {
             component.dispose()
         }
         return true
@@ -116,9 +126,15 @@ class ComponentTypeRegisteredPermission<in H : ComponentHolder<out T>, out C : T
         override val permission: String
 ) : ComponentTypeRegistered<H, C, T>()
 
-interface ComponentRegistered {
-    fun init() {}
+interface ComponentRegisteredHolder<in H : ComponentHolder<out Any>> {
+    fun init(holder: H) {}
     fun dispose() {}
+}
+
+interface ComponentRegistered : ComponentRegisteredHolder<ComponentHolder<out Any>> {
+    fun init() {}
+
+    override fun init(holder: ComponentHolder<out Any>) = init()
 }
 
 typealias ComponentTypeUniversal<C> =
