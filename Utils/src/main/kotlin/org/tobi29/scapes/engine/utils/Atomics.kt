@@ -20,3 +20,35 @@ typealias AtomicBoolean = java.util.concurrent.atomic.AtomicBoolean
 typealias AtomicInteger = java.util.concurrent.atomic.AtomicInteger
 typealias AtomicLong = java.util.concurrent.atomic.AtomicLong
 typealias AtomicReference<T> = java.util.concurrent.atomic.AtomicReference<T>
+
+inline fun AtomicInteger.getAndUpdate(update: (Int) -> Int): Int {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return current
+    }
+}
+
+inline fun AtomicLong.getAndUpdate(update: (Long) -> Long): Long {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return current
+    }
+}
+
+inline fun AtomicInteger.updateAndGet(update: (Int) -> Int): Int {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return new
+    }
+}
+
+inline fun AtomicLong.updateAndGet(update: (Long) -> Long): Long {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return new
+    }
+}
