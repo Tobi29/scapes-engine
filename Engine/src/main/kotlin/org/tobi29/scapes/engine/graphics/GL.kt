@@ -33,6 +33,7 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         private set
     var timestamp = 0L
         private set
+    val graphics: GraphicsSystem get() = engine.graphics
 
     fun reshape(contentWidth: Int,
                 contentHeight: Int) {
@@ -51,13 +52,13 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
     }
 
     fun aspectRatio() =
-            engine.container.run { containerWidth.toDouble() / containerHeight }
+            container.run { containerWidth.toDouble() / containerHeight }
 
     fun contentSpace(): Double {
         return max(contentWidth, contentHeight) / 1920.0
     }
 
-    fun isRenderCall() = engine.container.isRenderCall()
+    fun isRenderCall() = container.isRenderCall()
 
     fun check() {
         assert { isRenderCall() }

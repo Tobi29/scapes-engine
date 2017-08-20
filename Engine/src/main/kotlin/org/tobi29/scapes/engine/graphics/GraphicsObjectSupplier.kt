@@ -16,39 +16,44 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.Expression
 
-interface GraphicsObjectSupplier {
-    val engine: ScapesEngine
-
+interface GraphicsObjectSupplier : ByteBufferProvider {
+    val engine: ScapesEngine get() = container.engine
+    val container: Container
     val vaoTracker: GraphicsObjectTracker<Model>
     val textureTracker: GraphicsObjectTracker<Texture>
     val fboTracker: GraphicsObjectTracker<Framebuffer>
     val shaderTracker: GraphicsObjectTracker<Shader>
 
-    val textures: TextureManager
+    override fun allocate(capacity: Int): ByteBuffer =
+            container.allocate(capacity)
+
+    override fun reallocate(buffer: ByteBuffer): ByteBuffer =
+            container.reallocate(buffer)
 
     fun createTexture(width: Int,
                       height: Int): Texture {
-        return createTexture(width, height, engine.allocate(width * height * 4),
-                0)
+        return createTexture(width, height, allocate(width * height * 4), 0)
     }
 
     fun createTexture(image: Image,
                       mipmaps: Int): Texture {
-        return createTexture(image.width, image.height, image.buffer,
-                mipmaps, TextureFilter.NEAREST, TextureFilter.NEAREST,
+        return createTexture(image.width, image.height, image.buffer, mipmaps,
+                TextureFilter.NEAREST, TextureFilter.NEAREST,
                 TextureWrap.REPEAT, TextureWrap.REPEAT)
     }
 
     fun createTexture(width: Int,
                       height: Int,
                       mipmaps: Int): Texture {
-        return createTexture(width, height, engine.allocate(width * height * 4),
+        return createTexture(width, height, allocate(width * height * 4),
                 mipmaps)
     }
 
@@ -59,7 +64,7 @@ interface GraphicsObjectSupplier {
                       magFilter: TextureFilter,
                       wrapS: TextureWrap,
                       wrapT: TextureWrap): Texture {
-        return createTexture(width, height, engine.allocate(width * height * 4),
+        return createTexture(width, height, allocate(width * height * 4),
                 mipmaps, minFilter, magFilter, wrapS, wrapT)
     }
 
@@ -69,8 +74,8 @@ interface GraphicsObjectSupplier {
                       magFilter: TextureFilter = TextureFilter.NEAREST,
                       wrapS: TextureWrap = TextureWrap.REPEAT,
                       wrapT: TextureWrap = TextureWrap.REPEAT): Texture {
-        return createTexture(image.width, image.height, image.buffer,
-                mipmaps, minFilter, magFilter, wrapS, wrapT)
+        return createTexture(image.width, image.height, image.buffer, mipmaps,
+                minFilter, magFilter, wrapS, wrapT)
     }
 
     fun createTexture(width: Int,

@@ -42,7 +42,7 @@ class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
                                         size: Vector2d,
                                         pixelSize: Vector2d,
                                         delta: Double) {
-        gl.engine.graphics.textureEmpty().bind(gl)
+        gl.graphics.textureEmpty().bind(gl)
         gl.matrixStack.push { matrix ->
             matrix.translate(size.floatX() * 0.5f, size.floatY() * 0.5f, 0.0f)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
@@ -56,6 +56,6 @@ class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
         val pixelSize = renderer.pixelSize
         GuiUtils.busy(mesh, size.x, size.y, pixelSize.x, pixelSize.y,
                 r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble())
-        model = mesh.finish(engine)
+        model = mesh.finish(engine.graphics)
     }
 }

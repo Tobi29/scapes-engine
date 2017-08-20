@@ -16,18 +16,14 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.graphics.GL
-import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.graphics.TextureFilter
-import org.tobi29.scapes.engine.graphics.TextureWrap
+import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.generateMipMapsNullable
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.max
 
-internal open class TextureGL(override val engine: ScapesEngine,
+internal open class TextureGL(override val gos: GraphicsObjectSupplier,
                               width: Int,
                               height: Int,
                               buffer: ByteBuffer?,
@@ -223,7 +219,7 @@ internal open class TextureGL(override val engine: ScapesEngine,
                        width: Int,
                        height: Int): TextureBuffer {
         return TextureBuffer(
-                generateMipMapsNullable(buffer, engine, width, height, mipmaps,
+                generateMipMapsNullable(buffer, gos, width, height, mipmaps,
                         minFilter == TextureFilter.LINEAR), width, height)
     }
 

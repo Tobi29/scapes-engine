@@ -21,8 +21,8 @@ import org.tobi29.scapes.engine.gui.GuiUtils
 fun busyPipeline(gl: GL): suspend () -> () -> Unit {
     val mesh = Mesh()
     GuiUtils.busy(mesh, 64.0, 64.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
-    val busy = mesh.finish(gl.engine)
-    val shader = gl.engine.graphics.loadShader(SHADER_TEXTURED)
+    val busy = mesh.finish(gl)
+    val shader = gl.graphics.loadShader(SHADER_TEXTURED)
     return {
         val s = shader.getAsync()
         ;{
@@ -35,7 +35,7 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
             matrix.identity()
             matrix.modelViewProjection().orthogonal(-width * 0.5f,
                     -height * 0.5f, width, height)
-            gl.engine.graphics.textureEmpty().bind(gl)
+            gl.graphics.textureEmpty().bind(gl)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
             busy.render(gl, s)
         }

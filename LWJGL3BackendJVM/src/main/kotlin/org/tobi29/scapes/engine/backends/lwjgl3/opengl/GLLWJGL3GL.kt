@@ -132,7 +132,7 @@ class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
                             y: Int,
                             width: Int,
                             height: Int): Image {
-        val buffer = engine.allocate(width * height shl 2)
+        val buffer = allocate(width * height shl 2)
         glReadBuffer(GL_FRONT)
         glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer)
         flipVertical(width, height, buffer)
@@ -140,7 +140,7 @@ class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
     }
 
     override fun screenShotFBO(fbo: Framebuffer): Image {
-        val buffer = engine.allocate(fbo.width() * fbo.height() shl 2)
+        val buffer = allocate(fbo.width() * fbo.height() shl 2)
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer)
         flipVertical(fbo.width(), fbo.height(), buffer)
         return Image(fbo.width(), fbo.height(), buffer)

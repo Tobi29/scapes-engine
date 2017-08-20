@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.readOnly
 
-internal class FBO(engine: ScapesEngine,
+internal class FBO(override val gos: GraphicsObjectSupplier,
                    private val currentFBO: CurrentFBO,
                    width: Int,
                    height: Int,
@@ -50,11 +49,11 @@ internal class FBO(engine: ScapesEngine,
         this.width = max(width, 1)
         this.height = max(height, 1)
         texturesColor = (0 until colorAttachments).map {
-            TextureFBOColor(engine, width, height, minFilter, magFilter,
+            TextureFBOColor(gos, width, height, minFilter, magFilter,
                     TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr)
         }.readOnly()
         if (depth) {
-            textureDepth = TextureFBODepth(engine, width, height, minFilter,
+            textureDepth = TextureFBODepth(gos, width, height, minFilter,
                     magFilter, TextureWrap.CLAMP, TextureWrap.CLAMP)
         } else {
             textureDepth = null

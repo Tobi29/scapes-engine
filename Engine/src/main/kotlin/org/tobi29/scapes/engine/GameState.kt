@@ -31,15 +31,7 @@ abstract class GameState(val engine: ScapesEngine) {
     private val dirtyPipeline = AtomicBoolean(false)
     private var pipeline: Pipeline? = null
 
-    fun disposeState(gl: GL) {
-    }
-
-    fun disposeState() {
-        dispose()
-    }
-
-    open fun dispose() {
-    }
+    open fun dispose() {}
 
     abstract fun init()
 

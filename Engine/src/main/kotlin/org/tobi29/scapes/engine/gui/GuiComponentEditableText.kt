@@ -151,7 +151,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                 }
             }
         }
-        gl.engine.graphics.textureEmpty().bind(gl)
+        gl.graphics.textureEmpty().bind(gl)
         gl.setBlending(BlendingMode.INVERT)
         vaoSelection?.forEach { it.first.render(gl, shader) }
         gl.setBlending(BlendingMode.NORMAL)

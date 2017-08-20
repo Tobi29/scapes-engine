@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.Model
 import org.tobi29.scapes.engine.graphics.Shader
 
-internal abstract class VAO(protected val engine: ScapesEngine) : Model {
+internal abstract class VAO(override val gos: GraphicsObjectSupplier) : Model {
     protected var used: Long = 0
     override var isStored = false
     protected var markAsDisposed = false

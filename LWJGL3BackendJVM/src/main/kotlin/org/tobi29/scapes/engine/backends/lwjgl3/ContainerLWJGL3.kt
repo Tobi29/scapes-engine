@@ -40,13 +40,13 @@ import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toBoolean
 
 abstract class ContainerLWJGL3(
-        override val engine: ScapesEngine,
+        override final val engine: ScapesEngine,
         protected val useGLES: Boolean = false
 ) : Container, ByteBufferProvider by NativeByteBufferProvider {
     protected val tasks = ConcurrentLinkedQueue<() -> Unit>()
     protected val mainThread: Thread = Thread.currentThread()
-    override val gos = if (useGLES) GOSLWJGL3GLES(engine) else GOSLWJGL3GL(
-            engine)
+    override final val gos = if (useGLES) GOSLWJGL3GLES(this)
+    else GOSLWJGL3GL(this)
     protected val gl = if (useGLES) GLLWJGL3GLES(gos) else GLLWJGL3GL(gos)
     override val sounds = OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
 

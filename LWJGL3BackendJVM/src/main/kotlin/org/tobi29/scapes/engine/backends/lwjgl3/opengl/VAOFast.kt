@@ -24,7 +24,7 @@ import org.tobi29.scapes.engine.utils.assert
 internal class VAOFast(private val vbo: VBO,
                        private val length: Int,
                        private val renderType: RenderType) : VAO(
-        vbo.engine) {
+        vbo.gos) {
     private var arrayID = 0
 
     init {

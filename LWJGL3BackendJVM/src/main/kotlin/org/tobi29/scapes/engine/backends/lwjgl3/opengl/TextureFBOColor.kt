@@ -16,13 +16,13 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.assert
 
-internal class TextureFBOColor(engine: ScapesEngine,
+internal class TextureFBOColor(gos: GraphicsObjectSupplier,
                                width: Int,
                                height: Int,
                                minFilter: TextureFilter,
@@ -31,7 +31,7 @@ internal class TextureFBOColor(engine: ScapesEngine,
                                wrapT: TextureWrap,
                                private val alpha: Boolean,
                                private val hdr: Boolean) : TextureFBO(
-        engine, width, height, null, 0, minFilter, magFilter, wrapS, wrapT) {
+        gos, width, height, null, 0, minFilter, magFilter, wrapS, wrapT) {
 
     fun attach(gl: GL,
                i: Int) {

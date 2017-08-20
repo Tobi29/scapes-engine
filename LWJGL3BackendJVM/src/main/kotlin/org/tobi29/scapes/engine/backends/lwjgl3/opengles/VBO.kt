@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
 import org.tobi29.scapes.engine.utils.assert
@@ -25,7 +25,7 @@ import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.FastMath
 import org.tobi29.scapes.engine.utils.math.round
 
-internal class VBO(val engine: ScapesEngine,
+internal class VBO(val gos: GraphicsObjectSupplier,
                    attributes: List<ModelAttribute>,
                    length: Int) {
     private val stride: Int
@@ -47,7 +47,7 @@ internal class VBO(val engine: ScapesEngine,
             stride += (size - 1 or 0x03) + 1
         }
         this.stride = stride
-        val vertexBuffer = engine.allocate(length * stride)
+        val vertexBuffer = gos.allocate(length * stride)
         attributes.forEach { addToBuffer(it, length, vertexBuffer) }
         data = vertexBuffer
     }

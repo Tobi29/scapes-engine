@@ -16,19 +16,19 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.assert
 
-internal class TextureFBODepth(engine: ScapesEngine,
+internal class TextureFBODepth(gos: GraphicsObjectSupplier,
                                width: Int,
                                height: Int,
                                minFilter: TextureFilter,
                                magFilter: TextureFilter,
                                wrapS: TextureWrap,
-                               wrapT: TextureWrap) : TextureFBO(engine, width,
+                               wrapT: TextureWrap) : TextureFBO(gos, width,
         height, null, 0, minFilter, magFilter, wrapS, wrapT) {
 
     fun attach(gl: GL) {

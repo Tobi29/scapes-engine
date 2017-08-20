@@ -26,7 +26,7 @@ internal class VAOStatic(private val vbo: VBO,
                          index: IntArray,
                          private val length: Int,
                          private val renderType: RenderType) : VAO(
-        vbo.engine) {
+        vbo.gos) {
     private var data: ByteBuffer? = null
     private var indexID = 0
     private var arrayID = 0
@@ -37,7 +37,7 @@ internal class VAOStatic(private val vbo: VBO,
         } else if (renderType == RenderType.LINES && length % 2 != 0) {
             throw IllegalArgumentException("Length not multiply of 2")
         }
-        val indexBuffer = engine.allocate(length shl 1)
+        val indexBuffer = gos.allocate(length shl 1)
         for (i in 0 until length) {
             indexBuffer.putShort(index[i].toShort())
         }

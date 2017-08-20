@@ -16,14 +16,14 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
-internal abstract class TextureFBO(engine: ScapesEngine,
+internal abstract class TextureFBO(gos: GraphicsObjectSupplier,
                                    width: Int,
                                    height: Int,
                                    buffer: ByteBuffer?,
@@ -32,7 +32,7 @@ internal abstract class TextureFBO(engine: ScapesEngine,
                                    magFilter: TextureFilter,
                                    wrapS: TextureWrap,
                                    wrapT: TextureWrap) : TextureGL(
-        engine, width, height, buffer, mipmaps, minFilter, magFilter, wrapS,
+        gos, width, height, buffer, mipmaps, minFilter, magFilter, wrapS,
         wrapT) {
 
     fun resize(width: Int,

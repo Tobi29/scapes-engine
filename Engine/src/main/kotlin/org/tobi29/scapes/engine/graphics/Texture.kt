@@ -15,12 +15,9 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 interface Texture : GraphicsObject {
-    val engine: ScapesEngine
-
     fun bind(gl: GL)
 
     fun markDisposed()
@@ -46,7 +43,7 @@ interface Texture : GraphicsObject {
 
 fun Texture?.bind(gl: GL) {
     if (this == null) {
-        gl.engine.graphics.textureEmpty().bind(gl)
+        gl.graphics.textureEmpty().bind(gl)
     } else {
         bind(gl)
     }

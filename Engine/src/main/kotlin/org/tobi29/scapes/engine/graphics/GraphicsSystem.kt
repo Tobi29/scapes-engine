@@ -43,8 +43,10 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     private var lastContentWidth = 0
     private var lastContentHeight = 0
 
+    val textures = TextureManager(engine)
+
     init {
-        val buffer = engine.allocate(4)
+        val buffer = allocate(4)
         buffer.put((-1).toByte())
         buffer.put((-1).toByte())
         buffer.put((-1).toByte())
@@ -62,10 +64,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     }
 
     fun dispose(gl: GL) {
-        engine.halt()
         synchronized(this) {
-            val state = engine.state
-            state.disposeState(gl)
             gos.vaoTracker.disposeAll(gl)
             gos.textureTracker.disposeAll(gl)
             gos.fboTracker.disposeAll(gl)
@@ -103,7 +102,6 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
                 val renderState = renderState
                 if (renderState !== state) {
                     profilerSection("SwitchState") {
-                        renderState?.disposeState(gl)
                         this.renderState = state
                     }
                 }
@@ -159,7 +157,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     }
 
     override fun isDispatchNeeded(context: CoroutineContext) =
-            !engine.container.isRenderCall()
+            !container.isRenderCall()
 
     companion object : KLogging()
 }

@@ -15,7 +15,6 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.copy
 
 class Mesh(private val triangles: Boolean = false,
@@ -163,16 +162,16 @@ class Mesh(private val triangles: Boolean = false,
         normalArray = newNormalArray
     }
 
-    fun finish(engine: ScapesEngine): Model {
+    fun finish(gos: GraphicsObjectSupplier): Model {
         changeArraySize(pos)
         if (triangles) {
             val model: Model
             if (color) {
-                model = engine.graphics.createVCTN(vertexArray, colorArray,
-                        textureArray, normalArray, RenderType.TRIANGLES)
-            } else {
-                model = engine.graphics.createVTN(vertexArray, textureArray,
+                model = gos.createVCTN(vertexArray, colorArray, textureArray,
                         normalArray, RenderType.TRIANGLES)
+            } else {
+                model = gos.createVTN(vertexArray, textureArray, normalArray,
+                        RenderType.TRIANGLES)
             }
             return model
         } else {
@@ -190,12 +189,11 @@ class Mesh(private val triangles: Boolean = false,
             }
             val model: Model
             if (color) {
-                model = engine.graphics.createVCTNI(vertexArray, colorArray,
-                        textureArray, normalArray, indexArray,
-                        RenderType.TRIANGLES)
-            } else {
-                model = engine.graphics.createVTNI(vertexArray, textureArray,
+                model = gos.createVCTNI(vertexArray, colorArray, textureArray,
                         normalArray, indexArray, RenderType.TRIANGLES)
+            } else {
+                model = gos.createVTNI(vertexArray, textureArray, normalArray,
+                        indexArray, RenderType.TRIANGLES)
             }
             return model
         }

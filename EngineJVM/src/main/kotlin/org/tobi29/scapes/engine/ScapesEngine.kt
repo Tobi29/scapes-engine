@@ -170,7 +170,7 @@ impl class ScapesEngine(
     impl fun dispose() {
         halt()
         logger.info { "Disposing last state" }
-        stateMut?.disposeState()
+        stateMut?.dispose()
         stateMut = null
         logger.info { "Disposing sound system" }
         sounds.dispose()
@@ -203,7 +203,7 @@ impl class ScapesEngine(
         val newState = newState.getAndSet(null)
         if (newState != null) {
             synchronized(graphics) {
-                this.stateMut?.disposeState()
+                this.stateMut?.dispose()
                 this.stateMut = newState
                 newState.init()
             }

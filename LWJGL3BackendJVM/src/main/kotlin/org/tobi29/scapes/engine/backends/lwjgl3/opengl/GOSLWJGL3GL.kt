@@ -16,15 +16,14 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
-import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.Expression
 
-class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
-    override val textures = TextureManager(engine)
+class GOSLWJGL3GL(override val container: Container) : GraphicsObjectSupplier {
     override val vaoTracker = GraphicsObjectTracker<Model>()
     override val textureTracker = GraphicsObjectTracker<Texture>()
     override val fboTracker = GraphicsObjectTracker<Framebuffer>()
@@ -39,7 +38,7 @@ class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
                                magFilter: TextureFilter,
                                wrapS: TextureWrap,
                                wrapT: TextureWrap): Texture {
-        return TextureGL(engine, width, height, buffer, mipmaps, minFilter,
+        return TextureGL(this, width, height, buffer, mipmaps, minFilter,
                 magFilter, wrapS, wrapT)
     }
 
@@ -51,14 +50,14 @@ class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
                                    alpha: Boolean,
                                    minFilter: TextureFilter,
                                    magFilter: TextureFilter): Framebuffer {
-        return FBO(engine, currentFBO, width, height, colorAttachments, depth,
+        return FBO(this, currentFBO, width, height, colorAttachments, depth,
                 hdr, alpha, minFilter, magFilter)
     }
 
     override fun createModelFast(attributes: List<ModelAttribute>,
                                  length: Int,
                                  renderType: RenderType): Model {
-        val vbo = VBO(engine, attributes, length)
+        val vbo = VBO(this, attributes, length)
         return VAOFast(vbo, length, renderType)
     }
 
@@ -67,7 +66,7 @@ class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
                                    index: IntArray,
                                    indexLength: Int,
                                    renderType: RenderType): Model {
-        val vbo = VBO(engine, attributes, length)
+        val vbo = VBO(this, attributes, length)
         return VAOStatic(vbo, index, indexLength, renderType)
     }
 
@@ -76,13 +75,13 @@ class GOSLWJGL3GL(override val engine: ScapesEngine) : GraphicsObjectSupplier {
                                    attributesStream: List<ModelAttribute>,
                                    lengthStream: Int,
                                    renderType: RenderType): ModelHybrid {
-        val vbo = VBO(engine, attributes, length)
-        val vboStream = VBO(engine, attributesStream, lengthStream)
+        val vbo = VBO(this, attributes, length)
+        val vboStream = VBO(this, attributesStream, lengthStream)
         return VAOHybrid(vbo, vboStream, renderType)
     }
 
     override fun createShader(shader: CompiledShader,
                               properties: Map<String, Expression>): Shader {
-        return ShaderGL(shader, properties)
+        return ShaderGL(this, shader, properties)
     }
 }

@@ -133,7 +133,7 @@ class TileLayerRenderer(val engine: ScapesEngine,
                     }
                 }
             }
-            model = mesh.finish(engine)
+            model = mesh.finish(engine.graphics)
         }
     }
 }

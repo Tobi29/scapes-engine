@@ -17,6 +17,8 @@
 package org.tobi29.scapes.engine.graphics
 
 interface GraphicsObject {
+    val gos: GraphicsObjectSupplier
+
     fun ensureStored(gl: GL): Boolean
 
     fun ensureDisposed(gl: GL)

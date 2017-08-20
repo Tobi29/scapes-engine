@@ -59,9 +59,7 @@ open class GuiRenderBatch(var pixelSize: Vector2d) {
         this.meshes.asSequence().sortedBy { it.key }.forEach { (_, map) ->
             map.entries.forEach { entry ->
                 val texture = entry.key
-                meshes.add(Pair(
-                        entry.value.finish(texture.engine),
-                        texture))
+                meshes.add(entry.value.finish(texture.gos) to texture)
             }
         }
         this.meshes.clear()
