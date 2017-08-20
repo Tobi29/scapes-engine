@@ -192,7 +192,5 @@ fun GraphicsObjectSupplier.createVCTNI(vertex: FloatArray,
             0, VertexType.FLOAT))
     attributes.add(ModelAttribute(GL.NORMAL_ATTRIBUTE, 3, normal, true, 0,
             VertexType.BYTE))
-    return engine.graphics.createModelStatic(attributes, vertex.size / 3,
-            index,
-            renderType)
+    return createModelStatic(attributes, vertex.size / 3, index, renderType)
 }
