@@ -21,6 +21,27 @@ typealias AtomicInteger = java.util.concurrent.atomic.AtomicInteger
 typealias AtomicLong = java.util.concurrent.atomic.AtomicLong
 typealias AtomicReference<T> = java.util.concurrent.atomic.AtomicReference<T>
 
+class AtomicDouble {
+    private val long = AtomicLong(0L)
+
+    fun get(): Double = long.get().bitsToDouble()
+
+    fun set(newValue: Double) = long.set(newValue.bits())
+
+    fun getAndSet(newValue: Double): Double =
+            long.getAndAdd(newValue.bits()).bitsToDouble()
+
+    fun compareAndSet(expect: Double,
+                      update: Double): Boolean =
+            long.compareAndSet(expect.bits(), update.bits())
+
+    fun getAndAdd(delta: Double): Double =
+            getAndUpdate { it + delta }
+
+    fun addAndGet(delta: Double): Double =
+            updateAndGet { it + delta }
+}
+
 inline fun AtomicInteger.getAndUpdate(update: (Int) -> Int): Int {
     while (true) {
         val current = get()
@@ -37,6 +58,14 @@ inline fun AtomicLong.getAndUpdate(update: (Long) -> Long): Long {
     }
 }
 
+inline fun AtomicDouble.getAndUpdate(update: (Double) -> Double): Double {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return current
+    }
+}
+
 inline fun AtomicInteger.updateAndGet(update: (Int) -> Int): Int {
     while (true) {
         val current = get()
@@ -46,6 +75,14 @@ inline fun AtomicInteger.updateAndGet(update: (Int) -> Int): Int {
 }
 
 inline fun AtomicLong.updateAndGet(update: (Long) -> Long): Long {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return new
+    }
+}
+
+inline fun AtomicDouble.updateAndGet(update: (Double) -> Double): Double {
     while (true) {
         val current = get()
         val new = update(current)
