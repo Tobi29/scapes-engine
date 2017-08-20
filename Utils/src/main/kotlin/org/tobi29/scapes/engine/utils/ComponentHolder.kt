@@ -64,8 +64,15 @@ class ComponentStorage<T : Any>(
 
         components as ConcurrentHashMap<ComponentType<H, C, T>, C>
 
-        return components.computeAbsent(type) {
-            type.create(holder).also { verifyAdd(type) }
+        components[type]?.let { return it }
+
+        return type.create(holder).also { verifyAdd(type) }.also { component ->
+            if (components.putAbsent(type, component) == null) {
+                if (component is ComponentRegisteredHolder<*>) {
+                    component as ComponentRegisteredHolder<H>
+                    component.init(holder)
+                }
+            }
         }
     }
 
