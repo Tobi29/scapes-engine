@@ -1,14 +1,18 @@
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.copyToString
+
 fun crashReportName(time: String): String =
         "CrashReport-$time.txt"
 
 fun Appendable.crashReportSection(name: String,
-                                  columns: Int = 20) {
+                                  columns: Int = 180) {
     val dashes = columns - name.length - 1
     val dashesLeft = dashes shr 1
     val dashesRight = dashes - dashesLeft
-    println("$dashesLeft$name:$dashesRight")
+    val dashesLeftStr = CharArray(dashesLeft) { '-' }.copyToString()
+    val dashesRightStr = CharArray(dashesRight) { '-' }.copyToString()
+    println("$dashesLeftStr$name:$dashesRightStr")
 }
 
 fun Appendable.writeCrashReport(e: Throwable,
