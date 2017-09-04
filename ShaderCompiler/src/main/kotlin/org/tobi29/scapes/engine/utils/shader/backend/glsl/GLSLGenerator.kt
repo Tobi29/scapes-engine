@@ -26,7 +26,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private var output = StringBuilder(1024)
     private val identifiers = HashMap<Identifier, Expression>()
     private lateinit var context: ShaderContext
-    private var functionImplementations = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
+    private val functionImplementations = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
 
     private fun variable(identifier: Identifier): String? {
         return identifiers[identifier]?.let { expression(it) } ?: return null
