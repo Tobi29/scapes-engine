@@ -36,36 +36,54 @@ object STDLib {
             listOf(Types.Vector4i.exported),
             listOf(Types.Vector4b.exported))
 
-    val constructScalar = scalar
-    val constructVector2 = scalar +
-            genT(vector2, 2).filter { it.sumBy { it.type.vectorSize } == 2 }
-    val constructVector3 = scalar +
-            genT(vector3, 3).filter { it.sumBy { it.type.vectorSize } == 3 }
-    val constructVector4 = scalar +
-            genT(vector4, 4).filter { it.sumBy { it.type.vectorSize } == 4 }
+    val constructScalar = (scalar).toSet().readOnly()
+    val constructVector2 = (vector2.asSequence()
+            + genT(scalar.asSequence(), 2)
+            .filter { it.sumBy { it.type.vectorSize } == 2 })
+            .toSet().readOnly()
+    val constructVector3 = (vector3.asSequence()
+            + genT(vector2.asSequence(), 3)
+            .filter { it.sumBy { it.type.vectorSize } == 3 })
+            .toSet().readOnly()
+    val constructVector4 = (vector4.asSequence()
+            + genT(vector3.asSequence(), 4)
+            .filter { it.sumBy { it.type.vectorSize } == 4 })
+            .toSet().readOnly()
 
-    private val swizzleX = setOf("x")
-    private val swizzleXY = swizzleX + setOf("y")
-    private val swizzleXYZ = swizzleXY + setOf("z")
-    private val swizzleXYZW = swizzleXYZ + setOf("w")
+    private val swizzleX = (setOf("x")).readOnly()
+    private val swizzleXY = (swizzleX + setOf("y")).readOnly()
+    private val swizzleXYZ = (swizzleXY + setOf("z")).readOnly()
+    private val swizzleXYZW = (swizzleXYZ + setOf("w")).readOnly()
 
-    private val swizzleR = setOf("r")
-    private val swizzleRG = swizzleR + setOf("g")
-    private val swizzleRGB = swizzleRG + setOf("b")
-    private val swizzleRGBA = swizzleRGB + setOf("a")
+    private val swizzleR = (setOf("r")).readOnly()
+    private val swizzleRG = (swizzleR + setOf("g")).readOnly()
+    private val swizzleRGB = (swizzleRG + setOf("b")).readOnly()
+    private val swizzleRGBA = (swizzleRGB + setOf("a")).readOnly()
 
-    val swizzle2to1 = gen(swizzleXY, 1) + gen(swizzleRG, 1)
-    val swizzle2to2 = gen(swizzleXY, 2) + gen(swizzleRG, 2)
-    val swizzle2to3 = gen(swizzleXY, 3) + gen(swizzleRG, 3)
-    val swizzle2to4 = gen(swizzleXY, 4) + gen(swizzleRG, 4)
-    val swizzle3to1 = gen(swizzleXYZ, 1) + gen(swizzleRGB, 1)
-    val swizzle3to2 = gen(swizzleXYZ, 2) + gen(swizzleRGB, 2)
-    val swizzle3to3 = gen(swizzleXYZ, 3) + gen(swizzleRGB, 3)
-    val swizzle3to4 = gen(swizzleXYZ, 4) + gen(swizzleRGB, 4)
-    val swizzle4to1 = gen(swizzleXYZW, 1) + gen(swizzleRGBA, 1)
-    val swizzle4to2 = gen(swizzleXYZW, 2) + gen(swizzleRGBA, 2)
-    val swizzle4to3 = gen(swizzleXYZW, 3) + gen(swizzleRGBA, 3)
-    val swizzle4to4 = gen(swizzleXYZW, 4) + gen(swizzleRGBA, 4)
+    val swizzle2to1 = (gen(swizzleXY.asSequence(), 1)
+            + gen(swizzleRG.asSequence(), 1)).toSet().readOnly()
+    val swizzle2to2 = (gen(swizzleXY.asSequence(), 2)
+            + gen(swizzleRG.asSequence(), 2)).toSet().readOnly()
+    val swizzle2to3 = (gen(swizzleXY.asSequence(), 3)
+            + gen(swizzleRG.asSequence(), 3)).toSet().readOnly()
+    val swizzle2to4 = (gen(swizzleXY.asSequence(), 4)
+            + gen(swizzleRG.asSequence(), 4)).toSet().readOnly()
+    val swizzle3to1 = (gen(swizzleXYZ.asSequence(), 1)
+            + gen(swizzleRGB.asSequence(), 1)).toSet().readOnly()
+    val swizzle3to2 = (gen(swizzleXYZ.asSequence(), 2)
+            + gen(swizzleRGB.asSequence(), 2)).toSet().readOnly()
+    val swizzle3to3 = (gen(swizzleXYZ.asSequence(), 3)
+            + gen(swizzleRGB.asSequence(), 3)).toSet().readOnly()
+    val swizzle3to4 = (gen(swizzleXYZ.asSequence(), 4)
+            + gen(swizzleRGB.asSequence(), 4)).toSet().readOnly()
+    val swizzle4to1 = (gen(swizzleXYZW.asSequence(), 1)
+            + gen(swizzleRGBA.asSequence(), 1)).toSet().readOnly()
+    val swizzle4to2 = (gen(swizzleXYZW.asSequence(), 2)
+            + gen(swizzleRGBA.asSequence(), 2)).toSet().readOnly()
+    val swizzle4to3 = (gen(swizzleXYZW.asSequence(), 3)
+            + gen(swizzleRGBA.asSequence(), 3)).toSet().readOnly()
+    val swizzle4to4 = (gen(swizzleXYZW.asSequence(), 4)
+            + gen(swizzleRGBA.asSequence(), 4)).toSet().readOnly()
 
     val functions = HashMap<FunctionExportedSignature, (List<Expression>) -> Expression>()
             .also { functions(it) }.readOnly()
@@ -344,33 +362,21 @@ object STDLib {
         functions[signature] = simplification
     }
 
-    private fun gen(s: Set<String>,
-                    level: Int): Set<String> =
+    private fun gen(s: Sequence<String>,
+                    level: Int): Sequence<String> =
             if (level <= 1) s else gen(s, level - 1) join s
 
-    private infix fun Set<String>.join(other: Set<String>): Set<String> {
-        val set = HashSet<String>()
-        forEach { a ->
-            other.forEach { b ->
-                set.add("$a$b")
-            }
-        }
-        return set
-    }
+    private infix fun Sequence<String>.join(
+            other: Sequence<String>
+    ) = flatMap { a -> other.map { b -> "$a$b" } }
 
-    private fun genT(s: Set<List<TypeExported>>,
-                     level: Int): Set<List<TypeExported>> =
+    private fun genT(s: Sequence<List<TypeExported>>,
+                     level: Int): Sequence<List<TypeExported>> =
             if (level <= 1) s else (genT(s, level - 1) joinT s) + s
 
-    private infix fun Set<List<TypeExported>>.joinT(other: Set<List<TypeExported>>): Set<List<TypeExported>> {
-        val set = HashSet<List<TypeExported>>()
-        forEach { a ->
-            other.forEach { b ->
-                set.add(a + b)
-            }
-        }
-        return set
-    }
+    private infix fun Sequence<List<TypeExported>>.joinT(
+            other: Sequence<List<TypeExported>>
+    ) = flatMap { a -> other.map { b -> a + b } }
 }
 
 fun TypeExported.memberType(name: String) =
@@ -413,19 +419,20 @@ fun Types.memberType(name: String) = when (this) {
     else -> null
 }
 
-val Types.vectorSize get() = when (this) {
-    Types.Vector2 -> 2
-    Types.Vector3 -> 3
-    Types.Vector4 -> 4
-    Types.Vector2i -> 2
-    Types.Vector3i -> 3
-    Types.Vector4i -> 4
-    Types.Vector2b -> 2
-    Types.Vector3b -> 3
-    Types.Vector4b -> 4
-    Types.Matrix2 -> 2
-    Types.Matrix3 -> 3
-    Types.Matrix4 -> 4
-    Types.Void -> 0
-    else -> 1
-}
+val Types.vectorSize
+    get() = when (this) {
+        Types.Vector2 -> 2
+        Types.Vector3 -> 3
+        Types.Vector4 -> 4
+        Types.Vector2i -> 2
+        Types.Vector3i -> 3
+        Types.Vector4i -> 4
+        Types.Vector2b -> 2
+        Types.Vector3b -> 3
+        Types.Vector4b -> 4
+        Types.Matrix2 -> 2
+        Types.Matrix3 -> 3
+        Types.Matrix4 -> 4
+        Types.Void -> 0
+        else -> 1
+    }
