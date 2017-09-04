@@ -23,5 +23,7 @@ header class TaskLock {
 
     fun onDone(block: () -> Unit): Unit
 
+    val activeTasks: Int
+
     fun isDone(): Boolean
 }

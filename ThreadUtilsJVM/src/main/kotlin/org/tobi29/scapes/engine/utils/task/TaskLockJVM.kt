@@ -16,10 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.task
 
-import org.tobi29.scapes.engine.utils.AtomicLong
-import org.tobi29.scapes.engine.utils.TaskQueue
-import org.tobi29.scapes.engine.utils.add
-import org.tobi29.scapes.engine.utils.processCurrent
+import org.tobi29.scapes.engine.utils.*
 
 impl class TaskLock {
     private val count = AtomicLong(0L)
@@ -42,11 +39,20 @@ impl class TaskLock {
         }
     }
 
-    impl fun onDone(block: () -> Unit) = if (isDone()) {
-        block()
-    } else {
-        onDone.add(block)
+    impl fun onDone(block: () -> Unit) {
+        if (isDone()) {
+            block()
+        } else {
+            onDone.add(block)
+            if (isDone()) {
+                if (onDone.remove(block)) {
+                    block()
+                }
+            }
+        }
     }
+
+    impl val activeTasks get() = count.get().toIntClamped()
 
     impl fun isDone() = count.get() == 0L
 
