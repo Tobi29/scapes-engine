@@ -33,6 +33,14 @@ inline fun <T> TaskQueue<T>.add(block: T) {
 }
 
 /**
+ * Removes an element once from the queue.
+ * @param block The element to remove
+ * @receiver The queue to remove from
+ */
+inline fun <T> TaskQueue<T>.remove(block: T): Boolean =
+        remove(Option.Some(block))
+
+/**
  * Calls all elements and removes them in the queue, even if added during
  * execution.
  * @receiver The queue to iterate through
