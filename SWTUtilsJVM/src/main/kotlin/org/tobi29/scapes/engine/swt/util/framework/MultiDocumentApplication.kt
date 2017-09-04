@@ -19,10 +19,9 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
-import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.Version
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import kotlin.coroutines.experimental.CoroutineContext
 
 abstract class MultiDocumentApplication : Application {
     internal val composites = HashMap<Document, DocumentComposite>()
@@ -34,21 +33,31 @@ abstract class MultiDocumentApplication : Application {
     protected constructor(name: String,
                           id: String,
                           version: Version,
-                          taskExecutor: TaskExecutor) : super(name, id, version,
+                          taskExecutor: CoroutineContext) : super(name, id,
+            version,
             taskExecutor)
 
     abstract fun populate(composite: DocumentComposite,
                           menu: SmartMenuBar)
 
     fun openShell(document: Document) {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         shell(document)
     }
 
     fun openTab(document: Document) {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         tab(document)
     }
 
     fun document(composite: DocumentComposite): Document {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         return composite.document ?: throw IllegalStateException(
                 "Composite does not hold document")
     }
@@ -56,20 +65,32 @@ abstract class MultiDocumentApplication : Application {
 
     fun openNewShell(source: DocumentComposite,
                      document: Document) {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         shell(source, document)
     }
 
     fun openNewTab(source: DocumentComposite,
                    document: Document) {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         tab(source, document)
     }
 
     fun replaceTab(source: DocumentComposite,
                    document: Document) {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         reuse(source, document)
     }
 
     fun closeTab(source: DocumentComposite) {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         closeTabItem(source)
     }
 
@@ -77,6 +98,9 @@ abstract class MultiDocumentApplication : Application {
                 style: Int,
                 title: String,
                 message: String): Int {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         return message(source.shell, style, title, message)
     }
 
@@ -84,28 +108,18 @@ abstract class MultiDocumentApplication : Application {
                 style: Int,
                 title: String,
                 message: String): Int {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
+
         source.open()
         return Dialogs.openMessage(source, style, title, message)
     }
 
-    fun access(document: Document,
-               consumer: (DocumentComposite) -> Unit): Boolean {
-        val output = AtomicBoolean()
-        display.syncExec { output.set(accessDocument(document, consumer)) }
-        return output.get()
-    }
+    fun compositeFor(document: Document): DocumentComposite? {
+        if (display.thread != Thread.currentThread())
+            SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS)
 
-    fun accessAsync(document: Document,
-                    consumer: (DocumentComposite) -> Unit) {
-        display.asyncExec { accessDocument(document, consumer) }
-    }
-
-    private fun accessDocument(document: Document,
-                               consumer: (DocumentComposite) -> Unit): Boolean {
-        val composite = composites[document] ?: return false
-        assert { composite.document == document }
-        consumer(composite)
-        return true
+        return composites[document]?.also { assert { it.document === document } }
     }
 
     internal fun closeTabItem(source: DocumentComposite) {

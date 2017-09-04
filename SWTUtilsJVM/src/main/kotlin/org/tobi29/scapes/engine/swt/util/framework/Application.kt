@@ -15,6 +15,9 @@
  */
 package org.tobi29.scapes.engine.swt.util.framework
 
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.Runnable
 import org.eclipse.swt.SWT
 import org.eclipse.swt.program.Program
 import org.eclipse.swt.widgets.Display
@@ -28,37 +31,22 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.createTempFile
 import org.tobi29.scapes.engine.utils.io.filesystem.write
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.sleepAtLeast
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import org.tobi29.scapes.engine.utils.task.UpdateLoop
+import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.system.exitProcess
 
-abstract class Application : Runnable, Crashable {
+abstract class Application(
+        name: String,
+        id: String,
+        version: Version,
+        val taskExecutor: CoroutineContext = CommonPool
+) : CoroutineDispatcher(), Runnable, Crashable {
     val display: Display
-    val taskExecutor: TaskExecutor
-    val loop: UpdateLoop
-    private var timerSchedule: Long = Long.MIN_VALUE
 
-    protected constructor(name: String,
-                          id: String,
-                          version: Version) {
+    init {
         Display.setAppName(name)
         Display.setAppVersion(version.toString())
         display = Display.getDefault()
-        taskExecutor = TaskExecutor(this, id)
-        loop = UpdateLoop(taskExecutor, null)
-    }
-
-    protected constructor(name: String,
-                          id: String,
-                          version: Version,
-                          taskExecutor: TaskExecutor) {
-        Display.setAppName(name)
-        Display.setAppVersion(version.toString())
-        display = Display.getDefault()
-        this.taskExecutor = TaskExecutor(taskExecutor, id)
-        loop = UpdateLoop(taskExecutor, null)
     }
 
     fun message(style: Int,
@@ -92,10 +80,8 @@ abstract class Application : Runnable, Crashable {
     override fun run() {
         try {
             initApplication()
-            tick(timerSchedule)
             while (!done()) {
                 if (!display.readAndDispatch()) {
-                    tick(timerSchedule)
                     display.sleep()
                 }
             }
@@ -116,7 +102,6 @@ abstract class Application : Runnable, Crashable {
 
     fun disposeApplication() {
         dispose()
-        taskExecutor.shutdown()
     }
 
     override fun crash(e: Throwable): Nothing {
@@ -132,16 +117,9 @@ abstract class Application : Runnable, Crashable {
         exitProcess(1)
     }
 
-    private fun tick(schedule: Long) {
-        val sleep = clamp(loop.tick(), 1,
-                Int.MAX_VALUE.toLong()).toInt()
-        if (timerSchedule == schedule) {
-            timerSchedule++
-            val nextSchedule = timerSchedule
-            display.timerExec(sleep) {
-                tick(nextSchedule)
-            }
-        }
+    override fun dispatch(context: CoroutineContext,
+                          block: Runnable) {
+        display.asyncExec(block)
     }
 
     private fun writeCrash(e: Throwable): FilePath? {
