@@ -29,6 +29,10 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+artifacts {
+    archives sourcesJar
+}
+
 eclipse.project {
     natures "org.jetbrains.kotlin.core.kotlinNature"
 }
