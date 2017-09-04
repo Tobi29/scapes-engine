@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.utils.Pool
 import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
@@ -40,6 +41,11 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
         layout(output)
         return output
     }
+
+    open fun navigate(face: Face,
+                      component: GuiComponent): GuiComponent? = null
+
+    open fun enter(face: Face): GuiComponent? = null
 
     protected abstract fun layout(
             output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>)

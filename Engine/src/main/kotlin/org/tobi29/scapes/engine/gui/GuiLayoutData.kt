@@ -23,6 +23,7 @@ open class GuiLayoutData(val parent: GuiComponent?,
                          val priority: Long,
                          val blocksEvents: Boolean) {
     var preferredSize: (Vector2d, Vector2d) -> Vector2d = { a, _ -> a }
+    var selectable = false
 
     fun calculateSize(maxSize: Vector2d) = preferredSize(size, maxSize)
 }

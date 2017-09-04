@@ -22,8 +22,10 @@ import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 class GuiCursor {
     private val pos = MutableVector2d()
 
-    fun set(pos: Vector2d) {
+    fun set(pos: Vector2d): Boolean {
+        if (pos.x == this.pos.x && pos.y == this.pos.y) return false
         this.pos.set(pos)
+        return true
     }
 
     fun currentPos(): Vector2d {

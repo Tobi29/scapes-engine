@@ -38,7 +38,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
     protected var hover = false
     protected var hovering = false
     protected var removing = false
-    internal var removedMut = false
+    internal var removedMut = true
     protected val components =
             ConcurrentOrderedCollection(comparator<GuiComponent>())
     private val guiEvents = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
@@ -294,6 +294,14 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return gui.calculateSize(gui.baseSize(), this)
     }
 
+    protected fun findSelectable(): GuiComponent? {
+        if (parent.selectable) return this
+        for (child in components) {
+            child.findSelectable()?.let { return it }
+        }
+        return null
+    }
+
     protected fun applyTransform(event: GuiComponentEvent,
                                  component: Triple<GuiComponent, Vector2d, Vector2d>): GuiComponentEvent {
         val pos = applyTransform(event.x - component.second.x,
@@ -326,7 +334,9 @@ abstract class GuiComponent(val engine: ScapesEngine,
             else 0
 
     internal fun added() {
+        removedMut = false
         events.enable()
+        gui.selectDefault()
     }
 
     fun remove() {
@@ -341,6 +351,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
 
     internal fun removed() {
         removedMut = true
+        gui.deselect(this)
         events.disable()
         components.forEach { it.removed() }
     }
@@ -349,7 +360,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
         components.forEach { remove(it) }
     }
 
-    protected fun layoutManager(size: Vector2d): GuiLayoutManager {
+    fun layoutManager(size: Vector2d): GuiLayoutManager {
         if (components.isEmpty()) {
             return GuiLayoutManagerEmpty
         }

@@ -32,11 +32,12 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
     private var dragLeftY = 0.0
     private var dragRightX = 0.0
     private var dragRightY = 0.0
+    private var activeCursor = true
 
     override fun update(delta: Double) {
         val cursorX = controller.x()
         val cursorY = controller.y()
-        cursor.set(Vector2d(cursorX, cursorY))
+        if (cursor.set(Vector2d(cursorX, cursorY))) activeCursor = true
         draggingLeft?.let { component ->
             val guiPos = cursor.currentPos()
             val relativeX = guiPos.x - dragLeftX
@@ -65,9 +66,11 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                             scrollY, false))
         }
         val componentEvent = GuiComponentEvent(cursorX, cursorY)
-        val hover = engine.guiStack.fireEvent(componentEvent,
-                GuiComponent::hover)
-        engine.tooltip.setTooltip(hover?.let { Pair(it, cursor) })
+        if (activeCursor) {
+            val hover = engine.guiStack.fireEvent(componentEvent,
+                    GuiComponent::hover)
+            engine.tooltip.setTooltip(hover?.let { Pair(it, cursor) })
+        }
         controller.pressEvents().forEach { event ->
             when (event.state) {
                 ControllerBasic.PressState.PRESS, ControllerBasic.PressState.REPEAT -> handlePress(
@@ -85,6 +88,8 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
     override fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>> {
         return controller.pressEvents().map { event -> Pair(cursor, event) }
     }
+
+    override fun activeCursor(): Boolean = activeCursor
 
     private fun handlePress(key: ControllerKey,
                             event: GuiComponentEvent) {
@@ -111,29 +116,29 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                     return
                 }
             }
-            ControllerKey.KEY_ESCAPE -> if (engine.guiStack.fireAction(
-                    GuiAction.BACK)) {
-                return
+            ControllerKey.KEY_ESCAPE -> {
+                activeCursor = false
+                if (engine.guiStack.fireAction(GuiAction.BACK)) return
             }
-            ControllerKey.KEY_ENTER -> if (engine.guiStack.fireAction(
-                    GuiAction.ACTIVATE)) {
-                return
+            ControllerKey.KEY_ENTER -> {
+                activeCursor = false
+                if (engine.guiStack.fireAction(GuiAction.ACTIVATE)) return
             }
-            ControllerKey.KEY_UP -> if (engine.guiStack.fireAction(
-                    GuiAction.UP)) {
-                return
+            ControllerKey.KEY_UP -> {
+                activeCursor = false
+                if (engine.guiStack.fireAction(GuiAction.UP)) return
             }
-            ControllerKey.KEY_DOWN -> if (engine.guiStack.fireAction(
-                    GuiAction.DOWN)) {
-                return
+            ControllerKey.KEY_DOWN -> {
+                activeCursor = false
+                if (engine.guiStack.fireAction(GuiAction.DOWN)) return
             }
-            ControllerKey.KEY_LEFT -> if (engine.guiStack.fireAction(
-                    GuiAction.LEFT)) {
-                return
+            ControllerKey.KEY_LEFT -> {
+                activeCursor = false
+                if (engine.guiStack.fireAction(GuiAction.LEFT)) return
             }
-            ControllerKey.KEY_RIGHT -> if (engine.guiStack.fireAction(
-                    GuiAction.RIGHT)) {
-                return
+            ControllerKey.KEY_RIGHT -> {
+                activeCursor = false
+                if (engine.guiStack.fireAction(GuiAction.RIGHT)) return
             }
         }
         firePress(key)

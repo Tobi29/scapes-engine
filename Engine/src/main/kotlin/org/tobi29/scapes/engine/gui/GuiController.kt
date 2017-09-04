@@ -36,6 +36,8 @@ abstract class GuiController(protected val engine: ScapesEngine) {
 
     abstract fun captureCursor(): Boolean
 
+    open fun activeCursor(): Boolean = false
+
     protected fun firePress(key: ControllerKey): Boolean {
         val event = PressEvent(this, key)
         engine.events.fire(event)

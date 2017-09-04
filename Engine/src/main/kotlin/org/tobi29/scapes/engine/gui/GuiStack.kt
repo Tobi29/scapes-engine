@@ -84,6 +84,7 @@ class GuiStack {
             if (removed(remove)) {
                 focus = add
             }
+            add.added()
             return@synchronized true
         }
     }

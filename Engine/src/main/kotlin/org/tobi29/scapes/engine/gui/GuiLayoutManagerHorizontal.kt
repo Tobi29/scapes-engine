@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.vector.minus
@@ -105,4 +106,30 @@ class GuiLayoutManagerHorizontal(start: Vector2d,
         sizes.forAllObjects { it.component = null }
         sizeCache.give(sizes)
     }
+
+    override fun navigate(face: Face,
+                          component: GuiComponent): GuiComponent? {
+        if (face != Face.EAST && face != Face.WEST) return null
+        var i = components.indexOf(component)
+        if (i < 0) return null
+        while (true) {
+            when (face) {
+                Face.EAST -> i--
+                Face.WEST -> i++
+            }
+            return components.getOrNull(i) ?: return null
+        }
+    }
+
+    override fun enter(face: Face): GuiComponent? =
+            when (face) {
+                Face.EAST -> components.lastOrNull()
+                Face.WEST -> components.firstOrNull()
+            // TODO: Select based on previous location
+                else -> components.firstOrNull {
+                    it.parent.selectable || it.size()?.let { size ->
+                        it.layoutManager(size).enter(face)
+                    } != null
+                }
+            }
 }
