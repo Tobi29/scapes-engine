@@ -136,37 +136,6 @@ object STDLib {
         matrixFunctions(functions, Types.Matrix4.exported,
                 Types.Vector4.exported)
 
-        function(functions,
-                FunctionExportedSignature("float", Types.Float.exported,
-                        Types.Float.exported))
-
-        function(functions, FunctionExportedSignature("vector2",
-                Types.Vector2.exported,
-                Types.Float.exported))
-        function(functions, FunctionExportedSignature("vector2",
-                Types.Vector2.exported,
-                Types.Vector2.exported))
-        function(functions, FunctionExportedSignature("vector2",
-                Types.Vector2.exported,
-                Types.Float.exported,
-                Types.Float.exported))
-
-        function(functions, FunctionExportedSignature("vector3",
-                Types.Vector3.exported,
-                Types.Float.exported))
-        function(functions, FunctionExportedSignature("vector3",
-                Types.Vector3.exported,
-                Types.Float.exported,
-                Types.Float.exported,
-                Types.Float.exported))
-        function(functions, FunctionExportedSignature("vector3",
-                Types.Vector3.exported,
-                Types.Float.exported,
-                Types.Vector2.exported))
-        function(functions, FunctionExportedSignature("vector3",
-                Types.Vector3.exported,
-                Types.Vector2.exported,
-                Types.Float.exported))
         constructScalar.forEach {
             function(functions, FunctionExportedSignature("float",
                     Types.Float.exported, it))
