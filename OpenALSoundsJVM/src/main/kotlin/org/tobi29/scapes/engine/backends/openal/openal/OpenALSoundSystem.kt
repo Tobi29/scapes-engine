@@ -291,7 +291,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     private fun isSoundPlaying(openAL: OpenAL): Boolean {
-        return sources.any { it == -1 || !openAL.isStopped(it) }
+        return sources.any { !openAL.isStopped(it) }
     }
 
     companion object : KLogging()
