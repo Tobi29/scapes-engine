@@ -32,7 +32,7 @@ abstract class Expression {
 class ShaderProgram(
         declarations: List<Statement>,
         functions: List<CallFunction>,
-        shaders: Map <String, Pair<Scope, (Scope) -> ShaderFunction>>,
+        shaders: Map<String, Pair<Scope, (Scope) -> ShaderFunction>>,
         val outputs: ShaderSignature?,
         uniforms: List<Uniform?>,
         properties: List<Property>) {
@@ -251,11 +251,51 @@ data class FunctionExportedSignature(val name: String,
                 vararg parameters: TypeExported) : this(name, returned,
             listOf(*parameters))
 
+    private val hash = run {
+        var result = name.hashCode()
+        result = 31 * result + returned.hashCode()
+        result = 31 * result + parameters.hashCode()
+        result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FunctionExportedSignature) return false
+
+        if (hash != other.hash) return false
+        if (name != other.name) return false
+        if (returned != other.returned) return false
+        if (parameters != other.parameters) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = hash
+
     val call by lazy { FunctionParameterSignature(name, parameters) }
 }
 
 data class FunctionParameterSignature(val name: String,
-                                      val parameters: List<TypeExported>)
+                                      val parameters: List<TypeExported>) {
+    private val hash = run {
+        var result = name.hashCode()
+        result = 31 * result + parameters.hashCode()
+        result
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FunctionParameterSignature) return false
+
+        if (hash != other.hash) return false
+        if (name != other.name) return false
+        if (parameters != other.parameters) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int = hash
+}
 
 class Type(val type: Types,
            val array: Expression? = null,
