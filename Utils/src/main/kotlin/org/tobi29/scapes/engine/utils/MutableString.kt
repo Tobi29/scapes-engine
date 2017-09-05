@@ -60,7 +60,7 @@ class MutableString(initial: Int = 0) : CharSequence, Appendable {
                array: CharArray,
                offset: Int = 0,
                length: Int = array.size): MutableString {
-        if (position < 0 || position > length) {
+        if (position < 0 || position > this.length) {
             throw IndexOutOfBoundsException("$position")
         }
         ensure(length)
