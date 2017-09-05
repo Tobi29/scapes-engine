@@ -40,8 +40,8 @@ internal class ShaderGL(override val gos: GraphicsObjectSupplier,
 
     init {
         val shaders = GLUtils.compileShader(shader, properties)
-        vertexSource = shaders.first
-        fragmentSource = shaders.second
+        vertexSource = shaders.vertex
+        fragmentSource = shaders.fragment
     }
 
     override fun ensureStored(gl: GL): Boolean {

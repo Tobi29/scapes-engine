@@ -16,14 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.shader.backend.glsl
 
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.shader.*
 
 class GLSLGenerator(private val version: GLSLGenerator.Version) {
-    private var output = StringBuilder(1024)
+    private var output = MutableString(2048)
     private val identifiers = HashMap<Identifier, Expression>()
     private lateinit var context: ShaderContext
     private val functionImplementations = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
@@ -352,17 +349,32 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    fun generateVertex(scope: Scope,
-                       shader: CompiledShader,
-                       properties: Map<String, Expression>): String {
-        if (output.isNotEmpty()) {
-            // output.delete(0, output.length - 1)
-            output = StringBuilder(1024)
-        }
+    fun generate(scope: Scope,
+                 shader: CompiledShader,
+                 properties: Map<String, Expression>): GLSLProgram {
+        context = ShaderContext(shader.functionMap + stdFunctions2,
+                STDLib.functions, properties)
+
         init(scope)
-        context = ShaderContext(shader.functionMap + stdFunctions.map {
-            Pair(it.key.call, it.key)
-        }, STDLib.functions, properties)
+        val vertex = generateVertex(shader, properties)
+        identifiers.clear()
+        functionImplementations.clear()
+
+        init(scope)
+        val fragment = generateFragment(shader, properties)
+        identifiers.clear()
+        functionImplementations.clear()
+
+        return GLSLProgram(
+                vertex = vertex,
+                fragment = fragment)
+    }
+
+    private fun generateVertex(shader: CompiledShader,
+                               properties: Map<String, Expression>): String {
+        if (output.isNotEmpty()) {
+            output.clear()
+        }
         val shaderVertex = shader.shaderVertex ?: throw IllegalStateException(
                 "No vertex shader")
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
@@ -379,22 +391,14 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         functions(shader.functions)
         println()
         shader(shaderVertex)
-        identifiers.clear()
-        functionImplementations.clear()
         return output.toString()
     }
 
-    fun generateFragment(scope: Scope,
-                         shader: CompiledShader,
-                         properties: Map<String, Expression>): String {
+    private fun generateFragment(shader: CompiledShader,
+                                 properties: Map<String, Expression>): String {
         if (output.isNotEmpty()) {
-            // output.delete(0, output.length - 1)
-            output = StringBuilder(1024)
+            output.clear()
         }
-        init(scope)
-        context = ShaderContext(shader.functionMap + stdFunctions.map {
-            Pair(it.key.call, it.key)
-        }, STDLib.functions, properties)
         val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
                 "No fragment shader")
         val outputs = shader.outputs ?: throw IllegalStateException(
@@ -410,8 +414,6 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         functions(shader.functions)
         println()
         shader(shaderFragment)
-        identifiers.clear()
-        functionImplementations.clear()
         return output.toString()
     }
 
@@ -598,22 +600,18 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             stdFunctions = functions.readOnly()
         }
 
+        private val stdFunctions2 = stdFunctions.map { it.key.call to it.key }.toMap()
+
         private fun glslFunction(name: String,
                                  vararg args: String) =
                 "$name(${args.joinToString()})"
 
         fun generate(version: Version,
                      shader: CompiledShader,
-                     properties: Map<String, Expression>): Pair<String, String> {
-            val generator = generator.computeAbsent(version) {
-                ThreadLocal { GLSLGenerator(version) }
-            }.get()
-            val vertexSource = generator.generateVertex(shader.scope,
-                    shader, properties)
-            val fragmentSource = generator.generateFragment(shader.scope,
-                    shader, properties)
-            return Pair(vertexSource, fragmentSource)
-        }
+                     properties: Map<String, Expression>): GLSLProgram =
+                generator.computeAbsent(version) {
+                    ThreadLocal { GLSLGenerator(version) }
+                }.get().generate(shader.scope, shader, properties)
 
         private val generator = ConcurrentHashMap<Version, ThreadLocal<GLSLGenerator>>()
     }
@@ -623,6 +621,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         GLES_300
     }
 }
+
+data class GLSLProgram(val vertex: String,
+                       val fragment: String)
 
 class GLSLExpression(val type: TypeExported,
                      val code: String) : Expression() {
