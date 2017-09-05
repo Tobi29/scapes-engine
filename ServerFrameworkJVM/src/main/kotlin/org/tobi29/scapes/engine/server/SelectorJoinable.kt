@@ -20,26 +20,23 @@ import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.task.Joiner
 import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
 
-class SelectorJoinable(val selector: Selector) : Joiner.Joinable {
-    override val joiner = Joiner(this)
+class SelectorJoinable(private val selector: Selector) {
+    val joiner = Joiner(this)
     private val woken = AtomicBoolean()
     private val joinedMut = AtomicBoolean()
     private val markedMut = AtomicBoolean()
     private val completionTasks = ConcurrentLinkedQueue<() -> Unit>()
-    override val joined: Boolean
-        get() = joinedMut.get()
-    override val marked: Boolean
-        get() = markedMut.get()
+    val joined: Boolean get() = joinedMut.get()
+    val marked: Boolean get() = markedMut.get()
 
-    override fun mark() {
+    fun mark() {
         markedMut.set(true)
     }
 
-    override fun joinWait(time: Long) {
+    fun joinWait(time: Long) {
         synchronized(this) {
             try {
                 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
@@ -49,7 +46,7 @@ class SelectorJoinable(val selector: Selector) : Joiner.Joinable {
         }
     }
 
-    override fun join() {
+    fun join() {
         synchronized(this) {
             joinedMut.set(true)
             while (completionTasks.isNotEmpty()) {
@@ -60,27 +57,27 @@ class SelectorJoinable(val selector: Selector) : Joiner.Joinable {
         }
     }
 
-    override fun wake() {
+    fun wake() {
         woken.set(true)
         try {
             selector.wakeup()
-        } catch(e: ClosedSelectorException) {
+        } catch (e: ClosedSelectorException) {
         }
     }
 
-    override fun sleep(time: Long) {
+    fun sleep(time: Long) {
         if (!woken.getAndSet(false)) {
             try {
                 selector.select(time)
                 selector.selectedKeys().clear()
             } catch (e: IOException) {
                 logger.warn { "Error when waiting with selector: $e" }
-            } catch(e: ClosedSelectorException) {
+            } catch (e: ClosedSelectorException) {
             }
         }
     }
 
-    override fun onCompletion(runnable: () -> Unit): Boolean {
+    fun onCompletion(runnable: () -> Unit): Boolean {
         if (joined) {
             return false
         }

@@ -17,27 +17,26 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.Job
 import org.tobi29.scapes.engine.utils.ComponentRegistered
 import org.tobi29.scapes.engine.utils.ComponentTypeRegisteredUniversal
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.task.BasicJoinable
-import org.tobi29.scapes.engine.utils.task.Joiner
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import java.nio.channels.Selector
+import org.tobi29.scapes.engine.utils.task.launchThread
+import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Class for processing non-blocking connections asynchronously with possibly
  * multiple threads
- * @param taskExecutor The [TaskExecutor] to start threads with
+ * @param taskExecutor The [CoroutineContext] to start threads with
  * @param maxWorkerSleep Maximum sleep time in milliseconds
  */
 class ConnectionManager(
         /**
-         * The [TaskExecutor] to start threads with
+         * The [CoroutineContext] to start threads with
          */
-        val taskExecutor: TaskExecutor,
+        val taskExecutor: CoroutineContext,
         private val maxWorkerSleep: Long = 1000) : ComponentRegistered {
     private val workers = ArrayList<ConnectionWorker>()
     private val joiners = ConcurrentLinkedQueue<Joiner>()
@@ -50,30 +49,22 @@ class ConnectionManager(
      */
     fun workers(workerCount: Int) {
         logger.info { "Starting worker $workerCount threads..." }
-        val newWorkers = ConcurrentLinkedQueue<ConnectionWorker>()
-        val joiners = ArrayList<Joiner>()
         for (i in 0 until workerCount) {
-            val joiner = SelectorJoinable(Selector.open())
-            val startJoiner = BasicJoinable()
-            this.joiners.add(taskExecutor.runThread({ joiner ->
-                val worker = ConnectionWorker(this, joiner, maxWorkerSleep)
-                newWorkers.add(worker)
-                startJoiner.join()
+            val worker = ConnectionWorker(this, maxWorkerSleep)
+            workers.add(worker)
+            launchThread("Connection-Worker-$i", taskExecutor[Job]) {
                 try {
                     worker.run()
                 } finally {
+                    worker.joiner.join()
                     try {
-                        joiner.selector.close()
+                        worker.close()
                     } catch (e: IOException) {
-                        logger.warn { "Failed to close selector: $e" }
+                        logger.warn { "Failed to close worker: $e" }
                     }
                 }
-            }, "Connection-Worker-" + i, joiner = joiner))
-            joiners.add(startJoiner.joiner)
-        }
-        Joiner(joiners).join()
-        while (newWorkers.isNotEmpty()) {
-            newWorkers.poll()?.let { workers.add(it) }
+            }
+            joiners.add(worker.joiner.joiner)
         }
     }
 

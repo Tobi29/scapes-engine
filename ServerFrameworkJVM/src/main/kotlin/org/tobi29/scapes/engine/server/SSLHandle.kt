@@ -21,7 +21,6 @@ import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 import org.tobi29.scapes.engine.utils.io.WritableByteChannel
 import org.tobi29.scapes.engine.utils.isAndroidAPI
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.toArray
 import java.security.KeyStore
 import java.security.KeyStoreException
@@ -29,6 +28,7 @@ import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
+import kotlin.coroutines.experimental.CoroutineContext
 
 class SSLHandle(keyManagers: Array<KeyManager>?,
                 trustManagers: Array<TrustManager>?,
@@ -81,14 +81,14 @@ class SSLHandle(keyManagers: Array<KeyManager>?,
 
     fun newSSLChannel(address: RemoteAddress,
                       channel: ByteChannel,
-                      taskExecutor: TaskExecutor,
+                      taskExecutor: CoroutineContext,
                       client: Boolean) =
             newSSLChannel(address, channel, channel, taskExecutor, client)
 
     fun newSSLChannel(address: RemoteAddress,
                       channelRead: ReadableByteChannel,
                       channelWrite: WritableByteChannel,
-                      taskExecutor: TaskExecutor,
+                      taskExecutor: CoroutineContext,
                       client: Boolean): SSLChannel {
         val engine = newEngine(address).apply {
             needClientAuth = client

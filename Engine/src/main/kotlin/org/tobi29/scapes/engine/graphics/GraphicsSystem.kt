@@ -79,8 +79,8 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     fun render(gl: GL,
                delta: Double,
                contentWidth: Int,
-               contentHeight: Int) {
-        synchronized(this) {
+               contentHeight: Int): Boolean {
+        return synchronized(this) {
             try {
                 gl.checkError("Pre-Render")
                 gl.step(delta)
@@ -105,11 +105,12 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
                         this.renderState = state
                     }
                 }
+                executeDispatched(gl)
                 gl.setViewport(0, 0, gl.contentWidth, gl.contentHeight)
                 profilerSection("State") {
-                    state.renderState(gl, delta, fboSizeDirty)
+                    if (!state.renderState(gl, delta,
+                            fboSizeDirty)) return@synchronized false
                 }
-                executeDispatched(gl)
                 fpsDebug.setValue(1.0 / delta)
                 textureDebug.setValue(gos.textureTracker.count())
                 vaoDebug.setValue(gos.vaoTracker.count())
@@ -125,6 +126,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
             } catch (e: GraphicsException) {
                 logger.warn { "Graphics error during rendering: $e" }
             }
+            true
         }
     }
 

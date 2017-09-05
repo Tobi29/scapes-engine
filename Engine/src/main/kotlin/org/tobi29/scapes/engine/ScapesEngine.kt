@@ -31,19 +31,16 @@ import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
-import org.tobi29.scapes.engine.utils.task.UpdateLoop
 import kotlin.coroutines.experimental.CoroutineContext
 
 header class ScapesEngine(
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-        taskExecutor: TaskExecutor,
+        taskExecutor: CoroutineContext,
         configMap: MutableTagMap
 ) : CoroutineDispatcher, ComponentHolder<Any>, ByteBufferProvider {
     override val componentStorage: ComponentStorage<Any>
-    val taskExecutor: TaskExecutor
-    val loop: UpdateLoop
+    val taskExecutor: CoroutineContext
     val files: FileSystemContainer
     val events: EventDispatcher
     val resources: ResourceLoader
@@ -65,8 +62,8 @@ header class ScapesEngine(
 
     fun switchState(state: GameState)
     fun start()
-    fun halt()
-    fun dispose()
+    suspend fun halt()
+    suspend fun dispose()
     fun debugMap(): Map<String, String>
     fun isMouseGrabbed(): Boolean
 

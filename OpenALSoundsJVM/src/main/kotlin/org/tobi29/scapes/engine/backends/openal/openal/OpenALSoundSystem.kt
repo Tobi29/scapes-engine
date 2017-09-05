@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal
 
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.ScapesEngineConfig
 import org.tobi29.scapes.engine.backends.openal.openal.internal.*
@@ -23,6 +25,7 @@ import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
@@ -34,12 +37,12 @@ import org.tobi29.scapes.engine.utils.math.threadLocalRandom
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import org.tobi29.scapes.engine.utils.sleepNanos
 import org.tobi29.scapes.engine.utils.steadyClock
-import org.tobi29.scapes.engine.utils.task.Joiner
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import org.tobi29.scapes.engine.utils.task.ThreadJob
 import org.tobi29.scapes.engine.utils.task.Timer
+import org.tobi29.scapes.engine.utils.task.launchThread
 import org.tobi29.scapes.engine.volume
+import java.util.concurrent.locks.LockSupport
 
 class OpenALSoundSystem(override val engine: ScapesEngine,
                         openAL: OpenAL,
@@ -50,14 +53,15 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     private val queue = ConcurrentLinkedQueue<(OpenAL) -> Unit>()
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
-    private val joiner: Joiner
+    private var updateJob: Pair<ThreadJob, AtomicBoolean>? = null
     private var origin = Vector3d.ZERO
     private var listenerPosition = Vector3d.ZERO
     private var listenerOrientation = Vector3d.ZERO
     private var listenerVelocity = Vector3d.ZERO
 
     init {
-        joiner = engine.taskExecutor.runThread({ joiner ->
+        val stop = AtomicBoolean(false)
+        updateJob = launchThread("Engine-Sounds", engine.taskExecutor[Job]) {
             openAL.create(speedOfSound)
             for (i in sources.indices) {
                 sources[i] = openAL.createSource()
@@ -66,18 +70,30 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             val timer = Timer()
             val maxDiff = roundL(latency * 1000000.0)
             timer.init()
-            while (!joiner.marked) {
-                val tickDiff = timer.cap(maxDiff, ::sleepNanos)
+            var active = true
+            while (!stop.get()) {
+                val tickDiff =
+                        if (active) {
+                            timer.cap(maxDiff, { LockSupport.parkNanos(it) })
+                        } else {
+                            LockSupport.park()
+                            0L
+                        }
                 try {
                     val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
-                    while (!queue.isEmpty()) {
-                        queue.poll()?.invoke(openAL)
+                    active = false
+                    if (queue.isNotEmpty()) {
+                        while (true) {
+                            (queue.poll() ?: break).invoke(openAL)
+                        }
+                        active = true
                     }
                     val iterator = audios.iterator()
+                    if (iterator.hasNext()) active = true
                     while (iterator.hasNext()) {
                         val element = iterator.next()
-                        if (element.poll(this, openAL, listenerPosition,
-                                delta)) {
+                        if (element.poll(this@OpenALSoundSystem, openAL,
+                                listenerPosition, delta)) {
                             iterator.remove()
                         }
                     }
@@ -85,20 +101,21 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                     openAL.setListener(listenerPosition.minus(origin),
                             listenerOrientation, listenerVelocity)
                     val distance = origin.distanceSqr(listenerPosition)
-                    if (distance > 1024.0 && (distance > 4096.0 || !isSoundPlaying(
-                            openAL))) {
+                    if (distance > 1024.0
+                            && (distance > 4096.0 || !isSoundPlaying(openAL))) {
                         origin = listenerPosition
                     }
                     openAL.checkError("Updating-System")
+                    if (!active) active = isSoundPlaying(openAL)
                 } catch (e: SoundException) {
                     logger.warn { "Error polling sound-system: $e" }
                 }
             }
             try {
-                audios.forEach { it.stop(this, openAL) }
+                audios.forEach { it.stop(this@OpenALSoundSystem, openAL) }
                 audios.clear()
                 for (audioData in cache.values) {
-                    audioData.dispose(this, openAL)
+                    audioData.dispose(this@OpenALSoundSystem, openAL)
                 }
                 for (i in sources.indices) {
                     val source = sources[i]
@@ -112,7 +129,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 logger.warn { "Error disposing sound-system: $e" }
             }
             openAL.destroy()
-        }, "Sound", TaskExecutor.Priority.HIGH)
+        } to stop
     }
 
     override fun setListener(position: Vector3d,
@@ -213,7 +230,11 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     override fun dispose() {
-        joiner.join()
+        updateJob?.let { (job, stop) ->
+            stop.set(true)
+            LockSupport.unpark(job.thread)
+            runBlocking { job.join() }
+        }
     }
 
     internal fun volume(channel: String): Double {
@@ -287,7 +308,9 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
 
     private fun queue(consumer: (OpenAL) -> Unit) {
         queue.add(consumer)
-        joiner.wake()
+        updateJob?.let { (job, _) ->
+            LockSupport.unpark(job.thread)
+        }
     }
 
     private fun isSoundPlaying(openAL: OpenAL): Boolean {

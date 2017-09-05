@@ -14,31 +14,20 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.task
+package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
 import org.tobi29.scapes.engine.utils.AtomicInteger
 import org.tobi29.scapes.engine.utils.Queue
 import org.tobi29.scapes.engine.utils.logging.KLogging
 
-open class Joiner {
-    private val joinables: Array<Joinable>
-
-    constructor(thread: Joinable) {
-        joinables = arrayOf(thread)
-    }
-
-    constructor(joiners: Queue<Joiner>) : this(collectQueue(joiners))
+class Joiner(private val joinables: Array<SelectorJoinable>) {
+    constructor(thread: SelectorJoinable) : this(arrayOf(thread))
 
     constructor(joiners: Collection<Joiner>) : this(*joiners.toTypedArray())
 
-    constructor(vararg joiners: Joiner) {
-        val list = ArrayList<Joinable>(joiners.size)
-        for (joiner in joiners) {
-            list.addAll(joiner.joinables)
-        }
-        joinables = list.toTypedArray()
-    }
+    constructor(vararg joiners: Joiner) : this(
+            joiners.flatMap { it.joinables.asIterable() }.toTypedArray())
 
     fun wake() {
         joinables.forEach { it.wake() }
@@ -63,7 +52,7 @@ open class Joiner {
         }
         for (thread in joinables) {
             while (!thread.joined) {
-                thread.wake() {
+                thread.wake {
                     if (!supplier()) {
                         return
                     }
@@ -97,19 +86,6 @@ open class Joiner {
         }
     }
 
-    interface Joinable {
-        val joiner: Joiner
-        val joined: Boolean
-        val marked: Boolean
-
-        fun mark()
-        fun join()
-        fun wake()
-        fun joinWait(time: Long = 0)
-        fun sleep(time: Long = 0)
-        fun onCompletion(runnable: () -> Unit): Boolean
-    }
-
     companion object : KLogging() {
         private fun <E> collectQueue(queue: Queue<E>): ArrayList<E> {
             val list = ArrayList<E>()
@@ -121,7 +97,7 @@ open class Joiner {
     }
 }
 
-inline fun Joiner.Joinable.wake(block: () -> Unit) {
+inline fun SelectorJoinable.wake(block: () -> Unit) {
     wake()
     block()
 }

@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
-import org.tobi29.scapes.engine.utils.assert
 
 abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0
@@ -41,52 +40,34 @@ abstract class GameState(val engine: ScapesEngine) {
 
     fun renderState(gl: GL,
                     delta: Double,
-                    updateSize: Boolean) {
+                    updateSize: Boolean): Boolean {
         while (newPipeline.isNotEmpty()) {
-            newPipeline.poll()?.let { (sync, newPipeline) ->
-                finishPipeline(gl, Pipeline(gl, newPipeline), sync)
+            newPipeline.poll()?.let { (_, newPipeline) ->
+                finishPipeline(gl, Pipeline(gl, newPipeline))
             }
         }
         updateLoadedPipeline()
-        val pipeline = pipeline
-        if (pipeline == null) {
-            gl.clear(1.0f, 0.0f, 0.0f, 1.0f)
-        } else {
-            if (dirtyPipeline.getAndSet(false) || updateSize) {
-                val rebuiltPipeline = pipeline.rebuild(gl)
-                var done = false
-                launch(engine.graphics) {
-                    rebuiltPipeline.finish()
-                    done = true
-                }
-                while (!done) {
-                    engine.graphics.executeDispatched(gl)
-                }
-                this.pipeline = rebuiltPipeline
+        var pipeline = pipeline ?: return false
+        if (dirtyPipeline.getAndSet(false) || updateSize) {
+            pipeline = pipeline.rebuild(gl)
+            launch(engine.graphics) {
+                pipeline.finish()
             }
-            renderStep(delta)
-            this.pipeline?.render(delta)
+            this.pipeline = pipeline
         }
+        renderStep(delta)
+        return pipeline.render(delta)
     }
 
     private fun finishPipeline(gl: GL,
-                               pipeline: Pipeline,
-                               sync: Boolean) {
+                               pipeline: Pipeline) {
         var loaded: (() -> Unit)? = null
-        var done = false
         newPipelineLoaded = { loaded }
         launch(engine.graphics) {
             pipeline.finish()
             loaded = { this@GameState.pipeline = pipeline }
-            done = true
-        }
-        if (sync) {
-            while (!done) {
-                engine.graphics.executeDispatched(gl)
-            }
         }
         updateLoadedPipeline()
-        assert { !sync || this.pipeline != null }
     }
 
     private fun updateLoadedPipeline() {

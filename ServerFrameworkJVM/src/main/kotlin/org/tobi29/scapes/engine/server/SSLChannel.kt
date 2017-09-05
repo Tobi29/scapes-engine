@@ -15,20 +15,22 @@
  */
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.CoroutineName
+import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.AtomicInteger
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.*
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.nio.channels.ByteChannel
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
+import kotlin.coroutines.experimental.CoroutineContext
 
 class SSLChannel(address: RemoteAddress,
                  private val channelRead: ReadableByteChannel,
                  private val channelWrite: WritableByteChannel,
-                 taskExecutor: TaskExecutor,
+                 taskExecutor: CoroutineContext,
                  ssl: SSLHandle,
                  engine: SSLEngine
 ) : SSLLayer(address, taskExecutor, ssl, engine), ByteChannel {
@@ -101,7 +103,7 @@ class SSLChannel(address: RemoteAddress,
 }
 
 abstract class SSLLayer(private val address: RemoteAddress,
-                        private val taskExecutor: TaskExecutor,
+                        private val taskExecutor: CoroutineContext,
                         private val ssl: SSLHandle,
                         private val engine: SSLEngine) {
     private val taskCounter = AtomicInteger()
@@ -142,7 +144,13 @@ abstract class SSLLayer(private val address: RemoteAddress,
             if (state == State.HANDSHAKE) {
                 if (handshake()) {
                     state = State.VERIFY
-                    taskExecutor.runTask({ verifySSL() }, "SSL-Verify")
+                    launch(taskExecutor + CoroutineName("SSL-Verify")) {
+                        try {
+                            verifySSL()
+                        } finally {
+                            taskCounter.decrementAndGet()
+                        }
+                    }
                 } else {
                     continue
                 }
@@ -269,10 +277,13 @@ abstract class SSLLayer(private val address: RemoteAddress,
                     val task = engine.delegatedTask
                     if (task != null) {
                         taskCounter.incrementAndGet()
-                        taskExecutor.runTask({
-                            task.run()
-                            taskCounter.decrementAndGet()
-                        }, "SSLEngine-Task")
+                        launch(taskExecutor + CoroutineName("SSLEngine-Task")) {
+                            try {
+                                task.run()
+                            } finally {
+                                taskCounter.decrementAndGet()
+                            }
+                        }
                     }
                 }
                 else -> throw IllegalStateException(

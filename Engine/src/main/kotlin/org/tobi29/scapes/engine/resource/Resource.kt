@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.resource
 
+import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
@@ -23,56 +24,28 @@ import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 interface Resource<out T : Any> {
     fun tryGet(): T?
 
-    fun get(): T
-
-    fun onLoaded(block: () -> Unit)
+    fun onLoaded(block: (T) -> Unit)
 
     suspend fun getAsync(): T
 }
 
-internal class ImmediateResource<out T : Any>(val loaded: T) : Resource<T> {
-    override fun tryGet(): T? = get()
+internal class ImmediateResource<out T : Any>(private val loaded: T) : Resource<T> {
+    override fun tryGet(): T? = loaded
 
-    override fun get(): T = loaded
+    override fun onLoaded(block: (T) -> Unit) = block(loaded)
 
-    override fun onLoaded(block: () -> Unit) = block()
-
-    override suspend fun getAsync(): T = get()
+    override suspend fun getAsync(): T = loaded
 }
 
-class LazyResource<out T : Any>(load: suspend () -> T) : Resource<T> {
-    private val completionTasks = ConcurrentLinkedQueue<() -> Unit>()
-    private val load = AtomicReference<(suspend () -> T)?>(load)
-    private val loaded by lazy {
-        val result = this.load.get()!!.let { runBlocking { it() } }
-        synchronized(this) {
-            this.load.set(null)
-            while (completionTasks.isNotEmpty()) {
-                completionTasks.poll()?.invoke()
-            }
-        }
-        result
+class DeferredResource<out T : Any>(private val loaded: Deferred<T>) : Resource<T> {
+    override fun tryGet(): T? =
+            if (loaded.isCompleted) loaded.getCompleted() else null
+
+    override fun onLoaded(block: (T) -> Unit) {
+        loaded.invokeOnCompletion { block(loaded.getCompleted()) }
     }
 
-    override fun tryGet(): T? = get()
-
-    override fun get(): T = loaded
-
-    override fun onLoaded(block: () -> Unit) {
-        if (load.get() != null) {
-            block()
-            return
-        }
-        synchronized(this) {
-            if (load.get() != null) {
-                block()
-            } else {
-                completionTasks.add(block)
-            }
-        }
-    }
-
-    override suspend fun getAsync(): T = get()
+    override suspend fun getAsync(): T = loaded.await()
 }
 
 fun <T : Any> Resource(resource: T): Resource<T> = ImmediateResource(resource)

@@ -16,16 +16,32 @@
 
 package org.tobi29.scapes.engine.resource
 
+import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
+import org.tobi29.scapes.engine.utils.task.TaskLock
+import kotlin.coroutines.experimental.CoroutineContext
 
-header class ResourceLoader(taskExecutor: TaskExecutor) {
-    fun <T : Any> load(supplier: suspend () -> T): Resource<T>
+class ResourceLoader(private val taskExecutor: CoroutineContext) {
+    private val tasks = TaskLock()
 
-    fun onDone(block: () -> Unit)
+    fun <T : Any> load(supplier: suspend () -> T): Resource<T> {
+        tasks.increment()
+        return DeferredResource(async(taskExecutor) {
+            try {
+                supplier()
+            } finally {
+                tasks.decrement()
+            }
+        })
+    }
 
-    fun isDone(): Boolean
+    fun onDone(block: () -> Unit) = tasks.onDone(block)
+
+    val activeTasks: Int get() = tasks.activeTasks
+
+    fun isDone() = tasks.isDone()
 }
+
 
 suspend fun ResourceLoader.awaitDone() {
     return suspendCancellableCoroutine { cont ->

@@ -15,6 +15,8 @@
  */
 package org.tobi29.scapes.engine.graphics
 
+import kotlinx.coroutines.experimental.CoroutineName
+import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.gui.GuiRenderBatch
@@ -198,10 +200,10 @@ class FontRenderer(private val engine: ScapesEngine,
                     engine.allocate(4), 0, TextureFilter.LINEAR,
                     TextureFilter.LINEAR,
                     TextureWrap.CLAMP, TextureWrap.CLAMP)
-            engine.taskExecutor.runTask({
+            launch(engine.taskExecutor + CoroutineName("Render-Glyph-Page")) {
                 texture.setBuffer(renderer.page(id, engine), imageSize,
                         imageSize)
-            }, "Render-Glyph-Page")
+            }
             if (pages.size <= id) {
                 val newPages = arrayOfNulls<GlyphPage>(id + 1)
                 copy(pages, newPages)

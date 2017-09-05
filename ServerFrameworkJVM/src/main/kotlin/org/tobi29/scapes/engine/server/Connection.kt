@@ -89,7 +89,7 @@ suspend fun connect(worker: ConnectionWorker,
     try {
         channel.configureBlocking(false)
         channel.connect(address)
-        channel.register(worker.joiner.selector, SelectionKey.OP_CONNECT)
+        channel.register(worker.selector, SelectionKey.OP_CONNECT)
         while (!channel.finishConnect()) {
             yield()
         }

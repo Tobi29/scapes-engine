@@ -34,18 +34,25 @@ class TextureManager(private val engine: ScapesEngine) {
         return cache.computeAbsent(asset) { load(asset) }
     }
 
+    fun getNow(asset: String): Texture {
+        cache[asset]?.tryGet()?.let { return it }
+        return loadNow(asset).also { cache[asset] = Resource(it) }
+    }
+
     private fun load(asset: String): Resource<Texture> {
-        return engine.resources.load res@ {
-            val files = engine.files
-            val imageResource = files["$asset.png"]
-            val propertiesResource = files["$asset.json"]
-            val properties = if (propertiesResource.exists()) {
-                propertiesResource.read { readJSON(it) }
-            } else {
-                TagMap()
-            }
-            imageResource.read { texture(it, properties) }
+        return engine.resources.load { loadNow(asset) }
+    }
+
+    private fun loadNow(asset: String): Texture {
+        val files = engine.files
+        val imageResource = files["$asset.png"]
+        val propertiesResource = files["$asset.json"]
+        val properties = if (propertiesResource.exists()) {
+            propertiesResource.read { readJSON(it) }
+        } else {
+            TagMap()
         }
+        return imageResource.read { texture(it, properties) }
     }
 
     private fun texture(stream: ReadableByteStream,

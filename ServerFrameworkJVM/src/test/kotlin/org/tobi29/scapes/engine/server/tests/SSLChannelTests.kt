@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.server.tests
 
+import kotlinx.coroutines.experimental.CommonPool
+import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
@@ -24,11 +26,9 @@ import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.server.*
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.AtomicLong
-import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.fill
-import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import java.nio.channels.Pipe
 import java.security.KeyStoreException
 import javax.net.ssl.KeyManager
@@ -39,12 +39,7 @@ object SSLChannelTests : Spek({
         val sslServer = SSLHandle(getKeyManagers())
         val sslClient = SSLHandle.insecure()
         on("writing data through a pipe") {
-            val taskExecutor = TaskExecutor(object : Crashable {
-                override fun crash(e: Throwable): Nothing {
-                    e.printStackTrace()
-                    throw e
-                }
-            }, "Test")
+            val taskExecutor = CommonPool
 
             val success = AtomicLong(0L)
 
@@ -63,7 +58,7 @@ object SSLChannelTests : Spek({
                     sslClient.newSSLChannel(address, sourceRight, sinkRight,
                             taskExecutor, true), taskExecutor, false)
 
-            taskExecutor.runTask({
+            launch(taskExecutor) {
                 val bufferSend = ByteBuffer(1024).apply { fill { 42 }.flip() }
                 val bufferReceive = ByteBuffer(1024)
                 while (bufferSend.hasRemaining()) {
@@ -100,9 +95,9 @@ object SSLChannelTests : Spek({
                 channelLeft.finishAsync()
 
                 success.getAndIncrement()
-            }, "Left")
+            }
 
-            taskExecutor.runTask({
+            launch(taskExecutor) {
                 val bufferSend = ByteBuffer(1024).apply { fill { 43 }.flip() }
                 while (bufferSend.hasRemaining()) {
                     channelRight.write(bufferSend)
@@ -139,9 +134,7 @@ object SSLChannelTests : Spek({
                 channelRight.finishAsync()
 
                 success.getAndIncrement()
-            }, "Right")
-
-            taskExecutor.shutdown()
+            }
 
             it("should successfully handle both streams") {
                 success.get() shouldEqual 2L

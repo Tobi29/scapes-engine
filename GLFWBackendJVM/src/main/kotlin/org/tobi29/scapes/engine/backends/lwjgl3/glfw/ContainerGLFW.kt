@@ -255,7 +255,7 @@ class ContainerGLFW(engine: ScapesEngine,
             val time = steadyClock.timeSteadyNanos()
             GLFW.glfwPollEvents()
             controllers.poll()
-            profilerSection("Render") {
+            val swap = profilerSection("Render") {
                 engine.graphics.render(gl,
                         Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
                         contentWidth, contentHeight)
@@ -284,10 +284,12 @@ class ContainerGLFW(engine: ScapesEngine,
                 tickDiff = timer.cap(Timer.toDiff(engineConfig.fps),
                         ::sleepNanos)
             }
-            GLFW.glfwSwapBuffers(window)
-            if (!visible) {
-                GLFW.glfwShowWindow(window)
-                visible = true
+            if (swap) {
+                GLFW.glfwSwapBuffers(window)
+                if (!visible) {
+                    GLFW.glfwShowWindow(window)
+                    visible = true
+                }
             }
             if (vSync && plebSyncEnable) {
                 val maxDiff = 1000000000L / refreshRate

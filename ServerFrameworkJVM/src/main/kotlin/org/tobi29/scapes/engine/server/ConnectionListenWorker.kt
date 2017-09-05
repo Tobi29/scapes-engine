@@ -40,8 +40,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
             channel.socket().bind(address)
             connections.addConnection(-1) { worker, connection ->
                 channel.use {
-                    channel.register(worker.joiner.selector,
-                            SelectionKey.OP_ACCEPT)
+                    channel.register(worker.selector, SelectionKey.OP_ACCEPT)
                     while (!connection.shouldClose) {
                         val client = channel.accept()
                         if (client == null) {
@@ -57,7 +56,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                             }
                             if (!connections.addConnection { worker, connection ->
                                 try {
-                                    client.register(worker.joiner.selector,
+                                    client.register(worker.selector,
                                             SelectionKey.OP_READ)
                                     val secureChannel = ssl.newSSLChannel(
                                             RemoteAddress(address), client,
@@ -72,7 +71,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                     bundleChannel.inputStream[header]
                                     val id = bundleChannel.inputStream.get()
                                     if (header contentEquals connectionHeader) {
-                                        client.register(worker.joiner.selector,
+                                        client.register(worker.selector,
                                                 SelectionKey.OP_READ)
                                         onConnect(worker, bundleChannel, id,
                                                 connection)

@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.sync.Mutex
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -32,22 +32,22 @@ import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
-import org.tobi29.scapes.engine.utils.task.*
+import org.tobi29.scapes.engine.utils.task.Timer
+import org.tobi29.scapes.engine.utils.task.launchThread
 import kotlin.coroutines.experimental.CoroutineContext
 
 impl class ScapesEngine(
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-        impl val taskExecutor: TaskExecutor,
+        impl val taskExecutor: CoroutineContext,
         configMap: MutableTagMap
 ) : CoroutineDispatcher(), ComponentHolder<Any>, ByteBufferProvider {
     impl override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskQueue<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
-    private var joiner: Joiner? = null
+    private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
     private var stateMut: GameState? = null
-    impl val loop = UpdateLoop(taskExecutor, null)
     impl val files = FileSystemContainer()
     impl val events = newEventDispatcher()
     impl val resources = ResourceLoader(taskExecutor)
@@ -133,52 +133,56 @@ impl class ScapesEngine(
         newState.set(state)
     }
 
-    @Synchronized
     impl fun start() {
-        if (joiner != null) {
-            return
-        }
-        val wait = BasicJoinable()
-        joiner = taskExecutor.runThread({ joiner ->
+        val stop = AtomicBoolean(false)
+        val mutex = Mutex(true)
+        var startTps = 1.0
+        val job = launch(taskExecutor + CoroutineName("Engine-State")) {
+            mutex.lock()
+            launchThread("Engine-State", taskExecutor[Job]) {
+                var tps = startTps
+                val timer = Timer()
+                timer.init()
+                while (!stop.get()) {
+                    val tickDiff = timer.cap(Timer.toDiff(tps), ::sleepNanos)
+                    tpsDebug.setValue(Timer.toTps(tickDiff))
+                    val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
+                    tps = step(delta)
+                }
+                components.asSequence().filterMap<ComponentLifecycle>()
+                        .forEach { it.halt() }
+            }.join()
+        } to stop
+        if (updateJob.compareAndSet(null, job)) {
             components.asSequence().filterMap<ComponentLifecycle>()
                     .forEach { it.start() }
-            var tps = step(0.0001)
-            val timer = Timer()
-            timer.init()
-            wait.join()
-            while (!joiner.marked) {
-                val tickDiff = timer.cap(Timer.toDiff(tps), ::sleepNanos)
-                tpsDebug.setValue(Timer.toTps(tickDiff))
-                val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
-                tps = step(delta)
-            }
-            components.asSequence().filterMap<ComponentLifecycle>()
-                    .forEach { it.halt() }
-        }, "State", TaskExecutor.Priority.HIGH)
-        wait.joiner.join()
+            startTps = step(0.0001)
+            mutex.unlock()
+        } else job.first.cancel()
     }
 
-    @Synchronized
-    impl fun halt() {
-        joiner?.let {
-            it.join()
-            joiner = null
+    impl suspend fun halt() {
+        updateJob.get()?.let { job ->
+            job.second.set(true)
+            job.first.join()
+            updateJob.compareAndSet(job, null)
         }
     }
 
-    @Synchronized
-    impl fun dispose() {
+    impl suspend fun dispose() {
         halt()
-        logger.info { "Disposing last state" }
-        stateMut?.dispose()
-        stateMut = null
-        logger.info { "Disposing sound system" }
-        sounds.dispose()
-        logger.info { "Disposing game" }
-        clearComponents()
-        logger.info { "Shutting down tasks" }
-        taskExecutor.shutdown()
-        logger.info { "Stopped Scapes-Engine" }
+        synchronized(this) {
+            logger.info { "Disposing last state" }
+            stateMut?.dispose()
+            stateMut = null
+            logger.info { "Disposing sound system" }
+            sounds.dispose()
+            logger.info { "Disposing game" }
+            clearComponents()
+            logger.info { "Shutting down tasks" }
+            taskExecutor[Job]?.cancel()
+            logger.info { "Stopped Scapes-Engine" }
+        }
     }
 
     impl fun debugMap(): Map<String, String> {
@@ -209,9 +213,6 @@ impl class ScapesEngine(
             }
             currentState = newState
         }
-        profilerSection("Tasks") {
-            loop.tick()
-        }
         profilerSection("Components") {
             components.asSequence().filterMap<ComponentStep>()
                     .forEach { it.step(delta) }
@@ -228,7 +229,7 @@ impl class ScapesEngine(
         profilerSection("State") {
             state.step(delta)
         }
-        profilerSection("Queue") {
+        profilerSection("Tasks") {
             queue.processCurrent { it(delta) }
         }
         return state.tps
@@ -238,3 +239,4 @@ impl class ScapesEngine(
         impl val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
     }
 }
+

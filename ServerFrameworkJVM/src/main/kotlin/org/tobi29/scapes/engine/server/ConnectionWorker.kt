@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.server
 import kotlinx.coroutines.experimental.*
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import java.nio.channels.Selector
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**
@@ -32,15 +33,13 @@ class ConnectionWorker(
          * The [ConnectionManager] that holds this worker
          */
         val connection: ConnectionManager,
-        /**
-         * The [SelectorJoinable] used for idling
-         */
-        val joiner: SelectorJoinable,
-        private val maxWorkerSleep: Long,
-        private val thread: Thread = Thread.currentThread()) : CoroutineDispatcher() {
+        private val maxWorkerSleep: Long
+) : CoroutineDispatcher(), AutoCloseable {
     private val connectionQueue = ConcurrentLinkedQueue<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
     private val connections = ArrayList<ConnectionHandle>()
     private val queue = TaskQueue<() -> Unit>()
+    val selector = Selector.open()
+    val joiner = SelectorJoinable(selector)
 
     /**
      * Returns an estimate for how many connections this worker is processing
@@ -124,6 +123,10 @@ class ConnectionWorker(
         }
     }
 
+    override fun close() {
+        selector.close()
+    }
+
     override fun dispatch(context: CoroutineContext,
                           block: Runnable) {
         queue.add {
@@ -133,10 +136,6 @@ class ConnectionWorker(
                 logger.warn { "Job cancelled: ${e.message}" }
             }
         }
-    }
-
-    override fun isDispatchNeeded(context: CoroutineContext): Boolean {
-        return thread == Thread.currentThread()
     }
 
     companion object : KLogging()

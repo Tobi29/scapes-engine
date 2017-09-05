@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.graphics
 class Pipeline(gl: GL,
                private val builder: (GL) -> suspend () -> (Double) -> Unit) {
     private var finisher: (suspend () -> (Double) -> Unit)? = builder(gl)
-    private lateinit var steps: (Double) -> Unit
+    private var steps: ((Double) -> Unit)? = null
 
     suspend fun finish() {
         finisher?.let { finisher ->
@@ -28,8 +28,9 @@ class Pipeline(gl: GL,
         }
     }
 
-    fun render(delta: Double) {
-        steps(delta)
+    fun render(delta: Double): Boolean {
+        (steps ?: return false)(delta)
+        return true
     }
 
     fun rebuild(gl: GL): Pipeline {
