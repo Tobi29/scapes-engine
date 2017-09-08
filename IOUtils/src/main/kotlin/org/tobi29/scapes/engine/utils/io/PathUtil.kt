@@ -74,10 +74,11 @@ abstract class StandardPathEnvironment : PathEnvironment {
 
     private tailrec fun String.sanitize(): String {
         val sanitized = replace("$separator$separator", separator)
-        if (this == sanitized) {
-            return removeSuffix(separator)
+        return when {
+            this == separator -> this
+            this == sanitized -> removeSuffix(separator)
+            else -> sanitized.sanitize()
         }
-        return sanitized.sanitize()
     }
 
     override fun String.resolve(path: String): String {
@@ -141,40 +142,43 @@ abstract class StandardPathEnvironment : PathEnvironment {
         return (backtrack + destinationRelative).joinToString(separator)
     }
 
-    override val String.fileName get() = lastIndexOf(separator).let {
-        if (it < 0) {
-            separator
-        } else if (it == 0 && this == separator) {
-            null
-        } else {
-            separator.substring(it + 1)
+    override val String.fileName
+        get() = lastIndexOf(separator).let {
+            if (it < 0) {
+                separator
+            } else if (it == 0 && this == separator) {
+                null
+            } else {
+                separator.substring(it + 1)
+            }
         }
-    }
 
     override val String.isAbsolute get() = startsWith(separator)
 
-    override val String.parent get() = sanitize().let {
-        val index = it.lastIndexOf(separator)
-        if (index < 0 && it.isNotEmpty()) {
-            ""
-        } else if (index < 0 || index == 0) {
-            null
-        } else {
-            it.substring(0, index)
-        }
-    }
-
-    override val String.components get() = sanitize().let {
-        if (isEmpty()) {
-            emptyList()
-        } else {
-            if (it.isAbsolute) {
-                it.substring(separator.length)
+    override val String.parent
+        get() = sanitize().let {
+            val index = it.lastIndexOf(separator)
+            if (index < 0 && it.isNotEmpty()) {
+                ""
+            } else if (index < 0 || index == 0) {
+                null
             } else {
-                it
-            }.split(separator)
+                it.substring(0, index)
+            }
         }
-    }
+
+    override val String.components
+        get() = sanitize().let {
+            if (isEmpty()) {
+                emptyList()
+            } else {
+                if (it.isAbsolute) {
+                    it.substring(separator.length)
+                } else {
+                    it
+                }.split(separator)
+            }
+        }
 
     private fun findCommonRoot(first: String,
                                second: String): List<String> {
