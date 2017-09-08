@@ -63,7 +63,12 @@ suspend fun SequenceBuilder<FilePath>.walk(
     val onEntry = walker.onEntry
     val onEnter = walker.onEnter
     val onLeave = walker.onLeave
-    val metadata = metadata(path, *walker.options)
+    val metadata = try {
+        metadata(path, *walker.options)
+    } catch (e: IOException) {
+        onEntry(path)
+        return
+    }
     val basic = metadata.findMap<FileBasicMetadata>()
     val type = basic?.type
     if (type != FileType.TYPE_DIRECTORY && type != FileType.TYPE_SYMLINK) {
