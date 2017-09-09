@@ -39,7 +39,7 @@ class ConnectionManager(
         val taskExecutor: CoroutineContext,
         private val maxWorkerSleep: Long = 1000) : ComponentRegistered {
     private val workers = ArrayList<ConnectionWorker>()
-    private val joiners = ConcurrentLinkedQueue<Joiner>()
+    private val joiners = ConcurrentLinkedQueue<SelectorJoinable>()
 
     /**
      * Starts a specified number of threads for processing connections
@@ -64,7 +64,7 @@ class ConnectionManager(
                     }
                 }
             }
-            joiners.add(worker.joiner.joiner)
+            joiners.add(worker.joiner)
         }
     }
 
@@ -104,9 +104,15 @@ class ConnectionManager(
      * Stops all worker threads and blocks until they shut down
      */
     override fun dispose() {
-        val wait = ArrayList<Joiner>()
+        val wait = ArrayList<SelectorJoinable>()
         while (joiners.isNotEmpty()) joiners.poll()?.let { wait.add(it) }
-        Joiner(wait).join()
+        wait.forEach { it.mark() }
+        wait.forEach {
+            while (!it.joined) {
+                it.wake()
+                it.joinWait(100)
+            }
+        }
         logger.info { "Closed connection workers" }
     }
 

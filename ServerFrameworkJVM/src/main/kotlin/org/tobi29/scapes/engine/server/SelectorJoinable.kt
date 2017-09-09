@@ -24,7 +24,6 @@ import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
 
 class SelectorJoinable(private val selector: Selector) {
-    val joiner = Joiner(this)
     private val woken = AtomicBoolean()
     private val joinedMut = AtomicBoolean()
     private val markedMut = AtomicBoolean()
