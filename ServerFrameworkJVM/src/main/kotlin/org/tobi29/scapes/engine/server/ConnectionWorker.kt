@@ -18,14 +18,15 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.*
 import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**
  * Class for processing non-blocking connections
  * @param connection The [ConnectionManager] that holds this worker
- * @param joiner The [SelectorJoinable] used for idling
  * @param maxWorkerSleep Maximum sleep time in milliseconds
  */
 class ConnectionWorker(
@@ -39,7 +40,6 @@ class ConnectionWorker(
     private val connections = ArrayList<ConnectionHandle>()
     private val queue = TaskQueue<() -> Unit>()
     val selector = Selector.open()
-    val joiner = SelectorJoinable(selector)
 
     /**
      * Returns an estimate for how many connections this worker is processing
@@ -59,7 +59,7 @@ class ConnectionWorker(
     fun addConnection(timeout: Long,
                       block: suspend CoroutineScope.(Connection) -> Unit) {
         connectionQueue.add(Pair(timeout, block))
-        joiner.wake()
+        wake()
     }
 
     /**
@@ -67,8 +67,8 @@ class ConnectionWorker(
      *
      * **Note:** Should never be called twice or concurrently
      */
-    fun run() {
-        while (!joiner.marked) {
+    fun run(stop: AtomicBoolean) {
+        while (!stop.get()) {
             queue.processCurrent()
             if (connectionQueue.isNotEmpty()) {
                 while (connectionQueue.isNotEmpty()) {
@@ -100,17 +100,17 @@ class ConnectionWorker(
                         connections.remove(close)
                     }
                 }
-            } else if (!joiner.marked) {
+            } else if (!stop.get()) {
                 val sleep = if (connections.isEmpty()) 0 else maxWorkerSleep
-                joiner.sleep(sleep)
+                sleep(sleep)
             }
         }
         connections.forEach { it.requestClose.set(true) }
         val stopTimeout = System.nanoTime()
         while (connections.isNotEmpty() && System.nanoTime() - stopTimeout < 10000000000L) {
             queue.processCurrent()
-            if (!joiner.marked) {
-                joiner.sleep(10)
+            if (!stop.get()) {
+                sleep(10)
             }
         }
         connections.forEach {
@@ -120,6 +120,23 @@ class ConnectionWorker(
         }
         while (connections.isNotEmpty()) {
             queue.processDrain()
+        }
+    }
+
+    fun wake() {
+        try {
+            selector.wakeup()
+        } catch (e: ClosedSelectorException) {
+        }
+    }
+
+    fun sleep(time: Long) {
+        try {
+            selector.select(time)
+            selector.selectedKeys().clear()
+        } catch (e: IOException) {
+            logger.warn { "Error when waiting with selector: $e" }
+        } catch (e: ClosedSelectorException) {
         }
     }
 

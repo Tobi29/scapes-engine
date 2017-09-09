@@ -144,7 +144,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             this["Command"] = command.toTag()
             this["Payload"] = payload
         })
-        worker.joiner.wake()
+        worker.wake()
     }
 
     /**

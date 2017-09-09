@@ -18,6 +18,8 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.runBlocking
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ComponentRegistered
 import org.tobi29.scapes.engine.utils.ComponentTypeRegisteredUniversal
 import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
@@ -39,7 +41,7 @@ class ConnectionManager(
         val taskExecutor: CoroutineContext,
         private val maxWorkerSleep: Long = 1000) : ComponentRegistered {
     private val workers = ArrayList<ConnectionWorker>()
-    private val joiners = ConcurrentLinkedQueue<SelectorJoinable>()
+    private val joiners = ConcurrentLinkedQueue<Pair<Job, Pair<AtomicBoolean, ConnectionWorker>>>()
 
     /**
      * Starts a specified number of threads for processing connections
@@ -52,19 +54,19 @@ class ConnectionManager(
         for (i in 0 until workerCount) {
             val worker = ConnectionWorker(this, maxWorkerSleep)
             workers.add(worker)
-            launchThread("Connection-Worker-$i", taskExecutor[Job]) {
-                try {
-                    worker.run()
-                } finally {
-                    worker.joiner.join()
-                    try {
-                        worker.close()
-                    } catch (e: IOException) {
-                        logger.warn { "Failed to close worker: $e" }
-                    }
-                }
-            }
-            joiners.add(worker.joiner)
+            val stop = AtomicBoolean(false)
+            joiners.add(
+                    launchThread("Connection-Worker-$i", taskExecutor[Job]) {
+                        try {
+                            worker.run(stop)
+                        } finally {
+                            try {
+                                worker.close()
+                            } catch (e: IOException) {
+                                logger.warn { "Failed to close worker: $e" }
+                            }
+                        }
+                    } to (stop to worker))
         }
     }
 
@@ -104,13 +106,13 @@ class ConnectionManager(
      * Stops all worker threads and blocks until they shut down
      */
     override fun dispose() {
-        val wait = ArrayList<SelectorJoinable>()
+        val wait = ArrayList<Pair<Job, Pair<AtomicBoolean, ConnectionWorker>>>()
         while (joiners.isNotEmpty()) joiners.poll()?.let { wait.add(it) }
-        wait.forEach { it.mark() }
-        wait.forEach {
-            while (!it.joined) {
-                it.wake()
-                it.joinWait(100)
+        wait.forEach { (_, stop) -> stop.first.set(true) }
+        runBlocking {
+            wait.forEach { (job, stop) ->
+                stop.second.wake()
+                job.join()
             }
         }
         logger.info { "Closed connection workers" }
