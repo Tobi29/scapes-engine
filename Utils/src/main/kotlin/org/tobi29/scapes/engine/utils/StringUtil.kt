@@ -108,3 +108,6 @@ fun String.suffixToLength(char: Char,
     }
     return output.toString()
 }
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun String.toMutableString(): MutableString = MutableString(this)
