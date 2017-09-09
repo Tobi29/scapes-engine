@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.json
 
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
+import org.tobi29.scapes.engine.utils.io.Readable
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.write
 
-fun readJSON(stream: ReadableByteStream): TagMap = JSONTokenizer(stream).read()
+fun readJSON(stream: Readable): TagMap = JSONTokenizer(stream).read()
 
-fun TagMap.writeJSON(stream: WritableByteStream,
+fun TagMap.writeJSON(stream: Appendable,
                      pretty: Boolean = true) {
     if (pretty) {
         TagStructureWriterPrettyJSON(stream).let { writer ->
