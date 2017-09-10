@@ -259,9 +259,21 @@ typealias ReadTagMutableMap = Map<String, MutableTag>
 typealias ReadWriteTagMutableMap = MutableMap<String, MutableTag>
 
 // Need dummy parameter to allow having a function as a "constructor"
-@Suppress("UNUSED_PARAMETER")
+// We assume TagMap instances are always immutable
+@Suppress("UNUSED_PARAMETER", "EqualsOrHashCode")
 class TagMap internal constructor(unit: Unit,
-                                  override val value: Map<String, Tag>) : Tag(), Map<String, Tag> by value
+                                  override val value: Map<String, Tag>) : Tag(), Map<String, Tag> by value {
+    // ConcurrentHashMap checks values multiple times causing massive slowdown
+    // with deeply nested structures
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is TagMap) return value == other
+        if (value.size != other.value.size) return false
+        return value.all { (key, value) ->
+            value == other.value[key]
+        }
+    }
+}
 
 fun TagMap(block: MutableMap<String, Tag>.() -> Unit): TagMap = TagMap(
         Unit, ConcurrentHashMap<String, Tag>().apply(block).readOnly())
