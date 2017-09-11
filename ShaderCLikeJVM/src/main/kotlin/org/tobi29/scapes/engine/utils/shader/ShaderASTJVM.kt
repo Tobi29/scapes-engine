@@ -21,15 +21,27 @@ import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 
-fun Expression.attach(context: ParserRuleContext) {
+fun <E : Expression> E.attach(context: ParserRuleContext): E = apply {
     attach(context.start)
 }
 
-fun Expression.attach(context: TerminalNode) {
+fun <E : Expression> E.attach(context: TerminalNode): E = apply {
     attach(context.symbol)
 }
 
-fun Expression.attach(token: Token) {
+fun <E : Expression> E.attach(token: Token): E = apply {
     location = Vector2i(
             token.line, token.charPositionInLine)
 }
+
+inline fun <E : Expression> ParserRuleContext.parse(
+        crossinline block: ParserRuleContext.() -> E
+): E = block().attach(this)
+
+inline fun <E : Expression> TerminalNode.parse(
+        crossinline block: TerminalNode.() -> E
+): E = block().attach(this)
+
+inline fun <E : Expression> Token.parse(
+        crossinline block: Token.() -> E
+): E = block().attach(this)

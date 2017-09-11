@@ -30,6 +30,6 @@ impl object CLikeShader {
         }
         return CompiledShader(program.declarations, program.functions,
                 shaderVertex?.second, shaderFragment?.second, program.outputs,
-                scope, program.uniforms.toTypedArray(), program.properties)
+                program.uniforms.toTypedArray(), program.properties)
     }
 }

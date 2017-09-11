@@ -36,15 +36,15 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun expression(expression: Expression): String {
         if (expression is GLSLExpression) {
             return glslExpression(expression)
-        } else if (expression is AssignmentExpression) {
+        } else if (expression is AssignmentStatement) {
             return assignmentExpression(expression)
         } else if (expression is ConditionExpression) {
             return conditionExpression(expression)
-        } else if (expression is UnaryExpression) {
+        } else if (expression is UnaryStatement) {
             return unaryExpression(expression)
         } else if (expression is TernaryExpression) {
             return ternaryExpression(expression)
-        } else if (expression is FunctionExpression) {
+        } else if (expression is FunctionStatement) {
             return functionExpression(expression)
         } else if (expression is ArrayAccessExpression) {
             return arrayAccessExpression(expression)
@@ -71,8 +71,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         return expression.code
     }
 
-    private fun assignmentExpression(expression: AssignmentExpression): String {
-        return combineNotPacked(expression.left, expression.right, "=")
+    private fun assignmentExpression(statement: AssignmentStatement): String {
+        return combineNotPacked(statement.left, statement.right, "=")
     }
 
     private fun conditionExpression(expression: ConditionExpression): String {
@@ -89,9 +89,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun unaryExpression(expression: UnaryExpression): String {
-        val str = pack(expression.value)
-        when (expression.type) {
+    private fun unaryExpression(statement: UnaryStatement): String {
+        val str = pack(statement.value)
+        when (statement.type) {
             UnaryType.INCREMENT_GET -> return "++" + str
             UnaryType.DECREMENT_GET -> return "--" + str
             UnaryType.GET_INCREMENT -> return str + "++"
@@ -101,7 +101,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             UnaryType.BIT_NOT -> return '~' + str
             UnaryType.NOT -> return '!' + str
             else -> throw IllegalArgumentException(
-                    "Unexpected expression type: ${expression.type}")
+                    "Unexpected expression type: ${statement.type}")
         }
     }
 
@@ -111,20 +111,20 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 pack(expression.expressionElse)
     }
 
-    private fun functionExpression(expression: FunctionExpression): String {
-        val name = expression.name
-        val args = Array(expression.args.size) {
-            expression(expression.args[it])
+    private fun functionExpression(statement: FunctionStatement): String {
+        val name = statement.name
+        val args = Array(statement.arguments.size) {
+            expression(statement.arguments[it])
         }
         val signature = FunctionParameterSignature(name,
-                expression.args.map { it.type(context) })
+                statement.arguments.map { it.type(context) })
         val newFunction = context.functions[signature]
         if (newFunction != null) {
             functionImplementations[newFunction]?.let { return it(args) }
             return glslFunction(newFunction.name, *args)
         }
         throw ShaderGenerateException(
-                "No functions for given arguments: $signature", expression)
+                "No functions for given arguments: $signature", statement)
     }
 
     private fun arrayAccessExpression(expression: ArrayAccessExpression): String {
@@ -189,7 +189,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun declarationStatement(
-            statement: DeclarationStatement,
+            statement: FieldDeclarationStatement,
             level: Int) {
         identifiers[statement.identifier] = GLSLExpression(
                 statement.identifier.type, statement.identifier.name)
@@ -349,11 +349,18 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    fun generate(scope: Scope,
-                 shader: CompiledShader,
+    fun generate(shader: CompiledShader,
                  properties: Map<String, Expression>): GLSLProgram {
         context = ShaderContext(shader.functionMap + stdFunctions2,
                 STDLib.functions, properties)
+        val scope = Scope()
+        scope.add("out_Position", Types.Vector4.exported)
+        scope.add("varying_Fragment", Types.Vector4.exported)
+        shader.declarations.forEach { scope.add(it.identifier) }
+        shader.properties.forEach { scope.add(it.identifier) }
+        shader.uniforms().asSequence().filterNotNull()
+                .forEach { scope.add(it.identifier) }
+        shader.outputs?.parameters?.forEach { scope.add(it.identifier) }
 
         init(scope)
         val vertex = generateVertex(shader, properties)
@@ -558,7 +565,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             ifStatement(statement, level)
         } else if (statement is LoopFixedStatement) {
             loopFixedStatement(statement, level)
-        } else if (statement is DeclarationStatement) {
+        } else if (statement is FieldDeclarationStatement) {
             declarationStatement(statement, level)
         } else if (statement is ArrayDeclarationStatement) {
             arrayDeclarationStatement(statement, level)
@@ -611,7 +618,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                      properties: Map<String, Expression>): GLSLProgram =
                 generator.computeAbsent(version) {
                     ThreadLocal { GLSLGenerator(version) }
-                }.get().generate(shader.scope, shader, properties)
+                }.get().generate(shader, properties)
 
         private val generator = ConcurrentHashMap<Version, ThreadLocal<GLSLGenerator>>()
     }
@@ -627,6 +634,10 @@ data class GLSLProgram(val vertex: String,
 
 class GLSLExpression(val type: TypeExported,
                      val code: String) : Expression() {
+    override val id: String
+        get() = throw UnsupportedOperationException(
+                "Cannot serialize glsl expression")
+
     override fun type(context: ShaderContext) = type
 
     override fun simplify(context: ShaderContext,

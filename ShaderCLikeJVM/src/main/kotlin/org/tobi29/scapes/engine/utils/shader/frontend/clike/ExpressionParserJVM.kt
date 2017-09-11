@@ -20,9 +20,9 @@ import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 import org.tobi29.scapes.engine.utils.shader.*
 
-internal fun ScapesShaderParser.ExpressionContext.ast(scope: Scope): Expression {
-    primaryExpression()?.ast(scope)?.let { return it }
-    return when (childCount) {
+internal fun ScapesShaderParser.ExpressionContext.ast(scope: Scope): Expression = parse {
+    primaryExpression()?.ast(scope)?.let { return@parse it }
+    return@parse when (childCount) {
         2 -> {
             val left = children[0]
             val right = children[1]
@@ -106,29 +106,29 @@ internal fun ScapesShaderParser.ExpressionListContext?.ast(scope: Scope): ArrayL
     return expressions
 }
 
-internal fun ScapesShaderParser.IfStatementContext.ast(scope: Scope): Expression {
-    expression()?.compileContext { return ast(scope) }
+internal fun ScapesShaderParser.IfStatementContext.ast(scope: Scope): Expression = parse {
+    expression()?.compileContext { return@parse ast(scope) }
     throw ShaderCompileException("No expression found", this)
 }
 
-internal fun ScapesShaderParser.ExpressionStatementContext.ast(scope: Scope): Expression {
-    expression()?.compileContext { return ast(scope) }
-    return VoidStatement
+internal fun ScapesShaderParser.ExpressionStatementContext.ast(scope: Scope): Expression = parse {
+    expression()?.compileContext { return@parse ast(scope) }
+    return@parse VoidStatement().attach(this)
 }
 
-internal fun ScapesShaderParser.PrimaryExpressionContext.ast(scope: Scope): Expression {
+internal fun ScapesShaderParser.PrimaryExpressionContext.ast(scope: Scope): Expression = parse {
     Identifier()?.compileContext {
         val name = text
         if (name == "true") {
-            return BooleanExpression(true)
+            return@parse BooleanExpression(true)
         }
         if (name == "false") {
-            return BooleanExpression(false)
+            return@parse BooleanExpression(false)
         }
-        return scope.identifier(name)
+        return@parse scope.identifier(name)
     }
-    literal()?.compileContext { return ast() }
-    expression()?.compileContext { return ast(scope) }
+    literal()?.compileContext { return@parse ast() }
+    expression()?.compileContext { return@parse ast(scope) }
     throw IllegalStateException("Invalid context: $this")
 }
 

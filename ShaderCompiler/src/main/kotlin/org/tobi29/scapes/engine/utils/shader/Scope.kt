@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.utils.shader
 
 import org.tobi29.scapes.engine.utils.assert
 
-
 class Scope(vararg private val parents: Scope) {
     private val map = HashMap<String, Identifier>()
 
@@ -27,10 +26,14 @@ class Scope(vararg private val parents: Scope) {
         if (map.containsKey(name)) {
             return null
         }
-        val variable = Identifier(name, type, this)
+        val variable = Identifier(name, type)
         val old = map.put(name, variable)
         assert { old == null }
         return variable
+    }
+
+    fun add(identifier: Identifier) {
+        map[identifier.name] = identifier
     }
 
     operator fun get(name: String): Identifier? {
@@ -40,4 +43,10 @@ class Scope(vararg private val parents: Scope) {
         }
         return null
     }
+
+    fun check(other: Scope): Boolean {
+        return map == other.map
+    }
+
+    override fun toString(): String = map.toString()
 }

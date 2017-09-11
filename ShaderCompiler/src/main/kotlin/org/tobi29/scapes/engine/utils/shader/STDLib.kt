@@ -326,7 +326,7 @@ object STDLib {
             functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
             signature: FunctionExportedSignature,
             simplification: (List<Expression>) -> Expression = {
-                FunctionExpression(signature, it)
+                FunctionStatement(signature, it)
             }) {
         functions[signature] = simplification
     }

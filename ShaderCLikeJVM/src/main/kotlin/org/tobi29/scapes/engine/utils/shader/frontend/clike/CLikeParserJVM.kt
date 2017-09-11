@@ -25,7 +25,7 @@ import org.tobi29.scapes.engine.utils.shader.CallFunction
 internal fun externalDeclaration(
         context: ScapesShaderParser.TranslationUnitContext,
         scope: Scope): ShaderProgram {
-    val declarations = ArrayList<Statement>()
+    val declarations = ArrayList<DeclarationStatement>()
     val functions = ArrayList<CallFunction>()
     val shaders = HashMap <String, Pair<Scope, (Scope) -> ShaderFunction>>()
     var outputSignature: ShaderSignature? = null
@@ -232,14 +232,14 @@ internal fun statement(context: ScapesShaderParser.StatementContext,
     return scope.compound { block(context.compoundStatement().blockItemList()) }
 }
 
-internal fun ScapesShaderParser.DeclarationContext.ast(scope: Scope): Statement {
+internal fun ScapesShaderParser.DeclarationContext.ast(scope: Scope): DeclarationStatement {
     declarationField()?.let { return declaration(it, scope) }
     declarationArray()?.let { return declaration(it, scope) }
     throw IllegalStateException("Invalid parse tree")
 }
 
 internal fun declaration(context: ScapesShaderParser.DeclarationFieldContext,
-                         scope: Scope): Statement {
+                         scope: Scope): FieldDeclarationStatement {
     val declarator = context.declaratorField()
     val type = declarator.ast()
     val initializer = context.expression()
@@ -249,7 +249,7 @@ internal fun declaration(context: ScapesShaderParser.DeclarationFieldContext,
 }
 
 internal fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
-                         scope: Scope): Statement {
+                         scope: Scope): ArrayDeclarationStatement {
     val declarator = context.declaratorArray()
     val type = declarator.ast(scope)
     val initializer = context.initializerArray()

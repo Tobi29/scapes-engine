@@ -19,34 +19,34 @@ package org.tobi29.scapes.engine.utils.shader
 operator fun Expression.unaryPlus() = when (this) {
     is IntegerExpression -> this
     is DecimalExpression -> this
-    else -> UnaryExpression(UnaryType.POSITIVE, this)
+    else -> UnaryStatement(UnaryType.POSITIVE, this)
 }
 
 operator fun Expression.unaryMinus() = when (this) {
     is IntegerExpression -> IntegerExpression(-value)
     is DecimalExpression -> DecimalExpression(-value)
-    else -> UnaryExpression(UnaryType.NEGATIVE, this)
+    else -> UnaryStatement(UnaryType.NEGATIVE, this)
 }
 
 operator fun Expression.not() = when (this) {
     is BooleanExpression -> BooleanExpression(!value)
-    else -> UnaryExpression(UnaryType.NOT, this)
+    else -> UnaryStatement(UnaryType.NOT, this)
 }
 
 fun Expression.getIncrement() =
-        UnaryExpression(UnaryType.GET_INCREMENT, this)
+        UnaryStatement(UnaryType.GET_INCREMENT, this)
 
 fun Expression.getDecrement() =
-        UnaryExpression(UnaryType.GET_DECREMENT, this)
+        UnaryStatement(UnaryType.GET_DECREMENT, this)
 
 fun Expression.incrementGet() =
-        UnaryExpression(UnaryType.INCREMENT_GET, this)
+        UnaryStatement(UnaryType.INCREMENT_GET, this)
 
 fun Expression.decrementGet() =
-        UnaryExpression(UnaryType.DECREMENT_GET, this)
+        UnaryStatement(UnaryType.DECREMENT_GET, this)
 
 fun Expression.inv() =
-        UnaryExpression(UnaryType.BIT_NOT, this)
+        UnaryStatement(UnaryType.BIT_NOT, this)
 
 operator fun Expression.plus(other: Expression) =
         arithmeticOperation(this, other, "plus",
@@ -81,10 +81,10 @@ infix fun Expression.xor(other: Expression) =
                 { a, b -> a xor b }, { a, b -> a.xor(b) })
 
 infix fun Expression.shl(other: Expression) =
-        FunctionExpression("shl", listOf(this, other))
+        FunctionStatement("shl", listOf(this, other))
 
 infix fun Expression.shr(other: Expression) =
-        FunctionExpression("shr", listOf(this, other))
+        FunctionStatement("shr", listOf(this, other))
 
 infix fun Expression.andAnd(other: Expression) =
         ConditionExpression(ConditionType.AND, this, other)
@@ -97,19 +97,19 @@ infix fun Expression.equals(other: Expression) =
                 { a, b -> a == b }, { a, b -> a == b }, { a, b -> a == b })
 
 infix fun Expression.greaterThan(other: Expression) =
-        FunctionExpression("greaterThan", listOf(this, other))
+        FunctionStatement("greaterThan", listOf(this, other))
 
 infix fun Expression.lessThan(other: Expression) =
-        FunctionExpression("lessThan", listOf(this, other))
+        FunctionStatement("lessThan", listOf(this, other))
 
 infix fun Expression.greaterThanEqual(other: Expression) =
-        FunctionExpression("greaterThanEqual", listOf(this, other))
+        FunctionStatement("greaterThanEqual", listOf(this, other))
 
 infix fun Expression.lessThanEqual(other: Expression) =
-        FunctionExpression("lessThanEqual", listOf(this, other))
+        FunctionStatement("lessThanEqual", listOf(this, other))
 
 infix fun Expression.assign(other: Expression) =
-        AssignmentExpression(this, other)
+        AssignmentStatement(this, other)
 
 fun Expression.member(name: String) =
         MemberExpression(name, this)
@@ -120,7 +120,7 @@ fun function(name: String,
 
 fun function(name: String,
              arguments: List<Expression>) =
-        FunctionExpression(name, arguments)
+        FunctionStatement(name, arguments)
 
 fun Scope.declareIdentifier(name: String,
                             type: TypeExported) =
@@ -137,9 +137,9 @@ fun Scope.declaration(
         type: Type,
         name: String,
         initializer: Expression? = null
-): DeclarationStatement {
+): FieldDeclarationStatement {
     val identifier = declareIdentifier(name, type.exported)
-    return DeclarationStatement(type, identifier, initializer)
+    return FieldDeclarationStatement(type, identifier, initializer)
 }
 
 fun StatementScope.arrayDeclaration(
@@ -229,9 +229,9 @@ class ShaderParameterScope(val scope: Scope,
 }
 
 class ShaderProgramScope(val scope: Scope = Scope()) {
-    private val declarations = ArrayList<Statement>()
+    private val declarations = ArrayList<DeclarationStatement>()
     private val functions = ArrayList<CallFunction>()
-    private val shaders = HashMap <String, Pair<Scope, (Scope) -> ShaderFunction>>()
+    private val shaders = HashMap<String, Pair<Scope, (Scope) -> ShaderFunction>>()
     private var outputs: ShaderSignature? = null
     private val uniforms = ArrayList<Uniform?>()
     private val properties = ArrayList<Property>()
@@ -246,7 +246,7 @@ class ShaderProgramScope(val scope: Scope = Scope()) {
                     initializer: Scope.() -> Expression? = { null }): Identifier {
         val identifier = scope.declareIdentifier(name, type.exported)
         declarations.add(
-                DeclarationStatement(type, identifier, initializer(scope)))
+                FieldDeclarationStatement(type, identifier, initializer(scope)))
         return identifier
     }
 
@@ -300,5 +300,5 @@ fun ShaderProgram.finish(scope: Scope): CompiledShader {
     }
     return CompiledShader(declarations, functions,
             shaderVertex?.second, shaderFragment?.second, outputs,
-            scope, uniforms.toTypedArray(), properties)
+            uniforms.toTypedArray(), properties)
 }
