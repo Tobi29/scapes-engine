@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.server.tests
 
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.yield
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
@@ -58,7 +59,7 @@ object SSLChannelTests : Spek({
                     sslClient.newSSLChannel(address, sourceRight, sinkRight,
                             taskExecutor, true), taskExecutor, false)
 
-            launch(taskExecutor) {
+            val job1 = launch(taskExecutor) {
                 val bufferSend = ByteBuffer(1024).apply { fill { 42 }.flip() }
                 val bufferReceive = ByteBuffer(1024)
                 while (bufferSend.hasRemaining()) {
@@ -97,7 +98,7 @@ object SSLChannelTests : Spek({
                 success.getAndIncrement()
             }
 
-            launch(taskExecutor) {
+            val job2 = launch(taskExecutor) {
                 val bufferSend = ByteBuffer(1024).apply { fill { 43 }.flip() }
                 while (bufferSend.hasRemaining()) {
                     channelRight.write(bufferSend)
@@ -134,6 +135,11 @@ object SSLChannelTests : Spek({
                 channelRight.finishAsync()
 
                 success.getAndIncrement()
+            }
+
+            runBlocking {
+                job1.join()
+                job2.join()
             }
 
             it("should successfully handle both streams") {
