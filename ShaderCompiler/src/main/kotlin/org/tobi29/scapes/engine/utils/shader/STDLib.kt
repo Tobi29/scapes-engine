@@ -19,35 +19,36 @@ package org.tobi29.scapes.engine.utils.shader
 import org.tobi29.scapes.engine.utils.readOnly
 
 object STDLib {
-    private val scalar = setOf(
+    private val scalar = sequenceOf(
             listOf(Types.Float.exported),
             listOf(Types.Int.exported),
             listOf(Types.Boolean.exported))
-    private val vector2 = scalar + setOf(
+    private val vector2 = sequenceOf(
             listOf(Types.Vector2.exported),
             listOf(Types.Vector2i.exported),
             listOf(Types.Vector2b.exported))
-    private val vector3 = vector2 + setOf(
+    private val vector3 = sequenceOf(
             listOf(Types.Vector3.exported),
             listOf(Types.Vector3i.exported),
             listOf(Types.Vector3b.exported))
-    private val vector4 = vector3 + setOf(
+    private val vector4 = sequenceOf(
             listOf(Types.Vector4.exported),
             listOf(Types.Vector4i.exported),
             listOf(Types.Vector4b.exported))
 
-    val constructScalar = (scalar).toSet().readOnly()
-    val constructVector2 = (vector2.asSequence()
-            + genT(scalar.asSequence(), 2)
-            .filter { it.sumBy { it.type.vectorSize } == 2 })
+    val constructScalar = scalar.toSet().readOnly()
+    val constructVector2 = (scalar + vector2 + (
+            genT(scalar, 2)
+            ).filter { it.sumBy { it.type.vectorSize } == 2 })
             .toSet().readOnly()
-    val constructVector3 = (vector3.asSequence()
-            + genT(vector2.asSequence(), 3)
-            .filter { it.sumBy { it.type.vectorSize } == 3 })
+    val constructVector3 = (scalar + vector3 + (
+            genT(scalar, 3) + genT(scalar + vector2, 2)
+            ).filter { it.sumBy { it.type.vectorSize } == 3 })
             .toSet().readOnly()
-    val constructVector4 = (vector4.asSequence()
-            + genT(vector3.asSequence(), 4)
-            .filter { it.sumBy { it.type.vectorSize } == 4 })
+    val constructVector4 = (scalar + vector4 + (
+            genT(scalar, 4) + genT(scalar + vector2, 3)
+                    + genT(scalar + vector3, 2)
+            ).filter { it.sumBy { it.type.vectorSize } == 4 })
             .toSet().readOnly()
 
     private val swizzleX = (setOf("x")).readOnly()
