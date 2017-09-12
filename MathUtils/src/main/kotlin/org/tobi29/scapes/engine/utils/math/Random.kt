@@ -188,7 +188,7 @@ fun Random.nextByte() = nextInt(256).toByte()
  * Returns a value in range `[Short.MIN_VALUE]..[Short.MAX_VALUE]`
  * @return a value in range `[Short.MIN_VALUE]..[Short.MAX_VALUE]`
  */
-fun Random.nextShort() = nextInt(65536).toByte()
+fun Random.nextShort() = nextInt(65536).toShort()
 
 /**
  * Fills the given array with random byte values
