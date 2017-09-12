@@ -16,8 +16,21 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+/**
+ * [WritableByteStream] supporting arbitrary seeking
+ */
 interface RandomWritableByteStream : WritableByteStream {
+    /**
+     * Returns current position of the stream
+     * @return Current position of the stream
+     */
     fun position(): Int
 
+    /**
+     * Set current position of the stream
+     * @param pos New position
+     * @throws IllegalArgumentException When an invalid position was given
+     * @return The current stream
+     */
     fun position(pos: Int): WritableByteStream
 }

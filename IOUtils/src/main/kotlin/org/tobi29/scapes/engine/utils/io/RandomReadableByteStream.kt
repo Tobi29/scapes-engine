@@ -16,21 +16,41 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+/**
+ * [SizedReadableByteStream] supporting arbitrary seeking
+ */
 interface RandomReadableByteStream : SizedReadableByteStream {
-    override fun available(): Int {
-        return remaining()
-    }
+    override fun available(): Int = remaining()
 
-    // TODO: @Throws(IOException::class)
     override fun skip(len: Int) {
         position(position() + len)
     }
 
+    /**
+     * Returns current position of the stream
+     * @return Current position of the stream
+     */
     fun position(): Int
 
+    /**
+     * Set current position of the stream
+     * @param pos New position
+     * @throws IllegalArgumentException When an invalid position was given
+     * @return The current stream
+     */
     fun position(pos: Int): ReadableByteStream
 
+    /**
+     * Returns current limit of the stream
+     * @return Current limit of the stream
+     */
     fun limit(): Int
 
+    /**
+     * Set current limit of the stream
+     * @param limit New position
+     * @throws IllegalArgumentException When an invalid limit was given
+     * @return The current stream
+     */
     fun limit(limit: Int): ReadableByteStream
 }

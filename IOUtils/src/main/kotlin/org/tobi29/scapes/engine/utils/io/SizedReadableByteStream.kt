@@ -16,14 +16,27 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+/**
+ * [ReadableByteStream] exposing how much data is left in the stream
+ */
 interface SizedReadableByteStream : ReadableByteStream {
+    /**
+     * Returns amount of bytes left in the stream, may not change arbitrarily
+     * @returns Amount of bytes left in the stream
+     */
     fun remaining(): Int
 
-    fun hasRemaining(): Boolean {
-        return remaining() > 0
-    }
+    /**
+     * Returns `true` if there are remaining bytes and reading at least a
+     * single byte will guaranteed not throw because of the stream ending
+     * @returns `true` if there are remaining bytes
+     */
+    fun hasRemaining(): Boolean = remaining() > 0
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Skips through the entire stream
+     * @throws IOException When an IO error occurs
+     */
     fun consume() {
         while (hasRemaining()) {
             skip(remaining())

@@ -18,64 +18,110 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.bytesUTF8
 
+/**
+ * Interface for blocking write operations, with an extensive set of operations
+ * to make implementing protocols easier
+ */
+// TODO: Implement most operations with defaults
 interface WritableByteStream : Appendable {
-    override fun append(c: Char): Appendable {
-        put(c.toString().bytesUTF8())
-        return this
-    }
+    /**
+     * Write by processing the given buffer completely
+     * @param buffer Buffer to read from
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
+    fun put(buffer: ByteBuffer): WritableByteStream =
+            put(buffer, buffer.remaining())
 
-    override fun append(csq: CharSequence?): Appendable {
-        return append(csq, 0, csq?.length ?: 4) // "null" is of length 4
-    }
-
-    override fun append(csq: CharSequence?,
-                        start: Int,
-                        end: Int): Appendable {
-        val str = csq?.toString() ?: "null"
-        put(str.bytesUTF8())
-        return this
-    }
-
-    // TODO: @Throws(IOException::class)
-    fun put(buffer: ByteBuffer): WritableByteStream {
-        return put(buffer, buffer.remaining())
-    }
-
-    // TODO: @Throws(IOException::class)
+    /**
+     * Write by processing the given buffer by the given amount of bytes
+     * @param buffer Buffer to read from
+     * @param len The amount of bytes to read
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun put(buffer: ByteBuffer,
             len: Int): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Write by processing the given array by the given amount of bytes
+     * @param dest Array to read from
+     * @param off First index to read from the byte array
+     * @param len The amount of bytes to read
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun put(src: ByteArray,
             off: Int = 0,
-            len: Int = src.size): WritableByteStream {
-        return put(src.asByteBuffer(off, len))
-    }
+            len: Int = src.size - off): WritableByteStream =
+            put(src.asByteBuffer(off, len))
 
-    // TODO: @Throws(IOException::class)
-    fun putBoolean(value: Boolean): WritableByteStream {
-        return put(if (value) 1.toByte() else 0)
-    }
+    /**
+     * Writes `1` into the stream if [value] is `true` or `0` otherwise
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
+    fun putBoolean(value: Boolean): WritableByteStream =
+            put(if (value) 1.toByte() else 0)
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the byte into the stream
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun put(b: Byte): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the big-endian short into the stream
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putShort(value: Short): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the big-endian integer into the stream
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putInt(value: Int): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the big-endian long into the stream
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putLong(value: Long): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the big-endian float into the stream
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putFloat(value: Float): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the big-endian double into the stream
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putDouble(value: Double): WritableByteStream
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the byte array to the stream, prefixed by the length
+     *
+     * Format for length is either a single unsigned byte or 0xFF followed
+     * by a big-endian int
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putByteArray(value: ByteArray): WritableByteStream {
         if (value.size < 0xFF) {
             put(value.size.toByte())
@@ -86,7 +132,15 @@ interface WritableByteStream : Appendable {
         return put(value)
     }
 
-    // TODO: @Throws(IOException::class)
+    /**
+     * Writes the byte array to the stream, prefixed by the length
+     *
+     * Format for length is either a big-endian unsigned short or 0xFFFF
+     * followed by a big-endian inth
+     * @param value The value to write
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
     fun putByteArrayLong(value: ByteArray): WritableByteStream {
         if (value.size < 0xFFFF) {
             putShort(value.size.toShort())
@@ -97,7 +151,31 @@ interface WritableByteStream : Appendable {
         return put(value)
     }
 
-    // TODO: @Throws(IOException::class)
-    fun putString(value: String) =
+    /**
+     * Writes the string to the stream, encoded in UTF-8 and prefixes by length
+     *
+     * The format is consistent to first encoding the string in UTF-8 and then
+     * writing the array using [putByteArray]
+     * @param value The value to write
+     * @throws IOException When an IO error occurs or limit was broken
+     * @return The current stream
+     */
+    fun putString(value: String): WritableByteStream =
             putByteArray(value.bytesUTF8())
+
+    override fun append(c: Char): Appendable {
+        put(c.toString().bytesUTF8())
+        return this
+    }
+
+    override fun append(csq: CharSequence?): Appendable =
+            append(csq, 0, csq?.length ?: 4) // "null" is of length 4
+
+    override fun append(csq: CharSequence?,
+                        start: Int,
+                        end: Int): Appendable {
+        val str = csq?.toString() ?: "null"
+        put(str.bytesUTF8())
+        return this
+    }
 }
