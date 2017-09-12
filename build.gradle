@@ -69,7 +69,7 @@ ext {
     kotlinVersion = "1.1.4-3"
     kotlinxCoroutinesVersion = "0.0.4"
     slf4jVersion = "1.7.25"
-    spekVersion = "1.1.3"
+    spekVersion = "1.1.4"
     junitJupiterVersion = "5.0.0-RC2"
     swtVersion = "4.6"
     threetenbpVersion = "1.3.6"
