@@ -90,26 +90,21 @@ internal class OpenALStreamAudio(
             try {
                 controller.configure(openAL, source, sounds.volume(channel))
                 while (queued < 3) {
-                    stream()
-                    if (!readBuffer.isDone) {
-                        break
-                    }
+                    if (!stream()) break
                     val buffer = openAL.createBuffer()
                     store(openAL, buffer)
                     openAL.queue(source, buffer)
                     queued++
                 }
                 var finished = openAL.getBuffersProcessed(source)
-                while (finished-- > 0) {
-                    stream()
-                    if (!readBuffer.isDone) {
-                        break
-                    }
+                while (finished > 0) {
+                    if (!stream()) break
                     val unqueued = openAL.unqueue(source)
                     store(openAL, unqueued)
                     openAL.queue(source, unqueued)
+                    finished--
                 }
-                if (!openAL.isPlaying(source)) {
+                if (queued > 0 && !openAL.isPlaying(source)) {
                     openAL.play(source)
                 }
             } catch (e: IOException) {
@@ -152,11 +147,11 @@ internal class OpenALStreamAudio(
         stream = null
     }
 
-    private fun stream() {
+    private fun stream(): Boolean {
         while (!readBuffer.isDone) {
-            val stream = stream ?: return
+            val stream = stream ?: return false
             when (stream.get(readBuffer)) {
-                ReadableAudioStream.Result.YIELD -> return
+                ReadableAudioStream.Result.YIELD -> return false
                 ReadableAudioStream.Result.EOS -> {
                     stream.close()
                     if (state) {
@@ -167,6 +162,7 @@ internal class OpenALStreamAudio(
                 }
             }
         }
+        return true
     }
 
     private fun store(openAL: OpenAL,
@@ -174,11 +170,8 @@ internal class OpenALStreamAudio(
         readBuffer.toPCM16 { streamBuffer.putShort(it) }
         streamBuffer.buffer().flip()
         openAL.storeBuffer(buffer,
-                if (readBuffer.channels() > 1)
-                    AudioFormat.STEREO
-                else
-                    AudioFormat.MONO, streamBuffer.buffer(),
-                readBuffer.rate())
+                if (readBuffer.channels() > 1) AudioFormat.STEREO
+                else AudioFormat.MONO, streamBuffer.buffer(), readBuffer.rate())
         streamBuffer.buffer().clear()
         readBuffer.clear()
     }
