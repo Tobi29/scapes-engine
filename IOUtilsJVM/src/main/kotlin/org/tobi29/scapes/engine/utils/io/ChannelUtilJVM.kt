@@ -17,23 +17,22 @@ package org.tobi29.scapes.engine.utils.io
 
 import java.nio.channels.FileChannel
 
-// TODO: @Throws(IOException::class)
-impl fun ReadableByteChannel.skip(skip: Long): Long {
+impl fun ReadableByteChannel.skip(length: Int): Int {
     if (this is FileChannel) {
-        position(position() + skip)
+        position(position() + length)
         return 0
     } else {
-        val buffer = ByteBuffer((skip.coerceAtMost(4096)).toInt())
-        while (skip > 0) {
-            buffer.limit(skip.coerceAtMost(buffer.capacity().toLong()).toInt())
+        val buffer = ByteBuffer((length.coerceAtMost(4096)))
+        while (length > 0) {
+            buffer.limit(length.coerceAtMost(buffer.capacity()))
             val read = read(buffer)
             if (read == -1) {
                 throw IOException("End of stream")
             }
             if (read == 0) {
-                return skip
+                return length
             }
         }
-        return skip
+        return length
     }
 }
