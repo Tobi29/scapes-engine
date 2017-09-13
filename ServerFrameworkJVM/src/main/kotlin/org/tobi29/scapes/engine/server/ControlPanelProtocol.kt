@@ -216,8 +216,8 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         val challenge = ByteArray(CHALLENGE_CIPHER_LENGTH)
         val salt = ByteArray(SALT_LENGTH)
-        channel.inputStream[challenge]
-        channel.inputStream[salt]
+        channel.inputStream.get(challenge)
+        channel.inputStream.get(salt)
         try {
             val cipher = authentication(client, Cipher.DECRYPT_MODE, salt)
             channel.outputStream.put(cipher.doFinal(challenge))
@@ -265,7 +265,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             return true
         }
         val challenge = ByteArray(ASYM_CHALLENGE_CIPHER_LENGTH)
-        channel.inputStream[challenge]
+        channel.inputStream.get(challenge)
         try {
             val cipher = authentication(client, Cipher.DECRYPT_MODE)
             channel.outputStream.put(cipher.doFinal(challenge))
@@ -308,7 +308,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             return true
         }
         val check = ByteArray(challenge.size)
-        channel.inputStream[check]
+        channel.inputStream.get(check)
         if (!(check contentEquals challenge)) {
             throw ConnectionCloseException("Failed password authentication")
         }

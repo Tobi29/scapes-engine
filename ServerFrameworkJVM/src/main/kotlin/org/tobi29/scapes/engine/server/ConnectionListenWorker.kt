@@ -68,7 +68,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                     }
                                     val header = ByteArray(
                                             connectionHeader.size)
-                                    bundleChannel.inputStream[header]
+                                    bundleChannel.inputStream.get(header)
                                     val id = bundleChannel.inputStream.get()
                                     if (header contentEquals connectionHeader) {
                                         client.register(worker.selector,

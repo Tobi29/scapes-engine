@@ -28,7 +28,7 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
         return buffer.remaining()
     }
 
-    override fun skip(len: Int) {
+    override fun skip(len: Int): ReadableByteStream = apply {
         var skip = (len - buffer.remaining()).toLong()
         if (skip < 0) {
             buffer.position(buffer.position() + len)

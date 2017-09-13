@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.strUTF8
+import org.tobi29.scapes.engine.utils.*
 import kotlin.experimental.and
 
 /**
  * Interface for blocking read operations, with an extensive set of operations
  * to make implementing protocols easier
  */
-// TODO: Implement most operations with defaults
 interface ReadableByteStream : Readable {
     /**
      * Returns the amount of bytes available to be read from the stream without
@@ -35,17 +34,18 @@ interface ReadableByteStream : Readable {
      * Skip the given amount of bytes in the stream
      * @param len The amount of bytes to skip
      * @throws IOException When an IO error occurs
+     * @return The current stream
      */
-    fun skip(len: Int) {
-        get(ByteBuffer(len))
-    }
+    fun skip(len: Int): ReadableByteStream =
+            get(ByteBuffer(len))
 
     /**
      * Skip the given amount of bytes in the stream
      * @param len The amount of bytes to skip
      * @throws IOException When an IO error occurs
+     * @return The current stream
      */
-    fun skip(len: Long) {
+    fun skip(len: Long): ReadableByteStream = apply {
         var l = len
         while (l > Int.MAX_VALUE) {
             skip(Int.MAX_VALUE)
@@ -60,9 +60,8 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    operator fun get(buffer: ByteBuffer): ReadableByteStream {
-        return get(buffer, buffer.remaining())
-    }
+    fun get(buffer: ByteBuffer): ReadableByteStream =
+            get(buffer, buffer.remaining())
 
     /**
      * Read by filling the given buffer by the given amount of bytes
@@ -71,8 +70,21 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    operator fun get(buffer: ByteBuffer,
-                     len: Int): ReadableByteStream
+    fun get(buffer: ByteBuffer,
+            len: Int): ReadableByteStream
+
+    /**
+     * Read by filling the given array by the given amount of bytes
+     * @param destination Array to write to
+     * @param offset First index to write into the byte array
+     * @param length The amount of bytes to read
+     * @throws IOException When an IO error occurs
+     * @return The current stream
+     */
+    fun get(destination: ByteArray,
+            offset: Int = 0,
+            length: Int = destination.size - offset): ReadableByteStream =
+            get(destination.asByteBuffer(offset, length))
 
     /**
      * Read by filling the given buffer as much as possible
@@ -80,9 +92,8 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun getSome(buffer: ByteBuffer): Boolean {
-        return getSome(buffer, buffer.remaining())
-    }
+    fun getSome(buffer: ByteBuffer): Boolean =
+            getSome(buffer, buffer.remaining())
 
     /**
      * Read by filling the given buffer as much as possible
@@ -95,34 +106,20 @@ interface ReadableByteStream : Readable {
                 len: Int): Boolean
 
     /**
-     * Read by filling the given array by the given amount of bytes
-     * @param dest Array to write to
-     * @param off First index to write into the byte array
-     * @param len The amount of bytes to read
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    operator fun get(dest: ByteArray,
-                     off: Int = 0,
-                     len: Int = dest.size - off): ReadableByteStream {
-        return get(dest.asByteBuffer(off, len))
-    }
-
-    /**
      * Read by filling the given array at most by the given amount of bytes as
      * much as possible
-     * @param dest Array to write to
-     * @param off First index to write into the byte array
-     * @param len The amount of bytes to read
+     * @param destination Array to write to
+     * @param offset First index to write into the byte array
+     * @param length The amount of bytes to read
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun getSome(dest: ByteArray,
-                off: Int = 0,
-                len: Int = dest.size - off): Int {
-        val buffer = dest.asByteBuffer(off, len)
+    fun getSome(destination: ByteArray,
+                offset: Int = 0,
+                length: Int = destination.size - offset): Int {
+        val buffer = destination.asByteBuffer(offset, length)
         if (!getSome(buffer)) return -1
-        return buffer.position() - off
+        return buffer.position() - offset
     }
 
     /**
@@ -155,7 +152,7 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The short in the stream
      */
-    fun getShort(): Short
+    fun getShort(): Short = combineToShort(get(), get())
 
     /**
      * Reads a big-endian unsigned short
@@ -173,7 +170,7 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The integer in the stream
      */
-    fun getInt(): Int
+    fun getInt(): Int = combineToInt(get(), get(), get(), get())
 
     /**
      * Reads a big-endian unsigned integer
@@ -191,21 +188,22 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The long in the stream
      */
-    fun getLong(): Long
+    fun getLong(): Long = combineToLong(get(), get(), get(), get(), get(),
+            get(), get(), get())
 
     /**
      * Reads a float
      * @throws IOException When an IO error occurs
      * @return The float in the stream
      */
-    fun getFloat(): Float
+    fun getFloat(): Float = getInt().bitsToFloat()
 
     /**
      * Reads a double
      * @throws IOException When an IO error occurs
      * @return The double in the stream
      */
-    fun getDouble(): Double
+    fun getDouble(): Double = getLong().bitsToDouble()
 
     /**
      * Reads a byte array by fetching the length from the stream
@@ -271,9 +269,8 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs or limit was broken
      * @return The string in the stream
      */
-    fun getString(limit: Int = Int.MAX_VALUE): String {
-        return getByteArray(limit).strUTF8()
-    }
+    fun getString(limit: Int = Int.MAX_VALUE): String =
+            getByteArray(limit).strUTF8()
 
     /**
      * Reads a single character from the stream encoded in UTF-8

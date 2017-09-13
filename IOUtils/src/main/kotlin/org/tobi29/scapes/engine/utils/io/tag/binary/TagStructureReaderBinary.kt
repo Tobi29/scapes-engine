@@ -31,7 +31,7 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
 
     init {
         val magic = ByteArray(HEADER_MAGIC.size)
-        stream[magic]
+        stream.get(magic)
         if (!(magic contentEquals magic)) {
             throw IOException(
                     "Not in tag format! (Magic-Header: ${magic.joinToString()})")
