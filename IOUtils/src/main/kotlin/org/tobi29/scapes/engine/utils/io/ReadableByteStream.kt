@@ -32,21 +32,20 @@ interface ReadableByteStream : Readable {
 
     /**
      * Skip the given amount of bytes in the stream
-     * @param len The amount of bytes to skip
+     * @param length The amount of bytes to skip
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun skip(len: Int): ReadableByteStream =
-            get(ByteBuffer(len))
+    fun skip(length: Int): ReadableByteStream = get(ByteBuffer(length))
 
     /**
      * Skip the given amount of bytes in the stream
-     * @param len The amount of bytes to skip
+     * @param length The amount of bytes to skip
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun skip(len: Long): ReadableByteStream = apply {
-        var l = len
+    fun skip(length: Long): ReadableByteStream = apply {
+        var l = length
         while (l > Int.MAX_VALUE) {
             skip(Int.MAX_VALUE)
             l -= Int.MAX_VALUE

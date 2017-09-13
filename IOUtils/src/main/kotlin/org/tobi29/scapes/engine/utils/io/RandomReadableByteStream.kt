@@ -22,7 +22,7 @@ package org.tobi29.scapes.engine.utils.io
 interface RandomReadableByteStream : SizedReadableByteStream {
     override fun available(): Int = remaining()
 
-    override fun skip(len: Int) = position(position() + len)
+    override fun skip(length: Int) = position(position() + length)
 
     /**
      * Returns current position of the stream
