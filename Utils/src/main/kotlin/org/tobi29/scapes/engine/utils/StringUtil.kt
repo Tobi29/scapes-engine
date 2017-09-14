@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils
 /**
  * Creates a hash from the given [String]
  * @param value String to create the hash from
- * @param h     Base value for creating the hash
+ * @param h Base value for creating the hash
  * @return A 64-bit hash
  */
 fun hash(value: String,
@@ -71,16 +71,41 @@ fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str
     }
 }
 
+/**
+ * Copies the characters of the given array into a new string
+ * @param offset First index to read in the array
+ * @param length Number of characters to read
+ * @receiver Array to read from
+ * @return A new string containing the copied characters
+ */
 fun CharArray.copyToString(offset: Int = 0,
-                           length: Int = size): String =
+                           length: Int = size - offset): String =
         copyToStringImpl(offset, length)
 
+/**
+ * Copies the characters of the given string into an array
+ * @param destination Array to write to
+ * @param offset First index to write into in the array
+ * @param startIndex First index to copy from (inclusive)
+ * @param endIndex Last index to copy from (exclusive)
+ * @receiver String to read from
+ * @return A new string containing the copied characters
+ */
 fun String.copyToArray(destination: CharArray = CharArray(length),
                        offset: Int = 0,
                        startIndex: Int = 0,
                        endIndex: Int = length): CharArray =
         copyToArrayImpl(destination, offset, startIndex, endIndex)
 
+/**
+ * Ensures a certain length of the string by prefixing or throwing an exception
+ * @param char Character to fill with
+ * @param minLength Minimum length of resulting string
+ * @param maxLength Maximum length of resulting string
+ * @receiver String to use
+ * @throws IllegalArgumentException If initial string was already too long
+ * @return String with length between minLength and maxLength (inclusive)
+ */
 fun String.prefixToLength(char: Char,
                           minLength: Int,
                           maxLength: Int = Int.MAX_VALUE): String {
@@ -95,6 +120,15 @@ fun String.prefixToLength(char: Char,
     return output.toString()
 }
 
+/**
+ * Ensures a certain length of the string by suffixing or throwing an exception
+ * @param char Character to fill with
+ * @param minLength Minimum length of resulting string
+ * @param maxLength Maximum length of resulting string
+ * @receiver String to use
+ * @throws IllegalArgumentException If initial string was already too long
+ * @return String with length between minLength and maxLength (inclusive)
+ */
 fun String.suffixToLength(char: Char,
                           minLength: Int,
                           maxLength: Int = Int.MAX_VALUE): String {
@@ -109,5 +143,10 @@ fun String.suffixToLength(char: Char,
     return output.toString()
 }
 
+/**
+ * Converts the given string to a mutable one
+ * @receiver String to copy from
+ * @return A mutable copy of the string
+ */
 @Suppress("NOTHING_TO_INLINE")
 inline fun String.toMutableString(): MutableString = MutableString(this)
