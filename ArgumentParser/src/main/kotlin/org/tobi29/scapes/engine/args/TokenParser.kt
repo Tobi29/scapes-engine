@@ -26,7 +26,7 @@ class TokenParser
  * Constructs a new parses using the given options
  * @param options The sequence of options to use for parsing
  */
-(private val options: Sequence<CommandOption>) {
+(private val options: Iterable<CommandOption>) {
     private var optionsTerminated = false
     private var currentOption: CommandOption? = null
     private val currentArgs = ArrayList<String>()
@@ -216,3 +216,15 @@ class TokenParser
                 val value: List<String>) : Token()
     }
 }
+
+/**
+ * Parse the given tokens into parameters, flags and arguments
+ * @receiver The parser configuration
+ * @throws InvalidCommandLineException When a token is invalid
+ * @return A list of parameters, flags and arguments
+ */
+fun Iterable<CommandOption>.parseTokens(tokens: Iterable<String>): List<TokenParser.Token> =
+        TokenParser(this).let { parser ->
+            tokens.forEach { parser.append(it) }
+            parser.finish()
+        }

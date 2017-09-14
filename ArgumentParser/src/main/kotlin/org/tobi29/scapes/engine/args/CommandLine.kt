@@ -40,14 +40,14 @@ data class CommandLine
 /**
  * Assembles the given parsed tokens for easy access
  * @receiver The parsed tokens to assemble
- * @returns A [CommandLine] instance containing the data from the tokens
+ * @return A [CommandLine] instance containing the data from the tokens
  */
 fun Collection<TokenParser.Token>.assemble() = asSequence().assemble()
 
 /**
  * Assembles the given parsed tokens for easy access
  * @receiver The parsed tokens to assemble
- * @returns A [CommandLine] instance containing the data from the tokens
+ * @return A [CommandLine] instance containing the data from the tokens
  */
 fun Sequence<TokenParser.Token>.assemble(): CommandLine {
     val arguments = filterMap<TokenParser.Token.Argument>()
@@ -78,9 +78,22 @@ fun CommandLine.validate() {
 /**
  * Exception when invalid input was given to command line parsing
  */
-class InvalidCommandLineException
+class InvalidCommandLineException(message: String) : Exception(message)
+
 /**
- * Creates a new instance of this exception
- * @param message The message for the exception
+ * Parse the given tokens into a command line instance
+ * @receiver The parser configuration
+ * @throws InvalidCommandLineException When a token is invalid
+ * @return An assembled command line instance
  */
-(message: String) : Exception(message)
+fun Iterable<CommandOption>.parseDirtyCommandLine(tokens: Iterable<String>): CommandLine =
+        parseTokens(tokens).assemble()
+
+/**
+ * Parse the given tokens into a command line instance and validates it
+ * @receiver The parser configuration
+ * @throws InvalidCommandLineException When a token is invalid or it resulted in an invalid command line
+ * @return An assembled valid command line instance
+ */
+fun Iterable<CommandOption>.parseCommandLine(tokens: Iterable<String>): CommandLine =
+        parseDirtyCommandLine(tokens).apply { validate() }

@@ -20,7 +20,7 @@ package org.tobi29.scapes.engine.args
  * Fetches the list of arguments from the given [CommandLine]
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A list of strings or `null` if the option was not found
+ * @return A list of strings or `null` if the option was not found
  */
 fun CommandLine.getList(option: CommandOption) =
         parameters[option]
@@ -29,7 +29,7 @@ fun CommandLine.getList(option: CommandOption) =
  * Fetches the first argument for the option from the given [CommandLine]
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A string or `null` if the option was not found
+ * @return A string or `null` if the option was not found
  */
 fun CommandLine.get(option: CommandOption) =
         getList(option)?.firstOrNull()
@@ -38,7 +38,7 @@ fun CommandLine.get(option: CommandOption) =
  * Checks if the option is set in the given [CommandLine]
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns True in case the option was set and either to "true" or nothing
+ * @return True in case the option was set and either to "true" or nothing
  */
 fun CommandLine.getBoolean(option: CommandOption): Boolean {
     val value = getList(option) ?: return false
@@ -50,7 +50,7 @@ fun CommandLine.getBoolean(option: CommandOption): Boolean {
  * converts it to an int
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns An int or `null` if the option was not found
+ * @return An int or `null` if the option was not found
  */
 fun CommandLine.getInt(option: CommandOption) =
         get(option)?.toIntOrNull()
@@ -60,7 +60,7 @@ fun CommandLine.getInt(option: CommandOption) =
  * converts it to a long
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A long or `null` if the option was not found
+ * @return A long or `null` if the option was not found
  */
 fun CommandLine.getLong(option: CommandOption) =
         get(option)?.toLongOrNull()
@@ -70,7 +70,7 @@ fun CommandLine.getLong(option: CommandOption) =
  * converts it to a double
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A double or `null` if the option was not found
+ * @return A double or `null` if the option was not found
  */
 fun CommandLine.getDouble(option: CommandOption) =
         get(option)?.toDoubleOrNull()
@@ -79,7 +79,7 @@ fun CommandLine.getDouble(option: CommandOption) =
  * Fetches the first argument for the option from the given [CommandLine]
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A string
+ * @return A string
  * @throws InvalidCommandLineException If the option was not found
  */
 fun CommandLine.require(option: CommandOption) =
@@ -91,7 +91,7 @@ fun CommandLine.require(option: CommandOption) =
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
- * @returns A string
+ * @return A string
  * @throws InvalidCommandLineException If the option was not found
  */
 inline fun CommandLine.require(option: CommandOption,
@@ -104,7 +104,7 @@ inline fun CommandLine.require(option: CommandOption,
  * converts it to an int
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns An int
+ * @return An int
  * @throws InvalidCommandLineException If the option was not found
  */
 fun CommandLine.requireInt(option: CommandOption) =
@@ -117,7 +117,7 @@ fun CommandLine.requireInt(option: CommandOption) =
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
- * @returns An int
+ * @return An int
  * @throws InvalidCommandLineException If the option was not found
  */
 inline fun CommandLine.requireInt(option: CommandOption,
@@ -130,7 +130,7 @@ inline fun CommandLine.requireInt(option: CommandOption,
  * converts it to a long
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A long
+ * @return A long
  * @throws InvalidCommandLineException If the option was not found
  */
 fun CommandLine.requireLong(option: CommandOption) =
@@ -143,7 +143,7 @@ fun CommandLine.requireLong(option: CommandOption) =
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
- * @returns A long
+ * @return A long
  * @throws InvalidCommandLineException If the option was not found
  */
 inline fun CommandLine.requireLong(option: CommandOption,
@@ -156,7 +156,7 @@ inline fun CommandLine.requireLong(option: CommandOption,
  * converts it to a double
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
- * @returns A double
+ * @return A double
  * @throws InvalidCommandLineException If the option was not found
  */
 fun CommandLine.requireDouble(option: CommandOption) =
@@ -169,7 +169,7 @@ fun CommandLine.requireDouble(option: CommandOption) =
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
- * @returns A double
+ * @return A double
  * @throws InvalidCommandLineException If the option was not found
  */
 inline fun CommandLine.requireDouble(option: CommandOption,

@@ -19,16 +19,7 @@ package org.tobi29.scapes.engine.args
 /**
  * A option for parsing command line arguments
  */
-data class CommandOption
-/**
- * Creates a new option with the given names, amount of arguments and
- * description
- * @param shortNames Set of characters used as short names
- * @param longNames Set of strings used as long names
- * @param args The amount of arguments this option requires
- * @param description Description used for printing usage
- */
-(
+data class CommandOption(
         /**
          * Set of characters used as short names
          */
@@ -86,7 +77,7 @@ fun CommandOption.matches(name: String) = longNames.contains(name)
  * @receiver The sequence of [CommandOption]s to read
  * @return The help info in a string
  */
-fun Sequence<CommandOption>.printHelp() =
+fun Iterable<CommandOption>.printHelp() =
         StringBuilder().also { printHelp(it) }.toString()
 
 /**
@@ -95,8 +86,8 @@ fun Sequence<CommandOption>.printHelp() =
  * @receiver The sequence of [CommandOption]s to read
  * @param appendable The appendable to write to
  */
-fun Sequence<CommandOption>.printHelp(appendable: Appendable) {
-    val options = map { Pair(it, it.printUsage()) }.toList().asSequence()
+fun Iterable<CommandOption>.printHelp(appendable: Appendable) {
+    val options = map { Pair(it, it.printUsage()) }.toList()
     val descriptionGap = (options.map { it.second.length }.max() ?: 0) + 4
     var first = false
     options.forEach { (option, usage) ->

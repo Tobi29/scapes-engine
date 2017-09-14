@@ -21,30 +21,25 @@ import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
-import org.tobi29.scapes.engine.args.CommandOption
-import org.tobi29.scapes.engine.args.TokenParser
-import org.tobi29.scapes.engine.args.assemble
-import org.tobi29.scapes.engine.args.validate
+import org.tobi29.scapes.engine.args.*
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
+
+private val helpOption = CommandOption(
+        setOf('h'), setOf("help"), "Print this text and exit")
+private val versionOption = CommandOption(
+        setOf('v'), setOf("version"), "Print version and exit")
+private val propertyOption = CommandOption(
+        setOf('p'), setOf("property"), 1, "Set a property")
+private val options = listOf(helpOption, versionOption, propertyOption)
 
 object CommandLineTests : Spek({
     describe("parsing options from tokens") {
         given("a parser configuration") {
-            val optionsList = ArrayList<CommandOption>()
-            val helpOption = CommandOption(setOf('h'), setOf("help"),
-                    "Print this text and exit").also { optionsList.add(it) }
-            val versionOption = CommandOption(setOf('v'), setOf("version"),
-                    "Print version and exit").also { optionsList.add(it) }
-            val propertyOption = CommandOption(setOf('p'), setOf("property"), 1,
-                    "Set a property").also { optionsList.add(it) }
-            val options = optionsList.asSequence()
             on("parsing a list of arguments") {
                 val args = listOf("--property", "first", "arg", "-v",
                         "-p=second")
 
-                val parser = TokenParser(options)
-                args.forEach { parser.append(it) }
-                val tokens = parser.finish()
+                val tokens = options.parseTokens(args)
                 val commandLine = tokens.assemble()
                 commandLine.validate()
 
