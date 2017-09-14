@@ -275,14 +275,14 @@ object Duration {
 interface Clock {
     /**
      * Returns time instant in milliseconds
-     * @returns Current time in milliseconds
+     * @return Current time in milliseconds
      */
     fun timeMillis(): InstantMillis =
             (timeNanos() / 1000000L.toInt128()).toLongClamped()
 
     /**
      * Returns time instant in nanoseconds
-     * @returns Current time in nanoseconds
+     * @return Current time in nanoseconds
      */
     fun timeNanos(): InstantNanos
 
@@ -290,7 +290,7 @@ interface Clock {
      * Returns time instant in nanoseconds
      *
      * Convenience operator for [timeNanos]
-     * @returns Current time in nanoseconds
+     * @return Current time in nanoseconds
      * @see [timeNanos]
      */
     operator fun invoke(): InstantNanos = timeNanos()
@@ -307,7 +307,7 @@ interface SteadyClock {
      * Returns a timestamp in nanoseconds
      *
      * Invoking it again guarantees a value greater or equal to this one
-     * @returns Current time in nanoseconds
+     * @return Current time in nanoseconds
      */
     fun timeSteadyNanos(): InstantSteadyNanos
 }

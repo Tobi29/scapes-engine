@@ -73,7 +73,7 @@ inline fun RemoteAddress.resolve(
  * Resolves the [hostname]
  * @param hostname The hostname or ip-address to resolve
  * @param taskExecutor The [CoroutineContext] to run a task with
- * @returns The resulting address or `null` if it failed to resolve
+ * @return The resulting address or `null` if it failed to resolve
  */
 suspend fun resolve(hostname: String,
                     taskExecutor: CoroutineContext): InetAddress? {
@@ -87,7 +87,7 @@ suspend fun resolve(hostname: String,
  * @param hostname The hostname or ip-address to resolve
  * @param port The port that will be used to construct the socket address
  * @param taskExecutor The [CoroutineContext] to run a task with
- * @returns The resulting socket address or `null` if it failed to resolve
+ * @return The resulting socket address or `null` if it failed to resolve
  */
 suspend fun resolve(hostname: String,
                     port: Int,
@@ -98,7 +98,7 @@ suspend fun resolve(hostname: String,
  * Resolves the hostname of the given address
  * @receiver The [RemoteAddress] to resolve
  * @param taskExecutor The [CoroutineContext] to run a task with
- * @returns The resulting socket address or `null` if it failed to resolve
+ * @return The resulting socket address or `null` if it failed to resolve
  */
 suspend fun RemoteAddress.resolve(taskExecutor: CoroutineContext) =
         resolve(address, port, taskExecutor)

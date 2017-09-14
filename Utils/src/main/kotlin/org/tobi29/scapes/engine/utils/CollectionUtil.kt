@@ -22,7 +22,7 @@ package org.tobi29.scapes.engine.utils
  * Filters out elements of the wrong type and casts them
  * @param T The type to cast to
  * @receiver The sequence of elements to map
- * @returns A lazy sequence
+ * @return A lazy sequence
  */
 inline fun <reified T : Any> Sequence<*>.filterMap(): Sequence<T> {
     return mapNotNull { it as? T }
@@ -32,7 +32,7 @@ inline fun <reified T : Any> Sequence<*>.filterMap(): Sequence<T> {
  * Find the first element of correct type and casts it
  * @param T The type to cast to
  * @receiver The elements to search in
- * @returns The first casted element or `null`
+ * @return The first casted element or `null`
  */
 inline fun <reified T : Any> Sequence<*>.findMap(): T? {
     return find { it is T } as? T
@@ -42,7 +42,7 @@ inline fun <reified T : Any> Sequence<*>.findMap(): T? {
  * Find the first element of correct type and casts it
  * @param T The type to cast to
  * @receiver The elements to search in
- * @returns The first casted element or `null`
+ * @return The first casted element or `null`
  */
 inline fun <reified T : Any> Iterable<*>.findMap(): T? {
     return find { it is T } as? T
@@ -52,7 +52,7 @@ inline fun <reified T : Any> Iterable<*>.findMap(): T? {
  * Find the first element of correct type and casts it
  * @param T The type to cast to
  * @receiver The elements to search in
- * @returns The first casted element or `null`
+ * @return The first casted element or `null`
  */
 inline fun <reified T : Any> Array<*>.findMap(): T? {
     return find { it is T } as? T
@@ -62,7 +62,7 @@ inline fun <reified T : Any> Array<*>.findMap(): T? {
  * Takes all elements of a sequence and puts them into an array
  * @param T The type of elements
  * @receiver The sequence of elements to collect
- * @returns A new array containing
+ * @return A new array containing
  */
 inline fun <reified T> Sequence<T>.toArray(): Array<T> {
     return toList().toTypedArray()
@@ -72,7 +72,7 @@ inline fun <reified T> Sequence<T>.toArray(): Array<T> {
  * Constructs an infinite sequence starting with all the elements in the given
  * one and filling the rest with `null`
  * @receiver The sequence to start with
- * @returns An infinite sequence
+ * @return An infinite sequence
  */
 fun <T> Sequence<T>.andNull() = Sequence {
     val iterator = iterator()
@@ -92,7 +92,7 @@ fun <T> Sequence<T>.andNull() = Sequence {
  * @param T Element type
  * @param operation Function that takes the current accumulator value and the element itself and calculates the next accumulator value
  * @receiver The sequence of elements to reduce
- * @returns The resulting element or null if called on empty sequence
+ * @return The resulting element or null if called on empty sequence
  */
 inline fun <S, T : S> Sequence<T>.reduceOrNull(operation: (S, T) -> S): S? {
     val iterator = this.iterator()
@@ -114,7 +114,7 @@ inline fun <S, T : S> Sequence<T>.reduceOrNull(operation: (S, T) -> S): S? {
  * @param T Element type
  * @param operation Function that takes the index of an element, current accumulator value and the element itself and calculates the next accumulator value
  * @receiver The sequence of elements to reduce
- * @returns The resulting element or null if called on empty sequence
+ * @return The resulting element or null if called on empty sequence
  */
 inline fun <S, T : S> Sequence<T>.reduceIndexedOrNull(operation: (Int, S, T) -> S): S? {
     val iterator = this.iterator()

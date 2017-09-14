@@ -22,14 +22,14 @@ package org.tobi29.scapes.engine.utils.io
 interface SizedReadableByteStream : ReadableByteStream {
     /**
      * Returns amount of bytes left in the stream, may not change arbitrarily
-     * @returns Amount of bytes left in the stream
+     * @return Amount of bytes left in the stream
      */
     fun remaining(): Int
 
     /**
      * Returns `true` if there are remaining bytes and reading at least a
      * single byte will guaranteed not throw because of the stream ending
-     * @returns `true` if there are remaining bytes
+     * @return `true` if there are remaining bytes
      */
     fun hasRemaining(): Boolean = remaining() > 0
 

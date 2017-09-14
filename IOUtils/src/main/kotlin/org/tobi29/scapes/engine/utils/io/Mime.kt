@@ -21,7 +21,7 @@ package org.tobi29.scapes.engine.utils.io
  *
  * **Note:** The exact result may vary from platform to platform
  * @param name The name of the resource or `null`
- * @returns a mime-type string
+ * @return a mime-type string
  */
 fun detectMime(name: String? = null) =
         detectMime(null, name)
@@ -32,7 +32,7 @@ fun detectMime(name: String? = null) =
  * **Note:** The exact result may vary from platform to platform
  * @param stream The stream to read from
  * @param name The name of the resource or `null`
- * @returns a mime-type string
+ * @return a mime-type string
  */
 fun detectMime(stream: ReadableByteStream? = null,
                name: String? = null) =

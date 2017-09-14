@@ -77,7 +77,7 @@ data class Version(
          * [other]
          *
          * @param other The minimum level to check for
-         * @returns `true` if `this.level >= other.level`
+         * @return `true` if `this.level >= other.level`
          */
         infix fun atLeast(other: Comparison): Boolean = level >= other.level
 
@@ -86,7 +86,7 @@ data class Version(
          * [other]
          *
          * @param other The maximum level to check for
-         * @returns `true` if `this.level <= other.level`
+         * @return `true` if `this.level <= other.level`
          */
         infix fun atMost(other: Comparison): Boolean = level <= other.level
 
@@ -96,7 +96,7 @@ data class Version(
          *
          * @param lower The minimum level to check for
          * @param upper The maximum level to check for
-         * @returns `true` if `lower.level <= this.level <= upper.level`
+         * @return `true` if `lower.level <= this.level <= upper.level`
          */
         fun inside(lower: Comparison,
                    upper: Comparison): Boolean =

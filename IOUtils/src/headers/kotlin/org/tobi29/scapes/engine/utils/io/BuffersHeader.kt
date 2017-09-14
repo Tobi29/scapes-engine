@@ -25,7 +25,7 @@ header fun ByteBuffer.asString(): String
  * @param offset Offset in the array
  * @param length Length in the array
  * @receiver The array to back into
- * @returns A [ByteBuffer] using the array for storage
+ * @return A [ByteBuffer] using the array for storage
  */
 header fun ByteArray.asByteBuffer(offset: Int,
                                   length: Int): ByteBuffer

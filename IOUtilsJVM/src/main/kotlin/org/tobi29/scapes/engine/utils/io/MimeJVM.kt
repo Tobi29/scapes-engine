@@ -31,7 +31,7 @@ impl internal fun detectMimeImpl(stream: ReadableByteStream?,
  * **Note:** The exact result may vary from platform to platform
  * @param streamIn The input stream to read from or `null`
  * @param name The name of the resource or `null`
- * @returns a mime-type string
+ * @return a mime-type string
  */
 fun detectMimeIO(streamIn: InputStream? = null,
                  name: String? = null): String {

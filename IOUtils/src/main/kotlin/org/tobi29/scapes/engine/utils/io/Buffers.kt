@@ -71,7 +71,7 @@ inline fun CharBuffer(size: Int): CharBuffer =
 /**
  * Returns a view on the given array
  * @receiver The array to back into
- * @returns A [ByteBuffer] using the array for storage
+ * @return A [ByteBuffer] using the array for storage
  */
 inline fun ByteArray.asByteBuffer(): ByteBuffer = asByteBuffer(0, size)
 

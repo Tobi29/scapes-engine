@@ -79,7 +79,7 @@ class StampLock {
 
     /**
      * Returns `true` in case a write lock is held
-     * @returns `true` in case a write lock is held
+     * @return `true` in case a write lock is held
      */
     fun isHeld() = writeLock.isHeldByCurrentThread
 
