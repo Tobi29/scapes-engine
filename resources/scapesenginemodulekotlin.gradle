@@ -16,6 +16,7 @@
 
 apply plugin: "kotlin-platform-common"
 apply plugin: "maven"
+apply plugin: "org.jetbrains.dokka"
 apply plugin: "eclipse"
 
 kotlin {
