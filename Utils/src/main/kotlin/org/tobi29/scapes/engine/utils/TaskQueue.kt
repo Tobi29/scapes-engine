@@ -19,7 +19,7 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * A queue of tasks or [Option.None] indicating the end of a batch.
+ * A queue of tasks or [OptionNone] indicating the end of a batch.
  */
 typealias TaskQueue<T> = ConcurrentLinkedQueue<Option<T>>
 
@@ -29,7 +29,7 @@ typealias TaskQueue<T> = ConcurrentLinkedQueue<Option<T>>
  * @receiver The queue to add to
  */
 inline fun <T> TaskQueue<T>.add(block: T) {
-    add(Option.Some(block))
+    add(OptionSome(block))
 }
 
 /**
@@ -38,7 +38,7 @@ inline fun <T> TaskQueue<T>.add(block: T) {
  * @receiver The queue to remove from
  */
 inline fun <T> TaskQueue<T>.remove(block: T): Boolean =
-        remove(Option.Some(block))
+        remove(OptionSome(block))
 
 /**
  * Calls all elements and removes them in the queue, even if added during
@@ -56,7 +56,7 @@ inline fun <T : () -> Any?> TaskQueue<T>.processDrain() =
  */
 inline fun <T> TaskQueue<T>.processDrain(execute: (T) -> Unit) {
     while (isNotEmpty()) {
-        poll().let { it as? Option.Some }?.let { execute(it.value) }
+        poll().let { it as? OptionSome }?.let { execute(it.value) }
     }
 }
 
@@ -75,11 +75,11 @@ inline fun <T : () -> Any?> TaskQueue<T>.processCurrent() =
  */
 inline fun <T> TaskQueue<T>.processCurrent(execute: (T) -> Unit) {
     if (isNotEmpty()) {
-        add(Option.None)
+        add(nil)
         current@ while (isNotEmpty()) {
             val element = poll()
             when (element) {
-                is Option.Some -> execute(element.value)
+                is OptionSome -> execute(element.value)
                 else -> break@current
             }
         }
