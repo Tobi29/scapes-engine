@@ -120,7 +120,7 @@ class SSLHandle(keyManagers: Array<KeyManager>?,
                       session: SSLSession,
                       client: Boolean) {
         try {
-            if (client && verifyHostname) {
+            if (client && verifyHostname && !isAndroidAPI(24)) {
                 val verifier = HttpsURLConnection.getDefaultHostnameVerifier()
                 if (!verifier.verify(address.address, session)) {
                     throw SSLHandshakeException("Hostname verification failed")
