@@ -44,6 +44,10 @@ include "FileSystemsJVM"
 include "NIOFileSystemJVM"
 include "IOFileSystemJVM"
 
+// Platform integration
+include "PlatformIntegration"
+include "PlatformIntegrationJVM"
+
 // Server framework
 include "ServerFrameworkJVM"
 
