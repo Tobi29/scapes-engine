@@ -8,7 +8,7 @@ interface FileAttribute : FileMetadata
 
 data class FileBasicMetadata(val type: FileType,
                              val size: Long,
-                             val uid: Any) : FileMetadata
+                             val uid: Any?) : FileMetadata
 
 data class FileUID(val high: Long,
                    val low: Long)
