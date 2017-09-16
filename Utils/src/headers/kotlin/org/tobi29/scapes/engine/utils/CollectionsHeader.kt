@@ -1,25 +1,5 @@
 package org.tobi29.scapes.engine.utils
 
-header class ConcurrentLinkedQueue<E> : Queue<E> {
-    override val size: Int
-
-    override fun contains(element: E): Boolean
-    override fun containsAll(elements: Collection<E>): Boolean
-    override fun isEmpty(): Boolean
-    override fun offer(element: E): Boolean
-    override fun remove(): E
-    override fun poll(): E?
-    override fun element(): E
-    override fun peek(): E
-    override fun add(element: E): Boolean
-    override fun addAll(elements: Collection<E>): Boolean
-    override fun clear()
-    override fun iterator(): MutableIterator<E>
-    override fun remove(element: E): Boolean
-    override fun removeAll(elements: Collection<E>): Boolean
-    override fun retainAll(elements: Collection<E>): Boolean
-}
-
 header class ArrayDeque<E : Any> : Deque<E> {
     constructor()
     constructor(size: Int)

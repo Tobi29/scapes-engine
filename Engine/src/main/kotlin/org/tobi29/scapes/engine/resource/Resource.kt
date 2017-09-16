@@ -17,9 +17,6 @@
 package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.runBlocking
-import org.tobi29.scapes.engine.utils.AtomicReference
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 
 interface Resource<out T : Any> {
     fun tryGet(): T?

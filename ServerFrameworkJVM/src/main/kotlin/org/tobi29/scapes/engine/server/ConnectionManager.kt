@@ -22,7 +22,6 @@ import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ComponentRegistered
 import org.tobi29.scapes.engine.utils.ComponentTypeRegisteredUniversal
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.task.launchThread
@@ -40,8 +39,7 @@ class ConnectionManager(
          */
         val taskExecutor: CoroutineContext,
         private val maxWorkerSleep: Long = 1000) : ComponentRegistered {
-    private val workers = ArrayList<ConnectionWorker>()
-    private val joiners = ConcurrentLinkedQueue<Pair<Job, Pair<AtomicBoolean, ConnectionWorker>>>()
+    private val workers = ArrayList<Triple<ConnectionWorker, Job, AtomicBoolean>>()
 
     /**
      * Starts a specified number of threads for processing connections
@@ -50,24 +48,30 @@ class ConnectionManager(
      * @param workerCount The amount of worker threads to start
      */
     fun workers(workerCount: Int) {
-        logger.info { "Starting worker $workerCount threads..." }
-        for (i in 0 until workerCount) {
-            val worker = ConnectionWorker(this, maxWorkerSleep)
-            workers.add(worker)
-            val stop = AtomicBoolean(false)
-            joiners.add(
-                    launchThread("Connection-Worker-$i", taskExecutor[Job]) {
+        repeat(workerCount) { worker() }
+    }
+
+    /**
+     * Starts a thread for processing connections
+     *
+     * May be called multiple times to start more threads
+     */
+    fun worker() {
+        val worker = ConnectionWorker(this, maxWorkerSleep)
+        val stop = AtomicBoolean(false)
+        val w = Triple(worker,
+                launchThread("Connection-Worker", taskExecutor[Job]) {
+                    try {
+                        worker.run(stop)
+                    } finally {
                         try {
-                            worker.run(stop)
-                        } finally {
-                            try {
-                                worker.close()
-                            } catch (e: IOException) {
-                                logger.warn { "Failed to close worker: $e" }
-                            }
+                            worker.close()
+                        } catch (e: IOException) {
+                            logger.warn { "Failed to close worker: $e" }
                         }
-                    } to (stop to worker))
-        }
+                    }
+                }, stop)
+        synchronized(workers) { workers.add(w) }
     }
 
     /**
@@ -87,7 +91,7 @@ class ConnectionManager(
                       block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit): Boolean {
         var load = Int.MAX_VALUE
         var bestWorker: ConnectionWorker? = null
-        for (worker in workers) {
+        for ((worker, _, _) in workers) {
             val workerLoad = worker.connectionCount
             if (workerLoad < load) {
                 bestWorker = worker
@@ -106,16 +110,16 @@ class ConnectionManager(
      * Stops all worker threads and blocks until they shut down
      */
     override fun dispose() {
-        val wait = ArrayList<Pair<Job, Pair<AtomicBoolean, ConnectionWorker>>>()
-        while (joiners.isNotEmpty()) joiners.poll()?.let { wait.add(it) }
-        wait.forEach { (_, stop) -> stop.first.set(true) }
+        val closingWorkers = synchronized(workers) {
+            workers.toList().also { workers.clear() }
+        }
+        closingWorkers.forEach { (_, _, stop) -> stop.set(true) }
         runBlocking {
-            wait.forEach { (job, stop) ->
-                stop.second.wake()
+            closingWorkers.forEach { (worker, job, _) ->
+                worker.wake()
                 job.join()
             }
         }
-        logger.info { "Closed connection workers" }
     }
 
     companion object : KLogging() {

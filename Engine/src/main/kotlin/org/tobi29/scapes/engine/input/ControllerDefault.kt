@@ -16,17 +16,17 @@
 
 package org.tobi29.scapes.engine.input
 
+import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.removeEqual
 
 abstract class ControllerDefault : ControllerBasic {
     private val states = ConcurrentHashMap<ControllerKey, KeyState>()
-    private val pressEventQueue = ConcurrentLinkedQueue<ControllerBasic.PressEvent>()
-    private val typeEventQueue = ConcurrentLinkedQueue<KeyTypeEvent>()
+    private val pressEventQueue = LinkedListChannel<ControllerBasic.PressEvent>()
+    private val typeEventQueue = LinkedListChannel<KeyTypeEvent>()
     private var pressEvents: Collection<ControllerBasic.PressEvent> = emptyList()
     private var typeEvents: Collection<KeyTypeEvent> = emptyList()
     private var x = 0.0
@@ -56,9 +56,9 @@ abstract class ControllerDefault : ControllerBasic {
             }
             val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
             val newTypeEvents = ArrayList<KeyTypeEvent>()
-            isActive = !pressEventQueue.isEmpty()
-            while (!pressEventQueue.isEmpty()) {
-                val event = pressEventQueue.poll()!!
+            var active = false
+            while (true) {
+                val event = pressEventQueue.poll() ?: break
                 val key = event.key
                 when (event.state) {
                     ControllerBasic.PressState.PRESS ->
@@ -69,9 +69,12 @@ abstract class ControllerDefault : ControllerBasic {
                     }
                 }
                 newPressEvents.add(event)
+                active = true
             }
-            while (!typeEventQueue.isEmpty()) {
-                newTypeEvents.add(typeEventQueue.poll()!!)
+            isActive = active
+            while (true) {
+                val event = typeEventQueue.poll() ?: break
+                newTypeEvents.add(event)
             }
             pressEvents = newPressEvents
             typeEvents = newTypeEvents
@@ -107,15 +110,16 @@ abstract class ControllerDefault : ControllerBasic {
 
     override fun addPressEvent(key: ControllerKey,
                                state: ControllerBasic.PressState) {
-        pressEventQueue.add(ControllerBasic.PressEvent(key, state))
+        pressEventQueue.offer(ControllerBasic.PressEvent(key, state))
     }
 
     fun typeEvents(): Sequence<KeyTypeEvent> {
         return typeEvents.asSequence()
     }
 
-    open val isModifierDown get() = isDown(ControllerKey.KEY_CONTROL_LEFT) ||
-            isDown(ControllerKey.KEY_CONTROL_RIGHT)
+    open val isModifierDown
+        get() = isDown(ControllerKey.KEY_CONTROL_LEFT) ||
+                isDown(ControllerKey.KEY_CONTROL_RIGHT)
 
     fun x(): Double {
         return x
@@ -142,7 +146,7 @@ abstract class ControllerDefault : ControllerBasic {
     }
 
     fun addTypeEvent(character: Char) {
-        typeEventQueue.add(KeyTypeEvent(character))
+        typeEventQueue.offer(KeyTypeEvent(character))
     }
 
     fun clearTypeEvents() {

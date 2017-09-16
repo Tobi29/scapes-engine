@@ -153,36 +153,3 @@ impl class ConcurrentHashMap<K, V> : ConcurrentMap<K, V>, java.util.concurrent.C
     override fun hashCode() = map.hashCode()
     override fun toString() = map.toString()
 }
-
-// TODO: Use type alias
-impl class ConcurrentLinkedQueue<E> : Queue<E> {
-    private val queue = java.util.concurrent.ConcurrentLinkedQueue<E>()
-
-    impl override val size get() = queue.size
-
-    impl override fun offer(element: E) = queue.offer(element)
-    impl override fun add(element: E) = queue.add(element)
-    impl override fun addAll(elements: Collection<E>) = queue.addAll(elements)
-    impl override fun retainAll(elements: Collection<E>) = queue.retainAll(
-            elements)
-
-    impl override fun poll(): E? = queue.poll()
-    impl override fun contains(element: E) = queue.contains(element)
-    impl override fun iterator(): MutableIterator<E> = queue.iterator()
-    impl override fun removeAll(elements: Collection<E>) = queue.removeAll(
-            elements)
-
-    impl override fun remove(): E = queue.remove()
-    impl override fun containsAll(elements: Collection<E>) = queue.containsAll(
-            elements)
-
-    impl override fun isEmpty() = queue.isEmpty()
-    impl override fun clear() = queue.clear()
-    impl override fun remove(element: E) = queue.remove(element)
-    impl override fun peek(): E = queue.peek()
-    impl override fun element(): E = queue.element()
-
-    override fun equals(other: Any?) = queue == other
-    override fun hashCode() = queue.hashCode()
-    override fun toString() = queue.toString()
-}

@@ -17,10 +17,11 @@
 package org.tobi29.scapes.engine.utils.task
 
 import org.tobi29.scapes.engine.utils.*
+import java.util.concurrent.ConcurrentLinkedQueue
 
 impl class TaskLock {
     private val count = AtomicLong(0L)
-    private val onDone = TaskQueue<() -> Unit>()
+    private val onDone = ConcurrentLinkedQueue<Option<() -> Unit>>()
 
     impl fun increment() {
         count.incrementAndGet()
@@ -33,7 +34,14 @@ impl class TaskLock {
                 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
                 (count as Object).notifyAll()
             }
-            onDone.processCurrent()
+            onDone.add(nil)
+            process@ while (onDone.isNotEmpty()) {
+                val it = onDone.poll() ?: break
+                when (it) {
+                    is OptionSome -> it.get()()
+                    else -> break@process
+                }
+            }
         } else if (newCount < 0) {
             throw IllegalStateException("Negative task count")
         }
@@ -43,12 +51,9 @@ impl class TaskLock {
         if (isDone()) {
             block()
         } else {
-            onDone.add(block)
-            if (isDone()) {
-                if (onDone.remove(block)) {
-                    block()
-                }
-            }
+            val blockOption = OptionSome(block)
+            onDone.add(blockOption)
+            if (isDone() && onDone.remove(blockOption)) block()
         }
     }
 

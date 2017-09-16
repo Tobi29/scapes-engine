@@ -32,8 +32,7 @@ import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
-import org.tobi29.scapes.engine.utils.task.Timer
-import org.tobi29.scapes.engine.utils.task.launchThread
+import org.tobi29.scapes.engine.utils.task.*
 import kotlin.coroutines.experimental.CoroutineContext
 
 impl class ScapesEngine(
@@ -43,7 +42,7 @@ impl class ScapesEngine(
         configMap: MutableTagMap
 ) : CoroutineDispatcher(), ComponentHolder<Any>, ByteBufferProvider {
     impl override val componentStorage = ComponentStorage<Any>()
-    private val queue = TaskQueue<(Double) -> Unit>()
+    private val queue = TaskChannel<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
     private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
@@ -120,7 +119,7 @@ impl class ScapesEngine(
 
     impl override fun dispatch(context: CoroutineContext,
                                block: Runnable) {
-        queue.add {
+        queue.offer {
             try {
                 block.run()
             } catch (e: CancellationException) {

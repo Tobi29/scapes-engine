@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.backends.openal.openal
 
 import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.ScapesEngineConfig
@@ -27,7 +28,6 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ConcurrentHashSet
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
@@ -50,7 +50,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                         latency: Double) : SoundSystem {
     val speedOfSound = 343.3
     private val cache = HashMap<ReadSource, OpenALAudioData>()
-    private val queue = ConcurrentLinkedQueue<(OpenAL) -> Unit>()
+    private val queue = Channel<(OpenAL) -> Unit>(Channel.UNLIMITED)
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
     private var updateJob: Pair<ThreadJob, AtomicBoolean>? = null
@@ -82,7 +82,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 try {
                     val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
                     active = false
-                    if (queue.isNotEmpty()) {
+                    if (!queue.isEmpty) {
                         while (true) {
                             (queue.poll() ?: break).invoke(openAL)
                         }
@@ -307,7 +307,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     private fun queue(consumer: (OpenAL) -> Unit) {
-        queue.add(consumer)
+        if (!queue.offer(consumer)) throw IllegalStateException("Queue full")
         updateJob?.let { (job, _) ->
             LockSupport.unpark(job.thread)
         }

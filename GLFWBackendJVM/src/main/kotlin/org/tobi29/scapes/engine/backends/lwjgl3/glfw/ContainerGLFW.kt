@@ -41,6 +41,7 @@ import org.tobi29.scapes.engine.utils.sleepNanos
 import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.tag.toMap
 import org.tobi29.scapes.engine.utils.task.Timer
+import org.tobi29.scapes.engine.utils.task.processCurrent
 
 class ContainerGLFW(engine: ScapesEngine,
                     private val title: String,
@@ -214,9 +215,7 @@ class ContainerGLFW(engine: ScapesEngine,
             val start = steadyClock.timeSteadyNanos()
             val engineConfig = engine[ScapesEngineConfig.COMPONENT]
             val vSync = engineConfig.vSync
-            while (!tasks.isEmpty()) {
-                tasks.poll()?.invoke()
-            }
+            tasks.processCurrent()
             if (!valid) {
                 engine.graphics.reset()
                 controllerDefault.clearStates()

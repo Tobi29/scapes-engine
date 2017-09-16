@@ -17,9 +17,16 @@
 package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.*
-import org.tobi29.scapes.engine.utils.*
+import kotlinx.coroutines.experimental.channels.LinkedListChannel
+import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.AtomicLong
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.systemClock
+import org.tobi29.scapes.engine.utils.task.TaskChannel
+import org.tobi29.scapes.engine.utils.task.offer
+import org.tobi29.scapes.engine.utils.task.processCurrent
+import org.tobi29.scapes.engine.utils.task.processDrain
 import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
 import kotlin.coroutines.experimental.CoroutineContext
@@ -36,9 +43,9 @@ class ConnectionWorker(
         val connection: ConnectionManager,
         private val maxWorkerSleep: Long
 ) : CoroutineDispatcher(), AutoCloseable {
-    private val connectionQueue = ConcurrentLinkedQueue<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
+    private val connectionQueue = LinkedListChannel<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
     private val connections = ArrayList<ConnectionHandle>()
-    private val queue = TaskQueue<() -> Unit>()
+    private val queue = TaskChannel<() -> Unit>()
     val selector = Selector.open()
 
     /**
@@ -58,7 +65,7 @@ class ConnectionWorker(
      */
     fun addConnection(timeout: Long,
                       block: suspend CoroutineScope.(Connection) -> Unit) {
-        connectionQueue.add(Pair(timeout, block))
+        connectionQueue.offer(Pair(timeout, block))
         wake()
     }
 
@@ -70,10 +77,10 @@ class ConnectionWorker(
     fun run(stop: AtomicBoolean) {
         while (!stop.get()) {
             queue.processCurrent()
-            if (connectionQueue.isNotEmpty()) {
-                while (connectionQueue.isNotEmpty()) {
-                    val (initialTimeout, coroutine) = connectionQueue.poll()
-                            ?: continue
+            if (!connectionQueue.isEmpty) {
+                while (true) {
+                    val (initialTimeout, coroutine) =
+                            connectionQueue.poll() ?: break
                     val requestClose = AtomicBoolean()
                     val timeout = if (initialTimeout < 0) {
                         null
@@ -96,9 +103,7 @@ class ConnectionWorker(
                             }
                         }
                     }
-                    job.invokeOnCompletion {
-                        connections.remove(close)
-                    }
+                    job.invokeOnCompletion { connections.remove(close) }
                 }
             } else if (!stop.get()) {
                 val sleep = if (connections.isEmpty()) 0 else maxWorkerSleep
@@ -114,7 +119,7 @@ class ConnectionWorker(
             }
         }
         connections.forEach {
-            queue.add {
+            queue.offer {
                 it.job.cancel(CancellationException("Killing worker"))
             }
         }
@@ -146,7 +151,7 @@ class ConnectionWorker(
 
     override fun dispatch(context: CoroutineContext,
                           block: Runnable) {
-        queue.add {
+        queue.offer {
             try {
                 block.run()
             } catch (e: CancellationException) {

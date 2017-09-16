@@ -21,12 +21,12 @@ import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
-import org.tobi29.scapes.engine.utils.TaskQueue
-import org.tobi29.scapes.engine.utils.add
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.processCurrent
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
+import org.tobi29.scapes.engine.utils.task.TaskChannel
+import org.tobi29.scapes.engine.utils.task.offer
+import org.tobi29.scapes.engine.utils.task.processCurrent
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
@@ -38,7 +38,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     private val fboDebug: GuiWidgetDebugValues.Element
     private val shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture
-    private val queue = TaskQueue<(GL) -> Unit>()
+    private val queue = TaskChannel<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
     private var lastContentHeight = 0
@@ -131,7 +131,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     }
 
     fun requestScreenshot(block: (Image) -> Unit) {
-        queue.add { gl ->
+        queue.offer { gl ->
             block(gl.screenShot(0, 0, gl.contentWidth, gl.contentHeight))
         }
     }
@@ -149,7 +149,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
 
     override fun dispatch(context: CoroutineContext,
                           block: Runnable) {
-        queue.add {
+        queue.offer {
             try {
                 block.run()
             } catch (e: CancellationException) {

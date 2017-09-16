@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.input
 
+import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.removeEqual
 
@@ -26,7 +26,7 @@ class ControllerJoystick(private val name: String,
     private val id: String
     private val states = ConcurrentHashMap<ControllerKey, KeyState>()
     private val axes: DoubleArray
-    private val pressEventQueue = ConcurrentLinkedQueue<ControllerBasic.PressEvent>()
+    private val pressEventQueue = LinkedListChannel<ControllerBasic.PressEvent>()
     private var pressEvents: Collection<ControllerBasic.PressEvent> = emptyList()
     override var isActive = false
         private set
@@ -59,9 +59,9 @@ class ControllerJoystick(private val name: String,
                 }
             }
             val newPressEvents = ArrayList<ControllerBasic.PressEvent>()
-            isActive = !pressEventQueue.isEmpty()
-            while (!pressEventQueue.isEmpty()) {
-                val event = pressEventQueue.poll()!!
+            var active = false
+            while (true) {
+                val event = pressEventQueue.poll() ?: break
                 val key = event.key
                 when (event.state) {
                     ControllerBasic.PressState.PRESS ->
@@ -72,7 +72,9 @@ class ControllerJoystick(private val name: String,
                     }
                 }
                 newPressEvents.add(event)
+                active = true
             }
+            isActive = active
             pressEvents = newPressEvents
         }
     }
@@ -91,7 +93,7 @@ class ControllerJoystick(private val name: String,
 
     override fun addPressEvent(key: ControllerKey,
                                state: ControllerBasic.PressState) {
-        pressEventQueue.add(ControllerBasic.PressEvent(key, state))
+        pressEventQueue.offer(ControllerBasic.PressEvent(key, state))
     }
 
     fun axis(axis: Int): Double {

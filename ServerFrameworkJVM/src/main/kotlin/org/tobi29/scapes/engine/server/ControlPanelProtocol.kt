@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.IOException
@@ -50,9 +51,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
 
     private var idStr: String? = null
-    private val queue = ConcurrentLinkedQueue<TagMap>()
-    private val openHooks = ConcurrentLinkedQueue<() -> Unit>()
-    private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, Queue<(TagMap) -> Unit>>>()
+    private val queue = LinkedListChannel<TagMap>()
+    private val openHooks = LinkedListChannel<() -> Unit>()
+    private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, LinkedListChannel<(TagMap) -> Unit>>>()
     private var pingWait = 0L
     var ping = 0L
         private set
@@ -140,7 +141,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      */
     fun send(command: String,
              payload: TagMap) {
-        queue.add(TagMap {
+        queue.offer(TagMap {
             this["Command"] = command.toTag()
             this["Payload"] = payload
         })
@@ -160,7 +161,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     fun addCommand(command: String,
                    consumer: (TagMap) -> Unit) {
         val list = commands.computeAbsent(command) {
-            Pair(ArrayList(), ConcurrentLinkedQueue())
+            Pair(ArrayList(), LinkedListChannel())
         }
         synchronized(list.first) {
             list.first.add(consumer)
@@ -173,7 +174,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
      * @param runnable Callback that gets called
      */
     fun openHook(runnable: () -> Unit) {
-        openHooks.add(runnable)
+        openHooks.offer(runnable)
     }
 
     /**
@@ -185,9 +186,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     fun commandHook(command: String,
                     runnable: (TagMap) -> Unit) {
         val list = commands.computeAbsent(command) {
-            Pair(ArrayList(), ConcurrentLinkedQueue())
+            Pair(ArrayList(), LinkedListChannel())
         }
-        list.second.add(runnable)
+        list.second.offer(runnable)
     }
 
     override fun toString(): String {
@@ -198,8 +199,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
                                payload: TagMap) {
         val consumer = commands[command]
         if (consumer != null) {
-            while (!consumer.second.isEmpty()) {
-                consumer.second.poll()?.invoke(payload)
+            while (true) {
+                val onceListener = consumer.second.poll() ?: break
+                onceListener(payload)
             }
             synchronized(consumer.first) {
                 consumer.first.forEach { it(payload) }
@@ -227,7 +229,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             throw IOException(e)
         }
         channel.queueBundle()
-        while (!openHooks.isEmpty()) {
+        while (!openHooks.isEmpty) {
             openHooks.poll()?.invoke()
         }
         return false
@@ -275,7 +277,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             throw IOException(e)
         }
         channel.queueBundle()
-        while (!openHooks.isEmpty()) {
+        while (!openHooks.isEmpty) {
             openHooks.poll()?.invoke()
         }
         return false
@@ -313,7 +315,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             throw ConnectionCloseException("Failed password authentication")
         }
         idStr = id
-        while (!openHooks.isEmpty()) {
+        while (!openHooks.isEmpty) {
             openHooks.poll()?.invoke()
         }
         return false
@@ -375,7 +377,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     private suspend fun openSend() {
         val list = ArrayList<TagMap>(0)
-        while (!queue.isEmpty()) {
+        while (!queue.isEmpty) {
             queue.poll()?.let { list.add(it) }
         }
         if (!list.isEmpty()) {

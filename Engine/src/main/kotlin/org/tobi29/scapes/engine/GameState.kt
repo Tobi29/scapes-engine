@@ -16,16 +16,16 @@
 
 package org.tobi29.scapes.engine
 
+import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 
 abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0
-    private val newPipeline = ConcurrentLinkedQueue<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>()
+    private val newPipeline = LinkedListChannel<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>()
     private var newPipelineLoaded: (() -> (() -> Unit)?)? = null
     private val dirtyPipeline = AtomicBoolean(false)
     private var pipeline: Pipeline? = null
@@ -41,7 +41,7 @@ abstract class GameState(val engine: ScapesEngine) {
     fun renderState(gl: GL,
                     delta: Double,
                     updateSize: Boolean): Boolean {
-        while (newPipeline.isNotEmpty()) {
+        while (!newPipeline.isEmpty) {
             newPipeline.poll()?.let { (_, newPipeline) ->
                 finishPipeline(gl, Pipeline(gl, newPipeline))
             }
@@ -108,7 +108,7 @@ abstract class GameState(val engine: ScapesEngine) {
 
     fun switchPipelineBare(sync: Boolean,
                            block: (GL) -> suspend () -> (Double) -> Unit) {
-        newPipeline.add(Pair(sync, block))
+        newPipeline.offer(Pair(sync, block))
     }
 
     private fun renderGui(gl: GL): suspend () -> (Double) -> Unit {

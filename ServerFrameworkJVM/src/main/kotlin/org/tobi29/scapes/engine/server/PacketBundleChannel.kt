@@ -15,8 +15,8 @@
  */
 package org.tobi29.scapes.engine.server
 
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.*
@@ -27,7 +27,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
                           private val channelWrite: WritableByteChannel) {
     private val dataStreamOut = ByteBufferStream(growth = { it + 102400 })
     private val byteBufferStreamOut = ByteBufferStream(growth = { it + 102400 })
-    private val queue = ConcurrentLinkedQueue<ByteBuffer>()
+    private val queue = Channel<ByteBuffer>(Channel.UNLIMITED)
     private val deflater: CompressionUtil.Filter
     private val inflater: CompressionUtil.Filter
     private var output: ByteBuffer? = null
@@ -54,7 +54,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         return dataStreamOut.buffer().position()
     }
 
-    val outputFlushed get() = queue.isEmpty() && output == null
+    val outputFlushed get() = queue.isEmpty && output == null
 
     // TODO: @Throws(IOException::class)
     fun queueBundle() {
@@ -70,7 +70,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         bundle.putInt(size)
         bundle.put(byteBufferStreamOut.buffer())
         bundle.flip()
-        queue.add(bundle)
+        if (!queue.offer(bundle)) throw IOException("Send buffer full")
         dataStreamOut.buffer().clear()
         selector?.wakeup()
     }

@@ -30,7 +30,6 @@ import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
-import org.tobi29.scapes.engine.utils.ConcurrentLinkedQueue
 import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.NativeByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.ReadSource
@@ -38,12 +37,14 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toBoolean
+import org.tobi29.scapes.engine.utils.task.TaskChannel
+import org.tobi29.scapes.engine.utils.task.offer
 
 abstract class ContainerLWJGL3(
         override final val engine: ScapesEngine,
         protected val useGLES: Boolean = false
 ) : Container, ByteBufferProvider by NativeByteBufferProvider {
-    protected val tasks = ConcurrentLinkedQueue<() -> Unit>()
+    protected val tasks = TaskChannel<() -> Unit>()
     protected val mainThread: Thread = Thread.currentThread()
     override final val gos = if (useGLES) GOSLWJGL3GLES(this)
     else GOSLWJGL3GL(this)
@@ -76,7 +77,7 @@ abstract class ContainerLWJGL3(
         if (thread === mainThread) {
             return runnable()
         }
-        tasks.add(runnable)
+        tasks.offer(runnable)
     }
 
     companion object : KLogging() {
