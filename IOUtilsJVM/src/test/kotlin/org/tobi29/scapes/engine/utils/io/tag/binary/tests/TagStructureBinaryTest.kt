@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.tag.binary.tests
+package org.tobi29.scapes.engine.utils.io.tag.binary.tests
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
