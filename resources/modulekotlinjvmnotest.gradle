@@ -34,6 +34,12 @@ artifacts {
     archives sourcesJar
 }
 
+task printClasspath {
+    doLast {
+        println(sourceSets.getByName("main").runtimeClasspath.asPath)
+    }
+}
+
 ext.implementCommon = { Project project ->
     dependencies.implement project
     dependencies.compileOnly project

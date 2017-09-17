@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulekotlinjvmnotest.gradle"
+apply from: "$rootDir/resources/modulekotlinjvmnotest.gradle"
 
 apply plugin: "org.junit.platform.gradle.plugin"
 

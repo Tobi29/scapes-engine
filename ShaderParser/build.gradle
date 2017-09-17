@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/scapesenginemodulejava.gradle"
+apply from: "$rootDir/resources/modulejava.gradle"
 apply plugin: "antlr"
 apply plugin: "idea"
 
