@@ -20,6 +20,5 @@ dependencies {
     compile project(":IOUtils")
     compile project(":GraphicsUtils")
     compile project(":ShaderCompiler")
-    compile project(":TagStructureJSON")
     compile project(":ThreadUtils")
 }

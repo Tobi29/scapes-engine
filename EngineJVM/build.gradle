@@ -22,6 +22,5 @@ dependencies {
     compile project(":IOUtilsJVM")
     compile project(":GraphicsUtilsJVM")
     compile project(":ShaderCompilerJVM")
-    compile project(":TagStructureJSONJVM")
     compile project(":ThreadUtilsJVM")
 }
