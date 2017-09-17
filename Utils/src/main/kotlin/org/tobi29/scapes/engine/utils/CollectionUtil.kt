@@ -183,16 +183,16 @@ fun <E> ListIterator<E>.descendingIterator(): Iterator<E> =
  * @receiver A list iterator
  * @return A normal iterator that goes backwards
  */
-fun <E> MutableListIterator<E>.descendingIterator(): MutableIterator<E> =
+fun <E> MutableListIterator<E>.descendingMutableIterator(): MutableIterator<E> =
         object : MutableIterator<E> {
             override fun hasNext(): Boolean =
-                    this@descendingIterator.hasPrevious()
+                    this@descendingMutableIterator.hasPrevious()
 
             override fun next(): E =
-                    this@descendingIterator.previous()
+                    this@descendingMutableIterator.previous()
 
             override fun remove() =
-                    this@descendingIterator.remove()
+                    this@descendingMutableIterator.remove()
         }
 
 fun <T : Comparable<T>> comparator(): Comparator<T> =
