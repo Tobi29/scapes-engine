@@ -164,6 +164,37 @@ inline fun <T> Iterator(crossinline block: () -> T?): Iterator<T> {
     }
 }
 
+/**
+ * Returns a normal iterator that goes backwards through the list iterator
+ * @receiver A list iterator
+ * @return A normal iterator that goes backwards
+ */
+fun <E> ListIterator<E>.descendingIterator(): Iterator<E> =
+        object : Iterator<E> {
+            override fun hasNext(): Boolean =
+                    this@descendingIterator.hasPrevious()
+
+            override fun next(): E =
+                    this@descendingIterator.previous()
+        }
+
+/**
+ * Returns a normal iterator that goes backwards through the list iterator
+ * @receiver A list iterator
+ * @return A normal iterator that goes backwards
+ */
+fun <E> MutableListIterator<E>.descendingIterator(): MutableIterator<E> =
+        object : MutableIterator<E> {
+            override fun hasNext(): Boolean =
+                    this@descendingIterator.hasPrevious()
+
+            override fun next(): E =
+                    this@descendingIterator.previous()
+
+            override fun remove() =
+                    this@descendingIterator.remove()
+        }
+
 fun <T : Comparable<T>> comparator(): Comparator<T> =
         object : Comparator<T> {
             override fun compare(a: T,
