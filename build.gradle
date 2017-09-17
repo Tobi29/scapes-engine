@@ -87,7 +87,6 @@ ext {
 
     slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
     threeten = "org.threeten:threetenbp:$threetenbpVersion"
-    base64 = "com.owtelse.codec:base64:$base64Version"
     kotlinSTD = "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
     kotlinSTDJVM = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     kotlinSTDJS = "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"

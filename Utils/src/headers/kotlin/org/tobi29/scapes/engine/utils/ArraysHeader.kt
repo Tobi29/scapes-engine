@@ -125,18 +125,3 @@ header fun copyArray(src: CharArray,
                      length: Int,
                      offsetSrc: Int,
                      offsetDest: Int)
-
-/**
- * Converts a byte array to a Base64 string
- * @receiver Array to convert
- * @return String containing the data
- */
-header fun ByteArray.toBase64(): String
-
-/**
- * Converts a Base64 string to a byte array
- * @receiver String to convert
- * @return Byte array containing the data
- * @throws IllegalArgumentException When an invalid base64 was given
- */
-header fun String.fromBase64(): ByteArray

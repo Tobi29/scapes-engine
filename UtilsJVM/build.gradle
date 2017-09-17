@@ -20,6 +20,5 @@ implementCommon(project(":Utils"))
 
 dependencies {
     compile rootProject.ext.slf4jAPI
-    compile rootProject.ext.base64
     compile rootProject.ext.kotlinSTDJVM
 }

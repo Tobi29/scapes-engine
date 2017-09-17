@@ -18,27 +18,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import com.owtelse.codec.Base64
-import java.io.UnsupportedEncodingException
-
-impl fun ByteArray.toBase64(): String {
-    try {
-        return Base64.encode(this)
-    } catch (e: UnsupportedEncodingException) {
-        throw UnsupportedJVMException(e)
-    }
-}
-
-impl fun String.fromBase64(): ByteArray {
-    try {
-        return Base64.decode(this)
-    } catch (e: IllegalArgumentException) {
-        throw IllegalArgumentException(e)
-    } catch (e: UnsupportedEncodingException) {
-        throw IllegalArgumentException(e)
-    }
-}
-
 impl inline fun copyArray(src: BooleanArray,
                           dest: BooleanArray,
                           length: Int,
