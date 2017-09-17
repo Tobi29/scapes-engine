@@ -16,6 +16,7 @@
 
 // Utils
 include "Utils"
+include "UtilsJS"
 include "UtilsJVM"
 include "TagStructureJSON"
 include "TagStructureJSONJVM"
