@@ -18,6 +18,8 @@
 
 package org.tobi29.scapes.engine.utils.math
 
+import org.tobi29.scapes.engine.utils.toIntClamped
+
 impl inline fun abs(value: Int) = Math.abs(value)
 
 impl inline fun abs(value: Long) = Math.abs(value)
@@ -75,13 +77,15 @@ impl inline fun floorL(value: Double): Long {
 
 impl inline fun floorD(value: Double) = Math.floor(value)
 
-impl inline fun round(value: Float) = floor(value + 0.5f)
+impl inline fun round(value: Float) = round(value.toDouble())
 
-impl inline fun round(value: Double) = floor(value + 0.5)
+impl inline fun round(value: Double) = roundL(value).toIntClamped()
 
-impl inline fun roundL(value: Double) = floorL(value + 0.5)
+impl inline fun roundL(value: Double) = Math.round(value)
 
-impl inline fun roundD(value: Double) = Math.round(value).toDouble()
+impl inline fun roundD(value: Double) =
+        if (value > Long.MAX_VALUE || value < Long.MIN_VALUE) value
+        else roundL(value).toDouble()
 
 impl inline fun ceil(value: Float): Int {
     val int = value.toInt()
