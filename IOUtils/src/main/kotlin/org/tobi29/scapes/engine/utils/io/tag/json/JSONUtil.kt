@@ -12,7 +12,7 @@ internal fun Appendable.primitive(tag: TagPrimitive) = when (tag) {
     is TagString -> append('"').append(tag.value.jsonEscape()).append('"')
     is TagByteArray -> tag.value.joinTo(this, separator = ",", prefix = "[",
             postfix = "]")
-    else -> throw IOException("Invalid type: ${this::class}")
+    else -> throw IOException("Invalid type: $this")
 }
 
 private fun verify(value: Number) = when (value) {
