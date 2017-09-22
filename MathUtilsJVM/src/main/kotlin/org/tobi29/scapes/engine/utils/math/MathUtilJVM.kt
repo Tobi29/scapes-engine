@@ -143,9 +143,4 @@ impl inline fun pow(value1: Float,
 impl inline fun pow(value1: Double,
                     value2: Double) = Math.pow(value1, value2)
 
-impl inline fun lb(value: Int): Int {
-    if (value == 0) {
-        throw IllegalArgumentException("Calling lb on 0 is not allowed")
-    }
-    return 31 - Integer.numberOfLeadingZeros(value)
-}
+impl inline fun clz(value: Int): Int = Integer.numberOfLeadingZeros(value)

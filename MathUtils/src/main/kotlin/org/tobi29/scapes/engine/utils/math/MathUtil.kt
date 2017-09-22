@@ -973,11 +973,23 @@ inline fun nextPowerOfTwo(value: Int): Int {
 }
 
 /**
+ * Counts the amount of leading zeros
+ * @param value The value
+ * @return The amount of leading zeros in range 0..32
+ */
+header fun clz(value: Int): Int
+
+/**
  * Computes the logarithm with base 2 of [value]
  * @param value The value
  * @return Returns the logarithm with base 2 of [value]
  */
-header fun lb(value: Int): Int
+inline fun lb(value: Int): Int {
+    if (value == 0) {
+        throw IllegalArgumentException("Calling lb on 0 is not allowed")
+    }
+    return 31 - clz(value)
+}
 
 /**
  * Computes the modulus of the given number and [value]
