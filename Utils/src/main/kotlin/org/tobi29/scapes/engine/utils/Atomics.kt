@@ -16,11 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-typealias AtomicBoolean = java.util.concurrent.atomic.AtomicBoolean
-typealias AtomicInteger = java.util.concurrent.atomic.AtomicInteger
-typealias AtomicLong = java.util.concurrent.atomic.AtomicLong
-typealias AtomicReference<T> = java.util.concurrent.atomic.AtomicReference<T>
-
 class AtomicDouble {
     private val long = AtomicLong(0L)
 

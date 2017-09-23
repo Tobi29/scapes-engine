@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package java.util.concurrent.atomic
+package org.tobi29.scapes.engine.utils
 
 impl class AtomicBoolean(private var value: Boolean) {
     constructor() : this(false)

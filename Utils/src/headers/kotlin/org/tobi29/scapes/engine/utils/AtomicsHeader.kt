@@ -1,6 +1,5 @@
-package java.util.concurrent.atomic
+package org.tobi29.scapes.engine.utils
 
-@Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header class AtomicBoolean(value: Boolean) {
     fun get(): Boolean
 
@@ -12,7 +11,6 @@ header class AtomicBoolean(value: Boolean) {
     fun getAndSet(newValue: Boolean): Boolean
 }
 
-@Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header class AtomicInteger(value: Int) {
     fun get(): Int
 
@@ -36,7 +34,6 @@ header class AtomicInteger(value: Int) {
     fun addAndGet(delta: Int): Int
 }
 
-@Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header class AtomicLong(value: Long) {
     fun get(): Long
 
@@ -60,7 +57,6 @@ header class AtomicLong(value: Long) {
     fun addAndGet(delta: Long): Long
 }
 
-@Suppress("HEADER_WITHOUT_IMPLEMENTATION")
 header class AtomicReference<V>(value: V) {
     fun get(): V
 
