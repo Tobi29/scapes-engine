@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.scapes.engine.utils.io
 
 header fun ByteBuffer.asString(): String
