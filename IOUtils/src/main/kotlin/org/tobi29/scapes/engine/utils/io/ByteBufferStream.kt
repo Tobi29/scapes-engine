@@ -155,27 +155,27 @@ class ByteBufferStream(
 
     override fun getShort(): Short {
         ensureGet(2)
-        return buffer.short
+        return buffer.getShort()
     }
 
     override fun getInt(): Int {
         ensureGet(4)
-        return buffer.int
+        return buffer.getInt()
     }
 
     override fun getLong(): Long {
         ensureGet(8)
-        return buffer.long
+        return buffer.getLong()
     }
 
     override fun getFloat(): Float {
         ensureGet(4)
-        return buffer.float
+        return buffer.getFloat()
     }
 
     override fun getDouble(): Double {
         ensureGet(8)
-        return buffer.double
+        return buffer.getDouble()
     }
 
     private fun ensureGet(len: Int) {

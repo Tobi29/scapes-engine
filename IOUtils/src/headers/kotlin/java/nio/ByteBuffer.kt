@@ -18,12 +18,12 @@ header abstract class ByteBuffer(mark: Int,
 
     abstract fun get(): Byte
 
-    abstract fun put(b: Byte): ByteBuffer
+    abstract fun put(value: Byte): ByteBuffer
 
     abstract operator fun get(index: Int): Byte
 
     abstract fun put(index: Int,
-                     b: Byte): ByteBuffer
+                     value: Byte): ByteBuffer
 
     open fun get(dst: ByteArray): ByteBuffer
 
@@ -45,7 +45,7 @@ header abstract class ByteBuffer(mark: Int,
 
     abstract fun order(order: ByteOrder): ByteBuffer
 
-    abstract val char: Char
+    abstract fun getChar(): Char
 
     abstract fun putChar(value: Char): ByteBuffer
 
@@ -54,7 +54,7 @@ header abstract class ByteBuffer(mark: Int,
     abstract fun putChar(index: Int,
                          value: Char): ByteBuffer
 
-    abstract val short: Short
+    abstract fun getShort(): Short
 
     abstract fun putShort(value: Short): ByteBuffer
 
@@ -63,7 +63,7 @@ header abstract class ByteBuffer(mark: Int,
     abstract fun putShort(index: Int,
                           value: Short): ByteBuffer
 
-    abstract val int: Int
+    abstract fun getInt(): Int
 
     abstract fun putInt(value: Int): ByteBuffer
 
@@ -72,7 +72,7 @@ header abstract class ByteBuffer(mark: Int,
     abstract fun putInt(index: Int,
                         value: Int): ByteBuffer
 
-    abstract val long: Long
+    abstract fun getLong(): Long
 
     abstract fun putLong(value: Long): ByteBuffer
 
@@ -81,7 +81,7 @@ header abstract class ByteBuffer(mark: Int,
     abstract fun putLong(index: Int,
                          value: Long): ByteBuffer
 
-    abstract val float: Float
+    abstract fun getFloat(): Float
 
     abstract fun putFloat(value: Float): ByteBuffer
 
@@ -92,7 +92,7 @@ header abstract class ByteBuffer(mark: Int,
 
     abstract fun asFloatBuffer(): FloatBuffer
 
-    abstract val double: Double
+    abstract fun getDouble(): Double
 
     abstract fun putDouble(value: Double): ByteBuffer
 

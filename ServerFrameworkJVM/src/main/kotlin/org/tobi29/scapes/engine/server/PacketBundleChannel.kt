@@ -166,7 +166,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
                 throw IOException(
                         "Invalid bundle header size: " + input.remaining())
             }
-            val limit = input.int
+            val limit = input.getInt()
             if (limit > BUNDLE_MAX_SIZE) {
                 throw IOException("Bundle size too large: " + limit)
             }

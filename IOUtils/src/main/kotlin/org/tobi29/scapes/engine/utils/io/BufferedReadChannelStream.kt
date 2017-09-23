@@ -89,27 +89,27 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
 
     override fun getShort(): Short {
         ensure(2)
-        return buffer.short
+        return buffer.getShort()
     }
 
     override fun getInt(): Int {
         ensure(4)
-        return buffer.int
+        return buffer.getInt()
     }
 
     override fun getLong(): Long {
         ensure(8)
-        return buffer.long
+        return buffer.getLong()
     }
 
     override fun getFloat(): Float {
         ensure(4)
-        return buffer.float
+        return buffer.getFloat()
     }
 
     override fun getDouble(): Double {
         ensure(8)
-        return buffer.double
+        return buffer.getDouble()
     }
 
     private fun ensure(len: Int): Boolean {

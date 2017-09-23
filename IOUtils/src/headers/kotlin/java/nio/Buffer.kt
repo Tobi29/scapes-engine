@@ -9,33 +9,33 @@ header abstract class Buffer(mark: Int,
                              position: Int,
                              limit: Int,
                              capacity: Int) {
-    open fun capacity(): Int
+    fun capacity(): Int
 
-    open fun position(): Int
+    fun position(): Int
 
-    open fun position(newPosition: Int): Buffer
+    fun position(newPosition: Int): Buffer
 
-    open fun limit(): Int
+    fun limit(): Int
 
-    open fun limit(newLimit: Int): Buffer
+    fun limit(newLimit: Int): Buffer
 
-    open fun mark(): Buffer
+    fun mark(): Buffer
 
-    open fun reset(): Buffer
+    fun reset(): Buffer
 
-    open fun clear(): Buffer
+    fun clear(): Buffer
 
-    open fun flip(): Buffer
+    fun flip(): Buffer
 
-    open fun rewind(): Buffer
+    fun rewind(): Buffer
 
-    open fun remaining(): Int
+    fun remaining(): Int
 
-    open fun hasRemaining(): Boolean
+    fun hasRemaining(): Boolean
 
     abstract fun isReadOnly(): Boolean
 
-    open fun hasArray(): Boolean
+    abstract fun hasArray(): Boolean
 
-    open fun array(): Any
+    abstract fun array(): Any
 }

@@ -48,7 +48,7 @@ fun <T : Tile> MutableTag.toTileMap(tileSets: TileSets<T>,
             throw IllegalArgumentException("Tile array has invalid size")
         }
         val buffer = tiles.asByteBuffer()
-        array.fill { _, _ -> tileSets.tile(buffer.int) }
+        array.fill { _, _ -> tileSets.tile(buffer.getInt()) }
     }
     return array
 }

@@ -19,12 +19,12 @@ header abstract class CharBuffer(
 
     abstract fun get(): Char
 
-    abstract fun put(f: Char): CharBuffer
+    abstract fun put(value: Char): CharBuffer
 
     abstract operator fun get(index: Int): Char
 
     abstract fun put(index: Int,
-                     f: Char): CharBuffer
+                     value: Char): CharBuffer
 
     open fun get(dst: CharArray): CharBuffer
 

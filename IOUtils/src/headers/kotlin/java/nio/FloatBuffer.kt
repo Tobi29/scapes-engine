@@ -19,12 +19,12 @@ header abstract class FloatBuffer(
 
     abstract fun get(): Float
 
-    abstract fun put(f: Float): FloatBuffer
+    abstract fun put(value: Float): FloatBuffer
 
     abstract operator fun get(index: Int): Float
 
     abstract fun put(index: Int,
-                     f: Float): FloatBuffer
+                     value: Float): FloatBuffer
 
     open fun get(dst: FloatArray): FloatBuffer
 
