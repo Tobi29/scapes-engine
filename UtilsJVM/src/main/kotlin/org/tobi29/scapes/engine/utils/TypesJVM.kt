@@ -17,7 +17,9 @@
 package org.tobi29.scapes.engine.utils
 
 impl fun String.toUUID(): UUID? = try {
-    java.util.UUID.fromString(this)
+    UUID.fromString(this)
 } catch (e: IllegalArgumentException) {
     null
 }
+
+impl typealias UUID = java.util.UUID

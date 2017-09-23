@@ -31,11 +31,23 @@ impl class ConcurrentHashMap<K, V> : HashMap<K, V>(), ConcurrentMap<K, V> {
 impl fun String.toUUID(): UUID? {
     val split = split('-')
     if (split.size != 5) return null
-    val value = "${
-    split[0].prefixToLength('0', 8)}${
-    split[1].prefixToLength('0', 4)}${
-    split[2].prefixToLength('0', 4)}${
-    split[3].prefixToLength('0', 4)}${
-    split[4].prefixToLength('0', 12)}".toUInt128OrNull(16) ?: return null
-    return java.util.UUID(value)
+    val g0 = split[0].toLongOrNull(16) ?: return null
+    val g1 = split[1].toLongOrNull(16) ?: return null
+    val g2 = split[2].toLongOrNull(16) ?: return null
+    val g3 = split[3].toLongOrNull(16) ?: return null
+    val g4 = split[4].toLongOrNull(16) ?: return null
+    return UUID((g0 shl 32) or (g1 shl 16) or (g2), (g3 shl 48) or (g4))
+}
+
+impl class UUID(private val mostSignificantBits: Long,
+                private val leastSignificantBits: Long) {
+    impl open fun getMostSignificantBits() = mostSignificantBits
+    impl open fun getLeastSignificantBits() = leastSignificantBits
+
+    override fun toString(): String =
+            "${(mostSignificantBits ushr 32 and 0xFFFFFFFFL).toString(16, 8)}-${
+            (mostSignificantBits ushr 16 and 0xFFFFL).toString(16, 4)}-${
+            (mostSignificantBits ushr 0 and 0xFFFFL).toString(16, 4)}-${
+            (leastSignificantBits ushr 48 and 0xFFFFL).toString(16, 4)}-${
+            (leastSignificantBits ushr 0 and 0xFFFFFFFFFFFFL).toString(16, 12)}"
 }
