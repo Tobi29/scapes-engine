@@ -21,28 +21,34 @@ import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
 
-impl fun ByteArray.strUTF8(): String {
+impl internal fun ByteArray.utf8ToStringImpl(offset: Int,
+                                             size: Int): String {
     val buffer = ArrayBuffer(size)
     val byteBuffer = Uint8Array(buffer)
-    for ((i, v) in withIndex()) {
-        byteBuffer[i] = v
+    var j = offset
+    repeat(size) {
+        byteBuffer[it] = this[j++]
     }
     return TextDecoder().decode(byteBuffer)
 }
 
-impl fun String.bytesUTF8(): ByteArray {
+impl internal fun String.utf8ToArrayImpl(destination: ByteArray?,
+                                         offset: Int,
+                                         size: Int): ByteArray {
     val byteBuffer = TextEncoder().encode(this)
-    val array = ByteArray(byteBuffer.length)
-    for (i in array.indices) {
-        array[i] = byteBuffer[i]
+    val array = destination ?: ByteArray(
+            if (size < 0) byteBuffer.length else size)
+    var j = offset
+    repeat(size.coerceAtMost(array.size)) {
+        array[j++] = byteBuffer[it]
     }
     return array
 }
 
 impl internal fun CharArray.copyToStringImpl(offset: Int,
-                                             length: Int) =
-        StringBuilder(length).apply {
-            for (i in offset until offset + length) {
+                                             size: Int) =
+        StringBuilder(size).apply {
+            for (i in offset until offset + size) {
                 append(this@copyToStringImpl[i])
             }
         }.toString()

@@ -71,16 +71,48 @@ fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str
     }
 }
 
+@Deprecated("Use new function", ReplaceWith("utf8ToString()"))
+fun ByteArray.strUTF8(): String = utf8ToString()
+
+/**
+ * Reads UTF-8 data from the given array and returns a string
+ *
+ * **Note:** The conversion might skip invalid bytes or codepoints unavailable
+ * in UTF-16
+ * @param offset First byte in the array to read
+ * @param size Amount of bytes in the array to read
+ * @receiver Array to read from
+ * @return A string containing the encoded characters
+ */
+fun ByteArray.utf8ToString(offset: Int = 0,
+                           size: Int = this.size - offset): String =
+        utf8ToStringImpl(offset, size)
+
+@Deprecated("Use new function", ReplaceWith("utf8ToArray()"))
+fun String.bytesUTF8(): ByteArray = utf8ToArray()
+
+/**
+ * Encodes the given string into an array
+ * @param destination Array to write to or `null` to allocate one
+ * @param offset First byte in the array to write into
+ * @param size Maximum amount of bytes to write or `-1` to write everything or throw
+ * @receiver The string to encode
+ */
+fun String.utf8ToArray(destination: ByteArray? = null,
+                       offset: Int = 0,
+                       size: Int = -1): ByteArray =
+        utf8ToArrayImpl(destination, offset, size)
+
 /**
  * Copies the characters of the given array into a new string
  * @param offset First index to read in the array
- * @param length Number of characters to read
+ * @param size Number of characters to read
  * @receiver Array to read from
  * @return A new string containing the copied characters
  */
 fun CharArray.copyToString(offset: Int = 0,
-                           length: Int = size - offset): String =
-        copyToStringImpl(offset, length)
+                           size: Int = this.size - offset): String =
+        copyToStringImpl(offset, size)
 
 /**
  * Copies the characters of the given string into an array
