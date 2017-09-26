@@ -61,9 +61,3 @@ header object DefaultFloatBufferProvider : FloatBufferProvider {
 
     override fun reallocate(buffer: FloatBuffer): FloatBuffer
 }
-
-header object DefaultCharBufferProvider : CharBufferProvider {
-    override fun allocate(capacity: Int): CharBuffer
-
-    override fun reallocate(buffer: CharBuffer): CharBuffer
-}

@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.json
 
-import org.tobi29.scapes.engine.utils.io.Readable
+import org.tobi29.scapes.engine.utils.Readable
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.write
 

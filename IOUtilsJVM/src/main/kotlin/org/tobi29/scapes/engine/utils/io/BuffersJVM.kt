@@ -82,15 +82,3 @@ impl object DefaultFloatBufferProvider : FloatBufferProvider {
         return forceReallocate(buffer, this)
     }
 }
-
-impl object DefaultCharBufferProvider : CharBufferProvider {
-    impl override fun allocate(capacity: Int): CharBuffer =
-            java.nio.CharBuffer.allocate(capacity)
-
-    impl override fun reallocate(buffer: CharBuffer): CharBuffer {
-        if (buffer.hasArray()) {
-            return buffer
-        }
-        return forceReallocate(buffer, this)
-    }
-}

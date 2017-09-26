@@ -1,7 +1,7 @@
 package org.tobi29.scapes.engine.utils.io.tag.json
 
+import org.tobi29.scapes.engine.utils.Readable
 import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.Readable
 import org.tobi29.scapes.engine.utils.tag.*
 import org.tobi29.scapes.engine.utils.toString
 
