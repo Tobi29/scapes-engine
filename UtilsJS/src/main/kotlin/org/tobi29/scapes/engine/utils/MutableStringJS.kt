@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class MutableString(private var str: String) : CharSequence, Appendable {
+impl class MutableString impl constructor(private var str: String) : CharSequence, Appendable {
     impl override val length get() = str.length
 
     impl constructor() : this("")

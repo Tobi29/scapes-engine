@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class AtomicBoolean(private var value: Boolean) {
+impl class AtomicBoolean impl constructor(private var value: Boolean) {
     constructor() : this(false)
 
     impl fun get() = value
@@ -45,7 +45,7 @@ impl class AtomicBoolean(private var value: Boolean) {
     override fun toString() = get().toString()
 }
 
-impl class AtomicInteger(private var value: Int)/* : Number() */ {
+impl class AtomicInteger impl constructor(private var value: Int)/* : Number() */ {
     constructor() : this(0)
 
     impl fun get() = value
@@ -87,7 +87,7 @@ impl class AtomicInteger(private var value: Int)/* : Number() */ {
     /* override */ fun toChar() = get().toChar()
 }
 
-impl class AtomicLong(private var value: Long)/* : Number() */ {
+impl class AtomicLong impl constructor(private var value: Long)/* : Number() */ {
     constructor() : this(0L)
 
     impl fun get() = value
@@ -129,7 +129,7 @@ impl class AtomicLong(private var value: Long)/* : Number() */ {
     /* override */ fun toChar() = get().toChar()
 }
 
-impl class AtomicReference<V>(private var value: V) {
+impl class AtomicReference<V> impl constructor(private var value: V) {
     impl fun get() = value
 
     impl fun set(newValue: V) {

@@ -39,8 +39,8 @@ impl fun String.toUUID(): UUID? {
     return UUID((g0 shl 32) or (g1 shl 16) or (g2), (g3 shl 48) or (g4))
 }
 
-impl class UUID(private val mostSignificantBits: Long,
-                private val leastSignificantBits: Long) {
+impl class UUID impl constructor(private val mostSignificantBits: Long,
+                                 private val leastSignificantBits: Long) {
     impl open fun getMostSignificantBits() = mostSignificantBits
     impl open fun getLeastSignificantBits() = leastSignificantBits
 

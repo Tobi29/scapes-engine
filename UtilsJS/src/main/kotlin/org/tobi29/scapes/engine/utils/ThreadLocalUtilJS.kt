@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ThreadLocal<T>(private val initial: () -> T) {
+impl class ThreadLocal<T> impl constructor(private val initial: () -> T) {
     private val instanceMut = mutableLazy(initial)
     private val instance by instanceMut
 

@@ -28,7 +28,7 @@ impl class Profiler {
     impl fun current() = handle
 }
 
-impl class ProfilerHandle internal constructor(private var node: Node) {
+impl class ProfilerHandle impl internal constructor(private var node: Node) {
     impl fun enterNode(name: String) {
         node = node.children.computeAbsent(name) { Node(it, node) }
         node.lastEnter = steadyClock.timeSteadyNanos()

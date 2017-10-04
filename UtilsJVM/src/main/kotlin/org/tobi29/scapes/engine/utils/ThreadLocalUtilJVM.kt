@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ThreadLocal<T>(initial: () -> T) {
+impl class ThreadLocal<T> impl constructor(initial: () -> T) {
     private val tl = object : java.lang.ThreadLocal<T>() {
         override fun initialValue(): T {
             return initial()

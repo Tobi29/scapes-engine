@@ -52,7 +52,7 @@ impl class ConcurrentHashSet<E> : MutableSet<E> {
 }
 
 // TODO: Use type alias
-impl class ArrayDeque<E>(size: Int) : Deque<E> {
+impl class ArrayDeque<E> impl constructor(size: Int) : Deque<E> {
     impl constructor() : this(16)
 
     private val deque = java.util.ArrayDeque<E>(size)

@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils
 import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.reflect.KClass
 
-impl class EventDispatcher internal constructor(
+impl class EventDispatcher impl internal constructor(
         private val parent: EventDispatcher? = null) {
     private val root = findRoot()
     private val children = ConcurrentHashSet<EventDispatcher>()
@@ -90,7 +90,7 @@ impl class EventDispatcher internal constructor(
     }
 }
 
-impl class ListenerRegistrar internal constructor(impl val events: EventDispatcher) {
+impl class ListenerRegistrar impl internal constructor(impl val events: EventDispatcher) {
     fun <E : Any> listen(clazz: KClass<E>,
                          priority: Int,
                          accepts: (E) -> Boolean,
