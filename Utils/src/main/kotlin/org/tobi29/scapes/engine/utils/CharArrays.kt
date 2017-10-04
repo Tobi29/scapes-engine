@@ -7,6 +7,71 @@
 package org.tobi29.scapes.engine.utils
 
 /**
+ * Slice of an array, indexed in elements
+ */
+interface CharArraySlice : ArrayVarSlice<Char> {
+    /**
+     * Slices the array
+     * @param index First index to expose in slice
+     * @param length Amount of elements to expose in slice
+     * @return A new slice with specified bounds
+     */
+    fun slice(index: Int = 0,
+              length: Int = size - index): CharArraySlice
+
+    /**
+     * Returns the element at the given index in the slice
+     * @param index Index of the element
+     * @return The value at the given index
+     */
+    operator fun get(index: Int): Char
+
+    /**
+     * Sets the element at the given index in the slice
+     * @param index Index of the element
+     * @param value The value to set to
+     */
+    operator fun set(index: Int,
+                     value: Char)
+
+    override fun iterator(): Iterator<Char> =
+            object : SliceIterator<Char>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of a normal heap array
+ */
+class HeapCharArraySlice(
+        val array: CharArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapArrayVarSlice<Char>, CharArraySlice {
+    override fun slice(index: Int,
+                       length: Int): HeapCharArraySlice =
+            prepareSlice(index, length, array,
+                    ::HeapCharArraySlice)
+
+    override fun get(index: Int): Char = array[index(index)]
+    override fun set(index: Int,
+                     value: Char) = array.set(index(index), value)
+}
+
+/**
+ * Creates a slice from the given array, which holds the array itself as backing
+ * storage
+ * @param index Index to start the slice at
+ * @param size Amount of elements in slice
+ * @receiver The array to create a slice of
+ * @return A slice from the given array
+ */
+inline fun CharArray.sliceOver(
+        index: Int = 0,
+        size: Int = this.size - index
+): HeapCharArraySlice = HeapCharArraySlice(this, index, size)
+
+/**
  * Class wrapping an array to provide nicer support for 2-dimensional data.
  *
  * The layout for the dimensions is as follows:

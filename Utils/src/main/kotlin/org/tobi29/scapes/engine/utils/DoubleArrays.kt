@@ -7,6 +7,71 @@
 package org.tobi29.scapes.engine.utils
 
 /**
+ * Slice of an array, indexed in elements
+ */
+interface DoubleArraySlice : ArrayVarSlice<Double> {
+    /**
+     * Slices the array
+     * @param index First index to expose in slice
+     * @param length Amount of elements to expose in slice
+     * @return A new slice with specified bounds
+     */
+    fun slice(index: Int = 0,
+              length: Int = size - index): DoubleArraySlice
+
+    /**
+     * Returns the element at the given index in the slice
+     * @param index Index of the element
+     * @return The value at the given index
+     */
+    operator fun get(index: Int): Double
+
+    /**
+     * Sets the element at the given index in the slice
+     * @param index Index of the element
+     * @param value The value to set to
+     */
+    operator fun set(index: Int,
+                     value: Double)
+
+    override fun iterator(): Iterator<Double> =
+            object : SliceIterator<Double>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of a normal heap array
+ */
+class HeapDoubleArraySlice(
+        val array: DoubleArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapArrayVarSlice<Double>, DoubleArraySlice {
+    override fun slice(index: Int,
+                       length: Int): HeapDoubleArraySlice =
+            prepareSlice(index, length, array,
+                    ::HeapDoubleArraySlice)
+
+    override fun get(index: Int): Double = array[index(index)]
+    override fun set(index: Int,
+                     value: Double) = array.set(index(index), value)
+}
+
+/**
+ * Creates a slice from the given array, which holds the array itself as backing
+ * storage
+ * @param index Index to start the slice at
+ * @param size Amount of elements in slice
+ * @receiver The array to create a slice of
+ * @return A slice from the given array
+ */
+inline fun DoubleArray.sliceOver(
+        index: Int = 0,
+        size: Int = this.size - index
+): HeapDoubleArraySlice = HeapDoubleArraySlice(this, index, size)
+
+/**
  * Class wrapping an array to provide nicer support for 2-dimensional data.
  *
  * The layout for the dimensions is as follows:
