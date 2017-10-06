@@ -16,27 +16,24 @@
 
 package org.tobi29.scapes.engine.utils.io.tag.binary
 
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
-import org.tobi29.scapes.engine.utils.io.CompressionUtil
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.tag.*
 
 class TagStructureWriterBinary(private val stream: WritableByteStream,
                                private val compression: Byte,
                                private val useDictionary: Boolean,
-                               private val byteStream: ByteBufferStream,
-                               private val compressionStream: ByteBufferStream) : TagStructureWriter {
+                               private val byteStream: MemoryStream,
+                               private val compressionStream: MemoryStream) : TagStructureWriter {
     private lateinit var dictionary: KeyDictionary
     private lateinit var structureStream: WritableByteStream
 
     // TODO: @Throws(IOException::class)
     override fun begin(root: TagMap) {
         if (compression >= 0) {
-            byteStream.buffer().clear()
+            byteStream.reset()
             structureStream = byteStream
         } else {
-            stream.put(HEADER_MAGIC)
+            stream.put(HEADER_MAGIC.view)
             stream.put(HEADER_VERSION)
             stream.put(compression)
             structureStream = stream
@@ -53,18 +50,17 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
     override fun end() {
         structureStream.put(ID_STRUCTURE_TERMINATE)
         if (compression >= 0) {
-            byteStream.buffer().flip()
-            compressionStream.buffer().clear()
-            CompressionUtil.compress(ByteBufferStream(byteStream.buffer()),
-                    compressionStream)
-            compressionStream.buffer().flip()
-            byteStream.buffer().clear()
-            stream.put(HEADER_MAGIC)
+            byteStream.flip()
+            compressionStream.reset()
+            CompressionUtil.compress(byteStream, compressionStream)
+            compressionStream.flip()
+            byteStream.reset()
+            stream.put(HEADER_MAGIC.view)
             stream.put(HEADER_VERSION)
             stream.put(compression)
-            stream.putInt(compressionStream.buffer().remaining())
-            stream.put(compressionStream.buffer())
-            compressionStream.buffer().clear()
+            stream.putInt(compressionStream.remaining())
+            compressionStream.process { stream.put(it) }
+            compressionStream.reset()
         }
     }
 

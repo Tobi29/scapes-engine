@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.Expression
 
@@ -32,15 +32,14 @@ class GOSLWJGL3GL(override val container: Container) : GraphicsObjectSupplier {
 
     override fun createTexture(width: Int,
                                height: Int,
-                               buffer: ByteBuffer,
+                               buffer: ByteViewRO,
                                mipmaps: Int,
                                minFilter: TextureFilter,
                                magFilter: TextureFilter,
                                wrapS: TextureWrap,
-                               wrapT: TextureWrap): Texture {
-        return TextureGL(this, width, height, buffer, mipmaps, minFilter,
-                magFilter, wrapS, wrapT)
-    }
+                               wrapT: TextureWrap): Texture =
+            TextureGL(this, width, height, buffer, mipmaps, minFilter,
+                    magFilter, wrapS, wrapT)
 
     override fun createFramebuffer(width: Int,
                                    height: Int,

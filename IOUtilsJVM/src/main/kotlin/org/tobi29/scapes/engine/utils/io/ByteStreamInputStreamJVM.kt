@@ -16,19 +16,30 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.io.OutputStream
+import java.io.InputStream
 
-class ByteStreamOutputStream(private val stream: WritableByteStream) : OutputStream() {
-
+class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStream() {
     // TODO: @Throws(IOException::class)
-    override fun write(b: Int) {
-        stream.put(b.toByte())
+    override fun read(): Int {
+        return stream.get().toInt() and 0xFF
     }
 
     // TODO: @Throws(IOException::class)
-    override fun write(b: ByteArray,
-                       off: Int,
-                       len: Int) {
-        stream.put(b, off, len)
+    override fun read(b: ByteArray,
+                      off: Int,
+                      len: Int): Int {
+        return stream.getSome(b.view.slice(off, len))
+    }
+
+    // TODO: @Throws(IOException::class)
+    override fun skip(n: Long): Long {
+        val len = n.toInt()
+        stream.skip(len)
+        return len.toLong()
+    }
+
+    // TODO: @Throws(IOException::class)
+    override fun available(): Int {
+        return stream.available()
     }
 }

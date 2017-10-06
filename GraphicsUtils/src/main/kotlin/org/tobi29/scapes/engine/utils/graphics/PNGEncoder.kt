@@ -7,88 +7,86 @@ fun encodePNG(image: Image,
               stream: WritableByteStream,
               level: Int,
               alpha: Boolean) {
-    stream.put(PNG_HEADER)
+    stream.put(PNG_HEADER.view)
     stream.writeImage(image, level, alpha)
 }
 
 private fun WritableByteStream.writeImage(image: Image,
                                           level: Int,
                                           alpha: Boolean) {
-    val header = ByteBuffer(13).apply {
-        putInt(image.width)
-        putInt(image.height)
-        put(8)
-        put(if (alpha) 6 else 2.toByte())
-        put(0)
-        put(0)
-        put(0)
-        flip()
+    val header = ByteArray(13).viewBE.apply {
+        setInt(0, image.width)
+        setInt(4, image.height)
+        setByte(8, 8)
+        setByte(9, if (alpha) 6 else 2.toByte())
+        setByte(10, 0)
+        setByte(11, 0)
+        setByte(12, 0)
     }
     writeChunk(TYPE_IHDR, header)
     val data = if (alpha) {
-        val buffer = image.buffer
         BufferedReadChannelStream(object : ReadableByteChannel {
             private var x = -1
             private var y = 0
+            private var position = 0
 
             // TODO: Test and optimize
-            override fun read(dst: ByteBuffer): Int {
+            override fun read(buffer: ByteView): Int {
                 if (y >= image.height) {
                     return -1
                 }
-                val pos = dst.position()
-                while (dst.hasRemaining()) {
+                var positionWrite = 0
+                while (positionWrite < buffer.size) {
                     if (y < image.height) {
                         if (x == -1) {
-                            dst.put(0)
+                            buffer.setByte(positionWrite++, 0)
                             x++
                         } else if (x < image.width) {
-                            val length = dst.remaining().coerceAtMost(
+                            val length = (buffer.size).coerceAtMost(
                                     image.width - x)
-                            val limit = buffer.limit()
-                            buffer.limit(buffer.position() + length)
-                            dst.put(buffer)
-                            buffer.limit(limit)
+                            image.view.getBytes(position,
+                                    buffer.slice(positionWrite, length))
+                            position += length
+                            positionWrite += length
                             x += length
                         }
                         if (x >= image.width) {
                             x = -1
                             y++
                         }
-                    } else {
-                        break
-                    }
+                    } else break
                 }
-                return dst.position() - pos
+                return positionWrite
             }
 
             override fun isOpen() = true
             override fun close() {}
         })
     } else {
-        val buffer = image.buffer
         BufferedReadChannelStream(object : ReadableByteChannel {
             private var x = -1
             private var y = 0
             private var i = 0
+            private var position = 0
 
             // TODO: Test and optimize
-            override fun read(dst: ByteBuffer): Int {
+            override fun read(buffer: ByteView): Int {
                 if (y >= image.height) {
                     return -1
                 }
-                val pos = dst.position()
-                while (dst.hasRemaining()) {
+                var positionWrite = 0
+                while (positionWrite < buffer.size) {
                     if (y < image.height) {
                         if (x == -1) {
-                            dst.put(0)
+                            buffer.setByte(positionWrite++, 0)
                             x++
                         } else if (x < image.width) {
                             if (i < 3) {
-                                dst.put(buffer.get())
+                                buffer.setByte(positionWrite++,
+                                        image.view.getByte(position++))
                                 i++
                             } else if (i < 4) {
-                                buffer.position(buffer.position() + 1)
+                                position++
                                 i++
                             } else {
                                 i = 0
@@ -99,11 +97,9 @@ private fun WritableByteStream.writeImage(image: Image,
                             x = -1
                             y++
                         }
-                    } else {
-                        break
-                    }
+                    } else break
                 }
-                return dst.position() - pos
+                return positionWrite
             }
 
             override fun isOpen() = true
@@ -111,10 +107,9 @@ private fun WritableByteStream.writeImage(image: Image,
         })
     }
     val write = BufferedWriteChannelStream(object : WritableByteChannel {
-        override fun write(src: ByteBuffer): Int {
-            val pos = src.position()
-            writeChunk(TYPE_IDAT, src)
-            return src.position() - pos
+        override fun write(buffer: ByteViewRO): Int {
+            writeChunk(TYPE_IDAT, buffer)
+            return buffer.size
         }
 
         override fun isOpen() = true
@@ -126,7 +121,7 @@ private fun WritableByteStream.writeImage(image: Image,
 }
 
 private fun WritableByteStream.writeChunk(type: Int,
-                                          chunk: ByteBuffer? = null) {
+                                          chunk: ByteViewRO? = null) {
     var crc = initChainCRC32()
     crc = chainCRC32(crc, (type ushr 24).toByte(), zlibTable)
     crc = chainCRC32(crc, (type ushr 16).toByte(), zlibTable)
@@ -136,9 +131,10 @@ private fun WritableByteStream.writeChunk(type: Int,
         putInt(0)
         putInt(type)
     } else {
-        crc = computeChainCRC32(crc, chunk, zlibTable)
-        chunk.flip()
-        putInt(chunk.remaining())
+        repeat(chunk.size) {
+            crc = chainCRC32(crc, chunk.getByte(it), zlibTable)
+        }
+        putInt(chunk.size)
         putInt(type)
         put(chunk)
     }

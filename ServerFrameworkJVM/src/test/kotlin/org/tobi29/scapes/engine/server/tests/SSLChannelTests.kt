@@ -27,9 +27,7 @@ import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.server.*
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.AtomicLong
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.fill
+import org.tobi29.scapes.engine.utils.io.*
 import java.nio.channels.Pipe
 import java.security.KeyStoreException
 import javax.net.ssl.KeyManager
@@ -47,10 +45,18 @@ object SSLChannelTests : Spek({
             val address = RemoteAddress("test.dummy", 0)
             val pipe1 = Pipe.open()
             val pipe2 = Pipe.open()
-            val sourceLeft = pipe1.source().apply { configureBlocking(false) }
-            val sinkRight = pipe1.sink().apply { configureBlocking(false) }
-            val sourceRight = pipe2.source().apply { configureBlocking(false) }
-            val sinkLeft = pipe2.sink().apply { configureBlocking(false) }
+            val sourceLeft = pipe1.source().apply {
+                configureBlocking(false)
+            }.toChannel()
+            val sinkRight = pipe1.sink().apply {
+                configureBlocking(false)
+            }.toChannel()
+            val sourceRight = pipe2.source().apply {
+                configureBlocking(false)
+            }.toChannel()
+            val sinkLeft = pipe2.sink().apply {
+                configureBlocking(false)
+            }.toChannel()
 
             val channelLeft = sslClient.newSSLChannel(address,
                     sslServer.newSSLChannel(address, sourceLeft, sinkLeft,

@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.backends.openal.openal
 
 import org.tobi29.scapes.engine.sound.AudioFormat
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 
 interface OpenAL {
@@ -75,7 +75,7 @@ interface OpenAL {
 
     fun storeBuffer(id: Int,
                     format: AudioFormat,
-                    buffer: ByteBuffer,
+                    buffer: ByteViewRO,
                     rate: Int)
 
     fun isPlaying(id: Int): Boolean

@@ -19,8 +19,6 @@ import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
@@ -81,13 +79,11 @@ class STBGlyphRenderer(private val font: STBFont,
         }
     }
 
-    @Synchronized override fun page(id: Int,
-                                    bufferProvider: ByteBufferProvider): ByteBuffer {
+    @Synchronized override fun page(id: Int): ByteArray {
         val stack = MemoryStack.stackGet()
         stack.push {
             MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
-                val buffer = bufferProvider.allocate(
-                        imageSize * imageSize shl 2)
+                val buffer = ByteArray(imageSize * imageSize shl 2)
                 var i = 0
                 val offset = id shl pageTileBits
                 val xb = stack.mallocInt(1)
@@ -111,21 +107,20 @@ class STBGlyphRenderer(private val font: STBFont,
                             val renderY = offsetY + yy
                             MemoryUtil.memSet(
                                     MemoryUtil.memAddress(glyphBuffer), 0,
-                                    glyphBuffer.remaining())
+                                    glyphBuffer.remaining().toLong())
                             STBTruetype.stbtt_MakeCodepointBitmap(font.info,
                                     glyphBuffer, glyphSize, glyphSize,
                                     glyphSize, scale.toFloat(), scale.toFloat(),
                                     c)
                             for (yyy in 0 until sizeY) {
-                                buffer.position(
-                                        (renderY + yyy) * imageSize + renderX shl 2)
+                                var j = (renderY + yyy) * imageSize + renderX shl 2
                                 glyphBuffer.position(yyy * glyphSize)
-                                for (xxx in 0 until sizeX) {
+                                for (xxx in 0 until glyphSize) {
                                     val value = glyphBuffer.get()
-                                    buffer.put(0xFF.toByte())
-                                    buffer.put(0xFF.toByte())
-                                    buffer.put(0xFF.toByte())
-                                    buffer.put(value)
+                                    buffer[j++] = 0xFF.toByte()
+                                    buffer[j++] = 0xFF.toByte()
+                                    buffer[j++] = 0xFF.toByte()
+                                    buffer[j++] = value
                                 }
                             }
                             glyphBuffer.rewind()
@@ -133,7 +128,6 @@ class STBGlyphRenderer(private val font: STBFont,
                         i++
                     }
                 }
-                buffer.rewind()
                 return buffer
             }
         }

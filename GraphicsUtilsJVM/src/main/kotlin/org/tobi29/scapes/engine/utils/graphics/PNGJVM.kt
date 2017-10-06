@@ -16,46 +16,48 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import ar.com.hjg.pngj.*
-import org.tobi29.scapes.engine.utils.io.*
+import ar.com.hjg.pngj.PngReaderByte
+import ar.com.hjg.pngj.PngjException
+import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
+import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+import org.tobi29.scapes.engine.utils.io.view
 import java.io.InputStream
-import java.io.OutputStream
 
 // TODO: @Throws(IOException::class)
-impl fun decodePNG(stream: ReadableByteStream,
-                   bufferProvider: ByteBufferProvider): Image {
-    return decodePNG(ByteStreamInputStream(stream), bufferProvider)
+impl fun decodePNG(stream: ReadableByteStream): Image {
+    return decodePNG(ByteStreamInputStream(stream))
 }
 
 // TODO: @Throws(IOException::class)
-fun decodePNG(streamIn: InputStream,
-              bufferProvider: ByteBufferProvider): Image {
+fun decodePNG(streamIn: InputStream): Image {
     try {
         val reader = PngReaderByte(streamIn)
         val width = reader.imgInfo.cols
         val height = reader.imgInfo.rows
         val fillAlpha = !reader.imgInfo.alpha
-        val buffer = bufferProvider.allocate(width * height shl 2)
+        val buffer = ByteArray(width * height shl 2).view
+        var positionWrite = 0
         if (fillAlpha) {
             for (i in 0 until height) {
                 val line = reader.readRowByte()
                 val array = line.scanlineByte
                 var j = 0
                 while (j < array.size) {
-                    buffer.put(array[j++])
-                    buffer.put(array[j++])
-                    buffer.put(array[j++])
-                    buffer.put(0xFF.toByte())
+                    buffer.setByte(positionWrite++, array[j++])
+                    buffer.setByte(positionWrite++, array[j++])
+                    buffer.setByte(positionWrite++, array[j++])
+                    buffer.setByte(positionWrite++, 0xFF.toByte())
                 }
             }
         } else {
             for (i in 0 until height) {
                 val line = reader.readRowByte()
-                buffer.put(line.scanlineByte)
+                buffer.setBytes(positionWrite, line.scanlineByte.view)
+                positionWrite += line.scanlineByte.size
             }
         }
         reader.end()
-        buffer.rewind()
         return Image(width, height, buffer)
     } catch (e: PngjException) {
         throw IOException(e)

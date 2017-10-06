@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.Cam
 import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.roundL
@@ -159,13 +159,13 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
                                 y: Int,
                                 width: Int,
                                 height: Int,
-                                buffer: ByteBuffer)
+                                buffer: ByteViewRO)
 
     abstract fun replaceTextureMipMap(x: Int,
                                       y: Int,
                                       width: Int,
                                       height: Int,
-                                      vararg buffers: ByteBuffer)
+                                      vararg buffers: ByteViewRO)
 
     abstract fun activeTexture(i: Int)
 

@@ -19,10 +19,11 @@ package org.tobi29.scapes.engine.codec.ogg
 import com.jcraft.jogg.Packet
 import com.jcraft.jogg.Page
 import org.tobi29.scapes.engine.codec.AudioMetaData
+import org.tobi29.scapes.engine.utils.io.HeapViewFloatBE
+import org.tobi29.scapes.engine.utils.io.MemoryViewStream
 import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toTag
-import java.nio.FloatBuffer
 
 class OpusInitializer(private val info: OpusInfo) : CodecInitializer {
     override fun packet(packet: Packet) = run {
@@ -53,7 +54,7 @@ class OpusReadStream(info: OpusInfo) : CodecDecoder {
     private var pcmLength = 0
     private var granulePos = 0L
 
-    override fun get(buffer: FloatBuffer): Boolean {
+    override fun get(buffer: MemoryViewStream<HeapViewFloatBE>): Boolean {
         if (pcmOffset >= pcmLength) {
             return false
         }
@@ -69,9 +70,9 @@ class OpusReadStream(info: OpusInfo) : CodecDecoder {
             }
             val limit = min(granuleLimit,
                     (pcmLength - pcmOffset).toLong()).toInt()
-            val size = min(buffer.remaining() / channels, limit)
+            val size = min((buffer.remaining() shr 2) / channels, limit)
             for (i in pcmOffset * channels until (pcmOffset + size) * channels) {
-                buffer.put(pcm[i] / Short.MAX_VALUE.toFloat())
+                buffer.putFloat(pcm[i] / Short.MAX_VALUE.toFloat())
             }
             out += size
             pcmOffset += size

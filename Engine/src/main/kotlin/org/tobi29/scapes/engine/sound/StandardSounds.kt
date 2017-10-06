@@ -17,8 +17,9 @@
 package org.tobi29.scapes.engine.sound
 
 import org.tobi29.scapes.engine.utils.fromBase64
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.tag.TagBundleResource
+import org.tobi29.scapes.engine.utils.io.viewBE
+import org.tobi29.scapes.engine.utils.io.ro
 
 // Base64 encoded OGG/Vorbis file
 // Original audio by Kenney Vleugels (kenney.nl)
@@ -143,9 +144,5 @@ val CLICK by lazy {
                     "fFCvtOH7y9ctm2TIotkZnDGl5nopogbHPxeoSNubloNw0LwIthUtoDxjGEIwXaQcI7MjI2OJyWNA" +
                     "w96QU5FjUcySbVEtGEAs7wdYLXFNH8Gxnoc1olBWAmjJ0rBtwqeopABIizC8D5oE3mX8dY7fWIJk" +
                     "Oj4aAEIRAAAAAAAAdXYmAAAA")
-                    .fromBase64().let {
-                ByteBuffer(it.size).apply {
-                    put(it).flip()
-                }
-            })
+                    .fromBase64().viewBE.ro)
 }

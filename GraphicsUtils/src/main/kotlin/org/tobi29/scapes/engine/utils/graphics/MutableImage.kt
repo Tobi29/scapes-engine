@@ -16,20 +16,18 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteView
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.io.view
 
 class MutableImage(val width: Int = 1,
                    val height: Int = 1,
-                   buffer: ByteBuffer = ByteBuffer(width * height shl 2)) {
-    val buffer = buffer
-        get() = field.duplicate()
-
-    val size by lazy { Vector2i(width, height) }
-
+                   val view: ByteView = ByteArray(width * height shl 2).view) {
     init {
-        if (buffer.remaining() != width * height shl 2) {
+        if (view.size != width * height shl 2) {
             throw IllegalArgumentException("Backing buffer sized incorrectly")
         }
     }
+
+    val size by lazy { Vector2i(width, height) }
 }

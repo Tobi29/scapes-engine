@@ -17,13 +17,14 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.TextureAtlas
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.io.view
 
 abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: ScapesEngine,
                                                                minSize: Int = 1) : TextureAtlas<T>(
@@ -47,7 +48,7 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
     }
 
     protected fun load(paths: Array<out String>): Image {
-        var buffer: ByteBuffer
+        var buffer: ByteViewRO
         var width: Int
         var height: Int
         try {
@@ -62,10 +63,8 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
             width = source.width
             height = source.height
             if (paths.size > 1) {
-                buffer = ByteBuffer(width * height shl 2)
-                buffer.put(source.buffer)
-                buffer.rewind()
-                source.buffer.rewind()
+                val bufferMerge = ByteArray(width * height shl 2).view
+                bufferMerge.setBytes(0, source.view)
                 for (i in 1 until paths.size) {
                     val layer2 = sources[paths[i]]
                     val layer: Image
@@ -89,45 +88,56 @@ abstract class TextureAtlasEngine<T : TextureAtlasEngineEntry>(val engine: Scape
                     var layerG: Int
                     var layerB: Int
                     var layerA: Int
-                    val layerBuffer = layer.buffer
-                    while (layerBuffer.hasRemaining()) {
-                        layerR = layerBuffer.get().toInt() and 0xFF
-                        layerG = layerBuffer.get().toInt() and 0xFF
-                        layerB = layerBuffer.get().toInt() and 0xFF
-                        layerA = layerBuffer.get().toInt() and 0xFF
+                    val layerBuffer = layer.view
+                    var position = 0
+                    var positionWrite = 0
+                    while (position < layerBuffer.size) {
+                        layerR = layerBuffer.getByte(
+                                position++).toInt() and 0xFF
+                        layerG = layerBuffer.getByte(
+                                position++).toInt() and 0xFF
+                        layerB = layerBuffer.getByte(
+                                position++).toInt() and 0xFF
+                        layerA = layerBuffer.getByte(
+                                position++).toInt() and 0xFF
                         if (layerA == 255) {
-                            buffer.put(layerR.toByte())
-                            buffer.put(layerG.toByte())
-                            buffer.put(layerB.toByte())
-                            buffer.put(layerA.toByte())
+                            bufferMerge.setByte(positionWrite++,
+                                    layerR.toByte())
+                            bufferMerge.setByte(positionWrite++,
+                                    layerG.toByte())
+                            bufferMerge.setByte(positionWrite++,
+                                    layerB.toByte())
+                            bufferMerge.setByte(positionWrite++,
+                                    layerA.toByte())
                         } else if (layerA != 0) {
-                            buffer.mark()
-                            bufferR = buffer.get().toInt() and 0xFF
-                            bufferG = buffer.get().toInt() and 0xFF
-                            bufferB = buffer.get().toInt() and 0xFF
-                            bufferA = buffer.get().toInt() and 0xFF
-                            buffer.reset()
+                            bufferR = bufferMerge.getByte(
+                                    positionWrite + 0).toInt() and 0xFF
+                            bufferG = bufferMerge.getByte(
+                                    positionWrite + 1).toInt() and 0xFF
+                            bufferB = bufferMerge.getByte(
+                                    positionWrite + 2).toInt() and 0xFF
+                            bufferA = bufferMerge.getByte(
+                                    positionWrite + 3).toInt() and 0xFF
                             val a = layerA / 255.0
                             val oneMinusA = 1.0 - a
-                            buffer.put(
+                            bufferMerge.setByte(positionWrite++,
                                     (bufferR * oneMinusA + layerR * a).toByte())
-                            buffer.put(
+                            bufferMerge.setByte(positionWrite++,
                                     (bufferG * oneMinusA + layerG * a).toByte())
-                            buffer.put(
+                            bufferMerge.setByte(positionWrite++,
                                     (bufferB * oneMinusA + layerB * a).toByte())
-                            buffer.put(min(bufferA + layerA, 255).toByte())
-                        } else {
-                            buffer.position(buffer.position() + 4)
-                        }
+                            bufferMerge.setByte(positionWrite++,
+                                    min(bufferA + layerA, 255).toByte())
+                        } else positionWrite += 4
                     }
-                    buffer.rewind()
                 }
+                buffer = bufferMerge
             } else {
-                buffer = source.buffer
+                buffer = source.view
             }
         } catch (e: IOException) {
             logger.error { "Failed to load texture: $e" }
-            buffer = ByteBuffer(0x400)
+            buffer = ByteArray(0x400).view
             width = minSize
             height = minSize
         }

@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 
 interface Texture : GraphicsObject {
     fun bind(gl: GL)
@@ -32,11 +32,11 @@ interface Texture : GraphicsObject {
     fun setFilter(magFilter: TextureFilter,
                   minFilter: TextureFilter)
 
-    fun buffer(i: Int): ByteBuffer?
+    fun buffer(i: Int): ByteViewRO?
 
-    fun setBuffer(buffer: ByteBuffer?)
+    fun setBuffer(buffer: ByteViewRO?)
 
-    fun setBuffer(buffer: ByteBuffer?,
+    fun setBuffer(buffer: ByteViewRO?,
                   width: Int,
                   height: Int)
 }

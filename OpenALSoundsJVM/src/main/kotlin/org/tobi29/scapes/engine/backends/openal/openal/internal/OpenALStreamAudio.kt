@@ -25,9 +25,10 @@ import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
+import org.tobi29.scapes.engine.utils.io.ByteViewE
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.MemoryViewStream
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
@@ -42,7 +43,8 @@ internal class OpenALStreamAudio(
         private val hasPosition: Boolean,
         private val controller: OpenALAudioController
 ) : OpenALAudio, AudioController by controller {
-    private val streamBuffer = ByteBufferStream(engine)
+    private val streamBuffer = MemoryViewStream<ByteViewE>(
+            { engine.container.allocateNative(it) })
     private val readBuffer = AudioBuffer(4096)
     private var source = -1
     private var queued = 0
@@ -168,11 +170,12 @@ internal class OpenALStreamAudio(
     private fun store(openAL: OpenAL,
                       buffer: Int) {
         readBuffer.toPCM16 { streamBuffer.putShort(it) }
-        streamBuffer.buffer().flip()
+        streamBuffer.flip()
         openAL.storeBuffer(buffer,
                 if (readBuffer.channels() > 1) AudioFormat.STEREO
-                else AudioFormat.MONO, streamBuffer.buffer(), readBuffer.rate())
-        streamBuffer.buffer().clear()
+                else AudioFormat.MONO, streamBuffer.bufferSlice(),
+                readBuffer.rate())
+        streamBuffer.reset()
         readBuffer.clear()
     }
 

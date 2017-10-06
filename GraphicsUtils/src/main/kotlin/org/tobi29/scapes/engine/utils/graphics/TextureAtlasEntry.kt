@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.math.margin
 
-open class TextureAtlasEntry(var buffer: ByteBuffer?,
+open class TextureAtlasEntry(var buffer: ByteViewRO?,
                              val width: Int,
                              val height: Int) {
     var x = 0

@@ -26,8 +26,6 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.*
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
@@ -38,7 +36,7 @@ header class ScapesEngine(
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         taskExecutor: CoroutineContext,
         configMap: MutableTagMap
-) : CoroutineDispatcher, ComponentHolder<Any>, ByteBufferProvider {
+) : CoroutineDispatcher, ComponentHolder<Any> {
     override val componentStorage: ComponentStorage<Any>
     val taskExecutor: CoroutineContext
     val files: FileSystemContainer
@@ -67,10 +65,7 @@ header class ScapesEngine(
     fun debugMap(): Map<String, String>
     fun isMouseGrabbed(): Boolean
 
-    override fun allocate(capacity: Int): ByteBuffer
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer
-
-    header companion object : KLogging {
+    companion object : KLogging {
         val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>
     }
 }

@@ -16,10 +16,6 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
-
 class MatrixStack(matrices: Int) {
     private val stack = Array(matrices, { Matrix() })
     private var i = 0
@@ -57,17 +53,5 @@ inline fun <R> MatrixStack.push(block: (Matrix) -> R): R {
         return block(matrix)
     } finally {
         pop()
-    }
-}
-
-fun Matrix3f.putInto(buffer: ByteBuffer) {
-    for (value in values()) {
-        buffer.putFloat(value)
-    }
-}
-
-fun Matrix4f.putInto(buffer: ByteBuffer) {
-    for (value in values()) {
-        buffer.putFloat(value)
     }
 }

@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.backends.lwjgl3
 
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import java.nio.ByteBuffer
 
 inline fun <R> MemoryStack.push(block: () -> R): R {
     push()

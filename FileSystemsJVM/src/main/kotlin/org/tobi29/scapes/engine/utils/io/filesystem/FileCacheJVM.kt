@@ -34,11 +34,12 @@ object FileCache : KLogging() {
                     OPEN_TRUNCATE_EXISTING)).use { channel ->
                 val digest = Algorithm.SHA256.digest()
                 val streamOut = BufferedWriteChannelStream(channel)
-                process(stream, { buffer ->
-                    digest.update(buffer)
-                    buffer.rewind()
+                stream.process { buffer ->
+                    buffer.readAsByteArray { array, offset, size ->
+                        digest.update(array, offset, size)
+                    }
                     streamOut.put(buffer)
-                })
+                }
                 streamOut.flush()
                 channel.position(0)
                 val checksum = digest.digest()
@@ -50,7 +51,7 @@ object FileCache : KLogging() {
                     setLastModifiedTime(destination, systemClock())
                 } else {
                     write(destination) { output ->
-                        process(streamIn, { output.put(it) })
+                        streamIn.process { output.put(it) }
                     }
                 }
                 return Location(checksum)

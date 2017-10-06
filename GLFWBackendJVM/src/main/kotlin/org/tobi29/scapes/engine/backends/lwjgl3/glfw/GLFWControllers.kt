@@ -21,7 +21,7 @@ import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
 class GLFWControllers(private val events: EventDispatcher,

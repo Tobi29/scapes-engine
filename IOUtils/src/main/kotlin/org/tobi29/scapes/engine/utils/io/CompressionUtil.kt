@@ -23,12 +23,11 @@ object CompressionUtil {
 
     // TODO: @Throws(IOException::class)
     fun compress(input: ReadableByteStream,
-                 level: Int = -1,
-                 bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
-                 growth: (Int) -> Int = { it + 8192 }): ByteBuffer {
-        val stream = ByteBufferStream(bufferProvider, growth)
+                 level: Int = -1): ByteView {
+        val stream = MemoryViewStreamDefault()
         compress(input, stream, level)
-        return stream.buffer()
+        stream.flip()
+        return stream.bufferSlice()
     }
 
     // TODO: @Throws(IOException::class)
@@ -39,12 +38,11 @@ object CompressionUtil {
     }
 
     // TODO: @Throws(IOException::class)
-    fun decompress(input: ReadableByteStream,
-                   bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
-                   growth: (Int) -> Int = { it + 8192 }): ByteBuffer {
-        val output = ByteBufferStream(bufferProvider, growth)
-        decompress(input, output)
-        return output.buffer()
+    fun decompress(input: ReadableByteStream): ByteView {
+        val stream = MemoryViewStreamDefault()
+        compress(input, stream)
+        stream.flip()
+        return stream.bufferSlice()
     }
 
     // TODO: @Throws(IOException::class)

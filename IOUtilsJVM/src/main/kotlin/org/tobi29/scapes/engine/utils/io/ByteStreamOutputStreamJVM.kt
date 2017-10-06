@@ -14,6 +14,21 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.utils.io.filesystem
+package org.tobi29.scapes.engine.utils.io
 
-typealias FileChannel = java.nio.channels.FileChannel
+import java.io.OutputStream
+
+class ByteStreamOutputStream(private val stream: WritableByteStream) : OutputStream() {
+
+    // TODO: @Throws(IOException::class)
+    override fun write(b: Int) {
+        stream.put(b.toByte())
+    }
+
+    // TODO: @Throws(IOException::class)
+    override fun write(b: ByteArray,
+                       off: Int,
+                       len: Int) {
+        stream.put(b.view.slice(off, len))
+    }
+}

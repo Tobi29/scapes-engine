@@ -23,8 +23,8 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.test.assertions.shouldThrow
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.MemoryViewStreamDefault
 import org.tobi29.scapes.engine.utils.io.classpath.ClasspathPath
 import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.io.tag.json.writeJSON
@@ -102,10 +102,10 @@ private fun createTagMap(): TagMap {
 
 private fun checkWriteAndRead(map: TagMap,
                               pretty: Boolean): TagMap {
-    val channel = ByteBufferStream()
+    val channel = MemoryViewStreamDefault()
     map.writeJSON(channel, pretty)
-    channel.buffer().flip()
-    return readJSON(ByteBufferStream(channel.buffer()))
+    channel.flip()
+    return readJSON(channel)
 }
 
 object TagStructureJSONTests : Spek({
@@ -132,7 +132,7 @@ object TagStructureJSONTests : Spek({
             on("writing") {
                 it("should fail") {
                     shouldThrow<IOException> {
-                        val channel = ByteBufferStream()
+                        val channel = MemoryViewStreamDefault()
                         invalidTag.writeJSON(channel)
                     }
                 }

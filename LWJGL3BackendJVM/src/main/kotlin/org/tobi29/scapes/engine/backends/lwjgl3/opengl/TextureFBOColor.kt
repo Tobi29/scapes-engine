@@ -22,16 +22,17 @@ import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.assert
 
-internal class TextureFBOColor(gos: GraphicsObjectSupplier,
-                               width: Int,
-                               height: Int,
-                               minFilter: TextureFilter,
-                               magFilter: TextureFilter,
-                               wrapS: TextureWrap,
-                               wrapT: TextureWrap,
-                               private val alpha: Boolean,
-                               private val hdr: Boolean) : TextureFBO(
-        gos, width, height, null, 0, minFilter, magFilter, wrapS, wrapT) {
+internal class TextureFBOColor(
+        gos: GraphicsObjectSupplier,
+        width: Int,
+        height: Int,
+        minFilter: TextureFilter,
+        magFilter: TextureFilter,
+        wrapS: TextureWrap,
+        wrapT: TextureWrap,
+        private val alpha: Boolean,
+        private val hdr: Boolean
+) : TextureFBO(gos, width, height, 0, minFilter, magFilter, wrapS, wrapT) {
 
     fun attach(gl: GL,
                i: Int) {

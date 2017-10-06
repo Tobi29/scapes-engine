@@ -42,8 +42,8 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     override fun channel(path: FilePath,
                          options: Array<out OpenOption>,
                          attributes: Array<out FileAttribute>): FileChannel =
-            FileChannel.open(toPath(path), options.toNIOSet(),
-                    *attributes.toNIO())
+            java.nio.channels.FileChannel.open(toPath(path), options.toNIOSet(),
+                    *attributes.toNIO()).toChannel()
 
     override fun createFile(path: FilePath,
                             vararg attributes: FileAttribute): FilePath {

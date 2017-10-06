@@ -21,34 +21,6 @@ inline fun nextCRC32(crc: Int,
             chainCRC32(it, data, table)
         }.finishChainCRC32()
 
-@Suppress("NOTHING_TO_INLINE")
-inline fun computeCRC32(buffer: ByteBuffer,
-                        table: IntArray): Int =
-        computeCRC32(0, buffer, table)
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun computeCRC32(crc: Int,
-                        buffer: ByteBuffer,
-                        table: IntArray): Int =
-        initChainCRC32(crc).let {
-            computeChainCRC32(it, buffer, table)
-        }.finishChainCRC32()
-
-@Suppress("NOTHING_TO_INLINE")
-inline fun computeChainCRC32(buffer: ByteBuffer,
-                             table: IntArray): Int =
-        computeCRC32(0, buffer, table)
-
-fun computeChainCRC32(crc: Int,
-                      buffer: ByteBuffer,
-                      table: IntArray): Int {
-    var cc = crc
-    while (buffer.hasRemaining()) {
-        cc = chainCRC32(cc, buffer.get(), table)
-    }
-    return cc
-}
-
 fun tableCRC32(key: Int): IntArray = IntArray(256) { i ->
     var crc = i
     repeat(8) {

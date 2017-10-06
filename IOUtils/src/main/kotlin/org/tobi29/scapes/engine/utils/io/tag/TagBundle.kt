@@ -16,15 +16,17 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteViewBE
+import org.tobi29.scapes.engine.utils.io.ByteViewBERO
 import org.tobi29.scapes.engine.utils.io.UnixPathEnvironment
-import org.tobi29.scapes.engine.utils.io.asByteBuffer
+import org.tobi29.scapes.engine.utils.io.viewBE
+import org.tobi29.scapes.engine.utils.io.ro
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toByteArray
 import org.tobi29.scapes.engine.utils.tag.toMap
 
 class TagBundle(private val map: TagMap) {
-    fun resolve(path: String): ByteBuffer? {
+    fun resolve(path: String): ByteViewBERO? {
         val segments = UnixPathEnvironment.run { path.components }
         if (segments.isEmpty()) {
             return null
@@ -34,7 +36,7 @@ class TagBundle(private val map: TagMap) {
             directory = directory[segments[i]]?.toMap()
                     ?.toDirectory() ?: return null
         }
-        return directory[segments.last()]?.toMap()?.toFile()
+        return directory[segments.last()]?.toMap()?.toFile()?.ro
     }
 
     private fun TagMap.toDirectory(): TagMap? {
@@ -44,10 +46,10 @@ class TagBundle(private val map: TagMap) {
         return this["Contents"]?.toMap()
     }
 
-    private fun TagMap.toFile(): ByteBuffer? {
+    private fun TagMap.toFile(): ByteViewBE? {
         if (this["Type"].toString() != "File") {
             return null
         }
-        return this["Contents"]?.toByteArray()?.asByteBuffer()
+        return this["Contents"]?.toByteArray()?.viewBE
     }
 }

@@ -28,6 +28,7 @@ import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.io.view
 
 class FontRenderer(private val engine: ScapesEngine,
                    private val font: Font) {
@@ -197,12 +198,11 @@ class FontRenderer(private val engine: ScapesEngine,
             val pageInfo = renderer.pageInfo(id)
             val imageSize = pageInfo.size
             val texture = engine.graphics.createTexture(1, 1,
-                    engine.allocate(4), 0, TextureFilter.LINEAR,
+                    ByteArray(4).view, 0, TextureFilter.LINEAR,
                     TextureFilter.LINEAR,
                     TextureWrap.CLAMP, TextureWrap.CLAMP)
             launch(engine.taskExecutor + CoroutineName("Render-Glyph-Page")) {
-                texture.setBuffer(renderer.page(id, engine), imageSize,
-                        imageSize)
+                texture.setBuffer(renderer.page(id).view, imageSize, imageSize)
             }
             if (pages.size <= id) {
                 val newPages = arrayOfNulls<GlyphPage>(id + 1)

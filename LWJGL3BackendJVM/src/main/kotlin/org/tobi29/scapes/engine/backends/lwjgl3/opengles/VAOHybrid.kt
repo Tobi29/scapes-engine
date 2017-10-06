@@ -20,8 +20,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
 internal class VAOHybrid(private val vbo1: VBO,
                          private val vbo2: VBO,
@@ -110,7 +110,7 @@ internal class VAOHybrid(private val vbo1: VBO,
     }
 
     override fun bufferStream(gl: GL,
-                              buffer: ByteBuffer) {
+                              buffer: ByteViewRO) {
         vbo2.replaceBuffer(gl, buffer)
     }
 }

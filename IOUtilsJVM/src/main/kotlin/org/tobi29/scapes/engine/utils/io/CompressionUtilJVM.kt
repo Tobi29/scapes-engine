@@ -16,37 +16,31 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.util.zip.DataFormatException
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
-impl class ZDeflater(level: Int,
-                           buffer: Int = 8192) : CompressionUtil.Filter {
+impl class ZDeflater impl constructor(level: Int,
+                                      private val buffer: Int = 8192) : CompressionUtil.Filter {
     private val deflater = Deflater(level)
-    private val output = ByteBuffer(buffer)
-    private var input = ByteBuffer(buffer)
+    private val output = ByteArray(buffer)
+    private var input = MemoryViewStreamDefault()
 
     impl override fun input(buffer: ReadableByteStream): Boolean {
-        if (!input.hasRemaining()) {
-            val newInput = ByteBuffer(input.capacity() shl 1)
-            input.flip()
-            newInput.put(input)
-            input = newInput
+        input.limit(input.position() + this.buffer)
+        val read = buffer.getSome(input.bufferSlice())
+        if (read < 0) return false
+        input.position(input.position() + read)
+        input.buffer().slice(0, input.position()).let {
+            deflater.setInput(it.byteArray, it.offset, it.size)
         }
-        if (!buffer.getSome(input)) {
-            return false
-        }
-        deflater.setInput(input.array(), input.arrayOffset(), input.position())
         return true
     }
 
     impl override fun output(buffer: WritableByteStream): Int {
-        val len = deflater.deflate(output.array())
-        output.limit(len)
-        buffer.put(output)
-        output.clear()
-        input.clear()
-        return len
+        val length = deflater.deflate(output)
+        buffer.put(output.view.slice(size = length))
+        input.reset()
+        return length
     }
 
     impl override fun finish() {
@@ -70,37 +64,27 @@ impl class ZDeflater(level: Int,
     }
 }
 
-impl class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
+impl class ZInflater impl constructor(private val buffer: Int = 8192) : CompressionUtil.Filter {
     private val inflater = Inflater()
-    private val output = ByteBuffer(buffer)
-    private var input = ByteBuffer(buffer)
+    private val output = ByteArray(buffer)
+    private var input = MemoryViewStreamDefault()
 
     impl override fun input(buffer: ReadableByteStream): Boolean {
-        if (!input.hasRemaining()) {
-            val newInput = ByteBuffer(input.capacity() shl 1)
-            input.flip()
-            newInput.put(input)
-            input = newInput
+        input.limit(input.position() + this.buffer)
+        val read = buffer.getSome(input.bufferSlice())
+        if (read < 0) return false
+        input.position(input.position() + read)
+        input.buffer().slice(0, input.position()).let {
+            inflater.setInput(it.byteArray, it.offset, it.size)
         }
-        if (!buffer.getSome(input)) {
-            return false
-        }
-        inflater.setInput(input.array(), input.arrayOffset(), input.position())
         return true
     }
 
     impl override fun output(buffer: WritableByteStream): Int {
-        try {
-            val len = inflater.inflate(output.array())
-            output.limit(len)
-            buffer.put(output)
-            output.clear()
-            input.clear()
-            return len
-        } catch (e: DataFormatException) {
-            return -1
-        }
-
+        val length = inflater.inflate(output)
+        buffer.put(output.view.slice(size = length))
+        input.reset()
+        return length
     }
 
     impl override fun finish() {

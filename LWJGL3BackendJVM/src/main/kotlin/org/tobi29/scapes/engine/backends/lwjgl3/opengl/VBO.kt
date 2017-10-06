@@ -20,10 +20,13 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferNative
+import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import org.tobi29.scapes.engine.utils.math.FastMath
 import org.tobi29.scapes.engine.utils.math.round
+import java.nio.ByteBuffer
 
 internal class VBO(val gos: GraphicsObjectSupplier,
                    attributes: List<ModelAttribute>,
@@ -47,7 +50,7 @@ internal class VBO(val gos: GraphicsObjectSupplier,
             stride += (size - 1 or 0x03) + 1
         }
         this.stride = stride
-        val vertexBuffer = gos.allocate(length * stride)
+        val vertexBuffer = ByteBufferNative(length * stride)
         attributes.forEach { addToBuffer(it, length, vertexBuffer) }
         data = vertexBuffer
     }
@@ -57,12 +60,12 @@ internal class VBO(val gos: GraphicsObjectSupplier,
     }
 
     fun replaceBuffer(gl: GL,
-                      buffer: ByteBuffer) {
+                      buffer: ByteViewRO) {
         assert { stored }
         gl.check()
         glBindBuffer(GL_ARRAY_BUFFER, vertexID)
-        glBufferData(GL_ARRAY_BUFFER, buffer.capacity(), GL_STREAM_DRAW)
-        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer)
+        glBufferData(GL_ARRAY_BUFFER, buffer.size, GL_STREAM_DRAW)
+        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.readAsNativeByteBuffer())
     }
 
     private fun storeAttribute(gl: GL,

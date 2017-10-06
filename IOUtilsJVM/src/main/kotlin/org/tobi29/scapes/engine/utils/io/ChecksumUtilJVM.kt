@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.Algorithm
 import org.tobi29.scapes.engine.utils.Checksum
+import java.nio.ByteBuffer
 
 /**
  * Creates a checksum from the given array
@@ -55,6 +56,6 @@ fun checksum(buffer: ByteBuffer,
 fun checksum(input: ReadableByteStream,
              algorithm: Algorithm = Algorithm.SHA256): Checksum {
     val digest = algorithm.digest()
-    process(input, { digest.update(it) })
+    input.process { digest.update(it.readAsByteBuffer()) }
     return Checksum(algorithm, digest.digest())
 }

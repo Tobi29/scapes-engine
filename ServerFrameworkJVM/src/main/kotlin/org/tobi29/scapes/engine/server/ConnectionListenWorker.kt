@@ -18,7 +18,9 @@ package org.tobi29.scapes.engine.server
 
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.toChannel
 import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.utils.io.view
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.ServerSocketChannel
@@ -59,7 +61,8 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                     client.register(worker.selector,
                                             SelectionKey.OP_READ)
                                     val secureChannel = ssl.newSSLChannel(
-                                            RemoteAddress(address), client,
+                                            RemoteAddress(address),
+                                            client.toChannel(),
                                             connections.taskExecutor, false)
                                     val bundleChannel = PacketBundleChannel(
                                             secureChannel)
@@ -68,7 +71,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                     }
                                     val header = ByteArray(
                                             connectionHeader.size)
-                                    bundleChannel.inputStream.get(header)
+                                    bundleChannel.inputStream.get(header.view)
                                     val id = bundleChannel.inputStream.get()
                                     if (header contentEquals connectionHeader) {
                                         client.register(worker.selector,

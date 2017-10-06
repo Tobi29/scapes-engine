@@ -25,13 +25,15 @@ import java.nio.channels.Selector
 
 class PacketBundleChannel(private val channelRead: ReadableByteChannel,
                           private val channelWrite: WritableByteChannel) {
-    private val dataStreamOut = ByteBufferStream(growth = { it + 102400 })
-    private val byteBufferStreamOut = ByteBufferStream(growth = { it + 102400 })
-    private val queue = Channel<ByteBuffer>(Channel.UNLIMITED)
+    private val dataStreamOut = MemoryViewStreamDefault(
+            growth = { it + 102400 })
+    private val byteBufferStreamOut = MemoryViewStreamDefault(
+            growth = { it + 102400 })
+    private val queue = Channel<HeapViewByteBE>(Channel.UNLIMITED)
     private val deflater: CompressionUtil.Filter
     private val inflater: CompressionUtil.Filter
-    private var output: ByteBuffer? = null
-    private var input = ByteBuffer(1024)
+    private var output: HeapViewByteBE? = null
+    private var input = MemoryViewStreamDefault().apply { limit(4) }
     private var selector: Selector? = null
     private var hasInput: Boolean = false
     private var hasBundle: Boolean = false
@@ -39,7 +41,6 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
     init {
         deflater = ZDeflater(1)
         inflater = ZInflater()
-        input.limit(BUNDLE_HEADER_SIZE)
     }
 
     constructor(channel: ByteChannel) : this(channel, channel)
@@ -51,27 +52,26 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         get() = byteBufferStreamOut
 
     fun bundleSize(): Int {
-        return dataStreamOut.buffer().position()
+        return dataStreamOut.position()
     }
 
     val outputFlushed get() = queue.isEmpty && output == null
 
     // TODO: @Throws(IOException::class)
     fun queueBundle() {
-        dataStreamOut.buffer().flip()
-        byteBufferStreamOut.buffer().clear()
+        dataStreamOut.flip()
+        byteBufferStreamOut.reset()
         CompressionUtil.filter(dataStreamOut, byteBufferStreamOut, deflater)
-        byteBufferStreamOut.buffer().flip()
-        val size = byteBufferStreamOut.buffer().remaining()
+        byteBufferStreamOut.flip()
+        val size = byteBufferStreamOut.remaining()
         if (size > BUNDLE_MAX_SIZE) {
             throw IOException("Bundle size too large: " + size)
         }
         val bundle = buffer(BUNDLE_HEADER_SIZE + size)
-        bundle.putInt(size)
-        bundle.put(byteBufferStreamOut.buffer())
-        bundle.flip()
+        bundle.setInt(0, size)
+        bundle.setBytes(BUNDLE_HEADER_SIZE, byteBufferStreamOut.bufferSlice())
         if (!queue.offer(bundle)) throw IOException("Send buffer full")
-        dataStreamOut.buffer().clear()
+        dataStreamOut.reset()
         selector?.wakeup()
     }
 
@@ -97,23 +97,23 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
 
     fun write(): Boolean {
         while (true) {
-            var writeOutput = output
-            if (writeOutput == null) {
-                writeOutput = queue.poll()
-                if (writeOutput == null) {
+            var write = output
+            if (write == null) {
+                write = queue.poll()
+                if (write == null) {
                     return false
                 }
-                output = writeOutput
+                output = write
             }
-            val write = channelWrite.write(writeOutput)
-            if (write < 0) {
-                return true
-            }
-            if (!writeOutput.hasRemaining()) {
-                BUFFER_CACHE.get().add(WeakReference(writeOutput))
+            val wrote = channelWrite.write(write)
+            if (wrote < 0) return true
+            write = write.slice(wrote)
+            if (write.size <= 0) {
+                BUFFER_CACHE.get().add(WeakReference(write.byteArray))
                 output = null
                 continue
             }
+            output = write
             return false
         }
     }
@@ -126,25 +126,24 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         inflater.close()
     }
 
-    private fun buffer(capacity: Int): ByteBuffer {
+    private fun buffer(capacity: Int): HeapViewByteBE {
         val bufferCache = BUFFER_CACHE.get()
-        var bundle: ByteBuffer? = null
+        var bundle: HeapViewByteBE? = null
         var i = 0
         while (i < bufferCache.size) {
             val cacheBuffer = bufferCache[i].get()
             if (cacheBuffer == null) {
                 bufferCache.removeAt(i)
-            } else if (cacheBuffer.capacity() >= capacity) {
+            } else if (cacheBuffer.size >= capacity) {
                 bufferCache.removeAt(i)
-                bundle = cacheBuffer
-                bundle.clear().limit(capacity)
+                bundle = cacheBuffer.viewBE.slice(0, capacity)
                 break
             } else {
                 i++
             }
         }
         if (bundle == null) {
-            bundle = ByteBuffer(capacity)
+            bundle = ByteArray(capacity).viewBE
         }
         return bundle
     }
@@ -153,13 +152,9 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         assert { !hasBundle }
         if (input.hasRemaining()) {
             val read = channelRead.read(input)
-            if (read < 0) {
-                return true
-            }
+            if (read < 0) return true
         }
-        if (input.hasRemaining()) {
-            return false
-        }
+        if (input.hasRemaining()) return false
         input.flip()
         if (!hasInput) {
             if (input.remaining() != BUNDLE_HEADER_SIZE) {
@@ -170,22 +165,17 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
             if (limit > BUNDLE_MAX_SIZE) {
                 throw IOException("Bundle size too large: " + limit)
             }
-            if (input.capacity() < limit) {
-                BUFFER_CACHE.get().add(WeakReference(input))
-                input = buffer(limit)
-            } else {
-                input.clear()
-            }
+            input.reset()
             input.limit(limit)
             hasInput = true
             return false
         }
-        byteBufferStreamOut.buffer().clear()
-        CompressionUtil.filter(ByteBufferStream(input), byteBufferStreamOut,
-                inflater)
-        byteBufferStreamOut.buffer().flip()
+        byteBufferStreamOut.reset()
+        CompressionUtil.filter(input, byteBufferStreamOut, inflater)
+        byteBufferStreamOut.flip()
         hasInput = false
-        input.clear().limit(BUNDLE_HEADER_SIZE)
+        input.reset()
+        input.limit(BUNDLE_HEADER_SIZE)
         hasBundle = true
         return false
     }
@@ -193,7 +183,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
     companion object {
         private val BUNDLE_HEADER_SIZE = 4
         private val BUNDLE_MAX_SIZE = 1 shl 10 shl 10 shl 6
-        private val BUFFER_CACHE = ThreadLocal { ArrayList<WeakReference<ByteBuffer>>() }
+        private val BUFFER_CACHE = ThreadLocal { ArrayList<WeakReference<ByteArray>>() }
     }
 
     enum class FetchResult {

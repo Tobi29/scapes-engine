@@ -18,15 +18,18 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.generateMipMapsNullable
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferNative
+import org.tobi29.scapes.engine.utils.io.ByteBufferView
+import org.tobi29.scapes.engine.utils.io.viewBufferE
 import org.tobi29.scapes.engine.utils.math.max
 
 internal open class TextureGL(override val gos: GraphicsObjectSupplier,
                               width: Int,
                               height: Int,
-                              buffer: ByteBuffer?,
+                              buffer: ByteViewRO?,
                               protected val mipmaps: Int,
                               minFilter: TextureFilter,
                               magFilter: TextureFilter,
@@ -132,15 +135,15 @@ internal open class TextureGL(override val gos: GraphicsObjectSupplier,
         dirtyFilter.set(true)
     }
 
-    override fun buffer(i: Int): ByteBuffer? {
+    override fun buffer(i: Int): ByteViewRO? {
         return buffer.buffers[i]
     }
 
-    override fun setBuffer(buffer: ByteBuffer?) {
+    override fun setBuffer(buffer: ByteViewRO?) {
         setBuffer(buffer, this.buffer.width, this.buffer.height)
     }
 
-    override fun setBuffer(buffer: ByteBuffer?,
+    override fun setBuffer(buffer: ByteViewRO?,
                            width: Int,
                            height: Int) {
         this.buffer = buffer(buffer, width, height)
@@ -201,29 +204,29 @@ internal open class TextureGL(override val gos: GraphicsObjectSupplier,
                     buffer.buffers.size - 1)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, buffer.width,
                     buffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                    buffer.buffers[0])
+                    buffer.buffers[0]?.byteBuffer)
             for (i in 1 until buffer.buffers.size) {
                 glTexImage2D(GL_TEXTURE_2D, i, GL_RGBA,
                         max(buffer.width shr i, 1),
                         max(buffer.height shr i, 1), 0, GL_RGBA,
-                        GL_UNSIGNED_BYTE, buffer.buffers[i])
+                        GL_UNSIGNED_BYTE, buffer.buffers[i]?.byteBuffer)
             }
         } else {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, buffer.width,
                     buffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                    buffer.buffers[0])
+                    buffer.buffers[0]?.byteBuffer)
         }
     }
 
-    private fun buffer(buffer: ByteBuffer?,
+    private fun buffer(buffer: ByteViewRO?,
                        width: Int,
                        height: Int): TextureBuffer {
-        return TextureBuffer(
-                generateMipMapsNullable(buffer, gos, width, height, mipmaps,
-                        minFilter == TextureFilter.LINEAR), width, height)
+        return TextureBuffer(generateMipMapsNullable(buffer,
+                { ByteBufferNative(it).viewBufferE }, width, height, mipmaps,
+                minFilter == TextureFilter.LINEAR), width, height)
     }
 
-    protected class TextureBuffer(val buffers: Array<ByteBuffer?>,
+    protected class TextureBuffer(val buffers: Array<ByteBufferView?>,
                                   val width: Int,
                                   val height: Int)
 }

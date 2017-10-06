@@ -20,7 +20,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferNative
+import java.nio.ByteBuffer
 
 internal class VAOStatic(private val vbo: VBO,
                          index: IntArray,
@@ -37,7 +38,7 @@ internal class VAOStatic(private val vbo: VBO,
         } else if (renderType == RenderType.LINES && length % 2 != 0) {
             throw IllegalArgumentException("Length not multiply of 2")
         }
-        val indexBuffer = gos.allocate(length shl 1)
+        val indexBuffer = ByteBufferNative(length shl 1)
         for (i in 0 until length) {
             indexBuffer.putShort(index[i].toShort())
         }

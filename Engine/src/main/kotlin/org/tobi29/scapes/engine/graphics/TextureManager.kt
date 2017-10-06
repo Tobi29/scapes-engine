@@ -57,7 +57,7 @@ class TextureManager(private val engine: ScapesEngine) {
 
     private fun texture(stream: ReadableByteStream,
                         properties: TagMap): Texture {
-        return engine.graphics.createTexture(decodePNG(stream, engine),
+        return engine.graphics.createTexture(decodePNG(stream),
                 properties["Mipmaps"]?.toInt() ?: 0,
                 properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
                 properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,

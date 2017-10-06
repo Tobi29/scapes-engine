@@ -1,25 +1,69 @@
 package org.tobi29.scapes.engine.utils.io
 
-typealias Channel = java.nio.channels.Channel
-typealias ByteChannel = java.nio.channels.ByteChannel
-typealias ReadableByteChannel = java.nio.channels.ReadableByteChannel
-typealias WritableByteChannel = java.nio.channels.WritableByteChannel
+import org.tobi29.scapes.engine.utils.toIntClamped
 
-/**
- * Skip up to the given amount of bytes in the stream
- * @param length The amount of bytes to skip
- * @throws IOException When an IO error occurs
- * @return The actual amount of bytes skipped
- */
-fun ReadableByteChannel.skip(length: Long): Long {
-    var l = length
-    var skipped = 0L
-    while (l > Int.MAX_VALUE) {
-        val s = skip(Int.MAX_VALUE)
-        skipped += s
-        if (s < Int.MAX_VALUE) return skipped
-        l -= Int.MAX_VALUE
+interface ReadableByteChannel : Channel {
+    fun read(buffer: ByteView): Int
+
+    fun skip(length: Long): Long {
+        val buffer = ByteArray(length.coerceAtMost(4096).toInt()).viewBE
+        while (length > 0) {
+            val read = read(buffer.slice(0,
+                    buffer.size.coerceAtMost(length.toIntClamped())))
+            if (read == -1) {
+                throw IOException("End of stream")
+            }
+            if (read == 0) {
+                return length
+            }
+        }
+        return length
     }
-    skipped += skip(l.toInt())
-    return skipped
+}
+
+fun ReadableByteChannel.read(stream: MemoryViewStream<*>): Int =
+        read(stream.bufferSlice()).also {
+            if (it > 0) stream.position(stream.position() + it)
+        }
+
+interface WritableByteChannel : Channel {
+    fun write(buffer: ByteViewRO): Int
+}
+
+fun WritableByteChannel.write(stream: MemoryViewStream<*>): Int =
+        write(stream.bufferSlice()).also {
+            if (it > 0) stream.position(stream.position() + it)
+        }
+
+interface ByteChannel : ReadableByteChannel, WritableByteChannel
+
+interface SeekableByteChannel : ByteChannel {
+    /**
+     * @throws IOException
+     */
+    fun position(): Long
+
+    /**
+     * @throws IOException
+     */
+    fun position(newPosition: Long): SeekableByteChannel
+
+    /**
+     * @throws IOException
+     */
+    fun size(): Long
+
+    /**
+     * @throws IOException
+     */
+    fun truncate(size: Long): SeekableByteChannel
+
+    /**
+     * @throws IOException
+     */
+    fun remaining(): Long = size() - position()
+
+    override fun skip(length: Long) = length.also {
+        position(position() + length)
+    }
 }

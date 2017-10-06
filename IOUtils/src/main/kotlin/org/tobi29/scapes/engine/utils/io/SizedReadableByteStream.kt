@@ -42,4 +42,12 @@ interface SizedReadableByteStream : ReadableByteStream {
             skip(remaining())
         }
     }
+
+    override fun getSome(buffer: ByteView): Int =
+            remaining().let {
+                if (it <= 0) -1
+                else buffer.size.coerceAtMost(it).also { size ->
+                    get(buffer.slice(size = size))
+                }
+            }
 }

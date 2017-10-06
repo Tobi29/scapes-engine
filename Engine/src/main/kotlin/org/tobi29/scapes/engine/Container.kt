@@ -20,16 +20,18 @@ import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ByteViewE
 import org.tobi29.scapes.engine.utils.io.ReadSource
 
-interface Container : ByteBufferProvider {
+interface Container {
     val engine: ScapesEngine
     val gos: GraphicsObjectSupplier
     val sounds: SoundSystem
     val formFactor: FormFactor
     val containerWidth: Int
     val containerHeight: Int
+
+    fun allocateNative(size: Int): ByteViewE
 
     fun updateContainer()
 

@@ -77,7 +77,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
             if (openTruncateExisting) {
                 channel.truncate(0L)
             }
-            return channel
+            return channel.toChannel()
         } catch (e: FileNotFoundException) {
             throw NoSuchFileException(path)
         }
@@ -181,15 +181,16 @@ internal object IOFileUtilImpl : FileUtilImpl {
         channel(source, options = arrayOf(OPEN_READ)).use { channelIn ->
             channel(target, options = arrayOf(OPEN_WRITE, OPEN_CREATE,
                     OPEN_TRUNCATE_EXISTING)).use { channelOut ->
-                val buffer = ByteBuffer(1024)
+                val buffer = ByteArray(1024).view
                 while (true) {
                     val read = channelIn.read(buffer)
-                    if (read == -1) {
-                        break
+                    if (read < 0) break
+                    var write = buffer.slice(0, read)
+                    while (write.size > 0) {
+                        val wrote = channelOut.write(write)
+                        if (wrote < 0) throw IOException("End of stream")
+                        write = write.slice(wrote)
                     }
-                    buffer.flip()
-                    channelOut.write(buffer)
-                    buffer.compact()
                 }
             }
         }

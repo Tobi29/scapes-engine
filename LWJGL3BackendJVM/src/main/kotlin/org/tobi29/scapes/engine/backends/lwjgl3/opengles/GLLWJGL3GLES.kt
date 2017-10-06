@@ -16,9 +16,12 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.flipVertical
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteBufferNative
+import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
+import org.tobi29.scapes.engine.utils.io.viewSliceE
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.pow
 
@@ -132,18 +135,18 @@ class GLLWJGL3GLES(gos: GraphicsObjectSupplier) : GL(gos) {
                             y: Int,
                             width: Int,
                             height: Int): Image {
-        val buffer = allocate(width * height shl 2)
+        val buffer = ByteBufferNative(width * height shl 2)
         glReadBuffer(GL_FRONT)
         glReadPixels(x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer)
-        flipVertical(width, height, buffer)
-        return Image(width, height, buffer)
+        flipVertical(width, height, buffer.viewSliceE)
+        return Image(width, height, buffer.viewSliceE)
     }
 
     override fun screenShotFBO(fbo: Framebuffer): Image {
-        val buffer = allocate(fbo.width() * fbo.height() shl 2)
+        val buffer = ByteBufferNative(fbo.width() * fbo.height() shl 2)
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer)
-        flipVertical(fbo.width(), fbo.height(), buffer)
-        return Image(fbo.width(), fbo.height(), buffer)
+        flipVertical(fbo.width(), fbo.height(), buffer.viewSliceE)
+        return Image(fbo.width(), fbo.height(), buffer.viewSliceE)
     }
 
     override fun setAttribute1f(id: Int,
@@ -196,24 +199,24 @@ class GLLWJGL3GLES(gos: GraphicsObjectSupplier) : GL(gos) {
                                 y: Int,
                                 width: Int,
                                 height: Int,
-                                buffer: ByteBuffer) {
+                                buffer: ByteViewRO) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA,
-                GL_UNSIGNED_BYTE, buffer)
+                GL_UNSIGNED_BYTE, buffer.readAsNativeByteBuffer())
     }
 
     override fun replaceTextureMipMap(x: Int,
                                       y: Int,
                                       width: Int,
                                       height: Int,
-                                      vararg buffers: ByteBuffer) {
+                                      vararg buffers: ByteViewRO) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
-                GL_RGBA, GL_UNSIGNED_BYTE, buffers[0])
+                GL_RGBA, GL_UNSIGNED_BYTE, buffers[0].readAsNativeByteBuffer())
         for (i in 1 until buffers.size) {
             val scale = pow(2f, i.toFloat()).toInt()
             glTexSubImage2D(GL_TEXTURE_2D, i, x / scale, y / scale,
                     max(width / scale, 1),
                     max(height / scale, 1), GL_RGBA,
-                    GL_UNSIGNED_BYTE, buffers[i])
+                    GL_UNSIGNED_BYTE, buffers[i].readAsNativeByteBuffer())
         }
     }
 

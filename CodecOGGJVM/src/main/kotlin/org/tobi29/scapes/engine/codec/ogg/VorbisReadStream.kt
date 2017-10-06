@@ -23,11 +23,11 @@ import com.jcraft.jorbis.Comment
 import com.jcraft.jorbis.DspState
 import com.jcraft.jorbis.Info
 import org.tobi29.scapes.engine.codec.AudioMetaData
+import org.tobi29.scapes.engine.utils.io.HeapViewFloatBE
+import org.tobi29.scapes.engine.utils.io.MemoryViewStream
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.min
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toTag
-import java.nio.FloatBuffer
 
 class VorbisInitializer(private val info: Info,
                         private val comment: Comment) : CodecInitializer {
@@ -71,25 +71,19 @@ class VorbisReadStream(info: Info,
     private val index = IntArray(info.channels)
     private val pcm = arrayOfNulls<Array<FloatArray>>(1)
 
-    override fun get(buffer: FloatBuffer): Boolean {
+    override fun get(buffer: MemoryViewStream<HeapViewFloatBE>): Boolean {
         val samples = dspState.synthesis_pcmout(pcm, index)
         if (samples == 0) {
             return false
         }
         val pcmSamples = pcm[0] ?: throw IllegalStateException(
                 "Null in pcm array, JOrbis bug?")
-        val length = min(samples, buffer.remaining() / channels)
-        val offset = buffer.position()
-        for (i in 0 until channels) {
-            val channel = pcmSamples[i]
-            val location = index[i]
-            var position = offset + i
-            for (j in 0 until length) {
-                buffer.put(position, channel[location + j])
-                position += channels
+        val length = samples.coerceAtMost((buffer.remaining() shr 2) / channels)
+        for (i in 0 until length) {
+            for (j in 0 until channels) {
+                buffer.putFloat(pcmSamples[j][index[j] + i])
             }
         }
-        buffer.position(offset + length * channels)
         dspState.synthesis_read(length)
         return true
     }

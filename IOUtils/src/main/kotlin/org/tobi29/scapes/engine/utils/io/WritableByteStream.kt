@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import org.tobi29.scapes.engine.utils.bytesUTF8
+import org.tobi29.scapes.engine.utils.utf8ToArray
 
 /**
  * Interface for blocking write operations, with an extensive set of operations
@@ -25,36 +25,16 @@ import org.tobi29.scapes.engine.utils.bytesUTF8
 // TODO: Implement most operations with defaults
 interface WritableByteStream : Appendable {
     /**
-     * Write by processing the given buffer completely
+     * Write the contents of the given buffer to the stream
      * @param buffer Buffer to read from
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun put(buffer: ByteBuffer): WritableByteStream =
-            put(buffer, buffer.remaining())
-
-    /**
-     * Write by processing the given buffer by the given amount of bytes
-     * @param buffer Buffer to read from
-     * @param len The amount of bytes to read
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun put(buffer: ByteBuffer,
-            len: Int): WritableByteStream
-
-    /**
-     * Write by processing the given array by the given amount of bytes
-     * @param dest Array to read from
-     * @param off First index to read from the byte array
-     * @param len The amount of bytes to read
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun put(src: ByteArray,
-            off: Int = 0,
-            len: Int = src.size - off): WritableByteStream =
-            put(src.asByteBuffer(off, len))
+    fun put(buffer: ByteViewRO): WritableByteStream = apply {
+        for (i in 0 until buffer.size) {
+            put(buffer.getByte(i))
+        }
+    }
 
     /**
      * Writes `1` into the stream if [value] is `true` or `0` otherwise
@@ -129,7 +109,7 @@ interface WritableByteStream : Appendable {
             put(0xFF.toByte())
             putInt(value.size)
         }
-        return put(value)
+        return put(value.view)
     }
 
     /**
@@ -148,7 +128,7 @@ interface WritableByteStream : Appendable {
             putShort(0xFFFF.toShort())
             putInt(value.size)
         }
-        return put(value)
+        return put(value.view)
     }
 
     /**
@@ -161,10 +141,10 @@ interface WritableByteStream : Appendable {
      * @return The current stream
      */
     fun putString(value: String): WritableByteStream =
-            putByteArray(value.bytesUTF8())
+            putByteArray(value.utf8ToArray())
 
     override fun append(c: Char): Appendable {
-        put(c.toString().bytesUTF8())
+        put(c.toString().utf8ToArray().view)
         return this
     }
 
@@ -175,7 +155,7 @@ interface WritableByteStream : Appendable {
                         start: Int,
                         end: Int): Appendable {
         val str = csq?.toString() ?: "null"
-        put(str.bytesUTF8())
+        put(str.utf8ToArray().view)
         return this
     }
 }

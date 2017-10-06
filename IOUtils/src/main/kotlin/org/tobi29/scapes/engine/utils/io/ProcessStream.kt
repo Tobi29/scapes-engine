@@ -16,94 +16,29 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-fun <E> process(input: ReadableByteStream,
-                processor: StreamProcessor<E>,
-                bufferSize: Int = 1024): E {
-    val buffer = ByteBuffer(bufferSize)
-    while (input.getSome(buffer)) {
-        buffer.flip()
-        processor.process(buffer)
-        buffer.clear()
-    }
-    return processor.result()
-}
+import org.tobi29.scapes.engine.utils.toIntClamped
+import org.tobi29.scapes.engine.utils.utf8ToString
 
-// TODO: @Throws(IOException::class)
-fun process(input: ReadableByteStream,
-            processor: (ByteBuffer) -> Unit,
-            bufferSize: Int = 1024) {
-    val buffer = ByteBuffer(bufferSize)
-    while (input.getSome(buffer)) {
-        buffer.flip()
-        processor(buffer)
-        buffer.clear()
+inline fun ReadableByteStream.process(bufferSize: Int = 1024,
+                                      sink: (ByteViewRO) -> Unit) {
+    val buffer = ByteArray(bufferSize).view
+    while (true) {
+        val read = getSome(buffer)
+        if (read < 0) break
+        sink(buffer.slice(0, read))
     }
 }
 
-fun asArray(): StreamProcessor<ByteArray> {
-    return object : StreamProcessor<ByteArray> {
-        private val stream = ByteBufferStream()
+fun ReadableByteStream.asByteArray(): ByteArray =
+        asByteView().readAsByteArray()
 
-        override fun process(buffer: ByteBuffer) {
-            stream.put(buffer)
-        }
+fun ReadableByteStream.asString(): String =
+        asByteView().let { it.byteArray.utf8ToString(it.offset, it.size) }
 
-        override fun result(): ByteArray {
-            stream.buffer().flip()
-            val array = ByteArray(stream.buffer().remaining())
-            stream.buffer().get(array)
-            return array
-        }
-    }
-}
-
-fun asBuffer(bufferProvider: ByteBufferProvider = DefaultByteBufferProvider,
-             growth: (Int) -> Int = { it + 8192 }): StreamProcessor<ByteBuffer> {
-    return object : StreamProcessor<ByteBuffer> {
-        private val stream = ByteBufferStream(bufferProvider, growth)
-
-        override fun process(buffer: ByteBuffer) {
-            stream.put(buffer)
-        }
-
-        override fun result(): ByteBuffer {
-            stream.buffer().flip()
-            return stream.buffer()
-        }
-    }
-}
-
-fun asString(): StreamProcessor<String> {
-    return object : StreamProcessor<String> {
-        private val stream = ByteBufferStream(growth = { it + 1024 })
-
-        override fun process(buffer: ByteBuffer) {
-            stream.put(buffer)
-        }
-
-        override fun result(): String {
-            val buffer = stream.buffer()
-            buffer.flip()
-            return buffer.asString()
-        }
-    }
-}
-
-fun put(stream: WritableByteStream): StreamProcessor<Unit?> {
-    return object : StreamProcessor<Unit?> {
-        override fun process(buffer: ByteBuffer) {
-            stream.put(buffer)
-        }
-
-        override fun result(): Unit? {
-            return null
-        }
-    }
-}
-
-interface StreamProcessor<out E> {
-    // TODO: @Throws(IOException::class)
-    fun process(buffer: ByteBuffer)
-
-    fun result(): E
-}
+fun ReadableByteStream.asByteView(): HeapViewByteBE =
+        (if (this is SeekableByteChannel) MemoryViewStreamDefault(
+                ByteArray(remaining().toIntClamped()).viewBE)
+        else MemoryViewStreamDefault().also { stream ->
+            process { stream.put(it) }
+            stream.flip()
+        }).bufferSlice()

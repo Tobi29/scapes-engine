@@ -26,8 +26,6 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.utils.*
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
 import org.tobi29.scapes.engine.utils.io.FileSystemContainer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
@@ -35,12 +33,12 @@ import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.*
 import kotlin.coroutines.experimental.CoroutineContext
 
-impl class ScapesEngine(
+impl class ScapesEngine impl constructor(
         backend: (ScapesEngine) -> Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         impl val taskExecutor: CoroutineContext,
         configMap: MutableTagMap
-) : CoroutineDispatcher(), ComponentHolder<Any>, ByteBufferProvider {
+) : CoroutineDispatcher(), ComponentHolder<Any> {
     impl override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
@@ -195,11 +193,6 @@ impl class ScapesEngine(
     impl fun isMouseGrabbed(): Boolean {
         return stateMut?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
-
-    impl override fun allocate(capacity: Int) = container.allocate(capacity)
-
-    impl override fun reallocate(buffer: ByteBuffer) =
-            container.reallocate(buffer)
 
     private fun step(delta: Double): Double {
         var currentState = this.stateMut

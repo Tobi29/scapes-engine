@@ -16,37 +16,39 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.asByteArray
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.io.ro
 import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.scapes.engine.utils.io.view
 
-class Image(val width: Int = 1,
-            val height: Int = 1,
-            buffer: ByteBuffer = ByteBuffer(
-                    width * height shl 2)) : TagMapWrite {
-    val buffer = buffer
-        get() = field.asReadOnlyBuffer()
-
-    val size by lazy { Vector2i(width, height) }
-
+class Image(
+        val width: Int = 1,
+        val height: Int = 1,
+        buffer: ByteViewRO = ByteArray(width * height shl 2).view
+) : TagMapWrite {
     init {
-        if (buffer.remaining() != width * height shl 2) {
+        if (buffer.size != width * height shl 2) {
             throw IllegalArgumentException("Backing buffer sized incorrectly")
         }
     }
 
+    val view = buffer.ro
+
+    val size by lazy { Vector2i(width, height) }
+
     override fun write(map: ReadWriteTagMap) {
         map["Width"] = width.toTag()
         map["Height"] = height.toTag()
-        map["RGBA"] = buffer.asArray().toTag()
+        map["RGBA"] = view.asByteArray().toTag()
     }
 }
 
-fun MutableTag.toImage(bufferProvider: ByteBufferProvider = DefaultByteBufferProvider): Image? {
+fun MutableTag.toImage(): Image? {
     val map = toMap() ?: return null
     val width = map["Width"]?.toInt() ?: return null
     val height = map["Height"]?.toInt() ?: return null
     val rgba = map["RGBA"]?.toByteArray() ?: return null
-    val buffer = bufferProvider.reallocate(rgba.asByteBuffer())
-    return Image(width, height, buffer)
+    return Image(width, height, rgba.view)
 }

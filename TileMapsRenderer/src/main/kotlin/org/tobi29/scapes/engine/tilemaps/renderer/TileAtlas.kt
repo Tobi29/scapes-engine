@@ -73,19 +73,14 @@ open class TileAtlasEntry(sprite: Sprite,
                           height: Int,
                           engine: ScapesEngine,
                           texture: () -> Texture) : TextureAtlasEngineEntry(
-        sprite.frames.firstOrNull()?.image?.buffer, width, height, texture) {
+        sprite.frames.firstOrNull()?.image?.view, width, height, texture) {
     private val newFrame = AtomicInteger(-1)
     private val frames: Array<Pair<Double, Image>>
     private var spin = 0.0
 
     init {
         frames = sprite.frames.asSequence().map { frame ->
-            val buffer = engine.allocate(
-                    frame.image.width * frame.image.height shl 2)
-            buffer.put(frame.image.buffer)
-            buffer.rewind()
-            val image = Image(frame.image.width, frame.image.height, buffer)
-            Pair(1.0 / frame.duration, image)
+            Pair(1.0 / frame.duration, frame.image)
         }.toArray()
     }
 
@@ -94,8 +89,7 @@ open class TileAtlasEntry(sprite: Sprite,
         if (frame >= 0) {
             texture().bind(gl)
             val image = frames[frame].second
-            gl.replaceTextureMipMap(x, y, image.width, image.height,
-                    image.buffer)
+            gl.replaceTextureMipMap(x, y, image.width, image.height, image.view)
         }
     }
 

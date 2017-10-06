@@ -16,17 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-header fun ByteBuffer.asString(): String
-
-/**
- * Returns a view on the given array
- * @param offset Offset in the array
- * @param length Length in the array
- * @receiver The array to back into
- * @return A [ByteBuffer] using the array for storage
- */
-header fun ByteArray.asByteBuffer(offset: Int,
-                                  length: Int): ByteBuffer
+header class ByteOrder private constructor(name: String)
 
 /**
  * Big endian byte order
@@ -43,21 +33,3 @@ header val LITTLE_ENDIAN: ByteOrder
  * [LITTLE_ENDIAN]
  */
 header val NATIVE_ENDIAN: ByteOrder
-
-header object DefaultByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer
-
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer
-}
-
-header object DefaultLEByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer
-
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer
-}
-
-header object DefaultFloatBufferProvider : FloatBufferProvider {
-    override fun allocate(capacity: Int): FloatBuffer
-
-    override fun reallocate(buffer: FloatBuffer): FloatBuffer
-}

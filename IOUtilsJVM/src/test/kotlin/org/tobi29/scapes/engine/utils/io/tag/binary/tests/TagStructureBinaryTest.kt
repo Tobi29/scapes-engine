@@ -22,7 +22,7 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
+import org.tobi29.scapes.engine.utils.io.MemoryViewStreamDefault
 import org.tobi29.scapes.engine.utils.io.tag.binary.readBinary
 import org.tobi29.scapes.engine.utils.io.tag.binary.writeBinary
 import org.tobi29.scapes.engine.utils.tag.TagList
@@ -99,10 +99,10 @@ private fun createTagMap(): TagMap {
 
 private fun checkWriteAndRead(map: TagMap,
                               compression: Byte = -1): TagMap {
-    val channel = ByteBufferStream()
+    val channel = MemoryViewStreamDefault()
     map.writeBinary(channel, compression)
-    channel.buffer().flip()
-    return readBinary(ByteBufferStream(channel.buffer()))
+    channel.flip()
+    return readBinary(channel)
 }
 
 object TagStructureBinaryTests : Spek({

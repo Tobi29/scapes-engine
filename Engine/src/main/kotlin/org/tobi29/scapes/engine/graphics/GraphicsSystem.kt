@@ -27,6 +27,7 @@ import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.task.TaskChannel
 import org.tobi29.scapes.engine.utils.task.offer
 import org.tobi29.scapes.engine.utils.task.processCurrent
+import org.tobi29.scapes.engine.utils.io.view
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
@@ -46,13 +47,7 @@ class GraphicsSystem(private val gos: GraphicsObjectSupplier) : CoroutineDispatc
     val textures = TextureManager(engine)
 
     init {
-        val buffer = allocate(4)
-        buffer.put((-1).toByte())
-        buffer.put((-1).toByte())
-        buffer.put((-1).toByte())
-        buffer.put((-1).toByte())
-        buffer.rewind()
-        empty = createTexture(1, 1, buffer, 0)
+        empty = createTexture(1, 1, byteArrayOf(-1, -1, -1, -1).view, 0)
         val debugValues = engine.debugValues
         fpsDebug = debugValues["Graphics-Fps"]
         widthDebug = debugValues["Graphics-Width"]

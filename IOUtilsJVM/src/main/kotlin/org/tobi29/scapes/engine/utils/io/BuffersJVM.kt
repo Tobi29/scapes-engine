@@ -14,20 +14,32 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.utils.io
 
+import java.nio.Buffer
+import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-impl fun ByteBuffer.asString(): String =
-        if (hasArray()) {
-            String(array(), arrayOffset(), remaining())
-        } else {
-            String(asArray())
-        }
+interface BufferProvider<out T : Buffer> {
+    fun allocate(capacity: Int): T
+}
 
-impl inline fun ByteArray.asByteBuffer(offset: Int,
-                                       length: Int): ByteBuffer =
-        java.nio.ByteBuffer.wrap(this, offset, length)
+typealias ByteBufferProvider = BufferProvider<ByteBuffer>
+
+/**
+ * Returns a view on the given array
+ * @param offset Offset in the array
+ * @param size Length in the array
+ * @receiver The array to back into
+ * @return A [ByteBuffer] using the array for storage
+ */
+inline fun ByteArray.asByteBuffer(offset: Int = 0,
+                                  size: Int = this.size - offset): ByteBuffer =
+        java.nio.ByteBuffer.wrap(this, offset, size)
+
+impl typealias ByteOrder = java.nio.ByteOrder
 
 impl inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
 
@@ -35,50 +47,105 @@ impl inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
 
 impl inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
 
-impl object DefaultByteBufferProvider : ByteBufferProvider {
-    impl override fun allocate(capacity: Int): ByteBuffer =
+object DefaultByteBufferProvider : ByteBufferProvider {
+    override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocate(capacity).order(BIG_ENDIAN)
-
-    impl override fun reallocate(buffer: ByteBuffer): ByteBuffer {
-        if (buffer.hasArray()) {
-            return buffer.order(BIG_ENDIAN)
-        }
-        return forceReallocate(buffer, this)
-    }
 }
 
-impl object DefaultLEByteBufferProvider : ByteBufferProvider {
-    impl override fun allocate(capacity: Int): ByteBuffer =
+object DefaultLEByteBufferProvider : ByteBufferProvider {
+    override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocate(capacity).order(LITTLE_ENDIAN)
-
-    impl override fun reallocate(buffer: ByteBuffer): ByteBuffer {
-        if (buffer.hasArray()) {
-            return buffer.order(LITTLE_ENDIAN)
-        }
-        return forceReallocate(buffer, this)
-    }
 }
 
 object NativeByteBufferProvider : ByteBufferProvider {
     override fun allocate(capacity: Int): ByteBuffer =
             java.nio.ByteBuffer.allocateDirect(capacity).order(NATIVE_ENDIAN)
+}
 
-    override fun reallocate(buffer: ByteBuffer): ByteBuffer {
-        if (buffer.isDirect) {
-            return buffer.order(NATIVE_ENDIAN)
+/**
+ * Creates a [ByteBuffer] with big-endian byte-order
+ * @param size Capacity of the buffer
+ * @return A [ByteBuffer] with big-endian byte-order
+ */
+inline fun ByteBuffer(size: Int): ByteBuffer =
+        DefaultByteBufferProvider.allocate(size)
+
+fun ByteBufferNative(capacity: Int): ByteBuffer =
+        java.nio.ByteBuffer.allocateDirect(capacity).order(NATIVE_ENDIAN)
+
+/**
+ * Fills a buffer with the given value
+ * @receiver Buffer to fill
+ * @param supplier Supplier called for each value written to the buffer
+ * @return The given buffer
+ */
+inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
+    while (hasRemaining()) {
+        put(supplier())
+    }
+    return this
+}
+
+fun ByteBuffer.asArray() =
+        ByteArray(remaining()).also {
+            val position = position()
+            get(it)
+            position(position)
         }
-        return forceReallocate(buffer, this)
+
+// TODO: Make shorter for inline
+inline fun <R> ByteView.mutateAsByteBuffer(block: (ByteBuffer) -> R): R {
+    var buffer = asByteBuffer()
+    val mapped = if (buffer == null) {
+        buffer = ByteBuffer(size)
+        // TODO: Optimize?
+        for (i in 0 until size) {
+            buffer.put(i, getByte(i))
+        }
+        false
+    } else true
+    try {
+        return block(buffer)
+    } finally {
+        if (!mapped) {
+            // TODO: Optimize?
+            for (i in 0 until size) {
+                setByte(i, buffer.get(i))
+            }
+        }
     }
 }
 
-impl object DefaultFloatBufferProvider : FloatBufferProvider {
-    impl override fun allocate(capacity: Int): FloatBuffer =
-            java.nio.FloatBuffer.allocate(capacity)
-
-    impl override fun reallocate(buffer: FloatBuffer): FloatBuffer {
-        if (buffer.hasArray()) {
-            return buffer
+fun ByteViewRO.readAsByteBuffer(): ByteBuffer =
+        asByteBuffer() ?: ByteBuffer(size).also { buffer ->
+            for (i in 0 until size) {
+                buffer.put(i, getByte(i))
+            }
         }
-        return forceReallocate(buffer, this)
+
+fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
+    is ByteBufferView -> byteBuffer.slice().order(byteBuffer.order())
+    is ArrayByteView -> byteArray.asByteBuffer(offset, size).slice().also {
+        if (this is MemorySegmentE) {
+            it.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
+        }
     }
+    else -> null
 }
+
+fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
+        asByteBuffer()?.let {
+            if (!it.isDirect) {
+                val buffer = java.nio.ByteBuffer.allocateDirect(
+                        it.remaining()).order(NATIVE_ENDIAN)
+                buffer.put(it)
+                buffer.flip()
+                buffer
+            } else it
+        } ?: java.nio.ByteBuffer.allocateDirect(size)
+                .order(NATIVE_ENDIAN).also { buffer ->
+            for (i in 0 until size) {
+                buffer.put(getByte(i))
+            }
+            buffer.flip()
+        }

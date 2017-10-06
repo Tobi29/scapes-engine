@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.resource
 
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.asString
-import org.tobi29.scapes.engine.utils.io.process
 
 fun ResourceLoader.loadString(source: ReadSource) =
-        load { source.read { process(it, asString()) } }
+        load { source.read { it.asString() } }

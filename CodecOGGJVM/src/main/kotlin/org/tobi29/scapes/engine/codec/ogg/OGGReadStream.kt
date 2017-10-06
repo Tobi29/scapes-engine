@@ -25,10 +25,7 @@ import com.jcraft.jorbis.Info
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.FloatBuffer
-import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.mutableLazy
 
 class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
@@ -151,7 +148,7 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     private fun fillBuffer(): Boolean {
         val offset = syncState.buffer(BUFFER_SIZE)
         val read = channel.read(
-                ByteBuffer.wrap(syncState.data, offset, BUFFER_SIZE))
+                syncState.data.viewBE.slice(offset, BUFFER_SIZE))
         if (read == -1) {
             eos = true
         }
@@ -172,7 +169,7 @@ interface CodecInitializer {
 }
 
 interface CodecDecoder {
-    fun get(buffer: FloatBuffer): Boolean
+    fun get(buffer: MemoryViewStream<HeapViewFloatBE>): Boolean
 
     fun packet(page: Page,
                packet: Packet)

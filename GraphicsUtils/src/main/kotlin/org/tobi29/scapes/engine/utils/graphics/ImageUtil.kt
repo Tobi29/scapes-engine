@@ -18,9 +18,24 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
-import org.tobi29.scapes.engine.utils.io.DefaultByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ByteView
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.DefaultMemoryViewProvider
+import org.tobi29.scapes.engine.utils.io.view
+
+/**
+ * Copies from the receiver at the given coordinates into a new image
+ * @receiver The image to copy from
+ * @param x x-Coordinate in the source image
+ * @param y y-Coordinate in the source image
+ * @param width The width of the new image
+ * @param height The height of the new image
+ */
+inline fun Image.get(x: Int,
+                     y: Int,
+                     width: Int,
+                     height: Int) =
+        get(x, y, width, height, DefaultMemoryViewProvider)
 
 /**
  * Copies from the receiver at the given coordinates into a new image
@@ -35,8 +50,8 @@ inline fun Image.get(x: Int,
                      y: Int,
                      width: Int,
                      height: Int,
-                     bufferProvider: ByteBufferProvider = DefaultByteBufferProvider): Image {
-    val buffer = bufferProvider.allocate(width * height shl 2)
+                     bufferProvider: (Int) -> ByteView): Image {
+    val buffer = bufferProvider(width * height shl 2)
     get(x, y, width, height, buffer)
     return Image(width, height, buffer)
 }
@@ -51,7 +66,7 @@ inline fun Image.get(x: Int,
 inline fun Image.get(x: Int,
                      y: Int,
                      image: MutableImage) {
-    get(x, y, image.width, image.height, image.buffer)
+    get(x, y, image.width, image.height, image.view)
 }
 
 /**
@@ -67,8 +82,8 @@ inline fun Image.get(x: Int,
                      y: Int,
                      width: Int,
                      height: Int,
-                     buffer: ByteBuffer) {
-    copy(x, y, this.width, this.height, this.buffer, 0, 0, width, height,
+                     buffer: ByteView) {
+    copy(x, y, this.width, this.height, this.view, 0, 0, width, height,
             buffer, width, height)
 }
 
@@ -81,7 +96,7 @@ inline fun Image.get(x: Int,
 inline fun MutableImage.set(x: Int,
                             y: Int,
                             image: Image) {
-    set(x, y, image.width, image.height, image.buffer)
+    set(x, y, image.width, image.height, image.view)
 }
 
 /**
@@ -97,9 +112,9 @@ inline fun MutableImage.set(x: Int,
                             y: Int,
                             width: Int,
                             height: Int,
-                            buffer: ByteBuffer) {
+                            buffer: ByteViewRO) {
     copy(0, 0, width, height, buffer, x, y, this.width, this.height,
-            this.buffer, width, height)
+            this.view, width, height)
 }
 
 /**
@@ -124,12 +139,12 @@ fun copy(srcX: Int,
          srcY: Int,
          srcWidth: Int,
          srcHeight: Int,
-         srcBuffer: ByteBuffer,
+         srcBuffer: ByteViewRO,
          destX: Int,
          destY: Int,
          destWidth: Int,
          destHeight: Int,
-         destBuffer: ByteBuffer,
+         destBuffer: ByteView,
          width: Int,
          height: Int) {
     if (srcX < 0) {
@@ -160,72 +175,46 @@ fun copy(srcX: Int,
         throw IllegalArgumentException(
                 "destX and width are out of bounds : $destY + $height")
     }
-    if (srcWidth * srcHeight shl 2 != srcBuffer.remaining()) {
+    if (srcWidth * srcHeight shl 2 != srcBuffer.size) {
         throw IllegalArgumentException("Source buffer not correctly sized")
     }
-    if (destWidth * destHeight shl 2 != destBuffer.remaining()) {
+    if (destWidth * destHeight shl 2 != destBuffer.size) {
         throw IllegalArgumentException("Destination buffer not correctly sized")
     }
 
-    val oldSrcLimit = srcBuffer.limit()
-    val oldSrcPosition = srcBuffer.position()
-    val oldDestPosition = destBuffer.position()
-
     val srcScanSize = srcWidth shl 2
-    val srcScanOffset = (srcX shl 2) + oldSrcPosition
+    val srcScanOffset = srcX shl 2
     val destScanSize = destWidth shl 2
-    val destScanOffset = (destX shl 2) + oldDestPosition
+    val destScanOffset = destX shl 2
     val scanSize = width shl 2
     for (row in 0 until height) {
         val srcPos = (srcY + row) * srcScanSize + srcScanOffset
-        srcBuffer.limit(srcPos + scanSize)
-        srcBuffer.position(srcPos)
-        destBuffer.position((destY + row) * destScanSize + destScanOffset)
-        destBuffer.put(srcBuffer)
+        val destPos = (destY + row) * destScanSize + destScanOffset
+        srcBuffer.getBytes(srcPos, destBuffer.slice(destPos, scanSize))
     }
-
-    srcBuffer.limit(oldSrcLimit)
-    srcBuffer.position(oldSrcPosition)
-    destBuffer.position(oldDestPosition)
 }
 
 inline fun MutableImage.flipVertical() {
-    flipVertical(width, height, buffer)
+    flipVertical(width, height, view)
 }
 
 fun flipVertical(width: Int,
                  height: Int,
-                 buffer: ByteBuffer) {
+                 buffer: ByteView) {
     val scanline = width shl 2
     val limit = scanline * height
-    if (limit != buffer.remaining()) {
+    if (limit != buffer.size) {
         throw IllegalArgumentException("Buffer not correctly sized")
     }
 
-    val oldLimit = buffer.limit()
-    val oldPosition = buffer.position()
-
-    val copy = buffer.asReadOnlyBuffer()
-    val swap = ByteBuffer(scanline)
-    val offset = oldPosition
-    val offsetInv = offset + limit - scanline
+    val swap = ByteArray(scanline).view
+    val offsetInv = limit - scanline
     for (yy in 0 until (height shr 1)) {
-        buffer.limit((yy + 1) * scanline)
-        buffer.position(offset + yy * scanline)
-        swap.put(buffer)
-        buffer.position(offset + yy * scanline)
-        swap.rewind()
-        copy.limit(offsetInv - (yy - 1) * scanline)
-        copy.position(offsetInv - yy * scanline)
-        buffer.put(copy)
-        buffer.limit(limit)
-        buffer.position(offsetInv - yy * scanline)
-        buffer.put(swap)
-        swap.rewind()
+        val yyy = yy * scanline
+        buffer.getBytes(yyy, swap)
+        buffer.getBytes(offsetInv - yyy, buffer.slice(yyy, scanline))
+        buffer.setBytes(offsetInv - yyy, swap)
     }
-
-    buffer.limit(oldLimit)
-    buffer.position(oldPosition)
 }
 
 /**
@@ -235,7 +224,7 @@ fun flipVertical(width: Int,
  * @param image The image to take size and buffer from
  */
 inline fun Image(image: MutableImage) = Image(image.width, image.height,
-        image.buffer)
+        image.view)
 
 /**
  * Creates a new image from a mutable image
@@ -250,7 +239,9 @@ inline fun MutableImage.toImage() = Image(this)
  * @param image The image to take size and buffer from
  */
 inline fun MutableImage(image: Image) = MutableImage(image.width, image.height,
-        image.buffer)
+        image.view.run {
+            ByteArray(size).view.also { getBytes(0, it) }
+        })
 
 /**
  * Creates a new mutable image from an image copying its buffer

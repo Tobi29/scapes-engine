@@ -18,12 +18,10 @@ package org.tobi29.scapes.engine.server
 import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.AtomicInteger
-import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.*
-import java.nio.channels.ByteChannel
 import java.security.cert.X509Certificate
+import java.util.*
 import javax.net.ssl.*
 import kotlin.coroutines.experimental.CoroutineContext
 
@@ -42,9 +40,9 @@ class SSLChannel(address: RemoteAddress,
     val inputRate get() = inRate.getAndSet(0)
 
     // TODO: @Throws(IOException::class)
-    override fun read(buffer: ByteBuffer): Int {
-        val pos = buffer.position()
-        while (buffer.hasRemaining()) {
+    override fun read(buffer: ByteView): Int {
+        var currentBuffer = buffer
+        while (currentBuffer.size > 0) {
             var read = dataSSL()
             if (read == null) {
                 if (!process()) {
@@ -59,46 +57,44 @@ class SSLChannel(address: RemoteAddress,
                     }
                 }
             }
-            val len = read.remaining().coerceAtMost(buffer.remaining())
-            val limit = read.limit()
-            read.limit(read.position() + len)
-            buffer.put(read)
-            read.limit(limit)
+            val len = read.remaining().coerceAtMost(currentBuffer.size)
+            read.get(currentBuffer.slice(0, len))
+            currentBuffer = currentBuffer.slice(len)
         }
-        val len = buffer.position() - pos
-        return if (len > 0 || isOpen) len else -1
+        val len = buffer.size - currentBuffer.size
+        return if (len > 0 || isOpen()) len else -1
     }
 
     // TODO: @Throws(IOException::class)
-    override fun write(buffer: ByteBuffer): Int {
-        val pos = buffer.position()
-        while (buffer.hasRemaining() && process()) {
-            writeSSL(buffer)
+    override fun write(buffer: ByteViewRO): Int {
+        var currentBuffer = buffer
+        while (currentBuffer.size > 0 && process()) {
+            val wrote = writeSSL(currentBuffer)
+            if (wrote < 0) {
+                if (currentBuffer.size == buffer.size) return -1
+                break
+            }
+            currentBuffer = currentBuffer.slice(wrote)
         }
-        val len = buffer.position() - pos
-        return if (len > 0 || isOpen) len else -1
+        return buffer.size - currentBuffer.size
     }
 
     // TODO: @Throws(IOException::class)
     override fun close() {
     }
 
-    override fun fill(buffer: ByteBuffer): Boolean {
+    override fun fill(buffer: ByteView): Int {
         val read = channelRead.read(buffer)
-        if (read < 0) {
-            return false
-        }
+        if (read < 0) return read
         inRate.getAndAdd(read)
-        return true
+        return read
     }
 
-    override fun flush(buffer: ByteBuffer): Boolean {
-        val write = channelWrite.write(buffer)
-        if (write < 0) {
-            return false
-        }
-        outRate.getAndAdd(write)
-        return true
+    override fun flush(buffer: ByteView): Int {
+        val wrote = channelWrite.write(buffer)
+        if (wrote < 0) return wrote
+        outRate.getAndAdd(wrote)
+        return wrote
     }
 }
 
@@ -108,11 +104,9 @@ abstract class SSLLayer(private val address: RemoteAddress,
                         private val engine: SSLEngine) {
     private val taskCounter = AtomicInteger()
     private val verified = AtomicBoolean()
-    private val readBuffer = ByteBufferStream(growth = { it + 16384 })
-    private val readData = ByteBufferStream(
-            growth = { it + 16384 }).apply { buffer().limit(0) }
-    private val writeBuffer = ByteBufferStream(
-            growth = { it + 16384 }).apply { buffer().limit(0) }
+    private val readBuffer = MemoryViewStreamDefault()
+    private val readData = MemoryViewStreamDefault().apply { limit(0) }
+    private val writeBuffer = MemoryViewStreamDefault().apply { limit(0) }
     private var verifyException: IOException? = null
     private var close = false
     private var state = State.HANDSHAKE
@@ -132,11 +126,13 @@ abstract class SSLLayer(private val address: RemoteAddress,
                 return false
             }
             if (writeBuffer.hasRemaining()) {
-                if (!flush(writeBuffer.buffer())) {
+                val wrote = flush(writeBuffer.bufferSlice())
+                if (wrote < 0) {
                     engine.closeOutbound()
                     state = State.CLOSED
                     return false
                 }
+                writeBuffer.position(writeBuffer.position() + wrote)
                 if (writeBuffer.hasRemaining()) {
                     return false
                 }
@@ -186,33 +182,41 @@ abstract class SSLLayer(private val address: RemoteAddress,
         }
     }
 
-    protected fun dataSSL(): ByteBuffer? {
+    protected fun dataSSL(): RandomReadableByteStream? {
         if (readData.hasRemaining()) {
-            return readData.buffer()
+            return readData
         }
         return null
     }
 
     protected fun readSSL() {
-        readData.buffer().clear()
-        if (!fill(readBuffer.buffer())) {
+        readData.reset()
+        readBuffer.limit(readBuffer.position() + 8192)
+        val read = fill(readBuffer.bufferSlice())
+        if (read < 0) {
             engine.closeInbound()
             state = State.CLOSED
             return
         }
-        readBuffer.buffer().flip()
+        readBuffer.skip(read)
+        readBuffer.flip()
         loop@ do {
-            val result = engine.unwrap(readBuffer.buffer(),
-                    readData.buffer())
+            val bufferRead = readBuffer.bufferSlice().readAsByteBuffer()
+            val result = readData.bufferSlice().mutateAsByteBuffer { bufferData ->
+                engine.unwrap(bufferRead, bufferData).also {
+                    readBuffer.skip(bufferRead.position())
+                    readData.skip(bufferData.position())
+                }
+            }
             when (result.status) {
                 SSLEngineResult.Status.OK -> {
-                    readBuffer.buffer().compact()
-                    readData.buffer().flip()
+                    readBuffer.compact()
+                    readData.flip()
                     return
                 }
                 SSLEngineResult.Status.BUFFER_OVERFLOW -> readData.grow()
                 SSLEngineResult.Status.BUFFER_UNDERFLOW -> {
-                    readBuffer.buffer().compact()
+                    readBuffer.compact()
                     if (!readBuffer.hasRemaining()) {
                         readBuffer.grow()
                     }
@@ -221,32 +225,41 @@ abstract class SSLLayer(private val address: RemoteAddress,
                 SSLEngineResult.Status.CLOSED -> {
                     engine.closeInbound()
                     state = State.CLOSING
-                    readBuffer.buffer().compact()
+                    readBuffer.compact()
                     break@loop
                 }
                 else -> throw IllegalStateException(
                         "Invalid SSL status: " + result.status)
             }
         } while (readBuffer.hasRemaining())
-        readData.buffer().limit(0)
+        readData.limit(0)
         return
     }
 
-    protected fun writeSSL(buffer: ByteBuffer? = null) {
+    protected fun writeSSL(buffer: ByteViewRO? = null): Int {
         if (writeBuffer.hasRemaining()) {
-            return
+            return 0
         }
         while (true) {
-            writeBuffer.buffer().clear()
-            val result = if (buffer == null) {
-                engine.wrap(emptyArray(), writeBuffer.buffer())
-            } else {
-                engine.wrap(buffer, writeBuffer.buffer())
+            writeBuffer.reset()
+            var wrote = 0
+            val result = writeBuffer.bufferSlice().mutateAsByteBuffer { bufferWrite ->
+                if (buffer == null) {
+                    engine.wrap(emptyArray(), bufferWrite).also {
+                        writeBuffer.skip(bufferWrite.position())
+                    }
+                } else {
+                    val byteBuffer = buffer.readAsByteBuffer()
+                    engine.wrap(byteBuffer, bufferWrite).also {
+                        writeBuffer.skip(bufferWrite.position())
+                        wrote = byteBuffer.position()
+                    }
+                }
             }
             when (result.status) {
                 SSLEngineResult.Status.OK -> {
-                    writeBuffer.buffer().flip()
-                    return
+                    writeBuffer.flip()
+                    return wrote
                 }
                 SSLEngineResult.Status.BUFFER_OVERFLOW -> writeBuffer.grow()
                 SSLEngineResult.Status.BUFFER_UNDERFLOW -> throw SSLException(
@@ -254,8 +267,8 @@ abstract class SSLLayer(private val address: RemoteAddress,
                 SSLEngineResult.Status.CLOSED -> {
                     engine.closeOutbound()
                     state = State.CLOSING
-                    writeBuffer.buffer().flip()
-                    return
+                    writeBuffer.flip()
+                    return -1
                 }
                 else -> throw IllegalStateException(
                         "Invalid SSL status: " + result.status)
@@ -263,9 +276,9 @@ abstract class SSLLayer(private val address: RemoteAddress,
         }
     }
 
-    protected abstract fun fill(buffer: ByteBuffer): Boolean
+    protected abstract fun fill(buffer: ByteView): Int
 
-    protected abstract fun flush(buffer: ByteBuffer): Boolean
+    protected abstract fun flush(buffer: ByteView): Int
 
     private fun handshake(): Boolean {
         try {

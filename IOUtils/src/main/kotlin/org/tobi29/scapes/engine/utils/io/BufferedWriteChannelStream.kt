@@ -17,90 +17,85 @@
 package org.tobi29.scapes.engine.utils.io
 
 class BufferedWriteChannelStream(private val channel: WritableByteChannel) : WritableByteStream {
-    private val buffer = ByteBuffer(8192)
+    private val mbuffer = MemoryViewStreamDefault().apply { limit(8192) }
 
     // TODO: @Throws(IOException::class)
-    override fun put(buffer: ByteBuffer,
-                     len: Int): WritableByteStream {
-        val limit = buffer.limit()
-        buffer.limit(buffer.position() + len)
-        if (ensure(len)) {
-            this.buffer.put(buffer)
+    override fun put(buffer: ByteViewRO) = apply {
+        if (ensure(buffer.size)) {
+            mbuffer.put(buffer)
         } else {
             flush()
             write(buffer)
         }
-        buffer.limit(limit)
-        return this
     }
 
     // TODO: @Throws(IOException::class)
     override fun put(b: Byte): WritableByteStream {
         ensure(1)
-        buffer.put(b)
+        mbuffer.put(b)
         return this
     }
 
     // TODO: @Throws(IOException::class)
     override fun putShort(value: Short): WritableByteStream {
         ensure(2)
-        buffer.putShort(value)
+        mbuffer.putShort(value)
         return this
     }
 
     // TODO: @Throws(IOException::class)
     override fun putInt(value: Int): WritableByteStream {
         ensure(4)
-        buffer.putInt(value)
+        mbuffer.putInt(value)
         return this
     }
 
     // TODO: @Throws(IOException::class)
     override fun putLong(value: Long): WritableByteStream {
         ensure(8)
-        buffer.putLong(value)
+        mbuffer.putLong(value)
         return this
     }
 
     // TODO: @Throws(IOException::class)
     override fun putFloat(value: Float): WritableByteStream {
         ensure(4)
-        buffer.putFloat(value)
+        mbuffer.putFloat(value)
         return this
     }
 
     // TODO: @Throws(IOException::class)
     override fun putDouble(value: Double): WritableByteStream {
         ensure(8)
-        buffer.putDouble(value)
+        mbuffer.putDouble(value)
         return this
     }
 
     // TODO: @Throws(IOException::class)
     fun flush() {
-        buffer.flip()
-        write(buffer)
-        buffer.clear()
+        mbuffer.flip()
+        write(mbuffer.bufferSlice())
+        mbuffer.reset()
     }
 
     // TODO: @Throws(IOException::class)
     private fun ensure(len: Int): Boolean {
-        if (len > buffer.capacity()) {
+        if (len > mbuffer.limit()) {
             return false
         }
-        if (buffer.remaining() < len) {
+        if (mbuffer.remaining() < len) {
             flush()
         }
         return true
     }
 
     // TODO: @Throws(IOException::class)
-    private fun write(buffer: ByteBuffer) {
-        while (buffer.hasRemaining()) {
-            val length = channel.write(buffer)
-            if (length == -1) {
-                throw IOException("End of stream")
-            }
+    private fun write(buffer: ByteViewRO) {
+        var currentBuffer = buffer
+        while (currentBuffer.size > 0) {
+            val wrote = channel.write(currentBuffer)
+            if (wrote < 0) throw IOException("End of stream")
+            currentBuffer = currentBuffer.slice(wrote)
         }
     }
 }

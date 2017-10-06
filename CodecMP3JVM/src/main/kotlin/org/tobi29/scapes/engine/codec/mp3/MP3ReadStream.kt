@@ -20,14 +20,12 @@ import javazoom.jl.decoder.*
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.Channels
-import org.tobi29.scapes.engine.utils.io.FloatBuffer
-import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
-import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.io.ByteViewBE
+import org.tobi29.scapes.engine.utils.io.*
 
 class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    private val bitstream = Bitstream(Channels.newInputStream(channel))
+    private val bitstream = Bitstream(
+            Channels.newInputStream(channel.toJavaChannel()))
     private val decoder = Decoder()
     private val output = OutputBuffer()
     private var channels = 0
@@ -35,6 +33,7 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     private var rate = 0
     private var outputRate = 0
     private var eos = false
+    private var outputPosition = 0
     override val metaData = AudioMetaData(null, null)
 
     private fun getSampleRate(header: Header): Int {
@@ -103,7 +102,7 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         }
     }
 
-    private fun decodeFrame(buffer: FloatBuffer): Boolean {
+    private fun decodeFrame(buffer: MemoryViewStream<ByteViewBE>): Boolean {
         if (outputRate != rate) {
             // TODO: Need to git an mp3 file that actually does this to test
             return false
@@ -111,17 +110,15 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         if (!checkFrame()) {
             return false
         }
-        val len = min(buffer.remaining(), output.buffer.remaining())
-        val limit = output.buffer.limit()
-        output.buffer.limit(output.buffer.position() + len)
-        buffer.put(output.buffer)
-        output.buffer.limit(limit)
-        checkFrame()
+        val len = buffer.remaining().coerceAtMost(
+                output.size - outputPosition)
+        buffer.put(output.buffer.slice(outputPosition, len))
+        outputPosition += len
         return true
     }
 
     private fun checkFrame(): Boolean {
-        if (!output.buffer.hasRemaining()) {
+        if (outputPosition >= output.size) {
             val header = readFrame()
             if (header == null) {
                 eos = true
@@ -142,10 +139,9 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 
     private fun decodeFrame(header: Header) {
         try {
+            outputPosition = 0
             rate = getSampleRate(header)
-            output.buffer.clear()
             decoder.decodeFrame(header, bitstream)
-            output.buffer.limit(output.index[0])
             bitstream.closeFrame()
         } catch (e: DecoderException) {
             throw IOException(e)
@@ -153,8 +149,12 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     }
 
     private class OutputBuffer : Obuffer() {
-        val buffer = FloatBuffer(OBUFFERSIZE * MAXCHANNELS)
+        val buffer = (OBUFFERSIZE * MAXCHANNELS).let {
+            HeapViewFloatBE(FloatArray(it), 0, it shl 2)
+        }
         val index = IntArray(Obuffer.MAXCHANNELS)
+        inline val size get() = index[0]
+        private val increment = index.size shl 2
 
         init {
             clear_buffer()
@@ -162,15 +162,15 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 
         override fun append(channel: Int,
                             value: Short) {
-            buffer.put(index[channel], value.toFloat() / Short.MAX_VALUE)
-            index[channel] += index.size
+            buffer.setFloat(index[channel], value.toFloat() / Short.MAX_VALUE)
+            index[channel] += increment
         }
 
         override fun appendSamples(channel: Int,
                                    f: FloatArray) {
             for (sample in f) {
-                buffer.put(index[channel], sample / Short.MAX_VALUE)
-                index[channel] += index.size
+                buffer.setFloat(index[channel], sample / Short.MAX_VALUE)
+                index[channel] += increment
             }
         }
 
@@ -182,7 +182,7 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 
         override fun clear_buffer() {
             for (i in index.indices) {
-                index[i] = i
+                index[i] = i shl 2
             }
         }
 

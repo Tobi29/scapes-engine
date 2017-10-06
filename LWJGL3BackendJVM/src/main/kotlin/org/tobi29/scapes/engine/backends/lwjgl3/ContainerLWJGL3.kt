@@ -30,9 +30,10 @@ import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
-import org.tobi29.scapes.engine.utils.io.NativeByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ByteViewE
+import org.tobi29.scapes.engine.utils.io.ByteBufferNative
 import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.io.viewE
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
@@ -43,7 +44,7 @@ import org.tobi29.scapes.engine.utils.task.offer
 abstract class ContainerLWJGL3(
         override final val engine: ScapesEngine,
         protected val useGLES: Boolean = false
-) : Container, ByteBufferProvider by NativeByteBufferProvider {
+) : Container {
     protected val tasks = TaskChannel<() -> Unit>()
     protected val mainThread: Thread = Thread.currentThread()
     override final val gos = if (useGLES) GOSLWJGL3GLES(this)
@@ -67,6 +68,9 @@ abstract class ContainerLWJGL3(
             sleepThread.start()
         }
     }
+
+    override fun allocateNative(size: Int): ByteViewE =
+            ByteBufferNative(size).viewE
 
     override fun loadFont(asset: ReadSource): Font? {
         return STBFont.fromFont(this, asset)

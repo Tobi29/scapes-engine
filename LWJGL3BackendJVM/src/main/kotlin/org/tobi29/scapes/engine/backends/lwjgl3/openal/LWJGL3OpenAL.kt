@@ -21,12 +21,14 @@ import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.SoundException
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.cos
 import org.tobi29.scapes.engine.utils.math.sin
 import org.tobi29.scapes.engine.utils.math.toRad
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import java.nio.ByteBuffer
 import java.nio.IntBuffer
 
 class LWJGL3OpenAL : OpenAL {
@@ -192,13 +194,13 @@ class LWJGL3OpenAL : OpenAL {
 
     override fun storeBuffer(id: Int,
                              format: AudioFormat,
-                             buffer: ByteBuffer,
+                             buffer: ByteViewRO,
                              rate: Int) {
         when (format) {
             AudioFormat.MONO -> AL10.alBufferData(id, AL10.AL_FORMAT_MONO16,
-                    buffer, rate)
+                    buffer.readAsNativeByteBuffer(), rate)
             AudioFormat.STEREO -> AL10.alBufferData(id, AL10.AL_FORMAT_STEREO16,
-                    buffer, rate)
+                    buffer.readAsNativeByteBuffer(), rate)
         }
     }
 

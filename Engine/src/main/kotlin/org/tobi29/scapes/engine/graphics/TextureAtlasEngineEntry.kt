@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.graphics.TextureAtlasEntry
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
-open class TextureAtlasEngineEntry(buffer: ByteBuffer?,
+open class TextureAtlasEngineEntry(buffer: ByteViewRO?,
                                    width: Int,
                                    height: Int,
                                    protected val texture: () -> Texture) : TextureAtlasEntry(

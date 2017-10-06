@@ -22,14 +22,15 @@ import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.assert
 
-internal class TextureFBODepth(gos: GraphicsObjectSupplier,
-                               width: Int,
-                               height: Int,
-                               minFilter: TextureFilter,
-                               magFilter: TextureFilter,
-                               wrapS: TextureWrap,
-                               wrapT: TextureWrap) : TextureFBO(gos, width,
-        height, null, 0, minFilter, magFilter, wrapS, wrapT) {
+internal class TextureFBODepth(
+        gos: GraphicsObjectSupplier,
+        width: Int,
+        height: Int,
+        minFilter: TextureFilter,
+        magFilter: TextureFilter,
+        wrapS: TextureWrap,
+        wrapT: TextureWrap
+) : TextureFBO(gos, width, height, 0, minFilter, magFilter, wrapS, wrapT) {
 
     fun attach(gl: GL) {
         store(gl)

@@ -27,14 +27,16 @@ data class ClasspathPath(private val classLoader: ClassLoader,
         }
     }
 
-    override val parent get() = UnixPathEnvironment.run {
-        path.parent?.let { ClasspathPath(classLoader, it) }
-    }
+    override val parent
+        get() = UnixPathEnvironment.run {
+            path.parent?.let { ClasspathPath(classLoader, it) }
+        }
 
     override fun exists() = classLoader.getResource(path) != null
 
     override fun channel(): ReadableByteChannel {
-        return Channels.newChannel(classLoader.getResourceAsStream(path))
+        return Channels.newChannel(
+                classLoader.getResourceAsStream(path)).toChannel()
     }
 
     override fun mimeType(): String {

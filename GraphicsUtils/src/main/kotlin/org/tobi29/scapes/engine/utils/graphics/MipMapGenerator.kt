@@ -15,37 +15,35 @@
  */
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
+import org.tobi29.scapes.engine.utils.io.ByteView
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.math.max
 
 /**
- * Creates an array of [ByteBuffer] containing mipmap
+ * Creates an array of [ByteView]s containing mipmap
  * textures from the given source texture
- * @param buffer   [ByteBuffer] containing texture data in RGBA format
+ * @param buffer View containing texture data in RGBA format
  * @param bufferProvider Provider for buffer allocations
- * @param width    Width of source texture in pixels
- * @param height   Height of source texture in pixels
- * @param mipmaps  Amount of mipmap levels, resulting array will be n + 1 in size
- * @param alpha    Whether or not to allow transparent borders or harsh ones
- * @return An array of [ByteBuffer] containing the mipmap textures
+ * @param width Width of source texture in pixels
+ * @param height Height of source texture in pixels
+ * @param mipmaps Amount of mipmap levels, resulting array will be n + 1 in size
+ * @param alpha Whether or not to allow transparent borders or harsh ones
+ * @return An array of [ByteView]s containing the mipmap textures
  */
-fun generateMipMapsNullable(buffer: ByteBuffer?,
-                            bufferProvider: ByteBufferProvider,
-                            width: Int,
-                            height: Int,
-                            mipmaps: Int,
-                            alpha: Boolean): Array<ByteBuffer?> {
-    val buffers = arrayOfNulls<ByteBuffer>(mipmaps + 1)
+inline fun <reified B : ByteView> generateMipMapsNullable(
+        buffer: ByteViewRO?,
+        noinline bufferProvider: (Int) -> B,
+        width: Int,
+        height: Int,
+        mipmaps: Int,
+        alpha: Boolean
+): Array<B?> {
+    val buffers = arrayOfNulls<B>(mipmaps + 1)
     if (buffer == null) {
         return buffers
     }
     if (mipmaps == 0) {
-        buffers[0] = bufferProvider.allocate(width * height shl 2).apply {
-            put(buffer)
-            buffer.flip()
-            flip()
-        }
+        buffers[0] = bufferProvider(buffer.size).apply { setBytes(0, buffer) }
     } else {
         buffers[mipmaps] = generateMipMap(buffer, bufferProvider, width, height,
                 mipmaps, alpha, null, 1)
@@ -58,62 +56,58 @@ fun generateMipMapsNullable(buffer: ByteBuffer?,
 }
 
 /**
- * Creates an array of [ByteBuffer] containing mipmap
+ * Creates an array of [ByteView] containing mipmap
  * textures from the given source texture
- * @param buffer   [ByteBuffer] containing texture data in RGBA format
+ * @param buffer View containing texture data in RGBA format
  * @param bufferProvider Provider for buffer allocations
- * @param width    Width of source texture in pixels
- * @param height   Height of source texture in pixels
- * @param mipmaps  Amount of mipmap levels, resulting array will be n + 1 in size
- * @param alpha    Whether or not to allow transparent borders or harsh ones
- * @return An array of [ByteBuffer] containing the mipmap textures
+ * @param width Width of source texture in pixels
+ * @param height Height of source texture in pixels
+ * @param mipmaps Amount of mipmap levels, resulting array will be n + 1 in size
+ * @param alpha Whether or not to allow transparent borders or harsh ones
+ * @return An array of [ByteView] containing the mipmap textures
  */
-fun generateMipMaps(buffer: ByteBuffer,
-                    bufferProvider: ByteBufferProvider,
-                    width: Int,
-                    height: Int,
-                    mipmaps: Int,
-                    alpha: Boolean): Array<ByteBuffer> {
+inline fun <reified B : ByteView> generateMipMaps(
+        buffer: ByteViewRO,
+        noinline bufferProvider: (Int) -> B,
+        width: Int,
+        height: Int,
+        mipmaps: Int,
+        alpha: Boolean
+): Array<B> {
     @Suppress("UNCHECKED_CAST")
     return generateMipMapsNullable(buffer, bufferProvider, width, height,
-            mipmaps, alpha) as Array<ByteBuffer>
+            mipmaps, alpha) as Array<B>
 }
 
 /**
  * Creates a mipmap of given level from the given texture
- * @param buffer         [ByteBuffer] containing texture data in RGBA format
+ * @param buffer View containing texture data in RGBA format
  * @param bufferProvider Provider for buffer allocations
- * @param width          Width of source texture in pixels
- * @param height         Height of source texture in pixels
- * @param scaleBits      Scale for the mipmap texture given as bit-shift value
- * @param lower          Optional [ByteBuffer] to fetch data from when the source has invisible pixels
+ * @param width Width of source texture in pixels
+ * @param height Height of source texture in pixels
+ * @param scaleBits Scale for the mipmap texture given as bit-shift value
+ * @param lower Optional [ByteView] to fetch data from when the source has invisible pixels
  * @param lowerScaleBits Scale of the lower texture in comparison to the mipmap texture as bit-shift value
- * @param alpha          Whether or not to allow transparent borders or harsh ones
- * @return A [ByteBuffer] containing the mipmap texture
+ * @param alpha Whether or not to allow transparent borders or harsh ones
+ * @return A [ByteView] containing the mipmap texture
  */
-fun generateMipMap(buffer: ByteBuffer,
-                   bufferProvider: ByteBufferProvider,
-                   width: Int,
-                   height: Int,
-                   scaleBits: Int,
-                   alpha: Boolean,
-                   lower: ByteBuffer? = null,
-                   lowerScaleBits: Int = 0): ByteBuffer {
-    val offset = buffer.position()
-    val offsetLower: Int
-    if (lower == null) {
-        offsetLower = 0
-    } else {
-        offsetLower = lower.position()
-    }
+fun <B : ByteView> generateMipMap(buffer: ByteViewRO,
+                                                                    bufferProvider: (Int) -> B,
+                                                                    width: Int,
+                                                                    height: Int,
+                                                                    scaleBits: Int,
+                                                                    alpha: Boolean,
+                                                                    lower: ByteView? = null,
+                                                                    lowerScaleBits: Int = 0): B {
     val scale = 1 shl scaleBits
     val widthScaled = width shr scaleBits
     val heightScaled = height shr scaleBits
-    val mipmap = bufferProvider.allocate(
+    val mipmap = bufferProvider(
             max(widthScaled, 1) * max(heightScaled, 1) shl 2)
     val samples = 1 shl (scaleBits shl 1)
     val minVisible = samples shr 1
     val lowerWidth = widthScaled shr lowerScaleBits
+    var positionWrite = 0
     for (y in 0 until heightScaled) {
         val yy = y shl scaleBits
         for (x in 0 until widthScaled) {
@@ -125,12 +119,12 @@ fun generateMipMap(buffer: ByteBuffer,
             var visible = 0
             var div = 0
             for (yyy in 0 until scale) {
-                var i = ((yy + yyy) * width + xx shl 2) + offset
+                var i = (yy + yyy) * width + xx shl 2
                 for (xxx in 0 until scale) {
-                    val sampleR = buffer.get(i++).toInt() and 0xFF
-                    val sampleG = buffer.get(i++).toInt() and 0xFF
-                    val sampleB = buffer.get(i++).toInt() and 0xFF
-                    val sampleA = buffer.get(i++).toInt() and 0xFF
+                    val sampleR = buffer.getByte(i++).toInt() and 0xFF
+                    val sampleG = buffer.getByte(i++).toInt() and 0xFF
+                    val sampleB = buffer.getByte(i++).toInt() and 0xFF
+                    val sampleA = buffer.getByte(i++).toInt() and 0xFF
                     if (sampleA != 0) {
                         r += sampleR
                         g += sampleG
@@ -156,19 +150,18 @@ fun generateMipMap(buffer: ByteBuffer,
                 }
             }
             if (a == 0 && lower != null) {
-                var i = ((y shr lowerScaleBits) * lowerWidth + (x shr lowerScaleBits) shl 2) + offsetLower
-                mipmap.put(lower.get(i++))
-                mipmap.put(lower.get(i++))
-                mipmap.put(lower.get(i))
-                mipmap.put(0.toByte())
+                var i = (y shr lowerScaleBits) * lowerWidth + (x shr lowerScaleBits) shl 2
+                mipmap.setByte(positionWrite++, lower.getByte(i++))
+                mipmap.setByte(positionWrite++, lower.getByte(i++))
+                mipmap.setByte(positionWrite++, lower.getByte(i))
+                mipmap.setByte(positionWrite++, 0)
             } else {
-                mipmap.put(r.toByte())
-                mipmap.put(g.toByte())
-                mipmap.put(b.toByte())
-                mipmap.put(a.toByte())
+                mipmap.setByte(positionWrite++, r.toByte())
+                mipmap.setByte(positionWrite++, g.toByte())
+                mipmap.setByte(positionWrite++, b.toByte())
+                mipmap.setByte(positionWrite++, a.toByte())
             }
         }
     }
-    mipmap.rewind()
     return mipmap
 }

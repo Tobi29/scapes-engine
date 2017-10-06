@@ -22,26 +22,22 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
         return stream.available().coerceAtMost(remaining)
     }
 
-    override fun skip(length: Int): ReadableByteStream = apply {
+    override fun skip(length: Int) = apply {
         check(length)
         stream.skip(length)
     }
 
-    override fun get(buffer: ByteBuffer,
-                     len: Int): ReadableByteStream {
-        check(len)
-        return stream.get(buffer, len)
+    override fun get(buffer: ByteView) = apply {
+        check(buffer.size)
+        stream.get(buffer)
     }
 
-    override fun getSome(buffer: ByteBuffer,
-                         len: Int): Boolean {
-        if (remaining <= 0) {
-            return false
-        }
-        val len = len.coerceAtMost(remaining)
-        remaining -= len
-        return stream.getSome(buffer, len)
-    }
+    override fun getSome(buffer: ByteView) =
+            buffer.size.coerceAtMost(remaining).let {
+                stream.getSome(buffer.slice(size = it)).also {
+                    remaining -= it
+                }
+            }
 
     override fun get(): Byte {
         check(1)

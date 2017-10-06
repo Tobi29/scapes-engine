@@ -16,14 +16,10 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferProvider
-
 interface GlyphRenderer {
     fun pageInfo(id: Int): GlyphRenderer.GlyphPage
 
-    fun page(id: Int,
-             bufferProvider: ByteBufferProvider): ByteBuffer
+    fun page(id: Int): ByteArray
 
     fun pageID(character: Char): Int
 

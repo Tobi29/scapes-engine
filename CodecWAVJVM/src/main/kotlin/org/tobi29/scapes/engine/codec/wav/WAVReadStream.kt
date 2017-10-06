@@ -20,10 +20,12 @@ package org.tobi29.scapes.engine.codec.wav
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
+import org.tobi29.scapes.engine.utils.io.ByteViewLE
 import org.tobi29.scapes.engine.utils.io.*
 
 class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
-    private val buffer = DefaultLEByteBufferProvider.allocate(BUFFER_SIZE)
+    private val buffer = MemoryViewStream(
+            ByteArray(BUFFER_SIZE).viewLE).apply { limit(12) }
     private var channels = 0
     private var rate = 0
     private var align = 0
@@ -37,7 +39,6 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     override val metaData = AudioMetaData(null, null)
 
     init {
-        buffer.clear().limit(12)
         state = { this.init1() }
     }
 
@@ -59,7 +60,7 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         if (!buffer.hasRemaining()) {
             buffer.flip()
             val header = chunk(buffer)
-            val riffTypeID = buffer.int.toLong()
+            val riffTypeID = buffer.getInt().toLong()
             if (header.id != RIFF_CHUNK_ID) {
                 throw IOException(
                         "Invalid Wav Header data, incorrect riff chunk ID")
@@ -68,7 +69,8 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 throw IOException(
                         "Invalid Wav Header data, incorrect riff type ID")
             }
-            buffer.clear().limit(8)
+            buffer.reset()
+            buffer.limit(8)
             state = { this.init2() }
             return true
         }
@@ -84,14 +86,16 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             val chunk = chunk(buffer)
             when (chunk.id) {
                 FMT_CHUNK_ID -> {
-                    buffer.clear().limit(16)
+                    buffer.reset()
+                    buffer.limit(16)
                     state = { init3(chunk) }
                     return true
                 }
                 else -> {
                     state = {
                         skip(chunk.bytes.toLong(), {
-                            buffer.clear().limit(8);
+                            buffer.reset()
+                            buffer.limit(8);
                             { this.init2() }
                         })
                     }
@@ -108,18 +112,18 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         }
         if (!buffer.hasRemaining()) {
             buffer.flip()
-            val formatCode = buffer.short.toInt()
+            val formatCode = buffer.getShort().toInt()
             format = when (formatCode) {
                 1 -> Format.PCM
                 3 -> Format.IEEE
                 else -> throw IOException(
                         "Format Code $formatCode not supported")
             }
-            channels = buffer.short.toInt()
-            rate = buffer.int
+            channels = buffer.getShort().toInt()
+            rate = buffer.getInt()
             buffer.position(12)
-            align = buffer.short.toInt()
-            bits = buffer.short.toInt()
+            align = buffer.getShort().toInt()
+            bits = buffer.getShort().toInt()
             val bytes = bits + 7 shr 3
             if (bytes * channels != align) {
                 throw IOException(
@@ -136,7 +140,8 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             sanityCheck()
             state = {
                 skip((chunk.bytes - 16).toLong(), {
-                    buffer.clear().limit(8);
+                    buffer.reset()
+                    buffer.limit(8);
                     { this.init4() }
                 })
             }
@@ -169,7 +174,8 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 else -> {
                     state = {
                         skip(chunk.bytes.toLong(), {
-                            buffer.clear().limit(8);
+                            buffer.reset()
+                            buffer.limit(8);
                             { this.init4() }
                         })
                     }
@@ -208,24 +214,25 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 when (format) {
                     Format.PCM -> {
                         when (bits) {
-                            8 -> pcmBuffer.put(
+                            8 -> pcmBuffer.putFloat(
                                     offset + (this.buffer.get().toInt() and 0xFF) / scale)
-                            16 -> pcmBuffer.put(
-                                    offset + this.buffer.short / scale)
-                            24 -> pcmBuffer.put(
+                            16 -> pcmBuffer.putFloat(
+                                    offset + this.buffer.getShort() / scale)
+                            24 -> pcmBuffer.putFloat(
                                     offset + this.buffer.get24Bit() / scale)
-                            32 -> pcmBuffer.put(
-                                    offset + this.buffer.int / scale)
-                            64 -> pcmBuffer.put(
-                                    offset + this.buffer.long / scale)
+                            32 -> pcmBuffer.putFloat(
+                                    offset + this.buffer.getInt() / scale)
+                            64 -> pcmBuffer.putFloat(
+                                    offset + this.buffer.getLong() / scale)
                             else -> throw IllegalStateException(
                                     "Invalid bits: $bits")
                         }
                     }
                     Format.IEEE -> {
                         when (bits) {
-                            32 -> pcmBuffer.put(this.buffer.float)
-                            64 -> pcmBuffer.put(this.buffer.double.toFloat())
+                            32 -> pcmBuffer.putFloat(this.buffer.getFloat())
+                            64 -> pcmBuffer.putFloat(
+                                    this.buffer.getDouble().toFloat())
                             else -> throw IllegalStateException(
                                     "Invalid bits: $bits")
                         }
@@ -275,9 +282,9 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                              val size: Int,
                              val bytes: Int)
 
-    private fun chunk(buffer: ByteBuffer): Chunk {
-        val chunkID = buffer.int
-        val chunkSize = buffer.int
+    private fun chunk(buffer: MemoryViewStream<*>): Chunk {
+        val chunkID = buffer.getInt()
+        val chunkSize = buffer.getInt()
         val numChunkBytes = if (chunkSize % 2 == 0) chunkSize else chunkSize + 1
         return Chunk(chunkID, chunkSize, numChunkBytes)
     }
@@ -289,9 +296,9 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         private val RIFF_CHUNK_ID = 0x46464952
         private val RIFF_TYPE_ID = 0x45564157
 
-        private fun ByteBuffer.get24Bit(): Int {
+        private fun MemoryViewStream<ByteViewLE>.get24Bit(): Int {
             val low = get().toInt() and 0xFF
-            val high = short.toInt() shl 8
+            val high = getShort().toInt() shl 8
             return high or low
         }
     }

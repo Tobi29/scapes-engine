@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.tilemaps
 
 import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.view
 
 fun makeTransparent(image: Image,
                     transStr: String): Image {
@@ -30,22 +30,23 @@ fun makeTransparent(image: Image,
     val transR = (colorInt shr 16 and 0xFF).toByte()
     val transG = (colorInt shr 8 and 0xFF).toByte()
     val transB = (colorInt and 0xFF).toByte()
-    val buffer = image.buffer
-    val filteredBuffer = ByteBuffer(buffer.remaining())
-    while (buffer.hasRemaining()) {
-        val r = buffer.get()
-        val g = buffer.get()
-        val b = buffer.get()
-        val a = buffer.get()
+    val buffer = image.view
+    val filteredBuffer = ByteArray(buffer.size).view
+    var position = 0
+    var positionWrite = 0
+    while (position < buffer.size) {
+        val r = buffer.getByte(position++)
+        val g = buffer.getByte(position++)
+        val b = buffer.getByte(position++)
+        val a = buffer.getByte(position++)
         if (transR == r && transG == g && transB == b) {
-            filteredBuffer.putInt(0)
+            repeat(4) { filteredBuffer.setByte(positionWrite++, 0) }
         } else {
-            filteredBuffer.put(r)
-            filteredBuffer.put(g)
-            filteredBuffer.put(b)
-            filteredBuffer.put(a)
+            filteredBuffer.setByte(positionWrite++, r)
+            filteredBuffer.setByte(positionWrite++, g)
+            filteredBuffer.setByte(positionWrite++, b)
+            filteredBuffer.setByte(positionWrite++, a)
         }
     }
-    filteredBuffer.flip()
     return Image(image.width, image.height, filteredBuffer)
 }

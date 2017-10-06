@@ -21,18 +21,17 @@ import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
 
-internal abstract class TextureFBO(gos: GraphicsObjectSupplier,
-                                   width: Int,
-                                   height: Int,
-                                   buffer: ByteBuffer?,
-                                   mipmaps: Int,
-                                   minFilter: TextureFilter,
-                                   magFilter: TextureFilter,
-                                   wrapS: TextureWrap,
-                                   wrapT: TextureWrap) : TextureGL(
-        gos, width, height, buffer, mipmaps, minFilter, magFilter, wrapS,
+internal abstract class TextureFBO(
+        gos: GraphicsObjectSupplier,
+        width: Int,
+        height: Int,
+        mipmaps: Int,
+        minFilter: TextureFilter,
+        magFilter: TextureFilter,
+        wrapS: TextureWrap,
+        wrapT: TextureWrap
+) : TextureGL(gos, width, height, null, mipmaps, minFilter, magFilter, wrapS,
         wrapT) {
 
     fun resize(width: Int,

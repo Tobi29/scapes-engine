@@ -17,10 +17,13 @@
 package org.tobi29.scapes.engine.codec
 
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.FloatBuffer
+import org.tobi29.scapes.engine.utils.io.HeapViewFloat
+import org.tobi29.scapes.engine.utils.io.HeapViewFloatBE
+import org.tobi29.scapes.engine.utils.io.MemoryViewStream
 
 class AudioBuffer(private val size: Int) {
-    private var buffer = FloatBuffer(0)
+    private val buffer = MemoryViewStream(bufferProvider =
+    { HeapViewFloatBE(FloatArray((it + 3) shr 2), 0, it) })
     private var channels = 0
     private var rate = 0
     private var empty = true
@@ -28,13 +31,15 @@ class AudioBuffer(private val size: Int) {
         private set
 
     fun buffer(channels: Int,
-               rate: Int): FloatBuffer {
+               rate: Int): MemoryViewStream<HeapViewFloatBE> {
         if (empty) {
             empty = false
-            val capacity = size * channels
-            if (buffer.capacity() != capacity) {
-                buffer = FloatBuffer(capacity)
+            buffer.reset()
+            val capacity = (size * channels) shl 2
+            if (buffer.buffer().size < capacity) {
+                buffer.grow(capacity)
             }
+            buffer.limit(capacity)
             this.channels = channels
             this.rate = rate
         } else {
@@ -59,11 +64,12 @@ class AudioBuffer(private val size: Int) {
 
     fun clear() {
         assert { isDone }
-        buffer.clear()
+        buffer.reset()
+        empty = true
         isDone = false
     }
 
-    fun getBuffer(): FloatBuffer {
+    fun getBuffer(): MemoryViewStream<HeapViewFloat> {
         return buffer
     }
 }
@@ -71,6 +77,6 @@ class AudioBuffer(private val size: Int) {
 inline fun AudioBuffer.toPCM16(consumer: (Short) -> Unit) {
     val buffer = getBuffer()
     while (buffer.hasRemaining()) {
-        consumer(toInt16(buffer.get()))
+        consumer(toInt16(buffer.getFloat()))
     }
 }

@@ -17,121 +17,90 @@
 package org.tobi29.scapes.engine.utils.io
 
 class BufferedReadChannelStream(private val channel: ReadableByteChannel,
-                                private val buffer: ByteBuffer = ByteBuffer(
-                                        8192)) : ReadableByteStream {
-
-    init {
-        buffer.limit(0)
-    }
+                                buffer: ByteViewE = ByteArray(
+                                        8192).viewBE) : ReadableByteStream {
+    private val mbuffer = MemoryViewStream(buffer).apply { limit(0) }
 
     override fun available(): Int {
-        return buffer.remaining()
+        return mbuffer.remaining()
     }
 
     override fun skip(length: Int): ReadableByteStream = apply {
-        var skip = (length - buffer.remaining()).toLong()
+        var skip = (length - mbuffer.remaining()).toLong()
         if (skip < 0) {
-            buffer.position(buffer.position() + length)
+            mbuffer.position(mbuffer.position() + length)
         } else {
-            buffer.position(buffer.limit())
+            mbuffer.position(mbuffer.limit())
             while (skip > 0) {
                 skip = channel.skip(skip)
             }
         }
     }
 
-    override fun get(buffer: ByteBuffer,
-                     len: Int): ReadableByteStream {
-        if (ensure(len)) {
-            val limit = this.buffer.limit()
-            this.buffer.limit(this.buffer.position() + len)
-            buffer.put(this.buffer)
-            this.buffer.limit(limit)
+    override fun get(buffer: ByteView) = apply {
+        if (ensure(buffer.size)) {
+            mbuffer.get(buffer)
         } else {
-            val limit = buffer.limit()
-            buffer.limit(buffer.position() + len)
-            if (this.buffer.hasRemaining()) {
-                buffer.put(this.buffer)
-                read(buffer)
-            } else if (!read(buffer)) {
-                throw IOException("End of stream")
-            }
-            buffer.limit(limit)
+            val flushed = mbuffer.remaining()
+            if (flushed > 0) mbuffer.get(buffer.slice(size = flushed))
+            val read = channel.read(buffer.slice(flushed))
+            if (read < 0 && flushed <= 0) throw IOException("End of stream")
         }
-        return this
     }
 
-    override fun getSome(buffer: ByteBuffer,
-                         len: Int): Boolean {
-        if (this.buffer.remaining() >= len) {
-            val limit = this.buffer.limit()
-            this.buffer.limit(this.buffer.position() + len)
-            buffer.put(this.buffer)
-            this.buffer.limit(limit)
-        } else {
-            val limit = buffer.limit()
-            buffer.limit(buffer.position() + len)
-            if (this.buffer.hasRemaining()) {
-                buffer.put(this.buffer)
-                read(buffer)
-            } else if (!read(buffer)) {
-                return false
+    override fun getSome(buffer: ByteView): Int =
+            if (mbuffer.remaining() >= buffer.size) {
+                mbuffer.get(buffer)
+                buffer.size
+            } else {
+                val flushed = mbuffer.remaining()
+                if (flushed > 0) mbuffer.get(buffer.slice(size = flushed))
+                val read = channel.read(buffer.slice(flushed))
+                if (read < 0) {
+                    if (flushed <= 0) -1 else flushed
+                } else read + flushed
             }
-            buffer.limit(limit)
-        }
-        return true
-    }
 
     override fun get(): Byte {
         ensure(1)
-        return buffer.get()
+        return mbuffer.get()
     }
 
     override fun getShort(): Short {
         ensure(2)
-        return buffer.getShort()
+        return mbuffer.getShort()
     }
 
     override fun getInt(): Int {
         ensure(4)
-        return buffer.getInt()
+        return mbuffer.getInt()
     }
 
     override fun getLong(): Long {
         ensure(8)
-        return buffer.getLong()
+        return mbuffer.getLong()
     }
 
     override fun getFloat(): Float {
         ensure(4)
-        return buffer.getFloat()
+        return mbuffer.getFloat()
     }
 
     override fun getDouble(): Double {
         ensure(8)
-        return buffer.getDouble()
+        return mbuffer.getDouble()
     }
 
     private fun ensure(len: Int): Boolean {
-        if (len > buffer.capacity()) {
-            return false
+        if (len == 0) return true
+        if (len > mbuffer.buffer().size) return false
+        mbuffer.compact()
+        while (mbuffer.position() < len) {
+            val read = channel.read(mbuffer.bufferSlice())
+            if (read < 0) throw IOException("End of stream")
+            mbuffer.position(mbuffer.position() + read)
         }
-        if (buffer.remaining() < len) {
-            buffer.compact()
-            if (!read(buffer)) {
-                if (buffer.position() < len) {
-                    throw IOException("End of stream")
-                }
-            }
-            buffer.flip()
-        }
-        return true
-    }
-
-    private fun read(buffer: ByteBuffer): Boolean {
-        if (channel.read(buffer) == -1) {
-            return false
-        }
+        mbuffer.flip()
         return true
     }
 }

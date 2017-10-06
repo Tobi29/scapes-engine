@@ -36,7 +36,9 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun skip(length: Int): ReadableByteStream = get(ByteBuffer(length))
+    fun skip(length: Int): ReadableByteStream = apply {
+        repeat(length) { get() }
+    }
 
     /**
      * Skip the given amount of bytes in the stream
@@ -59,67 +61,20 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun get(buffer: ByteBuffer): ReadableByteStream =
-            get(buffer, buffer.remaining())
-
-    /**
-     * Read by filling the given buffer by the given amount of bytes
-     * @param buffer Buffer to write to
-     * @param len The amount of bytes to read
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun get(buffer: ByteBuffer,
-            len: Int): ReadableByteStream
-
-    /**
-     * Read by filling the given array by the given amount of bytes
-     * @param destination Array to write to
-     * @param offset First index to write into the byte array
-     * @param length The amount of bytes to read
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun get(destination: ByteArray,
-            offset: Int = 0,
-            length: Int = destination.size - offset): ReadableByteStream =
-            get(destination.asByteBuffer(offset, length))
-
-    /**
-     * Read by filling the given buffer as much as possible
-     * @param buffer Buffer to write to
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun getSome(buffer: ByteBuffer): Boolean =
-            getSome(buffer, buffer.remaining())
-
-    /**
-     * Read by filling the given buffer as much as possible
-     * @param buffer Buffer to write to
-     * @param len The amount of bytes to read at most
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun getSome(buffer: ByteBuffer,
-                len: Int): Boolean
-
-    /**
-     * Read by filling the given array at most by the given amount of bytes as
-     * much as possible
-     * @param destination Array to write to
-     * @param offset First index to write into the byte array
-     * @param length The amount of bytes to read
-     * @throws IOException When an IO error occurs
-     * @return The current stream
-     */
-    fun getSome(destination: ByteArray,
-                offset: Int = 0,
-                length: Int = destination.size - offset): Int {
-        val buffer = destination.asByteBuffer(offset, length)
-        if (!getSome(buffer)) return -1
-        return buffer.position() - offset
+    fun get(buffer: ByteView): ReadableByteStream = apply {
+        var position = 0
+        repeat(buffer.size) {
+            buffer.setByte(position++, get())
+        }
     }
+
+    /**
+     * Read by filling the given buffer as much as possible
+     * @param buffer Buffer to write to
+     * @throws IOException When an IO error occurs
+     * @return The amount of bytes read
+     */
+    fun getSome(buffer: ByteView): Int
 
     /**
      * Reads a boolean
@@ -226,7 +181,7 @@ interface ReadableByteStream : Readable {
                     "Array length outside of 0 to $limit: $limit")
         }
         val array = ByteArray(len)
-        get(array, 0, array.size)
+        get(array.view.slice(size = array.size))
         return array
     }
 
@@ -252,7 +207,7 @@ interface ReadableByteStream : Readable {
                     "Array length outside of 0 to $limit: $limit")
         }
         val array = ByteArray(len)
-        get(array, 0, array.size)
+        get(array.view.slice(size = array.size))
         return array
     }
 

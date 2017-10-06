@@ -21,21 +21,19 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.byteArrays
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.io.BufferedReadChannelStream
-import org.tobi29.scapes.engine.utils.io.BufferedWriteChannelStream
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferChannel
+import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.view
 
 object BufferedStreamTests : Spek({
     for (size in (0..15).map { 1 shl 16 }) {
         on("writing to and reading from a buffered stream with buffer size $size") {
-            val buffer = ByteBuffer(1 shl 16)
-            val channel = ByteBufferChannel(buffer)
+            val buffer = MemoryViewStreamDefault()
             val arrays = byteArrays(16, 8)
-            buffer.clear()
-            BufferedWriteChannelStream(channel).apply {
+            buffer.reset()
+            BufferedWriteChannelStream(
+                    WritableByteStreamChannel(buffer)).apply {
                 for (array in arrays) {
-                    put(array)
+                    put(array.view)
                 }
                 put(123)
                 putShort(1234)
@@ -44,10 +42,11 @@ object BufferedStreamTests : Spek({
                 flush()
             }
             buffer.flip()
-            BufferedReadChannelStream(channel).apply {
+            BufferedReadChannelStream(
+                    ReadableByteStreamChannel(buffer)).apply {
                 for (array in arrays) {
                     val check = ByteArray(array.size)
-                    get(check)
+                    get(check.view)
                     it("should equal to original array") {
                         check shouldEqual array
                     }

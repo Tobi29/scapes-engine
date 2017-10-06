@@ -17,10 +17,7 @@ package org.tobi29.scapes.engine.utils.io.tag.binary
 
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.WritableByteStream
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.tag.TagList
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.write
@@ -30,7 +27,7 @@ fun readBinary(stream: ReadableByteStream) = readBinary(stream, Int.MAX_VALUE,
 
 fun readBinary(stream: ReadableByteStream,
                allocationLimit: Int = Int.MAX_VALUE,
-               compressionStream: ByteBufferStream = COMPRESSION_STREAM.get()): TagMap {
+               compressionStream: MemoryStream = COMPRESSION_STREAM.get()): TagMap {
     TagStructureReaderBinary(stream,
             allocationLimit, compressionStream).let { reader ->
         return TagMap { reader.readMap(this) }
@@ -40,8 +37,8 @@ fun readBinary(stream: ReadableByteStream,
 fun TagMap.writeBinary(stream: WritableByteStream,
                        compression: Byte = -1,
                        useDictionary: Boolean = true,
-                       byteStream: ByteBufferStream = DATA_STREAM.get(),
-                       compressionStream: ByteBufferStream = COMPRESSION_STREAM.get()) {
+                       byteStream: MemoryStream = DATA_STREAM.get(),
+                       compressionStream: MemoryStream = COMPRESSION_STREAM.get()) {
     TagStructureWriterBinary(stream, compression, useDictionary, byteStream,
             compressionStream).let { writer ->
         writer.begin(this)
@@ -197,8 +194,8 @@ internal class KeyDictionary {
 }
 
 private val DATA_STREAM = ThreadLocal {
-    ByteBufferStream(growth = { it + 1048576 })
+    MemoryViewStreamDefault(growth = { it + 10485 })
 }
 private val COMPRESSION_STREAM = ThreadLocal {
-    ByteBufferStream(growth = { it + 1048576 })
+    MemoryViewStreamDefault(growth = { it + 10485 })
 }

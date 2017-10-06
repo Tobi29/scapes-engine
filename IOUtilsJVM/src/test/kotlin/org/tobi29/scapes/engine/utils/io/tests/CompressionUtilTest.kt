@@ -22,25 +22,26 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.byteArrays
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.io.ByteBuffer
-import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.CompressionUtil
+import org.tobi29.scapes.engine.utils.io.MemoryViewStream
+import org.tobi29.scapes.engine.utils.io.MemoryViewStreamDefault
+import org.tobi29.scapes.engine.utils.io.viewBE
+import org.tobi29.scapes.engine.utils.io.view
 
 object CompressionUtilTests : Spek({
     given("any byte array") {
         val arrays by memoized { byteArrays(32, 8) }
         on("compressing and decompressing") {
             for (array in arrays) {
-                val compressed = ByteBufferStream()
+                val compressed = MemoryViewStreamDefault()
                 CompressionUtil.compress(
-                        ByteBufferStream(ByteBuffer.wrap(array)), compressed)
-                compressed.buffer().flip()
-                val decompressed = ByteBufferStream()
-                CompressionUtil.decompress(
-                        ByteBufferStream(compressed.buffer()), decompressed)
-                decompressed.buffer().flip()
-                val check = ByteArray(decompressed.buffer().remaining())
-                decompressed.buffer().get(check)
+                        MemoryViewStream(array.viewBE), compressed)
+                compressed.flip()
+                val decompressed = MemoryViewStreamDefault()
+                CompressionUtil.decompress(compressed, decompressed)
+                decompressed.flip()
+                val check = ByteArray(decompressed.remaining())
+                decompressed.get(check.view)
                 it("should result with the same array") {
                     check shouldEqual array
                 }
