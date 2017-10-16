@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.platform.*
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
-import org.tobi29.scapes.engine.utils.Crashable
 import org.tobi29.scapes.engine.utils.Version
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
@@ -40,7 +39,7 @@ abstract class Application(
         id: String,
         version: Version,
         val taskExecutor: CoroutineContext = CommonPool
-) : CoroutineDispatcher(), Runnable, Crashable {
+) : CoroutineDispatcher(), Runnable {
     val display: Display
 
     init {
@@ -104,7 +103,7 @@ abstract class Application(
         dispose()
     }
 
-    override fun crash(e: Throwable): Nothing {
+    fun crash(e: Throwable): Nothing {
         logger.error(e) { "Application crashed:" }
         val path = writeCrash(e) ?: exitProcess(1)
         if (!Program.launch(path.toString())) {
