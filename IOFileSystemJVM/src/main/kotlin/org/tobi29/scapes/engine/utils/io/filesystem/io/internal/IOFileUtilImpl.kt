@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.utils.io.filesystem.*
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.RandomAccessFile
-import java.net.URI
 import java.util.*
 
 internal object IOFileUtilImpl : FileUtilImpl {
@@ -229,8 +228,8 @@ internal object IOFileUtilImpl : FileUtilImpl {
             return file.toString()
         }
 
-        override fun toUri(): URI {
-            return file.toURI()
+        override fun toUri(): Uri {
+            return file.toURI().toUri()
         }
 
         override fun toFile(): File = file

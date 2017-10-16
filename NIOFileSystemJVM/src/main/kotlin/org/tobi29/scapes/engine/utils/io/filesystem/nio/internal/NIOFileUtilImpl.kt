@@ -24,7 +24,6 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FileAttribute
 import org.tobi29.scapes.engine.utils.io.filesystem.LinkOption
 import org.tobi29.scapes.engine.utils.io.filesystem.OpenOption
 import java.io.File
-import java.net.URI
 import java.nio.file.*
 import java.nio.file.Path
 import java.nio.file.attribute.*
@@ -162,8 +161,8 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             return path.toString()
         }
 
-        override fun toUri(): URI {
-            return path.toUri()
+        override fun toUri(): Uri {
+            return path.toUri().toUri()
         }
 
         override fun toFile(): File = path.toFile()

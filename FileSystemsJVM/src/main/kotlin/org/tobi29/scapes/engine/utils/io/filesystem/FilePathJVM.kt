@@ -17,11 +17,11 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.tobi29.scapes.engine.utils.io.Path
+import org.tobi29.scapes.engine.utils.io.Uri
 import java.io.File
-import java.net.URI
 
 impl interface FilePath : Path, Comparable<FilePath> {
-    fun toUri(): URI
+    fun toUri(): Uri
 
     fun toFile(): File
 
