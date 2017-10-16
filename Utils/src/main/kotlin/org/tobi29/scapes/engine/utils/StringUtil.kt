@@ -175,6 +175,81 @@ fun String.suffixToLength(char: Char,
     return output.toString()
 }
 
+// Nullable versions of functions in Kotlin stdlib
+/**
+ * Returns a substring before the first occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringBeforeOrNull(delimiter: Char): String? {
+    val index = indexOf(delimiter)
+    return if (index == -1) null else substring(0, index)
+}
+
+/**
+ * Returns a substring before the first occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringBeforeOrNull(delimiter: String): String? {
+    val index = indexOf(delimiter)
+    return if (index == -1) null else substring(0, index)
+}
+
+/**
+ * Returns a substring after the first occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringAfterOrNull(delimiter: Char): String? {
+    val index = indexOf(delimiter)
+    return if (index == -1) null else substring(index + 1, length)
+}
+
+/**
+ * Returns a substring after the first occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringAfterOrNull(delimiter: String): String? {
+    val index = indexOf(delimiter)
+    return if (index == -1) null else substring(index + delimiter.length,
+            length)
+}
+
+/**
+ * Returns a substring before the last occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringBeforeLastOrNull(delimiter: Char): String? {
+    val index = lastIndexOf(delimiter)
+    return if (index == -1) null else substring(0, index)
+}
+
+/**
+ * Returns a substring before the last occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringBeforeLastOrNull(delimiter: String): String? {
+    val index = lastIndexOf(delimiter)
+    return if (index == -1) null else substring(0, index)
+}
+
+/**
+ * Returns a substring after the last occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`
+ */
+fun String.substringAfterLastOrNull(delimiter: Char): String? {
+    val index = lastIndexOf(delimiter)
+    return if (index == -1) null else substring(index + 1, length)
+}
+
+/**
+ * Returns a substring after the last occurrence of [delimiter].
+ * If the string does not contain the delimiter, returns `null`.
+ */
+fun String.substringAfterLastOrNull(delimiter: String): String? {
+    val index = lastIndexOf(delimiter)
+    return if (index == -1) null else substring(index + delimiter.length,
+            length)
+}
+
 /**
  * Converts the given string to a mutable one
  * @receiver String to copy from
