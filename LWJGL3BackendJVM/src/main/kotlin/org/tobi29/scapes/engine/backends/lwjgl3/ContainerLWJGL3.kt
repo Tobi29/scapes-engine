@@ -30,10 +30,7 @@ import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.graphics.Font
-import org.tobi29.scapes.engine.utils.io.ByteViewE
-import org.tobi29.scapes.engine.utils.io.ByteBufferNative
-import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.io.viewE
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.sleep
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
@@ -73,7 +70,7 @@ abstract class ContainerLWJGL3(
             ByteBufferNative(size).viewE
 
     override fun loadFont(asset: ReadSource): Font? {
-        return STBFont.fromFont(this, asset)
+        return STBFont.fromFont(this, asset.read { it.asByteView() })
     }
 
     fun exec(runnable: () -> Unit) {

@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface ByteArraySlice : ArrayVarSlice<Byte> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): ByteArraySlice
+interface ByteArraySliceRO : ArrayVarSlice<Byte> {
+    override fun slice(index: Int,
+                       size: Int): ByteArraySliceRO
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,29 @@ interface ByteArraySlice : ArrayVarSlice<Byte> {
      * @return The value at the given index
      */
     operator fun get(index: Int): Byte
+
+    fun getByte(index: Int): Byte = get(index)
+
+    fun getBytes(index: Int,
+                 slice: ByteArraySlice) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<Byte> =
+            object : SliceIterator<Byte>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface ByteArraySlice : ByteArraySliceRO {
+    override fun slice(index: Int,
+                       size: Int): ByteArraySlice
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +51,62 @@ interface ByteArraySlice : ArrayVarSlice<Byte> {
     operator fun set(index: Int,
                      value: Byte)
 
-    override fun iterator(): Iterator<Byte> =
-            object : SliceIterator<Byte>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setByte(index: Int,
+                value: Byte) = set(index, value)
+
+    fun setBytes(index: Int,
+                 slice: ByteArraySliceRO) =
+            slice.getBytes(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapByteArraySlice(
-        val array: ByteArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<Byte>, ByteArraySlice {
+interface HeapByteArraySlice : HeapArrayVarSlice<Byte>, ByteArraySlice {
+    val array: ByteArray
     override fun slice(index: Int,
-                       length: Int): HeapByteArraySlice =
-            prepareSlice(index, length, array,
-                    ::HeapByteArraySlice)
+                       size: Int): HeapByteArraySlice
 
     override fun get(index: Int): Byte = array[index(index)]
     override fun set(index: Int,
                      value: Byte) = array.set(index(index), value)
+
+    override fun getBytes(index: Int,
+                          slice: ByteArraySlice) {
+        if (slice !is HeapByteArraySlice) return super.getBytes(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setBytes(index: Int,
+                          slice: ByteArraySliceRO) {
+        if (slice !is HeapByteArraySlice) return super.setBytes(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun HeapByteArraySlice(
+        array: ByteArray,
+        offset: Int,
+        size: Int
+): HeapByteArraySlice = HeapByteArraySliceImpl(array, offset, size)
+
+private class HeapByteArraySliceImpl(
+        override val array: ByteArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapByteArraySlice {
+    override fun slice(index: Int,
+                       size: Int): HeapByteArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapByteArraySlice)
 }
 
 /**

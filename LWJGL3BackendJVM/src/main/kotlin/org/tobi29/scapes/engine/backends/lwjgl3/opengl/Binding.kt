@@ -19,6 +19,8 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.lwjgl.opengl.*
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import java.nio.ByteBuffer
 
 const val NOOP = -1
@@ -318,14 +320,14 @@ inline fun glBufferData(target: Int,
         GL15.glBufferData(target, size.toLong(), usage)
 
 inline fun glBufferData(target: Int,
-                        data: ByteBuffer,
+                        data: ByteViewRO,
                         usage: Int) =
-        GL15.glBufferData(target, data, usage)
+        GL15.glBufferData(target, data.readAsNativeByteBuffer(), usage)
 
 inline fun glBufferSubData(target: Int,
                            offset: Long,
-                           data: ByteBuffer) =
-        GL15.glBufferSubData(target, offset, data)
+                           data: ByteViewRO) =
+        GL15.glBufferSubData(target, offset, data.readAsNativeByteBuffer())
 
 inline fun glVertexAttribDivisor(index: Int,
                                  divisor: Int) =

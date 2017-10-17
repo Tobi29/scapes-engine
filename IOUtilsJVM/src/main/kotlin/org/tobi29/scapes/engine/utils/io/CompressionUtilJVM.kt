@@ -31,7 +31,7 @@ impl class ZDeflater impl constructor(level: Int,
         if (read < 0) return false
         input.position(input.position() + read)
         input.buffer().slice(0, input.position()).let {
-            deflater.setInput(it.byteArray, it.offset, it.size)
+            deflater.setInput(it.array, it.offset, it.size)
         }
         return true
     }
@@ -75,7 +75,7 @@ impl class ZInflater impl constructor(private val buffer: Int = 8192) : Compress
         if (read < 0) return false
         input.position(input.position() + read)
         input.buffer().slice(0, input.position()).let {
-            inflater.setInput(it.byteArray, it.offset, it.size)
+            inflater.setInput(it.array, it.offset, it.size)
         }
         return true
     }

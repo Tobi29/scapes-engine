@@ -6,7 +6,7 @@ interface ReadableByteChannel : Channel {
     fun read(buffer: ByteView): Int
 
     fun skip(length: Long): Long {
-        val buffer = ByteArray(length.coerceAtMost(4096).toInt()).viewBE
+        val buffer = ByteArray(length.coerceAtMost(4096).toInt()).view
         while (length > 0) {
             val read = read(buffer.slice(0,
                     buffer.size.coerceAtMost(length.toIntClamped())))

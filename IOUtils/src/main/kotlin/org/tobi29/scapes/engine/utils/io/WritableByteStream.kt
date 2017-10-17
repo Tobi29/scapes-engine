@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.ByteArraySliceRO
 import org.tobi29.scapes.engine.utils.utf8ToArray
 
 /**
@@ -30,9 +31,9 @@ interface WritableByteStream : Appendable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun put(buffer: ByteViewRO): WritableByteStream = apply {
+    fun put(buffer: ByteArraySliceRO): WritableByteStream = apply {
         for (i in 0 until buffer.size) {
-            put(buffer.getByte(i))
+            put(buffer[i])
         }
     }
 

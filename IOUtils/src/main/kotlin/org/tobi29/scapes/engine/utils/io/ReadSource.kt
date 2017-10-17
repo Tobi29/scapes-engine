@@ -28,5 +28,11 @@ interface ReadSource {
     }
 
     // TODO: @Throws(IOException::class)
+    suspend fun <R> readAsync(reader: (ReadableByteStream) -> R) = read(reader)
+
+    // TODO: @Throws(IOException::class)
+    suspend fun data(): ByteViewRO = read { it.asByteView() }
+
+    // TODO: @Throws(IOException::class)
     fun mimeType() = read { detectMime(it) }
 }

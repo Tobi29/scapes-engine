@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface FloatArraySlice : ArrayVarSlice<Float> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): FloatArraySlice
+interface FloatArraySliceRO : ArrayVarSlice<Float> {
+    override fun slice(index: Int,
+                       size: Int): FloatArraySliceRO
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,29 @@ interface FloatArraySlice : ArrayVarSlice<Float> {
      * @return The value at the given index
      */
     operator fun get(index: Int): Float
+
+    fun getFloat(index: Int): Float = get(index)
+
+    fun getFloats(index: Int,
+                  slice: FloatArraySlice) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<Float> =
+            object : SliceIterator<Float>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface FloatArraySlice : FloatArraySliceRO {
+    override fun slice(index: Int,
+                       size: Int): FloatArraySlice
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +51,62 @@ interface FloatArraySlice : ArrayVarSlice<Float> {
     operator fun set(index: Int,
                      value: Float)
 
-    override fun iterator(): Iterator<Float> =
-            object : SliceIterator<Float>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setFloat(index: Int,
+                 value: Float) = set(index, value)
+
+    fun setFloats(index: Int,
+                  slice: FloatArraySliceRO) =
+            slice.getFloats(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapFloatArraySlice(
-        val array: FloatArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<Float>, FloatArraySlice {
+interface HeapFloatArraySlice : HeapArrayVarSlice<Float>, FloatArraySlice {
+    val array: FloatArray
     override fun slice(index: Int,
-                       length: Int): HeapFloatArraySlice =
-            prepareSlice(index, length, array,
-                    ::HeapFloatArraySlice)
+                       size: Int): HeapFloatArraySlice
 
     override fun get(index: Int): Float = array[index(index)]
     override fun set(index: Int,
                      value: Float) = array.set(index(index), value)
+
+    override fun getFloats(index: Int,
+                           slice: FloatArraySlice) {
+        if (slice !is HeapFloatArraySlice) return super.getFloats(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setFloats(index: Int,
+                           slice: FloatArraySliceRO) {
+        if (slice !is HeapFloatArraySlice) return super.setFloats(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun HeapFloatArraySlice(
+        array: FloatArray,
+        offset: Int,
+        size: Int
+): HeapFloatArraySlice = HeapFloatArraySliceImpl(array, offset, size)
+
+private class HeapFloatArraySliceImpl(
+        override val array: FloatArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapFloatArraySlice {
+    override fun slice(index: Int,
+                       size: Int): HeapFloatArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapFloatArraySlice)
 }
 
 /**

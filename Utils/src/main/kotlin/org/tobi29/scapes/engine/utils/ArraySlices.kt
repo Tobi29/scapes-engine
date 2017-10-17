@@ -19,14 +19,22 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Arbitrary array slice
+ * Arbitrary array segment
  */
-interface ArrayVarSlice<out T> : Iterable<T> {
+interface ArraySegment {
     /**
      * Amount of elements in the slice
      */
     val size: Int
+
+    fun slice(index: Int = 0,
+              size: Int = this.size - index): ArraySegment
 }
+
+/**
+ * Arbitrary array slice
+ */
+interface ArrayVarSlice<out T> : ArraySegment, Iterable<T>
 
 /**
  * Arbitrary array slice based on some heap array with offset support

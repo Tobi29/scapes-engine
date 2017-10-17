@@ -16,19 +16,21 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.tobi29.scapes.engine.utils.io.ByteViewERO
 import org.tobi29.scapes.engine.utils.io.*
 
-data class TagBundleResource(private val data: ByteViewERO? = null) : ReadSource {
+data class TagBundleResource(private val data: ByteViewRO? = null) : ReadSource {
     override fun <R> read(reader: (ReadableByteStream) -> R): R {
-        val stream = data?.let(::MemoryViewReadableStream)
+        val stream = data?.viewBE?.let(::MemoryViewReadableStream)
                 ?: throw IOException("Entry does not exist")
         return reader(stream)
     }
 
     override fun exists() = data != null
 
-    override fun channel() = data?.let(::MemoryViewReadableStream)
+    override fun channel() = data?.viewBE?.let(::MemoryViewReadableStream)
             ?.let(::ReadableByteStreamChannel)
             ?: throw IOException("Entry does not exist")
+
+    override suspend fun data(): ByteViewRO =
+            data ?: throw IOException("Entry does not exist")
 }

@@ -25,8 +25,11 @@ import com.jcraft.jorbis.Info
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.HeapFloatArraySlice
+import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 import org.tobi29.scapes.engine.utils.mutableLazy
+import org.tobi29.scapes.engine.utils.sliceOver
 
 class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
     private val packet = Packet()
@@ -92,8 +95,10 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 return ReadableAudioStream.Result.BUFFER
             }
             val pcmBuffer = buffer.buffer(channels, rate)
-            while (pcmBuffer.hasRemaining()) {
-                if (!decoder.get(pcmBuffer)) {
+            var i = 0
+            while (i < pcmBuffer.size) {
+                val read = decoder.get(pcmBuffer.slice(i))
+                if (read <= 0) {
                     if (packet.e_o_s != 0) {
                         eos = true
                         break
@@ -103,9 +108,9 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                     } else {
                         break
                     }
-                }
+                } else i += read
             }
-            buffer.done()
+            buffer.done(i)
             return if (eos) ReadableAudioStream.Result.EOS else
                 ReadableAudioStream.Result.BUFFER
         }
@@ -148,7 +153,7 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     private fun fillBuffer(): Boolean {
         val offset = syncState.buffer(BUFFER_SIZE)
         val read = channel.read(
-                syncState.data.viewBE.slice(offset, BUFFER_SIZE))
+                syncState.data.sliceOver(offset, BUFFER_SIZE))
         if (read == -1) {
             eos = true
         }
@@ -158,18 +163,16 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
         syncState.wrote(read)
         return true
     }
-
-    companion object {
-        private val BUFFER_SIZE = 4096
-    }
 }
+
+private const val BUFFER_SIZE = 4096
 
 interface CodecInitializer {
     fun packet(packet: Packet): Pair<CodecDecoder, () -> AudioMetaData>?
 }
 
 interface CodecDecoder {
-    fun get(buffer: MemoryViewStream<HeapViewFloatBE>): Boolean
+    fun get(buffer: HeapFloatArraySlice): Int
 
     fun packet(page: Page,
                packet: Packet)

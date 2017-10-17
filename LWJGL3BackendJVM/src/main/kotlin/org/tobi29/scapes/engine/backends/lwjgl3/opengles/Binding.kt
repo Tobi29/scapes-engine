@@ -20,6 +20,8 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.lwjgl.opengles.GLES20
 import org.lwjgl.opengles.GLES30
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import java.nio.ByteBuffer
 
 const val NOOP = -1
@@ -320,14 +322,14 @@ inline fun glBufferData(target: Int,
         GLES20.glBufferData(target, size.toLong(), usage)
 
 inline fun glBufferData(target: Int,
-                        data: ByteBuffer,
+                        data: ByteViewRO,
                         usage: Int) =
-        GLES20.glBufferData(target, data, usage)
+        GLES20.glBufferData(target, data.readAsNativeByteBuffer(), usage)
 
 inline fun glBufferSubData(target: Int,
                            offset: Long,
-                           data: ByteBuffer) =
-        GLES20.glBufferSubData(target, offset, data)
+                           data: ByteViewRO) =
+        GLES20.glBufferSubData(target, offset, data.readAsNativeByteBuffer())
 
 inline fun glVertexAttribDivisor(index: Int,
                                  divisor: Int) =

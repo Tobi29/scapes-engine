@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.codec.spi.ReadableAudioStreamProvider
 import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 
 class WAVInputStreamProvider : ReadableAudioStreamProvider {
-    private val mimeTypes = listOf("audio/x-wav")
+    private val mimeTypes = listOf("audio/x-wav", "audio/vnd.wave")
 
     override fun accepts(mime: String) = mimeTypes.contains(mime)
 

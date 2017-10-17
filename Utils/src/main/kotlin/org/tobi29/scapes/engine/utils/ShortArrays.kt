@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface ShortArraySlice : ArrayVarSlice<Short> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): ShortArraySlice
+interface ShortArraySliceRO : ArrayVarSlice<Short> {
+    override fun slice(index: Int,
+                       size: Int): ShortArraySliceRO
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,29 @@ interface ShortArraySlice : ArrayVarSlice<Short> {
      * @return The value at the given index
      */
     operator fun get(index: Int): Short
+
+    fun getShort(index: Int): Short = get(index)
+
+    fun getShorts(index: Int,
+                  slice: ShortArraySlice) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<Short> =
+            object : SliceIterator<Short>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface ShortArraySlice : ShortArraySliceRO {
+    override fun slice(index: Int,
+                       size: Int): ShortArraySlice
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +51,62 @@ interface ShortArraySlice : ArrayVarSlice<Short> {
     operator fun set(index: Int,
                      value: Short)
 
-    override fun iterator(): Iterator<Short> =
-            object : SliceIterator<Short>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setShort(index: Int,
+                 value: Short) = set(index, value)
+
+    fun setShorts(index: Int,
+                  slice: ShortArraySliceRO) =
+            slice.getShorts(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapShortArraySlice(
-        val array: ShortArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<Short>, ShortArraySlice {
+interface HeapShortArraySlice : HeapArrayVarSlice<Short>, ShortArraySlice {
+    val array: ShortArray
     override fun slice(index: Int,
-                       length: Int): HeapShortArraySlice =
-            prepareSlice(index, length, array,
-                    ::HeapShortArraySlice)
+                       size: Int): HeapShortArraySlice
 
     override fun get(index: Int): Short = array[index(index)]
     override fun set(index: Int,
                      value: Short) = array.set(index(index), value)
+
+    override fun getShorts(index: Int,
+                           slice: ShortArraySlice) {
+        if (slice !is HeapShortArraySlice) return super.getShorts(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setShorts(index: Int,
+                           slice: ShortArraySliceRO) {
+        if (slice !is HeapShortArraySlice) return super.setShorts(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun HeapShortArraySlice(
+        array: ShortArray,
+        offset: Int,
+        size: Int
+): HeapShortArraySlice = HeapShortArraySliceImpl(array, offset, size)
+
+private class HeapShortArraySliceImpl(
+        override val array: ShortArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapShortArraySlice {
+    override fun slice(index: Int,
+                       size: Int): HeapShortArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapShortArraySlice)
 }
 
 /**

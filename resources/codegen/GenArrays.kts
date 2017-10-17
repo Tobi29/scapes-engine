@@ -67,17 +67,11 @@ print("""// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface ${specialize("ArraySlice")} : ArrayVarSlice<$type> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): ${specialize("ArraySlice")}
+interface ${specialize("ArraySliceRO")} : ArrayVarSlice<$type> {
+    override fun slice(index: Int,
+                       size: Int): ${specialize("ArraySliceRO")}
 
     /**
      * Returns the element at the given index in the slice
@@ -85,14 +79,17 @@ interface ${specialize("ArraySlice")} : ArrayVarSlice<$type> {
      * @return The value at the given index
      */
     operator fun get(index: Int): $type
-
-    /**
-     * Sets the element at the given index in the slice
-     * @param index Index of the element
-     * @param value The value to set to
-     */
-    operator fun set(index: Int,
-                     value: $type)
+${if (!isReference) """
+    fun get$type(index: Int): $type = get(index)
+""" else ""}
+    fun get${if (isReference) "Element"
+else type}s(index: Int,
+            slice: ${specializeIn("ArraySlice")}) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
 
     override fun iterator(): Iterator<$type> =
             object : SliceIterator<$type>(size) {
@@ -101,21 +98,81 @@ interface ${specialize("ArraySlice")} : ArrayVarSlice<$type> {
 }
 
 /**
+ * Slice of an array, indexed in elements
+ */
+interface ${specialize("ArraySlice")} : ${specialize("ArraySliceRO")} {
+    override fun slice(index: Int,
+                       size: Int): ${specialize("ArraySlice")}
+
+    /**
+     * Sets the element at the given index in the slice
+     * @param index Index of the element
+     * @param value The value to set to
+     */
+    operator fun set(index: Int,
+                     value: $type)
+${if (!isReference) """
+    fun set$type(index: Int,
+                 value: $type) = set(index, value)
+""" else ""}
+    fun set${if (isReference) "Element"
+else type}s(index: Int,
+            slice: ${specializeOut("ArraySliceRO")}) =
+            slice.get${if (isReference) "Element" else type}s(0, slice(index, slice.size))
+}
+
+/**
  * Slice of a normal heap array
  */
-class Heap${specialize("ArraySlice")}(
-        val array: ${specialize("Array")},
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<$type>, ${specialize("ArraySlice")} {
+interface Heap${specialize(
+        "ArraySlice")} : HeapArrayVarSlice<$type>, ${specialize("ArraySlice")} {
+        val array: ${specialize("Array")}
     override fun slice(index: Int,
-                       length: Int): Heap${specialize("ArraySlice")} =
-            prepareSlice(index, length, array,
-                    ::Heap${specializeName("ArraySlice")})
+                       size: Int): Heap${specialize("ArraySlice")}
 
     override fun get(index: Int): $type = array[index(index)]
     override fun set(index: Int,
                      value: $type) = array.set(index(index), value)
+
+    override fun get${if (isReference) "Element" else type}s(index: Int,
+                         slice: ${specializeIn("ArraySlice")}) {
+        if (slice !is Heap${specializeName(
+        "ArraySlice")}) return super.get${if (isReference) "Element" else type}s(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun set${if (isReference) "Element" else type}s(index: Int,
+                         slice: ${specializeOut("ArraySliceRO")}) {
+        if (slice !is Heap${specializeName(
+        "ArraySlice")}) return super.set${if (isReference) "Element" else type}s(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+$genericFun Heap${specializeName("ArraySlice")}(
+        array: ${specialize("Array")},
+        offset: Int,
+        size: Int
+): Heap${specialize("ArraySlice")} = Heap${specializeName(
+        "ArraySliceImpl")}(array, offset, size)
+
+private class Heap${specialize("ArraySliceImpl")}(
+        override val array: ${specialize("Array")},
+        override val offset: Int,
+        override val size: Int
+) : Heap${specialize("ArraySlice")} {
+    override fun slice(index: Int,
+                       size: Int): Heap${specialize("ArraySlice")} =
+            prepareSlice(index, size, array,
+                    ::Heap${specializeName("ArraySlice")})
 }
 
 /**

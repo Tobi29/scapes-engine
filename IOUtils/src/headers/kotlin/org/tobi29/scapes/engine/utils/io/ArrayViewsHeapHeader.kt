@@ -1,13 +1,18 @@
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.HeapByteArraySlice
+
 header sealed class HeapViewByte(
-        byteArray: ByteArray,
+        array: ByteArray,
         offset: Int,
         size: Int
-) : HeapView, ArrayByteView {
-    override final val byteArray: ByteArray
+) : HeapView, HeapByteArraySlice {
+    override final val array: ByteArray
     override final val size: Int
     override final val offset: Int
+
+    override abstract fun slice(index: Int,
+                                size: Int): HeapViewByte
 }
 
 header sealed class HeapViewShort(
@@ -71,35 +76,35 @@ header sealed class HeapViewDouble(
 }
 
 header class HeapViewByteBE(
-        byteArray: ByteArray,
+        array: ByteArray,
         offset: Int,
         size: Int
 ) : HeapViewByte, ByteViewBE {
     override fun slice(index: Int,
                        size: Int): HeapViewByteBE
 
-    override fun getByte(index: Int): Byte
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun get(index: Int): Byte
+    override fun set(index: Int,
+                     value: Byte)
 
     override fun setBytes(index: Int,
-                          byteView: ByteViewRO)
+                          slice: ByteViewRO)
 }
 
 header class HeapViewByteLE(
-        byteArray: ByteArray,
+        array: ByteArray,
         offset: Int,
         size: Int
 ) : HeapViewByte, ByteViewLE {
     override fun slice(index: Int,
                        size: Int): HeapViewByteLE
 
-    override fun getByte(index: Int): Byte
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun get(index: Int): Byte
+    override fun set(index: Int,
+                     value: Byte)
 
     override fun setBytes(index: Int,
-                          byteView: ByteViewRO)
+                          slice: ByteViewRO)
 }
 
 header class HeapViewShortBE(
@@ -110,10 +115,10 @@ header class HeapViewShortBE(
     override fun slice(index: Int,
                        size: Int): HeapViewShortBE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewShortLE(
@@ -124,10 +129,10 @@ header class HeapViewShortLE(
     override fun slice(index: Int,
                        size: Int): HeapViewShortLE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewCharBE(
@@ -138,10 +143,10 @@ header class HeapViewCharBE(
     override fun slice(index: Int,
                        size: Int): HeapViewCharBE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewCharLE(
@@ -152,10 +157,10 @@ header class HeapViewCharLE(
     override fun slice(index: Int,
                        size: Int): HeapViewCharLE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewIntBE(
@@ -166,10 +171,10 @@ header class HeapViewIntBE(
     override fun slice(index: Int,
                        size: Int): HeapViewIntBE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewIntLE(
@@ -180,10 +185,10 @@ header class HeapViewIntLE(
     override fun slice(index: Int,
                        size: Int): HeapViewIntLE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewFloatBE(
@@ -194,10 +199,10 @@ header class HeapViewFloatBE(
     override fun slice(index: Int,
                        size: Int): HeapViewFloatBE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewFloatLE(
@@ -208,10 +213,10 @@ header class HeapViewFloatLE(
     override fun slice(index: Int,
                        size: Int): HeapViewFloatLE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewLongBE(
@@ -222,10 +227,10 @@ header class HeapViewLongBE(
     override fun slice(index: Int,
                        size: Int): HeapViewLongBE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewLongLE(
@@ -236,10 +241,10 @@ header class HeapViewLongLE(
     override fun slice(index: Int,
                        size: Int): HeapViewLongLE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewDoubleBE(
@@ -250,10 +255,10 @@ header class HeapViewDoubleBE(
     override fun slice(index: Int,
                        size: Int): HeapViewDoubleBE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }
 
 header class HeapViewDoubleLE(
@@ -264,8 +269,8 @@ header class HeapViewDoubleLE(
     override fun slice(index: Int,
                        size: Int): HeapViewDoubleLE
 
-    override fun getByte(index: Int): Byte
+    override fun get(index: Int): Byte
 
-    override fun setByte(index: Int,
-                         value: Byte)
+    override fun set(index: Int,
+                     value: Byte)
 }

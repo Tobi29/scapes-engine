@@ -20,15 +20,14 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBufferNative
-import java.nio.ByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteView
 
 internal class VAOStatic(private val vbo: VBO,
                          index: IntArray,
                          private val length: Int,
                          private val renderType: RenderType) : VAO(
         vbo.gos) {
-    private var data: ByteBuffer? = null
+    private var data: ByteView? = null
     private var indexID = 0
     private var arrayID = 0
 
@@ -38,9 +37,9 @@ internal class VAOStatic(private val vbo: VBO,
         } else if (renderType == RenderType.LINES && length % 2 != 0) {
             throw IllegalArgumentException("Length not multiply of 2")
         }
-        val indexBuffer = ByteBufferNative(length shl 1)
+        val indexBuffer = vbo.gos.container.allocateNative(length shl 1)
         for (i in 0 until length) {
-            indexBuffer.putShort(index[i].toShort())
+            indexBuffer.setShort(i shl 1, index[i].toShort())
         }
         data = indexBuffer
     }
@@ -90,7 +89,6 @@ internal class VAOStatic(private val vbo: VBO,
         arrayID = glGenVertexArrays()
         glBindVertexArray(arrayID)
         vbo.store(gl, weak)
-        data.rewind()
         indexID = glGenBuffers()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, data, GL_STATIC_DRAW)

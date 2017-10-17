@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface LongArraySlice : ArrayVarSlice<Long> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): LongArraySlice
+interface LongArraySliceRO : ArrayVarSlice<Long> {
+    override fun slice(index: Int,
+                       size: Int): LongArraySliceRO
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,29 @@ interface LongArraySlice : ArrayVarSlice<Long> {
      * @return The value at the given index
      */
     operator fun get(index: Int): Long
+
+    fun getLong(index: Int): Long = get(index)
+
+    fun getLongs(index: Int,
+                 slice: LongArraySlice) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<Long> =
+            object : SliceIterator<Long>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface LongArraySlice : LongArraySliceRO {
+    override fun slice(index: Int,
+                       size: Int): LongArraySlice
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +51,62 @@ interface LongArraySlice : ArrayVarSlice<Long> {
     operator fun set(index: Int,
                      value: Long)
 
-    override fun iterator(): Iterator<Long> =
-            object : SliceIterator<Long>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setLong(index: Int,
+                value: Long) = set(index, value)
+
+    fun setLongs(index: Int,
+                 slice: LongArraySliceRO) =
+            slice.getLongs(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapLongArraySlice(
-        val array: LongArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<Long>, LongArraySlice {
+interface HeapLongArraySlice : HeapArrayVarSlice<Long>, LongArraySlice {
+    val array: LongArray
     override fun slice(index: Int,
-                       length: Int): HeapLongArraySlice =
-            prepareSlice(index, length, array,
-                    ::HeapLongArraySlice)
+                       size: Int): HeapLongArraySlice
 
     override fun get(index: Int): Long = array[index(index)]
     override fun set(index: Int,
                      value: Long) = array.set(index(index), value)
+
+    override fun getLongs(index: Int,
+                          slice: LongArraySlice) {
+        if (slice !is HeapLongArraySlice) return super.getLongs(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setLongs(index: Int,
+                          slice: LongArraySliceRO) {
+        if (slice !is HeapLongArraySlice) return super.setLongs(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun HeapLongArraySlice(
+        array: LongArray,
+        offset: Int,
+        size: Int
+): HeapLongArraySlice = HeapLongArraySliceImpl(array, offset, size)
+
+private class HeapLongArraySliceImpl(
+        override val array: LongArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapLongArraySlice {
+    override fun slice(index: Int,
+                       size: Int): HeapLongArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapLongArraySlice)
 }
 
 /**

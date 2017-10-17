@@ -19,9 +19,7 @@ package org.tobi29.scapes.engine.codec.ogg
 import com.jcraft.jogg.Packet
 import com.jcraft.jogg.Page
 import org.tobi29.scapes.engine.codec.AudioMetaData
-import org.tobi29.scapes.engine.utils.io.HeapViewFloatBE
-import org.tobi29.scapes.engine.utils.io.MemoryViewStream
-import org.tobi29.scapes.engine.utils.math.min
+import org.tobi29.scapes.engine.utils.HeapFloatArraySlice
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toTag
 
@@ -54,30 +52,33 @@ class OpusReadStream(info: OpusInfo) : CodecDecoder {
     private var pcmLength = 0
     private var granulePos = 0L
 
-    override fun get(buffer: MemoryViewStream<HeapViewFloatBE>): Boolean {
-        if (pcmOffset >= pcmLength) {
-            return false
-        }
-        if (preSkip > 0) {
-            val skip = min(preSkip, pcmLength - pcmOffset)
-            pcmOffset += skip
-            preSkip -= skip
-        }
-        if (preSkip == 0) {
-            val granuleLimit = (granulePos - granuleOffset - out)
-            if (granuleLimit <= 0L) {
-                return false
+    override fun get(buffer: HeapFloatArraySlice): Int {
+        while (true) {
+            if (pcmOffset >= pcmLength) {
+                return 0
             }
-            val limit = min(granuleLimit,
-                    (pcmLength - pcmOffset).toLong()).toInt()
-            val size = min((buffer.remaining() shr 2) / channels, limit)
-            for (i in pcmOffset * channels until (pcmOffset + size) * channels) {
-                buffer.putFloat(pcm[i] / Short.MAX_VALUE.toFloat())
+            if (preSkip > 0) {
+                val skip = preSkip.coerceAtMost(pcmLength - pcmOffset)
+                pcmOffset += skip
+                preSkip -= skip
             }
-            out += size
-            pcmOffset += size
+            if (preSkip == 0) {
+                val granuleLimit = (granulePos - granuleOffset - out)
+                if (granuleLimit <= 0L) {
+                    return 0
+                }
+                val size = granuleLimit
+                        .coerceAtMost((pcmLength - pcmOffset).toLong()).toInt()
+                        .coerceAtMost(buffer.size / channels)
+                var j = 0
+                for (i in pcmOffset * channels until (pcmOffset + size) * channels) {
+                    buffer[j++] = pcm[i] / Short.MAX_VALUE.toFloat()
+                }
+                out += size
+                pcmOffset += size
+                return j
+            }
         }
-        return true
     }
 
     override fun packet(page: Page,

@@ -16,14 +16,13 @@
 
 package org.tobi29.scapes.engine.codec
 
+import org.tobi29.scapes.engine.utils.HeapFloatArraySlice
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.HeapViewFloat
-import org.tobi29.scapes.engine.utils.io.HeapViewFloatBE
-import org.tobi29.scapes.engine.utils.io.MemoryViewStream
+import org.tobi29.scapes.engine.utils.sliceOver
 
 class AudioBuffer(private val size: Int) {
-    private val buffer = MemoryViewStream(bufferProvider =
-    { HeapViewFloatBE(FloatArray((it + 3) shr 2), 0, it) })
+    var buffer = floatArrayOf().sliceOver(size = 0)
+        private set
     private var channels = 0
     private var rate = 0
     private var empty = true
@@ -31,15 +30,12 @@ class AudioBuffer(private val size: Int) {
         private set
 
     fun buffer(channels: Int,
-               rate: Int): MemoryViewStream<HeapViewFloatBE> {
+               rate: Int): HeapFloatArraySlice {
         if (empty) {
             empty = false
-            buffer.reset()
-            val capacity = (size * channels) shl 2
-            if (buffer.buffer().size < capacity) {
-                buffer.grow(capacity)
-            }
-            buffer.limit(capacity)
+            val bufferSize = size * channels
+            if (buffer.size < bufferSize)
+                buffer = FloatArray(bufferSize).sliceOver()
             this.channels = channels
             this.rate = rate
         } else {
@@ -48,9 +44,9 @@ class AudioBuffer(private val size: Int) {
         return buffer
     }
 
-    fun done() {
-        assert { buffer.position() % channels == 0 }
-        buffer.flip()
+    fun done(size: Int) {
+        assert { size % channels == 0 }
+        buffer = buffer.slice(size = size)
         isDone = true
     }
 
@@ -64,19 +60,13 @@ class AudioBuffer(private val size: Int) {
 
     fun clear() {
         assert { isDone }
-        buffer.reset()
         empty = true
         isDone = false
-    }
-
-    fun getBuffer(): MemoryViewStream<HeapViewFloat> {
-        return buffer
     }
 }
 
 inline fun AudioBuffer.toPCM16(consumer: (Short) -> Unit) {
-    val buffer = getBuffer()
-    while (buffer.hasRemaining()) {
-        consumer(toInt16(buffer.getFloat()))
+    for (i in 0 until buffer.size) {
+        consumer(toInt16(buffer[i]))
     }
 }

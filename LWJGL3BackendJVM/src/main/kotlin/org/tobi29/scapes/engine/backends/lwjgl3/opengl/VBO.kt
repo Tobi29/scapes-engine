@@ -20,20 +20,19 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteBufferNative
-import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
+import org.tobi29.scapes.engine.utils.io.ByteView
+import org.tobi29.scapes.engine.utils.io.ByteViewE
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.math.FastMath
 import org.tobi29.scapes.engine.utils.math.round
-import java.nio.ByteBuffer
 
 internal class VBO(val gos: GraphicsObjectSupplier,
                    attributes: List<ModelAttribute>,
                    length: Int) {
     private val stride: Int
     private val attributes = ArrayList<ModelAttributeData>()
-    private var data: ByteBuffer? = null
+    private var data: ByteView? = null
     private var vertexID = 0
     private var stored = false
 
@@ -50,7 +49,7 @@ internal class VBO(val gos: GraphicsObjectSupplier,
             stride += (size - 1 or 0x03) + 1
         }
         this.stride = stride
-        val vertexBuffer = ByteBufferNative(length * stride)
+        val vertexBuffer = gos.container.allocateNative(length * stride)
         attributes.forEach { addToBuffer(it, length, vertexBuffer) }
         data = vertexBuffer
     }
@@ -65,7 +64,7 @@ internal class VBO(val gos: GraphicsObjectSupplier,
         gl.check()
         glBindBuffer(GL_ARRAY_BUFFER, vertexID)
         glBufferData(GL_ARRAY_BUFFER, buffer.size, GL_STREAM_DRAW)
-        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.readAsNativeByteBuffer())
+        glBufferSubData(GL_ARRAY_BUFFER, 0, buffer)
     }
 
     private fun storeAttribute(gl: GL,
@@ -130,127 +129,65 @@ internal class VBO(val gos: GraphicsObjectSupplier,
 
     private fun addToBuffer(attribute: ModelAttribute,
                             vertices: Int,
-                            buffer: ByteBuffer) {
+                            buffer: ByteViewE) {
         val floatArray = attribute.floatArray
         if (floatArray == null) {
             val byteArray = attribute.byteArray ?: throw IllegalArgumentException(
                     "Attribute contains no data")
             when (attribute.vertexType) {
-                VertexType.BYTE, VertexType.UNSIGNED_BYTE -> for (i in 0 until vertices) {
-                    val `is` = i * attribute.size
-                    buffer.position(attribute.offset + i * stride)
-                    for (j in 0 until attribute.size) {
-                        val ij = `is` + j
-                        buffer.put(byteArray[ij].toByte())
-                    }
-                }
-                VertexType.SHORT, VertexType.UNSIGNED_SHORT -> for (i in 0 until vertices) {
-                    val `is` = i * attribute.size
-                    buffer.position(attribute.offset + i * stride)
-                    for (j in 0 until attribute.size) {
-                        val ij = `is` + j
-                        buffer.putShort(byteArray[ij].toShort())
-                    }
-                }
+                VertexType.BYTE, VertexType.UNSIGNED_BYTE ->
+                    buffer.storeBytes({ byteArray[it].toByte() },
+                            vertices, attribute.offset, attribute.size, stride)
+                VertexType.SHORT, VertexType.UNSIGNED_SHORT ->
+                    buffer.storeShorts({ byteArray[it].toShort() },
+                            vertices, attribute.offset, attribute.size, stride)
                 else -> throw IllegalArgumentException(
                         "Invalid array in vao attribute!")
             }
         } else {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> for (i in 0 until vertices) {
-                    val `is` = i * attribute.size
-                    buffer.position(attribute.offset + i * stride)
-                    for (j in 0 until attribute.size) {
-                        val ij = `is` + j
-                        buffer.putFloat(floatArray[ij])
-                    }
-                }
-                VertexType.HALF_FLOAT -> for (i in 0 until vertices) {
-                    val `is` = i * attribute.size
-                    buffer.position(attribute.offset + i * stride)
-                    for (j in 0 until attribute.size) {
-                        val ij = `is` + j
-                        buffer.putShort(FastMath.convertFloatToHalf(
-                                floatArray[ij]))
-                    }
-                }
+                VertexType.FLOAT ->
+                    buffer.storeFloats({ floatArray[it] },
+                            vertices, attribute.offset, attribute.size, stride)
+                VertexType.HALF_FLOAT ->
+                    buffer.storeShorts(
+                            { FastMath.convertFloatToHalf(floatArray[it]) },
+                            vertices, attribute.offset, attribute.size, stride)
                 VertexType.BYTE -> if (attribute.normalized) {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.put(round(floatArray[ij] * 127.0f).toByte())
-                        }
-                    }
+                    buffer.storeBytes(
+                            { round(floatArray[it] * 127.0f).toByte() },
+                            vertices, attribute.offset, attribute.size, stride)
                 } else {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.put(round(floatArray[ij]).toByte())
-                        }
-                    }
+                    buffer.storeBytes(
+                            { round(floatArray[it]).toByte() },
+                            vertices, attribute.offset, attribute.size, stride)
                 }
                 VertexType.UNSIGNED_BYTE -> if (attribute.normalized) {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.put(round(floatArray[ij] * 255.0f).toByte())
-                        }
-                    }
+                    buffer.storeBytes(
+                            { round(floatArray[it] * 255.0f).toByte() },
+                            vertices, attribute.offset, attribute.size, stride)
                 } else {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.put(round(floatArray[ij]).toByte())
-                        }
-                    }
+                    buffer.storeBytes(
+                            { round(floatArray[it]).toByte() },
+                            vertices, attribute.offset, attribute.size, stride)
                 }
                 VertexType.SHORT -> if (attribute.normalized) {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.putShort(
-                                    round(floatArray[ij] * 32768.0f).toShort())
-                        }
-                    }
+                    buffer.storeShorts(
+                            { round(floatArray[it] * 32768.0f).toShort() },
+                            vertices, attribute.offset, attribute.size, stride)
                 } else {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.putShort(round(floatArray[ij]).toShort())
-                        }
-                    }
+                    buffer.storeShorts(
+                            { round(floatArray[it]).toShort() },
+                            vertices, attribute.offset, attribute.size, stride)
                 }
                 VertexType.UNSIGNED_SHORT -> if (attribute.normalized) {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.putShort(
-                                    round(floatArray[ij] * 65535.0f).toShort())
-                        }
-                    }
+                    buffer.storeShorts(
+                            { round(floatArray[it] * 65535.0f).toShort() },
+                            vertices, attribute.offset, attribute.size, stride)
                 } else {
-                    for (i in 0 until vertices) {
-                        val `is` = i * attribute.size
-                        buffer.position(attribute.offset + i * stride)
-                        for (j in 0 until attribute.size) {
-                            val ij = `is` + j
-                            buffer.putShort(round(floatArray[ij]).toShort())
-                        }
-                    }
+                    buffer.storeShorts(
+                            { round(floatArray[it]).toShort() },
+                            vertices, attribute.offset, attribute.size, stride)
                 }
                 else -> throw IllegalArgumentException(
                         "Invalid array in vao attribute!")
@@ -269,7 +206,6 @@ internal class VBO(val gos: GraphicsObjectSupplier,
                 "VBO cannot be stored anymore")
         stored = true
         gl.check()
-        data.rewind()
         vertexID = glGenBuffers()
         glBindBuffer(GL_ARRAY_BUFFER, vertexID)
         glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
@@ -298,5 +234,53 @@ internal class VBO(val gos: GraphicsObjectSupplier,
         val divisor = attribute.divisor
         val normalized = attribute.normalized
         val integer = attribute.byteArray != null
+    }
+}
+
+private inline fun ByteViewE.storeBytes(source: (Int) -> Byte,
+                                        vertices: Int,
+                                        offset: Int,
+                                        size: Int,
+                                        stride: Int) =
+        store({ i, j -> setByte(j, source(i)) }, vertices, offset, size,
+                stride, 1)
+
+private inline fun ByteViewE.storeShorts(source: (Int) -> Short,
+                                         vertices: Int,
+                                         offset: Int,
+                                         size: Int,
+                                         stride: Int) =
+        store({ i, j -> setShort(j, source(i)) }, vertices, offset, size,
+                stride, 2)
+
+private inline fun ByteViewE.storeInts(source: (Int) -> Int,
+                                       vertices: Int,
+                                       offset: Int,
+                                       size: Int,
+                                       stride: Int) =
+        store({ i, j -> setInt(j, source(i)) }, vertices, offset, size,
+                stride, 4)
+
+private inline fun ByteViewE.storeFloats(source: (Int) -> Float,
+                                         vertices: Int,
+                                         offset: Int,
+                                         size: Int,
+                                         stride: Int) =
+        store({ i, j -> setFloat(j, source(i)) }, vertices, offset, size,
+                stride, 4)
+
+private inline fun store(copy: (Int, Int) -> Unit,
+                         vertices: Int,
+                         offset: Int,
+                         size: Int,
+                         stride: Int,
+                         typeStride: Int) {
+    for (i in 0 until vertices) {
+        val o = i * size
+        var k = offset + i * stride
+        for (j in o until o + size) {
+            copy(j, k)
+            k += typeStride
+        }
     }
 }

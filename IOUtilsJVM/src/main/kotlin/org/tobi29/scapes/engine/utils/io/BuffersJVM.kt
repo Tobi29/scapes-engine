@@ -18,15 +18,8 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
-
-interface BufferProvider<out T : Buffer> {
-    fun allocate(capacity: Int): T
-}
-
-typealias ByteBufferProvider = BufferProvider<ByteBuffer>
 
 /**
  * Returns a view on the given array
@@ -37,7 +30,7 @@ typealias ByteBufferProvider = BufferProvider<ByteBuffer>
  */
 inline fun ByteArray.asByteBuffer(offset: Int = 0,
                                   size: Int = this.size - offset): ByteBuffer =
-        java.nio.ByteBuffer.wrap(this, offset, size)
+        ByteBuffer.wrap(this, offset, size)
 
 impl typealias ByteOrder = java.nio.ByteOrder
 
@@ -47,31 +40,16 @@ impl inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
 
 impl inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
 
-object DefaultByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer =
-            java.nio.ByteBuffer.allocate(capacity).order(BIG_ENDIAN)
-}
-
-object DefaultLEByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer =
-            java.nio.ByteBuffer.allocate(capacity).order(LITTLE_ENDIAN)
-}
-
-object NativeByteBufferProvider : ByteBufferProvider {
-    override fun allocate(capacity: Int): ByteBuffer =
-            java.nio.ByteBuffer.allocateDirect(capacity).order(NATIVE_ENDIAN)
-}
-
 /**
  * Creates a [ByteBuffer] with big-endian byte-order
  * @param size Capacity of the buffer
  * @return A [ByteBuffer] with big-endian byte-order
  */
 inline fun ByteBuffer(size: Int): ByteBuffer =
-        DefaultByteBufferProvider.allocate(size)
+        ByteBuffer.allocate(size)
 
 fun ByteBufferNative(capacity: Int): ByteBuffer =
-        java.nio.ByteBuffer.allocateDirect(capacity).order(NATIVE_ENDIAN)
+        ByteBuffer.allocateDirect(capacity).order(NATIVE_ENDIAN)
 
 /**
  * Fills a buffer with the given value
@@ -86,46 +64,33 @@ inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
     return this
 }
 
-fun ByteBuffer.asArray() =
-        ByteArray(remaining()).also {
-            val position = position()
-            get(it)
-            position(position)
-        }
-
-// TODO: Make shorter for inline
 inline fun <R> ByteView.mutateAsByteBuffer(block: (ByteBuffer) -> R): R {
     var buffer = asByteBuffer()
-    val mapped = if (buffer == null) {
+    val view = if (buffer == null) {
         buffer = ByteBuffer(size)
-        // TODO: Optimize?
-        for (i in 0 until size) {
-            buffer.put(i, getByte(i))
+        if (this is MemorySegmentE) {
+            buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
         }
-        false
-    } else true
+        buffer.viewE.also { getBytes(0, it) }
+    } else this
     try {
         return block(buffer)
     } finally {
-        if (!mapped) {
-            // TODO: Optimize?
-            for (i in 0 until size) {
-                setByte(i, buffer.get(i))
-            }
-        }
+        if (view !== this) view.getBytes(0, this)
     }
 }
 
 fun ByteViewRO.readAsByteBuffer(): ByteBuffer =
         asByteBuffer() ?: ByteBuffer(size).also { buffer ->
-            for (i in 0 until size) {
-                buffer.put(i, getByte(i))
+            if (this is MemorySegmentE) {
+                buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
             }
+            getBytes(0, buffer.viewE)
         }
 
 fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
     is ByteBufferView -> byteBuffer.slice().order(byteBuffer.order())
-    is ArrayByteView -> byteArray.asByteBuffer(offset, size).slice().also {
+    is ArrayByteView -> array.asByteBuffer(offset, size).slice().also {
         if (this is MemorySegmentE) {
             it.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
         }
@@ -136,16 +101,15 @@ fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
 fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
         asByteBuffer()?.let {
             if (!it.isDirect) {
-                val buffer = java.nio.ByteBuffer.allocateDirect(
-                        it.remaining()).order(NATIVE_ENDIAN)
+                val buffer = ByteBuffer.allocateDirect(it.remaining())
+                if (this is MemorySegmentE) {
+                    buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
+                }
                 buffer.put(it)
                 buffer.flip()
                 buffer
             } else it
         } ?: java.nio.ByteBuffer.allocateDirect(size)
                 .order(NATIVE_ENDIAN).also { buffer ->
-            for (i in 0 until size) {
-                buffer.put(getByte(i))
-            }
-            buffer.flip()
+            getBytes(0, buffer.viewE)
         }

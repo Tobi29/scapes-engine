@@ -33,12 +33,12 @@ fun ReadableByteStream.asByteArray(): ByteArray =
         asByteView().readAsByteArray()
 
 fun ReadableByteStream.asString(): String =
-        asByteView().let { it.byteArray.utf8ToString(it.offset, it.size) }
+        asByteView().let { it.array.utf8ToString(it.offset, it.size) }
 
 fun ReadableByteStream.asByteView(): HeapViewByteBE =
         (if (this is SeekableByteChannel) MemoryViewStreamDefault(
                 ByteArray(remaining().toIntClamped()).viewBE)
-        else MemoryViewStreamDefault().also { stream ->
+        else MemoryViewStreamDefault()).also { stream ->
             process { stream.put(it) }
             stream.flip()
-        }).bufferSlice()
+        }.bufferSlice()

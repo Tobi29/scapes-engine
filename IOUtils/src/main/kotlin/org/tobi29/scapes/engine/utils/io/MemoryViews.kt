@@ -4,14 +4,7 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.*
 
-interface MemorySegment {
-    val size: Int
-
-    fun slice(index: Int = 0,
-              size: Int = this.size - index): MemorySegment
-}
-
-interface MemorySegmentE : MemorySegment {
+interface MemorySegmentE : ArraySegment {
     val isBigEndian: Boolean
     val isLittleEndian: Boolean get() = !isBigEndian
 }
@@ -24,38 +17,8 @@ interface MemorySegmentLE : MemorySegmentE {
     override val isBigEndian: Boolean get() = false
 }
 
-interface ByteViewRO : MemorySegment {
-    override fun slice(index: Int,
-                       size: Int): ByteViewRO
-
-    fun getByte(index: Int): Byte
-
-    fun getBytes(index: Int,
-                 byteView: ByteView) {
-        var j = index
-        for (i in 0 until byteView.size) {
-            byteView.setByte(i, getByte(j))
-            j += 1
-        }
-    }
-}
-
-interface ByteView : ByteViewRO {
-    fun byteArray(index: Int,
-                  size: Int): MemoryViewByteArraySlice =
-            MemoryViewByteArraySlice(
-                    slice(index, size))
-
-    override fun slice(index: Int,
-                       size: Int): ByteView
-
-    fun setByte(index: Int,
-                value: Byte)
-
-    fun setBytes(index: Int,
-                 byteView: ByteViewRO) =
-            byteView.getBytes(0, slice(index, byteView.size))
-}
+typealias ByteViewRO = ByteArraySliceRO
+typealias ByteView = ByteArraySlice
 
 interface ByteViewERO : ByteViewRO, ShortViewERO, MemorySegmentE {
     override fun slice(index: Int,
@@ -117,7 +80,7 @@ interface ByteViewLE : ByteViewLERO, ByteViewE, ShortViewLE {
     }
 }
 
-interface ShortViewRO : MemorySegment {
+interface ShortViewRO : ArraySegment {
     override fun slice(index: Int,
                        size: Int): ShortViewRO
 
@@ -237,7 +200,7 @@ typealias CharViewBE = ShortViewBE
 typealias CharViewLERO = ShortViewLERO
 typealias CharViewLE = ShortViewLE
 
-interface IntViewRO : MemorySegment {
+interface IntViewRO : ArraySegment {
     override fun slice(index: Int,
                        size: Int): IntViewRO
 
@@ -350,7 +313,7 @@ typealias FloatViewBE = IntViewBE
 typealias FloatViewLERO = IntViewLERO
 typealias FloatViewLE = IntViewLE
 
-interface LongViewRO : MemorySegment {
+interface LongViewRO : ArraySegment {
     override fun slice(index: Int,
                        size: Int): LongViewRO
 
@@ -371,7 +334,7 @@ interface LongViewRO : MemorySegment {
                    doubleView: DoubleView) = getLongs(index, doubleView)
 }
 
-interface LongView : LongViewRO, MemorySegment {
+interface LongView : LongViewRO, ArraySegment {
     fun longArray(index: Int,
                   size: Int): MemoryViewLongArraySlice =
             MemoryViewLongArraySlice(
@@ -433,78 +396,82 @@ typealias DoubleViewBE = LongViewBE
 typealias DoubleViewLERO = LongViewLERO
 typealias DoubleViewLE = LongViewLE
 
-val ByteArray.view: ArrayByteView
+val ByteArray.view: HeapByteArraySlice
     get() = ArrayByteViewSimple(this, 0, size)
 
+val ByteArraySliceRO.view: ByteViewRO
+    get() = when (this) {
+        is HeapByteArraySlice -> ArrayByteViewSimple(array, offset, size)
+        else -> ByteArraySliceViewRO(this)
+    }
+
+open class ByteArraySliceViewRO(
+        open val slice: ByteArraySliceRO
+) : ByteArraySliceRO by slice {
+    override fun slice(index: Int,
+                       size: Int): ByteArraySliceViewRO =
+            slice.slice(index, size).let {
+                if (it === slice) this else ByteArraySliceViewRO(it)
+            }
+
+    override fun getByte(index: Int): Byte = slice.get(index)
+}
+
+val ByteArraySlice.view: ByteView
+    get() = when (this) {
+        is HeapByteArraySlice -> ArrayByteViewSimple(array, offset, size)
+        else -> ByteArraySliceView(this)
+    }
+
+open class ByteArraySliceView(
+        override val slice: ByteArraySlice
+) : ByteArraySliceViewRO(slice), ByteArraySlice by slice {
+    override fun slice(index: Int,
+                       size: Int): ByteArraySliceView =
+            slice.slice(index, size).let {
+                if (it === slice) this else ByteArraySliceView(it)
+            }
+
+    override fun get(index: Int): Byte = slice.get(index)
+
+    override fun setByte(index: Int,
+                         value: Byte) = slice.set(index, value)
+}
+
 fun ByteViewRO.readAsByteArray(): ByteArray = when (this) {
-    is ArrayByteView ->
-        if (size == byteArray.size && offset == 0) byteArray else {
-            ByteArray(size).also { copy(byteArray, it, size, offset) }
+    is HeapByteArraySlice ->
+        if (size == array.size && offset == 0) array else {
+            ByteArray(size).also { copy(array, it, size, offset) }
         }
     else -> ByteArray(size) { getByte(it) }
 }
 
 fun ByteViewRO.asByteArray(): ByteArray = when (this) {
-    is ArrayByteView -> ByteArray(size).also {
-        copy(byteArray, it, size, offset)
+    is HeapByteArraySlice -> ByteArray(size).also {
+        copy(array, it, size, offset)
     }
     else -> ByteArray(size) { getByte(it) }
 }
 
-interface ArrayByteView : ByteView {
-    val byteArray: ByteArray
-    val offset: Int
+typealias ArrayByteView = HeapByteArraySlice
 
-    override fun getBytes(index: Int,
-                          byteView: ByteView) = when (byteView) {
-        is ArrayByteView -> getBytes(index, byteView)
-        else -> super.getBytes(index, byteView)
-    }
-
-    fun getBytes(index: Int,
-                 byteView: ArrayByteView) {
-        if (index < 0 || index + byteView.size > size)
-            throw IndexOutOfBoundsException("Invalid index or view too long")
-
-        copy(byteArray, byteView.byteArray,
-                byteView.size, index + this.offset,
-                byteView.offset)
-    }
-
-    override fun setBytes(index: Int,
-                          byteView: ByteViewRO) = when (byteView) {
-        is ArrayByteView -> setBytes(index, byteView)
-        else -> super.setBytes(index, byteView)
-    }
-
-    fun setBytes(index: Int,
-                 byteView: ArrayByteView) {
-        if (index < 0 || index + byteView.size > size)
-            throw IndexOutOfBoundsException("Invalid index or view too long")
-
-        copy(byteView.byteArray, byteArray,
-                byteView.size, byteView.offset,
-                index + this.offset)
-    }
-}
-
-class ArrayByteViewSimple(override val byteArray: ByteArray,
+class ArrayByteViewSimple(override val array: ByteArray,
                           override val offset: Int,
-                          override val size: Int) : ArrayByteView {
+                          override val size: Int) : HeapByteArraySlice {
     override fun slice(index: Int,
-                       size: Int): ByteView =
+                       size: Int): HeapByteArraySlice =
             prepareSlice(this.offset, this.size, index,
                     size) { i, s ->
-                ArrayByteViewSimple(byteArray,
+                ArrayByteViewSimple(array,
                         i, s)
             }
 
-    override fun getByte(index: Int): Byte = byteArray[index(index)]
-    override fun setByte(index: Int,
-                         value: Byte) = byteArray.set(index(index), value)
+    override fun get(index: Int): Byte = array[index(index)]
+    override fun set(index: Int,
+                     value: Byte) = array.set(index(index), value)
 }
 
-inline fun ArrayByteView.index(
+inline fun HeapByteArraySlice.index(
         index: Int,
         dataLength: Int = 1
 ): Int = index(offset, size, index, dataLength)

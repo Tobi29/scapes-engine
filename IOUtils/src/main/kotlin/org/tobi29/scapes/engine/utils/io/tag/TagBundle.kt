@@ -16,17 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.io.tag
 
-import org.tobi29.scapes.engine.utils.io.ByteViewBE
-import org.tobi29.scapes.engine.utils.io.ByteViewBERO
-import org.tobi29.scapes.engine.utils.io.UnixPathEnvironment
-import org.tobi29.scapes.engine.utils.io.viewBE
-import org.tobi29.scapes.engine.utils.io.ro
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toByteArray
 import org.tobi29.scapes.engine.utils.tag.toMap
 
 class TagBundle(private val map: TagMap) {
-    fun resolve(path: String): ByteViewBERO? {
+    fun resolve(path: String): ByteViewRO? {
         val segments = UnixPathEnvironment.run { path.components }
         if (segments.isEmpty()) {
             return null
@@ -46,10 +42,10 @@ class TagBundle(private val map: TagMap) {
         return this["Contents"]?.toMap()
     }
 
-    private fun TagMap.toFile(): ByteViewBE? {
+    private fun TagMap.toFile(): ByteView? {
         if (this["Type"].toString() != "File") {
             return null
         }
-        return this["Contents"]?.toByteArray()?.viewBE
+        return this["Contents"]?.toByteArray()?.view
     }
 }

@@ -1,12 +1,13 @@
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.HeapByteArraySlice
 import org.tobi29.scapes.engine.utils.index
 import org.tobi29.scapes.engine.utils.prepareSlice
 
 val ByteViewRO.viewBE: ByteViewBERO
     get() = when (this) {
         is ByteViewBERO -> this
-        is ArrayByteView -> HeapViewByteBE(byteArray, offset, size)
+        is HeapByteArraySlice -> HeapViewByteBE(array, offset, size)
         else -> object : ByteViewBERO, ByteViewRO by this {
             override fun slice(index: Int,
                                size: Int): ByteViewBERO =
@@ -20,7 +21,7 @@ val ByteViewRO.viewBE: ByteViewBERO
 val ByteView.viewBE: ByteViewBE
     get() = when (this) {
         is ByteViewBE -> this
-        is ArrayByteView -> HeapViewByteBE(byteArray, offset, size)
+        is HeapByteArraySlice -> HeapViewByteBE(array, offset, size)
         else -> object : ByteViewBE, ByteView by this {
             override fun slice(index: Int,
                                size: Int): ByteViewBE =
@@ -34,7 +35,7 @@ val ByteView.viewBE: ByteViewBE
 val ByteViewRO.viewLE: ByteViewLERO
     get() = when (this) {
         is ByteViewLERO -> this
-        is ArrayByteView -> HeapViewByteLE(byteArray, offset, size)
+        is HeapByteArraySlice -> HeapViewByteLE(array, offset, size)
         else -> object : ByteViewLERO, ByteViewRO by this {
             override fun slice(index: Int,
                                size: Int): ByteViewLERO =
@@ -48,7 +49,7 @@ val ByteViewRO.viewLE: ByteViewLERO
 val ByteView.viewLE: ByteViewLE
     get() = when (this) {
         is ByteViewLE -> this
-        is ArrayByteView -> HeapViewByteLE(byteArray, offset, size)
+        is HeapByteArraySlice -> HeapViewByteLE(array, offset, size)
         else -> object : ByteViewLE, ByteView by this {
             override fun slice(index: Int,
                                size: Int): ByteViewLE =
@@ -182,8 +183,8 @@ inline fun <R> ByteViewRO.readAsByteArray(block: (ByteArray, Int, Int) -> R): R 
     val array: ByteArray
     val offset: Int
     when (this) {
-        is ArrayByteView -> {
-            array = byteArray
+        is HeapByteArraySlice -> {
+            array = this.array
             offset = this.offset
         }
         else -> {

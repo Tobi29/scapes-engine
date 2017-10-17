@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface CharArraySlice : ArrayVarSlice<Char> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): CharArraySlice
+interface CharArraySliceRO : ArrayVarSlice<Char> {
+    override fun slice(index: Int,
+                       size: Int): CharArraySliceRO
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,29 @@ interface CharArraySlice : ArrayVarSlice<Char> {
      * @return The value at the given index
      */
     operator fun get(index: Int): Char
+
+    fun getChar(index: Int): Char = get(index)
+
+    fun getChars(index: Int,
+                 slice: CharArraySlice) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<Char> =
+            object : SliceIterator<Char>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface CharArraySlice : CharArraySliceRO {
+    override fun slice(index: Int,
+                       size: Int): CharArraySlice
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +51,62 @@ interface CharArraySlice : ArrayVarSlice<Char> {
     operator fun set(index: Int,
                      value: Char)
 
-    override fun iterator(): Iterator<Char> =
-            object : SliceIterator<Char>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setChar(index: Int,
+                value: Char) = set(index, value)
+
+    fun setChars(index: Int,
+                 slice: CharArraySliceRO) =
+            slice.getChars(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapCharArraySlice(
-        val array: CharArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<Char>, CharArraySlice {
+interface HeapCharArraySlice : HeapArrayVarSlice<Char>, CharArraySlice {
+    val array: CharArray
     override fun slice(index: Int,
-                       length: Int): HeapCharArraySlice =
-            prepareSlice(index, length, array,
-                    ::HeapCharArraySlice)
+                       size: Int): HeapCharArraySlice
 
     override fun get(index: Int): Char = array[index(index)]
     override fun set(index: Int,
                      value: Char) = array.set(index(index), value)
+
+    override fun getChars(index: Int,
+                          slice: CharArraySlice) {
+        if (slice !is HeapCharArraySlice) return super.getChars(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setChars(index: Int,
+                          slice: CharArraySliceRO) {
+        if (slice !is HeapCharArraySlice) return super.setChars(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun HeapCharArraySlice(
+        array: CharArray,
+        offset: Int,
+        size: Int
+): HeapCharArraySlice = HeapCharArraySliceImpl(array, offset, size)
+
+private class HeapCharArraySliceImpl(
+        override val array: CharArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapCharArraySlice {
+    override fun slice(index: Int,
+                       size: Int): HeapCharArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapCharArraySlice)
 }
 
 /**

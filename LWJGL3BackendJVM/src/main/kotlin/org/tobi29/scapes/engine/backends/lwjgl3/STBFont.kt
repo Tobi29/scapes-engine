@@ -19,7 +19,10 @@ import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.utils.io.*
+import org.tobi29.scapes.engine.utils.io.ByteBufferNative
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io.readAsByteBuffer
 import java.nio.ByteBuffer
 
 class STBFont(internal val container: ContainerLWJGL3,
@@ -32,11 +35,10 @@ class STBFont(internal val container: ContainerLWJGL3,
 
     companion object {
         fun fromFont(container: ContainerLWJGL3,
-                     font: ReadSource): STBFont? {
+                     font: ByteViewRO): STBFont? {
             try {
-                val buffer = font.read { it.asByteView().readAsByteBuffer() }
-                val fontBuffer = ByteBufferNative(buffer.remaining())
-                fontBuffer.put(buffer)
+                val fontBuffer = ByteBufferNative(font.size)
+                fontBuffer.put(font.readAsByteBuffer())
                 fontBuffer.flip()
                 val infoBuffer = STBTTFontinfo.create()
                 if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer)) {

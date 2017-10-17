@@ -20,7 +20,6 @@ package org.tobi29.scapes.engine.codec.wav
 import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioMetaData
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.utils.io.ByteViewLE
 import org.tobi29.scapes.engine.utils.io.*
 
 class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStream {
@@ -44,7 +43,7 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 
     private fun skip(skip: Long,
                      next: () -> (() -> Boolean)?): Boolean {
-        val newSkip = channel.skip(skip)
+        val newSkip = skip - channel.skip(skip)
         if (newSkip == 0L) {
             state = next()
             return true
@@ -187,7 +186,7 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     }
 
     override fun get(buffer: AudioBuffer?): ReadableAudioStream.Result {
-        while (state?.invoke() ?: false) {
+        while (state?.invoke() == true) {
         }
         if (state != null) {
             return if (eos) ReadableAudioStream.Result.EOS else
@@ -197,7 +196,8 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             return ReadableAudioStream.Result.BUFFER
         }
         val pcmBuffer = buffer.buffer(channels, rate)
-        while (pcmBuffer.hasRemaining() && !eos) {
+        var i = 0
+        while (i < pcmBuffer.size && !eos) {
             if (this.buffer.remaining() < bits shr 3) {
                 this.buffer.compact()
                 val read = channel.read(this.buffer)
@@ -214,25 +214,26 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 when (format) {
                     Format.PCM -> {
                         when (bits) {
-                            8 -> pcmBuffer.putFloat(
-                                    offset + (this.buffer.get().toInt() and 0xFF) / scale)
-                            16 -> pcmBuffer.putFloat(
-                                    offset + this.buffer.getShort() / scale)
-                            24 -> pcmBuffer.putFloat(
-                                    offset + this.buffer.get24Bit() / scale)
-                            32 -> pcmBuffer.putFloat(
-                                    offset + this.buffer.getInt() / scale)
-                            64 -> pcmBuffer.putFloat(
-                                    offset + this.buffer.getLong() / scale)
+                            8 -> pcmBuffer[i++] =
+                                    offset + (this.buffer.get().toInt() and 0xFF) / scale
+                            16 -> pcmBuffer[i++] =
+                                    offset + this.buffer.getShort() / scale
+                            24 -> pcmBuffer[i++] =
+                                    offset + this.buffer.get24Bit() / scale
+                            32 -> pcmBuffer[i++] =
+                                    offset + this.buffer.getInt() / scale
+                            64 -> pcmBuffer[i++] =
+                                    offset + this.buffer.getLong() / scale
                             else -> throw IllegalStateException(
                                     "Invalid bits: $bits")
                         }
                     }
                     Format.IEEE -> {
                         when (bits) {
-                            32 -> pcmBuffer.putFloat(this.buffer.getFloat())
-                            64 -> pcmBuffer.putFloat(
-                                    this.buffer.getDouble().toFloat())
+                            32 -> pcmBuffer[i++] =
+                                    this.buffer.getFloat()
+                            64 -> pcmBuffer[i++] =
+                                    this.buffer.getDouble().toFloat()
                             else -> throw IllegalStateException(
                                     "Invalid bits: $bits")
                         }
@@ -240,7 +241,7 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
                 }
             }
         }
-        buffer.done()
+        buffer.done(i)
         return if (eos) ReadableAudioStream.Result.EOS else
             ReadableAudioStream.Result.BUFFER
     }

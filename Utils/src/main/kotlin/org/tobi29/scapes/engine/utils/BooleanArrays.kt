@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface BooleanArraySlice : ArrayVarSlice<Boolean> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): BooleanArraySlice
+interface BooleanArraySliceRO : ArrayVarSlice<Boolean> {
+    override fun slice(index: Int,
+                       size: Int): BooleanArraySliceRO
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,29 @@ interface BooleanArraySlice : ArrayVarSlice<Boolean> {
      * @return The value at the given index
      */
     operator fun get(index: Int): Boolean
+
+    fun getBoolean(index: Int): Boolean = get(index)
+
+    fun getBooleans(index: Int,
+                    slice: BooleanArraySlice) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<Boolean> =
+            object : SliceIterator<Boolean>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface BooleanArraySlice : BooleanArraySliceRO {
+    override fun slice(index: Int,
+                       size: Int): BooleanArraySlice
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +51,64 @@ interface BooleanArraySlice : ArrayVarSlice<Boolean> {
     operator fun set(index: Int,
                      value: Boolean)
 
-    override fun iterator(): Iterator<Boolean> =
-            object : SliceIterator<Boolean>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setBoolean(index: Int,
+                   value: Boolean) = set(index, value)
+
+    fun setBooleans(index: Int,
+                    slice: BooleanArraySliceRO) =
+            slice.getBooleans(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapBooleanArraySlice(
-        val array: BooleanArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<Boolean>, BooleanArraySlice {
+interface HeapBooleanArraySlice : HeapArrayVarSlice<Boolean>, BooleanArraySlice {
+    val array: BooleanArray
     override fun slice(index: Int,
-                       length: Int): HeapBooleanArraySlice =
-            prepareSlice(index, length, array,
-                    ::HeapBooleanArraySlice)
+                       size: Int): HeapBooleanArraySlice
 
     override fun get(index: Int): Boolean = array[index(index)]
     override fun set(index: Int,
                      value: Boolean) = array.set(index(index), value)
+
+    override fun getBooleans(index: Int,
+                             slice: BooleanArraySlice) {
+        if (slice !is HeapBooleanArraySlice) return super.getBooleans(index,
+                slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setBooleans(index: Int,
+                             slice: BooleanArraySliceRO) {
+        if (slice !is HeapBooleanArraySlice) return super.setBooleans(index,
+                slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun HeapBooleanArraySlice(
+        array: BooleanArray,
+        offset: Int,
+        size: Int
+): HeapBooleanArraySlice = HeapBooleanArraySliceImpl(array, offset, size)
+
+private class HeapBooleanArraySliceImpl(
+        override val array: BooleanArray,
+        override val offset: Int,
+        override val size: Int
+) : HeapBooleanArraySlice {
+    override fun slice(index: Int,
+                       size: Int): HeapBooleanArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapBooleanArraySlice)
 }
 
 /**

@@ -8,8 +8,8 @@ class MemoryViewByteArraySlice(
     override val size: Int get() = view.size
 
     override fun slice(index: Int,
-                       length: Int): ByteArraySlice =
-            view.slice(scale(index), scale(length)).let {
+                       size: Int): ByteArraySlice =
+            view.slice(scale(index), scale(size)).let {
                 if (it === view) this
                 else MemoryViewByteArraySlice(
                         it)

@@ -1,5 +1,6 @@
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.HeapByteArraySlice
 import java.nio.ByteBuffer
 
 inline val ByteBuffer.viewE: ByteViewE
@@ -52,9 +53,9 @@ class ByteBufferViewBE(
                     }.slice().order(
                             BIG_ENDIAN))
 
-    override fun getByte(index: Int) = buffer.get(index)
-    override fun setByte(index: Int,
-                         value: Byte) {
+    override fun get(index: Int) = buffer.get(index)
+    override fun set(index: Int,
+                     value: Byte) {
         buffer.put(index, value)
     }
 
@@ -95,21 +96,21 @@ class ByteBufferViewBE(
     }
 
     override fun setBytes(index: Int,
-                          byteView: ByteViewRO) {
-        when (byteView) {
-            is ArrayByteView -> {
+                          slice: ByteViewRO) {
+        when (slice) {
+            is HeapByteArraySlice -> {
                 val position = buffer.position()
                 buffer.position(index)
-                buffer.put(byteView.byteArray, byteView.offset, byteView.size)
+                buffer.put(slice.array, slice.offset, slice.size)
                 buffer.position(position)
             }
             is ByteBufferView -> {
                 val position = buffer.position()
                 buffer.position(index)
-                buffer.put(byteView.byteBuffer)
+                buffer.put(slice.byteBuffer)
                 buffer.position(position)
             }
-            else -> super<ByteBufferView>.setBytes(index, byteView)
+            else -> super<ByteBufferView>.setBytes(index, slice)
         }
     }
 }
@@ -130,9 +131,9 @@ class ByteBufferViewLE(
                     }.slice().order(
                             LITTLE_ENDIAN))
 
-    override fun getByte(index: Int) = buffer.get(index)
-    override fun setByte(index: Int,
-                         value: Byte) {
+    override fun get(index: Int) = buffer.get(index)
+    override fun set(index: Int,
+                     value: Byte) {
         buffer.put(index, value)
     }
 
@@ -175,10 +176,10 @@ class ByteBufferViewLE(
     override fun setBytes(index: Int,
                           byteView: ByteViewRO) {
         when (byteView) {
-            is ArrayByteView -> {
+            is HeapByteArraySlice -> {
                 val position = buffer.position()
                 buffer.position(index)
-                buffer.put(byteView.byteArray, byteView.offset, byteView.size)
+                buffer.put(byteView.array, byteView.offset, byteView.size)
                 buffer.position(position)
             }
             is ByteBufferView -> {

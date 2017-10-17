@@ -7,17 +7,11 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Slice of an array, indexed in elements
+ * Read-only slice of an array, indexed in elements
  */
-interface ArraySlice<T> : ArrayVarSlice<T> {
-    /**
-     * Slices the array
-     * @param index First index to expose in slice
-     * @param length Amount of elements to expose in slice
-     * @return A new slice with specified bounds
-     */
-    fun slice(index: Int = 0,
-              length: Int = size - index): ArraySlice<T>
+interface ArraySliceRO<T> : ArrayVarSlice<T> {
+    override fun slice(index: Int,
+                       size: Int): ArraySliceRO<T>
 
     /**
      * Returns the element at the given index in the slice
@@ -25,6 +19,27 @@ interface ArraySlice<T> : ArrayVarSlice<T> {
      * @return The value at the given index
      */
     operator fun get(index: Int): T
+
+    fun getElements(index: Int,
+                    slice: ArraySlice<in T>) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice.set(i, get(j++))
+        }
+    }
+
+    override fun iterator(): Iterator<T> =
+            object : SliceIterator<T>(size) {
+                override fun access(index: Int) = get(index)
+            }
+}
+
+/**
+ * Slice of an array, indexed in elements
+ */
+interface ArraySlice<T> : ArraySliceRO<T> {
+    override fun slice(index: Int,
+                       size: Int): ArraySlice<T>
 
     /**
      * Sets the element at the given index in the slice
@@ -34,28 +49,59 @@ interface ArraySlice<T> : ArrayVarSlice<T> {
     operator fun set(index: Int,
                      value: T)
 
-    override fun iterator(): Iterator<T> =
-            object : SliceIterator<T>(size) {
-                override fun access(index: Int) = get(index)
-            }
+    fun setElements(index: Int,
+                    slice: ArraySliceRO<out T>) =
+            slice.getElements(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
-class HeapArraySlice<T>(
-        val array: Array<T>,
-        override val offset: Int,
-        override val size: Int
-) : HeapArrayVarSlice<T>, ArraySlice<T> {
+interface HeapArraySlice<T> : HeapArrayVarSlice<T>, ArraySlice<T> {
+    val array: Array<T>
     override fun slice(index: Int,
-                       length: Int): HeapArraySlice<T> =
-            prepareSlice(index, length, array,
-                    ::HeapArraySlice)
+                       size: Int): HeapArraySlice<T>
 
     override fun get(index: Int): T = array[index(index)]
     override fun set(index: Int,
                      value: T) = array.set(index(index), value)
+
+    override fun getElements(index: Int,
+                             slice: ArraySlice<in T>) {
+        if (slice !is HeapArraySlice) return super.getElements(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(array, slice.array, slice.size, index + this.offset, slice.offset)
+    }
+
+    override fun setElements(index: Int,
+                             slice: ArraySliceRO<out T>) {
+        if (slice !is HeapArraySlice) return super.setElements(index, slice)
+
+        if (index < 0 || index + slice.size > size)
+            throw IndexOutOfBoundsException("Invalid index or view too long")
+
+        copy(slice.array, array, slice.size, slice.offset, index + this.offset)
+    }
+}
+
+fun <T> HeapArraySlice(
+        array: Array<T>,
+        offset: Int,
+        size: Int
+): HeapArraySlice<T> = HeapArraySliceImpl(array, offset, size)
+
+private class HeapArraySliceImpl<T>(
+        override val array: Array<T>,
+        override val offset: Int,
+        override val size: Int
+) : HeapArraySlice<T> {
+    override fun slice(index: Int,
+                       size: Int): HeapArraySlice<T> =
+            prepareSlice(index, size, array,
+                    ::HeapArraySlice)
 }
 
 /**

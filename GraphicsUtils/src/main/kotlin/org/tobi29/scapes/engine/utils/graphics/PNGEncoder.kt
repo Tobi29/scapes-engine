@@ -39,13 +39,13 @@ private fun WritableByteStream.writeImage(image: Image,
                 while (positionWrite < buffer.size) {
                     if (y < image.height) {
                         if (x == -1) {
-                            buffer.setByte(positionWrite++, 0)
+                            buffer[positionWrite++] = 0
                             x++
                         } else if (x < image.width) {
                             val length = (buffer.size).coerceAtMost(
                                     image.width - x)
                             image.view.getBytes(position,
-                                    buffer.slice(positionWrite, length))
+                                    buffer.slice(positionWrite, length).view)
                             position += length
                             positionWrite += length
                             x += length
@@ -78,12 +78,12 @@ private fun WritableByteStream.writeImage(image: Image,
                 while (positionWrite < buffer.size) {
                     if (y < image.height) {
                         if (x == -1) {
-                            buffer.setByte(positionWrite++, 0)
+                            buffer[positionWrite++] = 0
                             x++
                         } else if (x < image.width) {
                             if (i < 3) {
-                                buffer.setByte(positionWrite++,
-                                        image.view.getByte(position++))
+                                buffer[positionWrite++] =
+                                        image.view.getByte(position++)
                                 i++
                             } else if (i < 4) {
                                 position++
@@ -132,7 +132,7 @@ private fun WritableByteStream.writeChunk(type: Int,
         putInt(type)
     } else {
         repeat(chunk.size) {
-            crc = chainCRC32(crc, chunk.getByte(it), zlibTable)
+            crc = chainCRC32(crc, chunk[it], zlibTable)
         }
         putInt(chunk.size)
         putInt(type)

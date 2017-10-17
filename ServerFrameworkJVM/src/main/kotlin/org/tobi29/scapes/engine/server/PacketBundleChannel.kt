@@ -109,7 +109,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
             if (wrote < 0) return true
             write = write.slice(wrote)
             if (write.size <= 0) {
-                BUFFER_CACHE.get().add(WeakReference(write.byteArray))
+                BUFFER_CACHE.get().add(WeakReference(write.array))
                 output = null
                 continue
             }
