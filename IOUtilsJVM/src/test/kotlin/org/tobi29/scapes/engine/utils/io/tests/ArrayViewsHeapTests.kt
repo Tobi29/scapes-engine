@@ -16,31 +16,7 @@ object ArrayViewsHeapTests : Spek({
                     *testsForType({ ByteArray(it) },
                             ::HeapViewByteBE, "big-endian byte arrays"),
                     *testsForType({ ByteArray(it) },
-                            ::HeapViewByteLE, "little-endian byte arrays"),
-                    *testsForType({ ShortArray(it + 1 shr 1) },
-                            ::HeapViewShortBE, "big-endian short arrays"),
-                    *testsForType({ ShortArray(it + 1 shr 1) },
-                            ::HeapViewShortLE, "little-endian short arrays"),
-                    *testsForType({ CharArray(it + 1 shr 1) },
-                            ::HeapViewCharBE, "big-endian char arrays"),
-                    *testsForType({ CharArray(it + 1 shr 1) },
-                            ::HeapViewCharLE, "little-endian char arrays"),
-                    *testsForType({ IntArray(it + 1 shr 1) },
-                            ::HeapViewIntBE, "big-endian int arrays"),
-                    *testsForType({ IntArray(it + 1 shr 1) },
-                            ::HeapViewIntLE, "little-endian int arrays"),
-                    *testsForType({ FloatArray(it + 1 shr 1) },
-                            ::HeapViewFloatBE, "big-endian float arrays"),
-                    *testsForType({ FloatArray(it + 1 shr 1) },
-                            ::HeapViewFloatLE, "little-endian float arrays"),
-                    *testsForType({ LongArray(it + 1 shr 1) },
-                            ::HeapViewLongBE, "big-endian long arrays"),
-                    *testsForType({ LongArray(it + 1 shr 1) },
-                            ::HeapViewLongLE, "little-endian long arrays"),
-                    *testsForType({ DoubleArray(it + 1 shr 1) },
-                            ::HeapViewDoubleBE, "big-endian double arrays"),
-                    *testsForType({ DoubleArray(it + 1 shr 1) },
-                            ::HeapViewDoubleLE, "little-endian double arrays"))
+                            ::HeapViewByteLE, "little-endian byte arrays"))
             for ((name, left, right) in tests.map { (supplier, name) ->
                 name to supplier(269)
             }.map { (name, views) ->
@@ -134,24 +110,6 @@ private fun <B : ByteViewE> writeToView(view: B): B {
     view.setDouble(105, 1.1)
     view.setDouble(114, 1.1)
     view.setBytes(121, byteArrayOf(127, -1, -34, 4, 1, 4, 2, 6, 9).let {
-        if (view.isBigEndian) it.viewBE else it.viewLE
-    })
-    view.setBytes(131, shortArrayOf(8924, -1232, 21489, 2314, 231).let {
-        if (view.isBigEndian) it.viewBE else it.viewLE
-    })
-    view.setBytes(141, charArrayOf('G', 'r', '8', 'm', '8').let {
-        if (view.isBigEndian) it.viewBE else it.viewLE
-    })
-    view.setBytes(151, intArrayOf(4234532, -923523523).let {
-        if (view.isBigEndian) it.viewBE else it.viewLE
-    })
-    view.setBytes(161, floatArrayOf(1.1f, 2.1f).let {
-        if (view.isBigEndian) it.viewBE else it.viewLE
-    })
-    view.setBytes(171, longArrayOf(37582735798235, -134835892378829).let {
-        if (view.isBigEndian) it.viewBE else it.viewLE
-    })
-    view.setBytes(191, doubleArrayOf(1.1, 2.1).let {
         if (view.isBigEndian) it.viewBE else it.viewLE
     })
     return view
