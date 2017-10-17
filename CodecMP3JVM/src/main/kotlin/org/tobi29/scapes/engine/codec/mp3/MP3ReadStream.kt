@@ -178,7 +178,7 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
 
         override fun clear_buffer() {
             for (i in index.indices) {
-                index[i] = i shl 2
+                index[i] = i
             }
         }
 
