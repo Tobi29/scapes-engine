@@ -17,8 +17,11 @@
 package org.tobi29.scapes.engine.utils.io.filesystem
 
 import org.tobi29.scapes.engine.utils.io.Path
+import org.tobi29.scapes.engine.utils.io.Uri
 
 header interface FilePath : Path, Comparable<FilePath> {
+    fun toUri(): Uri
+
     fun normalize(): FilePath
 
     fun resolve(other: String): FilePath
