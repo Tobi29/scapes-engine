@@ -58,6 +58,25 @@ impl class UriHierarchicalAbsolute(java: JavaUri,
     ) : this(JavaUri(scheme, null, path, query, fragment), true)
 
     impl override val path: String get() = java.path ?: "" // Crash safety
+
+    impl override fun toString(): String = java.toString()
+
+    impl override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is UriHierarchicalAbsolute) return false
+        return scheme.equals(other.scheme, false)
+                && path == other.path
+                && query == other.query
+                && fragment == other.fragment
+    }
+
+    impl override fun hashCode(): Int {
+        var result = scheme.toLowerCase().hashCode()
+        result = 31 * result + path.hashCode()
+        result = 31 * result + (query?.hashCode() ?: 0)
+        result = 31 * result + (fragment?.hashCode() ?: 0)
+        return result
+    }
 }
 
 impl class UriHierarchicalNet(java: JavaUri,
@@ -80,6 +99,29 @@ impl class UriHierarchicalNet(java: JavaUri,
     impl val userInfo: String? get() = java.userInfo
     impl val host: String get() = java.host ?: "" // Crash safety
     impl val port: Int? get() = java.port.takeIf { it >= 0 }
+
+    impl override fun toString(): String = java.toString()
+
+    impl override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is UriHierarchicalNet) return false
+        return scheme.equals(other.scheme, false)
+                && host == other.host
+                && port == other.port
+                && path == other.path
+                && query == other.query
+                && fragment == other.fragment
+    }
+
+    impl override fun hashCode(): Int {
+        var result = scheme.toLowerCase().hashCode()
+        result = 31 * result + host.hashCode()
+        result = 31 * result + (port ?: 0)
+        result = 31 * result + (path?.hashCode() ?: 0)
+        result = 31 * result + (query?.hashCode() ?: 0)
+        result = 31 * result + (fragment?.hashCode() ?: 0)
+        return result
+    }
 }
 
 impl class UriOpaque(java: JavaUri,
@@ -95,6 +137,21 @@ impl class UriOpaque(java: JavaUri,
     ) : this(JavaUri(scheme, opaque, fragment), true)
 
     impl val opaque: String get() = java.schemeSpecificPart ?: "" // Crash safety
+
+    impl override fun toString(): String = java.toString()
+
+    impl override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is UriOpaque) return false
+        return scheme.equals(other.scheme, false)
+                && fragment == other.fragment
+    }
+
+    impl override fun hashCode(): Int {
+        var result = scheme.toLowerCase().hashCode()
+        result = 31 * result + (fragment?.hashCode() ?: 0)
+        return result
+    }
 }
 
 impl class UriRelative(java: JavaUri,
@@ -111,6 +168,23 @@ impl class UriRelative(java: JavaUri,
 
     impl val path: String get() = java.path ?: "" // Crash safety
     impl val query: String? get() = java.query
+
+    impl override fun toString(): String = java.toString()
+
+    impl override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is UriRelative) return false
+        return path == other.path
+                && query == other.query
+                && fragment == other.fragment
+    }
+
+    impl override fun hashCode(): Int {
+        var result = path.hashCode()
+        result = 31 * result + (query?.hashCode() ?: 0)
+        result = 31 * result + (fragment?.hashCode() ?: 0)
+        return result
+    }
 }
 
 impl fun Uri(str: String): Uri = JavaUri(str).toUri()
