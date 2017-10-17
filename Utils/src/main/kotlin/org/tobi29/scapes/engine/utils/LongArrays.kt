@@ -62,17 +62,23 @@ interface LongArraySlice : LongArraySliceRO {
 /**
  * Slice of a normal heap array
  */
-interface HeapLongArraySlice : HeapArrayVarSlice<Long>, LongArraySlice {
-    val array: LongArray
+open class HeapLongArraySlice(
+        val array: LongArray,
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<Long>, LongArraySlice {
     override fun slice(index: Int,
-                       size: Int): HeapLongArraySlice
+                       size: Int): HeapLongArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapLongArraySlice)
 
-    override fun get(index: Int): Long = array[index(index)]
-    override fun set(index: Int,
-                     value: Long) = array.set(index(index), value)
+    override final fun get(index: Int): Long = array[index(offset, size, index)]
+    override final fun set(index: Int,
+                           value: Long) = array.set(index(offset, size, index),
+            value)
 
-    override fun getLongs(index: Int,
-                          slice: LongArraySlice) {
+    override final fun getLongs(index: Int,
+                                slice: LongArraySlice) {
         if (slice !is HeapLongArraySlice) return super.getLongs(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -81,8 +87,8 @@ interface HeapLongArraySlice : HeapArrayVarSlice<Long>, LongArraySlice {
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun setLongs(index: Int,
-                          slice: LongArraySliceRO) {
+    override final fun setLongs(index: Int,
+                                slice: LongArraySliceRO) {
         if (slice !is HeapLongArraySlice) return super.setLongs(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -90,23 +96,6 @@ interface HeapLongArraySlice : HeapArrayVarSlice<Long>, LongArraySlice {
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-fun HeapLongArraySlice(
-        array: LongArray,
-        offset: Int,
-        size: Int
-): HeapLongArraySlice = HeapLongArraySliceImpl(array, offset, size)
-
-private class HeapLongArraySliceImpl(
-        override val array: LongArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapLongArraySlice {
-    override fun slice(index: Int,
-                       size: Int): HeapLongArraySlice =
-            prepareSlice(index, size, array,
-                    ::HeapLongArraySlice)
 }
 
 /**

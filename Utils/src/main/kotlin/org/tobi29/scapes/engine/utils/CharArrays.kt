@@ -62,17 +62,23 @@ interface CharArraySlice : CharArraySliceRO {
 /**
  * Slice of a normal heap array
  */
-interface HeapCharArraySlice : HeapArrayVarSlice<Char>, CharArraySlice {
-    val array: CharArray
+open class HeapCharArraySlice(
+        val array: CharArray,
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<Char>, CharArraySlice {
     override fun slice(index: Int,
-                       size: Int): HeapCharArraySlice
+                       size: Int): HeapCharArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapCharArraySlice)
 
-    override fun get(index: Int): Char = array[index(index)]
-    override fun set(index: Int,
-                     value: Char) = array.set(index(index), value)
+    override final fun get(index: Int): Char = array[index(offset, size, index)]
+    override final fun set(index: Int,
+                           value: Char) = array.set(index(offset, size, index),
+            value)
 
-    override fun getChars(index: Int,
-                          slice: CharArraySlice) {
+    override final fun getChars(index: Int,
+                                slice: CharArraySlice) {
         if (slice !is HeapCharArraySlice) return super.getChars(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -81,8 +87,8 @@ interface HeapCharArraySlice : HeapArrayVarSlice<Char>, CharArraySlice {
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun setChars(index: Int,
-                          slice: CharArraySliceRO) {
+    override final fun setChars(index: Int,
+                                slice: CharArraySliceRO) {
         if (slice !is HeapCharArraySlice) return super.setChars(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -90,23 +96,6 @@ interface HeapCharArraySlice : HeapArrayVarSlice<Char>, CharArraySlice {
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-fun HeapCharArraySlice(
-        array: CharArray,
-        offset: Int,
-        size: Int
-): HeapCharArraySlice = HeapCharArraySliceImpl(array, offset, size)
-
-private class HeapCharArraySliceImpl(
-        override val array: CharArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapCharArraySlice {
-    override fun slice(index: Int,
-                       size: Int): HeapCharArraySlice =
-            prepareSlice(index, size, array,
-                    ::HeapCharArraySlice)
 }
 
 /**

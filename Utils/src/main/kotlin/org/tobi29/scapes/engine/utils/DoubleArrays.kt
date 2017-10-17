@@ -62,17 +62,25 @@ interface DoubleArraySlice : DoubleArraySliceRO {
 /**
  * Slice of a normal heap array
  */
-interface HeapDoubleArraySlice : HeapArrayVarSlice<Double>, DoubleArraySlice {
-    val array: DoubleArray
+open class HeapDoubleArraySlice(
+        val array: DoubleArray,
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<Double>, DoubleArraySlice {
     override fun slice(index: Int,
-                       size: Int): HeapDoubleArraySlice
+                       size: Int): HeapDoubleArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapDoubleArraySlice)
 
-    override fun get(index: Int): Double = array[index(index)]
-    override fun set(index: Int,
-                     value: Double) = array.set(index(index), value)
+    override final fun get(index: Int): Double = array[index(offset, size,
+            index)]
 
-    override fun getDoubles(index: Int,
-                            slice: DoubleArraySlice) {
+    override final fun set(index: Int,
+                           value: Double) = array.set(
+            index(offset, size, index), value)
+
+    override final fun getDoubles(index: Int,
+                                  slice: DoubleArraySlice) {
         if (slice !is HeapDoubleArraySlice) return super.getDoubles(index,
                 slice)
 
@@ -82,8 +90,8 @@ interface HeapDoubleArraySlice : HeapArrayVarSlice<Double>, DoubleArraySlice {
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun setDoubles(index: Int,
-                            slice: DoubleArraySliceRO) {
+    override final fun setDoubles(index: Int,
+                                  slice: DoubleArraySliceRO) {
         if (slice !is HeapDoubleArraySlice) return super.setDoubles(index,
                 slice)
 
@@ -92,23 +100,6 @@ interface HeapDoubleArraySlice : HeapArrayVarSlice<Double>, DoubleArraySlice {
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-fun HeapDoubleArraySlice(
-        array: DoubleArray,
-        offset: Int,
-        size: Int
-): HeapDoubleArraySlice = HeapDoubleArraySliceImpl(array, offset, size)
-
-private class HeapDoubleArraySliceImpl(
-        override val array: DoubleArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapDoubleArraySlice {
-    override fun slice(index: Int,
-                       size: Int): HeapDoubleArraySlice =
-            prepareSlice(index, size, array,
-                    ::HeapDoubleArraySlice)
 }
 
 /**

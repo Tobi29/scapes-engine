@@ -57,17 +57,23 @@ interface ArraySlice<T> : ArraySliceRO<T> {
 /**
  * Slice of a normal heap array
  */
-interface HeapArraySlice<T> : HeapArrayVarSlice<T>, ArraySlice<T> {
-    val array: Array<T>
+open class HeapArraySlice<T>(
+        val array: Array<T>,
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<T>, ArraySlice<T> {
     override fun slice(index: Int,
-                       size: Int): HeapArraySlice<T>
+                       size: Int): HeapArraySlice<T> =
+            prepareSlice(index, size, array,
+                    ::HeapArraySlice)
 
-    override fun get(index: Int): T = array[index(index)]
-    override fun set(index: Int,
-                     value: T) = array.set(index(index), value)
+    override final fun get(index: Int): T = array[index(offset, size, index)]
+    override final fun set(index: Int,
+                           value: T) = array.set(index(offset, size, index),
+            value)
 
-    override fun getElements(index: Int,
-                             slice: ArraySlice<in T>) {
+    override final fun getElements(index: Int,
+                                   slice: ArraySlice<in T>) {
         if (slice !is HeapArraySlice) return super.getElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -76,8 +82,8 @@ interface HeapArraySlice<T> : HeapArrayVarSlice<T>, ArraySlice<T> {
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun setElements(index: Int,
-                             slice: ArraySliceRO<out T>) {
+    override final fun setElements(index: Int,
+                                   slice: ArraySliceRO<out T>) {
         if (slice !is HeapArraySlice) return super.setElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -85,23 +91,6 @@ interface HeapArraySlice<T> : HeapArrayVarSlice<T>, ArraySlice<T> {
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-fun <T> HeapArraySlice(
-        array: Array<T>,
-        offset: Int,
-        size: Int
-): HeapArraySlice<T> = HeapArraySliceImpl(array, offset, size)
-
-private class HeapArraySliceImpl<T>(
-        override val array: Array<T>,
-        override val offset: Int,
-        override val size: Int
-) : HeapArraySlice<T> {
-    override fun slice(index: Int,
-                       size: Int): HeapArraySlice<T> =
-            prepareSlice(index, size, array,
-                    ::HeapArraySlice)
 }
 
 /**

@@ -124,17 +124,21 @@ else type}s(index: Int,
 /**
  * Slice of a normal heap array
  */
-interface Heap${specialize(
-        "ArraySlice")} : HeapArrayVarSlice<$type>, ${specialize("ArraySlice")} {
-        val array: ${specialize("Array")}
+open class Heap${specialize("ArraySlice")}(
+        val array: ${specialize("Array")},
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<$type>, ${specialize("ArraySlice")} {
     override fun slice(index: Int,
-                       size: Int): Heap${specialize("ArraySlice")}
+                       size: Int): Heap${specialize("ArraySlice")} =
+            prepareSlice(index, size, array,
+                    ::Heap${specializeName("ArraySlice")})
 
-    override fun get(index: Int): $type = array[index(index)]
-    override fun set(index: Int,
-                     value: $type) = array.set(index(index), value)
+    override final fun get(index: Int): $type = array[index(offset, size, index)]
+    override final fun set(index: Int,
+                           value: $type) = array.set(index(offset, size, index), value)
 
-    override fun get${if (isReference) "Element" else type}s(index: Int,
+    override final fun get${if (isReference) "Element" else type}s(index: Int,
                          slice: ${specializeIn("ArraySlice")}) {
         if (slice !is Heap${specializeName(
         "ArraySlice")}) return super.get${if (isReference) "Element" else type}s(index, slice)
@@ -145,7 +149,7 @@ interface Heap${specialize(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun set${if (isReference) "Element" else type}s(index: Int,
+    override final fun set${if (isReference) "Element" else type}s(index: Int,
                          slice: ${specializeOut("ArraySliceRO")}) {
         if (slice !is Heap${specializeName(
         "ArraySlice")}) return super.set${if (isReference) "Element" else type}s(index, slice)
@@ -155,24 +159,6 @@ interface Heap${specialize(
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-$genericFun Heap${specializeName("ArraySlice")}(
-        array: ${specialize("Array")},
-        offset: Int,
-        size: Int
-): Heap${specialize("ArraySlice")} = Heap${specializeName(
-        "ArraySliceImpl")}(array, offset, size)
-
-private class Heap${specialize("ArraySliceImpl")}(
-        override val array: ${specialize("Array")},
-        override val offset: Int,
-        override val size: Int
-) : Heap${specialize("ArraySlice")} {
-    override fun slice(index: Int,
-                       size: Int): Heap${specialize("ArraySlice")} =
-            prepareSlice(index, size, array,
-                    ::Heap${specializeName("ArraySlice")})
 }
 
 /**

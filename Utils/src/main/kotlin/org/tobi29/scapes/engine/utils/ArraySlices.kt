@@ -76,10 +76,6 @@ inline fun <R> R.prepareSlice(
     else supplier(srcOffset + index, size)
 }
 
-inline internal fun HeapArrayVarSlice<*>.index(index: Int,
-                                               dataLength: Int = 1): Int =
-        index(offset, size, index, dataLength)
-
 inline fun index(offset: Int,
                  size: Int,
                  index: Int,

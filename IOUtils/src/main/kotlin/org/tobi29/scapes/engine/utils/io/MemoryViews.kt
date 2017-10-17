@@ -454,22 +454,7 @@ fun ByteViewRO.asByteArray(): ByteArray = when (this) {
 }
 
 typealias ArrayByteView = HeapByteArraySlice
-
-class ArrayByteViewSimple(override val array: ByteArray,
-                          override val offset: Int,
-                          override val size: Int) : HeapByteArraySlice {
-    override fun slice(index: Int,
-                       size: Int): HeapByteArraySlice =
-            prepareSlice(this.offset, this.size, index,
-                    size) { i, s ->
-                ArrayByteViewSimple(array,
-                        i, s)
-            }
-
-    override fun get(index: Int): Byte = array[index(index)]
-    override fun set(index: Int,
-                     value: Byte) = array.set(index(index), value)
-}
+typealias ArrayByteViewSimple = HeapByteArraySlice
 
 inline fun HeapByteArraySlice.index(
         index: Int,

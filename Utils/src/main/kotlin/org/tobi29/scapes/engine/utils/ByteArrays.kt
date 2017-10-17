@@ -62,17 +62,23 @@ interface ByteArraySlice : ByteArraySliceRO {
 /**
  * Slice of a normal heap array
  */
-interface HeapByteArraySlice : HeapArrayVarSlice<Byte>, ByteArraySlice {
-    val array: ByteArray
+open class HeapByteArraySlice(
+        val array: ByteArray,
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<Byte>, ByteArraySlice {
     override fun slice(index: Int,
-                       size: Int): HeapByteArraySlice
+                       size: Int): HeapByteArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapByteArraySlice)
 
-    override fun get(index: Int): Byte = array[index(index)]
-    override fun set(index: Int,
-                     value: Byte) = array.set(index(index), value)
+    override final fun get(index: Int): Byte = array[index(offset, size, index)]
+    override final fun set(index: Int,
+                           value: Byte) = array.set(index(offset, size, index),
+            value)
 
-    override fun getBytes(index: Int,
-                          slice: ByteArraySlice) {
+    override final fun getBytes(index: Int,
+                                slice: ByteArraySlice) {
         if (slice !is HeapByteArraySlice) return super.getBytes(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -81,8 +87,8 @@ interface HeapByteArraySlice : HeapArrayVarSlice<Byte>, ByteArraySlice {
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun setBytes(index: Int,
-                          slice: ByteArraySliceRO) {
+    override final fun setBytes(index: Int,
+                                slice: ByteArraySliceRO) {
         if (slice !is HeapByteArraySlice) return super.setBytes(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -90,23 +96,6 @@ interface HeapByteArraySlice : HeapArrayVarSlice<Byte>, ByteArraySlice {
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-fun HeapByteArraySlice(
-        array: ByteArray,
-        offset: Int,
-        size: Int
-): HeapByteArraySlice = HeapByteArraySliceImpl(array, offset, size)
-
-private class HeapByteArraySliceImpl(
-        override val array: ByteArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapByteArraySlice {
-    override fun slice(index: Int,
-                       size: Int): HeapByteArraySlice =
-            prepareSlice(index, size, array,
-                    ::HeapByteArraySlice)
 }
 
 /**

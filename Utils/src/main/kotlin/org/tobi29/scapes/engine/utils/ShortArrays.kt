@@ -62,17 +62,25 @@ interface ShortArraySlice : ShortArraySliceRO {
 /**
  * Slice of a normal heap array
  */
-interface HeapShortArraySlice : HeapArrayVarSlice<Short>, ShortArraySlice {
-    val array: ShortArray
+open class HeapShortArraySlice(
+        val array: ShortArray,
+        override final val offset: Int,
+        override final val size: Int
+) : HeapArrayVarSlice<Short>, ShortArraySlice {
     override fun slice(index: Int,
-                       size: Int): HeapShortArraySlice
+                       size: Int): HeapShortArraySlice =
+            prepareSlice(index, size, array,
+                    ::HeapShortArraySlice)
 
-    override fun get(index: Int): Short = array[index(index)]
-    override fun set(index: Int,
-                     value: Short) = array.set(index(index), value)
+    override final fun get(index: Int): Short = array[index(offset, size,
+            index)]
 
-    override fun getShorts(index: Int,
-                           slice: ShortArraySlice) {
+    override final fun set(index: Int,
+                           value: Short) = array.set(index(offset, size, index),
+            value)
+
+    override final fun getShorts(index: Int,
+                                 slice: ShortArraySlice) {
         if (slice !is HeapShortArraySlice) return super.getShorts(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -81,8 +89,8 @@ interface HeapShortArraySlice : HeapArrayVarSlice<Short>, ShortArraySlice {
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override fun setShorts(index: Int,
-                           slice: ShortArraySliceRO) {
+    override final fun setShorts(index: Int,
+                                 slice: ShortArraySliceRO) {
         if (slice !is HeapShortArraySlice) return super.setShorts(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -90,23 +98,6 @@ interface HeapShortArraySlice : HeapArrayVarSlice<Short>, ShortArraySlice {
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
-}
-
-fun HeapShortArraySlice(
-        array: ShortArray,
-        offset: Int,
-        size: Int
-): HeapShortArraySlice = HeapShortArraySliceImpl(array, offset, size)
-
-private class HeapShortArraySliceImpl(
-        override val array: ShortArray,
-        override val offset: Int,
-        override val size: Int
-) : HeapShortArraySlice {
-    override fun slice(index: Int,
-                       size: Int): HeapShortArraySlice =
-            prepareSlice(index, size, array,
-                    ::HeapShortArraySlice)
 }
 
 /**
