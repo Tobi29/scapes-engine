@@ -10,6 +10,8 @@ package org.tobi29.scapes.engine.utils
  * Read-only slice of an array, indexed in elements
  */
 interface FloatArraySliceRO : ArrayVarSlice<Float> {
+    override fun slice(index: Int): FloatArraySliceRO
+
     override fun slice(index: Int,
                        size: Int): FloatArraySliceRO
 
@@ -40,6 +42,8 @@ interface FloatArraySliceRO : ArrayVarSlice<Float> {
  * Slice of an array, indexed in elements
  */
 interface FloatArraySlice : FloatArraySliceRO {
+    override fun slice(index: Int): FloatArraySlice
+
     override fun slice(index: Int,
                        size: Int): FloatArraySlice
 
@@ -67,6 +71,9 @@ open class HeapFloatArraySlice(
         override final val offset: Int,
         override final val size: Int
 ) : HeapArrayVarSlice<Float>, FloatArraySlice {
+    override fun slice(index: Int): HeapFloatArraySlice =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): HeapFloatArraySlice =
             prepareSlice(index, size, array,

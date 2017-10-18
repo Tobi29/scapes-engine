@@ -38,7 +38,7 @@ impl class ZDeflater impl constructor(level: Int,
 
     impl override fun output(buffer: WritableByteStream): Int {
         val length = deflater.deflate(output)
-        buffer.put(output.view.slice(size = length))
+        buffer.put(output.view.slice(0, length))
         input.reset()
         return length
     }
@@ -82,7 +82,7 @@ impl class ZInflater impl constructor(private val buffer: Int = 8192) : Compress
 
     impl override fun output(buffer: WritableByteStream): Int {
         val length = inflater.inflate(output)
-        buffer.put(output.view.slice(size = length))
+        buffer.put(output.view.slice(0, length))
         input.reset()
         return length
     }

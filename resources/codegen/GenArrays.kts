@@ -70,6 +70,8 @@ package org.tobi29.scapes.engine.utils
  * Read-only slice of an array, indexed in elements
  */
 interface ${specialize("ArraySliceRO")} : ArrayVarSlice<$type> {
+    override fun slice(index: Int): ${specialize("ArraySliceRO")}
+
     override fun slice(index: Int,
                        size: Int): ${specialize("ArraySliceRO")}
 
@@ -101,6 +103,8 @@ else type}s(index: Int,
  * Slice of an array, indexed in elements
  */
 interface ${specialize("ArraySlice")} : ${specialize("ArraySliceRO")} {
+    override fun slice(index: Int): ${specialize("ArraySlice")}
+
     override fun slice(index: Int,
                        size: Int): ${specialize("ArraySlice")}
 
@@ -129,6 +133,9 @@ open class Heap${specialize("ArraySlice")}(
         override final val offset: Int,
         override final val size: Int
 ) : HeapArrayVarSlice<$type>, ${specialize("ArraySlice")} {
+    override fun slice(index: Int): Heap${specialize("ArraySlice")} =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): Heap${specialize("ArraySlice")} =
             prepareSlice(index, size, array,

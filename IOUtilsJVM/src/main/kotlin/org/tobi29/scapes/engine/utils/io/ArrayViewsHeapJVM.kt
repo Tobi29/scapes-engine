@@ -12,6 +12,8 @@ impl sealed class HeapViewByte impl constructor(
             throw IndexOutOfBoundsException("Invalid offset or size")
     }
 
+    impl override abstract fun slice(index: Int): HeapViewByte
+
     impl override abstract fun slice(index: Int,
                                      size: Int): HeapViewByte
 }
@@ -21,6 +23,8 @@ impl class HeapViewByteBE impl constructor(
         offset: Int,
         size: Int
 ) : HeapViewByte(array, offset, size), ByteViewBE {
+    impl override fun slice(index: Int) = slice(index, size - index)
+
     impl override fun slice(index: Int,
                             size: Int): HeapViewByteBE =
             prepareSlice(array, index, size, ::HeapViewByteBE)
@@ -31,6 +35,8 @@ impl class HeapViewByteLE impl constructor(
         offset: Int,
         size: Int
 ) : HeapViewByte(array, offset, size), ByteViewLE {
+    impl override fun slice(index: Int) = slice(index, size - index)
+
     impl override fun slice(index: Int,
                             size: Int): HeapViewByteLE =
             prepareSlice(array, index, size, ::HeapViewByteLE)

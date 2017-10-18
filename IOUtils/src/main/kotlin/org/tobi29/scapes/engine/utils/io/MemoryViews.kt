@@ -21,6 +21,8 @@ typealias ByteViewRO = ByteArraySliceRO
 typealias ByteView = ByteArraySlice
 
 interface ByteViewERO : ByteViewRO, ShortViewERO, MemorySegmentE {
+    override fun slice(index: Int): ByteViewERO
+
     override fun slice(index: Int,
                        size: Int): ByteViewERO
 
@@ -32,6 +34,8 @@ interface ByteViewERO : ByteViewRO, ShortViewERO, MemorySegmentE {
 }
 
 interface ByteViewE : ByteViewERO, ByteView, ShortViewE, MemorySegmentE {
+    override fun slice(index: Int): ByteViewE
+
     override fun slice(index: Int,
                        size: Int): ByteViewE
 
@@ -43,6 +47,8 @@ interface ByteViewE : ByteViewERO, ByteView, ShortViewE, MemorySegmentE {
 }
 
 interface ByteViewBERO : ByteViewERO, ShortViewBERO, MemorySegmentBE {
+    override fun slice(index: Int): ByteViewBERO
+
     override fun slice(index: Int,
                        size: Int): ByteViewBERO
 
@@ -51,6 +57,8 @@ interface ByteViewBERO : ByteViewERO, ShortViewBERO, MemorySegmentBE {
 }
 
 interface ByteViewBE : ByteViewBERO, ByteViewE, ShortViewBE {
+    override fun slice(index: Int): ByteViewBE
+
     override fun slice(index: Int,
                        size: Int): ByteViewBE
 
@@ -62,6 +70,8 @@ interface ByteViewBE : ByteViewBERO, ByteViewE, ShortViewBE {
 }
 
 interface ByteViewLERO : ByteViewERO, ShortViewLERO, MemorySegmentLE {
+    override fun slice(index: Int): ByteViewLERO
+
     override fun slice(index: Int,
                        size: Int): ByteViewLERO
 
@@ -70,6 +80,8 @@ interface ByteViewLERO : ByteViewERO, ShortViewLERO, MemorySegmentLE {
 }
 
 interface ByteViewLE : ByteViewLERO, ByteViewE, ShortViewLE {
+    override fun slice(index: Int): ByteViewLE
+
     override fun slice(index: Int,
                        size: Int): ByteViewLE
 
@@ -81,6 +93,8 @@ interface ByteViewLE : ByteViewLERO, ByteViewE, ShortViewLE {
 }
 
 interface ShortViewRO : ArraySegment {
+    override fun slice(index: Int): ShortViewRO
+
     override fun slice(index: Int,
                        size: Int): ShortViewRO
 
@@ -107,6 +121,8 @@ interface ShortView : ShortViewRO {
             MemoryViewShortArraySlice(
                     slice(index, size))
 
+    override fun slice(index: Int): ShortView
+
     override fun slice(index: Int,
                        size: Int): ShortView
 
@@ -125,6 +141,8 @@ interface ShortView : ShortViewRO {
 }
 
 interface ShortViewERO : ShortViewRO, IntViewERO, MemorySegmentE {
+    override fun slice(index: Int): ShortViewERO
+
     override fun slice(index: Int,
                        size: Int): ShortViewERO
 
@@ -136,6 +154,8 @@ interface ShortViewERO : ShortViewRO, IntViewERO, MemorySegmentE {
 }
 
 interface ShortViewE : ShortViewERO, ShortView, IntViewE, MemorySegmentE {
+    override fun slice(index: Int): ShortViewE
+
     override fun slice(index: Int,
                        size: Int): ShortViewE
 
@@ -148,6 +168,8 @@ interface ShortViewE : ShortViewERO, ShortView, IntViewE, MemorySegmentE {
 
 
 interface ShortViewBERO : ShortViewERO, IntViewBERO, MemorySegmentBE {
+    override fun slice(index: Int): ShortViewBERO
+
     override fun slice(index: Int,
                        size: Int): ShortViewBERO
 
@@ -156,6 +178,8 @@ interface ShortViewBERO : ShortViewERO, IntViewBERO, MemorySegmentBE {
 }
 
 interface ShortViewBE : ShortViewBERO, ShortViewE, IntViewBE {
+    override fun slice(index: Int): ShortViewBE
+
     override fun slice(index: Int,
                        size: Int): ShortViewBE
 
@@ -170,6 +194,8 @@ interface ShortViewBE : ShortViewBERO, ShortViewE, IntViewBE {
 }
 
 interface ShortViewLERO : ShortViewERO, IntViewLERO, MemorySegmentLE {
+    override fun slice(index: Int): ShortViewLERO
+
     override fun slice(index: Int,
                        size: Int): ShortViewLERO
 
@@ -178,6 +204,8 @@ interface ShortViewLERO : ShortViewERO, IntViewLERO, MemorySegmentLE {
 }
 
 interface ShortViewLE : ShortViewLERO, ShortViewE, IntViewLE {
+    override fun slice(index: Int): ShortViewLE
+
     override fun slice(index: Int,
                        size: Int): ShortViewLE
 
@@ -201,6 +229,8 @@ typealias CharViewLERO = ShortViewLERO
 typealias CharViewLE = ShortViewLE
 
 interface IntViewRO : ArraySegment {
+    override fun slice(index: Int): IntViewRO
+
     override fun slice(index: Int,
                        size: Int): IntViewRO
 
@@ -227,6 +257,8 @@ interface IntView : IntViewRO {
             MemoryViewIntArraySlice(
                     slice(index, size))
 
+    override fun slice(index: Int): IntView
+
     override fun slice(index: Int,
                        size: Int): IntView
 
@@ -245,6 +277,8 @@ interface IntView : IntViewRO {
 }
 
 interface IntViewERO : IntViewRO, LongViewERO, MemorySegmentE {
+    override fun slice(index: Int): IntViewERO
+
     override fun slice(index: Int,
                        size: Int): IntViewERO
 
@@ -256,6 +290,8 @@ interface IntViewERO : IntViewRO, LongViewERO, MemorySegmentE {
 }
 
 interface IntViewE : IntViewERO, IntView, LongViewE {
+    override fun slice(index: Int): IntViewE
+
     override fun slice(index: Int,
                        size: Int): IntViewE
 
@@ -267,6 +303,8 @@ interface IntViewE : IntViewERO, IntView, LongViewE {
 }
 
 interface IntViewBERO : IntViewERO, LongViewBERO, MemorySegmentBE {
+    override fun slice(index: Int): IntViewBERO
+
     override fun slice(index: Int,
                        size: Int): IntViewBERO
 
@@ -275,6 +313,8 @@ interface IntViewBERO : IntViewERO, LongViewBERO, MemorySegmentBE {
 }
 
 interface IntViewBE : IntViewBERO, IntViewE, LongViewBE {
+    override fun slice(index: Int): IntViewBE
+
     override fun slice(index: Int,
                        size: Int): IntViewBE
 
@@ -286,6 +326,8 @@ interface IntViewBE : IntViewBERO, IntViewE, LongViewBE {
 }
 
 interface IntViewLERO : IntViewERO, LongViewLERO, MemorySegmentLE {
+    override fun slice(index: Int): IntViewLERO
+
     override fun slice(index: Int,
                        size: Int): IntViewLERO
 
@@ -294,6 +336,8 @@ interface IntViewLERO : IntViewERO, LongViewLERO, MemorySegmentLE {
 }
 
 interface IntViewLE : IntViewLERO, IntViewE, LongViewLE {
+    override fun slice(index: Int): IntViewLE
+
     override fun slice(index: Int,
                        size: Int): IntViewLE
 
@@ -314,6 +358,8 @@ typealias FloatViewLERO = IntViewLERO
 typealias FloatViewLE = IntViewLE
 
 interface LongViewRO : ArraySegment {
+    override fun slice(index: Int): LongViewRO
+
     override fun slice(index: Int,
                        size: Int): LongViewRO
 
@@ -340,6 +386,8 @@ interface LongView : LongViewRO, ArraySegment {
             MemoryViewLongArraySlice(
                     slice(index, size))
 
+    override fun slice(index: Int): LongView
+
     override fun slice(index: Int,
                        size: Int): LongView
 
@@ -358,31 +406,43 @@ interface LongView : LongViewRO, ArraySegment {
 }
 
 interface LongViewERO : LongViewRO, MemorySegmentE {
+    override fun slice(index: Int): LongViewERO
+
     override fun slice(index: Int,
                        size: Int): LongViewERO
 }
 
 interface LongViewE : LongViewERO, LongView, MemorySegmentE {
+    override fun slice(index: Int): LongViewE
+
     override fun slice(index: Int,
                        size: Int): LongViewE
 }
 
 interface LongViewBERO : LongViewERO, MemorySegmentBE {
+    override fun slice(index: Int): LongViewBERO
+
     override fun slice(index: Int,
                        size: Int): LongViewBERO
 }
 
 interface LongViewBE : LongViewBERO, LongViewE {
+    override fun slice(index: Int): LongViewBE
+
     override fun slice(index: Int,
                        size: Int): LongViewBE
 }
 
 interface LongViewLERO : LongViewERO, MemorySegmentLE {
+    override fun slice(index: Int): LongViewLERO
+
     override fun slice(index: Int,
                        size: Int): LongViewLERO
 }
 
 interface LongViewLE : LongViewLERO, LongViewE {
+    override fun slice(index: Int): LongViewLE
+
     override fun slice(index: Int,
                        size: Int): LongViewLE
 }
@@ -397,17 +457,20 @@ typealias DoubleViewLERO = LongViewLERO
 typealias DoubleViewLE = LongViewLE
 
 val ByteArray.view: HeapByteArraySlice
-    get() = ArrayByteViewSimple(this, 0, size)
+    get() = HeapByteArraySlice(this, 0, size)
 
 val ByteArraySliceRO.view: ByteViewRO
     get() = when (this) {
-        is HeapByteArraySlice -> ArrayByteViewSimple(array, offset, size)
+        is HeapByteArraySlice -> HeapByteArraySlice(array, offset, size)
         else -> ByteArraySliceViewRO(this)
     }
 
 open class ByteArraySliceViewRO(
         open val slice: ByteArraySliceRO
 ) : ByteArraySliceRO by slice {
+    override fun slice(index: Int): ByteArraySliceViewRO =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): ByteArraySliceViewRO =
             slice.slice(index, size).let {
@@ -419,13 +482,16 @@ open class ByteArraySliceViewRO(
 
 val ByteArraySlice.view: ByteView
     get() = when (this) {
-        is HeapByteArraySlice -> ArrayByteViewSimple(array, offset, size)
+        is HeapByteArraySlice -> HeapByteArraySlice(array, offset, size)
         else -> ByteArraySliceView(this)
     }
 
 open class ByteArraySliceView(
         override val slice: ByteArraySlice
 ) : ByteArraySliceViewRO(slice), ByteArraySlice by slice {
+    override fun slice(index: Int): ByteArraySliceView =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): ByteArraySliceView =
             slice.slice(index, size).let {
@@ -454,7 +520,6 @@ fun ByteViewRO.asByteArray(): ByteArray = when (this) {
 }
 
 typealias ArrayByteView = HeapByteArraySlice
-typealias ArrayByteViewSimple = HeapByteArraySlice
 
 inline fun HeapByteArraySlice.index(
         index: Int,

@@ -1,6 +1,6 @@
 package kotlin.io
 
-import java.io.IOException
+import org.tobi29.scapes.engine.utils.io.IOException
 
 @Suppress("HEADER_WITHOUT_IMPLEMENTATION", "NO_ACTUAL_FOR_EXPECT")
 header abstract class FileSystemException(deny: Nothing) : IOException

@@ -10,6 +10,8 @@ package org.tobi29.scapes.engine.utils
  * Read-only slice of an array, indexed in elements
  */
 interface BooleanArraySliceRO : ArrayVarSlice<Boolean> {
+    override fun slice(index: Int): BooleanArraySliceRO
+
     override fun slice(index: Int,
                        size: Int): BooleanArraySliceRO
 
@@ -40,6 +42,8 @@ interface BooleanArraySliceRO : ArrayVarSlice<Boolean> {
  * Slice of an array, indexed in elements
  */
 interface BooleanArraySlice : BooleanArraySliceRO {
+    override fun slice(index: Int): BooleanArraySlice
+
     override fun slice(index: Int,
                        size: Int): BooleanArraySlice
 
@@ -67,6 +71,9 @@ open class HeapBooleanArraySlice(
         override final val offset: Int,
         override final val size: Int
 ) : HeapArrayVarSlice<Boolean>, BooleanArraySlice {
+    override fun slice(index: Int): HeapBooleanArraySlice =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): HeapBooleanArraySlice =
             prepareSlice(index, size, array,

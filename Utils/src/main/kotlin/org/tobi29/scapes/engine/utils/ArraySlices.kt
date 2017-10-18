@@ -27,8 +27,10 @@ interface ArraySegment {
      */
     val size: Int
 
-    fun slice(index: Int = 0,
-              size: Int = this.size - index): ArraySegment
+    fun slice(index: Int): ArraySegment
+
+    fun slice(index: Int,
+              size: Int): ArraySegment
 }
 
 /**

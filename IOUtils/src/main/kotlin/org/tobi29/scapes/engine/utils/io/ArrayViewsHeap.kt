@@ -9,6 +9,8 @@ val ByteViewRO.viewBE: ByteViewBERO
         is ByteViewBERO -> this
         is HeapByteArraySlice -> HeapViewByteBE(array, offset, size)
         else -> object : ByteViewBERO, ByteViewRO by this {
+            override fun slice(index: Int) = slice(index, size - index)
+
             override fun slice(index: Int,
                                size: Int): ByteViewBERO =
                     this@viewBE.slice(index, size).let {
@@ -23,6 +25,8 @@ val ByteView.viewBE: ByteViewBE
         is ByteViewBE -> this
         is HeapByteArraySlice -> HeapViewByteBE(array, offset, size)
         else -> object : ByteViewBE, ByteView by this {
+            override fun slice(index: Int) = slice(index, size - index)
+
             override fun slice(index: Int,
                                size: Int): ByteViewBE =
                     this@viewBE.slice(index, size).let {
@@ -37,6 +41,8 @@ val ByteViewRO.viewLE: ByteViewLERO
         is ByteViewLERO -> this
         is HeapByteArraySlice -> HeapViewByteLE(array, offset, size)
         else -> object : ByteViewLERO, ByteViewRO by this {
+            override fun slice(index: Int) = slice(index, size - index)
+
             override fun slice(index: Int,
                                size: Int): ByteViewLERO =
                     this@viewLE.slice(index, size).let {
@@ -51,6 +57,8 @@ val ByteView.viewLE: ByteViewLE
         is ByteViewLE -> this
         is HeapByteArraySlice -> HeapViewByteLE(array, offset, size)
         else -> object : ByteViewLE, ByteView by this {
+            override fun slice(index: Int) = slice(index, size - index)
+
             override fun slice(index: Int,
                                size: Int): ByteViewLE =
                     this@viewLE.slice(index, size).let {

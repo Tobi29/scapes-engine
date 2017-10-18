@@ -1,9 +1,5 @@
 package org.tobi29.scapes.engine.utils.io
 
-typealias AutoCloseable = java.lang.AutoCloseable
-
-typealias Closeable = java.io.Closeable
-
 inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
     var closed = false
     try {

@@ -181,7 +181,7 @@ interface ReadableByteStream : Readable {
                     "Array length outside of 0 to $limit: $limit")
         }
         val array = ByteArray(len)
-        get(array.view.slice(size = array.size))
+        get(array.view.slice(0, array.size))
         return array
     }
 
@@ -207,7 +207,7 @@ interface ReadableByteStream : Readable {
                     "Array length outside of 0 to $limit: $limit")
         }
         val array = ByteArray(len)
-        get(array.view.slice(size = array.size))
+        get(array.view.slice(0, array.size))
         return array
     }
 

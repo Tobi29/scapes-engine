@@ -10,6 +10,8 @@ package org.tobi29.scapes.engine.utils
  * Read-only slice of an array, indexed in elements
  */
 interface CharArraySliceRO : ArrayVarSlice<Char> {
+    override fun slice(index: Int): CharArraySliceRO
+
     override fun slice(index: Int,
                        size: Int): CharArraySliceRO
 
@@ -40,6 +42,8 @@ interface CharArraySliceRO : ArrayVarSlice<Char> {
  * Slice of an array, indexed in elements
  */
 interface CharArraySlice : CharArraySliceRO {
+    override fun slice(index: Int): CharArraySlice
+
     override fun slice(index: Int,
                        size: Int): CharArraySlice
 
@@ -67,6 +71,9 @@ open class HeapCharArraySlice(
         override final val offset: Int,
         override final val size: Int
 ) : HeapArrayVarSlice<Char>, CharArraySlice {
+    override fun slice(index: Int): HeapCharArraySlice =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): HeapCharArraySlice =
             prepareSlice(index, size, array,

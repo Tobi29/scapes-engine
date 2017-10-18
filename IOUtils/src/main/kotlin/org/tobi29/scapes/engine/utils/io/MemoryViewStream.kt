@@ -1,7 +1,6 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.assert
-import java.nio.BufferOverflowException
 
 typealias MemoryViewProvider<B> = (Int) -> B
 

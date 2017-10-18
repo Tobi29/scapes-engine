@@ -32,12 +32,14 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
         stream.get(buffer)
     }
 
-    override fun getSome(buffer: ByteView) =
-            buffer.size.coerceAtMost(remaining).let {
-                stream.getSome(buffer.slice(size = it)).also {
-                    remaining -= it
-                }
+    override fun getSome(buffer: ByteView): Int {
+        if (remaining <= 0) return -1
+        return buffer.size.coerceAtMost(remaining).let {
+            stream.getSome(buffer.slice(0, it)).also {
+                remaining -= it
             }
+        }
+    }
 
     override fun get(): Byte {
         check(1)

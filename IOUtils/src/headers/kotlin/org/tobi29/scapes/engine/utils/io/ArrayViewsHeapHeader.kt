@@ -7,6 +7,8 @@ header sealed class HeapViewByte(
         offset: Int,
         size: Int
 ) : HeapByteArraySlice, HeapView {
+    override abstract fun slice(index: Int): HeapViewByte
+
     override abstract fun slice(index: Int,
                                 size: Int): HeapViewByte
 }
@@ -16,6 +18,8 @@ header class HeapViewByteBE(
         offset: Int,
         size: Int
 ) : HeapViewByte, ByteViewBE {
+    override fun slice(index: Int): HeapViewByteBE
+
     override fun slice(index: Int,
                        size: Int): HeapViewByteBE
 }
@@ -25,6 +29,8 @@ header class HeapViewByteLE(
         offset: Int,
         size: Int
 ) : HeapViewByte, ByteViewLE {
+    override fun slice(index: Int): HeapViewByteLE
+
     override fun slice(index: Int,
                        size: Int): HeapViewByteLE
 }

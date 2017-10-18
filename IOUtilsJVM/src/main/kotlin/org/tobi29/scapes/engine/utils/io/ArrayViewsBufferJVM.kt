@@ -44,6 +44,8 @@ class ByteBufferViewBE(
         get() = buffer.duplicate().order(
                 BIG_ENDIAN)
 
+    override fun slice(index: Int) = slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int) =
             ByteBufferViewBE(
@@ -122,6 +124,8 @@ class ByteBufferViewLE(
         get() = buffer.duplicate().order(
                 LITTLE_ENDIAN)
 
+    override fun slice(index: Int) = slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int) =
             ByteBufferViewLE(
@@ -174,21 +178,21 @@ class ByteBufferViewLE(
     }
 
     override fun setBytes(index: Int,
-                          byteView: ByteViewRO) {
-        when (byteView) {
+                          slice: ByteViewRO) {
+        when (slice) {
             is HeapByteArraySlice -> {
                 val position = buffer.position()
                 buffer.position(index)
-                buffer.put(byteView.array, byteView.offset, byteView.size)
+                buffer.put(slice.array, slice.offset, slice.size)
                 buffer.position(position)
             }
             is ByteBufferView -> {
                 val position = buffer.position()
                 buffer.position(index)
-                buffer.put(byteView.byteBuffer)
+                buffer.put(slice.byteBuffer)
                 buffer.position(position)
             }
-            else -> super<ByteBufferView>.setBytes(index, byteView)
+            else -> super<ByteBufferView>.setBytes(index, slice)
         }
     }
 }

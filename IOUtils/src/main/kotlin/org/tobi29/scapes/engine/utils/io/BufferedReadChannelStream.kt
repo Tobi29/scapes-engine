@@ -42,7 +42,7 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
             mbuffer.get(buffer)
         } else {
             val flushed = mbuffer.remaining()
-            if (flushed > 0) mbuffer.get(buffer.slice(size = flushed))
+            if (flushed > 0) mbuffer.get(buffer.slice(0, flushed))
             val read = channel.read(buffer.slice(flushed))
             if (read < 0 && flushed <= 0) throw IOException("End of stream")
         }
@@ -54,7 +54,7 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
                 buffer.size
             } else {
                 val flushed = mbuffer.remaining()
-                if (flushed > 0) mbuffer.get(buffer.slice(size = flushed))
+                if (flushed > 0) mbuffer.get(buffer.slice(0, flushed))
                 val read = channel.read(buffer.slice(flushed))
                 if (read < 0) {
                     if (flushed <= 0) -1 else flushed

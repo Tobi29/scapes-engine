@@ -46,7 +46,7 @@ class AudioBuffer(private val size: Int) {
 
     fun done(size: Int) {
         assert { size % channels == 0 }
-        buffer = buffer.slice(size = size)
+        buffer = buffer.slice(0, size)
         isDone = true
     }
 

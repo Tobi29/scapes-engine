@@ -10,6 +10,8 @@ package org.tobi29.scapes.engine.utils
  * Read-only slice of an array, indexed in elements
  */
 interface LongArraySliceRO : ArrayVarSlice<Long> {
+    override fun slice(index: Int): LongArraySliceRO
+
     override fun slice(index: Int,
                        size: Int): LongArraySliceRO
 
@@ -40,6 +42,8 @@ interface LongArraySliceRO : ArrayVarSlice<Long> {
  * Slice of an array, indexed in elements
  */
 interface LongArraySlice : LongArraySliceRO {
+    override fun slice(index: Int): LongArraySlice
+
     override fun slice(index: Int,
                        size: Int): LongArraySlice
 
@@ -67,6 +71,9 @@ open class HeapLongArraySlice(
         override final val offset: Int,
         override final val size: Int
 ) : HeapArrayVarSlice<Long>, LongArraySlice {
+    override fun slice(index: Int): HeapLongArraySlice =
+            slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): HeapLongArraySlice =
             prepareSlice(index, size, array,

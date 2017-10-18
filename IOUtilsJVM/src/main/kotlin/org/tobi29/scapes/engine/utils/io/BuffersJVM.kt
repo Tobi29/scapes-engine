@@ -18,6 +18,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.HeapByteArraySlice
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -90,7 +91,7 @@ fun ByteViewRO.readAsByteBuffer(): ByteBuffer =
 
 fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
     is ByteBufferView -> byteBuffer.slice().order(byteBuffer.order())
-    is ArrayByteView -> array.asByteBuffer(offset, size).slice().also {
+    is HeapByteArraySlice -> array.asByteBuffer(offset, size).slice().also {
         if (this is MemorySegmentE) {
             it.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
         }

@@ -7,12 +7,13 @@ class MemoryViewByteArraySlice(
 ) : ByteArraySlice {
     override val size: Int get() = view.size
 
+    override fun slice(index: Int) = slice(index, size - index)
+
     override fun slice(index: Int,
                        size: Int): ByteArraySlice =
             view.slice(scale(index), scale(size)).let {
                 if (it === view) this
-                else MemoryViewByteArraySlice(
-                        it)
+                else MemoryViewByteArraySlice(it)
             }
 
     override fun get(index: Int): Byte = view.getByte(index(index))
@@ -30,12 +31,13 @@ class MemoryViewShortArraySlice(
 ) : ShortArraySlice {
     override val size: Int get() = view.size
 
+    override fun slice(index: Int) = slice(index, size - index)
+
     override fun slice(index: Int,
-                       length: Int): ShortArraySlice =
-            view.slice(scale(index), scale(length)).let {
+                       size: Int): ShortArraySlice =
+            view.slice(scale(index), scale(size)).let {
                 if (it === view) this
-                else MemoryViewShortArraySlice(
-                        it)
+                else MemoryViewShortArraySlice(it)
             }
 
     override fun get(index: Int): Short = view.getShort(index(index))
@@ -55,12 +57,13 @@ class MemoryViewIntArraySlice(
 ) : IntArraySlice {
     override val size: Int get() = view.size
 
+    override fun slice(index: Int) = slice(index, size - index)
+
     override fun slice(index: Int,
-                       length: Int): IntArraySlice =
-            view.slice(scale(index), scale(length)).let {
+                       size: Int): IntArraySlice =
+            view.slice(scale(index), scale(size)).let {
                 if (it === view) this
-                else MemoryViewIntArraySlice(
-                        it)
+                else MemoryViewIntArraySlice(it)
             }
 
     override fun get(index: Int): Int = view.getInt(index(index))
@@ -80,12 +83,13 @@ class MemoryViewLongArraySlice(
 ) : LongArraySlice {
     override val size: Int get() = view.size
 
+    override fun slice(index: Int) = slice(index, size - index)
+
     override fun slice(index: Int,
-                       length: Int): LongArraySlice =
-            view.slice(scale(index), scale(length)).let {
+                       size: Int): LongArraySlice =
+            view.slice(scale(index), scale(size)).let {
                 if (it === view) this
-                else MemoryViewLongArraySlice(
-                        it)
+                else MemoryViewLongArraySlice(it)
             }
 
     override fun get(index: Int): Long = view.getLong(index(index))

@@ -18,6 +18,112 @@
 
 package org.tobi29.scapes.engine.utils
 
+import org.khronos.webgl.*
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun ByteArray.asTypedArray(): Int8Array = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun ShortArray.asTypedArray(): Int16Array = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun CharArray.asTypedArray(): Uint16Array = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun IntArray.asTypedArray(): Int32Array = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun FloatArray.asTypedArray(): Float32Array = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun DoubleArray.asTypedArray(): Float64Array = asDynamic()
+
+inline fun HeapByteArraySlice.asTypedArray(): Int8Array =
+        array.asTypedArray().let {
+            Int8Array(it.buffer, it.byteOffset + (offset shl 0), it.length)
+        }
+
+inline fun HeapShortArraySlice.asTypedArray(): Int16Array =
+        array.asTypedArray().let {
+            Int16Array(it.buffer, it.byteOffset + (offset shl 1), it.length)
+        }
+
+inline fun HeapCharArraySlice.asTypedArray(): Uint16Array =
+        array.asTypedArray().let {
+            Uint16Array(it.buffer, it.byteOffset + (offset shl 1), it.length)
+        }
+
+inline fun HeapIntArraySlice.asTypedArray(): Int32Array =
+        array.asTypedArray().let {
+            Int32Array(it.buffer, it.byteOffset + (offset shl 2), it.length)
+        }
+
+inline fun HeapFloatArraySlice.asTypedArray(): Float32Array =
+        array.asTypedArray().let {
+            Float32Array(it.buffer, it.byteOffset + (offset shl 2), it.length)
+        }
+
+inline fun HeapDoubleArraySlice.asTypedArray(): Float64Array =
+        array.asTypedArray().let {
+            Float64Array(it.buffer, it.byteOffset + (offset shl 3), it.length)
+        }
+
+inline fun HeapByteArraySlice.asUnsignedTypedArray(): Uint8Array =
+        array.asTypedArray().let {
+            Uint8Array(it.buffer, it.byteOffset + (offset shl 0), it.length)
+        }
+
+inline fun HeapShortArraySlice.asUnsignedTypedArray(): Uint16Array =
+        array.asTypedArray().let {
+            Uint16Array(it.buffer, it.byteOffset + (offset shl 1), it.length)
+        }
+
+inline fun HeapCharArraySlice.asSignedTypedArray(): Int16Array =
+        array.asTypedArray().let {
+            Int16Array(it.buffer, it.byteOffset + (offset shl 1), it.length)
+        }
+
+inline fun HeapIntArraySlice.asUnsignedTypedArray(): Uint32Array =
+        array.asTypedArray().let {
+            Uint32Array(it.buffer, it.byteOffset + (offset shl 2), it.length)
+        }
+
+inline fun Int8Array.asUint8Array(): Uint8Array =
+        Uint8Array(buffer, byteOffset, length)
+
+inline fun Uint8Array.asUint8Array(): Int8Array =
+        Int8Array(buffer, byteOffset, length)
+
+inline fun Int16Array.asUint8Array(): Uint16Array =
+        Uint16Array(buffer, byteOffset, length)
+
+inline fun Uint16Array.asUint8Array(): Int16Array =
+        Int16Array(buffer, byteOffset, length)
+
+inline fun Int32Array.asUint8Array(): Uint32Array =
+        Uint32Array(buffer, byteOffset, length)
+
+inline fun Uint32Array.asUint8Array(): Int32Array =
+        Int32Array(buffer, byteOffset, length)
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun Int8Array.asArray(): ByteArray = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun Int16Array.asArray(): ShortArray = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun Uint16Array.asArray(): CharArray = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun Int32Array.asArray(): IntArray = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun Float32Array.asArray(): FloatArray = asDynamic()
+
+@Suppress("UnsafeCastFromDynamic")
+inline fun Float64Array.asArray(): DoubleArray = asDynamic()
+
 impl inline fun copyArray(src: BooleanArray,
                           dest: BooleanArray,
                           length: Int,

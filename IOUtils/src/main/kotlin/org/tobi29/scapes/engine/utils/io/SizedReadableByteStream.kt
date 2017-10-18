@@ -47,7 +47,7 @@ interface SizedReadableByteStream : ReadableByteStream {
             remaining().let {
                 if (it <= 0) -1
                 else buffer.size.coerceAtMost(it).also { size ->
-                    get(buffer.slice(size = size))
+                    get(buffer.slice(0, size))
                 }
             }
 }
