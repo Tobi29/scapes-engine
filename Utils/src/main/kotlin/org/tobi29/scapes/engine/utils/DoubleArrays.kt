@@ -107,6 +107,23 @@ open class HeapDoubleArraySlice(
 
         copy(slice.array, array, slice.size, slice.offset, index + this.offset)
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DoubleArraySliceRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + (this[i]?.hashCode() ?: 0)
+        }
+        return h
+    }
 }
 
 /**
