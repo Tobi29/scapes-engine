@@ -16,12 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
+import org.tobi29.scapes.engine.utils.combineToInt
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.asByteArray
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.io.ro
-import org.tobi29.scapes.engine.utils.tag.*
 import org.tobi29.scapes.engine.utils.io.view
+import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.tag.*
 
 class Image(
         val width: Int = 1,
@@ -37,6 +38,14 @@ class Image(
     val view = buffer.ro
 
     val size by lazy { Vector2i(width, height) }
+
+    operator fun get(x: Int,
+                     y: Int): Int {
+        if (x < 0 || y < 0 || x >= width || y >= height)
+            throw IndexOutOfBoundsException("Coordinates outside of image")
+        var i = (y * width + x) shl 2
+        return combineToInt(view[i++], view[i++], view[i++], view[i])
+    }
 
     override fun write(map: ReadWriteTagMap) {
         map["Width"] = width.toTag()
