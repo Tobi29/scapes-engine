@@ -246,13 +246,6 @@ class WAVReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             ReadableAudioStream.Result.BUFFER
     }
 
-    override fun close() {
-        try {
-            channel.close()
-        } catch (e: IOException) {
-        }
-    }
-
     private fun data(chunk: Chunk) {
         if (chunk.size % align != 0) {
             throw IOException(

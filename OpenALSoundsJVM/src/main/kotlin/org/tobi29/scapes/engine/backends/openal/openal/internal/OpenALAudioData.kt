@@ -23,6 +23,7 @@ import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.sound.AudioFormat
+import org.tobi29.scapes.engine.utils.io.ByteViewE
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.MemoryViewStream
@@ -52,8 +53,7 @@ internal class OpenALAudioData(data: ByteViewRO,
 
     companion object {
         fun read(engine: ScapesEngine,
-                 input: ReadableAudioStream,
-                 openAL: OpenAL): OpenALAudioData {
+                 input: ReadableAudioStream): Triple<ByteViewE, Int, Int> {
             val output = MemoryViewStream({
                 engine.container.allocateNative(it)
             }, { (it shl 1).coerceAtLeast(409600) })
@@ -91,7 +91,7 @@ internal class OpenALAudioData(data: ByteViewRO,
                 buffer.clear()
             }
             output.flip()
-            return OpenALAudioData(output.bufferSlice(), channels, rate, openAL)
+            return Triple(output.bufferSlice(), channels, rate)
         }
     }
 }

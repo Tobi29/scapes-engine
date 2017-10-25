@@ -16,9 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal
 
-import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.ScapesEngineConfig
 import org.tobi29.scapes.engine.backends.openal.openal.internal.*
@@ -26,8 +25,8 @@ import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.ConcurrentHashSet
+import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.io.ByteViewERO
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
@@ -37,19 +36,21 @@ import org.tobi29.scapes.engine.utils.math.threadLocalRandom
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.task.ThreadJob
 import org.tobi29.scapes.engine.utils.task.Timer
 import org.tobi29.scapes.engine.utils.task.launchThread
 import org.tobi29.scapes.engine.volume
 import java.util.concurrent.locks.LockSupport
+import kotlin.coroutines.experimental.CoroutineContext
+
+private typealias AudioData = Triple<ByteViewERO, Int, Int>
 
 class OpenALSoundSystem(override val engine: ScapesEngine,
                         openAL: OpenAL,
                         maxSources: Int,
-                        latency: Double) : SoundSystem {
+                        latency: Double) : CoroutineDispatcher(), SoundSystem {
     val speedOfSound = 343.3
-    private val cache = HashMap<ReadSource, OpenALAudioData>()
+    private val cache = HashMap<ReadSource, Either<Deferred<AudioData?>, OpenALAudioData>?>()
     private val queue = Channel<(OpenAL) -> Unit>(Channel.UNLIMITED)
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
@@ -114,9 +115,11 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             try {
                 audios.forEach { it.stop(this@OpenALSoundSystem, openAL) }
                 audios.clear()
-                for (audioData in cache.values) {
-                    audioData.dispose(this@OpenALSoundSystem, openAL)
-                }
+                cache.values.asSequence()
+                        .filterIsInstance<EitherRight<OpenALAudioData>>()
+                        .forEach {
+                            it.value.dispose(this@OpenALSoundSystem, openAL)
+                        }
                 for (i in sources.indices) {
                     val source = sources[i]
                     openAL.stop(source)
@@ -267,20 +270,33 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     internal fun getAudioData(openAL: OpenAL,
-                              asset: ReadSource): OpenALAudioData? {
-        if (!cache.containsKey(asset)) {
-            if (asset.exists()) {
-                try {
-                    AudioStream.create(asset).use {
-                        cache.put(asset,
-                                OpenALAudioData.read(engine, it, openAL))
+                              asset: ReadSource): Option<OpenALAudioData?> {
+        val entry = cache[asset]
+        return if (entry == null) {
+            cache[asset] = EitherLeft(async(engine.taskExecutor) {
+                tryWrap<AudioData, IOException> {
+                    asset.channel().use { channel ->
+                        AudioStream.create(channel,
+                                asset.mimeType()).use { stream ->
+                            OpenALAudioData.read(engine, stream)
+                        }
                     }
-                } catch (e: IOException) {
-                    logger.error(e) { "Failed to get audio data" }
-                }
-            }
+                }.unwrapOr { null }
+            })
+            nil
+        } else when (entry) {
+            is EitherLeft<Deferred<AudioData?>> ->
+                if (entry.value.isCompleted) {
+                    val completed = entry.value.getCompleted()
+                            ?.let {
+                                OpenALAudioData(it.first, it.second, it.third,
+                                        openAL)
+                            }
+                    cache[asset] = completed?.let { EitherRight(completed) }
+                    OptionSome(completed)
+                } else nil
+            is EitherRight<OpenALAudioData> -> OptionSome(entry.value)
         }
-        return cache[asset]
     }
 
     internal fun removeBufferFromSources(openAL: OpenAL,
@@ -304,6 +320,11 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             }
         }
         return -1
+    }
+
+    override fun dispatch(context: CoroutineContext,
+                          block: Runnable) {
+        queue { block.run() }
     }
 
     private fun queue(consumer: (OpenAL) -> Unit) {

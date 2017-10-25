@@ -118,13 +118,6 @@ class OGGReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             ReadableAudioStream.Result.YIELD
     }
 
-    override fun close() {
-        try {
-            channel.close()
-        } catch (e: IOException) {
-        }
-    }
-
     private fun readPacket(): Boolean {
         while (true) {
             when (streamState.packetout(packet)) {

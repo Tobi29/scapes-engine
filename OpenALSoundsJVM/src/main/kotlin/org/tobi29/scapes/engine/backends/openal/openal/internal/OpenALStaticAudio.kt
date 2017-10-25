@@ -23,6 +23,7 @@ import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.tryUnwrap
 
 internal class OpenALStaticAudio(
         private val asset: ReadSource,
@@ -53,7 +54,8 @@ internal class OpenALStaticAudio(
                       listenerPosition: Vector3d,
                       delta: Double): Boolean {
         if (buffer == -1) {
-            val audio = sounds.getAudioData(openAL, asset) ?: return false
+            val audio = sounds.getAudioData(openAL, asset)
+                    .tryUnwrap() ?: return false
             buffer = audio.buffer()
         }
         assert { buffer != -1 }

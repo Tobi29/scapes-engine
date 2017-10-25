@@ -100,13 +100,6 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             ReadableAudioStream.Result.BUFFER
     }
 
-    override fun close() {
-        try {
-            channel.close()
-        } catch (e: IOException) {
-        }
-    }
-
     private fun decodeFrame(buffer: HeapFloatArraySlice): Int {
         // TODO: Need to git an mp3 file that actually does this to test
         if (outputRate != rate || !checkFrame()) return 0

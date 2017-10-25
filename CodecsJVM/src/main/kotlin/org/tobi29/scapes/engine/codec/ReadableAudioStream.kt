@@ -16,12 +16,13 @@
 
 package org.tobi29.scapes.engine.codec
 
+import org.tobi29.scapes.engine.utils.io.Closeable
 import org.tobi29.scapes.engine.utils.tag.TagMap
 
 /**
  * Interface for reading audio data from an encoded source
  */
-interface ReadableAudioStream : AutoCloseable {
+interface ReadableAudioStream : Closeable {
     /**
      * Meta data of the stream, may be `null` until data becomes available
      *
@@ -53,7 +54,7 @@ interface ReadableAudioStream : AutoCloseable {
      * done on it
      */
     // TODO: @Throws(IOException::class)
-    override fun close()
+    override fun close() {}
 
     /**
      * Result type when calling [get] with a possibly `null` [AudioBuffer]

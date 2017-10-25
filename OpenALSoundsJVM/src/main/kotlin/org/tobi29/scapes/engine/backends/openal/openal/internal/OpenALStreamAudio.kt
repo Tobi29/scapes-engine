@@ -16,6 +16,10 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import kotlinx.coroutines.experimental.channels.ActorJob
+import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.channels.actor
+import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
@@ -25,16 +29,14 @@ import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
-import org.tobi29.scapes.engine.utils.io.ByteViewE
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.MemoryViewStream
-import org.tobi29.scapes.engine.utils.io.ReadSource
+import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(
-        engine: ScapesEngine,
+        private val engine: ScapesEngine,
         private val asset: ReadSource,
         private val channel: String,
         private val pos: Vector3d,
@@ -45,10 +47,9 @@ internal class OpenALStreamAudio(
 ) : OpenALAudio, AudioController by controller {
     private val streamBuffer = MemoryViewStream<ByteViewE>(
             { engine.container.allocateNative(it) })
-    private val readBuffer = AudioBuffer(4096)
     private var source = -1
     private var queued = 0
-    private var stream: ReadableAudioStream? = null
+    private var decodeActor: Pair<ActorJob<AudioBuffer>, Channel<AudioBuffer>>? = null
 
     constructor(engine: ScapesEngine,
                 asset: ReadSource,
@@ -80,42 +81,42 @@ internal class OpenALStreamAudio(
             openAL.setVelocity(source, velocity)
             openAL.setReferenceDistance(source, 1.0)
             openAL.setMaxDistance(source, Double.POSITIVE_INFINITY)
-            try {
-                stream = AudioStream.create(asset)
-            } catch (e: IOException) {
-                logger.warn { "Failed to play music: $e" }
-                stop(sounds, openAL)
-                return true
-            }
+            decodeActor = decodeActor(sounds, asset, state)
         }
-        if (stream != null) {
-            try {
-                controller.configure(openAL, source, sounds.volume(channel))
-                while (queued < 3) {
-                    if (!stream()) break
-                    val buffer = openAL.createBuffer()
-                    store(openAL, buffer)
-                    openAL.queue(source, buffer)
-                    queued++
-                }
-                var finished = openAL.getBuffersProcessed(source)
-                while (finished > 0) {
-                    if (!stream()) break
-                    val unqueued = openAL.unqueue(source)
-                    store(openAL, unqueued)
-                    openAL.queue(source, unqueued)
-                    finished--
-                }
-                if (queued > 0 && !openAL.isPlaying(source)) {
-                    openAL.play(source)
-                }
-            } catch (e: IOException) {
-                logger.warn { "Failed to stream music: $e" }
-                stop(sounds, openAL)
-                return true
+        val (decode, buffers) = decodeActor ?: return true
+        try {
+            controller.configure(openAL, source, sounds.volume(channel))
+            while (queued < 3) {
+                val buffer = buffers.poll() ?: break
+                val audioBuffer = openAL.createBuffer()
+                store(openAL, buffer, audioBuffer)
+                buffer.clear()
+                if (!decode.offer(buffer))
+                    throw IllegalStateException("Buffer lost")
+                openAL.queue(source, audioBuffer)
+                queued++
             }
-
-        } else if (!openAL.isPlaying(source)) {
+            if (queued > 0 && !openAL.isPlaying(source)) {
+                openAL.play(source)
+            }
+            var finished = openAL.getBuffersProcessed(source)
+            while (finished > 0) {
+                val unqueued = openAL.unqueue(source)
+                val buffer = buffers.poll()
+                if (buffer == null) {
+                    openAL.deleteBuffer(unqueued)
+                    queued--
+                    break
+                }
+                store(openAL, buffer, unqueued)
+                buffer.clear()
+                if (!decode.offer(buffer))
+                    throw IllegalStateException("Buffer lost")
+                openAL.queue(source, unqueued)
+                finished--
+            }
+        } catch (e: IOException) {
+            logger.warn { "Failed to stream music: $e" }
             stop(sounds, openAL)
             return true
         }
@@ -139,45 +140,62 @@ internal class OpenALStreamAudio(
             source = -1
             assert { this.queued == 0 }
         }
-        stream?.let {
-            try {
-                it.close()
-            } catch (e: IOException) {
-                logger.warn { "Failed to stop music stream: $e" }
-            }
+        try {
+            decodeActor?.first?.close()
+        } catch (e: Exception) {
+            logger.warn { "Failed to close stream: $e" }
         }
-        stream = null
-    }
-
-    private fun stream(): Boolean {
-        while (!readBuffer.isDone) {
-            val stream = stream ?: return false
-            when (stream.get(readBuffer)) {
-                ReadableAudioStream.Result.YIELD -> return false
-                ReadableAudioStream.Result.EOS -> {
-                    stream.close()
-                    if (state) {
-                        this.stream = AudioStream.create(asset)
-                    } else {
-                        this.stream = null
-                    }
-                }
-            }
-        }
-        return true
+        decodeActor = null
     }
 
     private fun store(openAL: OpenAL,
-                      buffer: Int) {
-        readBuffer.toPCM16 { streamBuffer.putShort(it) }
+                      buffer: AudioBuffer,
+                      audioBuffer: Int) {
+        buffer.toPCM16 { streamBuffer.putShort(it) }
         streamBuffer.flip()
-        openAL.storeBuffer(buffer,
-                if (readBuffer.channels() > 1) AudioFormat.STEREO
+        openAL.storeBuffer(audioBuffer,
+                if (buffer.channels() > 1) AudioFormat.STEREO
                 else AudioFormat.MONO, streamBuffer.bufferSlice(),
-                readBuffer.rate())
+                buffer.rate())
         streamBuffer.reset()
-        readBuffer.clear()
     }
 
     companion object : KLogging()
+}
+
+fun decodeActor(context: CoroutineContext,
+                asset: ReadSource,
+                state: Boolean): Pair<ActorJob<AudioBuffer>, Channel<AudioBuffer>> {
+    val output = Channel<AudioBuffer>()
+    val actor = actor<AudioBuffer>(context, 1) {
+        try {
+            do {
+                asset.channel().use { dataChannel ->
+                    AudioStream.create(dataChannel,
+                            asset.mimeType()).use { stream ->
+                        loop@ while (true) {
+                            val buffer = channel.receive()
+                            while (true) {
+                                when (stream.get(buffer)) {
+                                    ReadableAudioStream.Result.YIELD -> yield()
+                                    ReadableAudioStream.Result.BUFFER -> {
+                                        output.send(buffer)
+                                        continue@loop
+                                    }
+                                    ReadableAudioStream.Result.EOS -> {
+                                        output.send(buffer)
+                                        break@loop
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } while (state)
+        } finally {
+            output.close()
+        }
+    }
+    repeat(1) { actor.offer(AudioBuffer(4096)) }
+    return actor to output
 }

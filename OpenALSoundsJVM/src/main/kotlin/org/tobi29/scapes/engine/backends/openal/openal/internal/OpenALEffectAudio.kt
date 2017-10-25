@@ -22,6 +22,7 @@ import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.math.vector.distance
 import org.tobi29.scapes.engine.utils.steadyClock
+import org.tobi29.scapes.engine.utils.unwrapOr
 
 internal class OpenALEffectAudio(private val asset: ReadSource,
                                  private val channel: String,
@@ -44,7 +45,7 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
                     pos) / sounds.speedOfSound - delta * 0.5
             diff >= delay
         }) {
-            val audio = sounds.getAudioData(openAL, asset)
+            val audio = sounds.getAudioData(openAL, asset).unwrapOr { return false }
             if (audio != null) {
                 val gain = gain * sounds.volume(channel)
                 val source = sounds.freeSource(openAL)
