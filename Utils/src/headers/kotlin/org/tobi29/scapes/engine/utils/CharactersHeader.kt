@@ -17,23 +17,15 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * 32-bit codepoint
- *
- * Values in range 0x0..0xFFFF match those of [Char]
+ * Checks if the given character is an ISO control character
+ * @receiver The character to check
+ * @return `true` if the given character is an ISO control character
  */
-typealias Codepoint = Int
+header fun Char.isISOControl(): Boolean
 
 /**
- * String containing all lowercase latin letters
+ * Checks if the given character is an ISO control character
+ * @receiver The character to check
+ * @return `true` if the given character is an ISO control character
  */
-const val alphabetLatinLowercase = "abcdefghijklmnopqrstuvwxyz"
-
-/**
- * String containing all uppercase latin letters
- */
-const val alphabetLatinUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-/**
- * String containing all arabic digits
- */
-const val digitsArabic = "0123456789"
+header fun Codepoint.isISOControl(): Boolean

@@ -14,26 +14,12 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.utils
 
-/**
- * 32-bit codepoint
- *
- * Values in range 0x0..0xFFFF match those of [Char]
- */
-typealias Codepoint = Int
+impl inline fun Char.isISOControl(): Boolean =
+        java.lang.Character.isISOControl(this)
 
-/**
- * String containing all lowercase latin letters
- */
-const val alphabetLatinLowercase = "abcdefghijklmnopqrstuvwxyz"
-
-/**
- * String containing all uppercase latin letters
- */
-const val alphabetLatinUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-/**
- * String containing all arabic digits
- */
-const val digitsArabic = "0123456789"
+impl inline fun Codepoint.isISOControl(): Boolean =
+        java.lang.Character.isISOControl(this)
