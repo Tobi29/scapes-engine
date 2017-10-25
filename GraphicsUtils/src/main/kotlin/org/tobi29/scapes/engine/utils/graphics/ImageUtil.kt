@@ -218,6 +218,46 @@ fun flipVertical(width: Int,
 }
 
 /**
+ * Draws [image] on top of the given mutable image, comparable to a layer
+ * merge in an image editors
+ * @param image The image to merge on top
+ * @receiver The image to merge onto
+ */
+fun MutableImage.mergeBelow(image: Image) {
+    if (width != image.width || height != image.height)
+        throw IllegalArgumentException("Image sizes do not match")
+
+    var position = 0
+    while (position < image.view.size) {
+        val layerR = image.view[position + 0].toInt() and 0xFF
+        val layerG = image.view[position + 1].toInt() and 0xFF
+        val layerB = image.view[position + 2].toInt() and 0xFF
+        val layerA = image.view[position + 3].toInt() and 0xFF
+        when {
+            layerA == 255 -> {
+                view[position + 0] = layerR.toByte()
+                view[position + 1] = layerG.toByte()
+                view[position + 2] = layerB.toByte()
+                view[position + 3] = layerA.toByte()
+            }
+            layerA != 0 -> {
+                val bufferR = view[position + 0].toInt() and 0xFF
+                val bufferG = view[position + 1].toInt() and 0xFF
+                val bufferB = view[position + 2].toInt() and 0xFF
+                val bufferA = view[position + 3].toInt() and 0xFF
+                val a = layerA / 255.0
+                val oneMinusA = 1.0 - a
+                view[position + 0] = (bufferR * oneMinusA + layerR * a).toByte()
+                view[position + 1] = (bufferG * oneMinusA + layerG * a).toByte()
+                view[position + 2] = (bufferB * oneMinusA + layerB * a).toByte()
+                view[position + 3] = 255.coerceAtMost(bufferA + layerA).toByte()
+            }
+        }
+        position += 4
+    }
+}
+
+/**
  * Creates a new image from a mutable image
  *
  * **Note:** Changes to the old mutable image will change this new instance
