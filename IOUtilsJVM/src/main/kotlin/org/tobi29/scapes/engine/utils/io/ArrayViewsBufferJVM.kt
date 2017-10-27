@@ -1,6 +1,8 @@
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.ByteArraySliceRO
 import org.tobi29.scapes.engine.utils.HeapByteArraySlice
+import org.tobi29.scapes.engine.utils.hashCodePrimitive
 import java.nio.ByteBuffer
 
 inline val ByteBuffer.viewE: ByteViewE
@@ -35,6 +37,23 @@ inline val ByteBuffer.viewBufferLE: ByteBufferViewLE
 sealed class ByteBufferView(protected val buffer: ByteBuffer) : ByteViewE {
     override final val size = buffer.remaining()
     abstract val byteBuffer: ByteBuffer
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ByteArraySliceRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].hashCodePrimitive()
+        }
+        return h
+    }
 }
 
 class ByteBufferViewBE(
