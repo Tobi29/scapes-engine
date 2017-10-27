@@ -16,5 +16,5 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-header internal fun detectMimeImpl(stream: ReadableByteStream?,
+expect internal fun detectMimeImpl(stream: ReadableByteStream?,
                                    name: String?): String

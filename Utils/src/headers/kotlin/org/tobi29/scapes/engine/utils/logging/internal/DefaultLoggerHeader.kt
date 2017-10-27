@@ -18,4 +18,4 @@ package org.tobi29.scapes.engine.utils.logging.internal
 
 import org.tobi29.scapes.engine.utils.logging.KLogger
 
-header internal fun createDefaultLogger(name: String): KLogger
+expect internal fun createDefaultLogger(name: String): KLogger

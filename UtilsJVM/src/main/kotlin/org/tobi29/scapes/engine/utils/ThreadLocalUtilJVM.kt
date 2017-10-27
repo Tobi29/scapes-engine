@@ -16,14 +16,14 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ThreadLocal<T> impl constructor(initial: () -> T) {
+actual class ThreadLocal<T> actual constructor(initial: () -> T) {
     private val tl = object : java.lang.ThreadLocal<T>() {
         override fun initialValue(): T {
             return initial()
         }
     }
 
-    impl fun set(value: T) = tl.set(value)
-    impl fun get(): T = tl.get()
-    impl fun remove() = tl.remove()
+    actual fun set(value: T) = tl.set(value)
+    actual fun get(): T = tl.get()
+    actual fun remove() = tl.remove()
 }

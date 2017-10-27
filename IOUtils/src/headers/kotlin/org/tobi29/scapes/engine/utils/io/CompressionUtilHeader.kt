@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-header class ZDeflater(level: Int,
+expect class ZDeflater(level: Int,
                        buffer: Int = 8192) : CompressionUtil.Filter {
     override fun input(buffer: ReadableByteStream): Boolean
     override fun output(buffer: WritableByteStream): Int
@@ -27,7 +27,7 @@ header class ZDeflater(level: Int,
     override fun close()
 }
 
-header class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
+expect class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
     override fun input(buffer: ReadableByteStream): Boolean
     override fun output(buffer: WritableByteStream): Int
     override fun finish()

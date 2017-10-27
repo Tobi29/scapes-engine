@@ -20,108 +20,108 @@ package org.tobi29.scapes.engine.utils.math
 
 import kotlin.js.*
 
-impl inline fun abs(value: Int) = if (value < 0) -value else value
+actual inline fun abs(value: Int) = if (value < 0) -value else value
 
-impl inline fun abs(value: Long) = if (value < 0) -value else value
+actual inline fun abs(value: Long) = if (value < 0) -value else value
 
-impl inline fun abs(value: Float) = if (value < 0.0f) -value else value
+actual inline fun abs(value: Float) = if (value < 0.0f) -value else value
 
-impl inline fun abs(value: Double) = Math.abs(value)
+actual inline fun abs(value: Double) = Math.abs(value)
 
-impl inline fun min(value1: Int,
+actual inline fun min(value1: Int,
                     value2: Int) = Math.min(value1, value2)
 
-impl inline fun min(value1: Long,
+actual inline fun min(value1: Long,
                     value2: Long) = Math.min(value1, value2)
 
-impl inline fun min(value1: Float,
+actual inline fun min(value1: Float,
                     value2: Float) = Math.min(value1, value2)
 
-impl inline fun min(value1: Double,
+actual inline fun min(value1: Double,
                     value2: Double) = Math.min(value1, value2)
 
-impl inline fun max(value1: Int,
+actual inline fun max(value1: Int,
                     value2: Int) = Math.max(value1, value2)
 
-impl inline fun max(value1: Long,
+actual inline fun max(value1: Long,
                     value2: Long) = Math.max(value1, value2)
 
-impl inline fun max(value1: Float,
+actual inline fun max(value1: Float,
                     value2: Float) = Math.max(value1, value2)
 
-impl inline fun max(value1: Double,
+actual inline fun max(value1: Double,
                     value2: Double) = Math.max(value1, value2)
 
-impl inline fun sqrt(value: Float) = sqrt(value.toDouble()).toFloat()
+actual inline fun sqrt(value: Float) = sqrt(value.toDouble()).toFloat()
 
-impl inline fun sqrt(value: Double) = Math.sqrt(value)
+actual inline fun sqrt(value: Double) = Math.sqrt(value)
 
-impl inline fun cbrt(value: Float) = cbrt(value.toDouble()).toFloat()
+actual inline fun cbrt(value: Float) = cbrt(value.toDouble()).toFloat()
 
-impl inline fun cbrt(value: Double) = pow(value, 1.0 / 3.0)
+actual inline fun cbrt(value: Double) = pow(value, 1.0 / 3.0)
 
-impl inline fun floor(value: Float): Int {
+actual inline fun floor(value: Float): Int {
     val int = value.toInt()
     return if (value >= 0.0f || int.toFloat() == value) int else int - 1
 }
 
-impl inline fun floor(value: Double) = Math.floor(value)
+actual inline fun floor(value: Double) = Math.floor(value)
 
-impl inline fun floorL(value: Double): Long {
+actual inline fun floorL(value: Double): Long {
     val int = value.toLong()
     return if (value >= 0.0 || int.toDouble() == value) int else int - 1
 }
 
 @Suppress("UnsafeCastFromDynamic")
-impl inline fun floorD(value: Double): Double = MathD.floor(value)
+actual inline fun floorD(value: Double): Double = MathD.floor(value)
 
-impl inline fun round(value: Float) = floor(value + 0.5f)
+actual inline fun round(value: Float) = floor(value + 0.5f)
 
-impl inline fun round(value: Double) = floor(value + 0.5)
+actual inline fun round(value: Double) = floor(value + 0.5)
 
-impl inline fun roundL(value: Double) = floorL(value + 0.5f)
+actual inline fun roundL(value: Double) = floorL(value + 0.5f)
 
 @Suppress("UnsafeCastFromDynamic")
-impl inline fun roundD(value: Double): Double = MathD.round(value)
+actual inline fun roundD(value: Double): Double = MathD.round(value)
 
-impl inline fun ceil(value: Float): Int {
+actual inline fun ceil(value: Float): Int {
     val int = value.toInt()
     return if (value <= 0.0f || int.toFloat() == value) int else int + 1
 }
 
-impl inline fun ceil(value: Double) = Math.ceil(value)
+actual inline fun ceil(value: Double) = Math.ceil(value)
 
-impl inline fun ceilL(value: Double): Long {
+actual inline fun ceilL(value: Double): Long {
     val int = value.toLong()
     return if (value <= 0.0 || int.toDouble() == value) int else int + 1
 }
 
 @Suppress("UnsafeCastFromDynamic")
-impl inline fun ceilD(value: Double): Double = MathD.ceil(value)
+actual inline fun ceilD(value: Double): Double = MathD.ceil(value)
 
-impl inline fun sin(value: Float) = sin(value.toDouble()).toFloat()
+actual inline fun sin(value: Float) = sin(value.toDouble()).toFloat()
 
-impl inline fun sin(value: Double) = Math.sin(value)
+actual inline fun sin(value: Double) = Math.sin(value)
 
-impl inline fun asin(value: Float) = asin(value.toDouble()).toFloat()
+actual inline fun asin(value: Float) = asin(value.toDouble()).toFloat()
 
-impl inline fun asin(value: Double) = Math.asin(value)
+actual inline fun asin(value: Double) = Math.asin(value)
 
-impl inline fun cos(value: Float) = cos(value.toDouble()).toFloat()
+actual inline fun cos(value: Float) = cos(value.toDouble()).toFloat()
 
-impl inline fun cos(value: Double) = Math.cos(value)
+actual inline fun cos(value: Double) = Math.cos(value)
 
-impl inline fun acos(value: Float) = acos(value.toDouble()).toFloat()
+actual inline fun acos(value: Float) = acos(value.toDouble()).toFloat()
 
-impl inline fun acos(value: Double) = Math.acos(value)
+actual inline fun acos(value: Double) = Math.acos(value)
 
-impl inline fun tan(value: Float) = tan(value.toDouble()).toFloat()
+actual inline fun tan(value: Float) = tan(value.toDouble()).toFloat()
 
-impl inline fun tan(value: Double) = Math.tan(value)
+actual inline fun tan(value: Double) = Math.tan(value)
 
-impl inline fun tanh(value: Float) = tanh(value.toDouble()).toFloat()
+actual inline fun tanh(value: Float) = tanh(value.toDouble()).toFloat()
 
-impl fun tanh(value: Double) = tanhImpl(value)
+actual fun tanh(value: Double) = tanhImpl(value)
 
 @Suppress("UnsafeCastFromDynamic")
 private val tanhImpl: (Double) -> Double = if (MathD.tanh !== undefined) MathD.tanh
@@ -135,25 +135,25 @@ else { value ->
     }
 }
 
-impl inline fun atan(value: Float) = atan(value.toDouble()).toFloat()
+actual inline fun atan(value: Float) = atan(value.toDouble()).toFloat()
 
-impl inline fun atan(value: Double) = Math.atan(value)
+actual inline fun atan(value: Double) = Math.atan(value)
 
-impl inline fun atan2(value1: Float,
+actual inline fun atan2(value1: Float,
                       value2: Float) =
         atan2(value1.toDouble(), value2.toDouble()).toFloat()
 
-impl inline fun atan2(value1: Double,
+actual inline fun atan2(value1: Double,
                       value2: Double) = Math.atan2(value1, value2)
 
-impl inline fun pow(value1: Float,
+actual inline fun pow(value1: Float,
                     value2: Float) =
         pow(value1.toDouble(), value2.toDouble()).toFloat()
 
-impl inline fun pow(value1: Double,
+actual inline fun pow(value1: Double,
                     value2: Double) = Math.pow(value1, value2)
 
-impl fun clz(value: Int) = clzImpl(value)
+actual fun clz(value: Int) = clzImpl(value)
 
 @Suppress("UnsafeCastFromDynamic")
 private val clzImpl: (Int) -> Int = if (MathD.clz !== undefined) MathD.clz

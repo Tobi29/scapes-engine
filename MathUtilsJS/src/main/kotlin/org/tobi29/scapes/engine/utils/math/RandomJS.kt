@@ -75,11 +75,11 @@ internal class RandomJSJVM(seed: Long) : Random {
             ((next(26).toLong() shl 27) + next(27)).toDouble() / (1L shl 53)
 }
 
-impl fun Random(): Random = RandomJS
+actual fun Random(): Random = RandomJS
 
-impl fun Random(seed: Long): Random = RandomJSJVM(seed)
+actual fun Random(seed: Long): Random = RandomJSJVM(seed)
 
-impl fun threadLocalRandom(): Random = RandomJS
+actual fun threadLocalRandom(): Random = RandomJS
 
 private const val multiplier = 0x5DEECE66DL
 private const val offset = 0xBL

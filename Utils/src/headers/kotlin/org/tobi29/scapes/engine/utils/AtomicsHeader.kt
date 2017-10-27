@@ -1,6 +1,6 @@
 package org.tobi29.scapes.engine.utils
 
-header class AtomicBoolean(value: Boolean) {
+expect class AtomicBoolean(value: Boolean) {
     fun get(): Boolean
 
     fun compareAndSet(expect: Boolean,
@@ -11,7 +11,7 @@ header class AtomicBoolean(value: Boolean) {
     fun getAndSet(newValue: Boolean): Boolean
 }
 
-header class AtomicInteger(value: Int) {
+expect class AtomicInteger(value: Int) {
     fun get(): Int
 
     fun set(newValue: Int)
@@ -34,7 +34,7 @@ header class AtomicInteger(value: Int) {
     fun addAndGet(delta: Int): Int
 }
 
-header class AtomicLong(value: Long) {
+expect class AtomicLong(value: Long) {
     fun get(): Long
 
     fun set(newValue: Long)
@@ -57,7 +57,7 @@ header class AtomicLong(value: Long) {
     fun addAndGet(delta: Long): Long
 }
 
-header class AtomicReference<V>(value: V) {
+expect class AtomicReference<V>(value: V) {
     fun get(): V
 
     fun set(newValue: V)

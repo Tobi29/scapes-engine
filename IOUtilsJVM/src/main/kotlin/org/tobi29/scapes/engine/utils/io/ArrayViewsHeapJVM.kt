@@ -2,7 +2,7 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.HeapByteArraySlice
 
-impl sealed class HeapViewByte impl constructor(
+actual sealed class HeapViewByte actual constructor(
         array: ByteArray,
         offset: Int,
         size: Int
@@ -12,32 +12,32 @@ impl sealed class HeapViewByte impl constructor(
             throw IndexOutOfBoundsException("Invalid offset or size")
     }
 
-    impl override abstract fun slice(index: Int): HeapViewByte
+    actual override abstract fun slice(index: Int): HeapViewByte
 
-    impl override abstract fun slice(index: Int,
+    actual override abstract fun slice(index: Int,
                                      size: Int): HeapViewByte
 }
 
-impl class HeapViewByteBE impl constructor(
+actual class HeapViewByteBE actual constructor(
         array: ByteArray,
         offset: Int,
         size: Int
 ) : HeapViewByte(array, offset, size), ByteViewBE {
-    impl override fun slice(index: Int) = slice(index, size - index)
+    actual override fun slice(index: Int) = slice(index, size - index)
 
-    impl override fun slice(index: Int,
+    actual override fun slice(index: Int,
                             size: Int): HeapViewByteBE =
             prepareSlice(array, index, size, ::HeapViewByteBE)
 }
 
-impl class HeapViewByteLE impl constructor(
+actual class HeapViewByteLE actual constructor(
         array: ByteArray,
         offset: Int,
         size: Int
 ) : HeapViewByte(array, offset, size), ByteViewLE {
-    impl override fun slice(index: Int) = slice(index, size - index)
+    actual override fun slice(index: Int) = slice(index, size - index)
 
-    impl override fun slice(index: Int,
+    actual override fun slice(index: Int,
                             size: Int): HeapViewByteLE =
             prepareSlice(array, index, size, ::HeapViewByteLE)
 }

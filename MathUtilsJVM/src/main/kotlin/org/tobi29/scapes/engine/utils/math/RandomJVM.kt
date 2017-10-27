@@ -33,10 +33,10 @@ internal class RandomJVM(private val random: java.util.Random) : Random {
     override fun nextDouble() = random.nextDouble()
 }
 
-impl fun Random(): Random = RandomJVM(java.util.Random())
+actual fun Random(): Random = RandomJVM(java.util.Random())
 
-impl fun Random(seed: Long): Random = RandomJVM(java.util.Random(seed))
+actual fun Random(seed: Long): Random = RandomJVM(java.util.Random(seed))
 
-impl fun threadLocalRandom(): Random = tlRandom.get()
+actual fun threadLocalRandom(): Random = tlRandom.get()
 
 private val tlRandom = ThreadLocal { RandomJVM(ThreadLocalRandom.current()) }

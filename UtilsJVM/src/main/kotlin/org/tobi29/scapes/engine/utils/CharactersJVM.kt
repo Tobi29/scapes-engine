@@ -18,8 +18,8 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl inline fun Char.isISOControl(): Boolean =
+actual inline fun Char.isISOControl(): Boolean =
         java.lang.Character.isISOControl(this)
 
-impl inline fun Codepoint.isISOControl(): Boolean =
+actual inline fun Codepoint.isISOControl(): Boolean =
         java.lang.Character.isISOControl(this)

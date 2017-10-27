@@ -5,9 +5,9 @@ package org.tobi29.scapes.engine.utils
  *
  * Origin shall be same as usual on unix systems and timezone must be UT or UTC
  */
-header val systemClock: Clock
+expect val systemClock: Clock
 
 /**
  * Monotonically increasing clock with best effort precision
  */
-header val steadyClock: SteadyClock
+expect val steadyClock: SteadyClock

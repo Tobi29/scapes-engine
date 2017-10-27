@@ -77,14 +77,14 @@ private var outputErr = run {
 
 private inline fun String(value: Any?): String = js("String")(value)
 
-impl fun printerr(message: Any?) {
+actual fun printerr(message: Any?) {
     outputErr.print(message)
 }
 
-impl fun printerrln(message: Any?) {
+actual fun printerrln(message: Any?) {
     outputErr.println(message)
 }
 
-impl fun printerrln() {
+actual fun printerrln() {
     outputErr.println()
 }

@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils.logging.internal
 import org.tobi29.scapes.engine.utils.logging.KLogLevel
 import org.tobi29.scapes.engine.utils.logging.KLogger
 
-impl internal fun createDefaultLogger(name: String): KLogger =
+actual internal fun createDefaultLogger(name: String): KLogger =
         ConsoleKLogger(name)
 
 internal class ConsoleKLogger(val name: String) : KLogger() {

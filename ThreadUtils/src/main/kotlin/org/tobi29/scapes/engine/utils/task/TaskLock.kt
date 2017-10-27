@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.task
 
-header class TaskLock {
+expect class TaskLock() {
     fun increment(): Unit
 
     fun decrement(): Unit

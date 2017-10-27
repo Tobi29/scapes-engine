@@ -16,6 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl object Assertions {
-    impl var ENABLED = false
+actual object Assertions {
+    actual var ENABLED = false
 }

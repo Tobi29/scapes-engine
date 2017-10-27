@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ConcurrentHashMap<K, V> : HashMap<K, V>(), ConcurrentMap<K, V> {
-    impl open fun replace(key: K,
+actual class ConcurrentHashMap<K, V> : HashMap<K, V>(), ConcurrentMap<K, V> {
+    actual open fun replace(key: K,
                           oldValue: V,
                           newValue: V) =
             if (this[key] == oldValue) {
@@ -28,7 +28,7 @@ impl class ConcurrentHashMap<K, V> : HashMap<K, V>(), ConcurrentMap<K, V> {
             }
 }
 
-impl fun String.toUUID(): UUID? {
+actual fun String.toUUID(): UUID? {
     val split = split('-')
     if (split.size != 5) return null
     val g0 = split[0].toLongOrNull(16) ?: return null
@@ -39,10 +39,10 @@ impl fun String.toUUID(): UUID? {
     return UUID((g0 shl 32) or (g1 shl 16) or (g2), (g3 shl 48) or (g4))
 }
 
-impl class UUID impl constructor(private val mostSignificantBits: Long,
+actual class UUID actual constructor(private val mostSignificantBits: Long,
                                  private val leastSignificantBits: Long) {
-    impl open fun getMostSignificantBits() = mostSignificantBits
-    impl open fun getLeastSignificantBits() = leastSignificantBits
+    actual open fun getMostSignificantBits() = mostSignificantBits
+    actual open fun getLeastSignificantBits() = leastSignificantBits
 
     override fun toString(): String =
             "${(mostSignificantBits ushr 32 and 0xFFFFFFFFL).toString(16, 8)}-${

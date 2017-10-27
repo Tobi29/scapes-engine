@@ -15,20 +15,20 @@ private val impl: StandardPathsImpl by lazy {
     }
 }
 
-impl val homeDir: FilePath get() = impl.homeDir
-impl val configHome: FilePath get() = impl.configHome
-impl val configDirs: List<FilePath> get() = impl.configDirs
-impl val dataHome: FilePath get() = impl.dataHome
-impl val dataDirs: List<FilePath> get() = impl.dataDirs
-impl val cacheHome: FilePath get() = impl.cacheHome
+actual val homeDir: FilePath get() = impl.homeDir
+actual val configHome: FilePath get() = impl.configHome
+actual val configDirs: List<FilePath> get() = impl.configDirs
+actual val dataHome: FilePath get() = impl.dataHome
+actual val dataDirs: List<FilePath> get() = impl.dataDirs
+actual val cacheHome: FilePath get() = impl.cacheHome
 
-impl fun appIDForConfig(id: String,
+actual fun appIDForConfig(id: String,
                         name: String): FilePath = impl.appIDForConfig(id, name)
 
-impl fun appIDForData(id: String,
+actual fun appIDForData(id: String,
                       name: String): FilePath = impl.appIDForData(id, name)
 
-impl fun appIDForCache(id: String,
+actual fun appIDForCache(id: String,
                        name: String): FilePath = impl.appIDForCache(id, name)
 
 private interface StandardPathsImpl {

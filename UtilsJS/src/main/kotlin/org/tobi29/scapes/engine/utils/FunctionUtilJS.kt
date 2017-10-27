@@ -16,24 +16,24 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit =
+actual infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit =
         chainFunctions(arrayOf(*unchain(), *other.unchain()))
 
-impl fun chain(vararg functions: () -> Unit): () -> Unit =
+actual fun chain(vararg functions: () -> Unit): () -> Unit =
         chainFunctions(
                 functions.flatMap { it.unchain().asIterable() }.toTypedArray())
 
-impl infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =
+actual infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =
         chainFunctions(arrayOf(*unchain(), *other.unchain()))
 
-impl fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit =
+actual fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit =
         chainFunctions(
                 functions.flatMap { it.unchain().asIterable() }.toTypedArray())
 
-impl infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit =
+actual infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit =
         chainFunctions(arrayOf(*unchain(), *other.unchain()))
 
-impl fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit =
+actual fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit =
         chainFunctions(
                 functions.flatMap { it.unchain().asIterable() }.toTypedArray())
 

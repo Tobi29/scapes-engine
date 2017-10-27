@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-impl internal fun convertNumberToType(type: Number,
+actual internal fun convertNumberToType(type: Number,
                                       convert: Number): Number {
     return when (type) {
         is Byte -> convert.toByte()

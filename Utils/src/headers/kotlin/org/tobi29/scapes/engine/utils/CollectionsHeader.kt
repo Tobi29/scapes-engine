@@ -1,7 +1,6 @@
 package org.tobi29.scapes.engine.utils
 
-header class ArrayDeque<E : Any> : Deque<E> {
-    constructor()
+expect class ArrayDeque<E : Any>() : Deque<E> {
     constructor(size: Int)
 
     override val size: Int
@@ -40,7 +39,7 @@ header class ArrayDeque<E : Any> : Deque<E> {
     override fun retainAll(elements: Collection<E>): Boolean
 }
 
-header class ConcurrentHashMap<K, V> : ConcurrentMap<K, V> {
+expect class ConcurrentHashMap<K, V>() : ConcurrentMap<K, V> {
     override val size: Int
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
     override val keys: MutableSet<K>
@@ -61,7 +60,7 @@ header class ConcurrentHashMap<K, V> : ConcurrentMap<K, V> {
                      newValue: V): Boolean
 }
 
-header class ConcurrentHashSet<E> : MutableSet<E> {
+expect class ConcurrentHashSet<E>() : MutableSet<E> {
     override fun add(element: E): Boolean
     override fun addAll(elements: Collection<E>): Boolean
     override fun clear()
@@ -75,7 +74,7 @@ header class ConcurrentHashSet<E> : MutableSet<E> {
     override fun isEmpty(): Boolean
 }
 
-header class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>, ConcurrentMap<K, V> {
+expect class ConcurrentSortedMap<K : Comparable<K>, V>() : AbstractMap<K, V>, ConcurrentMap<K, V> {
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
     override val keys: MutableSet<K>
     override val values: MutableCollection<V>
@@ -90,7 +89,7 @@ header class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>, Conc
     override fun clear()
 }
 
-header class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>, MutableSet<T> {
+expect class ConcurrentSortedSet<T : Comparable<T>>() : AbstractSet<T>, MutableSet<T> {
     override val size: Int
     override fun isEmpty(): Boolean
     override fun iterator(): MutableIterator<T>

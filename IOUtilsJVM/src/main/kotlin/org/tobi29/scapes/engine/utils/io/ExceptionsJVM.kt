@@ -1,7 +1,7 @@
 package org.tobi29.scapes.engine.utils.io
 
-impl typealias IOException = java.io.IOException
-impl typealias ClosedChannelException = java.nio.channels.ClosedChannelException
+actual typealias IOException = java.io.IOException
+actual typealias ClosedChannelException = java.nio.channels.ClosedChannelException
 
-impl typealias BufferOverflowException = java.nio.BufferOverflowException
-impl typealias BufferUnderflowException = java.nio.BufferUnderflowException
+actual typealias BufferOverflowException = java.nio.BufferOverflowException
+actual typealias BufferUnderflowException = java.nio.BufferUnderflowException

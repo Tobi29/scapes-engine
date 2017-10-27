@@ -21,11 +21,11 @@ import ar.com.hjg.pngj.PngjException
 import org.tobi29.scapes.engine.utils.io.*
 import java.io.InputStream
 
-impl suspend fun decodePNG(asset: ReadSource): Image {
+actual suspend fun decodePNG(asset: ReadSource): Image {
     return asset.readAsync { decodePNG(it) }
 }
 
-impl suspend fun decodePNG(stream: ReadableByteStream): Image {
+actual suspend fun decodePNG(stream: ReadableByteStream): Image {
     return decodePNG(ByteStreamInputStream(stream))
 }
 

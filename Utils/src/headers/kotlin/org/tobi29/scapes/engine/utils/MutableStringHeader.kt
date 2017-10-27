@@ -1,6 +1,6 @@
 package org.tobi29.scapes.engine.utils
 
-header class MutableString : CharSequence, Appendable {
+expect class MutableString : CharSequence, Appendable {
     override val length: Int
 
     override fun get(index: Int): Char

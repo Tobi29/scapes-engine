@@ -2,7 +2,7 @@ package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.HeapByteArraySlice
 
-header sealed class HeapViewByte(
+expect sealed class HeapViewByte(
         array: ByteArray,
         offset: Int,
         size: Int
@@ -13,7 +13,7 @@ header sealed class HeapViewByte(
                                 size: Int): HeapViewByte
 }
 
-header class HeapViewByteBE(
+expect class HeapViewByteBE(
         array: ByteArray,
         offset: Int,
         size: Int
@@ -24,7 +24,7 @@ header class HeapViewByteBE(
                        size: Int): HeapViewByteBE
 }
 
-header class HeapViewByteLE(
+expect class HeapViewByteLE(
         array: ByteArray,
         offset: Int,
         size: Int

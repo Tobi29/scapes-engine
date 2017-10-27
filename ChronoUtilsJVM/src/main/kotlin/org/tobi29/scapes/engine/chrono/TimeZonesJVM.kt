@@ -9,11 +9,11 @@ import org.threeten.bp.OffsetDateTime as TTOffsetDateTime
 import org.threeten.bp.ZoneId as TTZoneId
 import org.threeten.bp.ZoneOffset as TTZoneOffset
 
-impl val timeZoneUTC: TimeZone = ThreeTenTimeZone(TTZoneOffset.UTC)
+actual val timeZoneUTC: TimeZone = ThreeTenTimeZone(TTZoneOffset.UTC)
 
-impl val timeZoneLocal: TimeZone = ThreeTenTimeZone(TTZoneId.systemDefault())
+actual val timeZoneLocal: TimeZone = ThreeTenTimeZone(TTZoneId.systemDefault())
 
-impl fun timeZoneOf(name: String): TimeZone =
+actual fun timeZoneOf(name: String): TimeZone =
         ThreeTenTimeZone(TTZoneId.of(name))
 
 class ThreeTenTimeZone(val ttZone: TTZoneId) : TimeZone {

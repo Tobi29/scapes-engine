@@ -16,11 +16,11 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), ConcurrentMap<K, V> {
+actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), ConcurrentMap<K, V> {
     private val map = HashMap<K, V>()
     private var list = emptyList<MutableMap.MutableEntry<K, V>>()
 
-    impl override val entries: MutableSet<MutableMap.MutableEntry<K, V>> =
+    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> =
             object : AbstractSet<MutableMap.MutableEntry<K, V>>(), MutableSet<MutableMap.MutableEntry<K, V>> {
                 override val size get() = map.size
 
@@ -86,7 +86,7 @@ impl class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Conc
                 override fun hashCode() = map.entries.hashCode()
             }
 
-    impl override val keys: MutableSet<K> =
+    actual override val keys: MutableSet<K> =
             object : AbstractSet<K>(), MutableSet<K> {
                 override val size get() = map.size
 
@@ -143,7 +143,7 @@ impl class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Conc
                 override fun hashCode() = map.keys.hashCode()
             }
 
-    impl override val values: MutableCollection<V> =
+    actual override val values: MutableCollection<V> =
             object : AbstractCollection<V>(), MutableCollection<V> {
                 override val size get() = map.size
 
@@ -208,7 +208,7 @@ impl class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Conc
                 override fun hashCode() = map.values.hashCode()
             }
 
-    impl override fun put(key: K,
+    actual override fun put(key: K,
                           value: V) =
             map.put(key, value).also { previous ->
                 val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
@@ -220,7 +220,7 @@ impl class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Conc
                 list = newList
             }
 
-    impl override fun putAll(from: Map<out K, V>) {
+    actual override fun putAll(from: Map<out K, V>) {
         val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
                 list.size + from.size)
         newList.addAll(list)
@@ -234,12 +234,12 @@ impl class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Conc
         list = newList
     }
 
-    impl override fun remove(key: K) =
+    actual override fun remove(key: K) =
             map.remove(key)?.also {
                 list = list.filter { it.key != key }
             }
 
-    impl override fun clear() {
+    actual override fun clear() {
         map.clear()
         list = emptyList()
     }

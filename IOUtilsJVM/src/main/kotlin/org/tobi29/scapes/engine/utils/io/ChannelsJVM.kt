@@ -17,9 +17,9 @@ package org.tobi29.scapes.engine.utils.io
 
 import java.nio.ByteBuffer
 
-impl typealias Channel = java.nio.channels.Channel
+actual typealias Channel = java.nio.channels.Channel
 
-impl typealias InterruptibleChannel = java.nio.channels.InterruptibleChannel
+actual typealias InterruptibleChannel = java.nio.channels.InterruptibleChannel
 
 interface JavaChannel : Channel {
     val java: java.nio.channels.Channel

@@ -21,11 +21,11 @@ package org.tobi29.scapes.engine.utils
  * @receiver The character to check
  * @return `true` if the given character is an ISO control character
  */
-header fun Char.isISOControl(): Boolean
+expect fun Char.isISOControl(): Boolean
 
 /**
  * Checks if the given character is an ISO control character
  * @receiver The character to check
  * @return `true` if the given character is an ISO control character
  */
-header fun Codepoint.isISOControl(): Boolean
+expect fun Codepoint.isISOControl(): Boolean

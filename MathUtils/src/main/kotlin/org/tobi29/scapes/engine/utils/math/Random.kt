@@ -149,7 +149,7 @@ interface Random {
  * security related tasks
  * @return a new instance of [Random]
  */
-header fun Random(): Random
+expect fun Random(): Random
 
 /**
  * Create a new pseudo random number generator with the given random seed
@@ -164,7 +164,7 @@ header fun Random(): Random
  * security related tasks
  * @return a new instance of [Random]
  */
-header fun Random(seed: Long): Random
+expect fun Random(seed: Long): Random
 
 /**
  * Give a pseudo random number generator to use in the current thread
@@ -176,7 +176,7 @@ header fun Random(seed: Long): Random
  * related tasks
  * @return a new instance of [Random]
  */
-header fun threadLocalRandom(): Random
+expect fun threadLocalRandom(): Random
 
 /**
  * Returns a value in range `[Byte.MIN_VALUE]..[Byte.MAX_VALUE]`

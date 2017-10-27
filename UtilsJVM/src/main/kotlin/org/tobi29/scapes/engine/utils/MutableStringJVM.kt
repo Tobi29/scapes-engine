@@ -16,41 +16,41 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class MutableString(val builder: StringBuilder) : CharSequence, Appendable {
-    impl override val length get() = builder.length
+actual class MutableString(val builder: StringBuilder) : CharSequence, Appendable {
+    actual override val length get() = builder.length
 
-    impl constructor() : this(0)
+    actual constructor() : this(0)
 
-    impl constructor(str: String) : this(StringBuilder(str))
+    actual constructor(str: String) : this(StringBuilder(str))
 
-    impl constructor(initial: Int) : this(StringBuilder(initial))
+    actual constructor(initial: Int) : this(StringBuilder(initial))
 
-    impl override fun get(index: Int): Char {
+    actual override fun get(index: Int): Char {
         if (index < 0 || index >= builder.length) {
             throw IndexOutOfBoundsException("$index")
         }
         return builder[index]
     }
 
-    impl override fun subSequence(startIndex: Int,
+    actual override fun subSequence(startIndex: Int,
                                   endIndex: Int) =
             substring(startIndex, endIndex)
 
-    impl override fun append(c: Char): MutableString = apply {
+    actual override fun append(c: Char): MutableString = apply {
         builder.append(c)
     }
 
-    impl override fun append(csq: CharSequence?): MutableString = apply {
+    actual override fun append(csq: CharSequence?): MutableString = apply {
         builder.append(csq)
     }
 
-    impl override fun append(csq: CharSequence?,
+    actual override fun append(csq: CharSequence?,
                              start: Int,
                              end: Int): MutableString = apply {
         builder.append(csq, start, end)
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     char: Char): MutableString = apply {
         if (position < 0 || position > builder.length) {
             throw IndexOutOfBoundsException("$position")
@@ -58,7 +58,7 @@ impl class MutableString(val builder: StringBuilder) : CharSequence, Appendable 
         builder.insert(position, char)
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     str: String): MutableString = apply {
         if (position < 0 || position > builder.length) {
             throw IndexOutOfBoundsException("$position")
@@ -66,30 +66,30 @@ impl class MutableString(val builder: StringBuilder) : CharSequence, Appendable 
         builder.insert(position, str)
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     array: CharArray): MutableString = apply {
         builder.insert(position, array)
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     array: CharArray,
                     offset: Int): MutableString =
             insert(position, array, offset, array.size - offset)
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     array: CharArray,
                     offset: Int,
                     length: Int): MutableString = apply {
         builder.insert(position, array, offset, length)
     }
 
-    impl fun delete(range: IntRange): MutableString =
+    actual fun delete(range: IntRange): MutableString =
             delete(range.start, range.endInclusive + 1)
 
-    impl fun delete(startIndex: Int): MutableString =
+    actual fun delete(startIndex: Int): MutableString =
             delete(startIndex, startIndex + 1)
 
-    impl fun delete(startIndex: Int,
+    actual fun delete(startIndex: Int,
                     endIndex: Int): MutableString = apply {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
@@ -98,14 +98,14 @@ impl class MutableString(val builder: StringBuilder) : CharSequence, Appendable 
         builder.delete(startIndex, endIndex)
     }
 
-    impl fun clear(): MutableString = apply {
+    actual fun clear(): MutableString = apply {
         builder.delete(0, builder.length)
     }
 
-    impl fun substring(startIndex: Int): String =
+    actual fun substring(startIndex: Int): String =
             substring(startIndex, builder.length)
 
-    impl fun substring(startIndex: Int,
+    actual fun substring(startIndex: Int,
                        endIndex: Int): String {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
@@ -114,7 +114,7 @@ impl class MutableString(val builder: StringBuilder) : CharSequence, Appendable 
         return builder.substring(startIndex, endIndex)
     }
 
-    impl override fun toString() = builder.toString()
+    actual override fun toString() = builder.toString()
 }
 
 @Suppress("NOTHING_TO_INLINE")

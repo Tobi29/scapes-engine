@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ConcurrentHashSet<E> : MutableSet<E> {
-    impl override fun addAll(elements: Collection<E>): Boolean {
+actual class ConcurrentHashSet<E> : MutableSet<E> {
+    actual override fun addAll(elements: Collection<E>): Boolean {
         var added = false
         for (element in elements) {
             added = add(element) || added
@@ -25,26 +25,26 @@ impl class ConcurrentHashSet<E> : MutableSet<E> {
         return added
     }
 
-    impl override fun removeAll(elements: Collection<E>) =
+    actual override fun removeAll(elements: Collection<E>) =
             map.keys.removeAll(elements)
 
-    impl override fun retainAll(elements: Collection<E>) =
+    actual override fun retainAll(elements: Collection<E>) =
             map.keys.retainAll(elements)
 
-    impl override fun contains(element: E) = map.keys.contains(element)
-    impl override fun containsAll(elements: Collection<E>) =
+    actual override fun contains(element: E) = map.keys.contains(element)
+    actual override fun containsAll(elements: Collection<E>) =
             map.keys.containsAll(elements)
 
-    impl override fun isEmpty() = map.isEmpty()
+    actual override fun isEmpty() = map.isEmpty()
 
     private val map = ConcurrentHashMap<E, Unit>()
 
-    impl override val size get() = map.size
+    actual override val size get() = map.size
 
-    impl override fun add(element: E) = map.put(element, Unit) == null
-    impl override fun remove(element: E) = map.remove(element) != null
-    impl override fun clear() = map.clear()
-    impl override fun iterator(): MutableIterator<E> = map.keys.iterator()
+    actual override fun add(element: E) = map.put(element, Unit) == null
+    actual override fun remove(element: E) = map.remove(element) != null
+    actual override fun clear() = map.clear()
+    actual override fun iterator(): MutableIterator<E> = map.keys.iterator()
 
     override fun equals(other: Any?) = map.keys == other
     override fun hashCode() = map.keys.hashCode()
@@ -52,56 +52,56 @@ impl class ConcurrentHashSet<E> : MutableSet<E> {
 }
 
 // TODO: Use type alias
-impl class ArrayDeque<E> impl constructor(size: Int) : Deque<E> {
-    impl constructor() : this(16)
+actual class ArrayDeque<E> actual constructor(size: Int) : Deque<E> {
+    actual constructor() : this(16)
 
     private val deque = java.util.ArrayDeque<E>(size)
 
-    impl override val size get() = deque.size
+    actual override val size get() = deque.size
 
-    impl override fun contains(element: E) = deque.contains(element)
-    impl override fun containsAll(elements: Collection<E>) = deque.containsAll(
+    actual override fun contains(element: E) = deque.contains(element)
+    actual override fun containsAll(elements: Collection<E>) = deque.containsAll(
             elements)
 
-    impl override fun isEmpty() = deque.isEmpty()
-    impl override fun add(element: E) = deque.add(element)
-    impl override fun addAll(elements: Collection<E>) = deque.addAll(elements)
-    impl override fun clear() = deque.clear()
-    impl override fun iterator() = deque.iterator()
-    impl override fun remove(element: E) = deque.remove(element)
-    impl override fun removeAll(elements: Collection<E>) = deque.removeAll(
+    actual override fun isEmpty() = deque.isEmpty()
+    actual override fun add(element: E) = deque.add(element)
+    actual override fun addAll(elements: Collection<E>) = deque.addAll(elements)
+    actual override fun clear() = deque.clear()
+    actual override fun iterator() = deque.iterator()
+    actual override fun remove(element: E) = deque.remove(element)
+    actual override fun removeAll(elements: Collection<E>) = deque.removeAll(
             elements)
 
-    impl override fun retainAll(elements: Collection<E>) = deque.retainAll(
+    actual override fun retainAll(elements: Collection<E>) = deque.retainAll(
             elements)
 
-    impl override fun offer(element: E) = deque.offer(element)
-    impl override fun remove(): E = deque.remove()
-    impl override fun poll(): E? = deque.poll()
-    impl override fun element(): E = deque.element()
-    impl override fun peek(): E = deque.peek()
+    actual override fun offer(element: E) = deque.offer(element)
+    actual override fun remove(): E = deque.remove()
+    actual override fun poll(): E? = deque.poll()
+    actual override fun element(): E = deque.element()
+    actual override fun peek(): E = deque.peek()
 
-    impl override fun addFirst(element: E) = deque.addFirst(element)
-    impl override fun addLast(element: E) = deque.addLast(element)
-    impl override fun offerFirst(element: E) = deque.offerFirst(element)
-    impl override fun offerLast(element: E) = deque.offerLast(element)
-    impl override fun removeFirst(): E = deque.removeFirst()
-    impl override fun removeLast(): E = deque.removeLast()
-    impl override fun pollFirst(): E? = deque.pollFirst()
-    impl override fun pollLast(): E? = deque.pollLast()
-    impl override fun getFirst(): E = deque.first
-    impl override fun getLast(): E = deque.last
-    impl override fun peekFirst(): E = deque.peekFirst()
-    impl override fun peekLast(): E = deque.peekLast()
-    impl override fun removeFirstOccurrence(element: E) =
+    actual override fun addFirst(element: E) = deque.addFirst(element)
+    actual override fun addLast(element: E) = deque.addLast(element)
+    actual override fun offerFirst(element: E) = deque.offerFirst(element)
+    actual override fun offerLast(element: E) = deque.offerLast(element)
+    actual override fun removeFirst(): E = deque.removeFirst()
+    actual override fun removeLast(): E = deque.removeLast()
+    actual override fun pollFirst(): E? = deque.pollFirst()
+    actual override fun pollLast(): E? = deque.pollLast()
+    actual override fun getFirst(): E = deque.first
+    actual override fun getLast(): E = deque.last
+    actual override fun peekFirst(): E = deque.peekFirst()
+    actual override fun peekLast(): E = deque.peekLast()
+    actual override fun removeFirstOccurrence(element: E) =
             deque.removeFirstOccurrence(element)
 
-    impl override fun removeLastOccurrence(element: E) =
+    actual override fun removeLastOccurrence(element: E) =
             deque.removeLastOccurrence(element)
 
-    impl override fun push(element: E) = deque.push(element)
-    impl override fun pop(): E = deque.pop()
-    impl override fun descendingIterator(): MutableIterator<E> =
+    actual override fun push(element: E) = deque.push(element)
+    actual override fun pop(): E = deque.pop()
+    actual override fun descendingIterator(): MutableIterator<E> =
             deque.descendingIterator()
 
     override fun equals(other: Any?) = deque == other
@@ -110,44 +110,44 @@ impl class ArrayDeque<E> impl constructor(size: Int) : Deque<E> {
 }
 
 // TODO: Use type alias
-impl class ConcurrentHashMap<K, V> : ConcurrentMap<K, V>, java.util.concurrent.ConcurrentMap<K, V> {
+actual class ConcurrentHashMap<K, V> : ConcurrentMap<K, V>, java.util.concurrent.ConcurrentMap<K, V> {
     private val map = java.util.concurrent.ConcurrentHashMap<K, V>()
 
-    impl override val size: Int get() = map.size
-    impl override val entries: MutableSet<MutableMap.MutableEntry<K, V>> get() = map.entries
-    impl override val keys: MutableSet<K> get() = map.keys
-    impl override val values: MutableCollection<V> get() = map.values
+    actual override val size: Int get() = map.size
+    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> get() = map.entries
+    actual override val keys: MutableSet<K> get() = map.keys
+    actual override val values: MutableCollection<V> get() = map.values
 
     override fun replace(key: K,
                          value: V): V? = map.replace(key, value)
 
-    impl override fun replace(key: K,
+    actual override fun replace(key: K,
                               oldValue: V,
                               newValue: V): Boolean =
             map.replace(key, oldValue, newValue)
 
-    impl override fun containsValue(value: V) = map.containsValue(value)
+    actual override fun containsValue(value: V) = map.containsValue(value)
 
-    impl override fun remove(key: K): V? = map.remove(key)
+    actual override fun remove(key: K): V? = map.remove(key)
 
     override fun remove(key: K,
                         value: V) = map.remove(key, value)
 
-    impl override fun get(key: K): V? = map[key]
+    actual override fun get(key: K): V? = map[key]
 
     override fun putIfAbsent(key: K,
                              value: V): V? = map.putIfAbsent(key, value)
 
-    impl override fun containsKey(key: K) = map.containsKey(key)
+    actual override fun containsKey(key: K) = map.containsKey(key)
 
-    impl override fun isEmpty() = map.isEmpty()
+    actual override fun isEmpty() = map.isEmpty()
 
-    impl override fun clear() = map.clear()
+    actual override fun clear() = map.clear()
 
-    impl override fun put(key: K,
+    actual override fun put(key: K,
                           value: V): V? = map.put(key, value)
 
-    impl override fun putAll(from: Map<out K, V>) = map.putAll(from)
+    actual override fun putAll(from: Map<out K, V>) = map.putAll(from)
 
     override fun equals(other: Any?) = map == other
     override fun hashCode() = map.hashCode()

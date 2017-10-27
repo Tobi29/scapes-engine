@@ -16,16 +16,16 @@
 
 package org.tobi29.scapes.engine.utils
 
-header infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit
+expect infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit
 
 /**
  * Chains all given functions into a single function
  * @param functions The functions to use
  * @return A function calling all given functions in order
  */
-header fun chain(vararg functions: () -> Unit): () -> Unit
+expect fun chain(vararg functions: () -> Unit): () -> Unit
 
-header infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit
+expect infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit
 
 /**
  * Chains all given functions into a single function
@@ -33,9 +33,9 @@ header infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit
  * @param I First argument type of the functions
  * @return A function calling all given functions in order
  */
-header fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit
+expect fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit
 
-header infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit
+expect infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit
 
 /**
  * Chains all given functions into a single function
@@ -43,4 +43,4 @@ header infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1
  * @param J Second argument type of the functions
  * @return A function calling all given functions in order
  */
-header fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit
+expect fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit

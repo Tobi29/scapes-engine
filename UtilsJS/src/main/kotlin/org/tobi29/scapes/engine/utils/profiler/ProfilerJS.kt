@@ -20,22 +20,22 @@ import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.steadyClock
 
-impl class Profiler {
-    impl val root = Node("JS Runtime")
+actual class Profiler {
+    actual val root = Node("JS Runtime")
 
     private val handle = ProfilerHandle(root)
 
-    impl fun current() = handle
+    actual fun current() = handle
 }
 
-impl class ProfilerHandle impl internal constructor(private var node: Node) {
-    impl fun enterNode(name: String) {
+actual class ProfilerHandle actual internal constructor(private var node: Node) {
+    actual fun enterNode(name: String) {
         node = node.children.computeAbsent(name) { Node(it, node) }
         node.lastEnter = steadyClock.timeSteadyNanos()
         dispatchers.forEach { it.enterNode(name) }
     }
 
-    impl fun exitNode(name: String) {
+    actual fun exitNode(name: String) {
         val parentNode = node.parent ?: throw IllegalStateException(
                 "Profiler stack popped on root node")
         assert { name == node.name() }
@@ -45,4 +45,4 @@ impl class ProfilerHandle impl internal constructor(private var node: Node) {
     }
 }
 
-impl internal val dispatchers: List<ProfilerDispatcher> = emptyList()
+actual internal val dispatchers: List<ProfilerDispatcher> = emptyList()

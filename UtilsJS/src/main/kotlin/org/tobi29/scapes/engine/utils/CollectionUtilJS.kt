@@ -18,45 +18,45 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl inline fun <T> Collection<T>.readOnly(): Collection<T> =
+actual inline fun <T> Collection<T>.readOnly(): Collection<T> =
         this
 
-impl inline fun <T> List<T>.readOnly(): List<T> =
+actual inline fun <T> List<T>.readOnly(): List<T> =
         this
 
-impl inline fun <T> Set<T>.readOnly(): Set<T> =
+actual inline fun <T> Set<T>.readOnly(): Set<T> =
         this
 
-impl inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> =
+actual inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> =
         this
 
-impl inline fun <T> Collection<T>.synchronized(): Collection<T> =
+actual inline fun <T> Collection<T>.synchronized(): Collection<T> =
         this
 
-impl inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> =
+actual inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> =
         this
 
-impl inline fun <T> List<T>.synchronized(): List<T> =
+actual inline fun <T> List<T>.synchronized(): List<T> =
         this
 
-impl inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
+actual inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
         this
 
-impl inline fun <T> Set<T>.synchronized(): Set<T> =
+actual inline fun <T> Set<T>.synchronized(): Set<T> =
         this
 
-impl inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> =
+actual inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> =
         this
 
-impl inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> =
+actual inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> =
         this
 
-impl inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
+actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
         this
 
-impl inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> = HashMap()
+actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> = HashMap()
 
-impl fun <K, V> MutableMap<K, V>.putAbsent(key: K,
+actual fun <K, V> MutableMap<K, V>.putAbsent(key: K,
                                            value: V): V? {
     if (this is ConcurrentMap) {
         return this.putAbsent(key, value)
@@ -67,14 +67,14 @@ impl fun <K, V> MutableMap<K, V>.putAbsent(key: K,
     }
 }
 
-impl inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
+actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
                                                      value: V): V? {
     this[key]?.let { return it }
     put(key, value)
     return null
 }
 
-impl fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+actual fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                                block: (K, V?) -> V): V {
     if (this is ConcurrentMap) {
         return this.computeAlways(key, block)
@@ -86,7 +86,7 @@ impl fun <K, V> MutableMap<K, V>.computeAlways(key: K,
     }
 }
 
-impl fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
                                                   block: (K, V?) -> V): V {
     val old = this[key]
     val new = block(key, old)
@@ -95,7 +95,7 @@ impl fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
 }
 
 @JsName("computeAlwaysNullable")
-impl fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+actual fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                                block: (K, V?) -> V?): V? {
     if (this is ConcurrentMap) {
         return this.computeAlways(key, block)
@@ -112,7 +112,7 @@ impl fun <K, V> MutableMap<K, V>.computeAlways(key: K,
 }
 
 @JsName("computeAlwaysNullableConcurrent")
-impl fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
                                                   block: (K, V?) -> V?): V? {
     val old = this[key]
     val new = block(key, old)
@@ -124,7 +124,7 @@ impl fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
     return new
 }
 
-impl inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+actual inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                       block: (K) -> V): V {
     if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
@@ -136,7 +136,7 @@ impl inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
     }
 }
 
-impl inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
                                                          block: (K) -> V): V {
     this[key]?.let { return it }
     val new = block(key)
@@ -144,7 +144,7 @@ impl inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
 }
 
 @JsName("computeAbsentNullable")
-impl inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+actual inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                       block: (K) -> V?): V? {
     if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
@@ -157,7 +157,7 @@ impl inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
 }
 
 @JsName("computeAbsentNullableConcurrent")
-impl inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
                                                          block: (K) -> V?): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
@@ -165,7 +165,7 @@ impl inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
 }
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-impl inline fun <K, V> MutableMap<K, V>.removeEqual(key: K,
+actual inline fun <K, V> MutableMap<K, V>.removeEqual(key: K,
                                                     value: V): Boolean =
         if (this[key] == value) {
             remove(key)

@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 
-header object CLikeShader {
+expect object CLikeShader {
     fun compile(source: String): CompiledShader
 }
 

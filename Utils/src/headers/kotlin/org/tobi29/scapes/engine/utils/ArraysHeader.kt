@@ -8,7 +8,7 @@ package org.tobi29.scapes.engine.utils
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun <T> copyArray(src: Array<out T>,
+expect fun <T> copyArray(src: Array<out T>,
                          dest: Array<in T>,
                          length: Int,
                          offsetSrc: Int,
@@ -22,7 +22,7 @@ header fun <T> copyArray(src: Array<out T>,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: BooleanArray,
+expect fun copyArray(src: BooleanArray,
                      dest: BooleanArray,
                      length: Int,
                      offsetSrc: Int,
@@ -36,7 +36,7 @@ header fun copyArray(src: BooleanArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: ByteArray,
+expect fun copyArray(src: ByteArray,
                      dest: ByteArray,
                      length: Int,
                      offsetSrc: Int,
@@ -50,7 +50,7 @@ header fun copyArray(src: ByteArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: ShortArray,
+expect fun copyArray(src: ShortArray,
                      dest: ShortArray,
                      length: Int,
                      offsetSrc: Int,
@@ -64,7 +64,7 @@ header fun copyArray(src: ShortArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: IntArray,
+expect fun copyArray(src: IntArray,
                      dest: IntArray,
                      length: Int,
                      offsetSrc: Int,
@@ -78,7 +78,7 @@ header fun copyArray(src: IntArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: LongArray,
+expect fun copyArray(src: LongArray,
                      dest: LongArray,
                      length: Int,
                      offsetSrc: Int,
@@ -92,7 +92,7 @@ header fun copyArray(src: LongArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: FloatArray,
+expect fun copyArray(src: FloatArray,
                      dest: FloatArray,
                      length: Int,
                      offsetSrc: Int,
@@ -106,7 +106,7 @@ header fun copyArray(src: FloatArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: DoubleArray,
+expect fun copyArray(src: DoubleArray,
                      dest: DoubleArray,
                      length: Int,
                      offsetSrc: Int,
@@ -120,7 +120,7 @@ header fun copyArray(src: DoubleArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-header fun copyArray(src: CharArray,
+expect fun copyArray(src: CharArray,
                      dest: CharArray,
                      length: Int,
                      offsetSrc: Int,

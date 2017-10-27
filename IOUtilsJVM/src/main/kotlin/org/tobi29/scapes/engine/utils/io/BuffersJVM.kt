@@ -33,13 +33,13 @@ inline fun ByteArray.asByteBuffer(offset: Int = 0,
                                   size: Int = this.size - offset): ByteBuffer =
         ByteBuffer.wrap(this, offset, size)
 
-impl typealias ByteOrder = java.nio.ByteOrder
+actual typealias ByteOrder = java.nio.ByteOrder
 
-impl inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
+actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
 
-impl inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
+actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
 
-impl inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
+actual inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
 
 /**
  * Creates a [ByteBuffer] with big-endian byte-order

@@ -20,8 +20,8 @@ import org.tobi29.scapes.engine.utils.logging.KLoggable
 import kotlin.reflect.KClass
 
 @Suppress("NOTHING_TO_INLINE")
-impl internal object KLoggerNameResolver {
-    impl inline fun name(loggable: KLoggable): String =
+actual internal object KLoggerNameResolver {
+    actual inline fun name(loggable: KLoggable): String =
             unwrapCompanionClass(loggable::class).simpleName ?: "???"
 
     inline private fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {

@@ -20,28 +20,28 @@ import org.tobi29.scapes.engine.utils.io.Path
 import org.tobi29.scapes.engine.utils.io.Uri
 import java.io.File
 
-impl interface FilePath : Path, Comparable<FilePath> {
-    impl override fun toUri(): Uri
+actual interface FilePath : Path, Comparable<FilePath> {
+    actual override fun toUri(): Uri
 
     fun toFile(): File
 
-    impl fun normalize(): FilePath
+    actual fun normalize(): FilePath
 
-    impl fun resolve(other: String): FilePath
+    actual fun resolve(other: String): FilePath
 
-    impl fun resolve(other: FilePath): FilePath
+    actual fun resolve(other: FilePath): FilePath
 
-    impl fun startsWith(other: String): Boolean
+    actual fun startsWith(other: String): Boolean
 
-    impl fun startsWith(other: FilePath): Boolean
+    actual fun startsWith(other: FilePath): Boolean
 
-    impl fun relativize(other: FilePath): FilePath?
+    actual fun relativize(other: FilePath): FilePath?
 
-    impl val fileName: FilePath?
+    actual val fileName: FilePath?
 
-    impl override val parent: FilePath?
+    actual override val parent: FilePath?
 
-    impl fun toAbsolutePath(): FilePath
+    actual fun toAbsolutePath(): FilePath
 
     override fun get(path: String): Path {
         return resolve(path)

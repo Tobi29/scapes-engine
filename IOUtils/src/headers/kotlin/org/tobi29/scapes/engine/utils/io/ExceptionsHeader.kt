@@ -1,12 +1,11 @@
 package org.tobi29.scapes.engine.utils.io
 
-header open class IOException : Exception {
-    constructor()
+expect open class IOException() : Exception {
     constructor(message: String)
     constructor(cause: Throwable)
 }
 
-header class ClosedChannelException : IOException
+expect class ClosedChannelException() : IOException
 
-header class BufferOverflowException : RuntimeException
-header class BufferUnderflowException : RuntimeException
+expect class BufferOverflowException() : RuntimeException
+expect class BufferUnderflowException() : RuntimeException

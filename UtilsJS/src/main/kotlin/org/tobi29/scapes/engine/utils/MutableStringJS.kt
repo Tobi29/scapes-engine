@@ -16,39 +16,39 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class MutableString impl constructor(private var str: String) : CharSequence, Appendable {
-    impl override val length get() = str.length
+actual class MutableString actual constructor(private var str: String) : CharSequence, Appendable {
+    actual override val length get() = str.length
 
-    impl constructor() : this("")
+    actual constructor() : this("")
 
-    impl constructor(initial: Int) : this()
+    actual constructor(initial: Int) : this()
 
-    impl override fun get(index: Int): Char {
+    actual override fun get(index: Int): Char {
         if (index < 0 || index >= str.length) {
             throw IndexOutOfBoundsException("$index")
         }
         return str[index]
     }
 
-    impl override fun subSequence(startIndex: Int,
+    actual override fun subSequence(startIndex: Int,
                                   endIndex: Int) =
             substring(startIndex, endIndex)
 
-    impl override fun append(c: Char): MutableString = apply {
+    actual override fun append(c: Char): MutableString = apply {
         str += c
     }
 
-    impl override fun append(csq: CharSequence?): MutableString = apply {
+    actual override fun append(csq: CharSequence?): MutableString = apply {
         str += csq ?: "null"
     }
 
-    impl override fun append(csq: CharSequence?,
+    actual override fun append(csq: CharSequence?,
                              start: Int,
                              end: Int): MutableString = apply {
         str += (csq ?: "null").subSequence(start, end)
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     char: Char): MutableString = apply {
         if (position < 0 || position > str.length) {
             throw IndexOutOfBoundsException("$position")
@@ -56,7 +56,7 @@ impl class MutableString impl constructor(private var str: String) : CharSequenc
         str = "${str.substring(0, position)}$char${str.substring(position)}"
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     str: String): MutableString = apply {
         if (position < 0 || position > this.str.length) {
             throw IndexOutOfBoundsException("$position")
@@ -65,28 +65,28 @@ impl class MutableString impl constructor(private var str: String) : CharSequenc
                 position)}"
     }
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     array: CharArray): MutableString =
             insert(position, array, 0)
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     array: CharArray,
                     offset: Int): MutableString =
             insert(position, array, offset, array.size - offset)
 
-    impl fun insert(position: Int,
+    actual fun insert(position: Int,
                     array: CharArray,
                     offset: Int,
                     length: Int): MutableString =
             insert(position, array.copyToString(offset, length))
 
-    impl fun delete(range: IntRange): MutableString =
+    actual fun delete(range: IntRange): MutableString =
             delete(range.start, range.endInclusive + 1)
 
-    impl fun delete(startIndex: Int): MutableString =
+    actual fun delete(startIndex: Int): MutableString =
             delete(startIndex, startIndex + 1)
 
-    impl fun delete(startIndex: Int,
+    actual fun delete(startIndex: Int,
                     endIndex: Int): MutableString = apply {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
@@ -98,12 +98,12 @@ impl class MutableString impl constructor(private var str: String) : CharSequenc
         str = "${str.substring(0, startIndex)}${str.substring(endIndex)}"
     }
 
-    impl fun clear(): MutableString = apply { str = "" }
+    actual fun clear(): MutableString = apply { str = "" }
 
-    impl fun substring(startIndex: Int): String =
+    actual fun substring(startIndex: Int): String =
             substring(startIndex, str.length)
 
-    impl fun substring(startIndex: Int,
+    actual fun substring(startIndex: Int,
                        endIndex: Int): String {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
@@ -115,5 +115,5 @@ impl class MutableString impl constructor(private var str: String) : CharSequenc
         return str.substring(startIndex, endIndex)
     }
 
-    impl override fun toString() = str
+    actual override fun toString() = str
 }

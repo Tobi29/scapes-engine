@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ConcurrentHashSet<E> : MutableSet<E> {
-    impl override fun addAll(elements: Collection<E>): Boolean {
+actual class ConcurrentHashSet<E> : MutableSet<E> {
+    actual override fun addAll(elements: Collection<E>): Boolean {
         var added = false
         for (element in elements) {
             added = add(element) || added
@@ -25,26 +25,26 @@ impl class ConcurrentHashSet<E> : MutableSet<E> {
         return added
     }
 
-    impl override fun removeAll(elements: Collection<E>) =
+    actual override fun removeAll(elements: Collection<E>) =
             map.keys.removeAll(elements)
 
-    impl override fun retainAll(elements: Collection<E>) =
+    actual override fun retainAll(elements: Collection<E>) =
             map.keys.retainAll(elements)
 
-    impl override fun contains(element: E) = map.keys.contains(element)
-    impl override fun containsAll(elements: Collection<E>) =
+    actual override fun contains(element: E) = map.keys.contains(element)
+    actual override fun containsAll(elements: Collection<E>) =
             map.keys.containsAll(elements)
 
-    impl override fun isEmpty() = map.isEmpty()
+    actual override fun isEmpty() = map.isEmpty()
 
     private val map = ConcurrentHashMap<E, Unit>()
 
-    impl override val size get() = map.size
+    actual override val size get() = map.size
 
-    impl override fun add(element: E) = map.put(element, Unit) == null
-    impl override fun remove(element: E) = map.remove(element) != null
-    impl override fun clear() = map.clear()
-    impl override fun iterator(): MutableIterator<E> = map.keys.iterator()
+    actual override fun add(element: E) = map.put(element, Unit) == null
+    actual override fun remove(element: E) = map.remove(element) != null
+    actual override fun clear() = map.clear()
+    actual override fun iterator(): MutableIterator<E> = map.keys.iterator()
 
     override fun equals(other: Any?) = map.keys == other
     override fun hashCode() = map.keys.hashCode()

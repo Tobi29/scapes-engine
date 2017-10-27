@@ -22,28 +22,28 @@ package org.tobi29.scapes.engine.utils
  * Android API Level that the current application is running on or `null`
  * if not running on Android
  */
-header val ANDROID_API_LEVEL: Int?
+expect val ANDROID_API_LEVEL: Int?
 
 /**
  * `true` if the current application is running on Kotlin/JVM or Android
  */
-header val IS_JVM: Boolean
+expect val IS_JVM: Boolean
 
 /**
  * `true` if the current application is running on Android
  * @see [ANDROID_API_LEVEL]
  */
-header val IS_ANDROID: Boolean
+expect val IS_ANDROID: Boolean
 
 /**
  * `true` if the current application is running on Kotlin/JS
  */
-header val IS_JS: Boolean
+expect val IS_JS: Boolean
 
 /**
  * `true` if the current application is running on Kotlin/Native
  */
-header val IS_NATIVE: Boolean
+expect val IS_NATIVE: Boolean
 
 /**
  * Checks if the current application is running on at least the specified
@@ -53,4 +53,4 @@ header val IS_NATIVE: Boolean
  * @param level The minimum API Level
  * @return `true` if specified API Level is available or running on other JVM
  */
-header fun isAndroidAPI(level: Int): Boolean
+expect fun isAndroidAPI(level: Int): Boolean

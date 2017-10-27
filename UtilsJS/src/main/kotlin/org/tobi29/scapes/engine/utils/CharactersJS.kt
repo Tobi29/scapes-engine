@@ -18,8 +18,8 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl inline fun Char.isISOControl(): Boolean =
+actual inline fun Char.isISOControl(): Boolean =
         toInt().isISOControl()
 
-impl fun Codepoint.isISOControl(): Boolean =
+actual fun Codepoint.isISOControl(): Boolean =
         this <= 0x9F && (this >= 0x7F || (this.ushr(5) == 0))

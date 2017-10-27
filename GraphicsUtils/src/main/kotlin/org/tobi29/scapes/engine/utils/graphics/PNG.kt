@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 
 // TODO: @Throws(IOException::class)
-header suspend fun decodePNG(asset: ReadSource): Image
+expect suspend fun decodePNG(asset: ReadSource): Image
 
 // TODO: @Throws(IOException::class)
-header suspend fun decodePNG(stream: ReadableByteStream): Image
+expect suspend fun decodePNG(stream: ReadableByteStream): Image

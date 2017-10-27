@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class AtomicBoolean impl constructor(private var value: Boolean) {
+actual class AtomicBoolean actual constructor(private var value: Boolean) {
     constructor() : this(false)
 
-    impl fun get() = value
+    actual fun get() = value
 
-    impl fun compareAndSet(expect: Boolean,
+    actual fun compareAndSet(expect: Boolean,
                            update: Boolean) =
             if (value == expect) {
                 value = update
@@ -30,11 +30,11 @@ impl class AtomicBoolean impl constructor(private var value: Boolean) {
                 false
             }
 
-    impl fun set(newValue: Boolean) {
+    actual fun set(newValue: Boolean) {
         value = newValue
     }
 
-    impl fun getAndSet(newValue: Boolean): Boolean {
+    actual fun getAndSet(newValue: Boolean): Boolean {
         var prev: Boolean
         do {
             prev = get()
@@ -45,18 +45,18 @@ impl class AtomicBoolean impl constructor(private var value: Boolean) {
     override fun toString() = get().toString()
 }
 
-impl class AtomicInteger impl constructor(private var value: Int)/* : Number() */ {
+actual class AtomicInteger actual constructor(private var value: Int)/* : Number() */ {
     constructor() : this(0)
 
-    impl fun get() = value
+    actual fun get() = value
 
-    impl fun set(newValue: Int) {
+    actual fun set(newValue: Int) {
         value = newValue
     }
 
-    impl fun getAndSet(newValue: Int) = value.also { value = newValue }
+    actual fun getAndSet(newValue: Int) = value.also { value = newValue }
 
-    impl fun compareAndSet(expect: Int,
+    actual fun compareAndSet(expect: Int,
                            update: Int) =
             if (value == expect) {
                 value = update
@@ -65,17 +65,17 @@ impl class AtomicInteger impl constructor(private var value: Int)/* : Number() *
                 false
             }
 
-    impl fun getAndIncrement() = addAndGet(1)
+    actual fun getAndIncrement() = addAndGet(1)
 
-    impl fun getAndDecrement() = addAndGet(-1)
+    actual fun getAndDecrement() = addAndGet(-1)
 
-    impl fun getAndAdd(delta: Int) = value.also { value += delta }
+    actual fun getAndAdd(delta: Int) = value.also { value += delta }
 
-    impl fun incrementAndGet() = addAndGet(1)
+    actual fun incrementAndGet() = addAndGet(1)
 
-    impl fun decrementAndGet() = addAndGet(-1)
+    actual fun decrementAndGet() = addAndGet(-1)
 
-    impl fun addAndGet(delta: Int) = value.let { value += delta; value }
+    actual fun addAndGet(delta: Int) = value.let { value += delta; value }
 
     override fun toString() = get().toString()
     /* override */ fun toByte() = get().toByte()
@@ -87,18 +87,18 @@ impl class AtomicInteger impl constructor(private var value: Int)/* : Number() *
     /* override */ fun toChar() = get().toChar()
 }
 
-impl class AtomicLong impl constructor(private var value: Long)/* : Number() */ {
+actual class AtomicLong actual constructor(private var value: Long)/* : Number() */ {
     constructor() : this(0L)
 
-    impl fun get() = value
+    actual fun get() = value
 
-    impl fun set(newValue: Long) {
+    actual fun set(newValue: Long) {
         value = newValue
     }
 
-    impl fun getAndSet(newValue: Long) = value.also { value = newValue }
+    actual fun getAndSet(newValue: Long) = value.also { value = newValue }
 
-    impl fun compareAndSet(expect: Long,
+    actual fun compareAndSet(expect: Long,
                            update: Long) =
             if (value == expect) {
                 value = update
@@ -107,17 +107,17 @@ impl class AtomicLong impl constructor(private var value: Long)/* : Number() */ 
                 false
             }
 
-    impl fun getAndIncrement() = addAndGet(1)
+    actual fun getAndIncrement() = addAndGet(1)
 
-    impl fun getAndDecrement() = addAndGet(-1)
+    actual fun getAndDecrement() = addAndGet(-1)
 
-    impl fun getAndAdd(delta: Long) = value.also { value += delta }
+    actual fun getAndAdd(delta: Long) = value.also { value += delta }
 
-    impl fun incrementAndGet() = addAndGet(1)
+    actual fun incrementAndGet() = addAndGet(1)
 
-    impl fun decrementAndGet() = addAndGet(-1)
+    actual fun decrementAndGet() = addAndGet(-1)
 
-    impl fun addAndGet(delta: Long) = value.let { value += delta; value }
+    actual fun addAndGet(delta: Long) = value.let { value += delta; value }
 
     override fun toString() = get().toString()
     /* override */ fun toByte() = get().toByte()
@@ -129,14 +129,14 @@ impl class AtomicLong impl constructor(private var value: Long)/* : Number() */ 
     /* override */ fun toChar() = get().toChar()
 }
 
-impl class AtomicReference<V> impl constructor(private var value: V) {
-    impl fun get() = value
+actual class AtomicReference<V> actual constructor(private var value: V) {
+    actual fun get() = value
 
-    impl fun set(newValue: V) {
+    actual fun set(newValue: V) {
         value = newValue
     }
 
-    impl fun compareAndSet(expect: V,
+    actual fun compareAndSet(expect: V,
                            update: V) =
             if (value === expect) {
                 value = update
@@ -145,7 +145,7 @@ impl class AtomicReference<V> impl constructor(private var value: V) {
                 false
             }
 
-    impl fun getAndSet(newValue: V) = value.also { value = newValue }
+    actual fun getAndSet(newValue: V) = value.also { value = newValue }
 
     override fun toString() = get().toString()
 }

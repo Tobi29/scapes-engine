@@ -3,7 +3,7 @@ package org.tobi29.scapes.engine.utils.tag
 import java.math.BigDecimal
 import java.math.BigInteger
 
-impl internal fun convertNumberToType(type: Number,
+actual internal fun convertNumberToType(type: Number,
                                       convert: Number): Number {
     return when (type) {
         is Byte -> convert.toByte()

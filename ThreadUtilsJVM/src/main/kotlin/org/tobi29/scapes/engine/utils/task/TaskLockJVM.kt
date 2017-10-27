@@ -19,15 +19,15 @@ package org.tobi29.scapes.engine.utils.task
 import org.tobi29.scapes.engine.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
-impl class TaskLock {
+actual class TaskLock {
     private val count = AtomicLong(0L)
     private val onDone = ConcurrentLinkedQueue<Option<() -> Unit>>()
 
-    impl fun increment() {
+    actual fun increment() {
         count.incrementAndGet()
     }
 
-    impl fun decrement() {
+    actual fun decrement() {
         val newCount = count.decrementAndGet()
         if (newCount == 0L) {
             synchronized(count) {
@@ -47,7 +47,7 @@ impl class TaskLock {
         }
     }
 
-    impl fun onDone(block: () -> Unit) {
+    actual fun onDone(block: () -> Unit) {
         if (isDone()) {
             block()
         } else {
@@ -57,9 +57,9 @@ impl class TaskLock {
         }
     }
 
-    impl val activeTasks get() = count.get().toIntClamped()
+    actual val activeTasks get() = count.get().toIntClamped()
 
-    impl fun isDone() = count.get() == 0L
+    actual fun isDone() = count.get() == 0L
 
     fun lock() {
         synchronized(count) {

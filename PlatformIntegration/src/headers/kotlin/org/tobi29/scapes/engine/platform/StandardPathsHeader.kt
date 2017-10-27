@@ -5,7 +5,7 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 /**
  * Home directory of the user, might not be accessible
  */
-header val homeDir: FilePath
+expect val homeDir: FilePath
 
 /**
  * Writable directory for storing config files, may be same as [dataHome]
@@ -13,7 +13,7 @@ header val homeDir: FilePath
  * **Note:** This might be a system-wide directory, so you should *always*
  * resolve [appIDForConfig] with this
  */
-header val configHome: FilePath
+expect val configHome: FilePath
 
 /**
  * List of directories that might contain config files, ordered by highest
@@ -25,7 +25,7 @@ header val configHome: FilePath
  * **Note:** It is discouraged to write to any of these and instead use
  * [configHome] for that
  */
-header val configDirs: List<FilePath>
+expect val configDirs: List<FilePath>
 
 /**
  * Writable directory for storing data files, may be same as [configHome]
@@ -33,7 +33,7 @@ header val configDirs: List<FilePath>
  * **Note:** This might be a system-wide directory, so you should *always*
  * resolve [appIDForData] with this
  */
-header val dataHome: FilePath
+expect val dataHome: FilePath
 
 /**
  * List of directories that might contain data files, ordered by highest
@@ -45,7 +45,7 @@ header val dataHome: FilePath
  * **Note:** It is discouraged to write to any of these and instead use
  * [dataHome] for that
  */
-header val dataDirs: List<FilePath>
+expect val dataDirs: List<FilePath>
 
 /**
  * Writable directory for storing cache files, may be located inside [dataHome]
@@ -54,7 +54,7 @@ header val dataDirs: List<FilePath>
  * **Note:** This might be a system-wide directory, so you should *always*
  * resolve [appIDForCache] with this
  */
-header val cacheHome: FilePath
+expect val cacheHome: FilePath
 
 /**
  * Returns a path to be resolved against [configHome] or one of [configDirs]
@@ -63,7 +63,7 @@ header val cacheHome: FilePath
  * @param name Name of the running application
  * @return A relative path, possibly empty
  */
-header fun appIDForConfig(id: String,
+expect fun appIDForConfig(id: String,
                           name: String): FilePath
 
 /**
@@ -73,7 +73,7 @@ header fun appIDForConfig(id: String,
  * @param name Name of the running application
  * @return A relative path, possibly empty
  */
-header fun appIDForData(id: String,
+expect fun appIDForData(id: String,
                         name: String): FilePath
 
 /**
@@ -83,5 +83,5 @@ header fun appIDForData(id: String,
  * @param name Name of the running application
  * @return A relative path, possibly empty
  */
-header fun appIDForCache(id: String,
+expect fun appIDForCache(id: String,
                          name: String): FilePath

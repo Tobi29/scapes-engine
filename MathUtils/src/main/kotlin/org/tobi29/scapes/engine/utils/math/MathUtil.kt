@@ -78,28 +78,28 @@ inline fun abs(value: Vector3d): Vector3d {
  * @param value The value
  * @return Absolute value of [value]
  */
-header fun abs(value: Int): Int
+expect fun abs(value: Int): Int
 
 /**
  * Returns the absolute value of [value]
  * @param value The value
  * @return Absolute value of [value]
  */
-header fun abs(value: Long): Long
+expect fun abs(value: Long): Long
 
 /**
  * Returns the absolute value of [value]
  * @param value The value
  * @return Absolute value of [value]
  */
-header fun abs(value: Float): Float
+expect fun abs(value: Float): Float
 
 /**
  * Returns the absolute value of [value]
  * @param value The value
  * @return Absolute value of [value]
  */
-header fun abs(value: Double): Double
+expect fun abs(value: Double): Double
 
 /**
  * Returns the smallest value in [value]
@@ -141,7 +141,7 @@ inline fun min(value1: Vector3d,
  * @param value2 The second value
  * @return Smaller value between [value1] and [value2]
  */
-header fun min(value1: Int,
+expect fun min(value1: Int,
                value2: Int): Int
 
 /**
@@ -150,7 +150,7 @@ header fun min(value1: Int,
  * @param value2 The second value
  * @return Smaller value between [value1] and [value2]
  */
-header fun min(value1: Long,
+expect fun min(value1: Long,
                value2: Long): Long
 
 /**
@@ -159,7 +159,7 @@ header fun min(value1: Long,
  * @param value2 The second value
  * @return Smaller value between [value1] and [value2]
  */
-header fun min(value1: Float,
+expect fun min(value1: Float,
                value2: Float): Float
 
 /**
@@ -168,7 +168,7 @@ header fun min(value1: Float,
  * @param value2 The second value
  * @return Smaller value between [value1] and [value2]
  */
-header fun min(value1: Double,
+expect fun min(value1: Double,
                value2: Double): Double
 
 /**
@@ -245,7 +245,7 @@ inline fun max(value1: Vector3i,
  * @param value2 The second value
  * @return Greater value between [value1] and [value2]
  */
-header fun max(value1: Int,
+expect fun max(value1: Int,
                value2: Int): Int
 
 /**
@@ -254,7 +254,7 @@ header fun max(value1: Int,
  * @param value2 The second value
  * @return Greater value between [value1] and [value2]
  */
-header fun max(value1: Long,
+expect fun max(value1: Long,
                value2: Long): Long
 
 /**
@@ -263,7 +263,7 @@ header fun max(value1: Long,
  * @param value2 The second value
  * @return Greater value between [value1] and [value2]
  */
-header fun max(value1: Float,
+expect fun max(value1: Float,
                value2: Float): Float
 
 /**
@@ -272,7 +272,7 @@ header fun max(value1: Float,
  * @param value2 The second value
  * @return Greater value between [value1] and [value2]
  */
-header fun max(value1: Double,
+expect fun max(value1: Double,
                value2: Double): Double
 
 /**
@@ -519,112 +519,112 @@ inline fun cbe(value: Double): Double {
  * @param value The value
  * @return Square-root value of [value]
  */
-header fun sqrt(value: Float): Float
+expect fun sqrt(value: Float): Float
 
 /**
  * Returns the square-root value of [value]
  * @param value The value
  * @return Square-root value of [value]
  */
-header fun sqrt(value: Double): Double
+expect fun sqrt(value: Double): Double
 
 /**
  * Returns the cube-root value of [value]
  * @param value The value
  * @return Cube-root value of [value]
  */
-header fun cbrt(value: Float): Float
+expect fun cbrt(value: Float): Float
 
 /**
  * Returns the cube-root value of [value]
  * @param value The value
  * @return Cube-root value of [value]
  */
-header fun cbrt(value: Double): Double
+expect fun cbrt(value: Double): Double
 
 /**
  * Returns the next integer below [value]
  * @param value The value
  * @return Next integer below [value]
  */
-header fun floor(value: Float): Int
+expect fun floor(value: Float): Int
 
 /**
  * Returns the next integer below [value]
  * @param value The value
  * @return Next integer below [value]
  */
-header fun floor(value: Double): Int
+expect fun floor(value: Double): Int
 
 /**
  * Returns the next integer below [value]
  * @param value The value
  * @return Next integer below [value]
  */
-header fun floorL(value: Double): Long
+expect fun floorL(value: Double): Long
 
 /**
  * Returns the next integer below [value]
  * @param value The value
  * @return Next integer below [value]
  */
-header fun floorD(value: Double): Double
+expect fun floorD(value: Double): Double
 
 /**
  * Returns the nearest integer [value]
  * @param value The value
  * @return Nearest integer below [value]
  */
-header fun round(value: Float): Int
+expect fun round(value: Float): Int
 
 /**
  * Returns the nearest integer [value]
  * @param value The value
  * @return Nearest integer below [value]
  */
-header fun round(value: Double): Int
+expect fun round(value: Double): Int
 
 /**
  * Returns the nearest integer [value]
  * @param value The value
  * @return Nearest integer below [value]
  */
-header fun roundL(value: Double): Long
+expect fun roundL(value: Double): Long
 
 /**
  * Returns the nearest integer [value]
  * @param value The value
  * @return Nearest integer below [value]
  */
-header fun roundD(value: Double): Double
+expect fun roundD(value: Double): Double
 
 /**
  * Returns the next integer above [value]
  * @param value The value
  * @return Next integer above [value]
  */
-header fun ceil(value: Float): Int
+expect fun ceil(value: Float): Int
 
 /**
  * Returns the next integer above [value]
  * @param value The value
  * @return Next integer above [value]
  */
-header fun ceil(value: Double): Int
+expect fun ceil(value: Double): Int
 
 /**
  * Returns the next integer above [value]
  * @param value The value
  * @return Next integer above [value]
  */
-header fun ceilL(value: Double): Long
+expect fun ceilL(value: Double): Long
 
 /**
  * Returns the next integer above [value]
  * @param value The value
  * @return Next integer above [value]
  */
-header fun ceilD(value: Double): Double
+expect fun ceilD(value: Double): Double
 
 /**
  * Converts the [Float] from degrees into radians
@@ -663,14 +663,14 @@ inline fun Double.toDeg(): Double {
  * @param value Value in radians
  * @return Result between `-1.0` and `1.0`
  */
-header fun sin(value: Float): Float
+expect fun sin(value: Float): Float
 
 /**
  * Computes the sin of [value]
  * @param value Value in radians
  * @return Result between `-1.0` and `1.0`
  */
-header fun sin(value: Double): Double
+expect fun sin(value: Double): Double
 
 /**
  * Computes the sin of [value] using a less accurate table
@@ -695,14 +695,14 @@ inline fun sinTable(value: Double): Double {
  * @param value Value between `-1.0` and `1.0`
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
-header fun asin(value: Float): Float
+expect fun asin(value: Float): Float
 
 /**
  * Computes the asin of [value]
  * @param value Value between `-1.0` and `1.0`
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
-header fun asin(value: Double): Double
+expect fun asin(value: Double): Double
 
 /**
  * Computes the asin of [value] using a less accurate table
@@ -727,14 +727,14 @@ inline fun asinTable(value: Double): Double {
  * @param value Value in radians
  * @return Result between `-1.0` and `1.0`
  */
-header fun cos(value: Float): Float
+expect fun cos(value: Float): Float
 
 /**
  * Computes the cos of [value]
  * @param value Value in radians
  * @return Result between `-1.0` and `1.0`
  */
-header fun cos(value: Double): Double
+expect fun cos(value: Double): Double
 
 /**
  * Computes the cos of [value] using a less accurate table
@@ -759,14 +759,14 @@ inline fun cosTable(value: Double): Double {
  * @param value Value between `-1.0` and `1.0`
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
-header fun acos(value: Float): Float
+expect fun acos(value: Float): Float
 
 /**
  * Computes the acos of [value]
  * @param value Value between `-1.0` and `1.0`
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
-header fun acos(value: Double): Double
+expect fun acos(value: Double): Double
 
 /**
  * Computes the acos of [value] using a less accurate table
@@ -791,42 +791,42 @@ inline fun acosTable(value: Double): Double {
  * @param value Value in radians
  * @return Result between `-1.0` and `1.0`
  */
-header fun tan(value: Float): Float
+expect fun tan(value: Float): Float
 
 /**
  * Computes the tan of [value]
  * @param value Value in radians
  * @return Result between `-1.0` and `1.0`
  */
-header fun tan(value: Double): Double
+expect fun tan(value: Double): Double
 
 /**
  * Computes the tanh of [value]
  * @param value The value to use
  * @return Result between `-1.0` and `1.0`
  */
-header fun tanh(value: Float): Float
+expect fun tanh(value: Float): Float
 
 /**
  * Computes the tanh of [value]
  * @param value The value to use
  * @return Result between `-1.0` and `1.0`
  */
-header fun tanh(value: Double): Double
+expect fun tanh(value: Double): Double
 
 /**
  * Computes the atan of [value]
  * @param value Value between `-1.0` and `1.0`
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
-header fun atan(value: Float): Float
+expect fun atan(value: Float): Float
 
 /**
  * Computes the atan of [value]
  * @param value Value between `-1.0` and `1.0`
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
-header fun atan(value: Double): Double
+expect fun atan(value: Double): Double
 
 /**
  * Computes the atan2 of [value1] and [value2]
@@ -834,7 +834,7 @@ header fun atan(value: Double): Double
  * @param value2 The second value
  * @return The atan2 of [value1] and [value2]
  */
-header fun atan2(value1: Float,
+expect fun atan2(value1: Float,
                  value2: Float): Float
 
 /**
@@ -843,7 +843,7 @@ header fun atan2(value1: Float,
  * @param value2 The second value
  * @return The atan2 of [value1] and [value2]
  */
-header fun atan2(value1: Double,
+expect fun atan2(value1: Double,
                  value2: Double): Double
 
 /**
@@ -874,7 +874,7 @@ inline fun atan2Fast(value1: Double,
  * @param value2 The exponent
  * @return [value1] to the power of [value2]
  */
-header fun pow(value1: Float,
+expect fun pow(value1: Float,
                value2: Float): Float
 
 /**
@@ -883,7 +883,7 @@ header fun pow(value1: Float,
  * @param value2 The exponent
  * @return [value1] to the power of [value2]
  */
-header fun pow(value1: Double,
+expect fun pow(value1: Double,
                value2: Double): Double
 
 /**
@@ -977,7 +977,7 @@ inline fun nextPowerOfTwo(value: Int): Int {
  * @param value The value
  * @return The amount of leading zeros in range 0..32
  */
-header fun clz(value: Int): Int
+expect fun clz(value: Int): Int
 
 /**
  * Computes the logarithm with base 2 of [value]

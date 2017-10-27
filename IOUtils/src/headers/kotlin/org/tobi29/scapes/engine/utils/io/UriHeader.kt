@@ -23,21 +23,21 @@ package org.tobi29.scapes.engine.utils.io
  * **Note:** Due to implementation details, handling of "invalid" URIs may
  * differ slightly across platforms
  */
-header sealed class Uri {
+expect sealed class Uri {
     val fragment: String?
 }
 
 /**
  * Class representing an absolute URI
  */
-header sealed class UriAbsolute : Uri {
+expect sealed class UriAbsolute : Uri {
     val scheme: String
 }
 
 /**
  * Class representing a hierarchical URI
  */
-header sealed class UriHierarchical : UriAbsolute {
+expect sealed class UriHierarchical : UriAbsolute {
     open val path: String?
     val query: String?
 }
@@ -45,7 +45,7 @@ header sealed class UriHierarchical : UriAbsolute {
 /**
  * Class representing a hierarchical non-network URI
  */
-header class UriHierarchicalAbsolute(scheme: String,
+expect class UriHierarchicalAbsolute(scheme: String,
                                      path: String,
                                      query: String?,
                                      fragment: String?) : UriHierarchical {
@@ -60,7 +60,7 @@ header class UriHierarchicalAbsolute(scheme: String,
 /**
  * Class representing a hierarchical network URI
  */
-header class UriHierarchicalNet(scheme: String,
+expect class UriHierarchicalNet(scheme: String,
                                 userInfo: String?,
                                 host: String,
                                 port: Int?,
@@ -80,7 +80,7 @@ header class UriHierarchicalNet(scheme: String,
 /**
  * Class representing an opaque URI
  */
-header class UriOpaque(scheme: String,
+expect class UriOpaque(scheme: String,
                        opaque: String,
                        fragment: String?) : UriAbsolute {
     val opaque: String
@@ -94,7 +94,7 @@ header class UriOpaque(scheme: String,
 /**
  * Class representing a relative URI
  */
-header class UriRelative(path: String,
+expect class UriRelative(path: String,
                          query: String?,
                          fragment: String?) : Uri {
     val path: String
@@ -115,4 +115,4 @@ header class UriRelative(path: String,
  * @throws IllegalArgumentException When an "invalid" URI is given
  * @return Some kind of [Uri], depending on the format of the URI
  */
-header fun Uri(str: String): Uri
+expect fun Uri(str: String): Uri

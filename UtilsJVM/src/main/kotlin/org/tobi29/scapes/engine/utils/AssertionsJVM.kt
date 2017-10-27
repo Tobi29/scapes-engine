@@ -16,6 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl object Assertions {
-    impl var ENABLED: Boolean = Assertions::class.java.desiredAssertionStatus()
+actual object Assertions {
+    actual var ENABLED: Boolean = Assertions::class.java.desiredAssertionStatus()
 }

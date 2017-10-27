@@ -1,6 +1,6 @@
 package org.tobi29.scapes.engine.utils
 
-header class EventDispatcher internal constructor(parent: EventDispatcher? = null) {
+expect class EventDispatcher internal constructor(parent: EventDispatcher? = null) {
     fun enable()
 
     fun disable()
@@ -8,7 +8,7 @@ header class EventDispatcher internal constructor(parent: EventDispatcher? = nul
     fun <E : Any> fire(event: E)
 }
 
-header class ListenerRegistrar internal constructor(events: EventDispatcher) {
+expect class ListenerRegistrar internal constructor(events: EventDispatcher) {
     val events: EventDispatcher
 
     inline fun <reified E : Any> listen(

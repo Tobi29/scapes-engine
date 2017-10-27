@@ -19,13 +19,13 @@ package org.tobi29.scapes.engine.utils.io
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
-impl class ZDeflater impl constructor(level: Int,
+actual class ZDeflater actual constructor(level: Int,
                                       private val buffer: Int = 8192) : CompressionUtil.Filter {
     private val deflater = Deflater(level)
     private val output = ByteArray(buffer)
     private var input = MemoryViewStreamDefault()
 
-    impl override fun input(buffer: ReadableByteStream): Boolean {
+    actual override fun input(buffer: ReadableByteStream): Boolean {
         input.limit(input.position() + this.buffer)
         val read = buffer.getSome(input.bufferSlice())
         if (read < 0) return false
@@ -36,40 +36,40 @@ impl class ZDeflater impl constructor(level: Int,
         return true
     }
 
-    impl override fun output(buffer: WritableByteStream): Int {
+    actual override fun output(buffer: WritableByteStream): Int {
         val length = deflater.deflate(output)
         buffer.put(output.view.slice(0, length))
         input.reset()
         return length
     }
 
-    impl override fun finish() {
+    actual override fun finish() {
         deflater.finish()
     }
 
-    impl override fun needsInput(): Boolean {
+    actual override fun needsInput(): Boolean {
         return deflater.needsInput()
     }
 
-    impl override fun finished(): Boolean {
+    actual override fun finished(): Boolean {
         return deflater.finished()
     }
 
-    impl override fun reset() {
+    actual override fun reset() {
         deflater.reset()
     }
 
-    impl override fun close() {
+    actual override fun close() {
         deflater.end()
     }
 }
 
-impl class ZInflater impl constructor(private val buffer: Int = 8192) : CompressionUtil.Filter {
+actual class ZInflater actual constructor(private val buffer: Int = 8192) : CompressionUtil.Filter {
     private val inflater = Inflater()
     private val output = ByteArray(buffer)
     private var input = MemoryViewStreamDefault()
 
-    impl override fun input(buffer: ReadableByteStream): Boolean {
+    actual override fun input(buffer: ReadableByteStream): Boolean {
         input.limit(input.position() + this.buffer)
         val read = buffer.getSome(input.bufferSlice())
         if (read < 0) return false
@@ -80,29 +80,29 @@ impl class ZInflater impl constructor(private val buffer: Int = 8192) : Compress
         return true
     }
 
-    impl override fun output(buffer: WritableByteStream): Int {
+    actual override fun output(buffer: WritableByteStream): Int {
         val length = inflater.inflate(output)
         buffer.put(output.view.slice(0, length))
         input.reset()
         return length
     }
 
-    impl override fun finish() {
+    actual override fun finish() {
     }
 
-    impl override fun needsInput(): Boolean {
+    actual override fun needsInput(): Boolean {
         return inflater.needsInput()
     }
 
-    impl override fun finished(): Boolean {
+    actual override fun finished(): Boolean {
         return inflater.finished()
     }
 
-    impl override fun reset() {
+    actual override fun reset() {
         inflater.reset()
     }
 
-    impl override fun close() {
+    actual override fun close() {
         inflater.end()
     }
 }

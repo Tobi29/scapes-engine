@@ -1,3 +1,3 @@
 package org.tobi29.scapes.engine.platform
 
-header internal fun environmentVariableImpl(key: String): String?
+expect internal fun environmentVariableImpl(key: String): String?

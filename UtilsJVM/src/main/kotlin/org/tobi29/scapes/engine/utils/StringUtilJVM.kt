@@ -1,10 +1,10 @@
 package org.tobi29.scapes.engine.utils
 
-impl internal fun ByteArray.utf8ToStringImpl(offset: Int,
+actual internal fun ByteArray.utf8ToStringImpl(offset: Int,
                                              size: Int) =
         String(this, offset, size)
 
-impl internal fun String.utf8ToArrayImpl(destination: ByteArray?,
+actual internal fun String.utf8ToArrayImpl(destination: ByteArray?,
                                          offset: Int,
                                          size: Int) =
         toByteArray().let {
@@ -18,11 +18,11 @@ impl internal fun String.utf8ToArrayImpl(destination: ByteArray?,
             }
         }
 
-impl internal fun CharArray.copyToStringImpl(offset: Int,
+actual internal fun CharArray.copyToStringImpl(offset: Int,
                                              size: Int) =
         String(this, offset, size)
 
-impl internal fun String.copyToArrayImpl(destination: CharArray,
+actual internal fun String.copyToArrayImpl(destination: CharArray,
                                          offset: Int,
                                          startIndex: Int,
                                          endIndex: Int) =

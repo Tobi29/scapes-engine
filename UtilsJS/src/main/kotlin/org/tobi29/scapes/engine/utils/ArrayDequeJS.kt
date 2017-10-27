@@ -17,26 +17,26 @@
 package org.tobi29.scapes.engine.utils
 
 // TODO: Is it viable to make a compact but efficient implementation for this on js?
-impl class ArrayDeque<E : Any> private constructor(
+actual class ArrayDeque<E : Any> private constructor(
         private var array: ArrayList<E>
 ) : Deque<E>, MutableCollection<E> by array {
-    impl constructor() : this(ArrayList<E>())
+    actual constructor() : this(ArrayList<E>())
 
-    impl constructor(size: Int) : this()
+    actual constructor(size: Int) : this()
 
-    impl override fun addFirst(element: E) = array.add(0, element)
+    actual override fun addFirst(element: E) = array.add(0, element)
 
-    impl override fun pollFirst(): E? =
+    actual override fun pollFirst(): E? =
             if (isEmpty()) null else array.removeAt(0)
 
-    impl override fun pollLast(): E? =
+    actual override fun pollLast(): E? =
             if (isEmpty()) null else array.removeAt(array.lastIndex)
 
-    impl override fun getFirst(): E = array[0]
+    actual override fun getFirst(): E = array[0]
 
-    impl override fun getLast(): E = array[size - 1]
+    actual override fun getLast(): E = array[size - 1]
 
-    impl override fun removeFirstOccurrence(element: E): Boolean {
+    actual override fun removeFirstOccurrence(element: E): Boolean {
         for (i in 0 until size) {
             if (element == array[i]) {
                 array.removeAt(i)
@@ -46,7 +46,7 @@ impl class ArrayDeque<E : Any> private constructor(
         return false
     }
 
-    impl override fun removeLastOccurrence(element: E): Boolean {
+    actual override fun removeLastOccurrence(element: E): Boolean {
         for (i in size - 1 downTo 0) {
             if (element == array[i]) {
                 array.removeAt(i)
@@ -56,50 +56,50 @@ impl class ArrayDeque<E : Any> private constructor(
         return false
     }
 
-    impl override fun descendingIterator(): MutableIterator<E> =
+    actual override fun descendingIterator(): MutableIterator<E> =
             array.listIterator(array.lastIndex).descendingMutableIterator()
 
     // Boilerplate following
 
-    impl override fun offerFirst(element: E): Boolean {
+    actual override fun offerFirst(element: E): Boolean {
         addFirst(element)
         return true
     }
 
-    impl override fun offerLast(element: E): Boolean {
+    actual override fun offerLast(element: E): Boolean {
         addLast(element)
         return true
     }
 
-    impl override fun removeFirst(): E {
+    actual override fun removeFirst(): E {
         return pollFirst() ?: throw NoSuchElementException()
     }
 
-    impl override fun removeLast(): E {
+    actual override fun removeLast(): E {
         return pollLast() ?: throw NoSuchElementException()
     }
 
-    impl override fun peekFirst() = getFirst()
+    actual override fun peekFirst() = getFirst()
 
-    impl override fun peekLast() = getLast()
+    actual override fun peekLast() = getLast()
 
-    impl override fun addLast(element: E) {
+    actual override fun addLast(element: E) {
         add(element)
     }
 
-    impl override fun offer(element: E) = offerLast(element)
+    actual override fun offer(element: E) = offerLast(element)
 
-    impl override fun remove() = removeFirst()
+    actual override fun remove() = removeFirst()
 
-    impl override fun poll() = pollFirst()
+    actual override fun poll() = pollFirst()
 
-    impl override fun element() = getFirst()
+    actual override fun element() = getFirst()
 
-    impl override fun peek() = getFirst()
+    actual override fun peek() = getFirst()
 
-    impl override fun push(element: E) {
+    actual override fun push(element: E) {
         addFirst(element)
     }
 
-    impl override fun pop() = removeFirst()
+    actual override fun pop() = removeFirst()
 }

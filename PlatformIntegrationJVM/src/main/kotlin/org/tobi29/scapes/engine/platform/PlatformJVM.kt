@@ -2,7 +2,7 @@ package org.tobi29.scapes.engine.platform
 
 import org.tobi29.scapes.engine.utils.IS_ANDROID
 
-impl val PLATFORM: Platform = run {
+actual val PLATFORM: Platform = run {
     if (IS_ANDROID) return@run Platform.ANDROID
 
     val osName = System.getProperty("os.name").toLowerCase()

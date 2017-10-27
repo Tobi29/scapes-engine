@@ -31,7 +31,7 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import kotlin.coroutines.experimental.CoroutineContext
 
-header class ScapesEngine(
+expect class ScapesEngine(
         container: Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         taskExecutor: CoroutineContext,

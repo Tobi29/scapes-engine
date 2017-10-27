@@ -1,13 +1,13 @@
 package org.tobi29.scapes.engine.utils.io
 
-header interface AutoCloseable {
+expect interface AutoCloseable {
     /**
      * @throws Exception
      */
     fun close()
 }
 
-header interface Closeable : AutoCloseable {
+expect interface Closeable : AutoCloseable {
     /**
      * @throws IOException
      */

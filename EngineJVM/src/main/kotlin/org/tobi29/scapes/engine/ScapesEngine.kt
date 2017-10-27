@@ -33,31 +33,31 @@ import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import org.tobi29.scapes.engine.utils.task.*
 import kotlin.coroutines.experimental.CoroutineContext
 
-impl class ScapesEngine impl constructor(
-        impl val container: Container,
+actual class ScapesEngine actual constructor(
+        actual val container: Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-        impl val taskExecutor: CoroutineContext,
+        actual val taskExecutor: CoroutineContext,
         configMap: MutableTagMap
 ) : CoroutineDispatcher(), ComponentHolder<Any> {
-    impl override val componentStorage = ComponentStorage<Any>()
+    actual override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
     private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
     private var stateMut: GameState? = null
-    impl val files = FileSystemContainer()
-    impl val events = newEventDispatcher()
-    impl val resources = ResourceLoader(taskExecutor)
-    impl val graphics: GraphicsSystem
-    impl val sounds: SoundSystem
-    impl val guiStyle: GuiStyle
-    impl val guiStack = GuiStack()
-    impl var guiController: GuiController = GuiControllerDummy(this)
-    impl val notifications: GuiNotifications
-    impl val tooltip: GuiTooltip
-    impl val debugValues: GuiWidgetDebugValues
-    impl val profiler: GuiWidgetProfiler
-    impl val performance: GuiWidgetPerformance
+    actual val files = FileSystemContainer()
+    actual val events = newEventDispatcher()
+    actual val resources = ResourceLoader(taskExecutor)
+    actual val graphics: GraphicsSystem
+    actual val sounds: SoundSystem
+    actual val guiStyle: GuiStyle
+    actual val guiStack = GuiStack()
+    actual var guiController: GuiController = GuiControllerDummy(this)
+    actual val notifications: GuiNotifications
+    actual val tooltip: GuiTooltip
+    actual val debugValues: GuiWidgetDebugValues
+    actual val profiler: GuiWidgetProfiler
+    actual val performance: GuiWidgetPerformance
 
     init {
         registerComponent(CONFIG_MAP_COMPONENT, configMap)
@@ -110,10 +110,10 @@ impl class ScapesEngine impl constructor(
         }
     }
 
-    impl val state
+    actual val state
         get() = stateMut ?: throw IllegalStateException("Engine not running")
 
-    impl override fun dispatch(context: CoroutineContext,
+    actual override fun dispatch(context: CoroutineContext,
                                block: Runnable) {
         queue.offer {
             try {
@@ -124,11 +124,11 @@ impl class ScapesEngine impl constructor(
         }
     }
 
-    impl fun switchState(state: GameState) {
+    actual fun switchState(state: GameState) {
         newState.set(state)
     }
 
-    impl fun start() {
+    actual fun start() {
         val stop = AtomicBoolean(false)
         val mutex = Mutex(true)
         var startTps = 1.0
@@ -156,7 +156,7 @@ impl class ScapesEngine impl constructor(
         } else job.first.cancel()
     }
 
-    impl suspend fun halt() {
+    actual suspend fun halt() {
         updateJob.get()?.let { job ->
             job.second.set(true)
             job.first.join()
@@ -164,7 +164,7 @@ impl class ScapesEngine impl constructor(
         }
     }
 
-    impl suspend fun dispose() {
+    actual suspend fun dispose() {
         halt()
         synchronized(this) {
             logger.info { "Disposing last state" }
@@ -180,7 +180,7 @@ impl class ScapesEngine impl constructor(
         }
     }
 
-    impl fun debugMap(): Map<String, String> {
+    actual fun debugMap(): Map<String, String> {
         val debugValues = HashMap<String, String>()
         for ((key, value) in this.debugValues.elements()) {
             debugValues.put(key, value.toString())
@@ -188,7 +188,7 @@ impl class ScapesEngine impl constructor(
         return debugValues.readOnly()
     }
 
-    impl fun isMouseGrabbed(): Boolean {
+    actual fun isMouseGrabbed(): Boolean {
         return stateMut?.isMouseGrabbed ?: false || guiController.captureCursor()
     }
 
@@ -225,8 +225,8 @@ impl class ScapesEngine impl constructor(
         return state.tps
     }
 
-    impl companion object : KLogging() {
-        impl val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
+    actual companion object : KLogging() {
+        actual val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
     }
 }
 

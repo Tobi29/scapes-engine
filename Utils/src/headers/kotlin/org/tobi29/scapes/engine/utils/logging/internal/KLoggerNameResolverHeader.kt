@@ -18,6 +18,6 @@ package org.tobi29.scapes.engine.utils.logging.internal
 
 import org.tobi29.scapes.engine.utils.logging.KLoggable
 
-header internal object KLoggerNameResolver {
+expect internal object KLoggerNameResolver {
     fun name(loggable: KLoggable): String
 }

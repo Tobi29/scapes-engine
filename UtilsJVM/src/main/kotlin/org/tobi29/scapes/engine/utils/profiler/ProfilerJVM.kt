@@ -24,7 +24,7 @@ import org.tobi29.scapes.engine.utils.steadyClock
 import java.util.*
 import kotlin.collections.set
 
-impl class Profiler {
+actual class Profiler {
     private val INSTANCE = ThreadLocal {
         val thread = Thread.currentThread()
         val node = Node({ "${thread.id}-${thread.name}" }, root)
@@ -33,24 +33,24 @@ impl class Profiler {
         }
     }
 
-    impl val root = Node("Threads")
+    actual val root = Node("Threads")
 
-    impl fun current() = INSTANCE.get()
+    actual fun current() = INSTANCE.get()
 }
 
-impl class ProfilerHandle internal constructor(
+actual class ProfilerHandle internal constructor(
         private var node: Node,
         internal val thread: Thread) {
 
-    impl internal constructor(node: Node) : this(node, Thread.currentThread())
+    actual internal constructor(node: Node) : this(node, Thread.currentThread())
 
-    impl fun enterNode(name: String) {
+    actual fun enterNode(name: String) {
         node = node.children.computeAbsent(name) { Node(it, node) }
         node.lastEnter = steadyClock.timeSteadyNanos()
         dispatchers.forEach { it.enterNode(name) }
     }
 
-    impl fun exitNode(name: String) {
+    actual fun exitNode(name: String) {
         val parentNode = node.parent ?: throw IllegalStateException(
                 "Profiler stack popped on root node")
         assert { name == node.name() }
@@ -60,7 +60,7 @@ impl class ProfilerHandle internal constructor(
     }
 }
 
-impl internal val dispatchers: List<ProfilerDispatcher> = run {
+actual internal val dispatchers: List<ProfilerDispatcher> = run {
     val dispatchers = ArrayList<ProfilerDispatcher>()
     for (dispatcher in ServiceLoader.load(
             ProfilerDispatcherProvider::class.java)) {

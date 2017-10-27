@@ -16,15 +16,15 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet<T> {
+actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet<T> {
     private val set = HashSet<T>()
     private var list = emptyList<T>()
 
-    impl override val size get() = set.size
+    actual override val size get() = set.size
 
-    impl override fun isEmpty() = set.isEmpty()
+    actual override fun isEmpty() = set.isEmpty()
 
-    impl override fun iterator() = list.iterator().let { iterator ->
+    actual override fun iterator() = list.iterator().let { iterator ->
         object : MutableIterator<T> {
             private var current: T? = null
 
@@ -40,7 +40,7 @@ impl class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet
         }
     }
 
-    impl override fun add(element: T) =
+    actual override fun add(element: T) =
             if (set.add(element)) {
                 val newList = ArrayList<T>(list.size + 1)
                 newList.addAll(list)
@@ -50,7 +50,7 @@ impl class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet
                 true
             } else false
 
-    impl override fun addAll(elements: Collection<T>) =
+    actual override fun addAll(elements: Collection<T>) =
             if (set.addAll(elements)) {
                 val newList = ArrayList<T>(list.size + elements.size)
                 newList.addAll(list)
@@ -60,32 +60,32 @@ impl class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet
                 true
             } else false
 
-    impl override fun clear() {
+    actual override fun clear() {
         set.clear()
         list = emptyList()
     }
 
-    impl override fun remove(element: T) =
+    actual override fun remove(element: T) =
             if (set.remove(element)) {
                 list -= element
                 true
             } else false
 
-    impl override fun removeAll(elements: Collection<T>) =
+    actual override fun removeAll(elements: Collection<T>) =
             if (set.removeAll(elements)) {
                 list -= elements
                 true
             } else false
 
-    impl override fun retainAll(elements: Collection<T>) =
+    actual override fun retainAll(elements: Collection<T>) =
             if (set.retainAll(elements)) {
                 list = elements.filter { set.contains(it) }
                 true
             } else false
 
-    impl override fun contains(element: T) = set.contains(element)
+    actual override fun contains(element: T) = set.contains(element)
 
-    impl override fun containsAll(elements: Collection<T>) =
+    actual override fun containsAll(elements: Collection<T>) =
             set.containsAll(elements)
 
     override fun equals(other: Any?): Boolean {

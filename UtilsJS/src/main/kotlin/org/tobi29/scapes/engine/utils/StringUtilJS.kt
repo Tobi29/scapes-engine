@@ -21,7 +21,7 @@ import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
 
-impl internal fun ByteArray.utf8ToStringImpl(offset: Int,
+actual internal fun ByteArray.utf8ToStringImpl(offset: Int,
                                              size: Int): String {
     val buffer = ArrayBuffer(size)
     val byteBuffer = Uint8Array(buffer)
@@ -32,7 +32,7 @@ impl internal fun ByteArray.utf8ToStringImpl(offset: Int,
     return TextDecoder().decode(byteBuffer)
 }
 
-impl internal fun String.utf8ToArrayImpl(destination: ByteArray?,
+actual internal fun String.utf8ToArrayImpl(destination: ByteArray?,
                                          offset: Int,
                                          size: Int): ByteArray {
     val byteBuffer = TextEncoder().encode(this)
@@ -45,7 +45,7 @@ impl internal fun String.utf8ToArrayImpl(destination: ByteArray?,
     return array
 }
 
-impl internal fun CharArray.copyToStringImpl(offset: Int,
+actual internal fun CharArray.copyToStringImpl(offset: Int,
                                              size: Int) =
         StringBuilder(size).apply {
             for (i in offset until offset + size) {
@@ -53,7 +53,7 @@ impl internal fun CharArray.copyToStringImpl(offset: Int,
             }
         }.toString()
 
-impl internal fun String.copyToArrayImpl(destination: CharArray,
+actual internal fun String.copyToArrayImpl(destination: CharArray,
                                          offset: Int,
                                          startIndex: Int,
                                          endIndex: Int): CharArray {

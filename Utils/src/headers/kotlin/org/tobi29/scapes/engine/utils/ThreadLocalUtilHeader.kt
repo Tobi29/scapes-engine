@@ -21,7 +21,7 @@ package org.tobi29.scapes.engine.utils
  * @param initial: Supplier that will be called once per thread
  * @param T: The type of the elements in the [ThreadLocal]
  */
-header class ThreadLocal<T>(initial: () -> T) {
+expect class ThreadLocal<T>(initial: () -> T) {
     fun set(value: T)
     fun get(): T
     fun remove()

@@ -38,7 +38,7 @@ private fun loadService(): FileUtilImpl {
             "No filesystem implementation available")
 }
 
-impl fun path(path: String): FilePath {
+actual fun path(path: String): FilePath {
     return IMPL.path(path)
 }
 
@@ -46,76 +46,76 @@ fun path(path: File): FilePath {
     return IMPL.path(path)
 }
 
-impl internal fun channelImpl(path: FilePath,
+actual internal fun channelImpl(path: FilePath,
                               options: Array<out OpenOption>,
                               attributes: Array<out FileAttribute>) =
         IMPL.channel(path, options, attributes)
 
 // TODO: @Throws(IOException::class)
-impl fun createFile(path: FilePath,
+actual fun createFile(path: FilePath,
                     vararg attributes: FileAttribute): FilePath {
     return IMPL.createFile(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun createDirectory(path: FilePath,
+actual fun createDirectory(path: FilePath,
                          vararg attributes: FileAttribute): FilePath {
     return IMPL.createDirectory(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun createDirectories(path: FilePath,
+actual fun createDirectories(path: FilePath,
                            vararg attributes: FileAttribute): FilePath {
     return IMPL.createDirectories(path, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun delete(path: FilePath) {
+actual fun delete(path: FilePath) {
     IMPL.delete(path)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun deleteIfExists(path: FilePath): Boolean {
+actual fun deleteIfExists(path: FilePath): Boolean {
     return IMPL.deleteIfExists(path)
 }
 
-impl fun metadata(path: FilePath,
+actual fun metadata(path: FilePath,
                   vararg options: LinkOption): Array<FileMetadata> {
     return IMPL.metadata(path, *options)
 }
 
-impl fun attributes(path: FilePath,
+actual fun attributes(path: FilePath,
                     vararg options: LinkOption): Array<FileAttribute> {
     return IMPL.attributes(path, *options)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun createTempFile(prefix: String,
+actual fun createTempFile(prefix: String,
                         suffix: String,
                         vararg attributes: FileAttribute): FilePath {
     return IMPL.createTempFile(prefix, suffix, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun createTempDir(prefix: String,
+actual fun createTempDir(prefix: String,
                        vararg attributes: FileAttribute): FilePath {
     return IMPL.createTempDir(prefix, *attributes)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun copy(source: FilePath,
+actual fun copy(source: FilePath,
               target: FilePath): FilePath {
     return IMPL.copy(source, target)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun move(source: FilePath,
+actual fun move(source: FilePath,
               target: FilePath): FilePath {
     return IMPL.move(source, target)
 }
 
 // TODO: @Throws(IOException::class)
-impl fun directoryStream(path: FilePath): DirectoryStream {
+actual fun directoryStream(path: FilePath): DirectoryStream {
     return IMPL.directoryStream(path)
 }
 

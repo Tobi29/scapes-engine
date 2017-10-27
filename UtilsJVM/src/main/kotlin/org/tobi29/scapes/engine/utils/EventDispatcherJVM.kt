@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils
 import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.reflect.KClass
 
-impl class EventDispatcher impl internal constructor(
+actual class EventDispatcher actual internal constructor(
         private val parent: EventDispatcher? = null) {
     private val root = findRoot()
     private val children = ConcurrentHashSet<EventDispatcher>()
@@ -28,7 +28,7 @@ impl class EventDispatcher impl internal constructor(
     private val enabled = AtomicBoolean(parent == null)
 
     @Synchronized
-    impl fun enable() {
+    actual fun enable() {
         val parent = parent ?: return
         if (!enabled.getAndSet(true)) {
             parent.children.add(this)
@@ -44,7 +44,7 @@ impl class EventDispatcher impl internal constructor(
     }
 
     @Synchronized
-    impl fun disable() {
+    actual fun disable() {
         val parent = parent ?: return
         if (enabled.getAndSet(false)) {
             parent.children.remove(this)
@@ -68,7 +68,7 @@ impl class EventDispatcher impl internal constructor(
         children.forEach { it.deactivate() }
     }
 
-    impl fun <E : Any> fire(event: E) {
+    actual fun <E : Any> fire(event: E) {
         root.activeListeners[event::class]?.let {
             @Suppress("UNCHECKED_CAST")
             (it as Iterable<Listener<E>>).forEach {
@@ -90,7 +90,7 @@ impl class EventDispatcher impl internal constructor(
     }
 }
 
-impl class ListenerRegistrar impl internal constructor(impl val events: EventDispatcher) {
+actual class ListenerRegistrar actual internal constructor(actual val events: EventDispatcher) {
     fun <E : Any> listen(clazz: KClass<E>,
                          priority: Int,
                          accepts: (E) -> Boolean,
@@ -102,24 +102,24 @@ impl class ListenerRegistrar impl internal constructor(impl val events: EventDis
         list.add(reference)
     }
 
-    impl inline fun <reified E : Any> listen(
+    actual inline fun <reified E : Any> listen(
             noinline listener: (E) -> Unit) {
         listen(0, listener)
     }
 
-    impl inline fun <reified E : Any> listen(
+    actual inline fun <reified E : Any> listen(
             priority: Int,
             noinline listener: (E) -> Unit) {
         listen(priority, { true }, listener)
     }
 
-    impl inline fun <reified E : Any> listen(
+    actual inline fun <reified E : Any> listen(
             noinline accepts: (E) -> Boolean,
             noinline listener: (E) -> Unit) {
         listen(0, accepts, listener)
     }
 
-    impl inline fun <reified E : Any> listen(
+    actual inline fun <reified E : Any> listen(
             priority: Int,
             noinline accepts: (E) -> Boolean,
             noinline listener: (E) -> Unit) {

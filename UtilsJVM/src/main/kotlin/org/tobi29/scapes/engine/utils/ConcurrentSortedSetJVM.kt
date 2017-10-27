@@ -2,32 +2,32 @@ package org.tobi29.scapes.engine.utils
 
 import java.util.concurrent.ConcurrentSkipListSet
 
-impl class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet<T> {
+actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(), MutableSet<T> {
     private val set = ConcurrentSkipListSet<T>()
 
-    impl override val size get() = set.size
+    actual override val size get() = set.size
 
-    impl override fun isEmpty() = set.isEmpty()
+    actual override fun isEmpty() = set.isEmpty()
 
-    impl override fun iterator() = set.iterator()
+    actual override fun iterator() = set.iterator()
 
-    impl override fun add(element: T) = set.add(element)
+    actual override fun add(element: T) = set.add(element)
 
-    impl override fun addAll(elements: Collection<T>) = set.addAll(elements)
+    actual override fun addAll(elements: Collection<T>) = set.addAll(elements)
 
-    impl override fun clear() = set.clear()
+    actual override fun clear() = set.clear()
 
-    impl override fun remove(element: T) = set.remove(element)
+    actual override fun remove(element: T) = set.remove(element)
 
-    impl override fun removeAll(elements: Collection<T>) =
+    actual override fun removeAll(elements: Collection<T>) =
             set.removeAll(elements)
 
-    impl override fun retainAll(elements: Collection<T>) =
+    actual override fun retainAll(elements: Collection<T>) =
             set.retainAll(elements)
 
-    impl override fun contains(element: T) = set.contains(element)
+    actual override fun contains(element: T) = set.contains(element)
 
-    impl override fun containsAll(elements: Collection<T>) =
+    actual override fun containsAll(elements: Collection<T>) =
             set.containsAll(elements)
 
     override fun equals(other: Any?): Boolean {

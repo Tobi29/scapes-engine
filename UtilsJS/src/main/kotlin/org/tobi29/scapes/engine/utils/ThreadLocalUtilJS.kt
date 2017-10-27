@@ -16,11 +16,11 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl class ThreadLocal<T> impl constructor(private val initial: () -> T) {
+actual class ThreadLocal<T> actual constructor(private val initial: () -> T) {
     private val instanceMut = mutableLazy(initial)
     private val instance by instanceMut
 
-    impl fun set(value: T) = instanceMut.set { value }
-    impl fun get(): T = instance
-    impl fun remove() = instanceMut.set(initial)
+    actual fun set(value: T) = instanceMut.set { value }
+    actual fun get(): T = instance
+    actual fun remove() = instanceMut.set(initial)
 }

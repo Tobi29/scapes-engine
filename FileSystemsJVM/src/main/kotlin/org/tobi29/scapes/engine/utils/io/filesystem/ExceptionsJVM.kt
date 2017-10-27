@@ -16,26 +16,26 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-impl internal fun FileSystemExceptionImpl(path: FilePath,
+actual internal fun FileSystemExceptionImpl(path: FilePath,
                                           otherPath: FilePath?,
                                           reason: String?): FileSystemException =
         FileSystemException(path.toFile(), otherPath?.toFile(), reason)
 
-impl internal fun FileAlreadyExistsExceptionImpl(path: FilePath,
+actual internal fun FileAlreadyExistsExceptionImpl(path: FilePath,
                                                  otherPath: FilePath?,
                                                  reason: String?): FileAlreadyExistsException =
         FileAlreadyExistsException(path.toFile(), otherPath?.toFile(), reason)
 
-impl internal fun AccessDeniedExceptionImpl(path: FilePath,
+actual internal fun AccessDeniedExceptionImpl(path: FilePath,
                                             otherPath: FilePath?,
                                             reason: String?): AccessDeniedException =
         AccessDeniedException(path.toFile(), otherPath?.toFile(), reason)
 
-impl internal fun NoSuchFileExceptionImpl(path: FilePath,
+actual internal fun NoSuchFileExceptionImpl(path: FilePath,
                                           otherPath: FilePath?,
                                           reason: String?): NoSuchFileException =
         NoSuchFileException(path.toFile(), otherPath?.toFile(), reason)
 
-impl val FileSystemException.path get() = path(file)
+actual val FileSystemException.path get() = path(file)
 
-impl val FileSystemException.otherPath get() = other?.let { path(it) }
+actual val FileSystemException.otherPath get() = other?.let { path(it) }

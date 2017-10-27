@@ -17,10 +17,10 @@
 package org.tobi29.scapes.engine.utils
 
 /** Prints the given message to the standard error stream. */
-header fun printerr(message: Any?)
+expect fun printerr(message: Any?)
 
 /** Prints the given message and newline to the standard error stream. */
-header fun printerrln(message: Any?)
+expect fun printerrln(message: Any?)
 
 /** Prints a newline to the standard error stream. */
-header fun printerrln()
+expect fun printerrln()

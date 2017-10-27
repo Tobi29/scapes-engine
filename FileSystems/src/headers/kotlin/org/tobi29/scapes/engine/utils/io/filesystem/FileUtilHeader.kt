@@ -16,55 +16,55 @@
 
 package org.tobi29.scapes.engine.utils.io.filesystem
 
-header fun path(path: String): FilePath
+expect fun path(path: String): FilePath
 
 // TODO: @Throws(IOException::class)
-header internal fun channelImpl(path: FilePath,
+expect internal fun channelImpl(path: FilePath,
                                 options: Array<out OpenOption>,
                                 attributes: Array<out FileAttribute>): FileChannel
 
 // TODO: @Throws(IOException::class)
-header fun createFile(path: FilePath,
+expect fun createFile(path: FilePath,
                       vararg attributes: FileAttribute): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun createDirectory(path: FilePath,
+expect fun createDirectory(path: FilePath,
                            vararg attributes: FileAttribute): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun createDirectories(path: FilePath,
+expect fun createDirectories(path: FilePath,
                              vararg attributes: FileAttribute): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun delete(path: FilePath)
+expect fun delete(path: FilePath)
 
 // TODO: @Throws(IOException::class)
-header fun deleteIfExists(path: FilePath): Boolean
+expect fun deleteIfExists(path: FilePath): Boolean
 
 // TODO: @Throws(IOException::class)
-header fun metadata(path: FilePath,
+expect fun metadata(path: FilePath,
                     vararg options: LinkOption): Array<FileMetadata>
 
 // TODO: @Throws(IOException::class)
-header fun attributes(path: FilePath,
+expect fun attributes(path: FilePath,
                       vararg options: LinkOption): Array<FileAttribute>
 
 // TODO: @Throws(IOException::class)
-header fun createTempFile(prefix: String,
+expect fun createTempFile(prefix: String,
                           suffix: String,
                           vararg attributes: FileAttribute): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun createTempDir(prefix: String,
+expect fun createTempDir(prefix: String,
                          vararg attributes: FileAttribute): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun copy(source: FilePath,
+expect fun copy(source: FilePath,
                 target: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun move(source: FilePath,
+expect fun move(source: FilePath,
                 target: FilePath): FilePath
 
 // TODO: @Throws(IOException::class)
-header fun directoryStream(path: FilePath): DirectoryStream
+expect fun directoryStream(path: FilePath): DirectoryStream

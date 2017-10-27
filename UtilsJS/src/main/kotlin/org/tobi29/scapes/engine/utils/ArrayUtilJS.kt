@@ -124,7 +124,7 @@ inline fun Float32Array.asArray(): FloatArray = asDynamic()
 @Suppress("UnsafeCastFromDynamic")
 inline fun Float64Array.asArray(): DoubleArray = asDynamic()
 
-impl inline fun copyArray(src: BooleanArray,
+actual inline fun copyArray(src: BooleanArray,
                           dest: BooleanArray,
                           length: Int,
                           offsetSrc: Int,
@@ -134,7 +134,7 @@ impl inline fun copyArray(src: BooleanArray,
     }
 }
 
-impl inline fun copyArray(src: ByteArray,
+actual inline fun copyArray(src: ByteArray,
                           dest: ByteArray,
                           length: Int,
                           offsetSrc: Int,
@@ -144,7 +144,7 @@ impl inline fun copyArray(src: ByteArray,
     }
 }
 
-impl inline fun copyArray(src: ShortArray,
+actual inline fun copyArray(src: ShortArray,
                           dest: ShortArray,
                           length: Int,
                           offsetSrc: Int,
@@ -154,7 +154,7 @@ impl inline fun copyArray(src: ShortArray,
     }
 }
 
-impl inline fun copyArray(src: IntArray,
+actual inline fun copyArray(src: IntArray,
                           dest: IntArray,
                           length: Int,
                           offsetSrc: Int,
@@ -164,7 +164,7 @@ impl inline fun copyArray(src: IntArray,
     }
 }
 
-impl inline fun copyArray(src: LongArray,
+actual inline fun copyArray(src: LongArray,
                           dest: LongArray,
                           length: Int,
                           offsetSrc: Int,
@@ -174,7 +174,7 @@ impl inline fun copyArray(src: LongArray,
     }
 }
 
-impl inline fun copyArray(src: FloatArray,
+actual inline fun copyArray(src: FloatArray,
                           dest: FloatArray,
                           length: Int,
                           offsetSrc: Int,
@@ -184,7 +184,7 @@ impl inline fun copyArray(src: FloatArray,
     }
 }
 
-impl inline fun copyArray(src: DoubleArray,
+actual inline fun copyArray(src: DoubleArray,
                           dest: DoubleArray,
                           length: Int,
                           offsetSrc: Int,
@@ -194,7 +194,7 @@ impl inline fun copyArray(src: DoubleArray,
     }
 }
 
-impl inline fun copyArray(src: CharArray,
+actual inline fun copyArray(src: CharArray,
                           dest: CharArray,
                           length: Int,
                           offsetSrc: Int,
@@ -204,7 +204,7 @@ impl inline fun copyArray(src: CharArray,
     }
 }
 
-impl inline fun <T> copyArray(src: Array<out T>,
+actual inline fun <T> copyArray(src: Array<out T>,
                               dest: Array<in T>,
                               length: Int,
                               offsetSrc: Int,

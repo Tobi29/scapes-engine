@@ -1,6 +1,6 @@
 package org.tobi29.scapes.engine.utils.io
 
-header interface Channel : Closeable {
+expect interface Channel : Closeable {
     fun isOpen(): Boolean
 
     /**
@@ -9,4 +9,4 @@ header interface Channel : Closeable {
     override fun close()
 }
 
-header interface InterruptibleChannel : Channel
+expect interface InterruptibleChannel : Channel

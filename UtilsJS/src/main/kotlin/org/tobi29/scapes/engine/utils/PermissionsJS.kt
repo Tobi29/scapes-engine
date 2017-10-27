@@ -16,4 +16,4 @@
 
 package org.tobi29.scapes.engine.utils
 
-impl fun checkPermission(permission: String) {}
+actual fun checkPermission(permission: String) {}

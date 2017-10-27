@@ -6,7 +6,7 @@ package org.tobi29.scapes.engine.utils
  * @receiver The collection
  * @return A read only view of the collection
  */
-header inline fun <T> Collection<T>.readOnly(): Collection<T>
+expect inline fun <T> Collection<T>.readOnly(): Collection<T>
 
 /**
  * Returns an unmodifiable version of the given list
@@ -14,7 +14,7 @@ header inline fun <T> Collection<T>.readOnly(): Collection<T>
  * @receiver The list
  * @return A read only view of the list
  */
-header inline fun <T> List<T>.readOnly(): List<T>
+expect inline fun <T> List<T>.readOnly(): List<T>
 
 /**
  * Returns an unmodifiable version of the given set
@@ -22,7 +22,7 @@ header inline fun <T> List<T>.readOnly(): List<T>
  * @receiver The set
  * @return A read only view of the set
  */
-header inline fun <T> Set<T>.readOnly(): Set<T>
+expect inline fun <T> Set<T>.readOnly(): Set<T>
 
 /**
  * Returns an unmodifiable version of the given map
@@ -31,7 +31,7 @@ header inline fun <T> Set<T>.readOnly(): Set<T>
  * @receiver The map
  * @return A read only view of the map
  */
-header inline fun <K, V> Map<K, V>.readOnly(): Map<K, V>
+expect inline fun <K, V> Map<K, V>.readOnly(): Map<K, V>
 
 /**
  * Returns a synchronized version of the given collection
@@ -39,7 +39,7 @@ header inline fun <K, V> Map<K, V>.readOnly(): Map<K, V>
  * @receiver The collection
  * @return A synchronized view of the collection
  */
-header inline fun <T> Collection<T>.synchronized(): Collection<T>
+expect inline fun <T> Collection<T>.synchronized(): Collection<T>
 
 /**
  * Returns a synchronized version of the given collection
@@ -47,7 +47,7 @@ header inline fun <T> Collection<T>.synchronized(): Collection<T>
  * @receiver The collection
  * @return A synchronized view of the collection
  */
-header inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T>
+expect inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T>
 
 /**
  * Returns a synchronized version of the given list
@@ -55,7 +55,7 @@ header inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T>
  * @receiver The list
  * @return A synchronized view of the list
  */
-header inline fun <T> List<T>.synchronized(): List<T>
+expect inline fun <T> List<T>.synchronized(): List<T>
 
 /**
  * Returns a synchronized version of the given list
@@ -63,7 +63,7 @@ header inline fun <T> List<T>.synchronized(): List<T>
  * @receiver The list
  * @return A synchronized view of the list
  */
-header inline fun <T> MutableList<T>.synchronized(): MutableList<T>
+expect inline fun <T> MutableList<T>.synchronized(): MutableList<T>
 
 /**
  * Returns a synchronized version of the given set
@@ -71,7 +71,7 @@ header inline fun <T> MutableList<T>.synchronized(): MutableList<T>
  * @receiver The set
  * @return A synchronized view of the set
  */
-header inline fun <T> Set<T>.synchronized(): Set<T>
+expect inline fun <T> Set<T>.synchronized(): Set<T>
 
 /**
  * Returns a synchronized version of the given set
@@ -79,7 +79,7 @@ header inline fun <T> Set<T>.synchronized(): Set<T>
  * @receiver The set
  * @return A synchronized view of the set
  */
-header inline fun <T> MutableSet<T>.synchronized(): MutableSet<T>
+expect inline fun <T> MutableSet<T>.synchronized(): MutableSet<T>
 
 /**
  * Returns a synchronized version of the given map
@@ -88,7 +88,7 @@ header inline fun <T> MutableSet<T>.synchronized(): MutableSet<T>
  * @receiver The map
  * @return A synchronized view of the map
  */
-header inline fun <K, V> Map<K, V>.synchronized(): Map<K, V>
+expect inline fun <K, V> Map<K, V>.synchronized(): Map<K, V>
 
 /**
  * Returns a synchronized version of the given map
@@ -97,7 +97,7 @@ header inline fun <K, V> Map<K, V>.synchronized(): Map<K, V>
  * @receiver The map
  * @return A synchronized view of the map
  */
-header inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V>
+expect inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V>
 
 /**
  * Returns a map using the given enum as keys
@@ -107,34 +107,34 @@ header inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V>
  * @param V The value type
  * @return A map using the given enum as keys
  */
-header inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V>
+expect inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V>
 
 /**
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-header fun <K, V> MutableMap<K, V>.putAbsent(key: K,
+expect fun <K, V> MutableMap<K, V>.putAbsent(key: K,
                                              value: V): V?
 
 /**
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-header fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
+expect fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
                                                 value: V): V?
 
 /**
  * Fetch the value for the [key] and remap it using [block]
  * @return The value returned from [block]
  */
-header fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+expect fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                                  block: (K, V?) -> V): V
 
 /**
  * Fetch the value for the [key] and remap it using [block]
  * @return The value returned from [block]
  */
-header fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+expect fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
                                                     block: (K, V?) -> V): V
 
 /**
@@ -143,7 +143,7 @@ header fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value returned from [block]
  */
-header fun <K, V> MutableMap<K, V>.computeAlways(key: K,
+expect fun <K, V> MutableMap<K, V>.computeAlways(key: K,
                                                  block: (K, V?) -> V?): V?
 
 /**
@@ -152,7 +152,7 @@ header fun <K, V> MutableMap<K, V>.computeAlways(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value returned from [block]
  */
-header fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
+expect fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
                                                     block: (K, V?) -> V?): V?
 
 /**
@@ -160,7 +160,7 @@ header fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
  * result
  * @return The value mapped to [key] at the end
  */
-header inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+expect inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                         block: (K) -> V): V
 
 /**
@@ -168,7 +168,7 @@ header inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
  * result
  * @return The value mapped to [key] at the end
  */
-header inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+expect inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
                                                            block: (K) -> V): V
 
 /**
@@ -178,7 +178,7 @@ header inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value mapped to [key] at the end
  */
-header inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
+expect inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
                                                         block: (K) -> V?): V?
 
 /**
@@ -188,8 +188,8 @@ header inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
  * Returning `null` in [block] will remove the value from the map
  * @return The value mapped to [key] at the end
  */
-header inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
+expect inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
                                                            block: (K) -> V?): V?
 
-header fun <K, V> MutableMap<K, V>.removeEqual(key: K,
+expect fun <K, V> MutableMap<K, V>.removeEqual(key: K,
                                                value: V): Boolean

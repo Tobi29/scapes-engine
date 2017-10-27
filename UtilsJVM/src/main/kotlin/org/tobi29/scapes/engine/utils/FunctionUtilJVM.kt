@@ -1,16 +1,16 @@
 package org.tobi29.scapes.engine.utils
 
-impl infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit =
+actual infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit =
         (this as? ChainedFunction0)?.append(other)
                 ?: (other as? ChainedFunction0)?.prepend(this)
                 ?: ChainedFunction0(arrayOf(this, other))
 
-impl fun chain(vararg functions: () -> Unit): () -> Unit =
+actual fun chain(vararg functions: () -> Unit): () -> Unit =
         ChainedFunction0(functions.flatMap {
             (it as? ChainedFunction0)?.functions?.asIterable() ?: listOf(it)
         }.toTypedArray())
 
-impl infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =
+actual infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =
         if (this is ChainedFunction1<*>) {
             (this as ChainedFunction1<P1>).append(other)
         } else if (other is ChainedFunction1<*>) {
@@ -19,14 +19,14 @@ impl infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =
             ChainedFunction1(arrayOf(this, other))
         }
 
-impl fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit =
+actual fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit =
         ChainedFunction1(functions.flatMap {
             if (it is ChainedFunction1<*>) {
                 (it as ChainedFunction1<P1>).functions.asIterable()
             } else listOf(it)
         }.toTypedArray())
 
-impl infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit =
+actual infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit =
         if (this is ChainedFunction2<*, *>) {
             (this as ChainedFunction2<P1, P2>).append(other)
         } else if (other is ChainedFunction2<*, *>) {
@@ -35,7 +35,7 @@ impl infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, 
             ChainedFunction2(arrayOf(this, other))
         }
 
-impl fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit =
+actual fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit =
         ChainedFunction2(functions.flatMap {
             if (it is ChainedFunction2<*, *>) {
                 (it as ChainedFunction2<P1, P2>).functions.asIterable()

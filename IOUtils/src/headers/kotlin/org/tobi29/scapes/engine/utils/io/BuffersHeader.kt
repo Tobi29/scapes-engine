@@ -16,20 +16,20 @@
 
 package org.tobi29.scapes.engine.utils.io
 
-header class ByteOrder private constructor(name: String)
+expect class ByteOrder private constructor(name: String)
 
 /**
  * Big endian byte order
  */
-header val BIG_ENDIAN: ByteOrder
+expect val BIG_ENDIAN: ByteOrder
 
 /**
  * Little endian byte order
  */
-header val LITTLE_ENDIAN: ByteOrder
+expect val LITTLE_ENDIAN: ByteOrder
 
 /**
  * Native endianness depending on current hardware, either [BIG_ENDIAN] or
  * [LITTLE_ENDIAN]
  */
-header val NATIVE_ENDIAN: ByteOrder
+expect val NATIVE_ENDIAN: ByteOrder

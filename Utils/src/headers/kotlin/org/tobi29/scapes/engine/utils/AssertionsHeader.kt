@@ -1,5 +1,5 @@
 package org.tobi29.scapes.engine.utils
 
-header object Assertions {
+expect object Assertions {
     var ENABLED: Boolean
 }
