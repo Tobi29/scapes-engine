@@ -1,6 +1,7 @@
 package org.tobi29.scapes.engine.utils.io.tag.json
 
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.isISOControl
 import org.tobi29.scapes.engine.utils.tag.*
 import org.tobi29.scapes.engine.utils.toString
 
@@ -47,8 +48,3 @@ internal fun String.jsonEscape() = StringBuilder(length).apply {
         }
     }
 }.toString()
-
-internal fun Char.isISOControl() = toInt().isISOControl()
-
-internal fun Int.isISOControl() = this <= 0x9F && (this >= 0x7F || (this.ushr(
-        5) == 0))

@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.utils.io.Path
 import org.tobi29.scapes.engine.utils.io.Uri
 
 header interface FilePath : Path, Comparable<FilePath> {
-    fun toUri(): Uri
+    override fun toUri(): Uri
 
     fun normalize(): FilePath
 

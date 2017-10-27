@@ -15,10 +15,11 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.Cam
 import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.view
 import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.roundL
@@ -33,7 +34,13 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         private set
     var timestamp = 0L
         private set
-    val graphics: GraphicsSystem get() = engine.graphics
+    private val empty by lazy {
+        createTexture(1, 1, byteArrayOf(-1, -1, -1, -1).view, 0)
+    }
+
+    fun textureEmpty(): Texture {
+        return empty
+    }
 
     fun reshape(contentWidth: Int,
                 contentHeight: Int) {

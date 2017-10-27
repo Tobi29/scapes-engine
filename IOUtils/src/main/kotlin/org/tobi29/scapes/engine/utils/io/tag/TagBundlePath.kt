@@ -19,10 +19,10 @@ package org.tobi29.scapes.engine.utils.io.tag
 import org.tobi29.scapes.engine.utils.io.*
 
 data class TagBundlePath(private val bundle: TagBundle,
-                         private val path: String) : Path {
+                         private val path: String) : PathLocal {
     private val data by lazy { bundle.resolve(path) }
 
-    override fun get(path: String): Path {
+    override fun get(path: String): PathLocal {
         UnixPathEnvironment.run {
             return TagBundlePath(bundle,
                     this@TagBundlePath.path.resolve(path))
@@ -34,18 +34,13 @@ data class TagBundlePath(private val bundle: TagBundle,
             path.parent?.let { TagBundlePath(bundle, it) }
         }
 
-    override fun <R> read(reader: (ReadableByteStream) -> R): R {
-        val stream = data?.viewBE?.let(::MemoryViewReadableStream)
-                ?: throw IOException("Entry does not exist")
+    override fun channel() = dataNow().viewBE.let(::MemoryViewReadableStream)
+            .let(::ReadableByteStreamChannel)
+
+    override fun <R> readNow(reader: (ReadableByteStream) -> R): R {
+        val stream = dataNow().viewBE.let(::MemoryViewReadableStream)
         return reader(stream)
     }
 
-    override fun exists() = data != null
-
-    override fun channel() = data?.viewBE?.let(::MemoryViewReadableStream)
-            ?.let(::ReadableByteStreamChannel)
-            ?: throw IOException("Entry does not exist")
-
-    override suspend fun data(): ByteViewRO =
-            data ?: throw IOException("Entry does not exist")
+    override fun dataNow() = data ?: throw IOException("Entry does not exist")
 }

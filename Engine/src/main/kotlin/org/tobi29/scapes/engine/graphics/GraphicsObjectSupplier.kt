@@ -17,15 +17,13 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.Container
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io.view
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.Expression
-import org.tobi29.scapes.engine.utils.io.view
 
 interface GraphicsObjectSupplier {
-    val engine: ScapesEngine get() = container.engine
     val container: Container
     val vaoTracker: GraphicsObjectTracker<Model>
     val textureTracker: GraphicsObjectTracker<Texture>
@@ -116,14 +114,14 @@ interface GraphicsObjectSupplier {
             lengthStream: Int,
             renderType: RenderType): ModelHybrid
 
-    fun loadShader(shader: () -> CompiledShader,
-                   properties: Map<String, Expression> = emptyMap()) =
-            engine.resources.load { createShader(shader(), properties) }
-
-    fun loadShader(shader: CompiledShader,
-                   properties: Map<String, Expression> = emptyMap()) =
-            engine.resources.load { createShader(shader, properties) }
-
     fun createShader(shader: CompiledShader,
                      properties: Map<String, Expression> = emptyMap()): Shader
 }
+
+fun GraphicsSystem.loadShader(shader: suspend () -> CompiledShader,
+                              properties: Map<String, Expression> = emptyMap()) =
+        engine.resources.load { createShader(shader(), properties) }
+
+fun GraphicsSystem.loadShader(shader: CompiledShader,
+                              properties: Map<String, Expression> = emptyMap()) =
+        engine.resources.load { createShader(shader, properties) }

@@ -34,7 +34,7 @@ import org.tobi29.scapes.engine.utils.task.*
 import kotlin.coroutines.experimental.CoroutineContext
 
 impl class ScapesEngine impl constructor(
-        backend: (ScapesEngine) -> Container,
+        impl val container: Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         impl val taskExecutor: CoroutineContext,
         configMap: MutableTagMap
@@ -48,7 +48,6 @@ impl class ScapesEngine impl constructor(
     impl val files = FileSystemContainer()
     impl val events = newEventDispatcher()
     impl val resources = ResourceLoader(taskExecutor)
-    impl val container: Container
     impl val graphics: GraphicsSystem
     impl val sounds: SoundSystem
     impl val guiStyle: GuiStyle
@@ -67,8 +66,7 @@ impl class ScapesEngine impl constructor(
         logger.info { "Starting Scapes-Engine: $this" }
 
         logger.info { "Creating backend" }
-        container = backend(this)
-        sounds = container.sounds
+        sounds = container.createSoundSystem(this)
 
         logger.info { "Setting up GUI" }
         guiStyle = defaultGuiStyle(this)
@@ -90,7 +88,7 @@ impl class ScapesEngine impl constructor(
         guiStack.addUnfocused("99-Debug", debugGui)
         tpsDebug = debugValues["Engine-Tps"]
         logger.info { "Creating graphics system" }
-        graphics = GraphicsSystem(container.gos)
+        graphics = GraphicsSystem(this, container.gos)
         logger.info { "Initializing engine" }
         registerComponent(DeltaProfilerComponent.COMPONENT,
                 DeltaProfilerComponent(performance))

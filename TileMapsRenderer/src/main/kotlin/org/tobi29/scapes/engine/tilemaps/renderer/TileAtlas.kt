@@ -14,86 +14,110 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.tilemaps.renderer
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.graphics.TextureAtlasEngine
-import org.tobi29.scapes.engine.graphics.TextureAtlasEngineEntry
+import org.tobi29.scapes.engine.tilemaps.Frame
 import org.tobi29.scapes.engine.tilemaps.Sprite
 import org.tobi29.scapes.engine.tilemaps.Tile
 import org.tobi29.scapes.engine.tilemaps.TileSets
 import org.tobi29.scapes.engine.utils.AtomicInteger
-import org.tobi29.scapes.engine.utils.graphics.Image
+import org.tobi29.scapes.engine.utils.graphics.MutableImage
+import org.tobi29.scapes.engine.utils.graphics.assembleAtlas
+import org.tobi29.scapes.engine.utils.graphics.set
+import org.tobi29.scapes.engine.utils.graphics.toImage
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.math.floor
+import org.tobi29.scapes.engine.utils.math.margin
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.remP
+import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.toArray
-import kotlin.collections.set
 
-class TileAtlas(engine: ScapesEngine) : TextureAtlasEngine<TileAtlasEntry>(
-        engine) {
-    private val tiles = ArrayList<TileAtlasEntry?>()
-    var maxSize = Vector2i.ZERO
-        private set
-
-    fun registerTile(tile: Tile): TileAtlasEntry {
-        tile(tile.id)?.let { return it }
-        val texture = TileAtlasEntry(tile.sprite, tile.size.x, tile.size.y,
-                engine, { texture })
-        textures["${tile.id}"] = texture
-        while (tiles.size <= tile.id) {
-            tiles.add(null)
-        }
-        tiles[tile.id] = texture
-        maxSize = max(maxSize, tile.size)
-        return texture
-    }
-
-    fun tile(id: Int): TileAtlasEntry? {
-        if (id < 0 || id >= tiles.size) {
-            return null
-        }
-        return tiles[id]
-    }
+class TileAtlas internal constructor(
+        val texture: Texture,
+        val maxSize: Vector2i,
+        private val tiles: List<TileEntry?>,
+        private val animations: List<TileAnimation>) {
+    fun tile(tile: Tile): TileEntry? = tile(tile.id)
+    fun tile(tile: Int): TileEntry? = tiles.getOrNull(tile)
 
     fun renderAnim(gl: GL) {
-        tiles.forEach { it?.renderAnim(gl) }
+        texture.bind(gl)
+        animations.forEach { it.render(gl) }
     }
 
     fun updateAnim(delta: Double) {
-        tiles.forEach { it?.updateAnim(delta) }
+        animations.forEach { it.update(delta) }
     }
 }
 
-open class TileAtlasEntry(sprite: Sprite,
-                          width: Int,
-                          height: Int,
-                          engine: ScapesEngine,
-                          texture: () -> Texture) : TextureAtlasEngineEntry(
-        sprite.frames.firstOrNull()?.image?.view, width, height, texture) {
+class TileEntry(val x: Int,
+                val y: Int,
+                val width: Int,
+                val height: Int,
+                atlasWidth: Int,
+                atlasHeight: Int) {
+    val textureX = x.toDouble() / atlasWidth
+    val textureY = y.toDouble() / atlasHeight
+    val textureWidth = width.toDouble() / atlasWidth
+    val textureHeight = height.toDouble() / atlasHeight
+}
+
+inline fun TileEntry.atPixelX(value: Int): Double {
+    return value / textureWidth
+}
+
+inline fun TileEntry.atPixelY(value: Int): Double {
+    return value / textureHeight
+}
+
+inline fun TileEntry.atPixelMarginX(value: Int): Double {
+    return marginX(atPixelX(value))
+}
+
+inline fun TileEntry.atPixelMarginY(value: Int): Double {
+    return marginY(atPixelX(value))
+}
+
+inline fun TileEntry.marginX(value: Double,
+                             margin: Double = 0.005): Double {
+    return textureX + margin(value, margin) * textureWidth
+}
+
+inline fun TileEntry.marginY(value: Double,
+                             margin: Double = 0.005): Double {
+    return textureY + margin(value, margin) * textureHeight
+}
+
+internal class TileAnimation(sprite: Sprite,
+                             private val x: Int,
+                             private val y: Int,
+                             private val width: Int,
+                             private val height: Int) {
     private val newFrame = AtomicInteger(-1)
-    private val frames: Array<Pair<Double, Image>>
+    private val frames: Array<Pair<Double, ByteViewRO>>
     private var spin = 0.0
 
     init {
         frames = sprite.frames.asSequence().map { frame ->
-            Pair(1.0 / frame.duration, frame.image)
+            Pair(1.0 / frame.duration, frame.image.view)
         }.toArray()
     }
 
-    fun renderAnim(gl: GL) {
+    fun render(gl: GL) {
         val frame = newFrame.getAndSet(-1)
         if (frame >= 0) {
-            texture().bind(gl)
-            val image = frames[frame].second
-            gl.replaceTextureMipMap(x, y, image.width, image.height, image.view)
+            gl.replaceTextureMipMap(x, y, width, height, frames[frame].second)
         }
     }
 
-    fun updateAnim(delta: Double) {
+    fun update(delta: Double) {
         if (frames.size <= 1) {
             return
         }
@@ -108,9 +132,48 @@ open class TileAtlasEntry(sprite: Sprite,
 
 fun atlas(engine: ScapesEngine,
           tileSets: TileSets<*>): TileAtlas {
-    val atlas = TileAtlas(engine)
-    tileSets.tiles.forEach { atlas.registerTile(it) }
-    atlas.init()
-    atlas.initTexture(0)
-    return atlas
+    val tiles = tileSets.tiles.map { tile ->
+        val size = tile.sprite.frames.asSequence().map { it.image.size }
+                .fold(Vector2i.ZERO) { a, b ->
+                    Vector2i(max(a.x, b.x), max(a.y, b.y))
+                }
+        val scaledTile = if (tile.sprite.frames.any { it.image.size != size }) {
+            Tile(Sprite(tile.sprite.frames.map { (duration, image) ->
+                val scaledImage = if (image.size.x != size.x || image.size.y != size.y) {
+                    val scaled = MutableImage(size.x, size.y)
+                    for (y in 0 until size.x) {
+                        for (x in 0 until size.y) {
+                            scaled[x, y] = image[x * image.size.x / size.x, y * image.size.y / size.y]
+                        }
+                    }
+                    scaled.toImage()
+                } else image
+                Frame(duration, scaledImage)
+            }), tile.size, tile.id, tile.tileSet)
+        } else tile
+        Triple(scaledTile, size, MutableVector2i())
+    }
+    val atlasSize = assembleAtlas(
+            tiles.asSequence().map { (_, size, position) -> size to position })
+    val atlas = MutableImage(atlasSize.x, atlasSize.y)
+    for ((tile, _, position) in tiles) {
+        tile.sprite.frames.firstOrNull()?.let {
+            atlas.set(position.x, position.y, it.image)
+        }
+    }
+    val otiles = ArrayList<TileEntry?>(tiles.size)
+    for ((tile, size, position) in tiles) {
+        while (otiles.size <= tile.id) otiles.add(null)
+        otiles[tile.id] = TileEntry(position.x, position.y, size.x, size.y,
+                atlas.width, atlas.height)
+    }
+    val animations = tiles.asSequence().filter { it.first.sprite.frames.size > 1 }
+            .map { (tile, size, position) ->
+                TileAnimation(tile.sprite, position.x, position.y, size.x,
+                        size.y)
+            }.toList()
+    return TileAtlas(engine.graphics.createTexture(atlas.toImage()),
+            tiles.fold(Vector2i.ZERO) { a, (_, b, _) ->
+                Vector2i(max(a.x, b.x), max(a.y, b.y))
+            }, otiles, animations)
 }

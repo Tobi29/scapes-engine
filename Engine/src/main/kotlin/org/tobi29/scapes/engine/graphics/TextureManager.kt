@@ -21,11 +21,13 @@ import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.graphics.decodePNG
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
+import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toInt
+import org.tobi29.scapes.engine.utils.tryWrap
+import org.tobi29.scapes.engine.utils.unwrapOr
 
 class TextureManager(private val engine: ScapesEngine) {
     private val cache = ConcurrentHashMap<String, Resource<Texture>>()
@@ -34,35 +36,21 @@ class TextureManager(private val engine: ScapesEngine) {
         return cache.computeAbsent(asset) { load(asset) }
     }
 
-    fun getNow(asset: String): Texture {
-        cache[asset]?.tryGet()?.let { return it }
-        return loadNow(asset).also { cache[asset] = Resource(it) }
-    }
-
     private fun load(asset: String): Resource<Texture> {
-        return engine.resources.load { loadNow(asset) }
-    }
-
-    private fun loadNow(asset: String): Texture {
-        val files = engine.files
-        val imageResource = files["$asset.png"]
-        val propertiesResource = files["$asset.json"]
-        val properties = if (propertiesResource.exists()) {
-            propertiesResource.read { readJSON(it) }
-        } else {
-            TagMap()
+        return engine.resources.load {
+            val files = engine.files
+            val imageResource = files["$asset.png"]
+            val propertiesResource = files["$asset.json"]
+            val properties = tryWrap<TagMap, IOException> {
+                propertiesResource.readAsync { readJSON(it) }
+            }.unwrapOr { TagMap() }
+            engine.graphics.createTexture(decodePNG(imageResource),
+                    properties["Mipmaps"]?.toInt() ?: 0,
+                    properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
+                    properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
+                    properties["WrapS"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT,
+                    properties["WrapT"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT)
         }
-        return imageResource.read { texture(it, properties) }
-    }
-
-    private fun texture(stream: ReadableByteStream,
-                        properties: TagMap): Texture {
-        return engine.graphics.createTexture(decodePNG(stream),
-                properties["Mipmaps"]?.toInt() ?: 0,
-                properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
-                properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
-                properties["WrapS"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT,
-                properties["WrapT"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT)
     }
 
     fun clearCache() {

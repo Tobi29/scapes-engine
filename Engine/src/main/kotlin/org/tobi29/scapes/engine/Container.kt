@@ -16,31 +16,21 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.io.ByteViewE
-import org.tobi29.scapes.engine.utils.io.ReadSource
 
-interface Container {
-    val engine: ScapesEngine
+interface Container : ScapesEngineBackend {
     val gos: GraphicsObjectSupplier
-    val sounds: SoundSystem
     val formFactor: FormFactor
     val containerWidth: Int
     val containerHeight: Int
-
-    fun allocateNative(size: Int): ByteViewE
 
     fun updateContainer()
 
     fun update(delta: Double)
 
-    fun loadFont(asset: ReadSource): Font?
-
     // TODO: @Throws(DesktopException::class)
-    fun run()
+    fun run(engine: ScapesEngine)
 
     fun stop()
 

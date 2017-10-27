@@ -19,8 +19,8 @@ package org.tobi29.scapes.engine.utils.io.classpath
 import org.tobi29.scapes.engine.utils.io.*
 
 data class ClasspathPath(private val classLoader: ClassLoader,
-                         private val path: String) : Path {
-    override fun get(path: String): Path {
+                         private val path: String) : PathLocal {
+    override fun get(path: String): PathLocal {
         UnixPathEnvironment.run {
             return ClasspathPath(classLoader,
                     this@ClasspathPath.path.resolve(path))
@@ -32,14 +32,13 @@ data class ClasspathPath(private val classLoader: ClassLoader,
             path.parent?.let { ClasspathPath(classLoader, it) }
         }
 
-    override fun exists() = classLoader.getResource(path) != null
-
     override fun channel(): ReadableByteChannel {
-        return Channels.newChannel(
-                classLoader.getResourceAsStream(path)).toChannel()
+        val stream = classLoader.getResourceAsStream(path)
+                ?: throw IOException("Classpath entry not found: $path")
+        return Channels.newChannel(stream).toChannel()
     }
 
-    override fun mimeType(): String {
+    override suspend fun mimeType(): String {
         return classLoader.getResourceAsStream(path).use {
             detectMimeIO(it, path)
         }

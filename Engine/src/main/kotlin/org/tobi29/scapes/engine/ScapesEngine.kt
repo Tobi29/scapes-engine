@@ -32,7 +32,7 @@ import org.tobi29.scapes.engine.utils.tag.MutableTagMap
 import kotlin.coroutines.experimental.CoroutineContext
 
 header class ScapesEngine(
-        backend: (ScapesEngine) -> Container,
+        container: Container,
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         taskExecutor: CoroutineContext,
         configMap: MutableTagMap

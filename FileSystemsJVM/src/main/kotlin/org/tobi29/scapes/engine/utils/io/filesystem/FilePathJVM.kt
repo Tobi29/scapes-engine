@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.io.Uri
 import java.io.File
 
 impl interface FilePath : Path, Comparable<FilePath> {
-    impl fun toUri(): Uri
+    impl override fun toUri(): Uri
 
     fun toFile(): File
 

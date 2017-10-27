@@ -21,6 +21,7 @@ import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
+import org.tobi29.scapes.engine.graphics.loadShader
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 
 abstract class GameState(val engine: ScapesEngine) {

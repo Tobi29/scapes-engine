@@ -18,14 +18,14 @@ package org.tobi29.scapes.engine.utils.graphics
 
 import ar.com.hjg.pngj.PngReaderByte
 import ar.com.hjg.pngj.PngjException
-import org.tobi29.scapes.engine.utils.io.ByteStreamInputStream
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.view
+import org.tobi29.scapes.engine.utils.io.*
 import java.io.InputStream
 
-// TODO: @Throws(IOException::class)
-impl fun decodePNG(stream: ReadableByteStream): Image {
+impl suspend fun decodePNG(asset: ReadSource): Image {
+    return asset.readAsync { decodePNG(it) }
+}
+
+impl suspend fun decodePNG(stream: ReadableByteStream): Image {
     return decodePNG(ByteStreamInputStream(stream))
 }
 

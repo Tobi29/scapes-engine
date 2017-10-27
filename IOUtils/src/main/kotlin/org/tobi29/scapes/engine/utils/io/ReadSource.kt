@@ -17,22 +17,36 @@
 package org.tobi29.scapes.engine.utils.io
 
 interface ReadSource {
-    fun exists(): Boolean
+    fun toUri(): Uri? = null
 
     // TODO: @Throws(IOException::class)
     fun channel(): ReadableByteChannel
 
     // TODO: @Throws(IOException::class)
-    fun <R> read(reader: (ReadableByteStream) -> R) = channel().use {
+    suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R = channel().use {
         reader(BufferedReadChannelStream(it))
     }
 
     // TODO: @Throws(IOException::class)
-    suspend fun <R> readAsync(reader: (ReadableByteStream) -> R) = read(reader)
+    suspend fun data(): ByteViewRO = readAsync { it.asByteView() }
 
     // TODO: @Throws(IOException::class)
-    suspend fun data(): ByteViewRO = read { it.asByteView() }
+    suspend fun mimeType(): String = readAsync { detectMime(it) }
+}
+
+interface ReadSourceLocal : ReadSource {
+    // TODO: @Throws(IOException::class)
+    fun <R> readNow(reader: (ReadableByteStream) -> R) = channel().use {
+        reader(BufferedReadChannelStream(it))
+    }
+
+    override suspend fun data() = dataNow()
 
     // TODO: @Throws(IOException::class)
-    fun mimeType() = read { detectMime(it) }
+    fun dataNow(): ByteViewRO = readNow { it.asByteView() }
+
+    override suspend fun mimeType() = mimeTypeNow()
+
+    // TODO: @Throws(IOException::class)
+    fun mimeTypeNow(): String = readNow { detectMime(it) }
 }

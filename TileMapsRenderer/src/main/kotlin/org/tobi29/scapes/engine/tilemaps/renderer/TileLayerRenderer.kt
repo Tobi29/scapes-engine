@@ -21,8 +21,6 @@ import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.tilemaps.Tile
 import org.tobi29.scapes.engine.utils.Array2
 import org.tobi29.scapes.engine.utils.array2OfNulls
-import org.tobi29.scapes.engine.utils.graphics.marginX
-import org.tobi29.scapes.engine.utils.graphics.marginY
 import org.tobi29.scapes.engine.utils.math.ceil
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.floor
@@ -108,7 +106,7 @@ class TileLayerRenderer(val engine: ScapesEngine,
                     val xxx = x + xx
 
                     val tile = map.getOrNull(xxx, yyy) ?: continue
-                    val entry = atlas.tile(tile.id) ?: continue
+                    val entry = atlas.tile(tile) ?: continue
 
                     val yo = tileDimensions.y - tile.size.y
                     val vx = (xx * tileDimensions.x).toDouble()

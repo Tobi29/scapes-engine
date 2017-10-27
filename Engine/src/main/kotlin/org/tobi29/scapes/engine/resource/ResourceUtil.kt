@@ -17,7 +17,12 @@
 package org.tobi29.scapes.engine.resource
 
 import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.io.asString
+import org.tobi29.scapes.engine.utils.io.readAsByteArray
+import org.tobi29.scapes.engine.utils.utf8ToString
 
 fun ResourceLoader.loadString(source: ReadSource) =
-        load { source.read { it.asString() } }
+        load {
+            source.data().readAsByteArray { array, offset, size ->
+                array.utf8ToString(offset, size)
+            }
+        }

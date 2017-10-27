@@ -146,7 +146,7 @@ object TagStructureJSONTests : Spek({
             }
             on("parsing the input") {
                 it("should succeed") {
-                    sample.read { readJSON(it) }
+                    sample.readNow { readJSON(it) }
                 }
             }
         }
@@ -156,7 +156,7 @@ object TagStructureJSONTests : Spek({
             }
             on("parsing the input") {
                 it("should fail") {
-                    shouldThrow<IOException> { sample.read { readJSON(it) } }
+                    shouldThrow<IOException> { sample.readNow { readJSON(it) } }
                 }
             }
         }

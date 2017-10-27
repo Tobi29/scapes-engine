@@ -19,6 +19,7 @@ import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.tobi29.scapes.engine.gui.GlyphRenderer
+import org.tobi29.scapes.engine.utils.isISOControl
 import org.tobi29.scapes.engine.utils.math.floor
 import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.math.round
@@ -79,7 +80,7 @@ class STBGlyphRenderer(private val font: STBFont,
         }
     }
 
-    @Synchronized override fun page(id: Int): ByteArray {
+    override suspend fun page(id: Int): ByteArray {
         val stack = MemoryStack.stackGet()
         stack.push {
             MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
@@ -95,7 +96,7 @@ class STBGlyphRenderer(private val font: STBFont,
                     for (x in 0 until tiles) {
                         val xx = x * glyphSize
                         val c = i + offset
-                        if (!Character.isISOControl(c)) {
+                        if (!c.isISOControl()) {
                             STBTruetype.stbtt_GetCodepointBitmapBox(font.info,
                                     c, scale.toFloat(), scale.toFloat(), xb, yb,
                                     wb, hb)

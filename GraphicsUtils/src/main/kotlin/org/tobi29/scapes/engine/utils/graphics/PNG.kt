@@ -16,7 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.ReadableByteStream
 
 // TODO: @Throws(IOException::class)
-header fun decodePNG(stream: ReadableByteStream): Image
+header suspend fun decodePNG(asset: ReadSource): Image
+
+// TODO: @Throws(IOException::class)
+header suspend fun decodePNG(stream: ReadableByteStream): Image

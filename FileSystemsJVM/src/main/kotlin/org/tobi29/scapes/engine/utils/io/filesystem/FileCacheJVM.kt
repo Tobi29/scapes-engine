@@ -22,11 +22,6 @@ import org.tobi29.scapes.engine.utils.logging.KLogging
 
 object FileCache : KLogging() {
     fun store(root: FilePath,
-              resource: ReadSource): Location {
-        return resource.read { stream -> store(root, stream) }
-    }
-
-    fun store(root: FilePath,
               stream: ReadableByteStream): Location {
         val write = createTempFile("CacheWrite", ".tmp")
         try {

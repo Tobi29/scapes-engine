@@ -22,9 +22,8 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
     val mesh = Mesh()
     GuiUtils.busy(mesh, 64.0, 64.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)
     val busy = mesh.finish(gl)
-    val shader = gl.graphics.loadShader(SHADER_TEXTURED)
     return {
-        val s = shader.getAsync()
+        val shader = gl.createShader(SHADER_TEXTURED(), emptyMap())
         ;{
         gl.disableCulling()
         gl.disableDepthTest()
@@ -35,9 +34,9 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
             matrix.identity()
             matrix.modelViewProjection().orthogonal(-width * 0.5f,
                     -height * 0.5f, width, height)
-            gl.graphics.textureEmpty().bind(gl)
+            gl.textureEmpty().bind(gl)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
-            busy.render(gl, s)
+            busy.render(gl, shader)
         }
     }
     }

@@ -21,3 +21,5 @@ interface Path : ReadSource {
 
     val parent: Path?
 }
+
+interface PathLocal : Path, ReadSourceLocal

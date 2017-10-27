@@ -17,6 +17,8 @@
 package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.Deferred
+import org.tobi29.scapes.engine.utils.DelegatedProperty
+import kotlin.reflect.KProperty
 
 interface Resource<out T : Any> {
     fun tryGet(): T?
@@ -46,3 +48,8 @@ class DeferredResource<out T : Any>(private val loaded: Deferred<T>) : Resource<
 }
 
 fun <T : Any> Resource(resource: T): Resource<T> = ImmediateResource(resource)
+
+fun <T : Any> Resource<T>.asProperty(fail: () -> Throwable) = object : DelegatedProperty<Any?, T> {
+    override fun getValue(thisRef: Any?,
+                          property: KProperty<*>): T = tryGet() ?: throw fail()
+}

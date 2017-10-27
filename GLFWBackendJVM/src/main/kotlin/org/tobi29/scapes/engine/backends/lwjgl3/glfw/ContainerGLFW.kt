@@ -43,30 +43,19 @@ import org.tobi29.scapes.engine.utils.tag.toMap
 import org.tobi29.scapes.engine.utils.task.Timer
 import org.tobi29.scapes.engine.utils.task.processCurrent
 
-class ContainerGLFW(engine: ScapesEngine,
-                    private val title: String,
-                    private val emulateTouch: Boolean = false,
-                    private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
-                    useGLES: Boolean = false) : ContainerLWJGL3(engine,
-        useGLES) {
+class ContainerGLFW(
+        private val title: String,
+        private val emulateTouch: Boolean = false,
+        private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
+        useGLES: Boolean = false
+) : ContainerLWJGL3(useGLES) {
     override var containerWidth = 0
         private set
     override var containerHeight = 0
         private set
     private val controllerDefault = GLFWControllerDefault()
-    private val controllers: GLFWControllers
     private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
     private val errorFun = GLFWErrorCallback.createPrint()
-    private val windowSizeFun: GLFWWindowSizeCallback
-    private val windowCloseFun: GLFWWindowCloseCallback
-    private val windowFocusFun: GLFWWindowFocusCallback
-    private val frameBufferSizeFun: GLFWFramebufferSizeCallback
-    private val keyFun: GLFWKeyCallback
-    private val charFun: GLFWCharCallback
-    private val mouseButtonFun: GLFWMouseButtonCallback
-    private val cursorPosFun: GLFWCursorPosCallback
-    private val scrollFun: GLFWScrollCallback
-    private val monitorFun: GLFWMonitorCallback
     internal var window = 0L
         private set
     private var refreshRate = 60
@@ -88,18 +77,30 @@ class ContainerGLFW(engine: ScapesEngine,
             throw GraphicsException("Unable to initialize GLFW")
         }
         logger.info { "GLFW version: ${GLFW.glfwGetVersionString()}" }
-        controllers = GLFWControllers(engine.events, virtualJoysticks)
-        windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
+    }
+
+    override val formFactor = Container.FormFactor.DESKTOP
+
+    override fun updateContainer() {
+        valid = false
+    }
+
+    override fun update(delta: Double) {
+    }
+
+    override fun run(engine: ScapesEngine) {
+        val controllers = GLFWControllers(engine.events, virtualJoysticks)
+        val windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
             containerWidth = round(width * density)
             containerHeight = round(height * density)
         }
-        windowCloseFun = GLFWWindowCloseCallback.create { stop() }
-        windowFocusFun = GLFWWindowFocusCallback.create { _, focused -> focus = focused }
-        frameBufferSizeFun = GLFWFramebufferSizeCallback.create { _, width, height ->
+        val windowCloseFun = GLFWWindowCloseCallback.create { stop() }
+        val windowFocusFun = GLFWWindowFocusCallback.create { _, focused -> focus = focused }
+        val frameBufferSizeFun = GLFWFramebufferSizeCallback.create { _, width, height ->
             contentWidth = width
             contentHeight = height
         }
-        keyFun = GLFWKeyCallback.create { _, key, _, action, _ ->
+        val keyFun = GLFWKeyCallback.create { _, key, _, action, _ ->
             val virtualKey = GLFWKeyMap.key(key)
             if (virtualKey != null) {
                 if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW.GLFW_RELEASE) {
@@ -118,10 +119,10 @@ class ContainerGLFW(engine: ScapesEngine,
                 plebSyncEnable = !plebSyncEnable
             }
         }
-        charFun = GLFWCharCallback.create { _, codepoint ->
+        val charFun = GLFWCharCallback.create { _, codepoint ->
             controllerDefault.addTypeEvent(codepoint.toChar())
         }
-        mouseButtonFun = GLFWMouseButtonCallback.create { _, button, action, _ ->
+        val mouseButtonFun = GLFWMouseButtonCallback.create { _, button, action, _ ->
             val virtualKey = ControllerKey.button(button)
             if (virtualKey != null) {
                 when (action) {
@@ -132,7 +133,7 @@ class ContainerGLFW(engine: ScapesEngine,
                 }
             }
         }
-        cursorPosFun = GLFWCursorPosCallback.create { window, xpos, ypos ->
+        val cursorPosFun = GLFWCursorPosCallback.create { window, xpos, ypos ->
             val dx = xpos - mouseX
             val dy = ypos - mouseY
             if (dx != 0.0 || dy != 0.0) {
@@ -152,27 +153,15 @@ class ContainerGLFW(engine: ScapesEngine,
                 }
             }
         }
-        scrollFun = GLFWScrollCallback.create { _, xoffset, yoffset ->
+        val scrollFun = GLFWScrollCallback.create { _, xoffset, yoffset ->
             if (xoffset != 0.0 || yoffset != 0.0) {
                 controllerDefault.addScroll(xoffset, yoffset)
             }
         }
-        monitorFun = GLFWMonitorCallback.create { _, _ ->
+        val monitorFun = GLFWMonitorCallback.create { _, _ ->
             refreshRate = Companion.refreshRate(window) ?: 60
         }
         GLFW.glfwSetMonitorCallback(monitorFun)
-    }
-
-    override val formFactor = Container.FormFactor.DESKTOP
-
-    override fun updateContainer() {
-        valid = false
-    }
-
-    override fun update(delta: Double) {
-    }
-
-    override fun run() {
         val latencyDebug = engine.debugValues["Input-Latency"]
         val plebSyncDebug = engine.debugValues["PlebSync™-Sleep"]
         var plebSync = 0L

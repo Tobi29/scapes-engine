@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.utils.shader.*
 
-val SHADER_TEXTURED = { SHADER_TEXTURED_LAZY }
+val SHADER_TEXTURED: suspend () -> CompiledShader = { SHADER_TEXTURED_LAZY }
 private val SHADER_TEXTURED_LAZY by lazy {
     ShaderProgramScope().apply {
         uniform(Type(Types.Matrix4), 1, "uniform_ModelViewProjectionMatrix")

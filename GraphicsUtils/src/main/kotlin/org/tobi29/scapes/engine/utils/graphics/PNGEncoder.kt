@@ -26,7 +26,7 @@ private fun WritableByteStream.writeImage(image: Image,
     writeChunk(TYPE_IHDR, header)
     val data = if (alpha) {
         BufferedReadChannelStream(object : ReadableByteChannel {
-            private var x = -1
+            private var i = -1
             private var y = 0
             private var position = 0
 
@@ -38,20 +38,20 @@ private fun WritableByteStream.writeImage(image: Image,
                 var positionWrite = 0
                 while (positionWrite < buffer.size) {
                     if (y < image.height) {
-                        if (x == -1) {
+                        if (i == -1) {
                             buffer[positionWrite++] = 0
-                            x++
-                        } else if (x < image.width) {
-                            val length = (buffer.size).coerceAtMost(
-                                    image.width - x)
+                            i++
+                        } else if (i < image.width shl 2) {
+                            val length = (buffer.size - positionWrite)
+                                    .coerceAtMost((image.width shl 2) - i)
                             image.view.getBytes(position,
-                                    buffer.slice(positionWrite, length).view)
+                                    buffer.slice(positionWrite, length))
                             position += length
                             positionWrite += length
-                            x += length
+                            i += length
                         }
-                        if (x >= image.width) {
-                            x = -1
+                        if (i >= image.width shl 2) {
+                            i = -1
                             y++
                         }
                     } else break

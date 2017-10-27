@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.gui
 interface GlyphRenderer {
     fun pageInfo(id: Int): GlyphRenderer.GlyphPage
 
-    fun page(id: Int): ByteArray
+    suspend fun page(id: Int): ByteArray
 
     fun pageID(character: Char): Int
 

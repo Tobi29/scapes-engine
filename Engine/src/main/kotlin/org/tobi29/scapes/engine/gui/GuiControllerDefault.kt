@@ -21,6 +21,7 @@ import org.tobi29.scapes.engine.input.ControllerBasic
 import org.tobi29.scapes.engine.input.ControllerDefault
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.isISOControl
 
 abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
                                                           protected val controller: ControllerDefault) : GuiController(
@@ -103,11 +104,5 @@ abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
 
     override fun captureCursor(): Boolean {
         return false
-    }
-
-    companion object {
-        fun Char.isISOControl() = toInt().isISOControl()
-        fun Int.isISOControl() = this <= 0x9F && (this >= 0x7F || (this.ushr(
-                5) == 0))
     }
 }

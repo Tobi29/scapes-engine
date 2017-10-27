@@ -203,22 +203,18 @@ internal object NIOFileUtilImpl : FileUtilImpl {
             return path(path.toAbsolutePath())
         }
 
-        override fun exists(): Boolean {
-            return Files.exists(path)
-        }
-
         override fun channel(): ReadableByteChannel {
             return channel(this, options = arrayOf(OPEN_READ))
         }
 
-        override fun <R> read(reader: (ReadableByteStream) -> R): R {
+        override suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R {
             channel().use {
                 return reader(BufferedReadChannelStream(it))
             }
         }
 
-        override fun mimeType(): String {
-            return read { detectMime(it, path.toString()) }
+        override suspend fun mimeType(): String {
+            return readAsync { detectMime(it, path.toString()) }
         }
     }
 

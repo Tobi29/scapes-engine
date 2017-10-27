@@ -17,15 +17,13 @@ package org.tobi29.scapes.engine.backends.lwjgl3
 
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
+import org.tobi29.scapes.engine.ScapesEngineBackend
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.utils.io.ByteBufferNative
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.readAsByteBuffer
+import org.tobi29.scapes.engine.utils.io.*
 import java.nio.ByteBuffer
 
-class STBFont(internal val container: ContainerLWJGL3,
+class STBFont(internal val container: ScapesEngineBackend,
               internal val fontBuffer: ByteBuffer,
               internal val info: STBTTFontinfo) : Font {
 
@@ -34,20 +32,20 @@ class STBFont(internal val container: ContainerLWJGL3,
     }
 
     companion object {
-        fun fromFont(container: ContainerLWJGL3,
-                     font: ByteViewRO): STBFont? {
-            try {
-                val fontBuffer = ByteBufferNative(font.size)
-                fontBuffer.put(font.readAsByteBuffer())
-                fontBuffer.flip()
-                val infoBuffer = STBTTFontinfo.create()
-                if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer)) {
-                    return STBFont(container, fontBuffer, infoBuffer)
-                }
-            } catch (e: IOException) {
-            }
+        suspend fun loadFont(backend: ScapesEngineBackend,
+                             asset: ReadSource): STBFont =
+                loadFont(backend, asset.data())
 
-            return null
+        fun loadFont(backend: ScapesEngineBackend,
+                     font: ByteViewRO): STBFont {
+            val fontBuffer = ByteBufferNative(font.size)
+            fontBuffer.put(font.readAsByteBuffer())
+            fontBuffer.flip()
+            val infoBuffer = STBTTFontinfo.create()
+            if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer)) {
+                return STBFont(backend, fontBuffer, infoBuffer)
+            }
+            throw IOException("Failed to initialize font")
         }
     }
 }

@@ -266,22 +266,18 @@ internal object IOFileUtilImpl : FileUtilImpl {
             return path(file.absoluteFile)
         }
 
-        override fun exists(): Boolean {
-            return file.exists()
-        }
-
         override fun channel(): ReadableByteChannel {
             return channel(this, options = arrayOf(OPEN_READ))
         }
 
-        override fun <R> read(reader: (ReadableByteStream) -> R): R {
+        override suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R {
             channel().use {
                 return reader(BufferedReadChannelStream(it))
             }
         }
 
-        override fun mimeType(): String {
-            return read { detectMime(it, file.toString()) }
+        override suspend fun mimeType(): String {
+            return readAsync { detectMime(it, file.toString()) }
         }
     }
 
