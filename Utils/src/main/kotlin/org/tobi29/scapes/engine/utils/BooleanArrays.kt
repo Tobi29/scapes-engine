@@ -120,7 +120,7 @@ open class HeapBooleanArraySlice(
     override fun hashCode(): Int {
         var h = 1
         for (i in 0 until size) {
-            h = h * 31 + (this[i]?.hashCode() ?: 0)
+            h = h * 31 + this[i].hashCodePrimitive()
         }
         return h
     }
