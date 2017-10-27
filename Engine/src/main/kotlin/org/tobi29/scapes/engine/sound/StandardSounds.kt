@@ -17,14 +17,14 @@
 package org.tobi29.scapes.engine.sound
 
 import org.tobi29.scapes.engine.utils.fromBase64
+import org.tobi29.scapes.engine.utils.io.HeapResource
 import org.tobi29.scapes.engine.utils.io.ro
-import org.tobi29.scapes.engine.utils.io.tag.TagBundleResource
 import org.tobi29.scapes.engine.utils.io.view
 
 // Base64 encoded OGG/Vorbis file
 // Original audio by Kenney Vleugels (kenney.nl)
 val CLICK by lazy {
-    TagBundleResource(
+    HeapResource(
             ("T2dnUwACAAAAAAAAAACNPdRiAAAAAEVrapIBHgF2b3JiaXMAAAAAAUSsAAAAAAAAAHcBAAAAAAC4" +
                     "AU9nZ1MAAAAAAAAAAAAAjT3UYgEAAACxFcVdEC3//////////////////8kDdm9yYmlzHQAAAFhp" +
                     "cGguT3JnIGxpYlZvcmJpcyBJIDIwMDcwNjIyAAAAAAEFdm9yYmlzKUJDVgEACAAAADFMIMWA0JBV" +
