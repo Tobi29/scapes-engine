@@ -15,11 +15,9 @@
  */
 package org.tobi29.scapes.engine.utils.math
 
-import org.tobi29.scapes.engine.utils.bits
-
 object FastMath {
     fun convertFloatToHalf(a: Float): Short {
-        val bits = a.bits()
+        val bits = a.toRawBits()
         val sign = bits.ushr(16) and 0x8000
         var value = (bits and 0x7fffffff) + 0x1000
         if (value >= 0x47800000) {

@@ -245,7 +245,7 @@ interface IntViewRO : ArraySegment {
         }
     }
 
-    fun getFloat(index: Int): Float = getInt(index).bitsToFloat()
+    fun getFloat(index: Int): Float = Float.fromBits(getInt(index))
 
     fun getFloats(index: Int,
                   floatView: FloatView) = getInts(index, floatView)
@@ -270,7 +270,7 @@ interface IntView : IntViewRO {
             intView.getInts(0, slice(index, intView.size))
 
     fun setFloat(index: Int,
-                 value: Float) = setInt(index, value.bits())
+                 value: Float) = setInt(index, value.toRawBits())
 
     fun setFloats(index: Int,
                   floatView: FloatView) = setInts(index, floatView)
@@ -374,7 +374,7 @@ interface LongViewRO : ArraySegment {
         }
     }
 
-    fun getDouble(index: Int): Double = getLong(index).bitsToDouble()
+    fun getDouble(index: Int): Double = Double.fromBits(getLong(index))
 
     fun getDoubles(index: Int,
                    doubleView: DoubleView) = getLongs(index, doubleView)
@@ -399,7 +399,7 @@ interface LongView : LongViewRO, ArraySegment {
             longView.getLongs(0, slice(index, longView.size))
 
     fun setDouble(index: Int,
-                  value: Double) = setLong(index, value.bits())
+                  value: Double) = setLong(index, value.toRawBits())
 
     fun setDoubles(index: Int,
                    doubleView: DoubleView) = setLongs(index, doubleView)

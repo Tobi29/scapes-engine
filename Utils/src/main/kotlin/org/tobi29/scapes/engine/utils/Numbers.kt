@@ -212,6 +212,22 @@ inline fun combineToLong(i1: Int,
         (i1.toLong() and 0xFFFFFFFF shl 32) or
                 (i0.toLong() and 0xFFFFFFFF shl 0)
 
+inline fun Boolean.hashCodePrimitive(): Int = if (this) 1231 else 1237
+
+inline fun Byte.hashCodePrimitive(): Int = this.toInt()
+
+inline fun Short.hashCodePrimitive(): Int = this.toInt()
+
+inline fun Char.hashCodePrimitive(): Int = this.toInt()
+
+inline fun Int.hashCodePrimitive(): Int = this
+
+inline fun Float.hashCodePrimitive(): Int = toBits()
+
+inline fun Long.hashCodePrimitive(): Int = (this xor this.ushr(32)).toInt()
+
+inline fun Double.hashCodePrimitive(): Int = toBits().hashCodePrimitive()
+
 private fun String.forceDigits(length: Int,
                                zero: Char = '0'): String {
     val negative = getOrNull(0) == '-'

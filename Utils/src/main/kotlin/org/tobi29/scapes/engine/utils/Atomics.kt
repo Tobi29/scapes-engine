@@ -19,16 +19,16 @@ package org.tobi29.scapes.engine.utils
 class AtomicDouble {
     private val long = AtomicLong(0L)
 
-    fun get(): Double = long.get().bitsToDouble()
+    fun get(): Double = Double.fromBits(long.get())
 
-    fun set(newValue: Double) = long.set(newValue.bits())
+    fun set(newValue: Double) = long.set(newValue.toRawBits())
 
     fun getAndSet(newValue: Double): Double =
-            long.getAndAdd(newValue.bits()).bitsToDouble()
+            Double.fromBits(long.getAndAdd(newValue.toRawBits()))
 
     fun compareAndSet(expect: Double,
                       update: Double): Boolean =
-            long.compareAndSet(expect.bits(), update.bits())
+            long.compareAndSet(expect.toRawBits(), update.toRawBits())
 
     fun getAndAdd(delta: Double): Double =
             getAndUpdate { it + delta }

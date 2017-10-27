@@ -150,14 +150,14 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The float in the stream
      */
-    fun getFloat(): Float = getInt().bitsToFloat()
+    fun getFloat(): Float = Float.fromBits(getInt())
 
     /**
      * Reads a double
      * @throws IOException When an IO error occurs
      * @return The double in the stream
      */
-    fun getDouble(): Double = getLong().bitsToDouble()
+    fun getDouble(): Double = Double.fromBits(getLong())
 
     /**
      * Reads a byte array by fetching the length from the stream

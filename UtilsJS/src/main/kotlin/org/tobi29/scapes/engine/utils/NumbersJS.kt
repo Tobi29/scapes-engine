@@ -21,33 +21,6 @@ package org.tobi29.scapes.engine.utils
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.DataView
 
-private val convertArray = ThreadLocal { DataView(ArrayBuffer(8)) }
-
-actual fun Float.bits() = convertArray.get().let { array ->
-    array.setFloat32(0, this)
-    array.getInt32(0)
-}
-
-actual fun Double.bits() = convertArray.get().let { array ->
-    // Using little-endian as most machines use it
-    array.setFloat64(0, this, true)
-    val a = array.getInt32(0, true).toLong()
-    val b = array.getInt32(4, true).toLong()
-    (b shl 32) + (a and 0xFFFFFFFF)
-}
-
-actual fun Int.bitsToFloat() = convertArray.get().let { array ->
-    array.setInt32(0, this)
-    array.getFloat32(0)
-}
-
-actual fun Long.bitsToDouble() = convertArray.get().let { array ->
-    // Using little-endian as most machines use it
-    array.setInt32(0, this.toInt(), true)
-    array.setInt32(4, (this ushr 32).toInt(), true)
-    array.getFloat64(0, true)
-}
-
 @Suppress("UnsafeCastFromDynamic")
 actual inline fun Int.toString(radix: Int): String =
         asDynamic().toString(radix)
