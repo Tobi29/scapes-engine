@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.math.max
 import org.tobi29.scapes.engine.utils.readOnly
 
 internal class FBO(override val gos: GraphicsObjectSupplier,
@@ -46,8 +45,8 @@ internal class FBO(override val gos: GraphicsObjectSupplier,
     private var markAsDisposed = false
 
     init {
-        this.width = max(width, 1)
-        this.height = max(height, 1)
+        this.width = width.coerceAtLeast(1)
+        this.height = height.coerceAtLeast(1)
         texturesColor = (0 until colorAttachments).map {
             TextureFBOColor(gos, width, height, minFilter, magFilter,
                     TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr)

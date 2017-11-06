@@ -20,10 +20,10 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.utils.isISOControl
-import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.round
+import org.tobi29.scapes.engine.utils.math.floorToInt
 import org.tobi29.scapes.engine.utils.math.sqr
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 class STBGlyphRenderer(private val font: STBFont,
                        size: Int) : GlyphRenderer {
@@ -72,7 +72,7 @@ class STBGlyphRenderer(private val font: STBFont,
                 for (i in 0 until pageTiles) {
                     val c = i + offset
                     STBTruetype.stbtt_GetCodepointHMetrics(font.info, c, xb, yb)
-                    width[i] = round(xb.get(0) * scale)
+                    width[i] = (xb.get(0) * scale).roundToInt()
                 }
                 return GlyphRenderer.GlyphPage(width, imageSize, tiles,
                         tileSize)
@@ -100,8 +100,10 @@ class STBGlyphRenderer(private val font: STBFont,
                             STBTruetype.stbtt_GetCodepointBitmapBox(font.info,
                                     c, scale.toFloat(), scale.toFloat(), xb, yb,
                                     wb, hb)
-                            val offsetX = max(floor(size * 0.5) + xb.get(0), 0)
-                            val offsetY = max(floor(size * 1.4) + yb.get(0), 0)
+                            val offsetX = max(
+                                    (size * 0.5).floorToInt() + xb.get(0), 0)
+                            val offsetY = max(
+                                    (size * 1.4).floorToInt() + yb.get(0), 0)
                             val sizeX = glyphSize - offsetX - 1
                             val sizeY = glyphSize - offsetY - 1
                             val renderX = offsetX + xx

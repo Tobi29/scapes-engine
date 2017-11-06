@@ -31,17 +31,17 @@ import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.roundL
-import org.tobi29.scapes.engine.utils.math.threadLocalRandom
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
-import org.tobi29.scapes.engine.utils.math.vector.distanceSqr
-import org.tobi29.scapes.engine.utils.math.vector.minus
+import org.tobi29.scapes.engine.math.threadLocalRandom
+import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.distanceSqr
+import org.tobi29.scapes.engine.math.vector.minus
 import org.tobi29.scapes.engine.utils.task.ThreadJob
 import org.tobi29.scapes.engine.utils.task.Timer
 import org.tobi29.scapes.engine.utils.task.launchThread
 import org.tobi29.scapes.engine.volume
 import java.util.concurrent.locks.LockSupport
 import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.math.roundToLong
 
 private typealias AudioData = Triple<ByteViewERO, Int, Int>
 
@@ -69,7 +69,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             }
             openAL.checkError("Initializing")
             val timer = Timer()
-            val maxDiff = roundL(latency * 1000000.0)
+            val maxDiff = (latency * 1000000.0).roundToLong()
             timer.init()
             var active = true
             while (!stop.get()) {

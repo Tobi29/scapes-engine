@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.math.max
+import kotlin.math.max
 
 class GuiComponentScrollPaneHidden(parent: GuiLayoutData,
                                    scrollStep: Int) : GuiComponentSlabHeavy(

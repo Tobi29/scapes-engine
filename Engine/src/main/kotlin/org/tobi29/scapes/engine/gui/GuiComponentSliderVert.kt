@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.sound.CLICK
 import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 
 class GuiComponentSliderVert(parent: GuiLayoutData,
                              sliderHeight: Int,

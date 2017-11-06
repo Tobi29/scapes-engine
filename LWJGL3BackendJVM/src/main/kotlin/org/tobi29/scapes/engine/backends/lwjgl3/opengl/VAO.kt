@@ -78,17 +78,17 @@ internal abstract class VAO(override val gos: GraphicsObjectSupplier) : Model {
         var uniformLocation = shader.uniformLocation(0)
         if (uniformLocation != -1) {
             glUniformMatrix4fv(uniformLocation, false,
-                    matrix.modelView().values())
+                    matrix.modelView().values)
         }
         uniformLocation = shader.uniformLocation(1)
         if (uniformLocation != -1) {
             glUniformMatrix4fv(uniformLocation, false,
-                    matrix.modelViewProjection().values())
+                    matrix.modelViewProjection().values)
         }
         uniformLocation = shader.uniformLocation(2)
         if (uniformLocation != -1) {
             glUniformMatrix3fv(uniformLocation, false,
-                    matrix.normal().values())
+                    matrix.normal().values)
         }
     }
 }

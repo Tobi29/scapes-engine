@@ -16,14 +16,12 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.flipVertical
 import org.tobi29.scapes.engine.utils.io.ByteBufferNative
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import org.tobi29.scapes.engine.utils.io.viewSliceE
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.pow
 
 class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
     override fun checkError(message: String) {
@@ -212,10 +210,10 @@ class GLLWJGL3GL(gos: GraphicsObjectSupplier) : GL(gos) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, width, height,
                 GL_RGBA, GL_UNSIGNED_BYTE, buffers[0].readAsNativeByteBuffer())
         for (i in 1 until buffers.size) {
-            val scale = pow(2f, i.toFloat()).toInt()
+            val scale = 1 shl i
             glTexSubImage2D(GL_TEXTURE_2D, i, x / scale, y / scale,
-                    max(width / scale, 1),
-                    max(height / scale, 1), GL_RGBA,
+                    (width / scale).coerceAtLeast(1),
+                    (height / scale).coerceAtLeast(1), GL_RGBA,
                     GL_UNSIGNED_BYTE, buffers[i].readAsNativeByteBuffer())
         }
     }

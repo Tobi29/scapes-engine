@@ -20,7 +20,7 @@ import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.removeEqual
 
 abstract class ControllerDefault : ControllerBasic {

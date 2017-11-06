@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector2d
 
 open class GuiLayoutData(val parent: GuiComponent?,
                          val size: Vector2d,

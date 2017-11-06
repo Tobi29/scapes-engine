@@ -16,9 +16,9 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.math.min
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import kotlin.math.min
 
 class GuiComponentEditableText constructor(parent: GuiLayoutData,
                                            text: String,

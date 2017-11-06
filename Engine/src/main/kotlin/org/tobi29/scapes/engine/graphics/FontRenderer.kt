@@ -23,12 +23,12 @@ import org.tobi29.scapes.engine.gui.GuiRenderBatch
 import org.tobi29.scapes.engine.gui.GuiUtils
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.copy
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.round
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.io.view
+import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 class FontRenderer(private val engine: ScapesEngine,
                    private val font: Font) {
@@ -152,9 +152,7 @@ class FontRenderer(private val engine: ScapesEngine,
                         break
                     }
                     if (i in start..(end - 1)) {
-                        output.rectangle(floor(xx).toDouble(),
-                                floor(yy).toDouble(),
-                                width.toDouble(),
+                        output.rectangle(floor(xx), floor(yy), width.toDouble(),
                                 height.toDouble(), actualWidth.toDouble(), page,
                                 pageLetter)
                     }
@@ -249,7 +247,7 @@ class FontRenderer(private val engine: ScapesEngine,
             if (cropped) {
                 return object : MeshOutput {
                     override fun size(height: Double): Int {
-                        return round(height / pixelSize)
+                        return (height / pixelSize).roundToInt()
                     }
 
                     override fun rectangle(xx: Double,
@@ -283,7 +281,7 @@ class FontRenderer(private val engine: ScapesEngine,
             } else {
                 return object : MeshOutput {
                     override fun size(height: Double): Int {
-                        return round(height / pixelSize)
+                        return (height / pixelSize).roundToInt()
                     }
 
                     override fun rectangle(xx: Double,

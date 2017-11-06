@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.utils.graphics
 import org.tobi29.scapes.engine.utils.combineToInt
 import org.tobi29.scapes.engine.utils.io.ByteView
 import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.splitToBytes
 
 class MutableImage(val width: Int = 1,

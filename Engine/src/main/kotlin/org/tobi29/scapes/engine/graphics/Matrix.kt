@@ -15,8 +15,8 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix3f
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
+import org.tobi29.scapes.engine.math.matrix.Matrix3f
+import org.tobi29.scapes.engine.math.matrix.Matrix4f
 
 class Matrix {
     private val modelViewProjectionMatrix = Matrix4f()
@@ -24,9 +24,9 @@ class Matrix {
     private val normalMatrix = Matrix3f()
 
     fun copy(matrix: Matrix) {
-        modelViewProjectionMatrix.copy(matrix.modelViewProjectionMatrix)
-        modelViewMatrix.copy(matrix.modelViewMatrix)
-        normalMatrix.copy(matrix.normalMatrix)
+        modelViewProjectionMatrix.set(matrix.modelViewProjectionMatrix)
+        modelViewMatrix.set(matrix.modelViewMatrix)
+        normalMatrix.set(matrix.normalMatrix)
     }
 
     fun identity() {

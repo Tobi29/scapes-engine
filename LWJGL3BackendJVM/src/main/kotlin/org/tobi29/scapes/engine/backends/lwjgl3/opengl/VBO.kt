@@ -24,8 +24,8 @@ import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteView
 import org.tobi29.scapes.engine.utils.io.ByteViewE
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.math.FastMath
-import org.tobi29.scapes.engine.utils.math.round
+import org.tobi29.scapes.engine.math.FastMath
+import kotlin.math.round
 
 internal class VBO(val gos: GraphicsObjectSupplier,
                    attributes: List<ModelAttribute>,

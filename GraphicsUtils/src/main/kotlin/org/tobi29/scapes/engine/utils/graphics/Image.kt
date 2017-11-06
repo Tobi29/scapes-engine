@@ -21,7 +21,7 @@ import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.asByteArray
 import org.tobi29.scapes.engine.utils.io.ro
 import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.tag.*
 
 class Image(

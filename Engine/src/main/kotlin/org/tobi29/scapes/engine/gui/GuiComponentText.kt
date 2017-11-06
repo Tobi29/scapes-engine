@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.FontRenderer
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector2d
 
 class GuiComponentText constructor(parent: GuiLayoutData,
                                    text: String,

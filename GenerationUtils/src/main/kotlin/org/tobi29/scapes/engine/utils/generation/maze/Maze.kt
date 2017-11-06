@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.utils.generation.maze
 
 import org.tobi29.scapes.engine.utils.BitFieldGrid
 import org.tobi29.scapes.engine.utils.getAt
-import org.tobi29.scapes.engine.utils.math.Face
+import org.tobi29.scapes.engine.math.Face
 import kotlin.experimental.and
 
 /**

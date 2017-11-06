@@ -17,8 +17,8 @@
 package org.tobi29.scapes.engine.utils.task
 
 import org.tobi29.scapes.engine.utils.SteadyClock
-import org.tobi29.scapes.engine.utils.math.roundL
 import org.tobi29.scapes.engine.utils.steadyClock
+import kotlin.math.roundToLong
 
 @Suppress("NOTHING_TO_INLINE")
 class Timer(val clock: SteadyClock = steadyClock) {
@@ -88,7 +88,7 @@ class Timer(val clock: SteadyClock = steadyClock) {
 
     companion object {
         fun toTps(diff: Long) = 1000000000.0 / diff
-        fun toDiff(tps: Double) = roundL(1000000000.0 / tps)
+        fun toDiff(tps: Double) = (1000000000.0 / tps).roundToLong()
         fun toDelta(diff: Long) = diff / 1000000000.0
     }
 }

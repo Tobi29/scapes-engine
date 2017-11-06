@@ -19,10 +19,10 @@
 package org.tobi29.scapes.engine.codec
 
 import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.math.round
+import kotlin.math.roundToInt
 
 inline fun toInt16(sample: Float): Short {
-    val pcm = round(sample * Short.MAX_VALUE)
+    val pcm = (sample * Short.MAX_VALUE).roundToInt()
     return clamp(pcm, Short.MIN_VALUE.toInt(),
             Short.MAX_VALUE.toInt()).toShort()
 }

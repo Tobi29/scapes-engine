@@ -24,12 +24,12 @@ import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.cos
-import org.tobi29.scapes.engine.utils.math.sin
 import org.tobi29.scapes.engine.utils.math.toRad
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
+import kotlin.math.cos
+import kotlin.math.sin
 
 class LWJGL3OpenAL : OpenAL {
     private var device = 0L

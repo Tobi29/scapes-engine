@@ -20,40 +20,35 @@ import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.tobi29.scapes.engine.math.FastAsin
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.math.FastAsin
+import kotlin.math.acos
+import kotlin.math.asin
 
 object FastAsinTests : Spek({
     describe("table asin") {
         given("any number") {
-            var rv = -2.0
-            while (rv <= 2.0) {
-                val r = rv
-                on("calculating the asin") {
-                    val sin = FastAsin.asin(r)
-                    it("should be close to the mathematical asin") {
-                        val expected = Math.asin(r)
-                        sin.shouldEqual(expected, 0.01)
-                    }
+            it("should be close to the mathematical asin") {
+                var r = -8.0
+                while (r <= 8.0) {
+                    val asin = FastAsin.asin(r)
+                    val expected = asin(r)
+                    asin.shouldEqual(expected, 0.007)
+                    r += 0.0009765625
                 }
-                rv += 0.0009765625
             }
         }
     }
     describe("table acos") {
         given("any number") {
-            var rv = -2.0
-            while (rv <= 2.0) {
-                val r = rv
-                on("calculating the acos") {
-                    val cos = FastAsin.acos(r)
-                    it("should be close to the mathematical acos") {
-                        val expected = Math.acos(r)
-                        cos.shouldEqual(expected, 0.01)
-                    }
+            it("should be close to the mathematical acos") {
+                var r = -8.0
+                while (r <= 8.0) {
+                    val acos = FastAsin.acos(r)
+                    val expected = acos(r)
+                    acos.shouldEqual(expected, 0.007)
+                    r += 0.0009765625
                 }
-                rv += 0.0009765625
             }
         }
     }

@@ -25,7 +25,7 @@ import org.tobi29.scapes.engine.utils.graphics.generateMipMapsNullable
 import org.tobi29.scapes.engine.utils.io.ByteBufferNative
 import org.tobi29.scapes.engine.utils.io.ByteBufferView
 import org.tobi29.scapes.engine.utils.io.viewBufferE
-import org.tobi29.scapes.engine.utils.math.max
+import kotlin.math.max
 
 internal open class TextureGL(override val gos: GraphicsObjectSupplier,
                               width: Int,

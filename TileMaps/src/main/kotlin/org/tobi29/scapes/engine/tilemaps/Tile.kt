@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.tilemaps
 
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
-import org.tobi29.scapes.engine.utils.math.vector.toVector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
+import org.tobi29.scapes.engine.math.vector.toVector2i
 import org.tobi29.scapes.engine.utils.tag.*
 
 open class Tile(val sprite: Sprite,

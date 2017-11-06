@@ -19,7 +19,7 @@ package org.tobi29.scapes.engine.tilemaps
 import org.tobi29.scapes.engine.utils.Iterator
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.graphics.get
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
 
 fun cut(image: Image,
         tileWidth: Int,

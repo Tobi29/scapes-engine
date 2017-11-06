@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 
 class DummySoundSystem(override val engine: ScapesEngine) : SoundSystem {
     override fun setListener(position: Vector3d,

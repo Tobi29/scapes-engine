@@ -22,10 +22,10 @@ import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
-import org.tobi29.scapes.engine.utils.math.ceil
-import org.tobi29.scapes.engine.utils.math.floor
+import org.tobi29.scapes.engine.utils.math.ceilToInt
+import org.tobi29.scapes.engine.utils.math.floorToInt
 import org.tobi29.scapes.engine.utils.math.lb
-import org.tobi29.scapes.engine.utils.math.round
+import kotlin.math.roundToInt
 
 object MathUtilTests : Spek({
     describe("floor") {
@@ -41,7 +41,7 @@ object MathUtilTests : Spek({
         given("any float number") {
             for (number in numbersFloat) {
                 on("calculating the floor") {
-                    val floor = floor(number.first)
+                    val floor = (number.first).floorToInt()
                     it("should equal the mathematical floor") {
                         floor shouldEqual number.second
                     }
@@ -51,7 +51,7 @@ object MathUtilTests : Spek({
         given("any double number") {
             for (number in numbersDouble) {
                 on("calculating the floor") {
-                    val floor = floor(number.first)
+                    val floor = (number.first).floorToInt()
                     it("should equal the mathematical floor") {
                         floor shouldEqual number.second
                     }
@@ -72,7 +72,7 @@ object MathUtilTests : Spek({
         given("any float number") {
             for (number in numbersFloat) {
                 on("calculating the ceil") {
-                    val ceil = ceil(number.first)
+                    val ceil = number.first.ceilToInt()
                     it("should equal the mathematical ceil") {
                         ceil shouldEqual number.second
                     }
@@ -82,7 +82,7 @@ object MathUtilTests : Spek({
         given("any double number") {
             for (number in numbersDouble) {
                 on("calculating the ceil") {
-                    val ceil = ceil(number.first)
+                    val ceil = number.first.ceilToInt()
                     it("should equal the mathematical ceil") {
                         ceil shouldEqual number.second
                     }
@@ -102,7 +102,7 @@ object MathUtilTests : Spek({
         given("any float number") {
             for (number in numbersFloat) {
                 on("calculating the round") {
-                    val round = round(number.first)
+                    val round = (number.first).roundToInt()
                     it("should equal the mathematical round") {
                         round shouldEqual number.second
                     }
@@ -112,7 +112,7 @@ object MathUtilTests : Spek({
         given("any double number") {
             for (number in numbersDouble) {
                 on("calculating the round") {
-                    val round = round(number.first)
+                    val round = (number.first).roundToInt()
                     it("should equal the mathematical round") {
                         round shouldEqual number.second
                     }

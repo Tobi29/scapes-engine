@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.utils.shader
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 
 fun <E : Expression> E.attach(context: ParserRuleContext): E = apply {
     attach(context.start)
@@ -30,8 +29,7 @@ fun <E : Expression> E.attach(context: TerminalNode): E = apply {
 }
 
 fun <E : Expression> E.attach(token: Token): E = apply {
-    location = Vector2i(
-            token.line, token.charPositionInLine)
+    location = SourceLocation(token.line, token.charPositionInLine)
 }
 
 inline fun <E : Expression> ParserRuleContext.parse(

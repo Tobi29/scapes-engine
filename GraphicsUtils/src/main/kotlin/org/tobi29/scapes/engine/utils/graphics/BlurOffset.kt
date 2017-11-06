@@ -18,7 +18,7 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.math.abs
+import kotlin.math.abs
 
 /**
  * Creates an array to give the offset for each sample

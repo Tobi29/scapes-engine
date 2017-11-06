@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.plus
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.plus
 
 open class GuiLayoutDataFlow(parent: GuiComponent,
                              val marginStart: Vector2d,

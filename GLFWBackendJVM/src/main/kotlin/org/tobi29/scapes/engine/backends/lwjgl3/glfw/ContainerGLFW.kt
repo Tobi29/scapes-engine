@@ -34,14 +34,14 @@ import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.round
 import org.tobi29.scapes.engine.utils.profiler.profilerSection
 import org.tobi29.scapes.engine.utils.sleepNanos
 import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.tag.toMap
 import org.tobi29.scapes.engine.utils.task.Timer
 import org.tobi29.scapes.engine.utils.task.processCurrent
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 class ContainerGLFW(
         private val title: String,
@@ -91,8 +91,8 @@ class ContainerGLFW(
     override fun run(engine: ScapesEngine) {
         val controllers = GLFWControllers(engine.events, virtualJoysticks)
         val windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
-            containerWidth = round(width * density)
-            containerHeight = round(height * density)
+            containerWidth = (width * density).roundToInt()
+            containerHeight = (height * density).roundToInt()
         }
         val windowCloseFun = GLFWWindowCloseCallback.create { stop() }
         val windowFocusFun = GLFWWindowFocusCallback.create { _, focused -> focus = focused }
@@ -223,8 +223,9 @@ class ContainerGLFW(
                     val widthBuffer = stack.mallocInt(1)
                     val heightBuffer = stack.mallocInt(1)
                     GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer)
-                    containerWidth = round(widthBuffer.get(0) * density)
-                    containerHeight = round(heightBuffer.get(0) * density)
+                    containerWidth = (widthBuffer.get(0) * density).roundToInt()
+                    containerHeight = (heightBuffer.get(
+                            0) * density).roundToInt()
                     GLFW.glfwGetFramebufferSize(window, widthBuffer,
                             heightBuffer)
                     contentWidth = widthBuffer.get(0)

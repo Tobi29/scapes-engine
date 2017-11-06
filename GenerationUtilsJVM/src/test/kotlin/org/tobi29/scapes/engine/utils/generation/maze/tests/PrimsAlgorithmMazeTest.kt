@@ -22,7 +22,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
 import org.tobi29.scapes.engine.utils.generation.maze.PrimsAlgorithmMazeGenerator
-import org.tobi29.scapes.engine.utils.math.Random
+import org.tobi29.scapes.engine.math.Random
 
 object PrimsAlgorithmMazeTests : Spek({
     describe("generating a maze") {

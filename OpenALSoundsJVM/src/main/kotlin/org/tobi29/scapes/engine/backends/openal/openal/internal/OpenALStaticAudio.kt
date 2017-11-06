@@ -22,7 +22,7 @@ import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.tryUnwrap
 
 internal class OpenALStaticAudio(

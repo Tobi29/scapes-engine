@@ -16,8 +16,8 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.math.remP
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector3d
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.MutableVector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 
 fun hsvToRGB(color: Vector3d): Vector3d {
     return hsvToRGB(color.x, color.y, color.z)

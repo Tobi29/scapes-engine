@@ -21,8 +21,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
 import org.tobi29.scapes.engine.utils.ConcurrentSortedMap
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.div
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.div
 
 class GuiStack {
     private val guis = ConcurrentSortedMap<String, Gui>()

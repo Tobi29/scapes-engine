@@ -20,5 +20,4 @@ dependencies {
     compile project(":CodecsJVM")
     compile rootProject.ext.jlayer
     compileOnly project(":IOUtils")
-    compileOnly project(":MathUtils")
 }

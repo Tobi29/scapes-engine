@@ -16,13 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.shader
 
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
-import org.tobi29.scapes.engine.utils.math.vector.toVector2i
 import org.tobi29.scapes.engine.utils.readOnly
 import org.tobi29.scapes.engine.utils.tag.*
 
 abstract class Expression : TagMapWrite {
-    var location: Vector2i? = null
+    var location: SourceLocation? = null
 
     abstract val id: String
 
@@ -56,7 +54,7 @@ fun MutableTag.toExpression(): Expression? {
 }
 
 fun <E : Expression> E.attachLocation(map: TagMap): E = apply {
-    map["Location"]?.toVector2i()?.let { location = it }
+    map["Location"]?.toSourceLocation()?.let { location = it }
 }
 
 class ShaderProgram(
@@ -987,3 +985,22 @@ inline fun comparisonOperation(
         } else {
             FunctionStatement(functionName, listOf(a, b))
         }
+
+data class SourceLocation(
+        val line: Int,
+        val column: Int
+) : TagMapWrite {
+    override fun toString() = "$line:$column"
+
+    override fun write(map: ReadWriteTagMap) {
+        map["Line"] = line.toTag()
+        map["Column"] = column.toTag()
+    }
+}
+
+fun MutableTag.toSourceLocation(): SourceLocation? {
+    val map = toMap() ?: return null
+    val line = map["Line"]?.toInt() ?: return null
+    val column = map["Column"]?.toInt() ?: return null
+    return SourceLocation(line, column)
+}

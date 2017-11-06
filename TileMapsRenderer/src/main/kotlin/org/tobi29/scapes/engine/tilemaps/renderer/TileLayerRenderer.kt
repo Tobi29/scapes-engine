@@ -18,14 +18,14 @@ package org.tobi29.scapes.engine.tilemaps.renderer
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.tilemaps.Tile
 import org.tobi29.scapes.engine.utils.Array2
 import org.tobi29.scapes.engine.utils.array2OfNulls
-import org.tobi29.scapes.engine.utils.math.ceil
+import org.tobi29.scapes.engine.utils.math.ceilToInt
 import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.math.floorToInt
 
 class TileLayerRenderer(val engine: ScapesEngine,
                         val tileDimensions: Vector2i,
@@ -56,10 +56,10 @@ class TileLayerRenderer(val engine: ScapesEngine,
         val y = origin.y / tileDimensions.y
         val w = size.x / tileDimensions.x
         val h = size.y / tileDimensions.y
-        val sx = clamp(floor(x) shr cx, 0, width - 1)
-        val sy = clamp(floor(y) shr cy, 0, height - 1)
-        val dx = clamp(ceil(x + w) shr cx, 0, width - 1)
-        val dy = clamp(ceil(y + h) shr cy, 0, height - 1)
+        val sx = clamp(x.floorToInt() shr cx, 0, width - 1)
+        val sy = clamp(y.floorToInt() shr cy, 0, height - 1)
+        val dx = clamp((x + w).ceilToInt() shr cx, 0, width - 1)
+        val dy = clamp((y + h).ceilToInt() shr cy, 0, height - 1)
         atlas.texture.bind(gl)
         for (yy in sy..dy) {
             val yyy = ((yy shl cy) * tileDimensions.y - origin.y).toFloat()

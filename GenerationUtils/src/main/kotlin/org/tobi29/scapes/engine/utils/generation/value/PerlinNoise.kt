@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.utils.generation.value
 
-import org.tobi29.scapes.engine.utils.math.Random
-import org.tobi29.scapes.engine.utils.math.floor
+import org.tobi29.scapes.engine.math.Random
+import org.tobi29.scapes.engine.utils.math.floorToInt
 import org.tobi29.scapes.engine.utils.math.mix
-import org.tobi29.scapes.engine.utils.math.vector.dot
+import org.tobi29.scapes.engine.math.vector.dot
 
 class PerlinNoise(random: Random) : ValueNoise {
     private val perm = IntArray(512)
@@ -37,8 +37,8 @@ class PerlinNoise(random: Random) : ValueNoise {
 
     override fun noise(x: Double,
                        y: Double): Double {
-        var xx = floor(x)
-        var yy = floor(y)
+        var xx = x.floorToInt()
+        var yy = y.floorToInt()
         val xxx = x - xx
         val yyy = y - yy
         xx = xx and 255
@@ -61,9 +61,9 @@ class PerlinNoise(random: Random) : ValueNoise {
     override fun noise(x: Double,
                        y: Double,
                        z: Double): Double {
-        var xx = floor(x)
-        var yy = floor(y)
-        var zz = floor(z)
+        var xx = x.floorToInt()
+        var yy = y.floorToInt()
+        var zz = z.floorToInt()
         val xxx = x - xx
         val yyy = y - yy
         val zzz = z - zz

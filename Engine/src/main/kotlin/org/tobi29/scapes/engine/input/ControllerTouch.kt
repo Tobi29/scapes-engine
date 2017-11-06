@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.input
 
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
+import org.tobi29.scapes.engine.math.vector.MutableVector2d
 
 interface ControllerTouch : Controller {
     fun fingers(): Sequence<Tracker>

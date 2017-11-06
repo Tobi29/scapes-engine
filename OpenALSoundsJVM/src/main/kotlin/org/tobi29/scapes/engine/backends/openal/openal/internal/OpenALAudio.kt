@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 
 internal interface OpenALAudio {
     fun poll(sounds: OpenALSoundSystem,

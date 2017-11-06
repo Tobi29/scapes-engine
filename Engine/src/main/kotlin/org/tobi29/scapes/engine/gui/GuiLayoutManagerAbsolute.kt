@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2d
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.MutableVector2d
+import org.tobi29.scapes.engine.math.vector.Vector2d
 
 class GuiLayoutManagerAbsolute(start: Vector2d,
                                maxSize: Vector2d,

@@ -19,8 +19,8 @@ import org.tobi29.scapes.engine.graphics.Mesh
 import org.tobi29.scapes.engine.graphics.Model
 import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 
 open class GuiRenderBatch(var pixelSize: Vector2d) {
     protected val meshes = HashMap<Int, MutableMap<Texture, Mesh>>()

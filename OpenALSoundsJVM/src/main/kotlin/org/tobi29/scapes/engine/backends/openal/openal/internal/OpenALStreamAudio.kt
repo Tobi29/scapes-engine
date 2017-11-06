@@ -32,7 +32,7 @@ import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
 import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(

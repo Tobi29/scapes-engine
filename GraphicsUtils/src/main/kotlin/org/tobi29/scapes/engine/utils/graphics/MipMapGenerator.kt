@@ -17,7 +17,7 @@ package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.io.ByteView
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.math.max
+import kotlin.math.max
 
 /**
  * Creates an array of [ByteView]s containing mipmap

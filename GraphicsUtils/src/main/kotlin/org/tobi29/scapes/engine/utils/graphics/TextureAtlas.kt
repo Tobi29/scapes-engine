@@ -17,18 +17,18 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.utils.ArrayDeque
-import org.tobi29.scapes.engine.utils.math.ceil
-import org.tobi29.scapes.engine.utils.math.nextPowerOfTwo
-import org.tobi29.scapes.engine.utils.math.sqrt
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.math.ceilToInt
+import org.tobi29.scapes.engine.math.nextPowerOfTwo
+import org.tobi29.scapes.engine.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
+import kotlin.math.sqrt
 
 fun assembleAtlas(textures: Sequence<Pair<Vector2i, MutableVector2i>>,
                   minSize: Int = 1): Vector2i {
     if (minSize <= 0) throw IllegalArgumentException(
             "minSize must be greater than 0, is: $minSize")
     val area = textures.map { it.first.x * it.first.y }.sum()
-    val areaSize = ceil(sqrt(area.toDouble()))
+    val areaSize = sqrt(area.toDouble()).ceilToInt()
     var size = nextPowerOfTwo(areaSize)
     while (true) {
         tryInsert(minSize, size, textures)?.let { return Vector2i(size, size) }

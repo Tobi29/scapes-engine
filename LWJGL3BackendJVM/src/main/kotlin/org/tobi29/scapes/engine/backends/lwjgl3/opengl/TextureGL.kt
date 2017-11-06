@@ -18,13 +18,12 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.graphics.generateMipMapsNullable
 import org.tobi29.scapes.engine.utils.io.ByteBufferNative
 import org.tobi29.scapes.engine.utils.io.ByteBufferView
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.viewBufferE
-import org.tobi29.scapes.engine.utils.math.max
 
 internal open class TextureGL(override val gos: GraphicsObjectSupplier,
                               width: Int,
@@ -207,8 +206,8 @@ internal open class TextureGL(override val gos: GraphicsObjectSupplier,
                     buffer.buffers[0]?.byteBuffer)
             for (i in 1 until buffer.buffers.size) {
                 glTexImage2D(GL_TEXTURE_2D, i, GL_RGBA,
-                        max(buffer.width shr i, 1),
-                        max(buffer.height shr i, 1), 0, GL_RGBA,
+                        (buffer.width shr i).coerceAtLeast(1),
+                        (buffer.height shr i).coerceAtLeast(1), 0, GL_RGBA,
                         GL_UNSIGNED_BYTE, buffer.buffers[i]?.byteBuffer)
             }
         } else {

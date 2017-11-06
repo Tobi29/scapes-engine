@@ -37,5 +37,5 @@ class ShaderGenerateException : Exception {
 private fun message(message: String,
                     expression: Expression): String {
     val location = expression.location ?: return message
-    return "${location.x}:${location.y} -> $message"
+    return "$location -> $message"
 }

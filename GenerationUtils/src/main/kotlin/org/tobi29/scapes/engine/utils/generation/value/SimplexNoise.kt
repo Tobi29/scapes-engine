@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.utils.generation.value
 
-import org.tobi29.scapes.engine.utils.math.Random
-import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.math.vector.dot
+import org.tobi29.scapes.engine.math.Random
+import org.tobi29.scapes.engine.utils.math.floorToInt
+import org.tobi29.scapes.engine.math.vector.dot
 
 class SimplexNoise(random: Random) : ValueNoise {
     private val perm = IntArray(512)
@@ -37,8 +37,8 @@ class SimplexNoise(random: Random) : ValueNoise {
     override fun noise(x: Double,
                        y: Double): Double {
         val s = (x + y) * F2
-        val i = floor(x + s)
-        val j = floor(y + s)
+        val i = (x + s).floorToInt()
+        val j = (y + s).floorToInt()
         val t = (i + j) * G2
         val x0 = x - i + t
         val y0 = y - j + t
@@ -95,9 +95,9 @@ class SimplexNoise(random: Random) : ValueNoise {
         val n2: Double
         val n3: Double
         val s = (x + y + z) * F3
-        val i = floor(x + s)
-        val j = floor(y + s)
-        val k = floor(z + s)
+        val i = (x + s).floorToInt()
+        val j = (y + s).floorToInt()
+        val k = (z + s).floorToInt()
         val t = (i + j + k) * G3
         val xx0 = i - t
         val yy0 = j - t

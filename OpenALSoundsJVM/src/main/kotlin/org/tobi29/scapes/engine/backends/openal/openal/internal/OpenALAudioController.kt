@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.sound.AudioController
-import org.tobi29.scapes.engine.utils.math.abs
+import kotlin.math.abs
 
 internal class OpenALAudioController(
         override var pitch: Double,

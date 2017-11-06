@@ -18,9 +18,14 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.utils.math.*
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.math.clamp
+import org.tobi29.scapes.engine.utils.math.floorToInt
+import org.tobi29.scapes.engine.utils.math.sqr
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
                                      scrollStep: Int,
@@ -93,10 +98,10 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
             val start = matrix.modelViewProjection().multiply(Vector3d.ZERO)
             val end = matrix.modelViewProjection().multiply(
                     Vector3d(size.x, size.y, 0.0))
-            val xx = floor((start.x * 0.5 + 0.5) * gl.contentWidth)
-            val yy = floor((0.5 - start.y * 0.5) * gl.contentHeight)
-            val xx2 = floor((end.x * 0.5 + 0.5) * gl.contentWidth)
-            val yy2 = floor((0.5 - end.y * 0.5) * gl.contentHeight)
+            val xx = ((start.x * 0.5 + 0.5) * gl.contentWidth).floorToInt()
+            val yy = ((0.5 - start.y * 0.5) * gl.contentHeight).floorToInt()
+            val xx2 = ((end.x * 0.5 + 0.5) * gl.contentWidth).floorToInt()
+            val yy2 = ((0.5 - end.y * 0.5) * gl.contentHeight).floorToInt()
             gl.enableScissor(min(xx, xx2), min(yy, yy2) + 1, abs(xx - xx2),
                     abs(yy - yy2))
             super.render(gl, shader, size, pixelSize, delta)

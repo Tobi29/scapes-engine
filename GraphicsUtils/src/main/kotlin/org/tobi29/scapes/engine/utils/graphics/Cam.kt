@@ -15,12 +15,12 @@
  */
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.math.Frustum
-import org.tobi29.scapes.engine.utils.math.cos
-import org.tobi29.scapes.engine.utils.math.sin
+import org.tobi29.scapes.engine.math.Frustum
 import org.tobi29.scapes.engine.utils.math.toRad
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector3d
-import org.tobi29.scapes.engine.utils.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.MutableVector3d
+import org.tobi29.scapes.engine.math.vector.Vector3d
+import kotlin.math.cos
+import kotlin.math.sin
 
 class Cam(var near: Float,
           var far: Float) {

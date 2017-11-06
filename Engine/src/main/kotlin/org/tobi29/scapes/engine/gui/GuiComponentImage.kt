@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector2d
 
 class GuiComponentImage(parent: GuiLayoutData,
                         texture: Resource<Texture>? = null) : GuiComponent(

@@ -20,7 +20,7 @@ import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
-import org.tobi29.scapes.engine.utils.math.Random
+import org.tobi29.scapes.engine.math.Random
 import kotlin.test.assertTrue
 
 object RandomTests : Spek({
@@ -29,7 +29,8 @@ object RandomTests : Spek({
             for (min in -10..max) {
                 on("generating random ints in range $min..$max") {
                     val counts = IntArray(max - min + 1)
-                    val random = Random(12345L + max * 10000L + min)
+                    val random = Random(
+                            12345L + max * 10000L + min)
                     val count = counts.size * 100
                     for (i in 0 until count) {
                         val r = random.nextInt(min, max)
@@ -52,7 +53,8 @@ object RandomTests : Spek({
                 }
                 on("generating random longs in range $min..$max") {
                     val counts = IntArray(max - min + 1)
-                    val random = Random(12345L + max * 10000L + min)
+                    val random = Random(
+                            12345L + max * 10000L + min)
                     val count = counts.size * 100
                     for (i in 0 until count) {
                         val r = random.nextLong(min.toLong(),

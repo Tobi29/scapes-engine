@@ -20,11 +20,11 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.createVCI
+import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.math.ceil
+import org.tobi29.scapes.engine.utils.math.ceilToInt
 import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.math.pow
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
+import kotlin.math.pow
 
 class GuiComponentGraph(parent: GuiLayoutData,
                         graphs: Int,
@@ -50,7 +50,7 @@ class GuiComponentGraph(parent: GuiLayoutData,
                                         size: Vector2d,
                                         pixelSize: Vector2d,
                                         delta: Double) {
-        val w = ceil(size.x)
+        val w = size.x.ceilToInt()
         if (data[0].size != w) {
             data = Array(data.size) { FloatArray(w) }
         }
@@ -94,7 +94,7 @@ class GuiComponentGraph(parent: GuiLayoutData,
                  graph: Int) {
         val data = this.data[graph]
         if (i[graph] < data.size) {
-            data[i[graph]++] = (1.0 - pow(value, 0.25)).toFloat()
+            data[i[graph]++] = (1.0 - value.pow(0.25)).toFloat()
         }
         if (i[graph] >= data.size) {
             i[graph] = 0

@@ -19,9 +19,9 @@ import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.math.Face
-import org.tobi29.scapes.engine.utils.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.vector.div
+import org.tobi29.scapes.engine.math.Face
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.div
 
 abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         GuiLayoutDataRoot()) {

@@ -20,9 +20,9 @@ import org.tobi29.scapes.engine.utils.graphics.Cam
 import org.tobi29.scapes.engine.utils.graphics.Image
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.utils.math.matrix.Matrix4f
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.roundL
+import org.tobi29.scapes.engine.math.matrix.Matrix4f
+import kotlin.math.max
+import kotlin.math.roundToLong
 
 abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)
@@ -55,7 +55,7 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         if (timer >= 360000.0) {
             timer -= 360000.0
         }
-        timestamp += max(roundL(1000000000.0 * delta), 1L)
+        timestamp += max((1000000000.0 * delta).roundToLong(), 1L)
     }
 
     fun aspectRatio() =

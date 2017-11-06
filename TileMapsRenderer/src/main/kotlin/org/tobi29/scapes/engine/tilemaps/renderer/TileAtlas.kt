@@ -31,13 +31,13 @@ import org.tobi29.scapes.engine.utils.graphics.assembleAtlas
 import org.tobi29.scapes.engine.utils.graphics.set
 import org.tobi29.scapes.engine.utils.graphics.toImage
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.math.floor
-import org.tobi29.scapes.engine.utils.math.margin
-import org.tobi29.scapes.engine.utils.math.max
+import org.tobi29.scapes.engine.utils.math.floorToInt
+import org.tobi29.scapes.engine.math.margin
 import org.tobi29.scapes.engine.utils.math.remP
-import org.tobi29.scapes.engine.utils.math.vector.MutableVector2i
-import org.tobi29.scapes.engine.utils.math.vector.Vector2i
+import org.tobi29.scapes.engine.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.toArray
+import kotlin.math.max
 
 class TileAtlas internal constructor(
         val texture: Texture,
@@ -121,9 +121,9 @@ internal class TileAnimation(sprite: Sprite,
         if (frames.size <= 1) {
             return
         }
-        val old = floor(spin)
+        val old = spin.floorToInt()
         spin = (spin + delta * frames[old].first) remP frames.size.toDouble()
-        val i = floor(spin)
+        val i = spin.floorToInt()
         if (old != i) {
             newFrame.set(i)
         }

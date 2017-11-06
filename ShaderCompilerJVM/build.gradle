@@ -19,5 +19,5 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 implementCommon(project(":ShaderCompiler"))
 
 dependencies {
-    compile project(":MathUtilsJVM")
+    compile project(":UtilsJVM")
 }

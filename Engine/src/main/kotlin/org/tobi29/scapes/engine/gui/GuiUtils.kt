@@ -17,10 +17,10 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.Mesh
-import org.tobi29.scapes.engine.utils.math.cos
-import org.tobi29.scapes.engine.utils.math.max
-import org.tobi29.scapes.engine.utils.math.sin
 import org.tobi29.scapes.engine.utils.math.toRad
+import kotlin.math.cos
+import kotlin.math.max
+import kotlin.math.sin
 
 object GuiUtils {
 
