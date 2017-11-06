@@ -33,18 +33,21 @@ class Pool<E>
  * Creates a new instance using the given [supplier]
  * @param supplier Called to create new objects in case the pool ran out of reusable ones
  */
-(private val supplier: () -> E) : Collection<E> {
+(private val supplier: () -> E) : AbstractMutableList<E>() {
     /**
      * Returns the current size of this [Pool]
      */
     override var size = 0
         private set
-    private val list = ArrayList<E>()
+    private var array = emptyArray<Any?>()
+    private var filled = 0
 
     /**
      * Resets the pool so it can be reused
      *
-     * **Note:** The stored objects are **not** cleared!
+     * **Note:** The stored objects are **not** cleared! To remove references
+     * to elements use [clear]
+     * @see clear
      */
     fun reset() {
         size = 0
@@ -53,37 +56,30 @@ class Pool<E>
     /**
      * Performs the given [action] on each object referenced by the pool
      */
-    fun forAllObjects(action: (E) -> Unit) = list.forEach(action)
+    fun forAllObjects(action: (E) -> Unit) {
+        for (i in 0 until filled) {
+            @Suppress("UNCHECKED_CAST")
+            action(array[i] as E)
+        }
+    }
 
     /**
      * Returns the next object from the pool or creates a new ones if none was
      * available
      * @return A possibly reused object
      */
-    fun push(): E {
-        val value: E
-        if (list.size <= size) {
-            value = supplier()
-            list.add(value)
-            size++
-        } else {
-            value = list[size++]
-        }
-        return value
-    }
-
-    /**
-     * Returns the object at the given index
-     * @param i Index to look at (Has to be in range `0` to `size - 1`
-     * @return Object at given index
-     * @throws IndexOutOfBoundsException When index is equal or greater than size or less than 0
-     */
-    operator fun get(i: Int): E {
-        if (i < 0 || i >= size) {
-            throw IndexOutOfBoundsException("Index: $i Size: $size")
-        }
-        return list[i]
-    }
+    fun push(): E =
+            if (filled <= size) {
+                supplier().also {
+                    ensure(1)
+                    array[size] = it
+                    size++
+                    filled++
+                }
+            } else {
+                @Suppress("UNCHECKED_CAST")
+                array[size++] as E
+            }
 
     /**
      * Discards the last element in the pool and returns the second to last one
@@ -98,39 +94,8 @@ class Pool<E>
         if (size == 0) {
             return null
         }
-        return list[size - 1]
-    }
-
-    /**
-     * Removes the given object out of the pool
-     *
-     * **Note:** The object it removed even after calling reset
-     * @param element Object to remove
-     * @return When `true` the object is no longer referenced by the pool,
-     * * otherwise it never was to begin with
-     */
-    fun remove(element: E): Boolean {
-        if (list.remove(element)) {
-            size--
-            return true
-        }
-        return false
-    }
-
-    /**
-     * Remove the element at the given index [i]
-     * @param i The index of the element to remove
-     * @return The element previously at that index
-     * @throws IndexOutOfBoundsException If `i < 0` or `i >= size`
-     */
-    fun removeAt(i: Int): E {
-        if (i < 0 || i >= size) {
-            throw IndexOutOfBoundsException(
-                    "Index: $i Size: $size")
-        }
-        val element = list.removeAt(i)
-        size--
-        return element
+        @Suppress("UNCHECKED_CAST")
+        return array[size - 1] as E
     }
 
     /**
@@ -139,17 +104,33 @@ class Pool<E>
      * **Node**: This element will only be used by the pool once [push] needed it
      */
     fun give(element: E) {
-        list.add(element)
+        ensure(1)
+        array[filled++] = element
     }
 
-    /**
-     * Returns an Iterator to iterate through all objects previously
-     * retrieved by [.push]
-     * @return An Iterator to iterate through the pool's data
-     */
+    override fun get(index: Int): E {
+        if (index < 0 || index >= size) {
+            throw IndexOutOfBoundsException("Index: $index Size: $size")
+        }
+        @Suppress("UNCHECKED_CAST")
+        return array[index] as E
+    }
+
+    override fun removeAt(index: Int): E {
+        if (index > size)
+            throw IndexOutOfBoundsException("Index: $index Size: $size")
+        @Suppress("UNCHECKED_CAST")
+        val element = array[index] as E
+        copy(array, array, filled - index - 1, index + 1, index)
+        size--
+        filled--
+        return element
+    }
+
     override fun iterator(): MutableIterator<E> {
         return object : MutableIterator<E> {
-            private var i: Int = 0
+            private var i = 0
+            private var j = -1
 
             override fun hasNext(): Boolean {
                 return i < size
@@ -160,45 +141,83 @@ class Pool<E>
                     throw NoSuchElementException(
                             "Reached limit: $i of $size")
                 }
-                return list[i++]
+                @Suppress("UNCHECKED_CAST")
+                val element = array[i] as E
+                i++
+                j = j.coerceAtLeast(i - 1)
+                return element
             }
 
             override fun remove() {
-                throw UnsupportedOperationException(
-                        "Cannot remove object from pool")
+                if (j < 0) throw IllegalStateException(
+                        "Cannot remove element before calling next")
+                if (j < i) removeAt(j++)
             }
         }
     }
 
-    /**
-     * Returns whether or not the given object can be found in the pool
-     *
-     * **Note:** Object outside the range are not checked
-     * @param element The object to search or `null`
-     * @return `true` if the object was found
-     */
-    override operator fun contains(element: E): Boolean {
-        if (element == null) {
-            for (i in 0 until size) {
-                if (list[i] == null) {
-                    return true
-                }
-            }
-        } else {
-            for (i in 0 until size) {
-                if (element == list[i]) {
-                    return true
-                }
-            }
+    override fun addAll(index: Int,
+                        elements: Collection<E>): Boolean {
+        val count = elements.size
+        if (index - 1 + elements.size > size)
+            throw IndexOutOfBoundsException(
+                    "Index: $index Size: $size Elements: $count")
+        ensure(count)
+        copy(array, array, filled - index, index, index + count)
+        var i = index
+        for (element in elements) {
+            array[i++] = element
+        }
+        size += count
+        filled += count
+        return true
+    }
+
+    override fun add(index: Int,
+                     element: E) {
+        if (index > size)
+            throw IndexOutOfBoundsException("Index: $index Size: $size")
+        ensure(1)
+        copy(array, array, filled - index, index, index + 1)
+        array[index] = element
+        size++
+        filled++
+    }
+
+    override fun clear() {
+        array = emptyArray()
+        size = 0
+        filled = 0
+    }
+
+    override fun set(index: Int,
+                     element: E): E {
+        if (index > size)
+            throw IndexOutOfBoundsException("Index: $index Size: $size")
+        @Suppress("UNCHECKED_CAST")
+        return (array[index] as E).also { array[index] = element }
+    }
+
+    private fun ensure(elements: Int = 1): Boolean {
+        val require = size + elements
+        var capacity = this.array.size
+        if (require > capacity) {
+            capacity = capacity.coerceAtLeast(8)
+            do {
+                // TODO: Make growth strategy configurable?
+                capacity *= 2
+            } while (require > capacity)
+            resize(capacity)
+            return true
         }
         return false
     }
 
-    override fun containsAll(elements: Collection<E>): Boolean {
-        return elements.all { contains(it) }
-    }
-
-    override fun isEmpty(): Boolean {
-        return size == 0
+    private fun resize(capacity: Int) {
+        if (capacity < size) throw IllegalArgumentException(
+                "Capacity is smaller than size: $capacity < $size")
+        val newArray = arrayOfNulls<Any>(capacity)
+        copy(array, newArray, filled)
+        array = newArray
     }
 }
