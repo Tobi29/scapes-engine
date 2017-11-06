@@ -20,9 +20,11 @@ import org.apache.tika.Tika
 import org.apache.tika.metadata.Metadata
 import org.tobi29.scapes.engine.utils.ThreadLocal
 import java.io.InputStream
+import java.security.AccessController
+import java.security.PrivilegedAction
 
 actual internal fun detectMimeImpl(stream: ReadableByteStream?,
-                                 name: String?) =
+                                   name: String?) =
         detectMimeIO(stream?.let { ByteStreamInputStream(it) }, name)
 
 /**
@@ -40,4 +42,6 @@ fun detectMimeIO(streamIn: InputStream? = null,
     return tika.get().detect(streamIn, name)
 }
 
-private val tika = ThreadLocal { Tika() }
+private val tika = ThreadLocal {
+    AccessController.doPrivileged(PrivilegedAction { Tika() })
+}
