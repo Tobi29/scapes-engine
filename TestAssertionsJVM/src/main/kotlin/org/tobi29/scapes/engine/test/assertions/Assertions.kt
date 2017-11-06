@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.test.assertions
 
+import kotlin.math.abs
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.asserter
@@ -83,7 +84,7 @@ fun assertEquals(expected: Float,
                  message: String? = null) {
     asserter.assertTrue({
         (message?.let { "$it. " } ?: "") + "Expected <$expected>, actual <$actual> with a margin of error of <$margin>."
-    }, actual.isNaN() && expected.isNaN() || actual - expected <= margin)
+    }, actual.isNaN() && expected.isNaN() || abs(actual - expected) <= margin)
 }
 
 fun assertEquals(expected: Double,
@@ -92,7 +93,7 @@ fun assertEquals(expected: Double,
                  message: String? = null) {
     asserter.assertTrue({
         (message?.let { "$it. " } ?: "") + "Expected <$expected>, actual <$actual> with a margin of error of <$margin>."
-    }, actual.isNaN() && expected.isNaN() || actual - expected <= margin)
+    }, actual.isNaN() && expected.isNaN() || abs(actual - expected) <= margin)
 }
 
 fun assertNotEquals(expected: Float,
@@ -101,7 +102,7 @@ fun assertNotEquals(expected: Float,
                     message: String? = null) {
     asserter.assertTrue({
         (message?.let { "$it. " } ?: "") + "Illegal value: <$actual> with a margin of error of <$margin>."
-    }, actual.isNaN() && expected.isNaN() || actual - expected > margin)
+    }, actual.isNaN() && expected.isNaN() || abs(actual - expected) > margin)
 }
 
 fun assertNotEquals(expected: Double,
@@ -110,5 +111,5 @@ fun assertNotEquals(expected: Double,
                     message: String? = null) {
     asserter.assertTrue({
         (message?.let { "$it. " } ?: "") + "Illegal value: <$actual> with a margin of error of <$margin>."
-    }, actual.isNaN() && expected.isNaN() || actual - expected > margin)
+    }, actual.isNaN() && expected.isNaN() || abs(actual - expected) > margin)
 }
