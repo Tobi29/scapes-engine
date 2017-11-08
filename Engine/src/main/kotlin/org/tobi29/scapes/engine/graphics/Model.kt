@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
+
 interface Model : GraphicsObject {
     fun markAsDisposed()
 
@@ -35,5 +37,15 @@ interface Model : GraphicsObject {
                         length: Int,
                         count: Int): Boolean
 
+    fun buffer(gl: GL,
+               buffer: ByteViewRO)
+
+    val stride: Int
+
     var weak: Boolean
+}
+
+interface ModelIndexed : Model {
+    fun bufferIndices(gl: GL,
+                      buffer: ByteViewRO)
 }

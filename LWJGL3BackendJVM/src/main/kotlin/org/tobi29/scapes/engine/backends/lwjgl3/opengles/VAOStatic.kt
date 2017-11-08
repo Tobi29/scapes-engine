@@ -17,16 +17,18 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.ModelIndexed
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ByteView
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 
 internal class VAOStatic(private val vbo: VBO,
                          index: IntArray,
                          private val length: Int,
                          private val renderType: RenderType) : VAO(
-        vbo.gos) {
+        vbo.gos), ModelIndexed {
     private var data: ByteView? = null
     private var indexID = 0
     private var arrayID = 0
@@ -114,5 +116,19 @@ internal class VAOStatic(private val vbo: VBO,
         detach = null
         markAsDisposed = false
         vbo.reset()
+    }
+
+    override fun buffer(gl: GL,
+                        buffer: ByteViewRO) {
+        vbo.replaceBuffer(gl, buffer)
+    }
+
+    override val stride get() = vbo.stride()
+
+    override fun bufferIndices(gl: GL,
+                               buffer: ByteViewRO) {
+        ensureStored(gl)
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, GL_STREAM_DRAW)
     }
 }

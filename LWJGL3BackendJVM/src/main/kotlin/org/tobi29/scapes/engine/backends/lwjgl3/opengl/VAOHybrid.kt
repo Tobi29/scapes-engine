@@ -20,8 +20,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 
 internal class VAOHybrid(private val vbo1: VBO,
                          private val vbo2: VBO,
@@ -105,12 +105,19 @@ internal class VAOHybrid(private val vbo1: VBO,
         vbo2.reset()
     }
 
-    override fun strideStream(): Int {
-        return vbo2.stride()
+    override fun buffer(gl: GL,
+                        buffer: ByteViewRO) {
+        vbo1.replaceBuffer(gl, buffer)
     }
+
+    override val stride get() = vbo1.stride()
 
     override fun bufferStream(gl: GL,
                               buffer: ByteViewRO) {
         vbo2.replaceBuffer(gl, buffer)
+    }
+
+    override fun strideStream(): Int {
+        return vbo2.stride()
     }
 }

@@ -20,9 +20,10 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.scapes.engine.utils.io.ByteViewRO
 
 internal class VAOFast(private val vbo: VBO,
-                       private val length: Int,
+                       private var length: Int,
                        private val renderType: RenderType) : VAO(
         vbo.gos) {
     private var arrayID = 0
@@ -102,4 +103,12 @@ internal class VAOFast(private val vbo: VBO,
         markAsDisposed = false
         vbo.reset()
     }
+
+    override fun buffer(gl: GL,
+                        buffer: ByteViewRO) {
+        vbo.replaceBuffer(gl, buffer)
+        length = buffer.size / stride
+    }
+
+    override val stride get() = vbo.stride()
 }
