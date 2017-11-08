@@ -17,6 +17,7 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.math.matrix.Matrix3f
 import org.tobi29.scapes.engine.math.matrix.Matrix4f
+import org.tobi29.scapes.engine.utils.math.toRad
 
 class Matrix {
     private val modelViewProjectionMatrix = Matrix4f()
@@ -52,28 +53,39 @@ class Matrix {
     fun rotate(angle: Double,
                x: Float,
                y: Float,
-               z: Float) {
-        modelViewProjectionMatrix.rotate(angle.toFloat(), x, y, z)
-        modelViewMatrix.rotate(angle.toFloat(), x, y, z)
-        normalMatrix.rotate(angle.toFloat(), x, y, z)
-    }
+               z: Float) = rotateRad(angle.toRad(), x, y, z)
+
+    fun rotateRad(angle: Double,
+                  x: Float,
+                  y: Float,
+                  z: Float) = rotateRad(angle.toFloat(), x, y, z)
 
     fun rotate(angle: Float,
                x: Float,
                y: Float,
-               z: Float) {
-        modelViewProjectionMatrix.rotate(angle, x, y, z)
-        modelViewMatrix.rotate(angle, x, y, z)
-        normalMatrix.rotate(angle, x, y, z)
+               z: Float) = rotateRad(angle.toRad(), x, y, z)
+
+    fun rotateRad(angle: Float,
+                  x: Float,
+                  y: Float,
+                  z: Float) {
+        modelViewProjectionMatrix.rotateRad(angle, x, y, z)
+        modelViewMatrix.rotateRad(angle, x, y, z)
+        normalMatrix.rotateRad(angle, x, y, z)
     }
 
     fun rotateAccurate(angle: Double,
                        x: Float,
                        y: Float,
-                       z: Float) {
-        modelViewProjectionMatrix.rotateAccurate(angle, x, y, z)
-        modelViewMatrix.rotateAccurate(angle, x, y, z)
-        normalMatrix.rotateAccurate(angle, x, y, z)
+                       z: Float) = rotateAccurateRad(angle.toRad(), x, y, z)
+
+    fun rotateAccurateRad(angle: Double,
+                          x: Float,
+                          y: Float,
+                          z: Float) {
+        modelViewProjectionMatrix.rotateAccurateRad(angle, x, y, z)
+        modelViewMatrix.rotateAccurateRad(angle, x, y, z)
+        normalMatrix.rotateAccurateRad(angle, x, y, z)
     }
 
     fun modelViewProjection(): Matrix4f {
