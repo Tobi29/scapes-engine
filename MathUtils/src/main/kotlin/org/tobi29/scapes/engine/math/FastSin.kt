@@ -38,7 +38,7 @@ class SinLUT(bits: Int) {
         rad2IndexF = rad2IndexD.toFloat()
         sin = FloatArray(count)
         for (i in 0 until count) {
-            sin[i] = kotlin.math.sin((i + 0.5f) / count * TWO_PI.toFloat())
+            sin[i] = kotlin.math.sin(i.toFloat() / count * TWO_PI.toFloat())
         }
         // Set exact values
         sin[0] = 0.0f
