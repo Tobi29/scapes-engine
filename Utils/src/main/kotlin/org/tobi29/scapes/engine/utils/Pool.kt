@@ -99,6 +99,16 @@ class Pool<E>
     }
 
     /**
+     * Discards the specified amount of elements in the pool
+     * @param elements Amount of elements to discard
+     */
+    fun pop(elements: Int) {
+        if (size < elements)
+            throw IndexOutOfBoundsException("Not enough elements in pool")
+        size -= elements
+    }
+
+    /**
      * Appends the element to the pool to be reused by [push]
      * **Note**: This element may no longer be used outside
      * **Node**: This element will only be used by the pool once [push] needed it
@@ -106,6 +116,28 @@ class Pool<E>
     fun give(element: E) {
         ensure(1)
         array[filled++] = element
+    }
+
+    /**
+     * Allocates enough space in the internal buffer for the specified amount
+     * of elements
+     *
+     * **Note:** This purely avoids allocating the array later, especially
+     * for large pools, the objects however are allocated on demand still
+     * @param capacity Amount of entry to be able to hold
+     */
+    fun ensureCapacity(capacity: Int): Boolean {
+        var current = array.size
+        if (capacity > current) {
+            current = current.coerceAtLeast(8)
+            do {
+                // TODO: Make growth strategy configurable?
+                current *= 2
+            } while (capacity > current)
+            resize(current)
+            return true
+        }
+        return false
     }
 
     override fun get(index: Int): E {
@@ -198,20 +230,9 @@ class Pool<E>
         return (array[index] as E).also { array[index] = element }
     }
 
-    private fun ensure(elements: Int = 1): Boolean {
-        val require = size + elements
-        var capacity = this.array.size
-        if (require > capacity) {
-            capacity = capacity.coerceAtLeast(8)
-            do {
-                // TODO: Make growth strategy configurable?
-                capacity *= 2
-            } while (require > capacity)
-            resize(capacity)
-            return true
-        }
-        return false
-    }
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun ensure(elements: Int = 1) =
+            ensureCapacity(size + elements)
 
     private fun resize(capacity: Int) {
         if (capacity < size) throw IllegalArgumentException(
