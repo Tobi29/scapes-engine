@@ -20,11 +20,10 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
+import org.tobi29.scapes.engine.math.FastMath
 import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteView
 import org.tobi29.scapes.engine.utils.io.ByteViewE
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.math.FastMath
 import kotlin.math.round
 
 internal class VBO(val gos: GraphicsObjectSupplier,
@@ -32,7 +31,7 @@ internal class VBO(val gos: GraphicsObjectSupplier,
                    length: Int) {
     private val stride: Int
     private val attributes = ArrayList<ModelAttributeData>()
-    private var data: ByteView? = null
+    private var data: ByteViewRO? = null
     private var vertexID = 0
     private var stored = false
 
@@ -60,8 +59,9 @@ internal class VBO(val gos: GraphicsObjectSupplier,
 
     fun replaceBuffer(gl: GL,
                       buffer: ByteViewRO) {
-        assert { stored }
         gl.check()
+        data = buffer
+        if (!stored) return
         glBindBuffer(GL_ARRAY_BUFFER, vertexID)
         glBufferData(GL_ARRAY_BUFFER, buffer.size, GL_STREAM_DRAW)
         glBufferSubData(GL_ARRAY_BUFFER, 0, buffer)
