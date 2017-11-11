@@ -209,15 +209,20 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Co
             }
 
     actual override fun put(key: K,
-                          value: V) =
+                            value: V) =
             map.put(key, value).also { previous ->
-                val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
-                        list.size + 1)
-                newList.addAll(list)
-                previous?.let { newList.removeAll { it.key == previous } }
-                newList.add(map.entries.first { it.key == key })
-                newList.sortBy { it.key }
-                list = newList
+                if (previous == null) {
+                    val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
+                            list.size + 1)
+                    newList.addAll(list)
+                    newList.add(map.entries.first { it.key == key })
+                    newList.sortBy { it.key }
+                    list = newList
+                } else {
+                    list.asSequence().filter { it.key == key }.forEach {
+                        it.setValue(value)
+                    }
+                }
             }
 
     actual override fun putAll(from: Map<out K, V>) {
@@ -225,9 +230,13 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Co
                 list.size + from.size)
         newList.addAll(list)
         for ((key, value) in from) {
-            map.put(key, value).let { previous ->
-                previous?.let { newList.removeAll { it.key == previous } }
+            val previous = map.put(key, value)
+            if (previous == null) {
                 newList.add(map.entries.first { it.key == key })
+            } else {
+                newList.asSequence().filter { it.key == key }.forEach {
+                    it.setValue(value)
+                }
             }
         }
         newList.sortBy { it.key }
