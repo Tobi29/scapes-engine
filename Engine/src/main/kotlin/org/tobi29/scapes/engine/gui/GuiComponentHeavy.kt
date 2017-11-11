@@ -18,9 +18,9 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.math.vector.Vector2d
 
 abstract class GuiComponentHeavy : GuiComponent {
     private val dirty = AtomicBoolean(true)
@@ -103,8 +103,8 @@ abstract class GuiComponentHeavy : GuiComponent {
             matrixStack.push { childMatrix ->
                 childMatrix.translate(position.floatX(), position.floatY(),
                         0.0f)
-                hasHeavy = hasHeavy or component.renderLightweight(renderer,
-                        childSize)
+                hasHeavy = component.renderLightweight(renderer,
+                        childSize) || hasHeavy
             }
         }
         return hasHeavy

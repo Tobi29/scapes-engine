@@ -20,10 +20,10 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
-import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.math.vector.times
+import org.tobi29.scapes.engine.utils.*
 
 abstract class GuiComponent(val engine: ScapesEngine,
                             val parent: GuiLayoutData,
@@ -155,8 +155,8 @@ abstract class GuiComponent(val engine: ScapesEngine,
                     matrixStack.push { childMatrix ->
                         childMatrix.translate(position.floatX(),
                                 position.floatY(), 0.0f)
-                        hasHeavy = hasHeavy or component.renderLightweight(
-                                renderer, childSize)
+                        hasHeavy = component.renderLightweight(renderer,
+                                childSize) || hasHeavy
                     }
                 }
             }

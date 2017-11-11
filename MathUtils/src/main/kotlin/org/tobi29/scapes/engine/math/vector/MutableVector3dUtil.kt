@@ -25,7 +25,8 @@ import kotlin.math.sqrt
  * @receiver The vector to use
  * @return Length of the given [MutableVector3d]
  */
-inline fun MutableVector3d.length(): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector3d.length(): Double {
     return sqrt(lengthSqr())
 }
 
@@ -44,7 +45,8 @@ inline fun MutableVector3d.lengthSqr(): Double {
  * @param other The second vector
  * @return Distance between the given [MutableVector3d]s
  */
-inline infix fun MutableVector3d.distance(other: MutableVector3d): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ infix fun MutableVector3d.distance(other: MutableVector3d): Double {
     return sqrt(distanceSqr(other))
 }
 
@@ -102,7 +104,8 @@ inline fun inside(origin: MutableVector3d,
  * @see Vector3d.normalize
  * @receiver The vector
  */
-inline fun MutableVector3d.normalize(): MutableVector3d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector3d.normalize(): MutableVector3d {
     val length = length()
     return this / length
 }
@@ -112,7 +115,8 @@ inline fun MutableVector3d.normalize(): MutableVector3d {
  * @see Vector3d.normalizeSafe
  * @receiver The vector
  */
-inline fun MutableVector3d.normalizeSafe(): MutableVector3d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector3d.normalizeSafe(): MutableVector3d {
     val length = length()
     return if (length == 0.0) set(0.0, 0.0, 0.0)
     else this / length

@@ -64,7 +64,8 @@ inline infix fun MutableVector2d.distanceSqr(other: MutableVector2d): Double {
  * @param other The second vector
  * @return The direction in radians
  */
-inline fun MutableVector2d.direction(other: MutableVector2d): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector2d.direction(other: MutableVector2d): Double {
     return direction(x, y, other.x, other.y)
 }
 
@@ -73,7 +74,8 @@ inline fun MutableVector2d.direction(other: MutableVector2d): Double {
  * @receiver The vector
  * @return The direction in radians
  */
-inline fun MutableVector2d.direction(): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector2d.direction(): Double {
     return direction(x, y)
 }
 
@@ -106,7 +108,8 @@ inline fun inside(origin: MutableVector2d,
  * @receiver The vector
  * @return Normalized vector with a length of `1.0`, or filled with `NaN` if the given vector is `(0,0)`
  */
-inline fun MutableVector2d.normalize(): MutableVector2d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector2d.normalize(): MutableVector2d {
     val length = length()
     return this / length
 }
@@ -116,7 +119,8 @@ inline fun MutableVector2d.normalize(): MutableVector2d {
  * @receiver The vector
  * @return Normalized vector with a length of `1.0`, or filled with `0` if the given vector is `(0,0)`
  */
-inline fun MutableVector2d.normalizeSafe(): MutableVector2d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector2d.normalizeSafe(): MutableVector2d {
     val length = length()
     return if (length == 0.0) set(0.0, 0.0)
     else this / length
