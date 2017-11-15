@@ -24,3 +24,27 @@ fun EventDispatcher(parent: EventDispatcher,
     init(ListenerRegistrar(listener))
     return listener
 }
+
+interface EventMuteable {
+    var muted: Boolean
+}
+
+inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
+        noinline listener: (E) -> Unit) =
+        listenAlive(0, listener)
+
+inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
+        priority: Int,
+        noinline listener: (E) -> Unit) =
+        listenAlive(0, { true }, listener)
+
+inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
+        noinline accepts: (E) -> Boolean,
+        noinline listener: (E) -> Unit) =
+        listenAlive(0, accepts, listener)
+
+inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
+        priority: Int,
+        noinline accepts: (E) -> Boolean,
+        noinline listener: (E) -> Unit) =
+        listen(priority, { !it.muted && accepts(it) }, listener)
