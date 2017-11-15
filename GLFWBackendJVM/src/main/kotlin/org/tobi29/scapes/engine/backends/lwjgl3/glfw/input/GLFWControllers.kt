@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw
+package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
 
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.system.Platform
-import org.tobi29.scapes.engine.input.*
+import org.tobi29.scapes.engine.input.Controller
+import org.tobi29.scapes.engine.input.ControllerButtons
+import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.EventDispatcher
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 
-class GLFWControllers(private val events: EventDispatcher,
-                      private val virtualJoysticks: MutableMap<Int, ControllerJoystick>) {
+internal class GLFWControllers(
+        private val events: EventDispatcher,
+        private val virtualJoysticks: MutableMap<Int, GLFWControllerGamepad>
+) {
     private val handlers = ConcurrentHashMap<Int, (String, FloatBuffer, ByteBuffer) -> Unit>()
 
     fun poll(): Boolean {
@@ -36,19 +39,20 @@ class GLFWControllers(private val events: EventDispatcher,
                 val axes = GLFW.glfwGetJoystickAxes(joystick)
                 val buttons = GLFW.glfwGetJoystickButtons(joystick)
                 val handler = handlers[joystick] ?: run {
-                    val virtualJoystick = ControllerJoystick(name,
+                    val virtualJoystick = GLFWControllerGamepad(name,
                             axes.capacity())
                     val states = BooleanArray(buttons.remaining())
                     val handler = { name: String, axes: FloatBuffer, buttons: ByteBuffer ->
-                        if (name != virtualJoystick.name() ||
+                        if (name != virtualJoystick.name ||
                                 buttons.remaining() != states.size ||
-                                axes.remaining() != virtualJoystick.axes()) {
+                                axes.remaining() != virtualJoystick.axes.size) {
                             handlers.remove(joystick)
                         }
                         var i = 0
                         while (axes.hasRemaining()) {
                             virtualJoystick.setAxis(i,
-                                    deadzones(axes.get().toDouble()))
+                                    deadzones(
+                                            axes.get().toDouble()), events)
                             i++
                         }
                         i = 0
@@ -60,9 +64,10 @@ class GLFWControllers(private val events: EventDispatcher,
                                 if (button != null) {
                                     virtualJoystick.addPressEvent(button,
                                             if (value)
-                                                ControllerBasic.PressState.PRESS
+                                                ControllerButtons.Action.PRESS
                                             else
-                                                ControllerBasic.PressState.RELEASE)
+                                                ControllerButtons.Action.RELEASE,
+                                            events)
                                 }
                             }
                             i++
@@ -70,7 +75,7 @@ class GLFWControllers(private val events: EventDispatcher,
                     }
                     handlers.put(joystick, handler)
                     virtualJoysticks.put(joystick, virtualJoystick)
-                    events.fire(ControllerAddEvent(virtualJoystick))
+                    events.fire(Controller.AddEvent(virtualJoystick))
                     joysticksChanged = true
                     handler
                 }
@@ -78,7 +83,7 @@ class GLFWControllers(private val events: EventDispatcher,
             } else if (handlers.containsKey(joystick)) {
                 handlers.remove(joystick)
                 virtualJoysticks.remove(joystick)?.let { virtualJoystick ->
-                    events.fire(ControllerRemoveEvent(virtualJoystick))
+                    events.fire(Controller.RemoveEvent(virtualJoystick))
                 }
                 joysticksChanged = true
             }
@@ -101,16 +106,3 @@ class GLFWControllers(private val events: EventDispatcher,
     }
 }
 
-class GLFWControllerDefault : ControllerDefault() {
-    private val superModifier = Platform.get() == Platform.MACOSX
-
-    override val isModifierDown get() = run {
-        if (superModifier) {
-            isDown(ControllerKey.KEY_SUPER_LEFT) || isDown(
-                    ControllerKey.KEY_SUPER_RIGHT)
-        } else {
-            isDown(ControllerKey.KEY_CONTROL_LEFT) || isDown(
-                    ControllerKey.KEY_CONTROL_RIGHT)
-        }
-    }
-}

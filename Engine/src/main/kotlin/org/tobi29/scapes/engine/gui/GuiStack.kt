@@ -20,14 +20,15 @@ import org.tobi29.scapes.engine.graphics.BlendingMode
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
-import org.tobi29.scapes.engine.utils.ConcurrentSortedMap
 import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.math.vector.div
+import org.tobi29.scapes.engine.utils.ConcurrentSortedMap
 
 class GuiStack {
     private val guis = ConcurrentSortedMap<String, Gui>()
     private val keys = HashMap<Gui, String>()
-    private var focus: Gui? = null
+    var focus: Gui? = null
+        private set
 
     fun add(id: String,
             add: Gui) {
@@ -111,13 +112,17 @@ class GuiStack {
         }
     }
 
-    fun fireEvent(type: GuiEvent,
-                  event: GuiComponentEvent): GuiComponent? {
+    fun <T : GuiComponentEvent> fireEvent(
+            type: GuiEvent<T>,
+            event: T
+    ): GuiComponent? {
         return fireEvent(event, GuiComponent.sink(type))
     }
 
-    fun fireEvent(event: GuiComponentEvent,
-                  listener: (GuiComponent, GuiComponentEvent) -> Boolean): GuiComponent? {
+    fun <T : GuiComponentEvent> fireEvent(
+            event: T,
+            listener: (GuiComponent, T) -> Boolean
+    ): GuiComponent? {
         val guis = ArrayList<Gui>(this.guis.size)
         guis.addAll(this.guis.values)
         for (i in guis.indices.reversed()) {
@@ -129,13 +134,17 @@ class GuiStack {
         return null
     }
 
-    fun fireRecursiveEvent(type: GuiEvent,
-                           event: GuiComponentEvent): Set<GuiComponent> {
+    fun <T : GuiComponentEvent> fireRecursiveEvent(
+            type: GuiEvent<T>,
+            event: T
+    ): Set<GuiComponent> {
         return fireRecursiveEvent(event, GuiComponent.sink(type))
     }
 
-    fun fireRecursiveEvent(event: GuiComponentEvent,
-                           listener: (GuiComponent, GuiComponentEvent) -> Boolean): Set<GuiComponent> {
+    fun <T : GuiComponentEvent> fireRecursiveEvent(
+            event: T,
+            listener: (GuiComponent, T) -> Boolean
+    ): Set<GuiComponent> {
         val guis = ArrayList<Gui>(this.guis.size)
         guis.addAll(this.guis.map { it.value })
         for (i in guis.indices.reversed()) {

@@ -100,10 +100,13 @@ object PlatformDialogs : KLogging() {
         iconify(window.window) {
             TinyFileDialogs.tinyfd_inputBox(title, "",
                     text.text)?.let { editText ->
-                if (text.text.isNotEmpty()) {
-                    text.text.delete(0, Int.MAX_VALUE)
+                synchronized(text) {
+                    if (text.text.isNotEmpty()) {
+                        text.text.delete(0, Int.MAX_VALUE)
+                    }
+                    text.text.append(editText)
+                    text.dirty.set(true)
                 }
-                text.text.append(editText)
             }
         }
     }

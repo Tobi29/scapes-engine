@@ -18,56 +18,48 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.utils.copyToString
 
-class GuiComponentTextField(parent: GuiLayoutData,
-                            textX: Int,
-                            textSize: Int,
-                            text: String,
-                            maxLength: Int,
-                            hiddenText: Boolean,
-                            private val major: Boolean) : GuiComponentButtonHeavy(
-        parent) {
-    private val text: GuiComponentEditableText
+class GuiComponentTextField(
+        parent: GuiLayoutData,
+        textX: Int,
+        textSize: Int,
+        text: String,
+        maxLength: Int,
+        hiddenText: Boolean
+) : GuiComponentButtonHeavy(parent) {
+    private val textComponent = addSubHori(textX.toDouble(), 0.0, -1.0,
+            textSize.toDouble()) {
+        GuiComponentEditableText(it, text, maxLength, {
+            engine.guiStack.focus === gui
+                    && gui.currentSelection === this@GuiComponentTextField
+        })
+    }
+
+    init {
+        if (hiddenText) {
+            this.textComponent.textFilter = { str ->
+                CharArray(str.length) { '*' }.copyToString()
+            }
+        } else {
+            this.textComponent.textFilter = { str -> str }
+        }
+    }
 
     constructor(parent: GuiLayoutData,
                 textSize: Int,
                 text: String,
-                hiddenText: Boolean = false) : this(
-            parent, textSize, text, Int.MAX_VALUE, hiddenText)
+                hiddenText: Boolean = false
+    ) : this(parent, textSize, text, Int.MAX_VALUE, hiddenText)
 
     constructor(parent: GuiLayoutData,
                 textSize: Int,
                 text: String,
                 maxLength: Int,
-                hiddenText: Boolean = false,
-                major: Boolean = false) : this(
-            parent, 4, textSize, text, maxLength, hiddenText, major)
+                hiddenText: Boolean = false
+    ) : this(parent, 4, textSize, text, maxLength, hiddenText)
 
-    init {
-        this.text = addSubHori(textX.toDouble(), 0.0, -1.0, textSize.toDouble()
-        ) { GuiComponentEditableText(it, text, maxLength) }
-        if (hiddenText) {
-            this.text.textFilter = { str ->
-                CharArray(str.length) { '*' }.copyToString()
-            }
-        } else {
-            this.text.textFilter = { str -> str }
+    var text: String
+        get() = textComponent.text
+        set(value) {
+            textComponent.text = value
         }
-    }
-
-    fun text(): String {
-        return text.text()
-    }
-
-    fun setText(text: String) {
-        this.text.setText(text)
-    }
-
-    override fun updateComponent(delta: Double) {
-        val current = gui.lastClicked
-        if (current === this || current === text || major) {
-            text.setActive(true)
-        } else {
-            text.setActive(false)
-        }
-    }
 }

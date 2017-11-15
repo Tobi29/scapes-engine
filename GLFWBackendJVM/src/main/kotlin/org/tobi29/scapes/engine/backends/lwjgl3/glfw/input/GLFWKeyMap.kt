@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw
+package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
 
 import org.lwjgl.glfw.GLFW
 import org.tobi29.scapes.engine.input.ControllerKey
@@ -71,8 +71,10 @@ object GLFWKeyMap {
         KEYS[GLFW.GLFW_KEY_BACKSLASH] = ControllerKey.KEY_BACKSLASH
         KEYS[GLFW.GLFW_KEY_RIGHT_BRACKET] = ControllerKey.KEY_BRACKET_RIGHT
         KEYS[GLFW.GLFW_KEY_GRAVE_ACCENT] = ControllerKey.KEY_GRAVE_ACCENT
-        KEYS[GLFW.GLFW_KEY_WORLD_1] = c("KEY_WORLD_1", "World 1")
-        KEYS[GLFW.GLFW_KEY_WORLD_2] = c("KEY_WORLD_2", "World 2")
+        KEYS[GLFW.GLFW_KEY_WORLD_1] = c(
+                "KEY_WORLD_1", "World 1")
+        KEYS[GLFW.GLFW_KEY_WORLD_2] = c(
+                "KEY_WORLD_2", "World 2")
         KEYS[GLFW.GLFW_KEY_ESCAPE] = ControllerKey.KEY_ESCAPE
         KEYS[GLFW.GLFW_KEY_ENTER] = ControllerKey.KEY_ENTER
         KEYS[GLFW.GLFW_KEY_TAB] = ControllerKey.KEY_TAB

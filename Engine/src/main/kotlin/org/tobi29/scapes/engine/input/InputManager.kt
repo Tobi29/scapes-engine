@@ -36,17 +36,18 @@ abstract class InputManager<M : InputMode>(
     private var inputModeMut = AtomicReference(inputModeDummy)
     val inputMode get() = inputModeMut.get()
     private val freezeInputModeMut = AtomicBoolean(false)
-    var freezeInputMode get() = freezeInputModeMut.get()
+    var freezeInputMode
+        get() = freezeInputModeMut.get()
         set(value) = freezeInputModeMut.set(value)
 
     val events = EventDispatcher(engine.events) {
-        listen<ControllerAddEvent> { event ->
+        listen<Controller.AddEvent> { event ->
             inputMode(event.controller)?.let {
                 inputModesMut[event.controller] = it
                 reloadInput()
             }
         }
-        listen<ControllerRemoveEvent> { event ->
+        listen<Controller.RemoveEvent> { event ->
             inputModesMut.remove(event.controller)
             reloadInput()
         }
@@ -63,12 +64,9 @@ abstract class InputManager<M : InputMode>(
     }
 
     override fun step(delta: Double) {
-        var newInputMode: M? = null
-        for (inputMode in inputModes) {
-            if (inputMode.poll(delta)) {
-                newInputMode = inputMode
-            }
-        }
+        val newInputMode: M? = inputModes.map {
+            it to it.poll(delta)
+        }.sortedByDescending { (_, lastActive) -> lastActive }.firstOrNull()?.first
         if (newInputMode != null && inputMode !== newInputMode
                 && !freezeInputMode) {
             changeInput(newInputMode)
@@ -110,7 +108,7 @@ interface InputMode {
 
     fun disabled() {}
 
-    fun poll(delta: Double): Boolean
+    fun poll(delta: Double): Long
 
     fun guiController(): GuiController
 }

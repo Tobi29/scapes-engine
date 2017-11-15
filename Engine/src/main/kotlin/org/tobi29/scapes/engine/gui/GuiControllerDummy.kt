@@ -16,27 +16,14 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.input.ControllerBasic
 
 class GuiControllerDummy(engine: ScapesEngine) : GuiController(engine) {
-
-    override fun update(delta: Double) {
-    }
-
-    override fun focusTextField(data: GuiController.TextFieldData,
+    override fun focusTextField(valid: () -> Boolean,
+                                data: TextFieldData,
                                 multiline: Boolean) {
     }
 
-    override fun processTextField(data: GuiController.TextFieldData,
-                                  multiline: Boolean): Boolean {
-        return false
-    }
-
     override fun cursors(): Sequence<GuiCursor> {
-        return emptySequence()
-    }
-
-    override fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>> {
         return emptySequence()
     }
 

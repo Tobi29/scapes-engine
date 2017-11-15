@@ -17,92 +17,117 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.input.ControllerBasic
-import org.tobi29.scapes.engine.input.ControllerDefault
-import org.tobi29.scapes.engine.input.ControllerKey
-import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.input.*
+import org.tobi29.scapes.engine.utils.AtomicReference
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.isISOControl
+import org.tobi29.scapes.engine.utils.listenAlive
 
-abstract class GuiControllerDefault protected constructor(engine: ScapesEngine,
-                                                          protected val controller: ControllerDefault) : GuiController(
-        engine) {
+abstract class GuiControllerDefault(
+        engine: ScapesEngine,
+        protected val controller: ControllerDesktop
+) : GuiController(engine) {
+    private val currentTextField =
+            AtomicReference<Triple<() -> Boolean, TextFieldData, Boolean>?>(
+                    null)
 
-    override fun focusTextField(data: GuiController.TextFieldData,
-                                multiline: Boolean) {
-    }
-
-    override fun processTextField(data: GuiController.TextFieldData,
-                                  multiline: Boolean): Boolean {
-        val changed = AtomicBoolean(false)
-        val shift = controller.isDown(ControllerKey.KEY_SHIFT_LEFT) ||
-                controller.isDown(ControllerKey.KEY_SHIFT_RIGHT)
-        if (controller.isModifierDown) {
+    private val events = EventDispatcher(engine.events) {
+        listenAlive<ControllerButtons.PressEvent>(100, {
+            it.state.controller == controller
+                    && it.action != ControllerButtons.Action.RELEASE
+        }) { event ->
+            val current = currentTextField.get() ?: return@listenAlive
+            val (valid, data, multiline) = current
+            if (!valid()) {
+                currentTextField.compareAndSet(current, null)
+                return@listenAlive
+            }
             val container = engine.container
-            controller.pressEvents().filter { event -> event.state !== ControllerBasic.PressState.RELEASE }.forEach { event ->
-                when (event.key) {
-                    ControllerKey.KEY_A -> data.selectAll()
-                    ControllerKey.KEY_C -> data.copy()?.let {
-                        container.clipboardCopy(it)
-                    }
-                    ControllerKey.KEY_X -> data.cut()?.let {
-                        container.clipboardCopy(it)
-                    }
-                    ControllerKey.KEY_V -> {
-                        var paste = container.clipboardPaste()
-                        if (!multiline) {
-                            paste = paste.replace("\n", "")
+            val shift = event.state.isDown(ControllerKey.KEY_SHIFT_LEFT) ||
+                    event.state.isDown(ControllerKey.KEY_SHIFT_RIGHT)
+            synchronized(data) {
+                if (event.state is ControllerDesktopState
+                        && event.state.isModifierDown) {
+                    when (event.key) {
+                        ControllerKey.KEY_A -> data.selectAll()
+                        ControllerKey.KEY_C -> data.copy()?.let {
+                            container.clipboardCopy(it)
                         }
-                        data.paste(paste)
+                        ControllerKey.KEY_X -> data.cut()?.let {
+                            container.clipboardCopy(it)
+                        }
+                        ControllerKey.KEY_V -> {
+                            var paste = container.clipboardPaste()
+                            if (!multiline) {
+                                paste = paste.replace("\n", "")
+                            }
+                            data.paste(paste)
+                        }
+                        else -> return@listenAlive
+                    }
+                } else {
+                    when (event.key) {
+                        ControllerKey.KEY_LEFT -> data.left(shift)
+                        ControllerKey.KEY_RIGHT -> data.right(shift)
+                        ControllerKey.KEY_HOME -> data.home(shift)
+                        ControllerKey.KEY_END -> data.end(shift)
+                        ControllerKey.KEY_ENTER -> if (multiline) {
+                            data.insert('\n')
+                        } else return@listenAlive
+                        ControllerKey.KEY_BACKSPACE -> if (data.selectionStart >= 0) {
+                            data.deleteSelection()
+                        } else {
+                            if (data.cursor > 0) {
+                                data.text.delete(data.cursor - 1)
+                                data.cursor--
+                            }
+                        }
+                        ControllerKey.KEY_DELETE -> if (data.selectionStart >= 0) {
+                            data.deleteSelection()
+                        } else {
+                            if (data.cursor < data.text.length) {
+                                data.text.delete(data.cursor)
+                            }
+                        }
+                        else -> return@listenAlive
                     }
                 }
-                changed.set(true)
+                data.dirty.set(true)
             }
-        } else {
-            controller.typeEvents().forEach { event ->
-                val character = event.character()
+            event.muted = true
+        }
+        listenAlive<ControllerKeyboard.TypeEvent>(100) { event ->
+            if (event.controller.isModifierDown) return@listenAlive
+            val current = currentTextField.get() ?: return@listenAlive
+            val (valid, data, multiline) = current
+            if (!valid()) {
+                currentTextField.compareAndSet(current, null)
+                return@listenAlive
+            }
+            synchronized(data) {
+                val character = event.character
                 if (!character.isISOControl()) {
                     data.insert(character)
-                    changed.set(true)
-                }
+                    data.dirty.set(true)
+                } else return@listenAlive
             }
-            controller.pressEvents().filter { event -> event.state !== ControllerBasic.PressState.RELEASE }.forEach { event ->
-                when (event.key) {
-                    ControllerKey.KEY_LEFT -> data.left(shift)
-                    ControllerKey.KEY_RIGHT -> data.right(shift)
-                    ControllerKey.KEY_HOME -> data.home(shift)
-                    ControllerKey.KEY_END -> data.end(shift)
-                    ControllerKey.KEY_ENTER -> if (multiline) {
-                        data.insert('\n')
-                    }
-                    ControllerKey.KEY_BACKSPACE -> if (data.selectionStart >= 0) {
-                        data.deleteSelection()
-                    } else {
-                        if (data.cursor > 0) {
-                            data.text.delete(data.cursor - 1)
-                            data.cursor--
-                        }
-                    }
-                    ControllerKey.KEY_DELETE -> if (data.selectionStart >= 0) {
-                        data.deleteSelection()
-                    } else {
-                        if (data.cursor < data.text.length) {
-                            data.text.delete(data.cursor)
-                        }
-                    }
-                }
-                changed.set(true)
-            }
+            event.muted = true
         }
-        if (changed.get()) {
-            if (data.selectionStart == data.selectionEnd) {
-                data.selectionStart = -1
-            }
-            return true
-        }
-        return false
     }
 
-    override fun captureCursor(): Boolean {
-        return false
+    override fun focusTextField(valid: () -> Boolean,
+                                data: TextFieldData,
+                                multiline: Boolean) {
+        currentTextField.set(Triple(valid, data, multiline))
+    }
+
+    override fun enabled() {
+        super.enabled()
+        events.enable()
+    }
+
+    override fun disabled() {
+        super.disabled()
+        events.disable()
     }
 }

@@ -28,7 +28,8 @@ open class GuiComponentWidget(parent: GuiLayoutData,
         if (parent is GuiLayoutDataAbsolute) {
             val pos = parent.posMutable()
             titleBar.on(GuiEvent.DRAG_LEFT) {
-                pos.plusX(it.relativeX).plusY(it.relativeY)
+                pos.plusX(it.relativeX * it.scaleX)
+                        .plusY(it.relativeY * it.scaleY)
             }
         }
     }

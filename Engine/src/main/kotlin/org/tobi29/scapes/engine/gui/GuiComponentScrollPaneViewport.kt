@@ -18,8 +18,11 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
+import org.tobi29.scapes.engine.input.pixelDeltaFor
 import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.math.ceilToInt
 import org.tobi29.scapes.engine.utils.math.clamp
 import org.tobi29.scapes.engine.utils.math.floorToInt
 import org.tobi29.scapes.engine.utils.math.sqr
@@ -57,13 +60,12 @@ class GuiComponentScrollPaneViewport(parent: GuiLayoutData,
 
     init {
         on(GuiEvent.SCROLL) { event ->
-            if (event.screen) {
-                scrollX -= event.relativeX
-                scrollY -= event.relativeY
-            } else {
-                scrollX -= event.relativeX * scrollStep
-                scrollY -= event.relativeY * scrollStep
-            }
+            val delta = event.delta.pixelDeltaFor(
+                    Vector2d(scrollStep.toDouble(), scrollStep.toDouble()),
+                    Vector2i((size.x / scrollStep).ceilToInt(),
+                            (size.y / scrollStep).ceilToInt()))
+            scrollX -= delta.x
+            scrollY -= delta.y
             scrollX = clamp(scrollX, 0.0,
                     max(0.0, max.x - event.size.x))
             scrollY = clamp(scrollY, 0.0,

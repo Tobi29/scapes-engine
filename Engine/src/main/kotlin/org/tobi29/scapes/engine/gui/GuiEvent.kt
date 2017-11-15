@@ -16,18 +16,18 @@
 
 package org.tobi29.scapes.engine.gui
 
-enum class GuiEvent {
-    CLICK_LEFT,
-    PRESS_LEFT,
-    DRAG_LEFT,
-    DROP_LEFT,
-    CLICK_RIGHT,
-    PRESS_RIGHT,
-    DRAG_RIGHT,
-    DROP_RIGHT,
-    SCROLL,
-    HOVER_ENTER,
-    HOVER,
-    HOVER_LEAVE,
-    CHANGE
+sealed class GuiEvent<T : GuiComponentEvent> {
+    object CLICK_LEFT : GuiEvent<GuiComponentEvent>()
+    object PRESS_LEFT : GuiEvent<GuiComponentEvent>()
+    object DRAG_LEFT : GuiEvent<GuiComponentEventDrag>()
+    object DROP_LEFT : GuiEvent<GuiComponentEvent>()
+    object CLICK_RIGHT : GuiEvent<GuiComponentEvent>()
+    object PRESS_RIGHT : GuiEvent<GuiComponentEvent>()
+    object DRAG_RIGHT : GuiEvent<GuiComponentEventDrag>()
+    object DROP_RIGHT : GuiEvent<GuiComponentEvent>()
+    object SCROLL : GuiEvent<GuiComponentEventScroll>()
+    object HOVER_ENTER : GuiEvent<GuiComponentEvent>()
+    object HOVER : GuiEvent<GuiComponentEvent>()
+    object HOVER_LEAVE : GuiEvent<GuiComponentEvent>()
+    object CHANGE : GuiEvent<GuiComponentEvent>()
 }

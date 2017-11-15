@@ -24,13 +24,16 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.*
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
+import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerDesktop
+import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerGamepad
+import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllers
+import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWKeyMap
 import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.clamp
@@ -53,8 +56,8 @@ class ContainerGLFW(
         private set
     override var containerHeight = 0
         private set
-    private val controllerDefault = GLFWControllerDefault()
-    private val virtualJoysticks = ConcurrentHashMap<Int, ControllerJoystick>()
+    private val controllerDesktop = GLFWControllerDesktop()
+    private val virtualJoysticks = ConcurrentHashMap<Int, GLFWControllerGamepad>()
     private val errorFun = GLFWErrorCallback.createPrint()
     internal var window = 0L
         private set
@@ -104,15 +107,18 @@ class ContainerGLFW(
             val virtualKey = GLFWKeyMap.key(key)
             if (virtualKey != null) {
                 if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW.GLFW_RELEASE) {
-                    controllerDefault.addTypeEvent(127.toChar())
+                    controllerDesktop.addTypeEvent(127.toChar(), engine.events)
                 }
                 when (action) {
-                    GLFW.GLFW_PRESS -> controllerDefault.addPressEvent(
-                            virtualKey, ControllerBasic.PressState.PRESS)
-                    GLFW.GLFW_REPEAT -> controllerDefault.addPressEvent(
-                            virtualKey, ControllerBasic.PressState.REPEAT)
-                    GLFW.GLFW_RELEASE -> controllerDefault.addPressEvent(
-                            virtualKey, ControllerBasic.PressState.RELEASE)
+                    GLFW.GLFW_PRESS -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.PRESS,
+                            engine.events)
+                    GLFW.GLFW_REPEAT -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.REPEAT,
+                            engine.events)
+                    GLFW.GLFW_RELEASE -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.RELEASE,
+                            engine.events)
                 }
             }
             if (key == GLFW.GLFW_KEY_GRAVE_ACCENT && action == GLFW.GLFW_PRESS) {
@@ -120,16 +126,18 @@ class ContainerGLFW(
             }
         }
         val charFun = GLFWCharCallback.create { _, codepoint ->
-            controllerDefault.addTypeEvent(codepoint.toChar())
+            controllerDesktop.addTypeEvent(codepoint.toChar(), engine.events)
         }
         val mouseButtonFun = GLFWMouseButtonCallback.create { _, button, action, _ ->
             val virtualKey = ControllerKey.button(button)
             if (virtualKey != null) {
                 when (action) {
-                    GLFW.GLFW_PRESS -> controllerDefault.addPressEvent(
-                            virtualKey, ControllerBasic.PressState.PRESS)
-                    GLFW.GLFW_RELEASE -> controllerDefault.addPressEvent(
-                            virtualKey, ControllerBasic.PressState.RELEASE)
+                    GLFW.GLFW_PRESS -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.PRESS,
+                            engine.events)
+                    GLFW.GLFW_RELEASE -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.RELEASE,
+                            engine.events)
                 }
             }
         }
@@ -142,20 +150,20 @@ class ContainerGLFW(
                     mouseX = 0.0
                     mouseY = 0.0
                 } else {
-                    controllerDefault.set(xpos * density, ypos * density)
+                    controllerDesktop.set(xpos * density, ypos * density)
                     mouseX = xpos
                     mouseY = ypos
                 }
                 if (mouseDeltaSkip) {
                     mouseDeltaSkip = false
                 } else {
-                    controllerDefault.addDelta(dx, dy, engine)
+                    controllerDesktop.addDelta(dx, dy, engine.events)
                 }
             }
         }
         val scrollFun = GLFWScrollCallback.create { _, xoffset, yoffset ->
             if (xoffset != 0.0 || yoffset != 0.0) {
-                controllerDefault.addScroll(xoffset, yoffset)
+                controllerDesktop.addScroll(xoffset, yoffset, engine.events)
             }
         }
         val monitorFun = GLFWMonitorCallback.create { _, _ ->
@@ -167,35 +175,40 @@ class ContainerGLFW(
         var plebSync = 0L
         var controllerEmulateTouch: ControllerTouch? = null
         if (emulateTouch) {
-            controllerEmulateTouch = object : ControllerTouch {
-                private var tracker: ControllerTouch.Tracker? = null
+            controllerEmulateTouch = object : ControllerTouch() {
+                override val lastActive get() = controllerDesktop.lastActive
 
-                override fun fingers(): Sequence<ControllerTouch.Tracker> {
-                    return tracker?.let { sequenceOf(it) } ?: emptySequence()
-                }
+                private var tracker: ControllerTracker.Tracker? = null
 
-                override fun poll(events: EventDispatcher) {
-                    controllerDefault.poll(events)
-                    val tracker = tracker
-                    if (tracker != null) {
-                        if (controllerDefault.isDown(ControllerKey.BUTTON_0)) {
-                            tracker.pos.set(controllerDefault.x(),
-                                    controllerDefault.y())
-                        } else {
-                            this.tracker = null
+                override val name = "Extra real touchscreen"
+
+                override fun fingers(): Sequence<ControllerTracker.Tracker> {
+                    synchronized(this) {
+                        val tracker = tracker
+                        if (tracker != null) {
+                            if (controllerDesktop.isDown(
+                                    ControllerKey.BUTTON_0)) {
+                                tracker.pos.set(controllerDesktop.x,
+                                        controllerDesktop.y)
+                            } else {
+                                this.tracker = null
+                            }
+                        } else if (controllerDesktop.isDown(
+                                ControllerKey.BUTTON_0)) {
+                            val newTracker = ControllerTracker.Tracker()
+                            newTracker.pos.set(controllerDesktop.x,
+                                    controllerDesktop.y)
+                            this.tracker = newTracker
                         }
-                    } else if (controllerDefault.isPressed(
-                            ControllerKey.BUTTON_0)) {
-                        val newTracker = ControllerTouch.Tracker()
-                        newTracker.pos.set(controllerDefault.x(),
-                                controllerDefault.y())
-                        this.tracker = newTracker
+                        return tracker?.let {
+                            sequenceOf(it)
+                        } ?: emptySequence()
                     }
                 }
             }
-            engine.events.fire(ControllerAddEvent(controllerEmulateTouch))
+            engine.events.fire(Controller.AddEvent(controllerEmulateTouch))
         } else {
-            engine.events.fire(ControllerAddEvent(controllerDefault))
+            engine.events.fire(Controller.AddEvent(controllerDesktop))
         }
         val timer = Timer()
         timer.init()
@@ -207,7 +220,7 @@ class ContainerGLFW(
             tasks.processCurrent()
             if (!valid) {
                 engine.graphics.reset()
-                controllerDefault.clearStates()
+                controllerDesktop.clearStates()
                 visible = false
                 if (window != 0L) {
                     GLFW.glfwDestroyWindow(window)
@@ -235,7 +248,7 @@ class ContainerGLFW(
                 if (mouseGrabbed) {
                     mouseX = containerWidth / density * 0.5
                     mouseY = containerHeight / density * 0.5
-                    controllerDefault.set(mouseX, mouseY)
+                    controllerDesktop.set(mouseX, mouseY)
                 }
             }
             if (plebSync > 0) {
@@ -265,7 +278,7 @@ class ContainerGLFW(
                             GLFW.GLFW_CURSOR_NORMAL)
                     GLFW.glfwSetCursorPos(window, mouseX, mouseY)
                 }
-                controllerDefault.set(mouseX, mouseY)
+                controllerDesktop.set(mouseX, mouseY)
             }
             if (vSync) {
                 tickDiff = timer.tick()
@@ -294,10 +307,10 @@ class ContainerGLFW(
             }
         }
         controllerEmulateTouch?.let {
-            engine.events.fire(ControllerRemoveEvent(it))
+            engine.events.fire(Controller.RemoveEvent(it))
         }
         if (!emulateTouch) {
-            engine.events.fire(ControllerRemoveEvent(controllerDefault))
+            engine.events.fire(Controller.RemoveEvent(controllerDesktop))
         }
         logger.info { "Disposing graphics system" }
         engine.graphics.dispose(gl)

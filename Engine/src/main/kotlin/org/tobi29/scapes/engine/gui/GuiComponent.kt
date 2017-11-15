@@ -41,7 +41,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
     internal var removedMut = true
     protected val components =
             ConcurrentOrderedCollection(comparator<GuiComponent>())
-    private val guiEvents = ConcurrentHashMap<GuiEvent, MutableSet<(GuiComponentEvent) -> Unit>>()
+    private val guiEvents = ConcurrentHashMap<GuiEvent<*>, MutableSet<(GuiComponentEvent) -> Unit>>()
     private val hasActiveChild = AtomicBoolean(true)
     val events = EventDispatcher(listenerParent) { listeners() }
 
@@ -57,19 +57,24 @@ abstract class GuiComponent(val engine: ScapesEngine,
     ) : this(engine, parent, engine.events)
 
     init {
-        on(GuiEvent.CLICK_LEFT, { gui.lastClicked = this })
+        on(GuiEvent.CLICK_LEFT, { gui.currentSelection = this })
     }
 
     open protected fun ListenerRegistrar.listeners() {}
 
-    fun on(event: GuiEvent,
-           listener: (GuiComponentEvent) -> Unit) {
+    fun <T : GuiComponentEvent> on(
+            event: GuiEvent<T>,
+            listener: (T) -> Unit
+    ) {
         val listeners = guiEvents.computeAbsent(event) { ConcurrentHashSet() }
-        listeners.add(listener)
+        @Suppress("UNCHECKED_CAST")
+        listeners.add { listener(it as T) }
     }
 
-    fun fireEvent(type: GuiEvent,
-                  event: GuiComponentEvent): Boolean {
+    fun <T : GuiComponentEvent> fireEvent(
+            type: GuiEvent<T>,
+            event: T
+    ): Boolean {
         val listeners = guiEvents[type]
         if (listeners == null || listeners.isEmpty()) {
             return false
@@ -171,8 +176,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
                 hovering = false
                 size()?.let { size ->
                     fireEvent(GuiEvent.HOVER_LEAVE,
-                            GuiComponentEvent(Double.NaN,
-                                    Double.NaN, size))
+                            GuiComponentEvent(size = size))
                 }
             }
             if (hover) {
@@ -204,13 +208,15 @@ abstract class GuiComponent(val engine: ScapesEngine,
         parent.parent?.activeUpdate()
     }
 
-    protected fun fireEvent(event: GuiComponentEvent,
-                            listener: (GuiComponent, GuiComponentEvent) -> Boolean): GuiComponent? {
+    protected fun <T : GuiComponentEvent> fireEvent(
+            event: T,
+            listener: (GuiComponent, T) -> Boolean
+    ): GuiComponent? {
         if (visible) {
             val inside = checkInside(event.x, event.y, event.size)
             if (inside) {
                 val layout = layoutManager(event.size)
-                for (component in layout.layout()) {
+                for (component in layout.layoutReversed()) {
                     if (!component.first.parent.blocksEvents) {
                         val sink = component.first.fireEvent(
                                 applyTransform(event, component),
@@ -229,14 +235,16 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return null
     }
 
-    protected fun fireRecursiveEvent(event: GuiComponentEvent,
-                                     listener: (GuiComponent, GuiComponentEvent) -> Boolean): Set<GuiComponent> {
+    protected fun <T : GuiComponentEvent> fireRecursiveEvent(
+            event: T,
+            listener: (GuiComponent, T) -> Boolean
+    ): Set<GuiComponent> {
         if (visible) {
             val inside = checkInside(event.x, event.y, event.size)
             if (inside) {
                 val sinks = HashSet<GuiComponent>()
                 val layout = layoutManager(event.size)
-                for (component in layout.layout()) {
+                for (component in layout.layoutReversed()) {
                     if (!component.first.parent.blocksEvents) {
                         sinks.addAll(component.first.fireRecursiveEvent(
                                 applyTransform(event, component), listener))
@@ -253,12 +261,14 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return emptySet()
     }
 
-    protected fun sendEvent(event: GuiComponentEvent,
-                            destination: GuiComponent,
-                            listener: (GuiComponentEvent) -> Unit): Boolean {
+    protected fun <T : GuiComponentEvent> sendEvent(
+            event: T,
+            destination: GuiComponent,
+            listener: (T) -> Unit
+    ): Boolean {
         if (visible) {
             val layout = layoutManager(event.size)
-            for (component in layout.layout()) {
+            for (component in layout.layoutReversed()) {
                 if (!component.first.parent.blocksEvents) {
                     val success = component.first.sendEvent(
                             applyTransform(event, component),
@@ -302,12 +312,13 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return null
     }
 
-    protected fun applyTransform(event: GuiComponentEvent,
-                                 component: Triple<GuiComponent, Vector2d, Vector2d>): GuiComponentEvent {
+    protected fun <T : GuiComponentEvent> applyTransform(
+            event: T,
+            component: Triple<GuiComponent, Vector2d, Vector2d>
+    ): T {
         val pos = applyTransform(event.x - component.second.x,
                 event.y - component.second.y, component.third)
-        return GuiComponentEvent(event, pos.x, pos.y,
-                component.third)
+        return event.copy(x = pos.x, y = pos.y, size = component.third)
     }
 
     protected fun applyTransform(x: Double,
@@ -379,13 +390,16 @@ abstract class GuiComponent(val engine: ScapesEngine,
     }
 
     companion object {
-        fun sink(
-                type: GuiEvent): Function2<GuiComponent, GuiComponentEvent, Boolean> {
+        fun <T : GuiComponentEvent> sink(
+                type: GuiEvent<T>
+        ): (GuiComponent, T) -> Boolean {
             return { component, event -> component.fireEvent(type, event) }
         }
 
-        fun sink(type: GuiEvent,
-                 component: GuiComponent): (GuiComponentEvent) -> Unit {
+        fun <T : GuiComponentEvent> sink(
+                type: GuiEvent<T>,
+                component: GuiComponent
+        ): (T) -> Unit {
             return { event -> component.fireEvent(type, event) }
         }
 

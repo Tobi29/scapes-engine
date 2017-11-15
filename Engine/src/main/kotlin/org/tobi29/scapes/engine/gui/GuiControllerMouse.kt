@@ -16,15 +16,16 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.input.ControllerBasic
-import org.tobi29.scapes.engine.input.ControllerDefault
-import org.tobi29.scapes.engine.input.ControllerKey
+import org.tobi29.scapes.engine.input.*
 import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.EventDispatcher
+import org.tobi29.scapes.engine.utils.listenAlive
 
-class GuiControllerMouse constructor(engine: ScapesEngine,
-                                     controller: ControllerDefault,
-                                     private val scrollSensitivity: Double = 1.0) : GuiControllerDefault(
-        engine, controller) {
+class GuiControllerMouse(
+        engine: ScapesEngine,
+        controller: ControllerDesktop,
+        private val scrollSensitivity: Double = 1.0
+) : GuiControllerDefault(engine, controller) {
     private val cursor = GuiCursor()
     private var draggingLeft: GuiComponent? = null
     private var draggingRight: GuiComponent? = null
@@ -33,10 +34,28 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
     private var dragRightX = 0.0
     private var dragRightY = 0.0
     private var activeCursor = true
+    private val events = EventDispatcher(engine.events) {
+        listenAlive<ControllerButtons.PressEvent> { event ->
+            if (when (event.action) {
+                ControllerButtons.Action.PRESS, ControllerButtons.Action.REPEAT ->
+                    handlePress(event.key,
+                            event.action == ControllerButtons.Action.REPEAT,
+                            GuiComponentEvent(controller.x, controller.y))
+                ControllerButtons.Action.RELEASE ->
+                    handleRelease(event.key,
+                            GuiComponentEvent(controller.x, controller.y))
+            }) event.muted = true
+        }
+        listen<ControllerMouse.ScrollEvent> { event ->
+            engine.guiStack.fireRecursiveEvent(GuiEvent.SCROLL,
+                    GuiComponentEventScroll(event.state.x, event.state.y,
+                            delta = event.delta))
+        }
+    }
 
     override fun update(delta: Double) {
-        val cursorX = controller.x()
-        val cursorY = controller.y()
+        val cursorX = controller.x
+        val cursorY = controller.y
         if (cursor.set(Vector2d(cursorX, cursorY))) activeCursor = true
         draggingLeft?.let { component ->
             val guiPos = cursor.currentPos()
@@ -45,8 +64,9 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
             dragLeftX = guiPos.x
             dragLeftY = guiPos.y
             component.gui.sendNewEvent(GuiEvent.DRAG_LEFT,
-                    GuiComponentEvent(cursorX, cursorY, relativeX,
-                            relativeY), component)
+                    GuiComponentEventDrag(cursorX, cursorY,
+                            relativeX = relativeX,
+                            relativeY = relativeY), component)
         }
         draggingRight?.let { component ->
             val guiPos = cursor.currentPos()
@@ -55,15 +75,9 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
             dragRightX = guiPos.x
             dragRightY = guiPos.y
             component.gui.sendNewEvent(GuiEvent.DRAG_RIGHT,
-                    GuiComponentEvent(cursorX, cursorY, relativeX,
-                            relativeY), component)
-        }
-        val scrollX = controller.scrollX() * scrollSensitivity
-        val scrollY = controller.scrollY() * scrollSensitivity
-        if (scrollX != 0.0 || scrollY != 0.0) {
-            engine.guiStack.fireRecursiveEvent(GuiEvent.SCROLL,
-                    GuiComponentEvent(cursorX, cursorY, scrollX,
-                            scrollY, false))
+                    GuiComponentEventDrag(cursorX, cursorY,
+                            relativeX = relativeX,
+                            relativeY = relativeY), component)
         }
         val componentEvent = GuiComponentEvent(cursorX, cursorY)
         if (activeCursor) {
@@ -71,81 +85,79 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                     GuiComponent::hover)
             engine.tooltip.setTooltip(hover?.let { Pair(it, cursor) })
         }
-        controller.pressEvents().forEach { event ->
-            when (event.state) {
-                ControllerBasic.PressState.PRESS, ControllerBasic.PressState.REPEAT -> handlePress(
-                        event.key, componentEvent)
-                ControllerBasic.PressState.RELEASE -> handleRelease(event.key,
-                        componentEvent)
-            }
-        }
     }
 
     override fun cursors(): Sequence<GuiCursor> {
         return sequenceOf(cursor)
     }
 
-    override fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>> {
-        return controller.pressEvents().map { event -> Pair(cursor, event) }
-    }
-
     override fun activeCursor(): Boolean = activeCursor
 
     private fun handlePress(key: ControllerKey,
-                            event: GuiComponentEvent) {
-        when (key) {
-            ControllerKey.BUTTON_0 -> {
-                val guiPos = cursor.currentPos()
-                draggingLeft = engine.guiStack.fireEvent(GuiEvent.PRESS_LEFT,
-                        event)
-                dragLeftX = guiPos.x
-                dragLeftY = guiPos.y
-                if (engine.guiStack.fireEvent(GuiEvent.CLICK_LEFT,
-                        event) != null) {
-                    return
+                            repeat: Boolean,
+                            event: GuiComponentEvent): Boolean =
+            when (key) {
+                ControllerKey.BUTTON_0 -> {
+                    val guiPos = cursor.currentPos()
+                    draggingLeft = engine.guiStack.fireEvent(
+                            GuiEvent.PRESS_LEFT, event)
+                    dragLeftX = guiPos.x
+                    dragLeftY = guiPos.y
+                    engine.guiStack.fireEvent(GuiEvent.CLICK_LEFT,
+                            event) != null
                 }
-            }
-            ControllerKey.BUTTON_1 -> {
-                val guiPos = cursor.currentPos()
-                draggingRight = engine.guiStack.fireEvent(GuiEvent.PRESS_RIGHT,
-                        event)
-                dragRightX = guiPos.x
-                dragRightY = guiPos.y
-                if (engine.guiStack.fireEvent(GuiEvent.CLICK_RIGHT,
-                        event) != null) {
-                    return
+                ControllerKey.BUTTON_1 -> {
+                    val guiPos = cursor.currentPos()
+                    draggingRight = engine.guiStack.fireEvent(
+                            GuiEvent.PRESS_RIGHT, event)
+                    dragRightX = guiPos.x
+                    dragRightY = guiPos.y
+                    engine.guiStack.fireEvent(GuiEvent.CLICK_RIGHT,
+                            event) != null
                 }
+                ControllerKey.KEY_ESCAPE -> {
+                    if (!repeat) {
+                        activeCursor = false
+                        engine.guiStack.fireAction(GuiAction.BACK)
+                    } else false
+                }
+                ControllerKey.KEY_ENTER -> {
+                    if (!repeat) {
+                        activeCursor = false
+                        engine.guiStack.fireAction(GuiAction.ACTIVATE)
+                    } else false
+                }
+                ControllerKey.KEY_UP -> {
+                    activeCursor = false
+                    engine.guiStack.fireAction(GuiAction.UP)
+                }
+                ControllerKey.KEY_DOWN -> {
+                    activeCursor = false
+                    engine.guiStack.fireAction(GuiAction.DOWN)
+                }
+                ControllerKey.KEY_LEFT -> {
+                    activeCursor = false
+                    engine.guiStack.fireAction(GuiAction.LEFT)
+                }
+                ControllerKey.KEY_RIGHT -> {
+                    activeCursor = false
+                    engine.guiStack.fireAction(GuiAction.RIGHT)
+                }
+                else -> false
             }
-            ControllerKey.KEY_ESCAPE -> {
-                activeCursor = false
-                if (engine.guiStack.fireAction(GuiAction.BACK)) return
-            }
-            ControllerKey.KEY_ENTER -> {
-                activeCursor = false
-                if (engine.guiStack.fireAction(GuiAction.ACTIVATE)) return
-            }
-            ControllerKey.KEY_UP -> {
-                activeCursor = false
-                if (engine.guiStack.fireAction(GuiAction.UP)) return
-            }
-            ControllerKey.KEY_DOWN -> {
-                activeCursor = false
-                if (engine.guiStack.fireAction(GuiAction.DOWN)) return
-            }
-            ControllerKey.KEY_LEFT -> {
-                activeCursor = false
-                if (engine.guiStack.fireAction(GuiAction.LEFT)) return
-            }
-            ControllerKey.KEY_RIGHT -> {
-                activeCursor = false
-                if (engine.guiStack.fireAction(GuiAction.RIGHT)) return
-            }
-        }
-        firePress(key)
+
+    override fun enabled() {
+        super.enabled()
+        events.enable()
+    }
+
+    override fun disabled() {
+        super.disabled()
+        events.disable()
     }
 
     private fun handleRelease(key: ControllerKey,
-                              event: GuiComponentEvent) {
+                              event: GuiComponentEvent): Boolean {
         when (key) {
             ControllerKey.BUTTON_0 -> draggingLeft?.let { component ->
                 component.gui.sendNewEvent(GuiEvent.DROP_LEFT, event, component)
@@ -156,6 +168,8 @@ class GuiControllerMouse constructor(engine: ScapesEngine,
                         component)
                 draggingRight = null
             }
+            else -> return false
         }
+        return true
     }
 }

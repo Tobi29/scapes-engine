@@ -15,23 +15,26 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.input.ScrollDelta
+import org.tobi29.scapes.engine.math.Face
+import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.math.vector.div
 import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.math.Face
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.div
 
 abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         GuiLayoutDataRoot()) {
     private val actions = ConcurrentHashMap<GuiAction, MutableSet<() -> Unit>>()
-    var lastClicked: GuiComponent? = null
-    private var currentSelection = AtomicReference<GuiComponent?>(null)
+    private var currentSelectionMut = AtomicReference<GuiComponent?>(null)
+    var currentSelection: GuiComponent?
+        get() = currentSelectionMut.get()
+        set(value) = currentSelectionMut.set(value)
 
     init {
         on(GuiAction.ACTIVATE, {
-            currentSelection.get()?.let { selection ->
+            currentSelectionMut.get()?.let { selection ->
                 sendNewEvent(GuiEvent.CLICK_LEFT, GuiComponentEvent(),
                         selection)
             }
@@ -44,26 +47,28 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         })
         on(GuiAction.LEFT, {
             if (!moveSelection(Face.EAST)) {
-                currentSelection.get()?.let { selection ->
+                currentSelectionMut.get()?.let { selection ->
                     sendNewEvent(GuiEvent.SCROLL,
-                            GuiComponentEvent(Double.NaN, Double.NaN, 1.0, 0.0,
-                                    false), selection)
+                            GuiComponentEventScroll(Double.NaN, Double.NaN,
+                                    delta = ScrollDelta.Line(
+                                            Vector2d(1.0, 0.0))), selection)
                 }
             }
         })
         on(GuiAction.RIGHT, {
             if (!moveSelection(Face.WEST)) {
-                currentSelection.get()?.let { selection ->
+                currentSelectionMut.get()?.let { selection ->
                     sendNewEvent(GuiEvent.SCROLL,
-                            GuiComponentEvent(Double.NaN, Double.NaN, -1.0, 0.0,
-                                    false), selection)
+                            GuiComponentEventScroll(Double.NaN, Double.NaN,
+                                    delta = ScrollDelta.Line(
+                                            Vector2d(-1.0, 0.0))), selection)
                 }
             }
         })
     }
 
     private fun moveSelection(face: Face): Boolean {
-        var level = currentSelection.get() ?: findSelectable() ?: return false
+        var level = currentSelectionMut.get() ?: findSelectable() ?: return false
         val next: GuiComponent
         while (true) {
             val container = level.parent.parent ?: return false
@@ -81,21 +86,21 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
                 break
             }
         }
-        currentSelection.set(next)
+        currentSelectionMut.set(next)
         return true
     }
 
     fun selectDefault() {
         if (!removedMut) {
-            if (currentSelection.get() === null) {
-                currentSelection.compareAndSet(null, findSelectable())
+            if (currentSelectionMut.get() === null) {
+                currentSelectionMut.compareAndSet(null, findSelectable())
             }
         }
     }
 
     fun deselect(component: GuiComponent) {
-        if (currentSelection.get() === component) {
-            currentSelection.compareAndSet(component, findSelectable())
+        if (currentSelectionMut.get() === component) {
+            currentSelectionMut.compareAndSet(component, findSelectable())
         }
     }
 
@@ -105,36 +110,48 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         listeners.add(listener)
     }
 
-    fun fireNewEvent(type: GuiEvent,
-                     event: GuiComponentEvent): GuiComponent? {
+    fun <T : GuiComponentEvent> fireNewEvent(
+            type: GuiEvent<T>,
+            event: T
+    ): GuiComponent? {
         return fireNewEvent(event, GuiComponent.sink(type))
     }
 
-    fun fireNewEvent(event: GuiComponentEvent,
-                     listener: (GuiComponent, GuiComponentEvent) -> Boolean): GuiComponent? {
+    fun <T : GuiComponentEvent> fireNewEvent(
+            event: T,
+            listener: (GuiComponent, T) -> Boolean
+    ): GuiComponent? {
         return fireEvent(scaleEvent(event), listener)
     }
 
-    fun fireNewRecursiveEvent(type: GuiEvent,
-                              event: GuiComponentEvent): Set<GuiComponent> {
+    fun <T : GuiComponentEvent> fireNewRecursiveEvent(
+            type: GuiEvent<T>,
+            event: T
+    ): Set<GuiComponent> {
         return fireNewRecursiveEvent(event, GuiComponent.sink(type))
     }
 
-    fun fireNewRecursiveEvent(event: GuiComponentEvent,
-                              listener: (GuiComponent, GuiComponentEvent) -> Boolean): Set<GuiComponent> {
+    fun <T : GuiComponentEvent> fireNewRecursiveEvent(
+            event: T,
+            listener: (GuiComponent, T) -> Boolean
+    ): Set<GuiComponent> {
         return fireRecursiveEvent(scaleEvent(event), listener)
     }
 
-    fun sendNewEvent(type: GuiEvent,
-                     event: GuiComponentEvent,
-                     destination: GuiComponent): Boolean {
+    fun <T : GuiComponentEvent> sendNewEvent(
+            type: GuiEvent<T>,
+            event: T,
+            destination: GuiComponent
+    ): Boolean {
         return sendNewEvent(event, destination,
                 GuiComponent.sink(type, destination))
     }
 
-    fun sendNewEvent(event: GuiComponentEvent,
-                     destination: GuiComponent,
-                     listener: (GuiComponentEvent) -> Unit): Boolean {
+    fun <T : GuiComponentEvent> sendNewEvent(
+            event: T,
+            destination: GuiComponent,
+            listener: (T) -> Unit
+    ): Boolean {
         return sendEvent(scaleEvent(event), destination, listener)
     }
 
@@ -158,7 +175,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
     public override fun update(delta: Double) {
         super.update(delta)
         if (visible && !engine.guiController.activeCursor()) {
-            currentSelection.get()?.let { selection ->
+            currentSelectionMut.get()?.let { selection ->
                 sendNewEvent(GuiComponentEvent(),
                         selection) { selection.hover(it) }
             }
@@ -169,11 +186,11 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         return true
     }
 
-    private fun scaleEvent(event: GuiComponentEvent): GuiComponentEvent {
+    private fun <T : GuiComponentEvent> scaleEvent(event: T): T {
         val size = baseSize()
         val container = engine.container
         val containerSize = Vector2d(container.containerWidth.toDouble(),
                 container.containerHeight.toDouble())
-        return GuiComponentEvent(event, size, size / containerSize)
+        return event.scale(size / containerSize, size)
     }
 }

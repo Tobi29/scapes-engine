@@ -20,19 +20,20 @@ import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.clamp
 import kotlin.math.min
 
-class GuiComponentEditableText constructor(parent: GuiLayoutData,
-                                           text: String,
-                                           private val maxLength: Int,
-                                           private val r: Float = 1.0f,
-                                           private val g: Float = 1.0f,
-                                           private val b: Float = 1.0f,
-                                           private val a: Float = 1.0f) : GuiComponentHeavy(
-        parent) {
+class GuiComponentEditableText(
+        parent: GuiLayoutData,
+        text: String,
+        private val maxLength: Int,
+        private val active: () -> Boolean,
+        private val r: Float = 1.0f,
+        private val g: Float = 1.0f,
+        private val b: Float = 1.0f,
+        private val a: Float = 1.0f
+) : GuiComponentHeavy(parent) {
     private val data = GuiController.TextFieldData()
-    private var active2 = false
-    private var focused = false
     private var vaoCursor: List<Pair<Model, Texture>>? = null
     private var vaoSelection: List<Pair<Model, Texture>>? = null
+    private var focused = false
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
@@ -41,11 +42,12 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
 
     constructor(parent: GuiLayoutData,
                 text: String,
+                active: () -> Boolean,
                 r: Float = 1.0f,
                 g: Float = 1.0f,
                 b: Float = 1.0f,
-                a: Float = 1.0f) : this(
-            parent, text, Int.MAX_VALUE, r, g, b, a)
+                a: Float = 1.0f
+    ) : this(parent, text, Int.MAX_VALUE, active, r, g, b, a)
 
     init {
         data.text.append(text)
@@ -53,34 +55,29 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
         dirty()
     }
 
-    fun data(): GuiController.TextFieldData {
-        return data
-    }
+    val isActive: Boolean get() = active()
 
-    fun active(): Boolean {
-        return active2
-    }
-
-    fun setActive(active: Boolean) {
-        this.active2 = active
-    }
-
-    fun text(): String {
-        return data.text.toString()
-    }
-
-    fun setText(text: String) {
-        if (data.text.toString() != text) {
-            data.text.clear()
-            data.text.append(text)
-            dirty()
+    var text: String
+        get() = synchronized(data) { data.text.toString() }
+        set(value) = synchronized(data) {
+            if (data.text.toString() != text) {
+                data.text.clear()
+                data.text.append(text)
+                dirty()
+            }
         }
-    }
 
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
+        var text = ""
+        var selectionStart = 0
+        var selectionEnd = 0
+        synchronized(data) {
+            text = data.text.toString()
+            selectionStart = clamp(data.selectionStart, -1, text.length)
+            selectionEnd = clamp(data.selectionEnd, 0, text.length)
+        }
         val font = gui.style.font
-        val text = data.text.toString()
         font.render(FontRenderer.to(renderer, r, g, b, a),
                 textFilter(text), size.floatY(), size.floatX())
         val batch = GuiRenderBatch(renderer.pixelSize)
@@ -92,8 +89,6 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                 cursor,
                 cursor + 1)
         vaoCursor = batch.finish()
-        val selectionStart = clamp(data.selectionStart, -1, text.length)
-        val selectionEnd = clamp(data.selectionEnd, 0, text.length)
         if (selectionStart >= 0) {
             font.render(
                     FontRenderer.to(batch, 0.0f, 0.0f, true, 1.0f, 1.0f, 1.0f,
@@ -107,13 +102,19 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
     }
 
     override fun updateComponent(delta: Double) {
-        if (active2) {
+        if (isActive) {
             if (!focused) {
-                engine.guiController.focusTextField(data, false)
+                engine.guiController.focusTextField({ isActive }, data, false)
                 focused = true
             }
+        } else if (focused) {
+            data.selectionStart = -1
+            data.cursor = data.text.length
+            focused = false
+        }
+        if (data.dirty.getAndSet(false)) {
             size()?.let { size ->
-                if (engine.guiController.processTextField(data, false)) {
+                synchronized(data) {
                     if (data.text.length > maxLength) {
                         data.text.delete(maxLength, data.text.length)
                         data.cursor = min(data.cursor, maxLength)
@@ -127,13 +128,9 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                         data.text.delete(maxLengthFont, data.text.length)
                         data.cursor = min(data.cursor, maxLengthFont)
                     }
-                    dirty()
                 }
             }
-        } else {
-            data.selectionStart = -1
-            data.cursor = data.text.length
-            focused = false
+            dirty()
         }
     }
 
@@ -143,7 +140,7 @@ class GuiComponentEditableText constructor(parent: GuiLayoutData,
                                         pixelSize: Vector2d,
                                         delta: Double) {
         super.renderComponent(gl, shader, size, pixelSize, delta)
-        if (active2) {
+        if (isActive) {
             if (gl.timestamp / 600000000L % 2L == 0L) {
                 vaoCursor?.forEach {
                     it.second.bind(gl)

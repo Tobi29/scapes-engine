@@ -49,7 +49,7 @@ class ControllerKeyReference {
         }
     }
 
-    fun isDown(controller: ControllerBasic): Boolean {
+    fun isDown(controller: ControllerButtons): Boolean {
         if (key == null) {
             return false
         }
@@ -64,24 +64,9 @@ class ControllerKeyReference {
         return true
     }
 
-    fun isPressed(controller: ControllerBasic): Boolean {
-        if (key == null) {
-            return false
-        }
-        if (!controller.isPressed(key)) {
-            return false
-        }
-        for (key in modifiers) {
-            if (!controller.isDown(key)) {
-                return false
-            }
-        }
-        return true
-    }
-
     fun isPressed(event: ControllerKey,
-                  controller: ControllerBasic): Boolean {
-        return event == key && isPressed(controller)
+                  controller: ControllerButtons): Boolean {
+        return event == key && isDown(controller)
     }
 
     fun isReleased(event: ControllerKey): Boolean {
@@ -124,17 +109,8 @@ class ControllerKeyReference {
                     ControllerKey.valueOf(split[0]) ?: return null, modifiers)
         }
 
-        fun isDown(controller: ControllerBasic,
-                   vararg references: ControllerKeyReference?) =
-                mostSpecific({ it.isDown(controller) }, *references)
-
-
-        fun isPressed(controller: ControllerBasic,
-                      vararg references: ControllerKeyReference?) =
-                mostSpecific({ it.isPressed(controller) }, *references)
-
         fun isPressed(event: ControllerKey,
-                      controller: ControllerBasic,
+                      controller: ControllerButtons,
                       vararg references: ControllerKeyReference?) =
                 mostSpecific({ it.isPressed(event, controller) }, *references)
 
@@ -157,15 +133,9 @@ class ControllerKeyReference {
     }
 }
 
-fun ControllerKeyReference?.isDown(controller: ControllerBasic) =
+fun ControllerKeyReference?.isDown(controller: ControllerButtons) =
         this?.isDown(controller) ?: false
 
-fun ControllerKeyReference?.isPressed(controller: ControllerBasic) =
-        this?.isPressed(controller) ?: false
-
 fun ControllerKeyReference?.isPressed(event: ControllerKey,
-                                      controller: ControllerBasic) =
+                                      controller: ControllerButtons) =
         this?.isPressed(event, controller) ?: false
-
-fun ControllerKeyReference?.isReleased(event: ControllerKey) =
-        this?.isReleased(event) ?: true

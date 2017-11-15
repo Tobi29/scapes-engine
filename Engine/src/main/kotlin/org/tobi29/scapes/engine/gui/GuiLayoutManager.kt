@@ -15,14 +15,14 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.Pool
-import org.tobi29.scapes.engine.utils.ThreadLocal
 import org.tobi29.scapes.engine.math.Face
-import kotlin.math.max
-import kotlin.math.min
 import org.tobi29.scapes.engine.math.vector.MutableVector2d
 import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.math.vector.minus
+import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.ThreadLocal
+import kotlin.math.max
+import kotlin.math.min
 
 abstract class GuiLayoutManager(protected val start: Vector2d,
                                 protected val maxSize: Vector2d,
@@ -35,7 +35,12 @@ abstract class GuiLayoutManager(protected val start: Vector2d,
         this.components.addAll(components)
     }
 
-    fun layout(): List<Triple<GuiComponent, Vector2d, Vector2d>> {
+    fun layout(): List<Triple<GuiComponent, Vector2d, Vector2d>> = layoutImpl()
+
+    fun layoutReversed(): ArrayList<Triple<GuiComponent, Vector2d, Vector2d>> =
+            layoutImpl().apply { reverse() }
+
+    private fun layoutImpl(): ArrayList<Triple<GuiComponent, Vector2d, Vector2d>> {
         val output = ArrayList<Triple<GuiComponent, Vector2d, Vector2d>>(
                 components.size)
         layout(output)

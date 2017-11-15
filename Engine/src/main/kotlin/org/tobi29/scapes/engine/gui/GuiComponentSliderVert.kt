@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.scapes.engine.input.ScrollDelta
 import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.sound.CLICK
 import org.tobi29.scapes.engine.utils.math.clamp
@@ -36,9 +37,14 @@ class GuiComponentSliderVert(parent: GuiLayoutData,
                     (event.y - this.sliderHeight * 0.5) / (event.size.y - this.sliderHeight))
         }
         on(GuiEvent.SCROLL) { event ->
-            if (!event.screen) {
-                val delta = event.relativeY * 0.05
-                setValue(this.value - delta)
+            // TODO: Do we want to scroll on pixel delta?
+            when (event.delta) {
+                is ScrollDelta.Line -> setValue(
+                        this.value - event.delta.delta.y * 0.05)
+                is ScrollDelta.Page -> if (event.delta.delta.y > 0.0)
+                    setValue(1.0)
+                else if (event.delta.delta.y < 0.0)
+                    setValue(0.0)
             }
         }
         on(GuiEvent.CLICK_LEFT) { event ->

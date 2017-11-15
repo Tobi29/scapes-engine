@@ -17,34 +17,28 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.input.ControllerBasic
-import org.tobi29.scapes.engine.input.ControllerKey
+import org.tobi29.scapes.engine.utils.AtomicBoolean
 import org.tobi29.scapes.engine.utils.MutableString
 
 abstract class GuiController(protected val engine: ScapesEngine) {
-    abstract fun update(delta: Double)
+    open fun update(delta: Double) {}
 
-    abstract fun focusTextField(data: TextFieldData,
+    abstract fun focusTextField(valid: () -> Boolean,
+                                data: TextFieldData,
                                 multiline: Boolean)
 
-    abstract fun processTextField(data: TextFieldData,
-                                  multiline: Boolean): Boolean
+    open fun cursors(): Sequence<GuiCursor> = emptySequence()
 
-    abstract fun cursors(): Sequence<GuiCursor>
-
-    abstract fun clicks(): Sequence<Pair<GuiCursor, ControllerBasic.PressEvent>>
-
-    abstract fun captureCursor(): Boolean
+    open fun captureCursor(): Boolean = false
 
     open fun activeCursor(): Boolean = false
 
-    protected fun firePress(key: ControllerKey): Boolean {
-        val event = PressEvent(this, key)
-        engine.events.fire(event)
-        return !event.muted
-    }
+    open fun enabled() {}
+
+    open fun disabled() {}
 
     class TextFieldData {
+        val dirty = AtomicBoolean(false)
         var text = MutableString(100)
         var cursor = 0
         var selectionStart = -1
@@ -161,9 +155,4 @@ abstract class GuiController(protected val engine: ScapesEngine) {
             text.insert(cursor++, character)
         }
     }
-}
-
-class PressEvent(val controller: GuiController,
-                 val key: ControllerKey) {
-    var muted = false
 }
