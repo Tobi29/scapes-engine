@@ -105,7 +105,8 @@ inline operator fun Vector2d.div(other: Vector2d): Vector2d {
  * @receiver The vector to use
  * @return Length of the given [Vector2d]
  */
-inline fun Vector2d.length(): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector2d.length(): Double {
     return sqrt(lengthSqr())
 }
 
@@ -153,7 +154,8 @@ inline fun Vector2d.direction(other: Vector2d): Double {
  * @receiver The vector
  * @return The direction in radians
  */
-inline fun Vector2d.direction(): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector2d.direction(): Double {
     return direction(x, y)
 }
 
@@ -186,7 +188,8 @@ inline fun inside(origin: Vector2d,
  * @receiver The vector
  * @return Normalized vector with a length of `1.0`, or filled with `NaN` if the given vector is `(0,0)`
  */
-inline fun Vector2d.normalize(): Vector2d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector2d.normalize(): Vector2d {
     val length = length()
     return this / length
 }
@@ -196,7 +199,8 @@ inline fun Vector2d.normalize(): Vector2d {
  * @receiver The vector
  * @return Normalized vector with a length of `1.0`, or filled with `0` if the given vector is `(0,0)`
  */
-inline fun Vector2d.normalizeSafe(): Vector2d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector2d.normalizeSafe(): Vector2d {
     val length = length()
     if (length == 0.0) {
         return Vector2d.ZERO

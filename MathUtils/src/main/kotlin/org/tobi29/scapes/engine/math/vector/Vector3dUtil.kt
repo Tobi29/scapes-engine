@@ -105,7 +105,8 @@ inline operator fun Vector3d.div(other: Vector3d): Vector3d {
  * @receiver The vector to use
  * @return Length of the given [Vector3d]
  */
-inline fun Vector3d.length(): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector3d.length(): Double {
     return sqrt(lengthSqr())
 }
 
@@ -124,7 +125,8 @@ inline fun Vector3d.lengthSqr(): Double {
  * @param other The second vector
  * @return Distance between the given [Vector3d]s
  */
-inline infix fun Vector3d.distance(other: Vector3d): Double {
+// TODO: Kotlin/JS Bug
+/*inline*/ infix fun Vector3d.distance(other: Vector3d): Double {
     return sqrt(distanceSqr(other))
 }
 
@@ -179,7 +181,8 @@ inline fun inside(origin: Vector3d,
  * @receiver The vector
  * @return Normalized vector with a length of `1.0`, or filled with `NaN` if the given vector is `(0,0,0)`
  */
-inline fun Vector3d.normalize(): Vector3d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector3d.normalize(): Vector3d {
     val length = length()
     return this / length
 }
@@ -189,7 +192,8 @@ inline fun Vector3d.normalize(): Vector3d {
  * @receiver The vector
  * @return Normalized vector with a length of `1.0`, or filled with `0` if the given vector is `(0,0,0)`
  */
-inline fun Vector3d.normalizeSafe(): Vector3d {
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector3d.normalizeSafe(): Vector3d {
     val length = length()
     if (length == 0.0) {
         return Vector3d.ZERO
