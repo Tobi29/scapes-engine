@@ -74,7 +74,7 @@ abstract class GuiApplication(
         display.asyncExec(runnable)
     }
 
-    override fun execute(commandLine: CommandLine): StatusCode {
+    override suspend fun execute(commandLine: CommandLine): StatusCode {
         try {
             initApplication(commandLine)
             while (!done()) {

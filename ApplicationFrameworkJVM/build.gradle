@@ -20,4 +20,5 @@ implementCommon(project(":ApplicationFramework"))
 
 dependencies {
     compile project(":ArgumentParserJVM")
+    compile project(":ThreadUtilsJVM")
 }

@@ -21,9 +21,9 @@ abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
     private val optionsMut = ArrayList<CommandOption>()
     val options = optionsMut.readOnly()
 
-    abstract fun execute(commandLine: CommandLine): StatusCode
+    abstract suspend fun execute(commandLine: CommandLine): StatusCode
 
-    override fun execute(args: Array<String>): StatusCode {
+    override suspend fun execute(args: Array<String>): StatusCode {
         val commandLine = tryWrap<CommandLine, InvalidCommandLineException> {
             optionsMut.parseCommandLine(args.asIterable())
         }.unwrapOr { e ->
