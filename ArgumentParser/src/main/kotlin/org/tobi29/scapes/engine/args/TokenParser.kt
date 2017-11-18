@@ -23,31 +23,44 @@ import org.tobi29.scapes.engine.utils.readOnly
  */
 class TokenParser
 /**
- * Constructs a new parses using the given options
- * @param options The sequence of options to use for parsing
+ * Constructs a new parses using the given elements
+ * @param elements The sequence of elements to use for parsing
  */
-(private val options: Iterable<CommandOption>) {
+(elements: Iterable<CommandElement>) {
     private var optionsTerminated = false
     private var currentOption: CommandOption? = null
     private val currentArgs = ArrayList<String>()
     private val tokensMut = ArrayList<Token>()
+    private var subcommands = emptyMap<String, CommandSubcommand>()
+    private var shortOptions = HashMap<Char, CommandOption>()
+    private var longOptions = HashMap<String, CommandOption>()
+
+    /**
+     * The current innermost subcommand
+     */
+    var subcommand: CommandSubcommand? = null
+        private set
 
     /**
      * The current list of parsed tokens
      */
     val tokens = tokensMut.readOnly()
 
+    init {
+        enterCommand(elements)
+    }
+
     /**
      * Finishes the parsing and returns a list of parsed tokens
      */
-    fun finish(): List<Token> {
+    fun finish(): Pair<CommandSubcommand?, List<Token>> {
         currentOption?.let { option ->
             tokensMut.add(Token.Parameter(option, currentArgs))
             currentArgs.clear()
             currentOption = null
         }
 
-        return tokens
+        return subcommand to tokens
     }
 
     /**
@@ -94,13 +107,18 @@ class TokenParser
 
     private fun appendArg(token: String) {
         currentOption?.let { option ->
-            if (currentArgs.size >= option.args - 1) {
+            if (currentArgs.size >= option.args.size - 1) {
                 tokensMut.add(Token.Parameter(option, currentArgs + token))
                 currentArgs.clear()
                 currentOption = null
             } else {
                 currentArgs.add(token)
             }
+            return
+        }
+
+        subcommands[token]?.let { subcommand ->
+            enterSubcommand(subcommand)
             return
         }
 
@@ -112,11 +130,10 @@ class TokenParser
 
         if (equals >= 0) {
             for (i in 0..equals - 2) {
-                val char = token[i]
-                (options.firstOrNull { it.matches(char) }
-                        ?: throw InvalidCommandLineException(
-                        "Invalid option: $char")).let {
-                    if (it.args > 0) {
+                val name = token[i]
+                (shortOptions[name] ?: throw InvalidCommandLineException(
+                        "Invalid option: $name")).let {
+                    if (it.args.isNotEmpty()) {
                         currentOption = it
                     } else {
                         tokensMut.add(Token.Parameter(it, emptyList()))
@@ -127,19 +144,17 @@ class TokenParser
             val name = token[equals - 1]
             val argument = token.substring(equals + 1)
 
-            (options.firstOrNull { it.matches(name) }
-                    ?: throw InvalidCommandLineException(
+            (shortOptions[name] ?: throw InvalidCommandLineException(
                     "Invalid option: $name")).let {
                 tokensMut.add(Token.Parameter(it, listOf(argument)))
             }
             return
         }
 
-        for (char in token) {
-            (options.firstOrNull { it.matches(char) }
-                    ?: throw InvalidCommandLineException(
-                    "Invalid option: $char")).let {
-                if (it.args > 0) {
+        for (name in token) {
+            (shortOptions[name] ?: throw InvalidCommandLineException(
+                    "Invalid option: $name")).let {
+                if (it.args.isNotEmpty()) {
                     currentOption = it
                 } else {
                     tokensMut.add(Token.Parameter(it, emptyList()))
@@ -155,18 +170,16 @@ class TokenParser
             val name = token.substring(0, equals)
             val argument = token.substring(equals + 1)
 
-            (options.firstOrNull { it.matches(name) }
-                    ?: throw InvalidCommandLineException(
+            (longOptions[name] ?: throw InvalidCommandLineException(
                     "Invalid option: $name")).let {
                 tokensMut.add(Token.Parameter(it, listOf(argument)))
             }
             return
         }
 
-        (options.firstOrNull { it.matches(token) }
-                ?: throw InvalidCommandLineException(
+        (longOptions[token] ?: throw InvalidCommandLineException(
                 "Invalid option: $token")).let {
-            if (it.args > 0) {
+            if (it.args.isNotEmpty()) {
                 currentOption = it
             } else {
                 tokensMut.add(Token.Parameter(it, emptyList()))
@@ -176,6 +189,22 @@ class TokenParser
 
     private fun appendTerminateOptions() {
         optionsTerminated = true
+    }
+
+    private fun enterSubcommand(subcommand: CommandSubcommand) {
+        enterCommand(subcommand.elements)
+        this.subcommand = subcommand
+    }
+
+    private fun enterCommand(elements: Iterable<CommandElement>) {
+        subcommands = elements.asSequence().mapNotNull {
+            (it as? CommandSubcommand)?.let { it.name to it }
+        }.toMap()
+        elements.asSequence().mapNotNull { it as? CommandOption }
+                .forEach { option ->
+                    option.shortNames.forEach { shortOptions[it] = option }
+                    option.longNames.forEach { longOptions[it] = option }
+                }
     }
 
     /**
@@ -223,7 +252,9 @@ class TokenParser
  * @throws InvalidCommandLineException When a token is invalid
  * @return A list of parameters, flags and arguments
  */
-fun Iterable<CommandOption>.parseTokens(tokens: Iterable<String>): List<TokenParser.Token> =
+fun Iterable<CommandElement>.parseTokens(
+        tokens: Iterable<String>
+): Pair<CommandSubcommand?, List<TokenParser.Token>> =
         TokenParser(this).let { parser ->
             tokens.forEach { parser.append(it) }
             parser.finish()

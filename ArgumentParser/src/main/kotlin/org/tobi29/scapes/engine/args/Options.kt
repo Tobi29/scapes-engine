@@ -17,7 +17,12 @@
 package org.tobi29.scapes.engine.args
 
 /**
- * A option for parsing command line arguments
+ * Command element for parsing command line arguments
+ */
+sealed class CommandElement
+
+/**
+ * An option for parsing command line arguments
  */
 data class CommandOption(
         /**
@@ -29,13 +34,13 @@ data class CommandOption(
          */
         val longNames: Set<String>,
         /**
-         * The amount of arguments this option requires
+         * The names of arguments this option requires
          */
-        val args: Int,
+        val args: List<String>,
         /**
          * Description used for printing usage
          */
-        val description: String) {
+        val description: String) : CommandElement() {
     /**
      * Creates a new option with the given names, no arguments and description
      * @param shortNames Set of characters used as short names
@@ -45,7 +50,7 @@ data class CommandOption(
     constructor(shortNames: Set<Char>,
                 longNames: Set<String>,
                 description: String
-    ) : this(shortNames, longNames, 0, description)
+    ) : this(shortNames, longNames, emptyList(), description)
 
     /**
      * Name retrieved through first long name or if none found first short name
@@ -54,6 +59,20 @@ data class CommandOption(
     val simpleName = longNames.firstOrNull()
             ?: shortNames.firstOrNull()?.toString() ?: "???"
 }
+
+/**
+ * A subcommand for separating command line arguments
+ */
+data class CommandSubcommand(
+        /**
+         * Name of the subcommand
+         */
+        val name: String,
+        /**
+         * Command elements available in the subcommand
+         */
+        val elements: Iterable<CommandElement>
+) : CommandElement()
 
 /**
  * Checks if the given name matches one of the short names
@@ -136,14 +155,5 @@ fun CommandOption.printUsage(appendable: Appendable) {
 
         appendable.append("--").append(it)
     }
-    if (args > 1) {
-        appendable.append(" <arg 1")
-        for (i in 2..args) {
-            appendable.append(", arg ").append(i.toString())
-        }
-        appendable.append('>')
-    } else if (args == 1) {
-        appendable.append(" <arg")
-        appendable.append('>')
-    }
+    if (args.isNotEmpty()) args.joinTo(appendable, prefix = " <", postfix = ">")
 }

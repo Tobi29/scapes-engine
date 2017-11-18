@@ -21,13 +21,11 @@ import org.tobi29.scapes.engine.utils.filterMap
 /**
  * Result from parsing and assembling command line options
  */
-data class CommandLine
-/**
- * Creates a new instance with the given contents
- * @param arguments The arguments in order they appeared in
- * @param parameters The string parameters from the options
- */
-(
+data class CommandLine(
+        /**
+         * The innermost subcommand matched
+         */
+        val subcommand: CommandSubcommand? = null,
         /**
          * The arguments in order they appeared in
          */
@@ -55,7 +53,7 @@ fun Sequence<TokenParser.Token>.assemble(): CommandLine {
     val parameters = filterMap<TokenParser.Token.Parameter>()
             .groupBy { it.option }.asSequence()
             .map { Pair(it.key, it.value.flatMap { it.value }) }.toMap()
-    return CommandLine(arguments, parameters)
+    return CommandLine(null, arguments, parameters)
 }
 
 /**
@@ -68,7 +66,7 @@ fun Sequence<TokenParser.Token>.assemble(): CommandLine {
  */
 fun CommandLine.validate() {
     parameters.forEach { (option, arguments) ->
-        if (option.args > arguments.size) {
+        if (option.args.size > arguments.size) {
             throw InvalidCommandLineException(
                     "Not enough arguments supplied for ${option.simpleName}")
         }
@@ -86,8 +84,10 @@ class InvalidCommandLineException(message: String) : Exception(message)
  * @throws InvalidCommandLineException When a token is invalid
  * @return An assembled command line instance
  */
-fun Iterable<CommandOption>.parseDirtyCommandLine(tokens: Iterable<String>): CommandLine =
-        parseTokens(tokens).assemble()
+fun Iterable<CommandElement>.parseDirtyCommandLine(tokens: Iterable<String>): CommandLine =
+        parseTokens(tokens).let { (subcommand, tokens) ->
+            tokens.assemble().copy(subcommand = subcommand)
+        }
 
 /**
  * Parse the given tokens into a command line instance and validates it
@@ -95,5 +95,5 @@ fun Iterable<CommandOption>.parseDirtyCommandLine(tokens: Iterable<String>): Com
  * @throws InvalidCommandLineException When a token is invalid or it resulted in an invalid command line
  * @return An assembled valid command line instance
  */
-fun Iterable<CommandOption>.parseCommandLine(tokens: Iterable<String>): CommandLine =
+fun Iterable<CommandElement>.parseCommandLine(tokens: Iterable<String>): CommandLine =
         parseDirtyCommandLine(tokens).apply { validate() }
