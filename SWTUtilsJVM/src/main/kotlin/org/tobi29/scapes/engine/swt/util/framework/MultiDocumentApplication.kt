@@ -19,23 +19,15 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
 import org.tobi29.scapes.engine.swt.util.widgets.SmartMenuBar
-import org.tobi29.scapes.engine.utils.Version
 import org.tobi29.scapes.engine.utils.assert
 import kotlin.coroutines.experimental.CoroutineContext
 
-abstract class MultiDocumentApplication : Application {
+abstract class MultiDocumentApplication : GuiApplication {
     internal val composites = HashMap<Document, DocumentComposite>()
 
-    protected constructor(name: String,
-                          id: String,
-                          version: Version) : super(name, id, version)
+    protected constructor() : super()
 
-    protected constructor(name: String,
-                          id: String,
-                          version: Version,
-                          taskExecutor: CoroutineContext) : super(name, id,
-            version,
-            taskExecutor)
+    protected constructor(taskExecutor: CoroutineContext) : super(taskExecutor)
 
     abstract fun populate(composite: DocumentComposite,
                           menu: SmartMenuBar)

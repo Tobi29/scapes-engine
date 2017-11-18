@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.swt.util
 
-import org.tobi29.scapes.engine.swt.util.framework.Application
+import org.tobi29.scapes.engine.swt.util.framework.GuiApplication
 
 class Shortcut(val key: Int,
                vararg modifiers: Shortcut.Modifier) {
@@ -41,7 +41,7 @@ class Shortcut(val key: Int,
         operator fun get(id: String,
                          key: Int,
                          vararg modifiers: Modifier): Shortcut {
-            return Application.platform.shortcut(id, Shortcut(key, *modifiers))
+            return GuiApplication.platform.shortcut(id, Shortcut(key, *modifiers))
         }
     }
 }

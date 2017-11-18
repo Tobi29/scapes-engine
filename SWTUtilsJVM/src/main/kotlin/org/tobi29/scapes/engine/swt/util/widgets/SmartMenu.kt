@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Menu
 import org.eclipse.swt.widgets.MenuItem
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.scapes.engine.swt.util.Shortcut
-import org.tobi29.scapes.engine.swt.util.framework.Application
+import org.tobi29.scapes.engine.swt.util.framework.GuiApplication
 
 open class SmartMenu : Menu {
     protected constructor(shell: Shell,
@@ -65,7 +65,7 @@ open class SmartMenu : Menu {
                action: () -> Unit,
                shortcut: Shortcut): MenuItem {
         val item = action(name, action)
-        item.accelerator = Application.platform.resolve(shortcut)
+        item.accelerator = GuiApplication.platform.resolve(shortcut)
         return item
     }
 

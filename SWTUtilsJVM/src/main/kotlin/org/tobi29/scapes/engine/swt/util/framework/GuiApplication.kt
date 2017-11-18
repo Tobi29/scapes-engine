@@ -22,9 +22,11 @@ import org.eclipse.swt.SWT
 import org.eclipse.swt.program.Program
 import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
+import org.tobi29.scapes.engine.application.Application
+import org.tobi29.scapes.engine.application.StatusCode
+import org.tobi29.scapes.engine.args.CommandLine
 import org.tobi29.scapes.engine.swt.util.platform.*
 import org.tobi29.scapes.engine.swt.util.widgets.Dialogs
-import org.tobi29.scapes.engine.utils.Version
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.createTempFile
@@ -34,19 +36,15 @@ import org.tobi29.scapes.engine.utils.sleepAtLeast
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.system.exitProcess
 
-abstract class Application(
-        name: String,
-        id: String,
-        version: Version,
+abstract class GuiApplication(
         val taskExecutor: CoroutineContext = CommonPool
-) : CoroutineDispatcher(), Runnable {
-    val display: Display
-
-    init {
+) : Application() {
+    val display: Display by lazy {
         Display.setAppName(name)
         Display.setAppVersion(version.toString())
-        display = Display.getDefault()
+        Display.getDefault()
     }
+    val uiContext by lazy { DisplayDispatcher(display) }
 
     fun message(style: Int,
                 title: String,
@@ -76,9 +74,9 @@ abstract class Application(
         display.asyncExec(runnable)
     }
 
-    override fun run() {
+    override fun execute(commandLine: CommandLine): StatusCode {
         try {
-            initApplication()
+            initApplication(commandLine)
             while (!done()) {
                 if (!display.readAndDispatch()) {
                     display.sleep()
@@ -89,14 +87,15 @@ abstract class Application(
         } catch (e: Throwable) {
             crash(e)
         }
+        return 0
     }
 
     fun done(): Boolean {
         return display.isDisposed || display.shells.isEmpty()
     }
 
-    fun initApplication() {
-        init()
+    fun initApplication(commandLine: CommandLine) {
+        init(commandLine)
     }
 
     fun disposeApplication() {
@@ -116,11 +115,6 @@ abstract class Application(
         exitProcess(1)
     }
 
-    override fun dispatch(context: CoroutineContext,
-                          block: Runnable) {
-        display.asyncExec(block)
-    }
-
     private fun writeCrash(e: Throwable): FilePath? {
         try {
             val path = createTempFile("CrashReport", ".txt")
@@ -136,7 +130,7 @@ abstract class Application(
         return null
     }
 
-    protected abstract fun init()
+    protected abstract fun init(commandLine: CommandLine)
 
     protected abstract fun dispose()
 
@@ -154,5 +148,12 @@ abstract class Application(
                 }
             }
         }
+    }
+}
+
+class DisplayDispatcher(private val display: Display) : CoroutineDispatcher() {
+    override fun dispatch(context: CoroutineContext,
+                          block: Runnable) {
+        display.asyncExec(block)
     }
 }

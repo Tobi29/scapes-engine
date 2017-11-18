@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile project(":FileSystemsJVM")
-    compile project(":ThreadUtilsJVM")
-    compile project(":ApplicationFrameworkJVM")
+    compile project(":ArgumentParser")
+}
 
-    compileOnly rootProject.ext.swtWindows32
+sourceSets {
+    main {
+        kotlin {
+            srcDirs += ["src/headers/kotlin"]
+        }
+    }
 }
