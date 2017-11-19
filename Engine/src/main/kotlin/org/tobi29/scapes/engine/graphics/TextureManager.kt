@@ -26,8 +26,6 @@ import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toInt
-import org.tobi29.scapes.engine.utils.tryWrap
-import org.tobi29.scapes.engine.utils.unwrapOr
 
 class TextureManager(private val engine: ScapesEngine) {
     private val cache = ConcurrentHashMap<String, Resource<Texture>>()
@@ -41,9 +39,11 @@ class TextureManager(private val engine: ScapesEngine) {
             val files = engine.files
             val imageResource = files["$asset.png"]
             val propertiesResource = files["$asset.json"]
-            val properties = tryWrap<TagMap, IOException> {
+            val properties = try {
                 propertiesResource.readAsync { readJSON(it) }
-            }.unwrapOr { TagMap() }
+            } catch (e: IOException) {
+                TagMap()
+            }
             engine.graphics.createTexture(decodePNG(imageResource),
                     properties["Mipmaps"]?.toInt() ?: 0,
                     properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
