@@ -25,7 +25,8 @@ import java.util.*
 private val IMPL = loadService()
 
 private fun loadService(): FileUtilImpl {
-    for (filesystem in ServiceLoader.load(FileSystemProvider::class.java)) {
+    for (filesystem in ServiceLoader.load(FileSystemProvider::class.java,
+            FileSystemProvider::class.java.classLoader)) {
         try {
             if (filesystem.available()) {
                 return filesystem.implementation()
