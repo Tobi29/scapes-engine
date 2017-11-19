@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.utils.graphics
 import org.tobi29.scapes.engine.utils.io.ByteView
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Creates an array of [ByteView]s containing mipmap
@@ -91,14 +92,16 @@ inline fun <reified B : ByteView> generateMipMaps(
  * @param alpha Whether or not to allow transparent borders or harsh ones
  * @return A [ByteView] containing the mipmap texture
  */
-fun <B : ByteView> generateMipMap(buffer: ByteViewRO,
-                                                                    bufferProvider: (Int) -> B,
-                                                                    width: Int,
-                                                                    height: Int,
-                                                                    scaleBits: Int,
-                                                                    alpha: Boolean,
-                                                                    lower: ByteView? = null,
-                                                                    lowerScaleBits: Int = 0): B {
+fun <B : ByteView> generateMipMap(
+        buffer: ByteViewRO,
+        bufferProvider: (Int) -> B,
+        width: Int,
+        height: Int,
+        scaleBits: Int,
+        alpha: Boolean,
+        lower: ByteView? = null,
+        lowerScaleBits: Int = 0
+): B {
     val scale = 1 shl scaleBits
     val widthScaled = width shr scaleBits
     val heightScaled = height shr scaleBits
@@ -107,6 +110,7 @@ fun <B : ByteView> generateMipMap(buffer: ByteViewRO,
     val samples = 1 shl (scaleBits shl 1)
     val minVisible = samples shr 1
     val lowerWidth = widthScaled shr lowerScaleBits
+    val lowerHeight = heightScaled shr lowerScaleBits
     var positionWrite = 0
     for (y in 0 until heightScaled) {
         val yy = y shl scaleBits
@@ -150,7 +154,9 @@ fun <B : ByteView> generateMipMap(buffer: ByteViewRO,
                 }
             }
             if (a == 0 && lower != null) {
-                var i = (y shr lowerScaleBits) * lowerWidth + (x shr lowerScaleBits) shl 2
+                var i = min(y shr lowerScaleBits,
+                        lowerHeight - 1) * lowerWidth + min(
+                        x shr lowerScaleBits, lowerWidth - 1) shl 2
                 mipmap.setByte(positionWrite++, lower.getByte(i++))
                 mipmap.setByte(positionWrite++, lower.getByte(i++))
                 mipmap.setByte(positionWrite++, lower.getByte(i))
