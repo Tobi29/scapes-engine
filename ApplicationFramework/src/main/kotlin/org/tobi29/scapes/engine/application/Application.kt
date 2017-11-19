@@ -1,7 +1,8 @@
 package org.tobi29.scapes.engine.application
 
 import org.tobi29.scapes.engine.args.*
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.Version
+import org.tobi29.scapes.engine.utils.printerrln
 
 interface Named {
     val execName: String
@@ -18,19 +19,25 @@ interface Versioned {
 }
 
 abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
-    private val optionsMut = ArrayList<CommandOption>()
-    val options = optionsMut.readOnly()
+    private val optionsMut = ArrayList<CommandElement>()
+    val commandConfig by lazy { CommandConfig(execName, optionsMut) }
 
     abstract suspend fun execute(commandLine: CommandLine): StatusCode
 
     override suspend fun execute(args: Array<String>): StatusCode {
-        val commandLine = tryWrap<CommandLine, InvalidCommandLineException> {
-            optionsMut.parseCommandLine(args.asIterable())
-        }.unwrapOr { e ->
+        val commandLine = try {
+            commandConfig.parseDirtyCommandLine(args.asIterable())
+        } catch (e: InvalidCommandLineException) {
             printerrln(e.message)
             return 255
         }
         handleEarly(commandLine)?.let { return it }
+        try {
+            commandLine.validate()
+        } catch (e: InvalidCommandLineException) {
+            printerrln(e.message)
+            return 255
+        }
         return execute(commandLine)
     }
 
@@ -38,7 +45,7 @@ abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
         return null
     }
 
-    protected fun commandOption(option: CommandOption) =
+    protected fun <E : CommandElement> commandElement(option: E) =
             option.also { optionsMut.add(it) }
 
     protected fun commandOption(
@@ -46,7 +53,12 @@ abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
             longNames: Set<String> = emptySet(),
             args: List<String> = emptyList(),
             description: String
-    ) = commandOption(CommandOption(shortNames, longNames, args, description))
+    ) = commandElement(CommandOption(shortNames, longNames, args, description))
+
+    protected fun commandArgument(
+            name: String,
+            count: IntRange = 0..1
+    ) = commandElement(CommandArgument(name, count))
 }
 
 abstract class Application : BareApplication() {
@@ -63,7 +75,7 @@ abstract class Application : BareApplication() {
         super.handleEarly(commandLine)?.let { return it }
 
         if (commandLine.getBoolean(helpOption)) {
-            println(options.printHelp(execName, commandLine.subcommand))
+            println(commandLine.command.printHelp())
             return 0
         }
 

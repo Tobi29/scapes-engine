@@ -25,15 +25,15 @@ data class CommandLine(
         /**
          * The innermost subcommand matched
          */
-        val subcommand: List<CommandSubcommand>,
-        /**
-         * The arguments in order they appeared in
-         */
-        val arguments: List<String>,
+        val command: List<CommandConfig>,
         /**
          * The string parameters from the options
          */
-        val parameters: Map<CommandOption, List<String>>)
+        val parameters: Map<CommandOption, List<String>>,
+        /**
+         * The arguments in order they appeared in
+         */
+        val arguments: Map<CommandArgument, List<String>>)
 
 /**
  * Assembles the given parsed tokens for easy access
@@ -48,27 +48,49 @@ fun Collection<TokenParser.Token>.assemble() = asSequence().assemble()
  * @return A [CommandLine] instance containing the data from the tokens
  */
 fun Sequence<TokenParser.Token>.assemble(): CommandLine {
-    val arguments = filterMap<TokenParser.Token.Argument>()
-            .map { it.argument }.toList()
     val parameters = filterMap<TokenParser.Token.Parameter>()
             .groupBy { it.option }.asSequence()
             .map { Pair(it.key, it.value.flatMap { it.value }) }.toMap()
-    return CommandLine(emptyList(), arguments, parameters)
+    val arguments = filterMap<TokenParser.Token.Argument>()
+            .groupBy { it.argument }.asSequence()
+            .map { Pair(it.key, it.value.map { it.value }) }.toMap()
+    return CommandLine(emptyList(), parameters, arguments)
 }
 
 /**
  * Validates the given command line and throws in case of errors
  *
- * Currently this just checks if all parameters have at least as many
- * arguments attached at they require
+ * Currently this just checks if all parameters and arguments have at least as
+ * many values attached as they require
  * @receiver The [CommandLine] to check
  * @throws InvalidCommandLineException An offending entry was found
  */
 fun CommandLine.validate() {
-    parameters.forEach { (option, arguments) ->
-        if (option.args.size > arguments.size) {
+    parameters.forEach { (option, values) ->
+        if (option.args.size > values.size) {
             throw InvalidCommandLineException(
-                    "Not enough arguments supplied for ${option.simpleName}")
+                    "Not enough values supplied for ${option.simpleName}")
+        }
+    }
+    arguments.forEach { (argument, values) ->
+        if (argument.count.endInclusive < values.size) {
+            throw InvalidCommandLineException(
+                    "Too many values supplied for ${argument.name}")
+        } else if (argument.count.start > values.size) {
+            throw InvalidCommandLineException(
+                    "Not enough values supplied for ${argument.name}")
+        }
+    }
+    command.forEach { (_, elements) ->
+        elements.asSequence().mapNotNull { it as? CommandArgument }.forEach { argument ->
+            val count = arguments[argument]?.size ?: 0
+            if (argument.count.endInclusive < count) {
+                throw InvalidCommandLineException(
+                        "Too many values supplied for ${argument.name}")
+            } else if (argument.count.start > count) {
+                throw InvalidCommandLineException(
+                        "Not enough values supplied for ${argument.name}")
+            }
         }
     }
 }
@@ -84,9 +106,9 @@ class InvalidCommandLineException(message: String) : Exception(message)
  * @throws InvalidCommandLineException When a token is invalid
  * @return An assembled command line instance
  */
-fun Iterable<CommandElement>.parseDirtyCommandLine(tokens: Iterable<String>): CommandLine =
+fun CommandConfig.parseDirtyCommandLine(tokens: Iterable<String>): CommandLine =
         parseTokens(tokens).let { (subcommand, tokens) ->
-            tokens.assemble().copy(subcommand = subcommand)
+            tokens.assemble().copy(command = subcommand)
         }
 
 /**
@@ -95,5 +117,5 @@ fun Iterable<CommandElement>.parseDirtyCommandLine(tokens: Iterable<String>): Co
  * @throws InvalidCommandLineException When a token is invalid or it resulted in an invalid command line
  * @return An assembled valid command line instance
  */
-fun Iterable<CommandElement>.parseCommandLine(tokens: Iterable<String>): CommandLine =
+fun CommandConfig.parseCommandLine(tokens: Iterable<String>): CommandLine =
         parseDirtyCommandLine(tokens).apply { validate() }

@@ -16,30 +16,28 @@
 
 package org.tobi29.scapes.engine.args
 
+import org.tobi29.scapes.engine.utils.ArrayDeque
 import org.tobi29.scapes.engine.utils.readOnly
 
 /**
  * Parses a stream of tokens into parameters, flags and arguments
  */
-class TokenParser
-/**
- * Constructs a new parses using the given elements
- * @param elements The sequence of elements to use for parsing
- */
-(elements: Iterable<CommandElement>) {
+class TokenParser(command: CommandConfig) {
     private var optionsTerminated = false
     private var currentOption: CommandOption? = null
     private val currentArgs = ArrayList<String>()
     private val tokensMut = ArrayList<Token>()
-    private var subcommands = emptyMap<String, CommandSubcommand>()
+    private var subcommands = emptyMap<String, CommandConfig>()
     private val shortOptions = HashMap<Char, CommandOption>()
     private val longOptions = HashMap<String, CommandOption>()
-    private val subcommandMut = ArrayList<CommandSubcommand>()
+    private val commandMut = ArrayList<CommandConfig>()
+    private var currentArgument: ArgumentEntry? = null
+    private val arguments = ArrayDeque<CommandArgument>()
 
     /**
-     * The current innermost subcommand
+     * The command path
      */
-    val subcommand = subcommandMut.readOnly()
+    val command = commandMut.readOnly()
 
     /**
      * The current list of parsed tokens
@@ -47,20 +45,20 @@ class TokenParser
     val tokens = tokensMut.readOnly()
 
     init {
-        enterCommand(elements)
+        enterCommand(command)
     }
 
     /**
      * Finishes the parsing and returns a list of parsed tokens
      */
-    fun finish(): Pair<List<CommandSubcommand>, List<Token>> {
+    fun finish(): Pair<List<CommandConfig>, List<Token>> {
         currentOption?.let { option ->
             tokensMut.add(Token.Parameter(option, currentArgs))
             currentArgs.clear()
             currentOption = null
         }
 
-        return subcommand to tokens
+        return command to tokens
     }
 
     /**
@@ -118,11 +116,21 @@ class TokenParser
         }
 
         subcommands[token]?.let { subcommand ->
-            enterSubcommand(subcommand)
+            enterCommand(subcommand)
             return
         }
 
-        tokensMut.add(Token.Argument(token))
+        if ((currentArgument?.count ?: 0) <= 0) arguments.poll()?.let {
+            currentArgument = ArgumentEntry(it)
+        }
+        currentArgument?.let { argument ->
+            tokensMut.add(Token.Argument(argument.argument, token))
+            argument.count--
+            if (argument.count <= 0) currentArgument = null
+            return
+        }
+
+        throw InvalidCommandLineException("Stray argument: $token")
     }
 
     private fun appendShort(token: String) {
@@ -191,20 +199,25 @@ class TokenParser
         optionsTerminated = true
     }
 
-    private fun enterSubcommand(subcommand: CommandSubcommand) {
-        enterCommand(subcommand.elements)
-        subcommandMut.add(subcommand)
-    }
-
-    private fun enterCommand(elements: Iterable<CommandElement>) {
+    private fun enterCommand(subcommand: CommandConfig) {
+        commandMut.add(subcommand)
+        val elements = subcommand.elements
         subcommands = elements.asSequence().mapNotNull {
-            (it as? CommandSubcommand)?.let { it.name to it }
+            (it as? CommandConfig)?.let { it.name to it }
         }.toMap()
-        elements.asSequence().mapNotNull { it as? CommandOption }
-                .forEach { option ->
-                    option.shortNames.forEach { shortOptions[it] = option }
-                    option.longNames.forEach { longOptions[it] = option }
+        currentArgument = null
+        arguments.clear()
+        for (element in elements) {
+            when (element) {
+                is CommandOption -> {
+                    element.shortNames.forEach { shortOptions[it] = element }
+                    element.longNames.forEach { longOptions[it] = element }
                 }
+                is CommandArgument -> {
+                    if (element.count.endInclusive > 0) arguments.add(element)
+                }
+            }
+        }
     }
 
     /**
@@ -214,27 +227,20 @@ class TokenParser
         /**
          * An argument not attached to any [CommandOption]
          */
-        data class Argument
-        /**
-         * Creates a new argument instance with the given contents
-         * @param argument The argument string
-         */
-        (
+        data class Argument(
                 /**
-                 * The argument string
+                 * The [CommandArgument] of the argument
                  */
-                val argument: String) : Token()
+                val argument: CommandArgument,
+                /**
+                 * The argument strings
+                 */
+                val value: String) : Token()
 
         /**
          * A parameter combining a [CommandOption] and its values
          */
-        data class Parameter
-        /**
-         * Creates a new parameter instance with the given contents
-         * @param option The [CommandOption] of the parameter
-         * @param value The argument strings
-         */
-        (
+        data class Parameter(
                 /**
                  * The [CommandOption] of the parameter
                  */
@@ -244,6 +250,10 @@ class TokenParser
                  */
                 val value: List<String>) : Token()
     }
+
+    private class ArgumentEntry(val argument: CommandArgument) {
+        var count = argument.count.endInclusive
+    }
 }
 
 /**
@@ -252,9 +262,9 @@ class TokenParser
  * @throws InvalidCommandLineException When a token is invalid
  * @return A list of parameters, flags and arguments
  */
-fun Iterable<CommandElement>.parseTokens(
+fun CommandConfig.parseTokens(
         tokens: Iterable<String>
-): Pair<List<CommandSubcommand>, List<TokenParser.Token>> =
+): Pair<List<CommandConfig>, List<TokenParser.Token>> =
         TokenParser(this).let { parser ->
             tokens.forEach { parser.append(it) }
             parser.finish()

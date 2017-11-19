@@ -63,7 +63,7 @@ data class CommandOption(
 /**
  * A subcommand for separating command line arguments
  */
-data class CommandSubcommand(
+data class CommandConfig(
         /**
          * Name of the subcommand
          */
@@ -75,12 +75,26 @@ data class CommandSubcommand(
 ) : CommandElement()
 
 /**
+ * An argument for otherwise unmatched tokens
+ */
+data class CommandArgument(
+        /**
+         * Name of the argument
+         */
+        val name: String,
+        /**
+         * Range of valid number of arguments
+         */
+        val count: IntRange = 0..1
+) : CommandElement()
+
+/**
  * Checks if the given name matches one of the short names
  * @receiver The [CommandOption] to check on
  * @param name The name to check
  * @return `true` if the name matches
  */
-fun CommandOption.matches(name: Char) = shortNames.contains(name)
+fun CommandOption.matches(name: Char) = name in shortNames
 
 /**
  * Checks if the given name matches one of the long names
@@ -88,38 +102,45 @@ fun CommandOption.matches(name: Char) = shortNames.contains(name)
  * @param name The name to check
  * @return `true` if the name matches
  */
-fun CommandOption.matches(name: String) = longNames.contains(name)
+fun CommandOption.matches(name: String) = name in longNames
 
 /**
  * Generate a help text for the given options with descriptions aligned
  * when using a monospace font
  * @receiver The sequence of [CommandOption]s to read
- * @param execName Name of executable
- * @param subcommand Subcommand options to show
+ * @param command Command options to show
  * @return The help info in a string
  */
-fun Iterable<CommandElement>.printHelp(execName: String? = null,
-                                       subcommand: List<CommandSubcommand> = emptyList()) =
-        StringBuilder().also { printHelp(it, execName, subcommand) }.toString()
+fun Iterable<CommandConfig>.printHelp() =
+        StringBuilder().also { printHelp(it) }.toString()
 
 /**
  * Generate a help text for the given options with descriptions aligned
  * when using a monospace font
  * @receiver The sequence of [CommandOption]s to read
  * @param appendable The appendable to write to
- * @param execName Name of executable
- * @param subcommand Subcommand options to show
+ * @param command Command options to show
  */
-fun Iterable<CommandElement>.printHelp(appendable: Appendable,
-                                       execName: String? = null,
-                                       subcommand: List<CommandSubcommand> = emptyList()) {
-    val elements = this + subcommand.flatMap { it.elements }
+fun Iterable<CommandConfig>.printHelp(appendable: Appendable) {
+    val elements = flatMap { it.elements }
+
+    appendable.append("Usage:")
+    forEach { appendable.append(' ').append(it.name) }
+    elements.forEach { element ->
+        if (element !is CommandArgument) return@forEach
+        if (element.count.start == 0) {
+            appendable.append(" [").append(element.name).append(']')
+        } else repeat(element.count.start) {
+            appendable.append(' ').append(element.name)
+        }
+        if (element.count.endInclusive > element.count.start)
+            appendable.append("...")
+    }
+    appendable.append('\n')
+
     val options = elements.mapNotNull {
         (it as? CommandOption)?.let { it to it.printUsage() }
     }
-    appendable.append("Usage: ")
-    execName?.let { appendable.append(it) }
-    appendable.append('\n')
     val descriptionGap = (options.map { it.second.length }.max() ?: 0) + 4
     var first = false
     options.forEach { (option, usage) ->
