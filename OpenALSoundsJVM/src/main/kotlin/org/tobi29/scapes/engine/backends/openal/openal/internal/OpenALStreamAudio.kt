@@ -27,12 +27,12 @@ import org.tobi29.scapes.engine.codec.AudioBuffer
 import org.tobi29.scapes.engine.codec.AudioStream
 import org.tobi29.scapes.engine.codec.ReadableAudioStream
 import org.tobi29.scapes.engine.codec.toPCM16
+import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.math.vector.Vector3d
 import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(
@@ -84,6 +84,7 @@ internal class OpenALStreamAudio(
             decodeActor = decodeActor(sounds, asset, state)
         }
         val (decode, buffers) = decodeActor ?: return true
+        if (buffers.isClosedForReceive) return true
         try {
             controller.configure(openAL, source, sounds.volume(channel))
             while (queued < 3) {
