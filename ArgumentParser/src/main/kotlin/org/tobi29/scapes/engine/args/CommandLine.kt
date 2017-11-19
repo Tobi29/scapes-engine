@@ -25,7 +25,7 @@ data class CommandLine(
         /**
          * The innermost subcommand matched
          */
-        val subcommand: CommandSubcommand? = null,
+        val subcommand: List<CommandSubcommand>,
         /**
          * The arguments in order they appeared in
          */
@@ -53,7 +53,7 @@ fun Sequence<TokenParser.Token>.assemble(): CommandLine {
     val parameters = filterMap<TokenParser.Token.Parameter>()
             .groupBy { it.option }.asSequence()
             .map { Pair(it.key, it.value.flatMap { it.value }) }.toMap()
-    return CommandLine(null, arguments, parameters)
+    return CommandLine(emptyList(), arguments, parameters)
 }
 
 /**

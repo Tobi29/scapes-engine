@@ -63,10 +63,7 @@ abstract class Application : BareApplication() {
         super.handleEarly(commandLine)?.let { return it }
 
         if (commandLine.getBoolean(helpOption)) {
-            val help = StringBuilder()
-            help.append("Usage: $execName\n")
-            options.printHelp(help)
-            println(help)
+            println(options.printHelp(execName, commandLine.subcommand))
             return 0
         }
 

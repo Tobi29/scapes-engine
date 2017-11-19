@@ -94,26 +94,39 @@ fun CommandOption.matches(name: String) = longNames.contains(name)
  * Generate a help text for the given options with descriptions aligned
  * when using a monospace font
  * @receiver The sequence of [CommandOption]s to read
+ * @param execName Name of executable
+ * @param subcommand Subcommand options to show
  * @return The help info in a string
  */
-fun Iterable<CommandOption>.printHelp() =
-        StringBuilder().also { printHelp(it) }.toString()
+fun Iterable<CommandElement>.printHelp(execName: String? = null,
+                                       subcommand: List<CommandSubcommand> = emptyList()) =
+        StringBuilder().also { printHelp(it, execName, subcommand) }.toString()
 
 /**
  * Generate a help text for the given options with descriptions aligned
  * when using a monospace font
  * @receiver The sequence of [CommandOption]s to read
  * @param appendable The appendable to write to
+ * @param execName Name of executable
+ * @param subcommand Subcommand options to show
  */
-fun Iterable<CommandOption>.printHelp(appendable: Appendable) {
-    val options = map { Pair(it, it.printUsage()) }.toList()
+fun Iterable<CommandElement>.printHelp(appendable: Appendable,
+                                       execName: String? = null,
+                                       subcommand: List<CommandSubcommand> = emptyList()) {
+    val elements = this + subcommand.flatMap { it.elements }
+    val options = elements.mapNotNull {
+        (it as? CommandOption)?.let { it to it.printUsage() }
+    }
+    appendable.append("Usage: ")
+    execName?.let { appendable.append(it) }
+    appendable.append('\n')
     val descriptionGap = (options.map { it.second.length }.max() ?: 0) + 4
     var first = false
     options.forEach { (option, usage) ->
         if (!first) {
             first = true
         } else {
-            appendable.append("\n")
+            appendable.append('\n')
         }
 
         appendable.append(usage)

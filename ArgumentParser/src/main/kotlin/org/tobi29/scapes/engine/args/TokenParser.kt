@@ -32,14 +32,14 @@ class TokenParser
     private val currentArgs = ArrayList<String>()
     private val tokensMut = ArrayList<Token>()
     private var subcommands = emptyMap<String, CommandSubcommand>()
-    private var shortOptions = HashMap<Char, CommandOption>()
-    private var longOptions = HashMap<String, CommandOption>()
+    private val shortOptions = HashMap<Char, CommandOption>()
+    private val longOptions = HashMap<String, CommandOption>()
+    private val subcommandMut = ArrayList<CommandSubcommand>()
 
     /**
      * The current innermost subcommand
      */
-    var subcommand: CommandSubcommand? = null
-        private set
+    val subcommand = subcommandMut.readOnly()
 
     /**
      * The current list of parsed tokens
@@ -53,7 +53,7 @@ class TokenParser
     /**
      * Finishes the parsing and returns a list of parsed tokens
      */
-    fun finish(): Pair<CommandSubcommand?, List<Token>> {
+    fun finish(): Pair<List<CommandSubcommand>, List<Token>> {
         currentOption?.let { option ->
             tokensMut.add(Token.Parameter(option, currentArgs))
             currentArgs.clear()
@@ -193,7 +193,7 @@ class TokenParser
 
     private fun enterSubcommand(subcommand: CommandSubcommand) {
         enterCommand(subcommand.elements)
-        this.subcommand = subcommand
+        subcommandMut.add(subcommand)
     }
 
     private fun enterCommand(elements: Iterable<CommandElement>) {
@@ -254,7 +254,7 @@ class TokenParser
  */
 fun Iterable<CommandElement>.parseTokens(
         tokens: Iterable<String>
-): Pair<CommandSubcommand?, List<TokenParser.Token>> =
+): Pair<List<CommandSubcommand>, List<TokenParser.Token>> =
         TokenParser(this).let { parser ->
             tokens.forEach { parser.append(it) }
             parser.finish()

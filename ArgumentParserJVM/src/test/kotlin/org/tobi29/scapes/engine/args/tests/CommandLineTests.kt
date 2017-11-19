@@ -59,7 +59,7 @@ object CommandLineTests : Spek({
                                     TokenParser.Token.Parameter(
                                             propertyOption,
                                             listOf("second"))),
-                            commandLine = CommandLine(null,
+                            commandLine = CommandLine(listOf(),
                                     listOf("arg"), mapOf(
                                     propertyOption to listOf("first", "second"),
                                     versionOption to listOf()))),
@@ -78,7 +78,7 @@ object CommandLineTests : Spek({
                                     TokenParser.Token.Parameter(
                                             subSettingOption,
                                             listOf("c"))),
-                            commandLine = CommandLine(subCommand,
+                            commandLine = CommandLine(listOf(subCommand),
                                     listOf("arg"), mapOf(
                                     propertyOption to listOf("a"),
                                     subPropertyOption to listOf("b"),
