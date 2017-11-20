@@ -57,7 +57,6 @@ include "PlatformIntegrationJVM"
 // Application framework
 include "ApplicationFramework"
 include "ApplicationFrameworkJVM"
-include "ApplicationFrameworkKonan"
 
 // Server framework
 include "ServerFrameworkJVM"
