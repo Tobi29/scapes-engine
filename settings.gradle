@@ -76,8 +76,10 @@ include "CodecWAVJVM"
 
 // Tile maps
 include "TileMaps"
+include "TileMapsJS"
 include "TileMapsJVM"
 include "TileMapsRenderer"
+include "TileMapsRendererJS"
 include "TileMapsRendererJVM"
 
 // Engine
