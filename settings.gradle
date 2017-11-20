@@ -87,6 +87,7 @@ include "EngineJVM"
 include "ShaderCLike"
 include "ShaderCLikeJVM"
 include "ShaderCompiler"
+include "ShaderCompilerJS"
 include "ShaderCompilerJVM"
 include "ShaderParser"
 
