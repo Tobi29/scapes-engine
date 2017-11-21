@@ -74,14 +74,26 @@ inline fun <reified T> Sequence<T>.toArray(): Array<T> {
  * @receiver The sequence to start with
  * @return An infinite sequence
  */
-fun <T> Sequence<T>.andNull() = Sequence {
-    val iterator = iterator()
-    object : Iterator<T?> {
-        override fun hasNext() = true
+fun <T> Sequence<T>.andNull() = Sequence { iterator().andNull() }
 
-        override fun next(): T? {
-            return if (iterator.hasNext()) iterator.next() else null
+/**
+ * Constructs an infinite iterator starting with all the elements in the given
+ * one and filling the rest with `null`
+ * @receiver The iterator to start with
+ * @return An infinite iterator
+ */
+fun <T> Iterator<T>.andNull() = object : Iterator<T?> {
+    private var finishedFirst = false
+
+    override fun hasNext() = true
+
+    override fun next(): T? {
+        if (finishedFirst) return null
+        if (!this@andNull.hasNext()) {
+            finishedFirst = true
+            return null
         }
+        return this@andNull.next()
     }
 }
 
