@@ -98,6 +98,29 @@ fun <T> Iterator<T>.andNull() = object : Iterator<T?> {
 }
 
 /**
+ * Constructs an iterator starting with all the elements in the given
+ * one and then the next iterator
+ * @receiver The iterator to start with
+ * @param other The second iterator
+ * @return A new iterator
+ */
+operator fun <T> Iterator<T>.plus(other: Iterator<T>) = object : Iterator<T> {
+    private var finishedFirst = false
+
+    override fun hasNext() =
+            (!finishedFirst && this@plus.hasNext()) || other.hasNext()
+
+    override fun next(): T {
+        if (finishedFirst) return other.next()
+        if (!this@plus.hasNext()) {
+            finishedFirst = true
+            return other.next()
+        }
+        return this@plus.next()
+    }
+}
+
+/**
  * Accumulates value starting with the first element and applying [operation]
  * from left to right to current accumulator value and each element.
  * @param S Element type
