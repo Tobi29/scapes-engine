@@ -21,7 +21,8 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadableByteChannel
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import java.util.*
+import org.tobi29.scapes.engine.utils.spiLoad
+import org.tobi29.scapes.engine.utils.spiLoadFirst
 
 object AudioStream : KLogging() {
     private val CODECS = ConcurrentHashMap<String, ReadableAudioStreamProvider>()
@@ -49,20 +50,8 @@ object AudioStream : KLogging() {
         return codec
     }
 
-    private fun loadService(
-            mime: String): ReadableAudioStreamProvider? {
-        for (codec in ServiceLoader.load(
-                ReadableAudioStreamProvider::class.java)) {
-            try {
-                if (codec.accepts(mime)) {
-                    logger.debug { "Loaded audio codec ($mime): ${codec::class.java.name}" }
-                    return codec
-                }
-            } catch (e: ServiceConfigurationError) {
-                logger.warn { "Unable to load codec provider: $e" }
-            }
-
-        }
-        return null
-    }
+    private fun loadService(mime: String): ReadableAudioStreamProvider? =
+            spiLoadFirst(spiLoad<ReadableAudioStreamProvider>(), { e ->
+                logger.warn(e) { "Service configuration error" }
+            }, { it.accepts(mime) })
 }

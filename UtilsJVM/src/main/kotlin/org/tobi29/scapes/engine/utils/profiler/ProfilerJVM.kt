@@ -16,12 +16,8 @@
 
 package org.tobi29.scapes.engine.utils.profiler
 
-import org.tobi29.scapes.engine.utils.ThreadLocal
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.profiler.spi.ProfilerDispatcherProvider
-import org.tobi29.scapes.engine.utils.steadyClock
-import java.util.*
+import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import kotlin.collections.set
 
 actual class Profiler {
@@ -60,14 +56,10 @@ actual class ProfilerHandle internal constructor(
     }
 }
 
-actual internal val dispatchers: List<ProfilerDispatcher> = run {
-    val dispatchers = ArrayList<ProfilerDispatcher>()
-    for (dispatcher in ServiceLoader.load(
-            ProfilerDispatcherProvider::class.java)) {
-        try {
-            dispatcher.dispatcher()?.let { dispatchers.add(it) }
-        } catch (e: ServiceConfigurationError) {
-        }
-    }
-    dispatchers
+actual internal val dispatchers = Dispatchers.i
+
+private object Dispatchers : KLogging() {
+    val i = spiLoad(spiLoad<ProfilerDispatcher>(), { e ->
+        logger.warn(e) { "Service configuration error" }
+    }).readOnly()
 }

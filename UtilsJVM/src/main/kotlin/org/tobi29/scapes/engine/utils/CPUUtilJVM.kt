@@ -16,34 +16,22 @@
 
 package org.tobi29.scapes.engine.utils
 
+import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider
-import java.util.*
 
 /**
  * Object to read the current cpu usage of the program
  */
-object CPUUtil {
-    private val PROVIDER = loadService()
-
-    private fun loadService(): CPUReaderProvider? {
-        for (provider in ServiceLoader.load(CPUReaderProvider::class.java)) {
-            try {
-                if (provider.available()) {
-                    return provider
-                }
-            } catch (e: ServiceConfigurationError) {
-            }
-        }
-        return null
-    }
+object CPUUtil : KLogging() {
+    private val i = spiLoadFirst(spiLoad<CPUReaderProvider>(), { e ->
+        logger.warn(e) { "Service configuration error" }
+    }, { it.available() })
 
     /**
      * Returns a new [Reader] if available on the current platform
      * @return A new [Reader] instance or null
      */
-    fun reader(): Reader? {
-        return PROVIDER?.reader()
-    }
+    fun reader(): Reader? = i?.reader()
 
     /**
      * Allows reading the current cpu usage for a set of threads or the entire
