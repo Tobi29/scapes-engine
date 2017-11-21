@@ -59,7 +59,8 @@ actual class ProfilerHandle internal constructor(
 actual internal val dispatchers = Dispatchers.i
 
 private object Dispatchers : KLogging() {
-    val i = spiLoad(spiLoad<ProfilerDispatcher>(), { e ->
+    val i = spiLoad(spiLoad<ProfilerDispatcher>(
+            Dispatchers::class.java.classLoader), { e ->
         logger.warn(e) { "Service configuration error" }
     }).readOnly()
 }

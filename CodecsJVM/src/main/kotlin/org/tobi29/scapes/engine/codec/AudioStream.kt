@@ -51,7 +51,8 @@ object AudioStream : KLogging() {
     }
 
     private fun loadService(mime: String): ReadableAudioStreamProvider? =
-            spiLoadFirst(spiLoad<ReadableAudioStreamProvider>(), { e ->
+            spiLoadFirst(spiLoad<ReadableAudioStreamProvider>(
+                    AudioStream::class.java.classLoader), { e ->
                 logger.warn(e) { "Service configuration error" }
             }, { it.accepts(mime) })
 }

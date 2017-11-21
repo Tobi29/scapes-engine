@@ -25,7 +25,8 @@ import org.tobi29.scapes.engine.utils.spiLoadFirst
 import java.io.File
 
 private object FileUtil : KLogging() {
-    val i = spiLoadFirst(spiLoad<FileSystemProvider>(), { e ->
+    val i = spiLoadFirst(spiLoad<FileSystemProvider>(
+            FileUtil::class.java.classLoader), { e ->
         logger.warn(e) { "Service configuration error" }
     }, { it.available() })?.implementation()
             ?: throw UnsupportedJVMException(

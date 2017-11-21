@@ -23,7 +23,8 @@ import org.tobi29.scapes.engine.utils.spi.CPUReaderProvider
  * Object to read the current cpu usage of the program
  */
 object CPUUtil : KLogging() {
-    private val i = spiLoadFirst(spiLoad<CPUReaderProvider>(), { e ->
+    private val i = spiLoadFirst(spiLoad<CPUReaderProvider>(
+            CPUUtil::class.java.classLoader), { e ->
         logger.warn(e) { "Service configuration error" }
     }, { it.available() })
 
