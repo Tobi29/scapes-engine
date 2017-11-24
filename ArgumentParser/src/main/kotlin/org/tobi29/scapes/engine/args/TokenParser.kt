@@ -79,8 +79,7 @@ class TokenParser(command: CommandConfig) {
                 if (length == 1) {
                     // Token: "-"
                     appendArg(token)
-                }
-                when (token[1]) {
+                } else when (token[1]) {
                     '-' -> {
                         if (length == 2) {
                             // Token: "--"
