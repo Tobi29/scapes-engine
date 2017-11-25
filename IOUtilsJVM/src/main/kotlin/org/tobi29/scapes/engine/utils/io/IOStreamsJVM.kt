@@ -16,7 +16,9 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.ByteArraySliceRO
 import java.io.InputStream
+import java.io.OutputStream
 
 class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStream() {
     // TODO: @Throws(IOException::class)
@@ -41,5 +43,30 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStrea
     // TODO: @Throws(IOException::class)
     override fun available(): Int {
         return stream.available()
+    }
+}
+
+class ByteStreamOutputStream(private val stream: WritableByteStream) : OutputStream() {
+
+    // TODO: @Throws(IOException::class)
+    override fun write(b: Int) {
+        stream.put(b.toByte())
+    }
+
+    // TODO: @Throws(IOException::class)
+    override fun write(b: ByteArray,
+                       off: Int,
+                       len: Int) {
+        stream.put(b.view.slice(off, len))
+    }
+}
+
+class OutputStreamByteStream(private val stream: OutputStream) : WritableByteStream {
+    override fun put(b: Byte) = also { stream.write(b.toInt()) }
+
+    override fun put(buffer: ByteArraySliceRO) = also {
+        buffer.readAsByteArray { array, offset, size ->
+            stream.write(array, offset, size)
+        }
     }
 }
