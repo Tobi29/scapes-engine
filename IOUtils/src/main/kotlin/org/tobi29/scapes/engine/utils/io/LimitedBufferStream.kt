@@ -45,7 +45,7 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
     override fun getTry(): Int {
         if (remaining < 1) return -1
         remaining--
-        return stream.get().toInt()
+        return stream.get().toInt() and 0xFF
     }
 
     override fun get(): Byte {

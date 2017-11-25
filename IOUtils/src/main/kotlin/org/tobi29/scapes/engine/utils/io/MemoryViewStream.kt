@@ -93,7 +93,7 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
 
     override fun getTry(): Int {
         ensureTry(1) ?: return -1
-        return mbuffer.getByte(position).toInt().also { position++ }
+        return mbuffer.getByte(position).also { position++ }.toInt() and 0xFF
     }
 
     override fun get(): Byte {
@@ -286,7 +286,7 @@ class MemoryViewStream<out B : ByteViewE>(
 
     override fun getTry(): Int {
         ensureTry(1) ?: return -1
-        return mbuffer.getByte(position).toInt().also { position++ }
+        return mbuffer.getByte(position).also { position++ }.toInt() and 0xFF
     }
 
     override fun get(): Byte {

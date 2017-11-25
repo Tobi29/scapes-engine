@@ -63,7 +63,7 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
 
     override fun getTry(): Int {
         ensureTry(1) ?: return -1
-        return mbuffer.get().toInt()
+        return mbuffer.get().toInt() and 0xFF
     }
 
     override fun get(): Byte {
