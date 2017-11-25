@@ -94,7 +94,7 @@ class BufferedWriteChannelStream(private val channel: WritableByteChannel) : Wri
         var currentBuffer = buffer
         while (currentBuffer.size > 0) {
             val wrote = channel.write(currentBuffer)
-            if (wrote < 0) throw IOException("End of stream")
+            if (wrote < 0) throw EndOfStreamException()
             currentBuffer = currentBuffer.slice(wrote)
         }
     }

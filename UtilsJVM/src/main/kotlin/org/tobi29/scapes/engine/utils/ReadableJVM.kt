@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
+import java.io.IOException
 import java.nio.CharBuffer
 
 /**
@@ -47,16 +48,41 @@ interface JavaReadable : Readable {
     val java: java.lang.Readable
 
     override fun read(): Char {
-        val single = CharBuffer.allocate(1)
-        java.read(single)
+        val single = single.get()
+        single.clear().limit(1)
+        while (single.hasRemaining()) {
+            // We have no access to EndOfStreamException in this module
+            if (java.read(single) < 0) throw IOException("End of stream")
+        }
         single.flip()
         return single.get()
+    }
+
+    override fun readTry(): Int {
+        val single = single.get()
+        single.clear().limit(1)
+        while (single.hasRemaining()) {
+            if (java.read(single) < 0) return -1
+        }
+        single.flip()
+        return single.get().toInt()
     }
 
     override fun read(array: CharArray,
                       offset: Int,
                       size: Int) {
-        java.read(CharBuffer.wrap(array, offset, size))
+        val buffer = CharBuffer.wrap(array, offset, size)
+        while (buffer.hasRemaining()) {
+            // We have no access to EndOfStreamException in this module
+            if (java.read(buffer) < 0) throw IOException("End of stream")
+        }
+    }
+
+    override fun readSome(array: CharArray,
+                          offset: Int,
+                          size: Int): Int {
+        val buffer = CharBuffer.wrap(array, offset, size)
+        return java.read(buffer)
     }
 }
 
@@ -75,3 +101,5 @@ interface SEReadable : java.lang.Readable {
         return cb.position() - position
     }
 }
+
+private val single = ThreadLocal { CharBuffer.allocate(1) }

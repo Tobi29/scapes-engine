@@ -72,9 +72,16 @@ interface ReadableByteStream : Readable {
      * Read by filling the given buffer as much as possible
      * @param buffer Buffer to write to
      * @throws IOException When an IO error occurs
-     * @return The amount of bytes read
+     * @return The amount of bytes read or -1 on end of stream
      */
     fun getSome(buffer: ByteView): Int
+
+    /**
+     * Reads a byte
+     * @throws IOException When an IO error occurs
+     * @return The byte in the stream or -1 on end of stream
+     */
+    fun getTry(): Int
 
     /**
      * Reads a boolean
@@ -88,7 +95,10 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The byte in the stream
      */
-    fun get(): Byte
+    fun get(): Byte = getTry().let {
+        if (it < 0) throw EndOfStreamException()
+        it.toByte()
+    }
 
     /**
      * Reads an unsigned byte
@@ -226,26 +236,38 @@ interface ReadableByteStream : Readable {
     fun getString(limit: Int = Int.MAX_VALUE): String =
             getByteArray(limit).strUTF8()
 
-    /**
-     * Reads a single character from the stream encoded in UTF-8
-     * @throws IOException When an IO error occurs or an invalid UTF-8 sequence appeared
-     * @return The character in the stream
-     */
-    override fun read(): Char {
-        val initial = get()
+    override fun read(): Char = readTry().let {
+        if (it < 0) throw EndOfStreamException()
+        it.toChar()
+    }
+
+    override fun readTry(): Int {
+        val initial = getTry().let {
+            if (it < 0) return -1
+            it.toByte()
+        }
         if (initial and 0b10000000.toByte() == 0b00000000.toByte()) {
-            return initial.toChar()
+            return initial.toInt()
         } else if (initial and 0b11100000.toByte() == 0b11000000.toByte()) {
-            val extra1 = get()
+            val extra1 = getTry().let {
+                if (it < 0) return -1
+                it.toByte()
+            }
             if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
                 throw IOException("Invalid UTF-8 byte: $extra1")
             }
             val c = ((initial.toInt() and 0b00011111) shl 6) or
                     ((extra1.toInt() and 0b00111111) shl 0)
-            return c.toChar()
+            return c
         } else if (initial and 0b11110000.toByte() == 0b11100000.toByte()) {
-            val extra1 = get()
-            val extra2 = get()
+            val extra1 = getTry().let {
+                if (it < 0) return -1
+                it.toByte()
+            }
+            val extra2 = getTry().let {
+                if (it < 0) return -1
+                it.toByte()
+            }
             if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
                 throw IOException("Invalid UTF-8 byte: $extra1")
             } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
@@ -254,11 +276,20 @@ interface ReadableByteStream : Readable {
             val c = ((initial.toInt() and 0b00011111) shl 12) or
                     ((extra1.toInt() and 0b00111111) shl 6) or
                     ((extra2.toInt() and 0b00111111) shl 0)
-            return c.toChar()
+            return c
         } else if (initial and 0b11111000.toByte() == 0b11110000.toByte()) {
-            val extra1 = get()
-            val extra2 = get()
-            val extra3 = get()
+            val extra1 = getTry().let {
+                if (it < 0) return -1
+                it.toByte()
+            }
+            val extra2 = getTry().let {
+                if (it < 0) return -1
+                it.toByte()
+            }
+            val extra3 = getTry().let {
+                if (it < 0) return -1
+                it.toByte()
+            }
             if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
                 throw IOException("Invalid UTF-8 byte: $extra1")
             } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
@@ -270,7 +301,7 @@ interface ReadableByteStream : Readable {
                     ((extra1.toInt() and 0b00111111) shl 12) or
                     ((extra2.toInt() and 0b00111111) shl 6) or
                     ((extra2.toInt() and 0b00111111) shl 0)
-            return c.toChar()
+            return c
         } else {
             throw IOException("Invalid UTF-8 byte: $initial")
         }

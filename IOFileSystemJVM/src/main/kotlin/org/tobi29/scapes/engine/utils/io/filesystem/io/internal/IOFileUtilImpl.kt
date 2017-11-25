@@ -187,7 +187,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
                     var write = buffer.slice(0, read)
                     while (write.size > 0) {
                         val wrote = channelOut.write(write)
-                        if (wrote < 0) throw IOException("End of stream")
+                        if (wrote < 0) throw EndOfStreamException()
                         write = write.slice(wrote)
                     }
                 }

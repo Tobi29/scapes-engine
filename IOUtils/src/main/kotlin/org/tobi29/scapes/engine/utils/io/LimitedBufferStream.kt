@@ -36,9 +36,16 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
         if (remaining <= 0) return -1
         return buffer.size.coerceAtMost(remaining).let {
             stream.getSome(buffer.slice(0, it)).also {
+                if (it < 0) throw EndOfStreamException()
                 remaining -= it
             }
         }
+    }
+
+    override fun getTry(): Int {
+        if (remaining < 1) return -1
+        remaining--
+        return stream.get().toInt()
     }
 
     override fun get(): Byte {
@@ -73,7 +80,7 @@ class LimitedBufferStream(private val stream: ReadableByteStream,
 
     private fun check(len: Int) {
         if (remaining < len) {
-            throw IOException("End of stream")
+            throw EndOfStreamException()
         }
         remaining -= len
     }

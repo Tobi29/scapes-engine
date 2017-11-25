@@ -27,7 +27,7 @@ interface ReadableByteChannel : Channel {
             val read = read(buffer.slice(0,
                     buffer.size.coerceAtMost(length.toIntClamped())))
             if (read == -1) {
-                throw IOException("End of stream")
+                throw EndOfStreamException()
             }
             if (read == 0) {
                 return length

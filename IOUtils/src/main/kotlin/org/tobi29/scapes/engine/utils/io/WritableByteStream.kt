@@ -17,13 +17,13 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.ByteArraySliceRO
+import org.tobi29.scapes.engine.utils.splitToBytes
 import org.tobi29.scapes.engine.utils.utf8ToArray
 
 /**
  * Interface for blocking write operations, with an extensive set of operations
  * to make implementing protocols easier
  */
-// TODO: Implement most operations with defaults
 interface WritableByteStream : Appendable {
     /**
      * Write the contents of the given buffer to the stream
@@ -60,7 +60,11 @@ interface WritableByteStream : Appendable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun putShort(value: Short): WritableByteStream
+    fun putShort(value: Short): WritableByteStream =
+            value.splitToBytes { b1, b0 ->
+                put(b1)
+                put(b0)
+            }
 
     /**
      * Writes the big-endian integer into the stream
@@ -68,7 +72,13 @@ interface WritableByteStream : Appendable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun putInt(value: Int): WritableByteStream
+    fun putInt(value: Int): WritableByteStream =
+            value.splitToBytes { b3, b2, b1, b0 ->
+                put(b3)
+                put(b2)
+                put(b1)
+                put(b0)
+            }
 
     /**
      * Writes the big-endian long into the stream
@@ -76,7 +86,17 @@ interface WritableByteStream : Appendable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun putLong(value: Long): WritableByteStream
+    fun putLong(value: Long): WritableByteStream =
+            value.splitToBytes { b7, b6, b5, b4, b3, b2, b1, b0 ->
+                put(b7)
+                put(b6)
+                put(b5)
+                put(b4)
+                put(b3)
+                put(b2)
+                put(b1)
+                put(b0)
+            }
 
     /**
      * Writes the big-endian float into the stream
@@ -84,7 +104,8 @@ interface WritableByteStream : Appendable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun putFloat(value: Float): WritableByteStream
+    fun putFloat(value: Float): WritableByteStream =
+            putInt(value.toRawBits())
 
     /**
      * Writes the big-endian double into the stream
@@ -92,7 +113,8 @@ interface WritableByteStream : Appendable {
      * @throws IOException When an IO error occurs
      * @return The current stream
      */
-    fun putDouble(value: Double): WritableByteStream
+    fun putDouble(value: Double): WritableByteStream =
+            putLong(value.toRawBits())
 
     /**
      * Writes the byte array to the stream, prefixed by the length

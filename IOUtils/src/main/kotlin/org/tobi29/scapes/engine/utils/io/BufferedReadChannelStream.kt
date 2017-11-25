@@ -44,7 +44,7 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
             val flushed = mbuffer.remaining()
             if (flushed > 0) mbuffer.get(buffer.slice(0, flushed))
             val read = channel.read(buffer.slice(flushed))
-            if (read < 0 && flushed <= 0) throw IOException("End of stream")
+            if (read < 0 && flushed <= 0) throw EndOfStreamException()
         }
     }
 
@@ -60,6 +60,11 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
                     if (flushed <= 0) -1 else flushed
                 } else read + flushed
             }
+
+    override fun getTry(): Int {
+        ensureTry(1) ?: return -1
+        return mbuffer.get().toInt()
+    }
 
     override fun get(): Byte {
         ensure(1)
@@ -91,13 +96,16 @@ class BufferedReadChannelStream(private val channel: ReadableByteChannel,
         return mbuffer.getDouble()
     }
 
-    private fun ensure(len: Int): Boolean {
+    private fun ensure(len: Int) =
+            ensureTry(len) ?: throw EndOfStreamException()
+
+    private fun ensureTry(len: Int): Boolean? {
         if (len == 0) return true
         if (len > mbuffer.buffer().size) return false
         mbuffer.compact()
         while (mbuffer.position() < len) {
             val read = channel.read(mbuffer.bufferSlice())
-            if (read < 0) throw IOException("End of stream")
+            if (read < 0) return null
             mbuffer.position(mbuffer.position() + read)
         }
         mbuffer.flip()

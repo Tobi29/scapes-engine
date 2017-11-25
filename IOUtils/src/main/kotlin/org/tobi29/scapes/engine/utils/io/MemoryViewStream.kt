@@ -64,17 +64,19 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
     override fun position(pos: Int) = apply {
         if (pos < 0 || pos > limit)
             throw IllegalArgumentException("Invalid position")
-        ensurePut(pos - position)
+        ensure(pos - position)
         position = pos
     }
 
-    fun ensurePut(len: Int) {
+    fun ensure(len: Int) = ensureTry(len) ?: throw EndOfStreamException()
+
+    fun ensureTry(len: Int): Boolean? {
         val used = position
         val size = mbuffer.size
         if (len <= size - used) {
-            return
+            return true
         }
-        throw IOException("End of stream")
+        return null
     }
 
     override fun limit(): Int {
@@ -89,38 +91,43 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
         return limit - position
     }
 
+    override fun getTry(): Int {
+        ensureTry(1) ?: return -1
+        return mbuffer.getByte(position).toInt().also { position++ }
+    }
+
     override fun get(): Byte {
-        ensurePut(1)
+        ensure(1)
         return mbuffer.getByte(position).also { position++ }
     }
 
     override fun getShort(): Short {
-        ensurePut(2)
+        ensure(2)
         return mbuffer.getShort(position).also { position += 2 }
     }
 
     override fun getInt(): Int {
-        ensurePut(4)
+        ensure(4)
         return mbuffer.getInt(position).also { position += 4 }
     }
 
     override fun getLong(): Long {
-        ensurePut(8)
+        ensure(8)
         return mbuffer.getLong(position).also { position += 8 }
     }
 
     override fun getFloat(): Float {
-        ensurePut(4)
+        ensure(4)
         return mbuffer.getFloat(position).also { position += 4 }
     }
 
     override fun getDouble(): Double {
-        ensurePut(8)
+        ensure(8)
         return mbuffer.getDouble(position).also { position += 8 }
     }
 
     override fun get(buffer: ByteView) = apply {
-        ensurePut(buffer.size)
+        ensure(buffer.size)
         mbuffer.getBytes(position, buffer)
         position += buffer.size
     }
@@ -148,7 +155,7 @@ class MemoryViewStream<out B : ByteViewE>(
     }
 
     fun bufferSlice(): B {
-        if (limit >= 0) ensurePut(limit - position)
+        if (limit >= 0) ensure(limit - position)
         @Suppress("UNCHECKED_CAST")
         return mbuffer.slice(position,
                 (if (limit < 0) mbuffer.size else limit) - position) as B
@@ -172,7 +179,7 @@ class MemoryViewStream<out B : ByteViewE>(
         mbuffer.setBytes(0, mbuffer.slice(position, remaining))
         position = remaining
         if (limit > end) {
-            ensurePut(limit - end)
+            ensure(limit - end)
             repeat(limit - end) { mbuffer.setByte(position++, 0) }
         }
         this.limit = -1
@@ -190,64 +197,65 @@ class MemoryViewStream<out B : ByteViewE>(
     override fun position(pos: Int) = apply {
         if (pos < 0 || (pos > limit && limit >= 0))
             throw IllegalArgumentException("Invalid position")
-        ensurePut(pos - position)
+        ensure(pos - position)
         position = pos
     }
 
     override fun put(b: Byte) = apply {
-        ensurePut(1)
+        ensure(1)
         mbuffer.setByte(position, b)
         position++
     }
 
     override fun putShort(value: Short) = apply {
-        ensurePut(2)
+        ensure(2)
         mbuffer.setShort(position, value)
         position += 2
     }
 
     override fun putInt(value: Int) = apply {
-        ensurePut(4)
+        ensure(4)
         mbuffer.setInt(position, value)
         position += 4
     }
 
     override fun putLong(value: Long) = apply {
-        ensurePut(8)
+        ensure(8)
         mbuffer.setLong(position, value)
         position += 8
     }
 
     override fun putFloat(value: Float) = apply {
-        ensurePut(4)
+        ensure(4)
         mbuffer.setFloat(position, value)
         position += 4
     }
 
     override fun putDouble(value: Double) = apply {
-        ensurePut(8)
+        ensure(8)
         mbuffer.setDouble(position, value)
         position += 8
     }
 
     override fun put(buffer: ByteViewRO) = apply {
-        ensurePut(buffer.size)
+        ensure(buffer.size)
         mbuffer.setBytes(position, buffer)
         position += buffer.size
     }
 
-    fun ensurePut(len: Int) {
+    fun ensure(len: Int) = ensureTry(len) ?: throw EndOfStreamException()
+
+    fun ensureTry(len: Int): Boolean? {
         val used = position
         var size = mbuffer.size
-        if (len <= size - used) {
-            return
-        }
+        if (len <= size - used) return true
         do {
             size = growth(size)
         } while (len > size - used)
         if (limit >= 0) size = size.coerceAtMost(limit)
-        if (len > size - used) throw IOException("End of stream")
+        if (len > size - used) return null
         grow(size)
+        return true
     }
 
     fun grow(size: Int = growth(mbuffer.size)) {
@@ -276,38 +284,43 @@ class MemoryViewStream<out B : ByteViewE>(
         return (if (limit < 0) Int.MAX_VALUE else limit) - position
     }
 
+    override fun getTry(): Int {
+        ensureTry(1) ?: return -1
+        return mbuffer.getByte(position).toInt().also { position++ }
+    }
+
     override fun get(): Byte {
-        ensurePut(1)
+        ensure(1)
         return mbuffer.getByte(position).also { position++ }
     }
 
     override fun getShort(): Short {
-        ensurePut(2)
+        ensure(2)
         return mbuffer.getShort(position).also { position += 2 }
     }
 
     override fun getInt(): Int {
-        ensurePut(4)
+        ensure(4)
         return mbuffer.getInt(position).also { position += 4 }
     }
 
     override fun getLong(): Long {
-        ensurePut(8)
+        ensure(8)
         return mbuffer.getLong(position).also { position += 8 }
     }
 
     override fun getFloat(): Float {
-        ensurePut(4)
+        ensure(4)
         return mbuffer.getFloat(position).also { position += 4 }
     }
 
     override fun getDouble(): Double {
-        ensurePut(8)
+        ensure(8)
         return mbuffer.getDouble(position).also { position += 8 }
     }
 
     override fun get(buffer: ByteView) = apply {
-        ensurePut(buffer.size)
+        ensure(buffer.size)
         mbuffer.getBytes(position, buffer)
         position += buffer.size
     }

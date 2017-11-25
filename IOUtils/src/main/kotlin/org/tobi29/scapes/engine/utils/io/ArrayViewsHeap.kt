@@ -146,3 +146,25 @@ inline fun <R> ByteViewRO.readAsByteArray(block: (ByteArray, Int, Int) -> R): R 
     }
     return block(array, offset, size)
 }
+
+inline fun <R> ByteView.mutateAsByteArray(block: (ByteArray, Int, Int) -> R): R {
+    val array: ByteArray
+    val offset: Int
+    val mapped = when (this) {
+        is HeapByteArraySlice -> {
+            array = this.array
+            offset = this.offset
+            true
+        }
+        else -> {
+            array = asByteArray()
+            offset = 0
+            false
+        }
+    }
+    try {
+        return block(array, offset, size)
+    } finally {
+        if (!mapped) view.getBytes(0, array.view)
+    }
+}
