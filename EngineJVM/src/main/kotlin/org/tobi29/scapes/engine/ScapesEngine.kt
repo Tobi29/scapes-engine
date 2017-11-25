@@ -144,12 +144,12 @@ actual class ScapesEngine actual constructor(
                     val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
                     tps = step(delta)
                 }
-                components.asSequence().filterMap<ComponentLifecycle>()
+                components.asSequence().filterIsInstance<ComponentLifecycle>()
                         .forEach { it.halt() }
             }.join()
         } to stop
         if (updateJob.compareAndSet(null, job)) {
-            components.asSequence().filterMap<ComponentLifecycle>()
+            components.asSequence().filterIsInstance<ComponentLifecycle>()
                     .forEach { it.start() }
             startTps = step(0.0001)
             mutex.unlock()
@@ -204,7 +204,7 @@ actual class ScapesEngine actual constructor(
             currentState = newState
         }
         profilerSection("Components") {
-            components.asSequence().filterMap<ComponentStep>()
+            components.asSequence().filterIsInstance<ComponentStep>()
                     .forEach { it.step(delta) }
         }
         profilerSection("Gui") {

@@ -19,16 +19,6 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Filters out elements of the wrong type and casts them
- * @param T The type to cast to
- * @receiver The sequence of elements to map
- * @return A lazy sequence
- */
-inline fun <reified T : Any> Sequence<*>.filterMap(): Sequence<T> {
-    return mapNotNull { it as? T }
-}
-
-/**
  * Find the first element of correct type and casts it
  * @param T The type to cast to
  * @receiver The elements to search in

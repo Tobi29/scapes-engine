@@ -110,7 +110,7 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     override fun attributes(path: FilePath,
                             vararg options: LinkOption): Array<FileAttribute> =
             metadata(path, *options).asSequence()
-                    .filterMap<FileAttribute>().toArray()
+                    .filterIsInstance<FileAttribute>().toArray()
 
     override fun createTempFile(prefix: String,
                                 suffix: String,
