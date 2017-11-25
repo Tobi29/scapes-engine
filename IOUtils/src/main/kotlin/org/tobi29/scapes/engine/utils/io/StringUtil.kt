@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils.io
 
+import org.tobi29.scapes.engine.utils.MutableString
 import org.tobi29.scapes.engine.utils.Readable
 import kotlin.math.min
 
@@ -111,6 +112,41 @@ fun Readable.readLineTry(output: Appendable,
         }
     }
     return true
+}
+
+/**
+ * Returns an iterator for reading all lines from a [Readable]
+ *
+ * **Note:** The iterator may throw [IOException] on any called method
+ * @param ln The newline string to check for
+ * @receiver The source to read from
+ * @return An iterator for reading all lines from the receiver
+ */
+fun Readable.readLines(ln: String = "\n"): Iterator<String> =
+        ReadableLineIterator(this, ln)
+
+private class ReadableLineIterator(
+        private val readable: Readable,
+        private val ln: String = "\n"
+) : Iterator<String> {
+    private val builder = MutableString(256)
+    private var current: String? = null
+    private var eos = false
+
+    override fun hasNext(): Boolean = requireNext() != null
+
+    override fun next(): String = (requireNext()
+            ?: throw NoSuchElementException("No more lines available")
+            ).also { current = null }
+
+    private fun requireNext(): String? {
+        current?.let { return it }
+        if (eos) return null
+        if (!readable.readLineTry(builder, ln)) eos = true
+        current = builder.toString()
+        builder.clear()
+        return current
+    }
 }
 
 private fun Readable.readLineTry(output: Appendable,
