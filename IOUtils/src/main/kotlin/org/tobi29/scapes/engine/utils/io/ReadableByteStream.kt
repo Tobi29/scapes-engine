@@ -234,7 +234,7 @@ interface ReadableByteStream : Readable {
      * @return The string in the stream
      */
     fun getString(limit: Int = Int.MAX_VALUE): String =
-            getByteArray(limit).strUTF8()
+            getByteArray(limit).utf8ToString()
 
     override fun read(): Char = readTry().let {
         if (it < 0) throw EndOfStreamException()

@@ -71,9 +71,6 @@ fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str
     }
 }
 
-@Deprecated("Use new function", ReplaceWith("utf8ToString()"))
-fun ByteArray.strUTF8(): String = utf8ToString()
-
 /**
  * Reads UTF-8 data from the given array and returns a string
  *
