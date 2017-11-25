@@ -143,7 +143,7 @@ private class ReadableLineIterator(
         current?.let { return it }
         if (eos) return null
         if (!readable.readLineTry(builder, ln)) eos = true
-        current = builder.toString()
+        if (!eos || builder.isNotEmpty()) current = builder.toString()
         builder.clear()
         return current
     }
