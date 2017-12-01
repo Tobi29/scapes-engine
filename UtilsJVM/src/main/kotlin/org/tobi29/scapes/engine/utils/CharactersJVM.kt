@@ -23,3 +23,25 @@ actual inline fun Char.isISOControl(): Boolean =
 
 actual inline fun Codepoint.isISOControl(): Boolean =
         java.lang.Character.isISOControl(this)
+
+actual inline fun Codepoint.isBmpCodepoint(): Boolean =
+        java.lang.Character.isBmpCodePoint(this)
+
+actual inline fun Char.isSurrogate(): Boolean =
+        java.lang.Character.isSurrogate(this)
+
+actual inline fun Char.isHighSurrogate(): Boolean =
+        java.lang.Character.isHighSurrogate(this)
+
+actual inline fun Codepoint.highSurrogate(): Char =
+        java.lang.Character.highSurrogate(this)
+
+actual inline fun Char.isLowSurrogate(): Boolean =
+        java.lang.Character.isLowSurrogate(this)
+
+actual inline fun Codepoint.lowSurrogate(): Char =
+        java.lang.Character.lowSurrogate(this)
+
+actual inline fun surrogateCodepoint(high: Char,
+                                     low: Char): Codepoint =
+        java.lang.Character.toCodePoint(high, low)

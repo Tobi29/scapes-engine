@@ -18,8 +18,41 @@
 
 package org.tobi29.scapes.engine.utils
 
+private const val MIN_HIGH_SURROGATE = '\uD800'
+private const val MAX_HIGH_SURROGATE = '\uDBFF'
+private const val MIN_LOW_SURROGATE = '\uDC00'
+private const val MAX_LOW_SURROGATE = '\uDFFF'
+private const val MIN_SURROGATE = MIN_HIGH_SURROGATE
+private const val MAX_SURROGATE = MAX_LOW_SURROGATE
+private const val MIN_SUPPLEMENTARY_CODE_POINT = 0x010000
+
 actual inline fun Char.isISOControl(): Boolean =
         toInt().isISOControl()
 
 actual fun Codepoint.isISOControl(): Boolean =
         this <= 0x9F && (this >= 0x7F || (this.ushr(5) == 0))
+
+actual fun Codepoint.isBmpCodepoint(): Boolean =
+        this in 0 until MIN_SUPPLEMENTARY_CODE_POINT
+
+actual fun Char.isSurrogate(): Boolean =
+        this in MIN_SURROGATE..MAX_SURROGATE
+
+actual fun Char.isHighSurrogate(): Boolean =
+        this in MIN_HIGH_SURROGATE..MAX_HIGH_SURROGATE
+
+actual fun Codepoint.highSurrogate(): Char =
+        ((this ushr 10) + MIN_HIGH_SURROGATE.toInt()
+                - (MIN_SUPPLEMENTARY_CODE_POINT ushr 10)).toChar()
+
+actual fun Char.isLowSurrogate(): Boolean =
+        this in MIN_LOW_SURROGATE..MAX_LOW_SURROGATE
+
+actual fun Codepoint.lowSurrogate(): Char =
+        ((this and 0x3ff) + MIN_LOW_SURROGATE.toInt()).toChar()
+
+actual fun surrogateCodepoint(high: Char,
+                              low: Char): Codepoint =
+        (((high - MIN_HIGH_SURROGATE) shl 10)
+                + (low - MIN_LOW_SURROGATE)
+                + MIN_SUPPLEMENTARY_CODE_POINT)
