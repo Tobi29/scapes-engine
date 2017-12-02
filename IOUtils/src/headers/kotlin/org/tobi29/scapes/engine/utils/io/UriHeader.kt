@@ -62,13 +62,13 @@ expect class UriHierarchicalAbsolute(scheme: String,
  */
 expect class UriHierarchicalNet(scheme: String,
                                 userInfo: String?,
-                                host: String,
+                                host: String?,
                                 port: Int?,
                                 path: String?,
                                 query: String?,
                                 fragment: String?) : UriHierarchical {
     val userInfo: String?
-    val host: String
+    val host: String?
     val port: Int?
 
     override fun toString(): String

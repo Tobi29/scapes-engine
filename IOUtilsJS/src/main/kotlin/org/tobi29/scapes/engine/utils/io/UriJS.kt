@@ -72,14 +72,14 @@ actual class UriHierarchicalAbsolute actual constructor(
 actual class UriHierarchicalNet(
         scheme: String,
         actual val userInfo: String?,
-        actual val host: String,
+        actual val host: String?,
         private val portStr: String?,
         path: String?,
         query: String?,
         fragment: String?) : UriHierarchical(scheme, path, query, fragment) {
     actual constructor(scheme: String,
                        userInfo: String?,
-                       host: String,
+                       host: String?,
                        port: Int?,
                        path: String?,
                        query: String?,
@@ -90,7 +90,7 @@ actual class UriHierarchicalNet(
 
     actual override fun toString(): String =
             "$scheme://${userInfo?.uriEscapeUserInfo()?.let { "$it@" } ?: ""
-            }${host.uriEscapeHost()
+            }${host?.uriEscapeHost() ?: ""
             }${portStr?.let { ":$it" } ?: ""
             }${path?.uriEscapePath() ?: ""
             }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
@@ -109,7 +109,7 @@ actual class UriHierarchicalNet(
 
     actual override fun hashCode(): Int {
         var result = scheme.toLowerCase().hashCode()
-        result = 31 * result + host.hashCode()
+        result = 31 * result + (host?.hashCode() ?: 0)
         result = 31 * result + (port ?: 0)
         result = 31 * result + (path?.hashCode() ?: 0)
         result = 31 * result + (query?.hashCode() ?: 0)
@@ -172,9 +172,9 @@ actual class UriRelative actual constructor(
 actual fun Uri(str: String): Uri {
     uriParseHierarchicalNet.matchEntire(str)?.let { match ->
         return UriHierarchicalNet(match.groups[1]?.value!!,
-                match.groups[3]?.value, match.groups[4]?.value!!,
-                match.groups[6]?.value?.toIntOrNull(), match.groups[7]?.value,
-                match.groups[9]?.value, match.groups[11]?.value)
+                match.groups[4]?.value, match.groups[5]?.value,
+                match.groups[7]?.value?.toIntOrNull(), match.groups[8]?.value,
+                match.groups[10]?.value, match.groups[12]?.value)
     }
     uriParseHierarchicalAbsolute.matchEntire(str)?.let { match ->
         return UriHierarchicalAbsolute(match.groups[1]?.value!!,
@@ -194,7 +194,7 @@ actual fun Uri(str: String): Uri {
 
 private const val uriScheme = """([^:/?#]*)"""
 private const val uriUserInfo = """([^@/?#]*)@"""
-private const val uriHost = """([^:/?#]*)"""
+private const val uriHost = """([^:/?#]+)"""
 private const val uriPort = """:([^/?#]*)"""
 private const val uriPath = """(/[^?#]*)"""
 private const val uriQuery = """\?([^#]*)"""
@@ -206,8 +206,8 @@ private val uriParseHierarchicalAbsolute =
         "$uriScheme:$uriPath($uriQuery)?($uriFragment)?".toRegex()
 // Scheme : Path : ?Query : Query : #Fragment : Fragment
 private val uriParseHierarchicalNet =
-        "$uriScheme://($uriUserInfo)?$uriHost($uriPort)?$uriPath?($uriQuery)?($uriFragment)?".toRegex()
-// Scheme : UserInfo@ : UserInfo : Host : :Port : Port : Path : ?Query : Query : #Fragment : Fragment
+        "$uriScheme://(($uriUserInfo)?$uriHost($uriPort)?)?$uriPath?($uriQuery)?($uriFragment)?".toRegex()
+// Scheme : UserInfo@Host:Port : UserInfo@ : UserInfo : Host : :Port : Port : Path : ?Query : Query : #Fragment : Fragment
 private val uriParseOpaque =
         "$uriScheme:$uriOpaque($uriFragment)?".toRegex()
 // Scheme : Opaque : #Fragment : Fragment

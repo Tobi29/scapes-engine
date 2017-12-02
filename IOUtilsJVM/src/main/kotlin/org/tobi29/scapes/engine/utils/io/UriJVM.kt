@@ -88,7 +88,7 @@ actual class UriHierarchicalNet(java: JavaUri,
 
     actual constructor(scheme: String,
                      userInfo: String?,
-                     host: String,
+                     host: String?,
                      port: Int?,
                      path: String?,
                      query: String?,
@@ -97,7 +97,7 @@ actual class UriHierarchicalNet(java: JavaUri,
             true)
 
     actual val userInfo: String? get() = java.userInfo
-    actual val host: String get() = java.host ?: "" // Crash safety
+    actual val host: String? get() = java.host
     actual val port: Int? get() = java.port.takeIf { it >= 0 }
 
     actual override fun toString(): String = java.toString()
@@ -115,7 +115,7 @@ actual class UriHierarchicalNet(java: JavaUri,
 
     actual override fun hashCode(): Int {
         var result = scheme.toLowerCase().hashCode()
-        result = 31 * result + host.hashCode()
+        result = 31 * result + (host?.hashCode() ?: 0)
         result = 31 * result + (port ?: 0)
         result = 31 * result + (path?.hashCode() ?: 0)
         result = 31 * result + (query?.hashCode() ?: 0)
