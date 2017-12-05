@@ -124,91 +124,145 @@ inline fun Float32Array.asArray(): FloatArray = asDynamic()
 @Suppress("UnsafeCastFromDynamic")
 inline fun Float64Array.asArray(): DoubleArray = asDynamic()
 
-actual inline fun copyArray(src: BooleanArray,
-                          dest: BooleanArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
+actual inline fun copyArray(
+        src: BooleanArray,
+        dest: BooleanArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
     for (i in 0 until length) {
         dest[i + offsetDest] = src[i + offsetSrc]
     }
 }
 
-actual inline fun copyArray(src: ByteArray,
-                          dest: ByteArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
+actual inline fun copyArray(
+        src: ByteArray,
+        dest: ByteArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
+    dest.asTypedArray().set(
+            src.asTypedArray().subarray(offsetSrc, offsetSrc + length),
+            offsetDest)
+}
+
+actual inline fun copyArray(
+        src: ShortArray,
+        dest: ShortArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
+    dest.asTypedArray().set(
+            src.asTypedArray().subarray(offsetSrc, offsetSrc + length),
+            offsetDest)
+}
+
+actual inline fun copyArray(
+        src: IntArray,
+        dest: IntArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
+    dest.asTypedArray().set(
+            src.asTypedArray().subarray(offsetSrc, offsetSrc + length),
+            offsetDest)
+}
+
+actual inline fun copyArray(
+        src: LongArray,
+        dest: LongArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
     for (i in 0 until length) {
         dest[i + offsetDest] = src[i + offsetSrc]
     }
 }
 
-actual inline fun copyArray(src: ShortArray,
-                          dest: ShortArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
+actual inline fun copyArray(
+        src: FloatArray,
+        dest: FloatArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
+    dest.asTypedArray().set(
+            src.asTypedArray().subarray(offsetSrc, offsetSrc + length),
+            offsetDest)
 }
 
-actual inline fun copyArray(src: IntArray,
-                          dest: IntArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
+actual inline fun copyArray(
+        src: DoubleArray,
+        dest: DoubleArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
+    dest.asTypedArray().set(
+            src.asTypedArray().subarray(offsetSrc, offsetSrc + length),
+            offsetDest)
 }
 
-actual inline fun copyArray(src: LongArray,
-                          dest: LongArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
+actual inline fun copyArray(
+        src: CharArray,
+        dest: CharArray,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
+    dest.asTypedArray().set(
+            src.asTypedArray().subarray(offsetSrc, offsetSrc + length),
+            offsetDest)
 }
 
-actual inline fun copyArray(src: FloatArray,
-                          dest: FloatArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
-}
-
-actual inline fun copyArray(src: DoubleArray,
-                          dest: DoubleArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
-}
-
-actual inline fun copyArray(src: CharArray,
-                          dest: CharArray,
-                          length: Int,
-                          offsetSrc: Int,
-                          offsetDest: Int) {
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
-}
-
-actual inline fun <T> copyArray(src: Array<out T>,
-                              dest: Array<in T>,
-                              length: Int,
-                              offsetSrc: Int,
-                              offsetDest: Int) {
+actual inline fun <T> copyArray(
+        src: Array<out T>,
+        dest: Array<in T>,
+        length: Int,
+        offsetSrc: Int,
+        offsetDest: Int
+) {
+    if (length < 0 || offsetSrc < 0 || offsetDest < 0
+            || (offsetSrc + length > src.size)
+            || (offsetDest + length > dest.size))
+        throw IndexOutOfBoundsException("Invalid copy bounds")
     for (i in 0 until length) {
         dest[i + offsetDest] = src[i + offsetSrc]
     }
