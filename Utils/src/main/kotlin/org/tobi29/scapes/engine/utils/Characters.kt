@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.utils
 
 /**
@@ -37,3 +39,88 @@ const val alphabetLatinUppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
  * String containing all arabic digits
  */
 const val digitsArabic = "0123456789"
+
+/**
+ * Converts a single (non-surrogate) character to a codepoint
+ */
+inline fun Char.toCP(): Codepoint = toInt()
+
+fun Codepoint.toCPString(): String =
+        if (isBmpCodepoint()) "${toChar()}"
+        else "${highSurrogate()}${lowSurrogate()}"
+
+/**
+ * Creates an [Iterator] over all codepoints in a [CharSequence]
+ *
+ * **Note:** Invalid characters are silently skipped or might produce mangled
+ * codepoints
+ */
+fun CharSequence.codepoints(): Iterator<Int> = object : Iterator<Int> {
+    var i = 0
+    var c = 0
+    var q = false
+
+    override fun hasNext(): Boolean {
+        if (q) return true
+        return progressCodepoint(i) { n, cn ->
+            i = n
+            c = cn
+            true
+        } == true
+    }
+
+    override fun next(): Int {
+        if (!hasNext()) throw NoSuchElementException(
+                "Iterator has no more elements")
+        q = false
+        return c
+    }
+}
+
+/**
+ * Iterates over all codepoints in a [CharSequence]
+ *
+ * **Note:** Invalid characters are silently skipped or might produce mangled
+ * codepoints
+ */
+inline fun CharSequence.forEachCodepoint(block: (Codepoint) -> Unit) {
+    var i = 0
+    while (progressCodepoint(i) { n, c ->
+        i = n
+        block(c)
+        true
+    } == true);
+}
+
+/**
+ * Progresses over a single codepoint in a [CharSequence]
+ *
+ * **Note:** Invalid characters are silently skipped or might produce mangled
+ * codepoints
+ *
+ * **Note:** This is a low-level utility, consider higher-level alternatives
+ * when applicable
+ * @param i The first character for the codepoint
+ * @param output Called with next character index and codepoint
+ * @return `null` if the input ended or otherwise return value of [output]
+ * @see CharSequence.codepoints
+ * @see CharSequence.forEachCodepoint
+ */
+inline fun <R> CharSequence.progressCodepoint(
+        i: Int,
+        output: (Int, Codepoint) -> R
+): R? {
+    if (i >= length) return null
+    val c0 = this[i]
+    val n: Int
+    val c = if (c0.isSurrogate()) {
+        if (i >= length) return null
+        val c1 = this[i + 1]
+        n = i + 2
+        surrogateCodepoint(c0, c1)
+    } else {
+        n = i + 1
+        c0.toCP()
+    }
+    return output(n, c)
+}
