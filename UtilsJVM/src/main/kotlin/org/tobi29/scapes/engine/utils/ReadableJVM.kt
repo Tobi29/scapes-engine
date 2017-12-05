@@ -92,13 +92,23 @@ interface SEReadable : java.lang.Readable {
     override fun read(cb: CharBuffer): Int {
         val position = cb.position()
         if (cb.hasArray()) {
-            se.read(cb.array(), cb.arrayOffset() + position, cb.remaining())
+            val read = se.readSome(cb.array(), cb.arrayOffset() + position,
+                    cb.remaining())
+            if (read >= 0) cb.position(cb.position() + read)
+            return read
         } else {
+            var read = 0
             while (cb.hasRemaining()) {
-                cb.put(se.read())
+                val c = se.readTry()
+                if (c < 0) {
+                    if (read == 0) return -1
+                    break
+                }
+                cb.put(c.toChar())
+                read++
             }
+            return read
         }
-        return cb.position() - position
     }
 }
 
