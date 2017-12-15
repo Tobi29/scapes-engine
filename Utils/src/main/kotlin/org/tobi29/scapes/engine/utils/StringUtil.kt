@@ -254,3 +254,22 @@ fun String.substringAfterLastOrNull(delimiter: String): String? {
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun String.toMutableString(): MutableString = MutableString(this)
+
+/**
+ * Returns a [Readable] reading through the given string
+ * @receiver String to read from
+ * @return A [Readable] returning the contents of the given string
+ */
+fun CharSequence.toReadable(): Readable = object : Readable {
+    private var i = 0
+
+    override fun read(): Char {
+        if (i >= length) throw IndexOutOfBoundsException("End of string")
+        return this@toReadable[i++]
+    }
+
+    override fun readTry(): Int {
+        if (i >= length) return -1
+        return this@toReadable[i++].toInt()
+    }
+}
