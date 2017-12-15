@@ -69,3 +69,33 @@ interface Readable {
         return size
     }
 }
+
+/**
+ * Reads a single codepoint
+ * @return The read codepoint
+ */
+fun Readable.readCodepoint(): Codepoint {
+    val c0 = read()
+    return if (c0.isHighSurrogate()) {
+        val c1 = read()
+        surrogateCodepoint(c0, c1)
+    } else c0.toCP()
+}
+
+/**
+ * Reads a single codepoint
+ * @return The read codepoint or -1 on end of stream
+ */
+fun Readable.readCodepointTry(): Int {
+    val c0 = readTry().let {
+        if (it < 0) return -1
+        it.toChar()
+    }
+    return if (c0.isHighSurrogate()) {
+        val c1 = readTry().let {
+            if (it < 0) return -1
+            it.toChar()
+        }
+        surrogateCodepoint(c0, c1)
+    } else c0.toCP()
+}
