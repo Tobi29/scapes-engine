@@ -94,6 +94,11 @@ private fun createTagMap(): TagMap {
         // Empty structure and list
         this["EmptyMap"] = TagMap()
         this["EmptyList"] = TagList()
+        this["EmptyMapInList"] = TagList { add(TagMap()) }
+        this["EmptyMapInListInList"] = TagList {
+            add(TagList { add(TagMap()) })
+        }
+        this["EmptyListInMap"] = TagMap { this["List"] = TagList() }
     }
 }
 
