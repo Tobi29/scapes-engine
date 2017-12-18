@@ -112,6 +112,7 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
 
     // TODO: @Throws(IOException::class)
     override fun endListWithEmpty() {
+        structureStream.put(ID_STRUCTURE_EMPTY)
         structureStream.put(ID_LIST_TERMINATE)
     }
 
