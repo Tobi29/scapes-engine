@@ -20,9 +20,9 @@ package org.tobi29.scapes.engine.utils
 
 actual inline val ANDROID_API_LEVEL get(): Int? = null
 
-actual inline val IS_JVM get() = true
-actual inline val IS_ANDROID get() = ANDROID_API_LEVEL != null
-actual inline val IS_JS get() = false
+actual inline val IS_JVM get() = false
+actual inline val IS_ANDROID get() = false
+actual inline val IS_JS get() = true
 actual inline val IS_NATIVE get() = false
 
 actual inline fun isAndroidAPI(level: Int) = false
