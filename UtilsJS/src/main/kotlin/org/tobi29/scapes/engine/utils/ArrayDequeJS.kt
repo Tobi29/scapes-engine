@@ -19,7 +19,8 @@ package org.tobi29.scapes.engine.utils
 // TODO: Is it viable to make a compact but efficient implementation for this on js?
 actual class ArrayDeque<E : Any> private constructor(
         private var array: ArrayList<E>
-) : Deque<E>, MutableCollection<E> by array {
+) : Deque<E>,
+        MutableCollection<E> by array {
     actual constructor() : this(ArrayList<E>())
 
     actual constructor(size: Int) : this()
@@ -36,7 +37,7 @@ actual class ArrayDeque<E : Any> private constructor(
 
     actual override fun getLast(): E = array[size - 1]
 
-    actual override fun removeFirstOccurrence(element: E): Boolean {
+    actual override fun removeFirstOccurrence(element: Any): Boolean {
         for (i in 0 until size) {
             if (element == array[i]) {
                 array.removeAt(i)
@@ -46,7 +47,7 @@ actual class ArrayDeque<E : Any> private constructor(
         return false
     }
 
-    actual override fun removeLastOccurrence(element: E): Boolean {
+    actual override fun removeLastOccurrence(element: Any): Boolean {
         for (i in size - 1 downTo 0) {
             if (element == array[i]) {
                 array.removeAt(i)

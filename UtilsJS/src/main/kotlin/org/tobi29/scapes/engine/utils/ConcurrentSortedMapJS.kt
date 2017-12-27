@@ -16,12 +16,14 @@
 
 package org.tobi29.scapes.engine.utils
 
-actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), ConcurrentMap<K, V> {
+actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(),
+        ConcurrentMap<K, V> {
     private val map = HashMap<K, V>()
     private var list = emptyList<MutableMap.MutableEntry<K, V>>()
 
     actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> =
-            object : AbstractSet<MutableMap.MutableEntry<K, V>>(), MutableSet<MutableMap.MutableEntry<K, V>> {
+            object : AbstractSet<MutableMap.MutableEntry<K, V>>(),
+                    MutableSet<MutableMap.MutableEntry<K, V>> {
                 override val size get() = map.size
 
                 override fun add(element: MutableMap.MutableEntry<K, V>): Boolean =
@@ -87,7 +89,8 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Co
             }
 
     actual override val keys: MutableSet<K> =
-            object : AbstractSet<K>(), MutableSet<K> {
+            object : AbstractSet<K>(),
+                    MutableSet<K> {
                 override val size get() = map.size
 
                 override fun add(element: K): Boolean =
@@ -144,7 +147,8 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Co
             }
 
     actual override val values: MutableCollection<V> =
-            object : AbstractCollection<V>(), MutableCollection<V> {
+            object : AbstractCollection<V>(),
+                    MutableCollection<V> {
                 override val size get() = map.size
 
                 override fun add(element: V): Boolean =
@@ -243,10 +247,32 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(), Co
         list = newList
     }
 
+    actual override fun replace(key: K,
+                                value: V): V? =
+            if (map.containsKey(key)) put(key, value) else null
+
+    actual override fun replace(key: K,
+                                oldValue: V,
+                                newValue: V): Boolean =
+            if (map[key] == oldValue) {
+                put(key, newValue)
+                true
+            } else false
+
+    actual override fun putIfAbsent(key: K,
+                                    value: V): V? = putIfAbsent(key, value)
+
     actual override fun remove(key: K) =
             map.remove(key)?.also {
                 list = list.filter { it.key != key }
             }
+
+    actual override fun remove(key: K,
+                               value: V): Boolean =
+            if (map[key] == value) {
+                map.remove(key)
+                true
+            } else false
 
     actual override fun clear() {
         map.clear()

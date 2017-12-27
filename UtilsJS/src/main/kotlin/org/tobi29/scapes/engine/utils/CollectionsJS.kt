@@ -16,7 +16,78 @@
 
 package org.tobi29.scapes.engine.utils
 
+actual interface Queue<E> : MutableCollection<E> {
+    actual fun offer(element: E): Boolean
+    actual fun remove(): E
+    actual fun poll(): E?
+    actual fun element(): E
+    actual fun peek(): E
+}
+
+actual interface Deque<E> : Queue<E> {
+    actual fun addFirst(element: E)
+    actual fun addLast(element: E)
+    actual fun offerFirst(element: E): Boolean
+    actual fun offerLast(element: E): Boolean
+    actual fun removeFirst(): E
+    actual fun removeLast(): E
+    actual fun pollFirst(): E?
+    actual fun pollLast(): E?
+    actual fun getFirst(): E
+    actual fun getLast(): E
+    actual fun peekFirst(): E
+    actual fun peekLast(): E
+    actual fun removeFirstOccurrence(element: Any): Boolean
+    actual fun removeLastOccurrence(element: Any): Boolean
+    actual fun push(element: E)
+    actual fun pop(): E
+    actual fun descendingIterator(): MutableIterator<E>
+}
+
+actual interface ConcurrentMap<K, V> : MutableMap<K, V> {
+    actual fun replace(key: K,
+                       value: V): V?
+
+    actual fun replace(key: K,
+                       oldValue: V,
+                       newValue: V): Boolean
+
+    actual fun putIfAbsent(key: K,
+                           value: V): V?
+
+    actual fun remove(key: K,
+                      value: V): Boolean
+}
+
+actual class ConcurrentHashMap<K, V> : HashMap<K, V>(),
+        ConcurrentMap<K, V> {
+    actual override fun replace(key: K,
+                                value: V): V? =
+            if (containsKey(key)) put(key, value) else null
+
+    actual override fun replace(key: K,
+                                oldValue: V,
+                                newValue: V): Boolean =
+            if (this[key] == oldValue) {
+                put(key, newValue)
+                true
+            } else false
+
+    actual override fun putIfAbsent(key: K,
+                                    value: V): V? =
+            putIfAbsent(key, value)
+
+    actual override fun remove(key: K,
+                               value: V): Boolean =
+            if (this[key] == value) {
+                remove(key)
+                true
+            } else false
+}
+
 actual class ConcurrentHashSet<E> : MutableSet<E> {
+    private val map = ConcurrentHashMap<E, Unit>()
+
     actual override fun addAll(elements: Collection<E>): Boolean {
         var added = false
         for (element in elements) {
@@ -36,8 +107,6 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
             map.keys.containsAll(elements)
 
     actual override fun isEmpty() = map.isEmpty()
-
-    private val map = ConcurrentHashMap<E, Unit>()
 
     actual override val size get() = map.size
 

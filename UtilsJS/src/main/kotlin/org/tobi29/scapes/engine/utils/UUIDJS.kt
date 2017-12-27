@@ -16,18 +16,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-actual class ConcurrentHashMap<K, V> : HashMap<K, V>(), ConcurrentMap<K, V> {
-    actual open fun replace(key: K,
-                          oldValue: V,
-                          newValue: V) =
-            if (this[key] == oldValue) {
-                this[key] = newValue
-                true
-            } else {
-                false
-            }
-}
-
 actual fun String.toUUID(): UUID? {
     val split = split('-')
     if (split.size != 5) return null
@@ -40,7 +28,7 @@ actual fun String.toUUID(): UUID? {
 }
 
 actual class UUID actual constructor(private val mostSignificantBits: Long,
-                                 private val leastSignificantBits: Long) {
+                                     private val leastSignificantBits: Long) {
     actual open fun getMostSignificantBits() = mostSignificantBits
     actual open fun getLeastSignificantBits() = leastSignificantBits
 
