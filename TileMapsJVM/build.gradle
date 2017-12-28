@@ -16,8 +16,7 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":TileMaps"))
-
 dependencies {
+    expectedBy project(":TileMaps")
     compile project(":GraphicsUtilsJVM")
 }

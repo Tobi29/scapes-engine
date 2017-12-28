@@ -16,12 +16,11 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":FileSystems"))
-
 compileKotlin {
     kotlinOptions.freeCompilerArgs += "-Xallow-kotlin-package"
 }
 
 dependencies {
+    expectedBy project(":FileSystems")
     compile project(":IOUtilsJVM")
 }

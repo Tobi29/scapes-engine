@@ -16,8 +16,7 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":MathUtils"))
-
 dependencies {
+    expectedBy project(":MathUtils")
     compile project(":UtilsJVM")
 }

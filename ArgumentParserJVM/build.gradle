@@ -16,8 +16,7 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":ArgumentParser"))
-
 dependencies {
+    expectedBy project(":ArgumentParser")
     compile project(":UtilsJVM")
 }

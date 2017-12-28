@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
-implementCommon(project(":GraphicsUtils"))
-
 dependencies {
+    expectedBy project(":GraphicsUtils")
     compile project(":IOUtilsJS")
     compile project(":MathUtilsJS")
 }

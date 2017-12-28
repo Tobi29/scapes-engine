@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":IOUtils"))
-
 dependencies {
+    expectedBy project(":IOUtils")
     compile project(":UtilsJVM")
     compile rootProject.ext.tika
 }

@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":Utils"))
-
 dependencies {
+    expectedBy project(":Utils")
     compile rootProject.ext.slf4jAPI
     compile rootProject.ext.kotlinSTDJVM
 }

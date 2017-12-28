@@ -16,8 +16,7 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":PlatformIntegration"))
-
 dependencies {
+    expectedBy project(":PlatformIntegration")
     compile project(":FileSystemsJVM")
 }

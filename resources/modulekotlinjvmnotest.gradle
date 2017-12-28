@@ -40,13 +40,6 @@ task printClasspath {
     }
 }
 
-ext.implementCommon = { Project project ->
-    dependencies.expectedBy project
-    dependencies.compileOnly project
-    dependencies.testCompileOnly project
-    tasks.sourcesJar.from project.sourceSets.main.allSource
-}
-
 eclipse.project {
     natures "org.jetbrains.kotlin.core.kotlinNature"
 }

@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":GraphicsUtils"))
-
 dependencies {
+    expectedBy project(":GraphicsUtils")
     compile project(":IOUtilsJVM")
     compile project(":MathUtilsJVM")
     compile(rootProject.ext.pngj) { transitive = false }

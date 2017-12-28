@@ -16,8 +16,7 @@
 
 apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
-implementCommon(project(":Utils"))
-
 dependencies {
+    expectedBy project(":Utils")
     compile rootProject.ext.kotlinSTDJS
 }

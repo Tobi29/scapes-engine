@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":ShaderCLike"))
-
 dependencies {
+    expectedBy project(":ShaderCLike")
     compile project(":ShaderCompilerJVM")
     compile project(":ShaderParser")
 }

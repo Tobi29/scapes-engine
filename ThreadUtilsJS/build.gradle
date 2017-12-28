@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
-implementCommon(project(":ThreadUtils"))
-
 dependencies {
+    expectedBy project(":ThreadUtils")
     compile project(":UtilsJS")
     compile rootProject.ext.kotlinxCoroutinesCoreJS
 }

@@ -16,8 +16,7 @@
 
 apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
-implementCommon(project(":ChronoUtils"))
-
 dependencies {
+    expectedBy project(":ChronoUtils")
     compile project(":UtilsJS")
 }

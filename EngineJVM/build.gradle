@@ -16,9 +16,8 @@
 
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
-implementCommon(project(":Engine"))
-
 dependencies {
+    expectedBy project(":Engine")
     compile project(":IOUtilsJVM")
     compile project(":GraphicsUtilsJVM")
     compile project(":ShaderCompilerJVM")
