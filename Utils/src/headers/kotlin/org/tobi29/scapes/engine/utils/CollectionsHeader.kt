@@ -101,9 +101,11 @@ expect interface ConcurrentMap<K, V> : MutableMap<K, V> {
 }
 
 expect class ConcurrentHashMap<K, V>() : ConcurrentMap<K, V> {
+    // TODO: Would this count as a Kotlin bug?
+    // override val keys: MutableSet<K>
+
     override val size: Int
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>>
-    override val keys: MutableSet<K>
     override val values: MutableCollection<V>
     override fun isEmpty(): Boolean
     override fun containsKey(key: K): Boolean
