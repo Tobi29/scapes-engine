@@ -24,13 +24,21 @@ kotlin {
     }
 }
 
+configurations {
+    sources
+}
+
 task sourcesJar(type: Jar) {
     classifier = "sources"
+    from {
+        configurations.sources.collect { it.isDirectory() ? it : zipTree(it) }
+    }
     from sourceSets.main.allSource
 }
 
 artifacts {
     archives sourcesJar
+    sources sourcesJar
 }
 
 compileKotlin2Js {

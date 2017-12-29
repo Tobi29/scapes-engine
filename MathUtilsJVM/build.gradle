@@ -18,5 +18,6 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":MathUtils")
+    sources project(path: ":MathUtils", configuration: "sources")
     compile project(":UtilsJVM")
 }

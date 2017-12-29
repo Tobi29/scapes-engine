@@ -25,6 +25,10 @@ kotlin {
     }
 }
 
+configurations {
+    sources
+}
+
 task sourcesJar(type: Jar) {
     classifier = "sources"
     from sourceSets.main.allSource
@@ -32,6 +36,7 @@ task sourcesJar(type: Jar) {
 
 artifacts {
     archives sourcesJar
+    sources sourcesJar
 }
 
 eclipse.project {

@@ -22,5 +22,6 @@ compileKotlin {
 
 dependencies {
     expectedBy project(":FileSystems")
+    sources project(path: ":FileSystems", configuration: "sources")
     compile project(":IOUtilsJVM")
 }

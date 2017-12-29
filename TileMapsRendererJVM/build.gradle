@@ -18,6 +18,7 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":TileMapsRenderer")
+    sources project(path: ":TileMapsRenderer", configuration: "sources")
     compile project(":EngineJVM")
     compile project(":TileMapsJVM")
 }
