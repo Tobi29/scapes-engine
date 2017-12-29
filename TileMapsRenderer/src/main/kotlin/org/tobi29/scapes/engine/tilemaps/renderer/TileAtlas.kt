@@ -21,6 +21,9 @@ package org.tobi29.scapes.engine.tilemaps.renderer
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.scapes.engine.math.margin
+import org.tobi29.scapes.engine.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.tilemaps.Frame
 import org.tobi29.scapes.engine.tilemaps.Sprite
 import org.tobi29.scapes.engine.tilemaps.Tile
@@ -32,10 +35,6 @@ import org.tobi29.scapes.engine.utils.graphics.set
 import org.tobi29.scapes.engine.utils.graphics.toImage
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.math.floorToInt
-import org.tobi29.scapes.engine.math.margin
-import org.tobi29.scapes.engine.utils.math.remP
-import org.tobi29.scapes.engine.math.vector.MutableVector2i
-import org.tobi29.scapes.engine.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.toArray
 import kotlin.math.max
 
@@ -118,15 +117,17 @@ internal class TileAnimation(sprite: Sprite,
     }
 
     fun update(delta: Double) {
-        if (frames.size <= 1) {
-            return
-        }
+        if (frames.size <= 1) return
+
         val old = spin.floorToInt()
-        spin = (spin + delta * frames[old].first) remP frames.size.toDouble()
+        val duration = frames[old].first
+
+        spin = ((spin + delta * duration) % frames.size.toDouble())
+                .coerceAtLeast(0.0)
+        if (!spin.isFinite()) spin = 0.0
+
         val i = spin.floorToInt()
-        if (old != i) {
-            newFrame.set(i)
-        }
+        if (old != i) newFrame.set(i)
     }
 }
 
