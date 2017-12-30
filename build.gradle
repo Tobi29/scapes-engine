@@ -66,7 +66,7 @@ task wrapper(type: Wrapper) {
 }
 
 ext {
-    kotlinVersion = "1.2.0"
+    kotlinVersion = "1.2.10"
     kotlinxCoroutinesVersion = "0.0.6"
     slf4jVersion = "1.7.25"
     spekVersion = "1.1.5"
