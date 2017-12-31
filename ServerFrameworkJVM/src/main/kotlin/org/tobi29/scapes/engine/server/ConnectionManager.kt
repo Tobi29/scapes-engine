@@ -60,7 +60,7 @@ class ConnectionManager(
         val worker = ConnectionWorker(this, maxWorkerSleep)
         val stop = AtomicBoolean(false)
         val w = Triple(worker,
-                launchThread("Connection-Worker", taskExecutor[Job]) {
+                launchThread("Connection-Worker") {
                     try {
                         worker.run(stop)
                     } finally {

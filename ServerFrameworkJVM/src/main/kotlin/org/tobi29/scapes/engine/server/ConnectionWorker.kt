@@ -46,7 +46,7 @@ class ConnectionWorker(
     private val connectionQueue = LinkedListChannel<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
     private val connections = ArrayList<ConnectionHandle>()
     private val queue = TaskChannel<() -> Unit>()
-    val selector = Selector.open()
+    val selector: Selector = Selector.open()
 
     /**
      * Returns an estimate for how many connections this worker is processing
