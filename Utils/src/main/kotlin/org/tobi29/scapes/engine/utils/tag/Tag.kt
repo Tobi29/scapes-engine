@@ -371,6 +371,12 @@ interface TagMapWrite : TagWrite {
     override fun toTag() = TagMap { write(this) }
 }
 
+interface TagListWrite : TagWrite {
+    fun write(list: MutableList<Tag>)
+
+    override fun toTag() = TagList { write(this) }
+}
+
 private fun compareNumbers(first: Any,
                            second: Any) = if (first is Number && second is Number) {
     compareNumbers(first, second)
