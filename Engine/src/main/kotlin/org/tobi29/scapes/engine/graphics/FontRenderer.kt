@@ -15,17 +15,16 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.gui.GuiRenderBatch
 import org.tobi29.scapes.engine.gui.GuiUtils
+import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.computeAbsent
 import org.tobi29.scapes.engine.utils.copy
 import org.tobi29.scapes.engine.utils.io.view
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.math.vector.Vector2d
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -199,7 +198,7 @@ class FontRenderer(private val engine: ScapesEngine,
                     ByteArray(4).view, 0, TextureFilter.LINEAR,
                     TextureFilter.LINEAR,
                     TextureWrap.CLAMP, TextureWrap.CLAMP)
-            launch(engine.taskExecutor + CoroutineName("Render-Glyph-Page")) {
+            launch(engine.taskExecutor) {
                 texture.setBuffer(renderer.page(id).view, imageSize, imageSize)
             }
             if (pages.size <= id) {

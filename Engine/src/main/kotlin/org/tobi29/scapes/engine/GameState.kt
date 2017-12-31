@@ -16,13 +16,13 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.graphics.loadShader
 import org.tobi29.scapes.engine.utils.AtomicBoolean
+import org.tobi29.scapes.engine.utils.task.LinkedListChannel
 
 abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0
