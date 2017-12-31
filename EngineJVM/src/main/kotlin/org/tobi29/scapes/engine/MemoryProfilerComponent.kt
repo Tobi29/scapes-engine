@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.TimeUnit
 import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -25,10 +24,12 @@ import org.tobi29.scapes.engine.utils.ComponentRegisteredHolder
 import org.tobi29.scapes.engine.utils.ComponentTypeRegistered
 import org.tobi29.scapes.engine.utils.task.Timer
 import org.tobi29.scapes.engine.utils.task.loop
+import org.tobi29.scapes.engine.utils.toIntClamped
 
 class MemoryProfilerComponent(
         private val debugValues: GuiWidgetDebugValues
-) : ComponentRegisteredHolder<ScapesEngine>, ComponentStep {
+) : ComponentRegisteredHolder<ScapesEngine>,
+        ComponentStep {
     private val runtime = Runtime.getRuntime()
     private var job: Job? = null
 
@@ -38,7 +39,7 @@ class MemoryProfilerComponent(
         val maxMemoryDebug = debugValues["Runtime-Memory-Max"]
         job = launch(holder) {
             Timer().apply { init() }.loop(Timer.toDiff(4.0),
-                    { delay(it, TimeUnit.NANOSECONDS) }) {
+                    { delay((it / 1000000L).toIntClamped()) }) {
                 usedMemoryDebug.setValue(
                         (runtime.totalMemory() - runtime.freeMemory()) / 1048576)
                 heapMemoryDebug.setValue(runtime.totalMemory() / 1048576)

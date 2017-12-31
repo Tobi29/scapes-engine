@@ -22,6 +22,10 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.ScapesEngineConfig
 import org.tobi29.scapes.engine.backends.openal.openal.internal.*
 import org.tobi29.scapes.engine.codec.AudioStream
+import org.tobi29.scapes.engine.math.threadLocalRandom
+import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.math.vector.distanceSqr
+import org.tobi29.scapes.engine.math.vector.minus
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
@@ -31,10 +35,6 @@ import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.math.threadLocalRandom
-import org.tobi29.scapes.engine.math.vector.Vector3d
-import org.tobi29.scapes.engine.math.vector.distanceSqr
-import org.tobi29.scapes.engine.math.vector.minus
 import org.tobi29.scapes.engine.utils.task.ThreadJob
 import org.tobi29.scapes.engine.utils.task.Timer
 import org.tobi29.scapes.engine.utils.task.launchThread
@@ -62,7 +62,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
 
     init {
         val stop = AtomicBoolean(false)
-        updateJob = launchThread("Engine-Sounds", engine.taskExecutor[Job]) {
+        updateJob = launchThread("Engine-Sounds") {
             openAL.create(speedOfSound)
             for (i in sources.indices) {
                 sources[i] = openAL.createSource()

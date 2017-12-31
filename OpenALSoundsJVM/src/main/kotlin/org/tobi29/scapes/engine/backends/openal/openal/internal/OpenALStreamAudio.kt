@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
-import kotlinx.coroutines.experimental.channels.ActorJob
 import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.ScapesEngine
@@ -44,12 +44,13 @@ internal class OpenALStreamAudio(
         private val state: Boolean,
         private val hasPosition: Boolean,
         private val controller: OpenALAudioController
-) : OpenALAudio, AudioController by controller {
+) : OpenALAudio,
+        AudioController by controller {
     private val streamBuffer = MemoryViewStream<ByteViewE>(
             { engine.container.allocateNative(it) })
     private var source = -1
     private var queued = 0
-    private var decodeActor: Pair<ActorJob<AudioBuffer>, Channel<AudioBuffer>>? = null
+    private var decodeActor: Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>>? = null
 
     constructor(engine: ScapesEngine,
                 asset: ReadSource,
@@ -166,7 +167,7 @@ internal class OpenALStreamAudio(
 
 fun decodeActor(context: CoroutineContext,
                 asset: ReadSource,
-                state: Boolean): Pair<ActorJob<AudioBuffer>, Channel<AudioBuffer>> {
+                state: Boolean): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>> {
     val output = Channel<AudioBuffer>()
     val actor = actor<AudioBuffer>(context, 1) {
         try {

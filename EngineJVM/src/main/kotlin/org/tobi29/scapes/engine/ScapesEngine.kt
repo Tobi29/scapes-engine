@@ -38,7 +38,8 @@ actual class ScapesEngine actual constructor(
         defaultGuiStyle: (ScapesEngine) -> GuiStyle,
         actual val taskExecutor: CoroutineContext,
         configMap: MutableTagMap
-) : CoroutineDispatcher(), ComponentHolder<Any> {
+) : CoroutineDispatcher(),
+        ComponentHolder<Any> {
     actual override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
@@ -114,7 +115,7 @@ actual class ScapesEngine actual constructor(
         get() = stateMut ?: throw IllegalStateException("Engine not running")
 
     actual override fun dispatch(context: CoroutineContext,
-                               block: Runnable) {
+                                 block: Runnable) {
         queue.offer {
             try {
                 block.run()
@@ -134,7 +135,7 @@ actual class ScapesEngine actual constructor(
         var startTps = 1.0
         val job = launch(taskExecutor + CoroutineName("Engine-State")) {
             mutex.lock()
-            launchThread("Engine-State", taskExecutor[Job]) {
+            launchThread("Engine-State") {
                 var tps = startTps
                 val timer = Timer()
                 timer.init()

@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.task
 
-import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import org.tobi29.scapes.engine.utils.Option
 import org.tobi29.scapes.engine.utils.OptionSome
 import org.tobi29.scapes.engine.utils.nil
@@ -24,7 +23,9 @@ import org.tobi29.scapes.engine.utils.nil
 /**
  * A queue of tasks or [nil] indicating the end of a batch.
  */
-typealias TaskChannel<T> = LinkedListChannel<Option<T>>
+typealias TaskChannel<T> = UnboundChannel<Option<T>>
+
+inline fun <T> TaskChannel(): TaskChannel<T> = LinkedListChannel()
 
 /**
  * Adds an element to the end of the queue.

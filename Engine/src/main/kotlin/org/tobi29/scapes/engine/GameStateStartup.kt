@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.graphics.busyPipeline
 import org.tobi29.scapes.engine.utils.AtomicReference
@@ -37,7 +36,7 @@ class GameStateStartup(engine: ScapesEngine,
         }
         }
         }
-        launch(engine.taskExecutor + CoroutineName("Load-State")) {
+        launch(engine.taskExecutor) {
             readySwitch.set(switch())
         }
     }
