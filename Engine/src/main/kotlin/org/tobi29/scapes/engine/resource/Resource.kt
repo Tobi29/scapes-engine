@@ -16,11 +16,14 @@
 
 package org.tobi29.scapes.engine.resource
 
+import kotlinx.coroutines.experimental.CompletableDeferred
 import kotlinx.coroutines.experimental.Deferred
 import org.tobi29.scapes.engine.utils.DelegatedProperty
 import kotlin.reflect.KProperty
 
 interface Resource<out T : Any> {
+    fun get(): Deferred<T>
+
     fun tryGet(): T?
 
     fun onLoaded(block: (T) -> Unit)
@@ -29,6 +32,8 @@ interface Resource<out T : Any> {
 }
 
 internal class ImmediateResource<out T : Any>(private val loaded: T) : Resource<T> {
+    override fun get(): Deferred<T> = CompletableDeferred(loaded)
+
     override fun tryGet(): T? = loaded
 
     override fun onLoaded(block: (T) -> Unit) = block(loaded)
@@ -37,6 +42,8 @@ internal class ImmediateResource<out T : Any>(private val loaded: T) : Resource<
 }
 
 class DeferredResource<out T : Any>(private val loaded: Deferred<T>) : Resource<T> {
+    override fun get(): Deferred<T> = loaded
+
     override fun tryGet(): T? =
             if (loaded.isCompleted) loaded.getCompleted() else null
 
