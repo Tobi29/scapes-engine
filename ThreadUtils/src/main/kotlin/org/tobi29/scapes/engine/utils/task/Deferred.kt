@@ -16,7 +16,32 @@
 
 package org.tobi29.scapes.engine.utils.task
 
+import kotlinx.coroutines.experimental.CompletableDeferred
 import kotlinx.coroutines.experimental.Deferred
+
+/**
+ * Transforms a deferred value by calling [transform] on completion
+ *
+ * **Note:** Just like with [Deferred.invokeOnCompletion] [transform] should be
+ * lock-free and fast, exceptions however are caught and passed to the given
+ * deferred value
+ * @param transform Synchronous mapping to desired value
+ * @receiver Deferred value to map
+ * @return A deferred value available as soon as the given one is available
+ */
+inline fun <T, R> Deferred<T>.map(
+        crossinline transform: (T) -> R
+): Deferred<R> = CompletableDeferred<R>().also { deferred ->
+    invokeOnCompletion(true) { cause ->
+        if (cause == null) {
+            try {
+                deferred.complete(transform(getCompleted()))
+            } catch (e: Throwable) {
+                deferred.completeExceptionally(e)
+            }
+        } else deferred.completeExceptionally(cause)
+    }
+}
 
 inline fun <T> Deferred<T>.tryGet(): T? =
         if (isCompleted) getCompleted() else null
