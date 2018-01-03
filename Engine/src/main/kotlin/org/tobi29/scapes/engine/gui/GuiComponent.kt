@@ -216,16 +216,13 @@ abstract class GuiComponent(val engine: ScapesEngine,
             val inside = checkInside(event.x, event.y, event.size)
             if (inside) {
                 val layout = layoutManager(event.size)
-                for (component in layout.layoutReversed()) {
-                    if (!component.first.parent.blocksEvents) {
-                        val sink = component.first.fireEvent(
-                                applyTransform(event, component),
-                                listener)
-                        if (sink != null) {
-                            return sink
-                        }
-                    }
-                }
+                layout.layoutReversed().asSequence()
+                        .filterNot { it.first.parent.blocksEvents }
+                        .mapNotNull {
+                            it.first.fireEvent(
+                                    applyTransform(event, it),
+                                    listener)
+                        }.firstOrNull()?.let { return it }
                 if (!ignoresEvents()) {
                     listener.invoke(this, event)
                     return this
@@ -238,27 +235,32 @@ abstract class GuiComponent(val engine: ScapesEngine,
     protected fun <T : GuiComponentEvent> fireRecursiveEvent(
             event: T,
             listener: (GuiComponent, T) -> Boolean
-    ): Set<GuiComponent> {
+    ): Set<GuiComponent>? {
         if (visible) {
             val inside = checkInside(event.x, event.y, event.size)
             if (inside) {
-                val sinks = HashSet<GuiComponent>()
+                var sinks: HashSet<GuiComponent>? = null
                 val layout = layoutManager(event.size)
-                for (component in layout.layoutReversed()) {
-                    if (!component.first.parent.blocksEvents) {
-                        sinks.addAll(component.first.fireRecursiveEvent(
-                                applyTransform(event, component), listener))
-                    }
-                }
+                layout.layoutReversed().asSequence()
+                        .filterNot { it.first.parent.blocksEvents }
+                        .forEach {
+                            it.first.fireRecursiveEvent(
+                                    applyTransform(event, it),
+                                    listener)?.let {
+                                sinks = sinks ?: HashSet()
+                                sinks!!.addAll(it)
+                            }
+                        }
                 if (!ignoresEvents()) {
+                    sinks = sinks ?: HashSet()
                     if (listener.invoke(this, event)) {
-                        sinks.add(this)
+                        sinks!!.add(this)
                     }
                 }
                 return sinks
             }
         }
-        return emptySet()
+        return null
     }
 
     protected fun <T : GuiComponentEvent> sendEvent(
@@ -268,16 +270,12 @@ abstract class GuiComponent(val engine: ScapesEngine,
     ): Boolean {
         if (visible) {
             val layout = layoutManager(event.size)
-            for (component in layout.layoutReversed()) {
-                if (!component.first.parent.blocksEvents) {
-                    val success = component.first.sendEvent(
-                            applyTransform(event, component),
-                            destination, listener)
-                    if (success) {
-                        return true
-                    }
-                }
-            }
+            if (layout.layoutReversed().asSequence()
+                    .filterNot { it.first.parent.blocksEvents }
+                    .any {
+                        it.first.sendEvent(applyTransform(event, it),
+                                destination, listener)
+                    }) return true
             if (destination == this) {
                 listener(event)
                 return true

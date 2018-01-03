@@ -125,35 +125,27 @@ class GuiStack {
     ): GuiComponent? {
         val guis = ArrayList<Gui>(this.guis.size)
         guis.addAll(this.guis.values)
-        for (i in guis.indices.reversed()) {
-            val sink = guis[i].fireNewEvent(event, listener)
-            if (sink != null) {
-                return sink
-            }
-        }
-        return null
+        return guis.indices.reversed().asSequence()
+                .map { guis[it].fireNewEvent(event, listener) }
+                .firstOrNull { it != null }
     }
 
     fun <T : GuiComponentEvent> fireRecursiveEvent(
             type: GuiEvent<T>,
             event: T
-    ): Set<GuiComponent> {
+    ): Set<GuiComponent>? {
         return fireRecursiveEvent(event, GuiComponent.sink(type))
     }
 
     fun <T : GuiComponentEvent> fireRecursiveEvent(
             event: T,
             listener: (GuiComponent, T) -> Boolean
-    ): Set<GuiComponent> {
+    ): Set<GuiComponent>? {
         val guis = ArrayList<Gui>(this.guis.size)
         guis.addAll(this.guis.map { it.value })
-        for (i in guis.indices.reversed()) {
-            val sink = guis[i].fireNewRecursiveEvent(event, listener)
-            if (!sink.isEmpty()) {
-                return sink
-            }
-        }
-        return emptySet()
+        return guis.indices.reversed().asSequence()
+                .map { guis[it].fireNewRecursiveEvent(event, listener) }
+                .firstOrNull { it != null } ?: emptySet()
     }
 
     fun fireAction(action: GuiAction): Boolean {

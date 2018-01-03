@@ -127,14 +127,14 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
     fun <T : GuiComponentEvent> fireNewRecursiveEvent(
             type: GuiEvent<T>,
             event: T
-    ): Set<GuiComponent> {
+    ): Set<GuiComponent>? {
         return fireNewRecursiveEvent(event, GuiComponent.sink(type))
     }
 
     fun <T : GuiComponentEvent> fireNewRecursiveEvent(
             event: T,
             listener: (GuiComponent, T) -> Boolean
-    ): Set<GuiComponent> {
+    ): Set<GuiComponent>? {
         return fireRecursiveEvent(scaleEvent(event), listener)
     }
 
