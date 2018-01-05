@@ -158,8 +158,5 @@ class GraphicsSystem(
         }
     }
 
-    override fun isDispatchNeeded(context: CoroutineContext) =
-            !container.isRenderCall()
-
     companion object : KLogging()
 }
