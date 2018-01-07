@@ -34,6 +34,12 @@ fun ByteViewRO.asUint8Array(): Uint8Array? = asInt8Array()?.let {
     Uint8Array(it.buffer, it.byteOffset, it.byteLength)
 }
 
+fun ByteViewRO.readAsArrayBuffer(): ArrayBuffer =
+        readAsInt8Array().let { array ->
+            if (array.byteOffset == 0 && array.byteLength == array.buffer.byteLength) array.buffer
+            else ArrayBuffer(array.byteLength).also { Int8Array(it).set(array) }
+        }
+
 fun ByteViewRO.readAsDataView(): DataView =
         asDataView() ?: ByteArray(size).view.also {
             getBytes(0, it)
