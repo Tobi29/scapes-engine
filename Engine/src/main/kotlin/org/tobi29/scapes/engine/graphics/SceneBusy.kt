@@ -16,7 +16,21 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiUtils
+
+class SceneBusy(engine: ScapesEngine) : Scene(engine) {
+    override fun appendToPipeline(gl: GL): suspend () -> (Double) -> Unit {
+        val busy = busyPipeline(gl)
+        return {
+            val busyRender = busy()
+            ;{ _ ->
+            gl.clear(0.0f, 0.0f, 0.0f, 1.0f)
+            busyRender()
+        }
+        }
+    }
+}
 
 fun busyPipeline(gl: GL): suspend () -> () -> Unit {
     val mesh = Mesh()
