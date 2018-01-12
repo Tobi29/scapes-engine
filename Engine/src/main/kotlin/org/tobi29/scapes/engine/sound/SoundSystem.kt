@@ -17,8 +17,8 @@
 package org.tobi29.scapes.engine.sound
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.io.ReadSource
 
 interface SoundSystem {
     val engine: ScapesEngine
@@ -27,10 +27,10 @@ interface SoundSystem {
                     orientation: Vector3d,
                     velocity: Vector3d)
 
-    fun isPlaying(channel: String): Boolean
+    fun isPlaying(channel: VolumeChannel): Boolean
 
     fun playMusic(asset: String,
-                  channel: String,
+                  channel: VolumeChannel,
                   state: Boolean,
                   pitch: Double = 1.0,
                   gain: Double = 1.0,
@@ -40,7 +40,7 @@ interface SoundSystem {
                     referenceDistance, rolloffFactor)
 
     fun playMusic(asset: String,
-                  channel: String,
+                  channel: VolumeChannel,
                   position: Vector3d,
                   velocity: Vector3d,
                   state: Boolean,
@@ -52,7 +52,7 @@ interface SoundSystem {
                     state, pitch, gain, referenceDistance, rolloffFactor)
 
     fun playMusic(asset: ReadSource,
-                  channel: String,
+                  channel: VolumeChannel,
                   state: Boolean,
                   pitch: Double = 1.0,
                   gain: Double = 1.0,
@@ -60,7 +60,7 @@ interface SoundSystem {
                   rolloffFactor: Double = 1.0)
 
     fun playMusic(asset: ReadSource,
-                  channel: String,
+                  channel: VolumeChannel,
                   position: Vector3d,
                   velocity: Vector3d,
                   state: Boolean,
@@ -70,7 +70,7 @@ interface SoundSystem {
                   rolloffFactor: Double = 1.0)
 
     fun playSound(asset: String,
-                  channel: String,
+                  channel: VolumeChannel,
                   pitch: Double = 1.0,
                   gain: Double = 1.0,
                   referenceDistance: Double = 1.0,
@@ -79,7 +79,7 @@ interface SoundSystem {
                     referenceDistance, rolloffFactor)
 
     fun playSound(asset: String,
-                  channel: String,
+                  channel: VolumeChannel,
                   position: Vector3d,
                   velocity: Vector3d,
                   pitch: Double = 1.0,
@@ -90,14 +90,14 @@ interface SoundSystem {
                     gain, referenceDistance, rolloffFactor)
 
     fun playSound(asset: ReadSource,
-                  channel: String,
+                  channel: VolumeChannel,
                   pitch: Double = 1.0,
                   gain: Double = 1.0,
                   referenceDistance: Double = 1.0,
                   rolloffFactor: Double = 1.0)
 
     fun playSound(asset: ReadSource,
-                  channel: String,
+                  channel: VolumeChannel,
                   position: Vector3d,
                   velocity: Vector3d,
                   pitch: Double = 1.0,
@@ -106,7 +106,7 @@ interface SoundSystem {
                   rolloffFactor: Double = 1.0)
 
     fun playStaticAudio(asset: String,
-                        channel: String,
+                        channel: VolumeChannel,
                         pitch: Double = 1.0,
                         gain: Double = 1.0,
                         referenceDistance: Double = 1.0,
@@ -115,13 +115,13 @@ interface SoundSystem {
                     referenceDistance, rolloffFactor)
 
     fun playStaticAudio(asset: ReadSource,
-                        channel: String,
+                        channel: VolumeChannel,
                         pitch: Double = 1.0,
                         gain: Double = 1.0,
                         referenceDistance: Double = 1.0,
                         rolloffFactor: Double = 1.0): StaticAudio
 
-    fun stop(channel: String)
+    fun stop(channel: VolumeChannel)
 
     fun clearCache()
 

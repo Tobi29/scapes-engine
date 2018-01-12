@@ -18,18 +18,21 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.StaticAudio
+import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.utils.tryUnwrap
 
 internal class OpenALStaticAudio(
         private val asset: ReadSource,
         private val channel: String,
         private val controller: OpenALAudioController
-) : OpenALAudio, StaticAudio, AudioController by controller {
+) : OpenALAudio,
+        StaticAudio,
+        AudioController by controller {
     private var buffer = -1
     private var source = -1
     private var playing = false
@@ -90,9 +93,10 @@ internal class OpenALStaticAudio(
         return false
     }
 
-    override fun isPlaying(channel: String): Boolean {
-        return this.channel.startsWith(channel)
-    }
+    override fun isPlaying(channel: String) =
+            VolumeChannelEnvironment.run {
+                this@OpenALStaticAudio.channel in channel
+            }
 
     override fun stop(sounds: OpenALSoundSystem,
                       openAL: OpenAL) {

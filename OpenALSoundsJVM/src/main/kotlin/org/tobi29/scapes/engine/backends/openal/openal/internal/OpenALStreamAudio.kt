@@ -30,6 +30,8 @@ import org.tobi29.scapes.engine.codec.toPCM16
 import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
+import org.tobi29.scapes.engine.sound.VolumeChannel
+import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.scapes.engine.utils.assert
 import org.tobi29.scapes.engine.utils.io.*
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -125,9 +127,10 @@ internal class OpenALStreamAudio(
         return false
     }
 
-    override fun isPlaying(channel: String): Boolean {
-        return this.channel.startsWith(channel)
-    }
+    override fun isPlaying(channel: VolumeChannel) =
+            VolumeChannelEnvironment.run {
+                this@OpenALStreamAudio.channel in channel
+            }
 
     override fun stop(sounds: OpenALSoundSystem,
                       openAL: OpenAL) {

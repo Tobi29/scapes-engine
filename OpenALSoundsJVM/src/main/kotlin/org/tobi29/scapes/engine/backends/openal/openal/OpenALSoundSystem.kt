@@ -29,6 +29,7 @@ import org.tobi29.scapes.engine.math.vector.minus
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
+import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.ByteViewERO
 import org.tobi29.scapes.engine.utils.io.IOException
@@ -143,14 +144,14 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         listenerVelocity = velocity
     }
 
-    override fun isPlaying(channel: String): Boolean {
+    override fun isPlaying(channel: VolumeChannel): Boolean {
         return audios.asSequence().filter { audio ->
             audio.isPlaying(channel)
         }.any()
     }
 
     override fun playMusic(asset: ReadSource,
-                           channel: String,
+                           channel: VolumeChannel,
                            state: Boolean,
                            pitch: Double,
                            gain: Double,
@@ -164,7 +165,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     override fun playMusic(asset: ReadSource,
-                           channel: String,
+                           channel: VolumeChannel,
                            position: Vector3d,
                            velocity: Vector3d,
                            state: Boolean,
@@ -180,7 +181,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     override fun playSound(asset: ReadSource,
-                           channel: String,
+                           channel: VolumeChannel,
                            pitch: Double,
                            gain: Double,
                            referenceDistance: Double,
@@ -194,7 +195,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     override fun playSound(asset: ReadSource,
-                           channel: String,
+                           channel: VolumeChannel,
                            position: Vector3d,
                            velocity: Vector3d,
                            pitch: Double,
@@ -209,7 +210,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
     }
 
     override fun playStaticAudio(asset: ReadSource,
-                                 channel: String,
+                                 channel: VolumeChannel,
                                  pitch: Double,
                                  gain: Double,
                                  referenceDistance: Double,
@@ -220,7 +221,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         return staticAudio
     }
 
-    override fun stop(channel: String) {
+    override fun stop(channel: VolumeChannel) {
         queue { openAL ->
             val stopped = audios.filter { it.isPlaying(channel) }
             stopped.forEach { it.stop(this, openAL) }
@@ -240,7 +241,7 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         }
     }
 
-    internal fun volume(channel: String): Double {
+    internal fun volume(channel: VolumeChannel): Double {
         return engine[ScapesEngineConfig.COMPONENT].volume(channel)
     }
 

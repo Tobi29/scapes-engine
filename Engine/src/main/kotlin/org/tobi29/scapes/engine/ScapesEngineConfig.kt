@@ -15,6 +15,7 @@
  */
 package org.tobi29.scapes.engine
 
+import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.scapes.engine.utils.ComponentType
 import org.tobi29.scapes.engine.utils.access
 import org.tobi29.scapes.engine.utils.tag.*
@@ -47,10 +48,13 @@ var ScapesEngineConfig.fullscreen: Boolean by access {
     engineMap.tagBoolean("Fullscreen", false)
 }
 
-fun ScapesEngineConfig.volume(channel: String) = configMap.mapMut(
-        "Volumes").asSequence().filter {
-    channel.startsWith(it.key)
-}.maxBy { it.key.length }?.value?.toDouble() ?: 1.0
+fun ScapesEngineConfig.volume(channel: String) =
+        VolumeChannelEnvironment.run {
+            configMap.mapMut("Volumes").asSequence()
+                    .filter { channel in it.key }
+                    .mapNotNull { it.value.toDouble() }
+                    .fold(1.0) { a, b -> a * b }
+        }
 
 
 fun ScapesEngineConfig.setVolume(channel: String,

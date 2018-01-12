@@ -18,9 +18,10 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.math.vector.distance
+import org.tobi29.scapes.engine.sound.VolumeChannel
+import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.steadyClock
 import org.tobi29.scapes.engine.utils.unwrapOr
 
@@ -45,7 +46,8 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
                     pos) / sounds.speedOfSound - delta * 0.5
             diff >= delay
         }) {
-            val audio = sounds.getAudioData(openAL, asset).unwrapOr { return false }
+            val audio = sounds.getAudioData(openAL,
+                    asset).unwrapOr { return false }
             if (audio != null) {
                 val gain = gain * sounds.volume(channel)
                 val source = sounds.freeSource(openAL)
@@ -64,9 +66,7 @@ internal class OpenALEffectAudio(private val asset: ReadSource,
         return false
     }
 
-    override fun isPlaying(channel: String): Boolean {
-        return false
-    }
+    override fun isPlaying(channel: VolumeChannel) = false
 
     override fun stop(sounds: OpenALSoundSystem,
                       openAL: OpenAL) {
