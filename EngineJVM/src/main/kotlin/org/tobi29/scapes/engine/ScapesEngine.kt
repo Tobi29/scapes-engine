@@ -47,7 +47,7 @@ actual class ScapesEngine actual constructor(
     private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
     private var stateMut: GameState? = null
     actual val files = FileSystemContainer()
-    actual val events = newEventDispatcher()
+    actual val events = EventDispatcher()
     actual val resources = ResourceLoader(taskExecutor)
     actual val graphics: GraphicsSystem
     actual val sounds: SoundSystem

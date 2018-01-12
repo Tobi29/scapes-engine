@@ -19,12 +19,15 @@ package org.tobi29.scapes.engine.utils
 import kotlin.reflect.KClass
 
 actual class EventDispatcher actual internal constructor(
-        private val parent: EventDispatcher? = null) {
+        private val parent: EventDispatcher?
+) {
     private val root = findRoot()
     private val children = ConcurrentHashSet<EventDispatcher>()
     private val activeListeners = ConcurrentHashMap<KClass<*>, MutableSet<Listener<*>>>()
     internal val listeners = ConcurrentHashMap<KClass<*>, MutableSet<Listener<*>>>()
     private val enabled = AtomicBoolean(parent == null)
+
+    actual constructor() : this(null)
 
     @Synchronized
     actual fun enable() {

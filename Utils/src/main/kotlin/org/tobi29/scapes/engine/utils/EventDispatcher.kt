@@ -16,12 +16,18 @@
 
 package org.tobi29.scapes.engine.utils
 
-fun newEventDispatcher() = EventDispatcher(null)
+@PublishedApi
+internal fun eventDispatcher(
+        parent: EventDispatcher? = null
+): Pair<EventDispatcher, ListenerRegistrar> =
+        EventDispatcher(parent).let { it to ListenerRegistrar(it) }
 
-fun EventDispatcher(parent: EventDispatcher,
-                    init: ListenerRegistrar.() -> Unit): EventDispatcher {
-    val listener = EventDispatcher(parent)
-    init(ListenerRegistrar(listener))
+inline fun EventDispatcher(
+        parent: EventDispatcher,
+        init: ListenerRegistrar.() -> Unit
+): EventDispatcher {
+    val (listener, registrar) = eventDispatcher(parent)
+    init(registrar)
     return listener
 }
 

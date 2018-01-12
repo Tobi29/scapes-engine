@@ -16,7 +16,11 @@
 
 package org.tobi29.scapes.engine.utils
 
-expect class EventDispatcher internal constructor(parent: EventDispatcher? = null) {
+expect class EventDispatcher internal constructor(
+        parent: EventDispatcher?
+) {
+    constructor()
+
     fun enable()
 
     fun disable()
