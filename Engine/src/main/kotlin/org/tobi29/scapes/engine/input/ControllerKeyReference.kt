@@ -98,12 +98,12 @@ class ControllerKeyReference {
             }
             val split = str.split(',', limit = 2)
             val modifiers: List<ControllerKey>
-            if (split.size > 1) {
-                modifiers = split[1].split(',').map {
+            modifiers = if (split.size > 1) {
+                split[1].split(',').map {
                     ControllerKey.valueOf(it) ?: return null
                 }
             } else {
-                modifiers = emptyList()
+                emptyList()
             }
             return ControllerKeyReference(
                     ControllerKey.valueOf(split[0]) ?: return null, modifiers)

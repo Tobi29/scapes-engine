@@ -38,11 +38,9 @@ fun TagMap.write(writer: TagStructureWriter) {
 
 fun TagList.write(writer: TagStructureWriter,
                   key: String) {
-    var size = size
     if (size > 0) {
-        size--
         writer.beginList(key)
-        for (i in 0 until size) {
+        for (i in 0 until size - 1) {
             val element = this[i]
             if (element is TagMap) {
                 if (element.isEmpty()) {
@@ -60,7 +58,7 @@ fun TagList.write(writer: TagStructureWriter,
                 throw IllegalArgumentException("Invalid element: $element")
             }
         }
-        val element = this[size]
+        val element = this[size - 1]
         if (element is TagMap) {
             if (element.isEmpty()) {
                 writer.endListWithEmpty()
@@ -84,11 +82,9 @@ fun TagList.write(writer: TagStructureWriter,
 }
 
 fun TagList.write(writer: TagStructureWriter) {
-    var size = size
     if (size > 0) {
-        size--
         writer.beginList()
-        for (i in 0 until size) {
+        for (i in 0 until size - 1) {
             val element = this[i]
             if (element is TagMap) {
                 if (element.isEmpty()) {
@@ -106,7 +102,7 @@ fun TagList.write(writer: TagStructureWriter) {
                 throw IllegalArgumentException("Invalid element: $element")
             }
         }
-        val element = this[size]
+        val element = this[size - 1]
         if (element is TagMap) {
             if (element.isEmpty()) {
                 writer.endListWithEmpty()

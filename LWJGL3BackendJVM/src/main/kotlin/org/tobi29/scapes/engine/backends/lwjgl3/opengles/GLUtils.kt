@@ -34,9 +34,9 @@ import org.tobi29.scapes.engine.utils.utf8ToString
 
 internal object GLUtils : KLogging() {
     fun renderType(renderType: RenderType): Int {
-        when (renderType) {
-            RenderType.TRIANGLES -> return GLES20.GL_TRIANGLES
-            RenderType.LINES -> return GLES20.GL_LINES
+        return when (renderType) {
+            RenderType.TRIANGLES -> GLES20.GL_TRIANGLES
+            RenderType.LINES -> GLES20.GL_LINES
             else -> throw IllegalArgumentException(
                     "Unknown render type: " + renderType)
         }
@@ -44,10 +44,10 @@ internal object GLUtils : KLogging() {
 
     fun status(): FramebufferStatus {
         val status = GLES20.glCheckFramebufferStatus(GLES20.GL_FRAMEBUFFER)
-        when (status) {
-            GLES20.GL_FRAMEBUFFER_COMPLETE -> return FramebufferStatus.COMPLETE
-            GLES20.GL_FRAMEBUFFER_UNSUPPORTED -> return FramebufferStatus.UNSUPPORTED
-            else -> return FramebufferStatus.UNKNOWN
+        return when (status) {
+            GLES20.GL_FRAMEBUFFER_COMPLETE -> FramebufferStatus.COMPLETE
+            GLES20.GL_FRAMEBUFFER_UNSUPPORTED -> FramebufferStatus.UNSUPPORTED
+            else -> FramebufferStatus.UNKNOWN
         }
     }
 

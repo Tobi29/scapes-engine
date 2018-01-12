@@ -51,11 +51,11 @@ inline fun gaussianBlurWeight(samples: Int,
     val array = DoubleArray(samples)
     for (sample in 0 until samples) {
         val weight = curve.invoke(abs(sample - offset) * scale)
-        array[sample] = weight.toDouble()
+        array[sample] = weight
         magnitude += weight
     }
     for (sample in 0 until samples) {
-        array[sample] /= magnitude.toDouble()
+        array[sample] /= magnitude
     }
     return array
 }

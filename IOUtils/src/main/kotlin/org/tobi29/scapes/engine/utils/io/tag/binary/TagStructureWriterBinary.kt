@@ -29,19 +29,19 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
 
     // TODO: @Throws(IOException::class)
     override fun begin(root: TagMap) {
-        if (compression >= 0) {
+        structureStream = if (compression >= 0) {
             byteStream.reset()
-            structureStream = byteStream
+            byteStream
         } else {
             stream.put(HEADER_MAGIC.view)
             stream.put(HEADER_VERSION)
             stream.put(compression)
-            structureStream = stream
+            stream
         }
-        if (useDictionary) {
-            dictionary = KeyDictionary(root)
+        dictionary = if (useDictionary) {
+            KeyDictionary(root)
         } else {
-            dictionary = KeyDictionary()
+            KeyDictionary()
         }
         dictionary.write(structureStream)
     }

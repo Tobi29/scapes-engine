@@ -86,12 +86,12 @@ object TagMapTests : Spek({
                     this["Data"] = tagListOf(1, 2, 3, 4)
                 })
         )
-        for (tag in tagsEqual) {
+        for ((first, second) in tagsEqual) {
             it("should equal") {
-                tag.first shouldEqual tag.second
+                first shouldEqual second
             }
             it("should give the same hash code") {
-                tag.first.hashCode() shouldEqual tag.second.hashCode()
+                first.hashCode() shouldEqual second.hashCode()
             }
         }
     }

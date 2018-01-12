@@ -104,8 +104,8 @@ enum class Algorithm(private val digestName: String,
      * @return [MessageDigest] using the specified algorithm
      */
     fun digest(): MessageDigest {
-        try {
-            return MessageDigest.getInstance(digestName)
+        return try {
+            MessageDigest.getInstance(digestName)
         } catch (e: NoSuchAlgorithmException) {
             throw UnsupportedJVMException(e)
         }

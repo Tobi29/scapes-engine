@@ -75,8 +75,8 @@ inline fun <R> ByteView.mutateAsByteBuffer(block: (ByteBuffer) -> R): R {
         }
         buffer.viewE.also { getBytes(0, it) }
     } else this
-    try {
-        return block(buffer)
+    return try {
+        block(buffer)
     } finally {
         if (view !== this) view.getBytes(0, this)
     }

@@ -37,6 +37,14 @@ class AtomicDouble(initial: Double) {
             updateAndGet { it + delta }
 }
 
+inline fun <V> AtomicReference<V>.getAndUpdate(update: (V) -> V): V {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return current
+    }
+}
+
 inline fun AtomicInteger.getAndUpdate(update: (Int) -> Int): Int {
     while (true) {
         val current = get()
@@ -58,6 +66,14 @@ inline fun AtomicDouble.getAndUpdate(update: (Double) -> Double): Double {
         val current = get()
         val new = update(current)
         if (compareAndSet(current, new)) return current
+    }
+}
+
+inline fun <V> AtomicReference<V>.updateAndGet(update: (V) -> V): V {
+    while (true) {
+        val current = get()
+        val new = update(current)
+        if (compareAndSet(current, new)) return new
     }
 }
 

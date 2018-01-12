@@ -122,8 +122,8 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
     }
 
     private fun readFrame(): Header? {
-        try {
-            return bitstream.readFrame()
+        return try {
+            bitstream.readFrame()
         } catch (e: BitstreamException) {
             throw IOException(e)
         }

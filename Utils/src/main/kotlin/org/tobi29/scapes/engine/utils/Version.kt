@@ -131,8 +131,8 @@ fun compare(current: Version,
  * @throws IllegalArgumentException When the parsing failed
  */
 fun version(str: String): Version {
-    try {
-        return versionParse(str)
+    return try {
+        versionParse(str)
     } catch (e: VersionException) {
         throw IllegalArgumentException(e.message ?: "")
     }

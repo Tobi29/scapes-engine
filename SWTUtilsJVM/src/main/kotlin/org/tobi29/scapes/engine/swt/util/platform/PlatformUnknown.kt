@@ -22,18 +22,18 @@ import org.tobi29.scapes.engine.swt.util.Shortcut
 class PlatformUnknown : Platform {
     override fun shortcut(id: String,
                           shortcut: Shortcut): Shortcut {
-        when (id) {
-            else -> return shortcut
+        return when (id) {
+            else -> shortcut
         }
     }
 
     override fun resolve(shortcut: Shortcut): Int {
         var style = shortcut.key
         for (modifier in shortcut.modifiers) {
-            when (modifier) {
-                Shortcut.Modifier.CONTROL -> style = style or SWT.CONTROL
-                Shortcut.Modifier.ALT -> style = style or SWT.ALT
-                Shortcut.Modifier.SHIFT -> style = style or SWT.SHIFT
+            style = when (modifier) {
+                Shortcut.Modifier.CONTROL -> style or SWT.CONTROL
+                Shortcut.Modifier.ALT -> style or SWT.ALT
+                Shortcut.Modifier.SHIFT -> style or SWT.SHIFT
             }
         }
         return style

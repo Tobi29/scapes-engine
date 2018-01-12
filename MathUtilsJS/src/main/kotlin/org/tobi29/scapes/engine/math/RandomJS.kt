@@ -35,10 +35,10 @@ internal object RandomJS : Random {
 // Mimics `java.util.Random` to allow consistent seeded RNG (especially useful
 // for cross-platform games)
 internal class RandomJSJVM(seed: Long) : Random {
-    private var seed = seed xor multiplier and mask
+    private var seed = seed xor MULTIPLIER and MASK
 
     private fun next(bits: Int): Int {
-        seed = seed * multiplier + offset and mask
+        seed = seed * MULTIPLIER + OFFSET and MASK
         return seed.ushr(48 - bits).toInt()
     }
 
@@ -82,9 +82,9 @@ actual fun Random(seed: Long): Random = RandomJSJVM(
 
 actual fun threadLocalRandom(): Random = RandomJS
 
-private const val multiplier = 0x5DEECE66DL
-private const val offset = 0xBL
-private const val mask = 0xFFFFFFFFFFFFL
+private const val MULTIPLIER = 0x5DEECE66DL
+private const val OFFSET = 0xBL
+private const val MASK = 0xFFFFFFFFFFFFL
 
 private external object Math {
     fun random(): Double

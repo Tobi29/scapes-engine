@@ -148,7 +148,7 @@ private class AndroidPathsImpl : StandardPathsImpl {
         fun getCacheDir(): File = getCacheDir.invoke(handle) as File
 
         companion object {
-            val clazz = Class.forName("android.app.Context")
+            private val clazz = Class.forName("android.app.Context")
             private val getApplicationContext = clazz.getMethod(
                     "getApplicationContext")
             private val getFilesDir = clazz.getMethod("getFilesDir")
@@ -161,7 +161,7 @@ private class AndroidPathsImpl : StandardPathsImpl {
 
     private class Environment(private val handle: Any) {
         companion object {
-            val clazz = Class.forName("android.os.Environment")
+            private val clazz = Class.forName("android.os.Environment")
             private val getExternalStorageDirectory = clazz.getMethod(
                     "getExternalStorageDirectory")
 

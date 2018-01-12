@@ -114,10 +114,10 @@ object PlatformDialogs : KLogging() {
     fun openFile(path: FilePath) {
         val command: Array<String>
         val pathStr = path.toAbsolutePath().toString()
-        when (Platform.get()) {
-            Platform.LINUX -> command = arrayOf("xdg-open", pathStr)
-            Platform.MACOSX -> command = arrayOf("open", pathStr)
-            Platform.WINDOWS -> command = arrayOf("cmd.exe", "/c", "start",
+        command = when (Platform.get()) {
+            Platform.LINUX -> arrayOf("xdg-open", pathStr)
+            Platform.MACOSX -> arrayOf("open", pathStr)
+            Platform.WINDOWS -> arrayOf("cmd.exe", "/c", "start",
                     pathStr)
             else -> return
         }
@@ -134,8 +134,8 @@ object PlatformDialogs : KLogging() {
         if (window != 0L) {
             GLFW.glfwIconifyWindow(window)
         }
-        try {
-            return block()
+        return try {
+            block()
         } finally {
             if (window != 0L) {
                 GLFW.glfwRestoreWindow(window)

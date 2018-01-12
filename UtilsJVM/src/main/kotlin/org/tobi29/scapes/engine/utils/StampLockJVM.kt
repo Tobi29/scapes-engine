@@ -69,9 +69,9 @@ class StampLock {
      * @return The return value of [block]
      */
     inline fun <R> write(block: () -> R): R {
-        try {
+        return try {
             lock()
-            return block()
+            block()
         } finally {
             unlock()
         }

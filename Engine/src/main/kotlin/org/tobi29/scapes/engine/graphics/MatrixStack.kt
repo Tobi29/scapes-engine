@@ -49,8 +49,8 @@ class MatrixStack(matrices: Int) {
 
 inline fun <R> MatrixStack.push(block: (Matrix) -> R): R {
     val matrix = push()
-    try {
-        return block(matrix)
+    return try {
+        block(matrix)
     } finally {
         pop()
     }

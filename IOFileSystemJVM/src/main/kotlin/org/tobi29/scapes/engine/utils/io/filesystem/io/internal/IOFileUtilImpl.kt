@@ -71,12 +71,12 @@ internal object IOFileUtilImpl : FileUtilImpl {
         } else {
             ""
         }
-        try {
+        return try {
             val channel = RandomAccessFile(path.toFile(), mode).channel
             if (openTruncateExisting) {
                 channel.truncate(0L)
             }
-            return channel.toChannel()
+            channel.toChannel()
         } catch (e: FileNotFoundException) {
             throw NoSuchFileException(path)
         }

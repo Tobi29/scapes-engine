@@ -46,10 +46,10 @@ internal fun ScapesShaderParser.ShaderParameterDeclarationContext.ast(scope: Sco
     val type = declarator().ast(scope)
     val idConstant = IntegerLiteral()
     val id: Int
-    if (idConstant == null) {
-        id = -1
+    id = if (idConstant == null) {
+        -1
     } else {
-        id = idConstant.text.toInt()
+        idConstant.text.toInt()
     }
     val name = Identifier().text
     val variable = scope.add(name,

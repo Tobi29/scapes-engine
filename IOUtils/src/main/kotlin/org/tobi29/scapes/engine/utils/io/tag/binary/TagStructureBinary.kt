@@ -82,8 +82,8 @@ internal fun readKey(stream: ReadableByteStream,
                      dictionary: KeyDictionary?,
                      allocationLimit: Int): String {
     val alias = stream.get()
-    if (alias.toInt() == -1) {
-        return stream.getString(allocationLimit)
+    return if (alias.toInt() == -1) {
+        stream.getString(allocationLimit)
     } else {
         if (dictionary == null) {
             throw IOException("Dictionary key without dictionary")
@@ -93,7 +93,7 @@ internal fun readKey(stream: ReadableByteStream,
         if (key.length > allocationLimit) {
             throw IOException("No more allocations allowed for key")
         }
-        return key
+        key
     }
 }
 
@@ -183,11 +183,10 @@ internal class KeyDictionary {
     }
 
     private class KeyOccurrence(key: String) {
-        val length: Int
+        val length: Int = key.length
         var count = 0
 
         init {
-            length = key.length
             count += length
         }
     }

@@ -53,8 +53,8 @@ inline fun <R> profilerSection(name: String,
                                receiver: () -> R): R {
     val instance = PROFILER.get()?.current()
     instance?.enterNode(name)
-    try {
-        return receiver()
+    return try {
+        receiver()
     } finally {
         instance?.exitNode(name)
     }

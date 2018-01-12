@@ -38,12 +38,12 @@ object TagNumberTests : Spek({
                 Pair(TagBigDecimal(BigDecimal("4.0")), TagInt(4))
         )
         given("two number tags") {
-            for (tag in tagsEqual) {
+            for ((first, second) in tagsEqual) {
                 it("should equal") {
-                    tag.first shouldEqual tag.second
+                    first shouldEqual second
                 }
                 it("should give the same hash code") {
-                    tag.first.hashCode() shouldEqual tag.second.hashCode()
+                    first.hashCode() shouldEqual second.hashCode()
                 }
             }
         }
@@ -53,12 +53,12 @@ object TagNumberTests : Spek({
                 Pair(TagBigDecimal(BigDecimal("4.1")), TagInt(4))
         )
         given("two number tags") {
-            for (tag in tagsNotEqual) {
+            for ((first, second) in tagsNotEqual) {
                 it("should not equal") {
-                    tag.first shouldNotEqual tag.second
+                    first shouldNotEqual second
                 }
                 it("should not give the same hash code") {
-                    tag.first.hashCode() shouldNotEqual tag.second.hashCode()
+                    first.hashCode() shouldNotEqual second.hashCode()
                 }
             }
         }

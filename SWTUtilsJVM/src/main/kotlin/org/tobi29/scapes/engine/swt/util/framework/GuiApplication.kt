@@ -135,19 +135,16 @@ abstract class GuiApplication(
     protected abstract fun dispose()
 
     companion object : KLogging() {
-        val platform: Platform
-
-        init {
-            when (SWT.getPlatform()) {
-                "gtk" -> platform = PlatformLinux()
-                "cocoa" -> platform = PlatformMacOSX()
-                "win32" -> platform = PlatformWindows()
-                else -> {
-                    logger.warn { "Unknown SWT platform: ${SWT.getPlatform()}" }
-                    platform = PlatformUnknown()
-                }
+        val platform: Platform = when (SWT.getPlatform()) {
+            "gtk" -> PlatformLinux()
+            "cocoa" -> PlatformMacOSX()
+            "win32" -> PlatformWindows()
+            else -> {
+                logger.warn { "Unknown SWT platform: ${SWT.getPlatform()}" }
+                PlatformUnknown()
             }
         }
+
     }
 }
 

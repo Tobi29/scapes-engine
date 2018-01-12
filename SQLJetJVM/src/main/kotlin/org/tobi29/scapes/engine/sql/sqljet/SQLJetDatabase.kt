@@ -202,8 +202,8 @@ class SQLJetDatabase(private val connection: SqlJetDb) : SQLDatabase {
     }
 
     private inline fun <R> access(crossinline block: SqlJetDb.() -> R): R {
-        try {
-            return AccessController.doPrivileged(PrivilegedAction {
+        return try {
+            AccessController.doPrivileged(PrivilegedAction {
                 synchronized(connection) {
                     return@PrivilegedAction block(connection)
                 }
@@ -243,8 +243,8 @@ inline fun <R> SqlJetDb.transactionExclusive(block: () -> R) =
 inline fun <R> SqlJetDb.transaction(mode: SqlJetTransactionMode,
                                     block: () -> R): R {
     beginTransaction(mode)
-    try {
-        return block()
+    return try {
+        block()
     } finally {
         commit()
     }

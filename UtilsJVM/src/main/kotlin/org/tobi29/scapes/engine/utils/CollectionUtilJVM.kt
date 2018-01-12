@@ -63,49 +63,56 @@ actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
 actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
         java.util.EnumMap<E, V>(E::class.java)
 
-actual fun <K, V> MutableMap<K, V>.putAbsent(key: K,
-                                           value: V): V? {
-    if (this is ConcurrentMap) {
-        return this.putAbsent(key, value)
+actual fun <K, V> MutableMap<K, V>.putAbsent(
+        key: K,
+        value: V
+): V? {
+    return if (this is ConcurrentMap) {
+        this.putAbsent(key, value)
     } else {
         this[key]?.let { return it }
         put(key, value)
-        return null
+        null
     }
 }
 
-actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K,
-                                                     value: V): V? =
-        putIfAbsent(key, value)
+actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(
+        key: K,
+        value: V
+): V? = putIfAbsent(key, value)
 
-actual fun <K, V> MutableMap<K, V>.computeAlways(key: K,
-                                               block: (K, V?) -> V): V {
-    if (this is ConcurrentMap) {
-        return this.computeAlways(key, block)
+actual fun <K, V> MutableMap<K, V>.computeAlways(
+        key: K,
+        block: (K, V?) -> V
+): V {
+    return if (this is ConcurrentMap) {
+        this.computeAlways(key, block)
     } else {
         val old = this[key]
         val new = block(key, old)
         this[key] = new
-        return new
+        new
     }
 }
 
-actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
-                                                  block: (K, V?) -> V): V {
+actual fun <K, V> ConcurrentMap<K, V>.computeAlways(
+        key: K,
+        block: (K, V?) -> V
+): V {
     while (true) {
         var old = this[key]
         while (true) {
             val new = block(key, old)
             if (old == null) {
                 old = putAbsent(key, new)
-                if (old == null) {
-                    return new
+                return if (old == null) {
+                    new
                 } else {
                     continue
                 }
             }
-            if (replace(key, old, new)) {
-                return new
+            return if (replace(key, old, new)) {
+                new
             } else {
                 break
             }
@@ -114,10 +121,12 @@ actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
 }
 
 @JvmName("computeAlwaysNullable")
-actual fun <K, V> MutableMap<K, V>.computeAlways(key: K,
-                                               block: (K, V?) -> V?): V? {
-    if (this is ConcurrentMap) {
-        return this.computeAlways(key, block)
+actual fun <K, V> MutableMap<K, V>.computeAlways(
+        key: K,
+        block: (K, V?) -> V?
+): V? {
+    return if (this is ConcurrentMap) {
+        this.computeAlways(key, block)
     } else {
         val old = this[key]
         val new = block(key, old)
@@ -126,13 +135,15 @@ actual fun <K, V> MutableMap<K, V>.computeAlways(key: K,
         } else if (old != null || containsKey(key)) {
             remove(key)
         }
-        return new
+        new
     }
 }
 
 @JvmName("computeAlwaysNullable")
-actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
-                                                  block: (K, V?) -> V?): V? {
+actual fun <K, V> ConcurrentMap<K, V>.computeAlways(
+        key: K,
+        block: (K, V?) -> V?
+): V? {
     while (true) {
         var old = this[key]
         while (true) {
@@ -145,14 +156,14 @@ actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
             }
             if (old == null) {
                 old = putAbsent(key, new)
-                if (old == null) {
-                    return new
+                return if (old == null) {
+                    new
                 } else {
                     continue
                 }
             }
-            if (replace(key, old, new)) {
-                return new
+            return if (replace(key, old, new)) {
+                new
             } else {
                 break
             }
@@ -160,47 +171,56 @@ actual fun <K, V> ConcurrentMap<K, V>.computeAlways(key: K,
     }
 }
 
-actual inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
-                                                      block: (K) -> V): V {
-    if (this is ConcurrentMap) {
+actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
+        key: K,
+        block: (K) -> V
+): V {
+    return if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
-        return this.computeAbsent(key, block)
+        this.computeAbsent(key, block)
     } else {
         this[key]?.let { return it }
         val new = block(key)
-        return putAbsent(key, new) ?: new
+        putAbsent(key, new) ?: new
     }
 }
 
-actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
-                                                         block: (K) -> V): V {
+actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
+        key: K,
+        block: (K) -> V
+): V {
     this[key]?.let { return it }
     val new = block(key)
     return putAbsent(key, new) ?: new
 }
 
 @JvmName("computeAbsentNullable")
-actual inline fun <K, V> MutableMap<K, V>.computeAbsent(key: K,
-                                                      block: (K) -> V?): V? {
-    if (this is ConcurrentMap) {
+actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
+        key: K,
+        block: (K) -> V?
+): V? {
+    return if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
-        return this.computeAbsent(key, block)
+        this.computeAbsent(key, block)
     } else {
         this[key]?.let { return it }
         val new = block(key) ?: return null
-        return putAbsent(key, new) ?: new
+        putAbsent(key, new) ?: new
     }
 }
 
 @JvmName("computeAbsentNullable")
-actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(key: K,
-                                                         block: (K) -> V?): V? {
+actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
+        key: K,
+        block: (K) -> V?
+): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
     return putAbsent(key, new) ?: new
 }
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-actual inline fun <K, V> MutableMap<K, V>.removeEqual(key: K,
-                                                    value: V): Boolean =
-        remove(key, value)
+actual inline fun <K, V> MutableMap<K, V>.removeEqual(
+        key: K,
+        value: V
+): Boolean = remove(key, value)

@@ -493,7 +493,7 @@ open class ByteArraySliceViewRO(
                 if (it === slice) this else ByteArraySliceViewRO(it)
             }
 
-    override fun getByte(index: Int): Byte = slice.get(index)
+    override fun getByte(index: Int): Byte = slice[index]
 }
 
 val ByteArraySlice.view: ByteView
@@ -514,7 +514,7 @@ open class ByteArraySliceView(
                 if (it === slice) this else ByteArraySliceView(it)
             }
 
-    override fun get(index: Int): Byte = slice.get(index)
+    override fun get(index: Int): Byte = slice[index]
 
     override fun setByte(index: Int,
                          value: Byte) = slice.set(index, value)

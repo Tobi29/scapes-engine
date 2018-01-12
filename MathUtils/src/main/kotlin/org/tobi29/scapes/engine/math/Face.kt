@@ -31,7 +31,7 @@ enum class Face(val value: Int,
     SOUTH(4, 0, 1, 0, 4),
     WEST(5, -1, 0, 0, 5);
 
-    val delta: Vector3i
+    val delta: Vector3i = Vector3i(x, y, z)
 
     val opposite by lazy {
         when (this) {
@@ -45,20 +45,16 @@ enum class Face(val value: Int,
         }
     }
 
-    init {
-        delta = Vector3i(x, y, z)
-    }
-
     companion object {
         operator fun get(data: Int): Face {
-            when (data) {
-                0 -> return UP
-                1 -> return DOWN
-                2 -> return NORTH
-                3 -> return EAST
-                4 -> return SOUTH
-                5 -> return WEST
-                else -> return NONE
+            return when (data) {
+                0 -> UP
+                1 -> DOWN
+                2 -> NORTH
+                3 -> EAST
+                4 -> SOUTH
+                5 -> WEST
+                else -> NONE
             }
         }
     }

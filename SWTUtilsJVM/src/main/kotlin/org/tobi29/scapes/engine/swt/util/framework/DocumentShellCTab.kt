@@ -39,13 +39,13 @@ internal class DocumentShellCTab(display: Display,
     override fun updateTab() {
         val composite: DocumentComposite?
         val tabFolder = tabFolder
-        if (tabFolder != null) {
+        composite = if (tabFolder != null) {
             val tabItem = tabFolder.selection
             val control = tabItem.control as? DocumentCompositeCTab ?: throw IllegalStateException(
                     "Non document composite in tab folder")
-            composite = control as DocumentComposite
+            control
         } else {
-            composite = directComposite
+            directComposite
         }
         composite?.let { setMenuBar(it) }
     }

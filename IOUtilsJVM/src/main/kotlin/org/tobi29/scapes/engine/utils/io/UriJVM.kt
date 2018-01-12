@@ -22,8 +22,10 @@ actual sealed class Uri(val java: JavaUri) {
     actual val fragment: String? get() = java.fragment
 }
 
-actual sealed class UriAbsolute(java: JavaUri,
-                              unsafe: Boolean = false) : Uri(java) {
+actual sealed class UriAbsolute(
+        java: JavaUri,
+        unsafe: Boolean = false
+) : Uri(java) {
     init {
         if (!unsafe && !java.isAbsolute)
             throw IllegalArgumentException("URI is not absolute")
@@ -32,8 +34,10 @@ actual sealed class UriAbsolute(java: JavaUri,
     actual val scheme: String get() = java.scheme ?: "" // Crash safety
 }
 
-actual sealed class UriHierarchical(java: JavaUri,
-                                  unsafe: Boolean = false) : UriAbsolute(java) {
+actual sealed class UriHierarchical(
+        java: JavaUri,
+        unsafe: Boolean = false
+) : UriAbsolute(java) {
     init {
         if (!unsafe && java.isOpaque)
             throw IllegalArgumentException("URI is not hierarchical")
@@ -43,18 +47,20 @@ actual sealed class UriHierarchical(java: JavaUri,
     actual val query: String? get() = java.query
 }
 
-actual class UriHierarchicalAbsolute(java: JavaUri,
-                                   unsafe: Boolean = false) : UriHierarchical(
-        java) {
+actual class UriHierarchicalAbsolute(
+        java: JavaUri,
+        unsafe: Boolean = false
+) : UriHierarchical(java) {
     init {
         if (!unsafe && java.host != null)
             throw IllegalArgumentException("URI has a host")
     }
 
-    actual constructor(scheme: String,
-                     path: String,
-                     query: String?,
-                     fragment: String?
+    actual constructor(
+            scheme: String,
+            path: String,
+            query: String?,
+            fragment: String?
     ) : this(JavaUri(scheme, null, path, query, fragment), true)
 
     actual override val path: String get() = java.path ?: "" // Crash safety
@@ -79,20 +85,23 @@ actual class UriHierarchicalAbsolute(java: JavaUri,
     }
 }
 
-actual class UriHierarchicalNet(java: JavaUri,
-                              unsafe: Boolean = false) : UriHierarchical(java) {
+actual class UriHierarchicalNet(
+        java: JavaUri,
+        unsafe: Boolean = false
+) : UriHierarchical(java) {
     init {
         if (!unsafe && java.host == null)
             throw IllegalArgumentException("URI has no host")
     }
 
-    actual constructor(scheme: String,
-                     userInfo: String?,
-                     host: String?,
-                     port: Int?,
-                     path: String?,
-                     query: String?,
-                     fragment: String?
+    actual constructor(
+            scheme: String,
+            userInfo: String?,
+            host: String?,
+            port: Int?,
+            path: String?,
+            query: String?,
+            fragment: String?
     ) : this(JavaUri(scheme, userInfo, host, port ?: -1, path, query, fragment),
             true)
 
@@ -124,16 +133,19 @@ actual class UriHierarchicalNet(java: JavaUri,
     }
 }
 
-actual class UriOpaque(java: JavaUri,
-                     unsafe: Boolean = false) : UriAbsolute(java) {
+actual class UriOpaque(
+        java: JavaUri,
+        unsafe: Boolean = false
+) : UriAbsolute(java) {
     init {
         if (!unsafe && !java.isOpaque)
             throw IllegalArgumentException("URI is not opaque")
     }
 
-    actual constructor(scheme: String,
-                     opaque: String,
-                     fragment: String?
+    actual constructor(
+            scheme: String,
+            opaque: String,
+            fragment: String?
     ) : this(JavaUri(scheme, opaque, fragment), true)
 
     actual val opaque: String get() = java.schemeSpecificPart ?: "" // Crash safety
@@ -154,16 +166,19 @@ actual class UriOpaque(java: JavaUri,
     }
 }
 
-actual class UriRelative(java: JavaUri,
-                       unsafe: Boolean = false) : Uri(java) {
+actual class UriRelative(
+        java: JavaUri,
+        unsafe: Boolean = false
+) : Uri(java) {
     init {
         if (!unsafe && java.isAbsolute)
             throw IllegalArgumentException("URI is not relative")
     }
 
-    actual constructor(path: String,
-                     query: String?,
-                     fragment: String?
+    actual constructor(
+            path: String,
+            query: String?,
+            fragment: String?
     ) : this(JavaUri(null, path, query, fragment), true)
 
     actual val path: String get() = java.path ?: "" // Crash safety

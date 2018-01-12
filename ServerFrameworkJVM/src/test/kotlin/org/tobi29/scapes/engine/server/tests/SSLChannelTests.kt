@@ -156,10 +156,10 @@ object SSLChannelTests : Spek({
 })
 
 private fun getKeyManagers(): Array<KeyManager> {
-    try {
+    return try {
         val keyStore = keyStore("default.p12", "storepass",
                 SSLChannelTests::class.java.classLoader)
-        return keyManagers(keyStore, "storepass")
+        keyManagers(keyStore, "storepass")
     } catch (e: KeyStoreException) {
         throw IOException(e)
     }

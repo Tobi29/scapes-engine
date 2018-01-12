@@ -26,22 +26,14 @@ object FastAtan2 {
     private val SIZE = 1024
     private val STRETCH = PI.toFloat()
     private val EZIS = -SIZE
-    private val ATAN2_TABLE_PPY = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_PPX = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_PNY = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_PNX = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_NPY = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_NPX = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_NNY = FloatArray(
-            SIZE + 1)
-    private val ATAN2_TABLE_NNX = FloatArray(
-            SIZE + 1)
+    private val ATAN2_TABLE_PPY = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_PPX = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_PNY = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_PNX = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_NPY = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_NPX = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_NNY = FloatArray(SIZE + 1)
+    private val ATAN2_TABLE_NNX = FloatArray(SIZE + 1)
 
     init {
         for (i in 0..SIZE) {
@@ -58,35 +50,34 @@ object FastAtan2 {
     }
 
     fun atan2(y: Double,
-              x: Double): Double {
-        if (x >= 0) {
-            if (y >= 0) {
-                if (x >= y) {
-                    return ATAN2_TABLE_PPY[(SIZE * y / x + 0.5).toInt()].toDouble()
+              x: Double): Double =
+            if (x >= 0) {
+                if (y >= 0) {
+                    if (x >= y) {
+                        ATAN2_TABLE_PPY[(SIZE * y / x + 0.5).toInt()].toDouble()
+                    } else {
+                        ATAN2_TABLE_PPX[(SIZE * x / y + 0.5).toInt()].toDouble()
+                    }
                 } else {
-                    return ATAN2_TABLE_PPX[(SIZE * x / y + 0.5).toInt()].toDouble()
+                    if (x >= -y) {
+                        ATAN2_TABLE_PNY[(EZIS * y / x + 0.5).toInt()].toDouble()
+                    } else {
+                        ATAN2_TABLE_PNX[(EZIS * x / y + 0.5).toInt()].toDouble()
+                    }
                 }
             } else {
-                if (x >= -y) {
-                    return ATAN2_TABLE_PNY[(EZIS * y / x + 0.5).toInt()].toDouble()
+                if (y >= 0) {
+                    if (-x >= y) {
+                        ATAN2_TABLE_NPY[(EZIS * y / x + 0.5).toInt()].toDouble()
+                    } else {
+                        ATAN2_TABLE_NPX[(EZIS * x / y + 0.5).toInt()].toDouble()
+                    }
                 } else {
-                    return ATAN2_TABLE_PNX[(EZIS * x / y + 0.5).toInt()].toDouble()
+                    if (x <= y) {
+                        ATAN2_TABLE_NNY[(SIZE * y / x + 0.5).toInt()].toDouble()
+                    } else {
+                        ATAN2_TABLE_NNX[(SIZE * x / y + 0.5).toInt()].toDouble()
+                    }
                 }
             }
-        } else {
-            if (y >= 0) {
-                if (-x >= y) {
-                    return ATAN2_TABLE_NPY[(EZIS * y / x + 0.5).toInt()].toDouble()
-                } else {
-                    return ATAN2_TABLE_NPX[(EZIS * x / y + 0.5).toInt()].toDouble()
-                }
-            } else {
-                if (x <= y) {
-                    return ATAN2_TABLE_NNY[(SIZE * y / x + 0.5).toInt()].toDouble()
-                } else {
-                    return ATAN2_TABLE_NNX[(SIZE * x / y + 0.5).toInt()].toDouble()
-                }
-            }
-        }
-    }
 }

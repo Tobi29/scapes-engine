@@ -162,8 +162,8 @@ inline fun <R> ByteView.mutateAsByteArray(block: (ByteArray, Int, Int) -> R): R 
             false
         }
     }
-    try {
-        return block(array, offset, size)
+    return try {
+        block(array, offset, size)
     } finally {
         if (!mapped) view.getBytes(0, array.view)
     }

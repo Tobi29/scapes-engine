@@ -142,8 +142,8 @@ class UriPath(private val uri: Uri) : Path {
 
 suspend fun <R> Blob.useUri(block: suspend (Uri) -> R): R {
     val url = URL.createObjectURL(this)
-    try {
-        return block(Uri(url))
+    return try {
+        block(Uri(url))
     } finally {
         URL.revokeObjectURL(url)
     }

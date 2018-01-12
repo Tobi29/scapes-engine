@@ -86,14 +86,14 @@ suspend fun connect(worker: ConnectionWorker,
 suspend fun connect(worker: ConnectionWorker,
                     address: SocketAddress): SocketChannel {
     val channel = SocketChannel.open()
-    try {
+    return try {
         channel.configureBlocking(false)
         channel.connect(address)
         channel.register(worker.selector, SelectionKey.OP_CONNECT)
         while (!channel.finishConnect()) {
             yield()
         }
-        return channel
+        channel
     } catch (e: IOException) {
         channel.close()
         throw e

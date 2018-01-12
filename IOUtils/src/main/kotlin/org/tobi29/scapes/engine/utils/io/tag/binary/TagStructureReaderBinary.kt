@@ -22,7 +22,6 @@ import org.tobi29.scapes.engine.utils.tag.Tag
 import org.tobi29.scapes.engine.utils.tag.TagList
 import org.tobi29.scapes.engine.utils.tag.TagMap
 import org.tobi29.scapes.engine.utils.tag.toTag
-import org.tobi29.scapes.engine.utils.io.view
 
 class TagStructureReaderBinary(stream: ReadableByteStream,
                                private var allocationLimit: Int,
@@ -33,7 +32,7 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
     init {
         val magic = ByteArray(HEADER_MAGIC.size)
         stream.get(magic.view)
-        if (!(magic contentEquals magic)) {
+        if (!(magic contentEquals HEADER_MAGIC)) {
             throw IOException(
                     "Not in tag format! (Magic-Header: ${magic.joinToString()})")
         }
@@ -43,15 +42,15 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
                     "Unsupported version or not in tag format! (Version: $version)")
         }
         val compression = stream.get()
-        if (compression >= 0) {
+        structureBuffer = if (compression >= 0) {
             val len = stream.getInt()
             compressionStream.reset()
             CompressionUtil.decompress(LimitedBufferStream(stream, len),
                     compressionStream)
             compressionStream.flip()
-            structureBuffer = compressionStream
+            compressionStream
         } else {
-            structureBuffer = stream
+            stream
         }
         dictionary = KeyDictionary(structureBuffer)
     }

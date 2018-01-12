@@ -19,11 +19,7 @@ import org.tobi29.scapes.engine.swt.util.framework.GuiApplication
 
 class Shortcut(val key: Int,
                vararg modifiers: Shortcut.Modifier) {
-    val modifiers: Array<out Modifier>
-
-    init {
-        this.modifiers = modifiers
-    }
+    val modifiers: Array<out Modifier> = modifiers
 
     enum class Modifier {
         CONTROL,

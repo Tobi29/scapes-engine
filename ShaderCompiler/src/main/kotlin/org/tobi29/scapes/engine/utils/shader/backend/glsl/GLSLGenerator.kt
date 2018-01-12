@@ -81,9 +81,9 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun conditionOperator(type: ConditionType): String {
-        when (type) {
-            ConditionType.OR -> return "||"
-            ConditionType.AND -> return "&&"
+        return when (type) {
+            ConditionType.OR -> "||"
+            ConditionType.AND -> "&&"
             else -> throw IllegalArgumentException(
                     "Unexpected expression type: $type")
         }
@@ -91,15 +91,15 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun unaryExpression(statement: UnaryStatement): String {
         val str = pack(statement.value)
-        when (statement.type) {
-            UnaryType.INCREMENT_GET -> return "++" + str
-            UnaryType.DECREMENT_GET -> return "--" + str
-            UnaryType.GET_INCREMENT -> return str + "++"
-            UnaryType.GET_DECREMENT -> return str + "--"
-            UnaryType.POSITIVE -> return '+' + str
-            UnaryType.NEGATIVE -> return '-' + str
-            UnaryType.BIT_NOT -> return '~' + str
-            UnaryType.NOT -> return '!' + str
+        return when (statement.type) {
+            UnaryType.INCREMENT_GET -> "++" + str
+            UnaryType.DECREMENT_GET -> "--" + str
+            UnaryType.GET_INCREMENT -> str + "++"
+            UnaryType.GET_DECREMENT -> str + "--"
+            UnaryType.POSITIVE -> '+' + str
+            UnaryType.NEGATIVE -> '-' + str
+            UnaryType.BIT_NOT -> '~' + str
+            UnaryType.NOT -> '!' + str
             else -> throw IllegalArgumentException(
                     "Unexpected expression type: ${statement.type}")
         }
@@ -317,10 +317,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun precision(precision: Precision): String {
-        when (precision) {
-            Precision.lowp -> return "lowp"
-            Precision.mediump -> return "mediump"
-            Precision.highp -> return "highp"
+        return when (precision) {
+            Precision.lowp -> "lowp"
+            Precision.mediump -> "mediump"
+            Precision.highp -> "highp"
             else -> throw IllegalArgumentException(
                     "Unexpected precision: $precision")
         }

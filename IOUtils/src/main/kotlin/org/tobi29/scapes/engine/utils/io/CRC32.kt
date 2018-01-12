@@ -40,10 +40,10 @@ inline fun nextCRC32(crc: Int,
 fun tableCRC32(key: Int): IntArray = IntArray(256) { i ->
     var crc = i
     repeat(8) {
-        if (crc and 1 != 0) {
-            crc = key xor (crc ushr 1)
+        crc = if (crc and 1 != 0) {
+            key xor (crc ushr 1)
         } else {
-            crc = crc ushr 1
+            crc ushr 1
         }
     }
     crc

@@ -25,13 +25,15 @@ actual sealed class Uri(actual val fragment: String?)
 
 actual sealed class UriAbsolute(
         actual val scheme: String,
-        fragment: String?) : Uri(fragment)
+        fragment: String?
+) : Uri(fragment)
 
 actual sealed class UriHierarchical(
         scheme: String,
         path: String?,
         actual val query: String?,
-        fragment: String?) : UriAbsolute(scheme, fragment) {
+        fragment: String?
+) : UriAbsolute(scheme, fragment) {
     init {
         scheme.uriSchemeVerify()
         path?.uriPathAbsoluteVerify()
@@ -45,7 +47,8 @@ actual class UriHierarchicalAbsolute actual constructor(
         scheme: String,
         actual override val path: String,
         query: String?,
-        fragment: String?) : UriHierarchical(scheme, path, query, fragment) {
+        fragment: String?
+) : UriHierarchical(scheme, path, query, fragment) {
     actual override fun toString(): String =
             "$scheme:${path.uriEscapePath()
             }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
@@ -76,14 +79,16 @@ actual class UriHierarchicalNet(
         private val portStr: String?,
         path: String?,
         query: String?,
-        fragment: String?) : UriHierarchical(scheme, path, query, fragment) {
-    actual constructor(scheme: String,
-                       userInfo: String?,
-                       host: String?,
-                       port: Int?,
-                       path: String?,
-                       query: String?,
-                       fragment: String?
+        fragment: String?
+) : UriHierarchical(scheme, path, query, fragment) {
+    actual constructor(
+            scheme: String,
+            userInfo: String?,
+            host: String?,
+            port: Int?,
+            path: String?,
+            query: String?,
+            fragment: String?
     ) : this(scheme, userInfo, host, port?.toString(), path, query, fragment)
 
     actual val port: Int? get() = portStr?.toInt()?.takeIf { it in 0x0 until 0xFFFF }
@@ -121,7 +126,8 @@ actual class UriHierarchicalNet(
 actual class UriOpaque actual constructor(
         scheme: String,
         actual val opaque: String,
-        fragment: String?) : UriAbsolute(scheme, fragment) {
+        fragment: String?
+) : UriAbsolute(scheme, fragment) {
     actual override fun toString(): String =
             "$scheme:${opaque.uriEscapeOpaque()
             }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
@@ -143,7 +149,8 @@ actual class UriOpaque actual constructor(
 actual class UriRelative actual constructor(
         actual val path: String,
         actual val query: String?,
-        fragment: String?) : Uri(fragment) {
+        fragment: String?
+) : Uri(fragment) {
     init {
         path.uriPathRelativeVerify()
     }
@@ -187,7 +194,7 @@ actual fun Uri(str: String): Uri {
     }
     uriParseRelative.matchEntire(str)?.let { match ->
         return UriRelative(match.groups[1]?.value!!,
-                match.groups[3]?.value!!, match.groups[5]?.value)
+                match.groups[3]?.value, match.groups[5]?.value)
     }
     throw IllegalArgumentException("Invalid url: $str")
 }

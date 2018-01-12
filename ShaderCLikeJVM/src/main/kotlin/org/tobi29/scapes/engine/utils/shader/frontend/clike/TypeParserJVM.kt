@@ -53,16 +53,16 @@ internal fun ScapesShaderParser.TypeContext.ast(): TypeExported {
 }
 
 internal fun ScapesShaderParser.TypeSpecifierContext.ast(): Types {
-    try {
-        return Types.valueOf(text)
+    return try {
+        Types.valueOf(text)
     } catch (e: IllegalArgumentException) {
         throw ShaderCompileException("Invalid type: $text", this)
     }
 }
 
 internal fun ScapesShaderParser.PrecisionSpecifierContext.ast(): Precision {
-    try {
-        return Precision.valueOf(text)
+    return try {
+        Precision.valueOf(text)
     } catch (e: IllegalArgumentException) {
         throw ShaderCompileException("Invalid precision: $text", this)
     }

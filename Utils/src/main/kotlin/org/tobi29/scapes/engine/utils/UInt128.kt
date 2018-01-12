@@ -82,8 +82,8 @@ data class UInt128(val high: Long,
     fun toChar() = low.toChar()
 
     companion object {
-        val MIN_VALUE: UInt128 = UInt128(minvh, minvl)
-        val MAX_VALUE: UInt128 = UInt128(maxvh, maxvl)
+        val MIN_VALUE: UInt128 = UInt128(MINVH, MINVL)
+        val MAX_VALUE: UInt128 = UInt128(MAXVH, MAXVL)
     }
 }
 

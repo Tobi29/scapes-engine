@@ -36,11 +36,10 @@ class STBGlyphRenderer(private val font: STBFont,
     private val glyphSize: Int
     private val imageSize: Int
     private val tileSize: Double
-    private val size: Double
+    private val size: Double = size.toDouble()
     private val scale: Double
 
     init {
-        this.size = size.toDouble()
         val tileBits = if (size < 16) {
             4
         } else if (size < 32) {

@@ -114,11 +114,10 @@ class Mesh(private val triangles: Boolean = false,
                   ny: Double = 0.0,
                   nz: Double = 1.0) {
         if (remaining <= 0) {
-            val growth: Int
-            if (pos == 0) {
-                growth = START_SIZE
+            val growth: Int = if (pos == 0) {
+                START_SIZE
             } else {
-                growth = pos
+                pos
             }
             changeArraySize(pos + growth)
             remaining += growth
@@ -165,15 +164,13 @@ class Mesh(private val triangles: Boolean = false,
     fun finish(gos: GraphicsObjectSupplier): Model {
         changeArraySize(pos)
         if (triangles) {
-            val model: Model
-            if (color) {
-                model = gos.createVCTN(vertexArray, colorArray, textureArray,
+            return if (color) {
+                gos.createVCTN(vertexArray, colorArray, textureArray,
                         normalArray, RenderType.TRIANGLES)
             } else {
-                model = gos.createVTN(vertexArray, textureArray, normalArray,
+                gos.createVTN(vertexArray, textureArray, normalArray,
                         RenderType.TRIANGLES)
             }
-            return model
         } else {
             val indexArray = IntArray((pos * 1.5).toInt())
             var i = 0
@@ -188,11 +185,11 @@ class Mesh(private val triangles: Boolean = false,
                 p += 4
             }
             val model: Model
-            if (color) {
-                model = gos.createVCTNI(vertexArray, colorArray, textureArray,
+            model = if (color) {
+                gos.createVCTNI(vertexArray, colorArray, textureArray,
                         normalArray, indexArray, RenderType.TRIANGLES)
             } else {
-                model = gos.createVTNI(vertexArray, textureArray, normalArray,
+                gos.createVTNI(vertexArray, textureArray, normalArray,
                         indexArray, RenderType.TRIANGLES)
             }
             return model

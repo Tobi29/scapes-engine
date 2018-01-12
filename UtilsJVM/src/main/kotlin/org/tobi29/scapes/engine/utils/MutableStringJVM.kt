@@ -16,7 +16,10 @@
 
 package org.tobi29.scapes.engine.utils
 
-actual class MutableString(val builder: StringBuilder) : CharSequence, Appendable {
+actual class MutableString(
+        val builder: StringBuilder
+) : CharSequence,
+        Appendable {
     actual override val length get() = builder.length
 
     actual constructor() : this(0)
@@ -33,7 +36,7 @@ actual class MutableString(val builder: StringBuilder) : CharSequence, Appendabl
     }
 
     actual override fun subSequence(startIndex: Int,
-                                  endIndex: Int) =
+                                    endIndex: Int) =
             substring(startIndex, endIndex)
 
     actual override fun append(c: Char): MutableString = apply {
@@ -45,13 +48,13 @@ actual class MutableString(val builder: StringBuilder) : CharSequence, Appendabl
     }
 
     actual override fun append(csq: CharSequence?,
-                             start: Int,
-                             end: Int): MutableString = apply {
+                               start: Int,
+                               end: Int): MutableString = apply {
         builder.append(csq, start, end)
     }
 
     actual fun insert(position: Int,
-                    char: Char): MutableString = apply {
+                      char: Char): MutableString = apply {
         if (position < 0 || position > builder.length) {
             throw IndexOutOfBoundsException("$position")
         }
@@ -59,7 +62,7 @@ actual class MutableString(val builder: StringBuilder) : CharSequence, Appendabl
     }
 
     actual fun insert(position: Int,
-                    str: String): MutableString = apply {
+                      str: String): MutableString = apply {
         if (position < 0 || position > builder.length) {
             throw IndexOutOfBoundsException("$position")
         }
@@ -67,19 +70,19 @@ actual class MutableString(val builder: StringBuilder) : CharSequence, Appendabl
     }
 
     actual fun insert(position: Int,
-                    array: CharArray): MutableString = apply {
+                      array: CharArray): MutableString = apply {
         builder.insert(position, array)
     }
 
     actual fun insert(position: Int,
-                    array: CharArray,
-                    offset: Int): MutableString =
+                      array: CharArray,
+                      offset: Int): MutableString =
             insert(position, array, offset, array.size - offset)
 
     actual fun insert(position: Int,
-                    array: CharArray,
-                    offset: Int,
-                    length: Int): MutableString = apply {
+                      array: CharArray,
+                      offset: Int,
+                      length: Int): MutableString = apply {
         builder.insert(position, array, offset, length)
     }
 
@@ -90,7 +93,7 @@ actual class MutableString(val builder: StringBuilder) : CharSequence, Appendabl
             delete(startIndex, startIndex + 1)
 
     actual fun delete(startIndex: Int,
-                    endIndex: Int): MutableString = apply {
+                      endIndex: Int): MutableString = apply {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
                     "End index less than start index: $endIndex < $startIndex")
@@ -106,7 +109,7 @@ actual class MutableString(val builder: StringBuilder) : CharSequence, Appendabl
             substring(startIndex, builder.length)
 
     actual fun substring(startIndex: Int,
-                       endIndex: Int): String {
+                         endIndex: Int): String {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
                     "End index less than start index: $endIndex < $startIndex")

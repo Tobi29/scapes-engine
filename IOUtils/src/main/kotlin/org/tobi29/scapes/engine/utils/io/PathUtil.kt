@@ -31,23 +31,6 @@ interface PathEnvironment {
     fun String.resolve(path: String): String
 
     /**
-     * Append a relative path to an encoded path
-     * @receiver The path to normalize
-     * @return An encoded path by combining the two given paths
-     */
-    fun String.normalize(): String
-
-    /**
-     * File name of the given encoded path
-     */
-    val String.fileName: String?
-
-    /**
-     * `true` if the given encoded path is absolute
-     */
-    val String.isAbsolute: Boolean
-
-    /**
      * Parent directory of given path, not taking links into account or `null`
      * in case no parent is available
      */
@@ -64,7 +47,29 @@ interface PathEnvironment {
 }
 
 /**
- * Sane default path environment supporting `.` and `..` as used in unix paths
+ * Environment for operating on string-based file paths
+ */
+interface FilePathEnvironment : PathEnvironment {
+    /**
+     * Append a relative path to an encoded path
+     * @receiver The path to normalize
+     * @return An encoded path by combining the two given paths
+     */
+    fun String.normalize(): String
+
+    /**
+     * File name of the given encoded path
+     */
+    val String.fileName: String?
+
+    /**
+     * `true` if the given encoded path is absolute
+     */
+    val String.isAbsolute: Boolean
+}
+
+/**
+ * Sane default path environment
  */
 abstract class StandardPathEnvironment : PathEnvironment {
     /**
@@ -72,7 +77,7 @@ abstract class StandardPathEnvironment : PathEnvironment {
      */
     abstract val separator: String
 
-    private tailrec fun String.sanitize(): String {
+    protected tailrec fun String.sanitize(): String {
         val sanitized = replace("$separator$separator", separator)
         return when {
             this == separator -> this
@@ -93,6 +98,27 @@ abstract class StandardPathEnvironment : PathEnvironment {
         }
     }
 
+    override val String.parent
+        get() = sanitize().let {
+            val index = it.lastIndexOf(separator)
+            if (index < 0 && it.isNotEmpty()) {
+                ""
+            } else if (index < 0 || index == 0) {
+                null
+            } else {
+                it.substring(0, index)
+            }
+        }
+
+    override val String.components
+        get() = sanitize().split(separator)
+}
+
+/**
+ * Sane default path environment supporting absolute paths as well as `.` and `..` as used in unix paths
+ */
+abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
+        FilePathEnvironment {
     override fun String.normalize(): String {
         val path = sanitize()
         val root = path.startsWith(separator)
@@ -149,23 +175,11 @@ abstract class StandardPathEnvironment : PathEnvironment {
             } else if (it == 0 && this == separator) {
                 null
             } else {
-                separator.substring(it + 1)
+                substring(it + 1)
             }
         }
 
     override val String.isAbsolute get() = startsWith(separator)
-
-    override val String.parent
-        get() = sanitize().let {
-            val index = it.lastIndexOf(separator)
-            if (index < 0 && it.isNotEmpty()) {
-                ""
-            } else if (index < 0 || index == 0) {
-                null
-            } else {
-                it.substring(0, index)
-            }
-        }
 
     override val String.components
         get() = sanitize().let {
@@ -209,6 +223,6 @@ abstract class StandardPathEnvironment : PathEnvironment {
 /**
  * Path environment that emulates unix paths
  */
-object UnixPathEnvironment : StandardPathEnvironment() {
+object UnixPathEnvironment : StandardFilePathEnvironment() {
     override val separator get() = "/"
 }

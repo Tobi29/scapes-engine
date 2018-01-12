@@ -25,11 +25,10 @@ class InputDialog(parent: Shell,
                   title: String,
                   private val button: String = "OK") : Dialog(
         parent) {
-    private val shell: Shell
+    private val shell: Shell = Shell(parent,
+            SWT.DIALOG_TRIM or SWT.SHEET or SWT.PRIMARY_MODAL)
 
     init {
-        shell = Shell(parent,
-                SWT.DIALOG_TRIM or SWT.SHEET or SWT.PRIMARY_MODAL)
         shell.setMinimumSize(450, 0)
         shell.text = title
         shell.layout = GridLayout(1, false)

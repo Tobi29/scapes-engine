@@ -50,7 +50,7 @@ class ThreeTenTimeZone(val ttZone: TTZoneId) : TimeZone {
 val TTInstant.chInstant
     get() = epochSecond.toInt128() * 1000000000.toInt128() + nano.toInt128()
 
-val InstantNanos.ttInstant
+val InstantNanos.ttInstant: TTInstant
     get() = TTInstant.ofEpochSecond(seconds.also {
         if (it > Long.MAX_VALUE.toInt128()
                 || it < Long.MIN_VALUE.toInt128())

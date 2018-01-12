@@ -32,10 +32,9 @@ internal class OpenALAudioData(data: ByteViewRO,
                                channels: Int,
                                rate: Int,
                                openAL: OpenAL) {
-    private val buffer: Int
+    private val buffer: Int = openAL.createBuffer()
 
     init {
-        buffer = openAL.createBuffer()
         openAL.storeBuffer(buffer,
                 if (channels > 1) AudioFormat.STEREO else AudioFormat.MONO,
                 data, rate)

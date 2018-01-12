@@ -91,8 +91,8 @@ data class Int128(val high: Long,
     fun toChar() = low.toChar()
 
     companion object {
-        val MIN_VALUE: Int128 = Int128(sminvh, sminvl)
-        val MAX_VALUE: Int128 = Int128(smaxvh, smaxvl)
+        val MIN_VALUE: Int128 = Int128(SMINVH, SMINVL)
+        val MAX_VALUE: Int128 = Int128(SMAXVH, SMAXVL)
     }
 }
 

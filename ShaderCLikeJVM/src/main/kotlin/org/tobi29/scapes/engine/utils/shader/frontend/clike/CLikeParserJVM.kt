@@ -91,10 +91,10 @@ internal fun externalDeclaration(
                 val returned = signature.type().ast()
                 val precisionSpecifier = signature.precisionSpecifier()
                 val returnedPrecision: Precision
-                if (precisionSpecifier == null) {
-                    returnedPrecision = Precision.mediump
+                returnedPrecision = if (precisionSpecifier == null) {
+                    Precision.mediump
                 } else {
-                    returnedPrecision = precisionSpecifier.ast()
+                    precisionSpecifier.ast()
                 }
                 val functionSignature = FunctionSignature(
                         name, returned,

@@ -59,10 +59,10 @@ internal abstract class DocumentShell(display: Display,
 
     protected fun setMenuBar(composite: DocumentComposite) {
         text = composite.document?.title ?: ""
-        if (composite.menu.itemCount == 0) {
-            menuBar = null
+        menuBar = if (composite.menu.itemCount == 0) {
+            null
         } else {
-            menuBar = composite.menu
+            composite.menu
         }
     }
 

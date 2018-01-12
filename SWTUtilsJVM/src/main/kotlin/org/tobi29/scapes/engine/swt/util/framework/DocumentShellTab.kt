@@ -41,7 +41,7 @@ internal class DocumentShellTab(display: Display,
             if (tabItems.isNotEmpty()) {
                 val control = tabItems[0].control as? DocumentCompositeTab ?: throw IllegalStateException(
                         "Non document composite in tab folder")
-                composite = control as DocumentComposite
+                composite = control
             }
         } else {
             composite = directComposite

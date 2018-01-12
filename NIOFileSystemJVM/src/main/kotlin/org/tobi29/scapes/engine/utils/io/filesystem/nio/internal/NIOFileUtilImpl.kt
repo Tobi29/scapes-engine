@@ -46,8 +46,8 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     override fun createFile(path: FilePath,
                             vararg attributes: FileAttribute): FilePath {
-        try {
-            return path(Files.createFile(toPath(path), *attributes.toNIO()))
+        return try {
+            path(Files.createFile(toPath(path), *attributes.toNIO()))
         } catch (e: java.nio.file.FileAlreadyExistsException) {
             throw FileAlreadyExistsException(path, reason = e.reason)
         }
@@ -188,10 +188,10 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         }
 
         override fun relativize(other: FilePath): FilePath? {
-            try {
-                return path(path.relativize(toPath(other)))
+            return try {
+                path(path.relativize(toPath(other)))
             } catch (e: IllegalArgumentException) {
-                return null
+                null
             }
         }
 

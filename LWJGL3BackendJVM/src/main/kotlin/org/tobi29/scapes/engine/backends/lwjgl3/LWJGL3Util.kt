@@ -22,16 +22,16 @@ import java.nio.ByteBuffer
 
 inline fun <R> MemoryStack.push(block: () -> R): R {
     push()
-    try {
-        return block()
+    return try {
+        block()
     } finally {
         pop()
     }
 }
 
 inline fun <R> ByteBuffer.use(block: (ByteBuffer) -> R): R {
-    try {
-        return block(this)
+    return try {
+        block(this)
     } finally {
         MemoryUtil.memFree(this)
     }

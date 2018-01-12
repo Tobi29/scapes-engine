@@ -19,8 +19,8 @@ package org.tobi29.scapes.engine.swt.util
 import org.eclipse.swt.graphics.Resource
 
 inline fun <T : Resource, R> T.use(block: (T) -> R): R {
-    try {
-        return block(this)
+    return try {
+        block(this)
     } finally {
         dispose()
     }

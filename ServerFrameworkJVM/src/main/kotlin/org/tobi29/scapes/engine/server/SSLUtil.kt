@@ -56,9 +56,9 @@ private val e = BigInteger("65537")
  */
 // TODO: @Throws(InvalidKeySpecException::class)
 fun readPrivate(str: String): RSAPrivateKey {
-    try {
+    return try {
         val keySpec = PKCS8EncodedKeySpec(str.fromBase64())
-        return FACTORY.generatePrivate(keySpec) as RSAPrivateKey
+        FACTORY.generatePrivate(keySpec) as RSAPrivateKey
     } catch (e: IOException) {
         throw InvalidKeySpecException(e)
     }
@@ -89,9 +89,9 @@ fun extractPublic(key: RSAPrivateKey): PublicKey {
  */
 // TODO: @Throws(InvalidKeySpecException::class)
 fun readPublic(str: String): PublicKey {
-    try {
+    return try {
         val spec = X509EncodedKeySpec(str.fromBase64())
-        return FACTORY.generatePublic(spec)
+        FACTORY.generatePublic(spec)
     } catch (e: IOException) {
         throw InvalidKeySpecException(e)
     }
@@ -139,11 +139,11 @@ fun writePublic(key: PublicKey): String {
 // TODO: @Throws(KeyStoreException::class)
 fun keyManagers(keyStore: KeyStore,
                 password: String): Array<KeyManager> {
-    try {
+    return try {
         val keyManagerFactory = KeyManagerFactory.getInstance(
                 KeyManagerFactory.getDefaultAlgorithm())
         keyManagerFactory.init(keyStore, password.toCharArray())
-        return keyManagerFactory.keyManagers
+        keyManagerFactory.keyManagers
     } catch(e: NoSuchAlgorithmException) {
         throw KeyStoreException(e)
     } catch(e: UnrecoverableKeyException) {
@@ -159,11 +159,11 @@ fun keyManagers(keyStore: KeyStore,
  */
 // TODO: @Throws(KeyStoreException::class)
 fun trustManagers(keyStore: KeyStore): Array<TrustManager> {
-    try {
+    return try {
         val trustManagerFactory = TrustManagerFactory.getInstance(
                 TrustManagerFactory.getDefaultAlgorithm())
         trustManagerFactory.init(keyStore)
-        return trustManagerFactory.trustManagers
+        trustManagerFactory.trustManagers
     } catch(e: NoSuchAlgorithmException) {
         throw KeyStoreException(e)
     }
@@ -211,10 +211,10 @@ fun keyStore(stream: ReadableByteStream,
 // TODO: @Throws(IOException::class)
 fun keyStore(streamIn: InputStream,
              password: String): KeyStore {
-    try {
+    return try {
         val keyStore = KeyStore.getInstance("PKCS12")
         keyStore.load(streamIn, password.toCharArray())
-        return keyStore
+        keyStore
     } catch (e: KeyStoreException) {
         throw IOException(e)
     } catch (e: NoSuchAlgorithmException) {

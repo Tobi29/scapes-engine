@@ -18,9 +18,6 @@
 
 package org.tobi29.scapes.engine.utils
 
-import org.khronos.webgl.ArrayBuffer
-import org.khronos.webgl.DataView
-
 @Suppress("UnsafeCastFromDynamic")
 actual inline fun Int.toString(radix: Int): String =
         asDynamic().toString(radix)

@@ -33,14 +33,13 @@ import kotlin.coroutines.experimental.CoroutineContext
 class SSLHandle(keyManagers: Array<KeyManager>?,
                 trustManagers: Array<TrustManager>?,
                 private val verifyHostname: Boolean = true) {
-    private val context: SSLContext
+    private val context: SSLContext = if (isAndroidAPI(20)) {
+        SSLContext.getInstance("TLSv1.2")
+    } else {
+        SSLContext.getInstance("TLSv1")
+    }
 
     init {
-        if (isAndroidAPI(20)) {
-            context = SSLContext.getInstance("TLSv1.2")
-        } else {
-            context = SSLContext.getInstance("TLSv1")
-        }
         if (trustManagers == null) {
             context.init(keyManagers, trustManagers(), SecureRandom())
         } else {

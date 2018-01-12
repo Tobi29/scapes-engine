@@ -31,13 +31,13 @@ fun hsvToRGB(h: Double,
     val p = v * (1.0 - s)
     val q = v * (1.0 - f * s)
     val t = v * (1.0 - (1.0 - f) * s)
-    when (c) {
-        0 -> return Vector3d(v, t, p)
-        1 -> return Vector3d(q, v, p)
-        2 -> return Vector3d(p, v, t)
-        3 -> return Vector3d(p, q, v)
-        4 -> return Vector3d(t, p, v)
-        5 -> return Vector3d(v, p, q)
+    return when (c) {
+        0 -> Vector3d(v, t, p)
+        1 -> Vector3d(q, v, p)
+        2 -> Vector3d(p, v, t)
+        3 -> Vector3d(p, q, v)
+        4 -> Vector3d(t, p, v)
+        5 -> Vector3d(v, p, q)
         else -> throw IllegalArgumentException("Invalid hue: $h")
     }
 }

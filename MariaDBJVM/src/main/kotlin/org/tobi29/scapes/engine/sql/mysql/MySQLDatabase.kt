@@ -316,9 +316,9 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
     }
 
     private inline fun <R> access(crossinline block: Connection.() -> R): R {
-        try {
+        return try {
             try {
-                return AccessController.doPrivileged(PrivilegedAction {
+                AccessController.doPrivileged(PrivilegedAction {
                     synchronized(connection) {
                         return@PrivilegedAction block(connection)
                     }

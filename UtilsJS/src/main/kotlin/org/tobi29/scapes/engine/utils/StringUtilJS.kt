@@ -21,8 +21,10 @@ import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.get
 import org.khronos.webgl.set
 
-actual internal fun ByteArray.utf8ToStringImpl(offset: Int,
-                                             size: Int): String {
+actual internal fun ByteArray.utf8ToStringImpl(
+        offset: Int,
+        size: Int
+): String {
     val buffer = ArrayBuffer(size)
     val byteBuffer = Uint8Array(buffer)
     var j = offset
@@ -32,9 +34,11 @@ actual internal fun ByteArray.utf8ToStringImpl(offset: Int,
     return TextDecoder().decode(byteBuffer)
 }
 
-actual internal fun String.utf8ToArrayImpl(destination: ByteArray?,
-                                         offset: Int,
-                                         size: Int): ByteArray {
+actual internal fun String.utf8ToArrayImpl(
+        destination: ByteArray?,
+        offset: Int,
+        size: Int
+): ByteArray {
     val byteBuffer = TextEncoder().encode(this)
     val array = destination ?: ByteArray(
             if (size < 0) byteBuffer.length else size)
@@ -45,18 +49,21 @@ actual internal fun String.utf8ToArrayImpl(destination: ByteArray?,
     return array
 }
 
-actual internal fun CharArray.copyToStringImpl(offset: Int,
-                                             size: Int) =
-        StringBuilder(size).apply {
-            for (i in offset until offset + size) {
-                append(this@copyToStringImpl[i])
-            }
-        }.toString()
+actual internal fun CharArray.copyToStringImpl(
+        offset: Int,
+        size: Int
+) = StringBuilder(size).apply {
+    for (i in offset until offset + size) {
+        append(this@copyToStringImpl[i])
+    }
+}.toString()
 
-actual internal fun String.copyToArrayImpl(destination: CharArray,
-                                         offset: Int,
-                                         startIndex: Int,
-                                         endIndex: Int): CharArray {
+actual internal fun String.copyToArrayImpl(
+        destination: CharArray,
+        offset: Int,
+        startIndex: Int,
+        endIndex: Int
+): CharArray {
     val destOffset = offset - startIndex
     for (i in startIndex until endIndex) {
         destination[i + destOffset] = this[i]

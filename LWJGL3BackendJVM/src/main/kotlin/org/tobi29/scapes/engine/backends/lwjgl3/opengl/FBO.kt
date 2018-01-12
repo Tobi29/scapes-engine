@@ -51,11 +51,11 @@ internal class FBO(override val gos: GraphicsObjectSupplier,
             TextureFBOColor(gos, width, height, minFilter, magFilter,
                     TextureWrap.CLAMP, TextureWrap.CLAMP, alpha, hdr)
         }.readOnly()
-        if (depth) {
-            textureDepth = TextureFBODepth(gos, width, height, minFilter,
+        textureDepth = if (depth) {
+            TextureFBODepth(gos, width, height, minFilter,
                     magFilter, TextureWrap.CLAMP, TextureWrap.CLAMP)
         } else {
-            textureDepth = null
+            null
         }
     }
 

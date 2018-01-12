@@ -42,7 +42,7 @@ object ArrayViewsHeapTests : Spek({
                     writeToView(left)
                     writeToView(right)
                     it("should result in two equal views") {
-                        for (i in 0..left.size - 1) {
+                        for (i in 0 until left.size) {
                             left.getByte(i) shouldEqual right.getByte(i)
                         }
                         for (i in 0..left.size - 2) {

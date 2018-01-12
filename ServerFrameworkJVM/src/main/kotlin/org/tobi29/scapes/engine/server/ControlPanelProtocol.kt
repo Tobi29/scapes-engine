@@ -449,10 +449,10 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
          */
         fun keyPairAuthentication(mode: Int,
                                   publicKey: PublicKey): Cipher {
-            try {
+            return try {
                 val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
                 cipher.init(mode, publicKey)
-                return cipher
+                cipher
             } catch (e: NoSuchAlgorithmException) {
                 throw IOException(e)
             } catch (e: InvalidKeySpecException) {
@@ -483,10 +483,10 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
          */
         fun keyPairAuthentication(mode: Int,
                                   privateKey: PrivateKey): Cipher {
-            try {
+            return try {
                 val cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding")
                 cipher.init(mode, privateKey)
-                return cipher
+                cipher
             } catch (e: NoSuchAlgorithmException) {
                 throw IOException(e)
             } catch (e: InvalidKeySpecException) {
