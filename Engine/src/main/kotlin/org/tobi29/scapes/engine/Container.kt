@@ -29,9 +29,6 @@ interface Container : ScapesEngineBackend {
 
     fun update(delta: Double)
 
-    // TODO: @Throws(DesktopException::class)
-    fun run(engine: ScapesEngine)
-
     fun stop()
 
     fun clipboardCopy(value: String)

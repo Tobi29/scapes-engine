@@ -91,7 +91,7 @@ class ContainerGLFW(
     override fun update(delta: Double) {
     }
 
-    override fun run(engine: ScapesEngine) {
+    fun run(engine: ScapesEngine) {
         val controllers = GLFWControllers(engine.events, virtualJoysticks)
         val windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
             containerWidth = (width * density).roundToInt()
