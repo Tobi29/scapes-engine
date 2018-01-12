@@ -17,5 +17,6 @@
 package org.tobi29.scapes.engine.utils
 
 actual object Assertions {
+    @JvmStatic
     actual var ENABLED: Boolean = Assertions::class.java.desiredAssertionStatus()
 }
