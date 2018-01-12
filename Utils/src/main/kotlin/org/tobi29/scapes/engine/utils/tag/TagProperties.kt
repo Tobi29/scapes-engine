@@ -16,13 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.tag
 
-import org.tobi29.scapes.engine.utils.DelegatedMutableProperty
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class MutableTagProperty(
         private val key: String,
         private val access: () -> MutableTagMap?
-) : DelegatedMutableProperty<Any?, MutableTag?> {
+) : ReadWriteProperty<Any?, MutableTag?> {
     override fun getValue(thisRef: Any?,
                           property: KProperty<*>) = getTag(key, access)
 
@@ -34,7 +34,7 @@ class MutableTagProperty(
 class MutableTagPropertyStatic(
         private val key: String,
         private val tag: MutableTagMap
-) : DelegatedMutableProperty<Any?, MutableTag?> {
+) : ReadWriteProperty<Any?, MutableTag?> {
     override fun getValue(thisRef: Any?,
                           property: KProperty<*>) = getTag(key, { tag })
 
@@ -72,7 +72,7 @@ inline fun <T> MutableTagMap.tag(
         key: String,
         crossinline map: (MutableTag?) -> T,
         crossinline unmap: (T) -> MutableTag?) =
-        object : DelegatedMutableProperty<Any?, T> {
+        object : ReadWriteProperty<Any?, T> {
             override fun getValue(thisRef: Any?,
                                   property: KProperty<*>) =
                     map(getTag(key, { this@tag }))
@@ -91,7 +91,7 @@ inline fun <T> tag(
         crossinline map: (MutableTag?) -> T,
         crossinline unmap: (T) -> MutableTag?,
         crossinline access: () -> MutableTagMap) =
-        object : DelegatedMutableProperty<Any?, T> {
+        object : ReadWriteProperty<Any?, T> {
             private fun doAccess() = access()
 
             override fun getValue(thisRef: Any?,
@@ -105,7 +105,7 @@ inline fun <T> tag(
         }
 
 fun MutableTagMap.tagMap(key: String) =
-        object : DelegatedMutableProperty<Any?, MutableTagMap> {
+        object : ReadWriteProperty<Any?, MutableTagMap> {
             override fun getValue(thisRef: Any?,
                                   property: KProperty<*>) =
                     mapMut(key)

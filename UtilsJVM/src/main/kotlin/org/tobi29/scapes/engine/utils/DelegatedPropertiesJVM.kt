@@ -16,11 +16,12 @@
 
 package org.tobi29.scapes.engine.utils
 
+import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 fun <R, V> accessSynchronized(lock: Any,
-                              accessor: R.() -> DelegatedMutableProperty<Any?, V>) =
-        object : DelegatedMutableProperty<R, V> {
+                              accessor: R.() -> ReadWriteProperty<Any?, V>) =
+        object : ReadWriteProperty<R, V> {
             override fun getValue(thisRef: R,
                                   property: KProperty<*>) =
                     synchronized(lock) {
