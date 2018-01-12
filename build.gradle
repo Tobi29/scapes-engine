@@ -84,8 +84,6 @@ ext {
     jorbisVersion = "0.0.17"
     lwjglVersion = "3.1.5"
 
-    slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
-    threeten = "org.threeten:threetenbp:$threetenbpVersion"
     kotlinSTD = "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
     kotlinSTDJVM = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     kotlinSTDJS = "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"
@@ -97,7 +95,9 @@ ext {
             "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$kotlinxCoroutinesVersion"
     kotlinxCoroutinesCoreJVM =
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
+    slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
+    threeten = "org.threeten:threetenbp:$threetenbpVersion"
     mariaDBJavaClient =
             "org.mariadb.jdbc:mariadb-java-client:$mariadbJavaClientVersion"
     sqliteJDBC = "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
