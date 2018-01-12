@@ -15,6 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.utils.math.clamp
@@ -34,6 +37,7 @@ class GuiComponentEditableText(
     private var vaoCursor: List<Pair<Model, Texture>>? = null
     private var vaoSelection: List<Pair<Model, Texture>>? = null
     private var focused = false
+    private var updateJob: Job? = null
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
@@ -89,19 +93,40 @@ class GuiComponentEditableText(
                 cursor,
                 cursor + 1)
         vaoCursor = batch.finish()
-        if (selectionStart >= 0) {
+        vaoSelection = if (selectionStart >= 0) {
             font.render(
                     FontRenderer.to(batch, 0.0f, 0.0f, true, 1.0f, 1.0f, 1.0f,
                             1.0f), text,
                     size.floatY(), size.floatY(), size.floatY(), size.floatX(),
                     selectionStart, selectionEnd)
-            vaoSelection = batch.finish()
+            batch.finish()
         } else {
-            vaoSelection = null
+            null
         }
     }
 
-    override fun updateComponent(delta: Double) {
+    override fun init() = updateVisible()
+
+    override fun updateVisible() {
+        synchronized(this) {
+            dispose()
+            if (!isVisible) return@synchronized
+            updateJob = launch(engine.graphics) {
+                while (true) {
+                    yield() // Wait for next frame
+                    update()
+                }
+            }
+        }
+    }
+
+    override fun dispose() {
+        synchronized(this) {
+            updateJob?.cancel()
+        }
+    }
+
+    private fun update() {
         if (isActive) {
             if (!focused) {
                 engine.guiController.focusTextField({ isActive }, data, false)

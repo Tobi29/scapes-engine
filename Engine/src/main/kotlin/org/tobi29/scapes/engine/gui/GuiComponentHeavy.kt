@@ -110,19 +110,8 @@ abstract class GuiComponentHeavy : GuiComponent {
         return hasHeavy
     }
 
-    override fun update(delta: Double) {
-        super.update(delta)
-        if (visible) {
-            updateComponent(delta)
-        }
-        parent.parent?.activeUpdate()
-    }
-
     override fun dirty() {
         dirty.set(true)
-    }
-
-    protected open fun updateComponent(delta: Double) {
     }
 
     protected open fun renderComponent(gl: GL,

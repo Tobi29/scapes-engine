@@ -113,7 +113,8 @@ open class GuiComponentSlab(parent: GuiLayoutData) : GuiComponent(
                 ::GuiComponentGroup)
     }
 
-    override fun newLayoutManager(size: Vector2d): GuiLayoutManager {
+    override fun newLayoutManager(components: Collection<GuiComponent>,
+                                  size: Vector2d): GuiLayoutManager {
         return GuiLayoutManagerHorizontal(Vector2d.ZERO, size, components)
     }
 }

@@ -31,7 +31,4 @@ class GuiNotifications(style: GuiStyle) : Gui(style) {
         return pane.addVert(10.0, 10.0, 10.0, 10.0, -1.0, 60.0,
                 id.getAndIncrement(), child)
     }
-
-    override val isValid: Boolean
-        get() = true
 }

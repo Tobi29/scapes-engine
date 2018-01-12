@@ -15,6 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.input.ScrollDelta
 import org.tobi29.scapes.engine.math.Face
 import org.tobi29.scapes.engine.math.vector.Vector2d
@@ -24,17 +27,23 @@ import org.tobi29.scapes.engine.utils.ConcurrentHashMap
 import org.tobi29.scapes.engine.utils.ConcurrentHashSet
 import org.tobi29.scapes.engine.utils.computeAbsent
 
-abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
+open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         GuiLayoutDataRoot()) {
     private val actions = ConcurrentHashMap<GuiAction, MutableSet<() -> Unit>>()
-    private var currentSelectionMut = AtomicReference<GuiComponent?>(null)
+    private var updateJob: Job? = null
+    private val _currentSelection = AtomicReference<GuiComponent?>(null)
+    private var currentSelectionActive: GuiComponent? = null
     var currentSelection: GuiComponent?
-        get() = currentSelectionMut.get()
-        set(value) = currentSelectionMut.set(value)
+        get() = _currentSelection.get()
+        set(value) = _currentSelection.set(value)
+
+    fun swapSelection(old: GuiComponent?,
+                      new: GuiComponent?): Boolean =
+            _currentSelection.compareAndSet(old, new)
 
     init {
         on(GuiAction.ACTIVATE, {
-            currentSelectionMut.get()?.let { selection ->
+            currentSelection?.let { selection ->
                 sendNewEvent(GuiEvent.CLICK_LEFT, GuiComponentEvent(),
                         selection)
             }
@@ -47,7 +56,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         })
         on(GuiAction.LEFT, {
             if (!moveSelection(Face.EAST)) {
-                currentSelectionMut.get()?.let { selection ->
+                currentSelection?.let { selection ->
                     sendNewEvent(GuiEvent.SCROLL,
                             GuiComponentEventScroll(Double.NaN, Double.NaN,
                                     delta = ScrollDelta.Line(
@@ -57,7 +66,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         })
         on(GuiAction.RIGHT, {
             if (!moveSelection(Face.WEST)) {
-                currentSelectionMut.get()?.let { selection ->
+                currentSelection?.let { selection ->
                     sendNewEvent(GuiEvent.SCROLL,
                             GuiComponentEventScroll(Double.NaN, Double.NaN,
                                     delta = ScrollDelta.Line(
@@ -68,7 +77,7 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
     }
 
     private fun moveSelection(face: Face): Boolean {
-        var level = currentSelectionMut.get() ?: findSelectable() ?: return false
+        var level = currentSelection ?: findSelectable() ?: return false
         val next: GuiComponent
         while (true) {
             val container = level.parent.parent ?: return false
@@ -86,21 +95,19 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
                 break
             }
         }
-        currentSelectionMut.set(next)
+        currentSelection = next
         return true
     }
 
     fun selectDefault() {
-        if (!removedMut) {
-            if (currentSelectionMut.get() === null) {
-                currentSelectionMut.compareAndSet(null, findSelectable())
-            }
+        if (isVisible && currentSelection === null) {
+            swapSelection(null, findSelectable())
         }
     }
 
     fun deselect(component: GuiComponent) {
-        if (currentSelectionMut.get() === component) {
-            currentSelectionMut.compareAndSet(component, findSelectable())
+        if (currentSelection === component) {
+            swapSelection(component, findSelectable())
         }
     }
 
@@ -152,7 +159,10 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
             destination: GuiComponent,
             listener: (T) -> Unit
     ): Boolean {
-        return sendEvent(scaleEvent(event), destination, listener)
+        return destination.sendEvent(scaleEvent(event)) {
+            listener(it)
+            true
+        } ?: false
     }
 
     fun fireAction(action: GuiAction): Boolean {
@@ -170,15 +180,43 @@ abstract class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
                 container.containerHeight.toDouble())
     }
 
-    abstract val isValid: Boolean
+    override fun init() = updateVisible()
 
-    public override fun update(delta: Double) {
-        super.update(delta)
-        if (visible && !engine.guiController.activeCursor()) {
-            currentSelectionMut.get()?.let { selection ->
-                sendNewEvent(GuiComponentEvent(),
-                        selection) { selection.hover(it) }
+    override fun updateVisible() {
+        synchronized(this) {
+            dispose()
+            if (!isVisible) return@synchronized
+            updateJob = launch(engine.graphics) {
+                while (true) {
+                    yield() // Wait for next frame
+                    update()
+                }
             }
+        }
+    }
+
+    override fun dispose() {
+        synchronized(this) {
+            updateJob?.cancel()
+        }
+    }
+
+    private fun update() {
+        val activeCursor = visible && !engine.guiController.activeCursor()
+        val selection = if (activeCursor) currentSelection else null
+        if (selection != currentSelectionActive) {
+            val componentEvent = GuiComponentEvent()
+            currentSelectionActive?.let { component ->
+                component.gui.sendNewEvent(componentEvent, component) {
+                    component.hoverEnd(it)
+                }
+            }
+            selection?.let { component ->
+                component.gui.sendNewEvent(componentEvent, component) {
+                    component.hoverBegin(it)
+                }
+            }
+            currentSelectionActive = selection
         }
     }
 

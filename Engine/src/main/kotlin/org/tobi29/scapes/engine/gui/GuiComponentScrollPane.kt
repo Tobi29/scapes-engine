@@ -21,12 +21,11 @@ import kotlin.math.max
 class GuiComponentScrollPane(parent: GuiLayoutData,
                              scrollStep: Int) : GuiComponentVisibleSlabHeavy(
         parent) {
-    val viewport: GuiComponentScrollPaneViewport
+    val viewport: GuiComponentScrollPaneViewport = addHori(0.0, 0.0, -1.0, -1.0) {
+        GuiComponentScrollPaneViewport(it, scrollStep)
+    }
 
     init {
-        viewport = addHori(0.0, 0.0, -1.0, -1.0) {
-            GuiComponentScrollPaneViewport(it, scrollStep)
-        }
         val slider = addHori(0.0, 0.0, 10.0, -1.0) {
             GuiComponentSliderVert(it, 0.0)
         }

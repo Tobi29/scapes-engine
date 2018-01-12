@@ -15,13 +15,20 @@
  */
 package org.tobi29.scapes.engine.gui.debug
 
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.utils.profiler.*
+import org.tobi29.scapes.engine.utils.task.Timer
+import org.tobi29.scapes.engine.utils.task.loopUntilCancel
 
 class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         "Profiler") {
     private val scrollPane: GuiComponentScrollPaneViewport
+    private val profilerNotEnabled: GuiComponentText
+    private var elements: List<Element> = emptyList()
     private var node: Node? = PROFILER.get()?.root
+    private var updateJob: Job? = null
 
     init {
         val slab = addVert(2.0, 2.0, -1.0, 20.0, ::GuiComponentGroupSlab)
@@ -37,6 +44,9 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         scrollPane = addVert(10.0, 10.0, -1.0, -1.0) {
             GuiComponentScrollPane(it, 20)
         }.viewport
+        profilerNotEnabled = scrollPane.addVert(0.0, 0.0, -1.0, 24.0) {
+            GuiComponentText(it, "Profiler not enabled")
+        }
 
         toggle.on(GuiEvent.CLICK_LEFT) {
             if (PROFILER_ENABLED) {
@@ -64,21 +74,25 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
     fun nodes() {
         synchronized(this) {
             val node = node
-            scrollPane.removeAll()
+            for (element in this.elements) {
+                element.remove()
+            }
+            val elements = ArrayList<Element>()
             if (node == null) {
-                scrollPane.addVert(0.0, 0.0, -1.0, 24.0) {
-                    GuiComponentText(it, "Profiler not enabled")
-                }
+                profilerNotEnabled.visible = true
                 return@synchronized
             }
-            scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
+            profilerNotEnabled.visible = false
+            elements.add(scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
                 Element(it, node, node.parent)
-            }
+            })
             for (child in node.children.values) {
-                scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
-                    Element(it, child, child)
-                }
+                elements.add(
+                        scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
+                            Element(it, child, child)
+                        })
             }
+            this.elements = elements
         }
     }
 
@@ -89,24 +103,44 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
     }
 
+    override fun init() = updateVisible()
+
+    override fun updateVisible() {
+        synchronized(this) {
+            dispose()
+            if (!isVisible) return@synchronized
+            updateJob = launch(engine.taskExecutor) {
+                Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
+                    for (component in elements) {
+                        component.update()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun dispose() {
+        synchronized(this) {
+            updateJob?.cancel()
+        }
+    }
+
     private inner class Element(parent: GuiLayoutData,
                                 private val node: Node,
-                                go: Node?) : GuiComponentGroupSlabHeavy(
-            parent) {
-        private val key: GuiComponentTextButton
-        private val value: GuiComponentText
+                                go: Node?) : GuiComponentGroupSlab(parent) {
+        private val key: GuiComponentTextButton = addHori(2.0, 2.0, -1.0,
+                -1.0) {
+            GuiComponentTextButton(it, 12, node.name.invoke())
+        }
+        private val value: GuiComponentText = addHori(4.0, 4.0, -1.0, -1.0) {
+            GuiComponentText(it, "")
+        }
 
         init {
-            key = addHori(2.0, 2.0, -1.0, -1.0) {
-                GuiComponentTextButton(it, 12, node.name.invoke())
-            }
-            value = addHori(4.0, 4.0, -1.0, -1.0) {
-                GuiComponentText(it, "")
-            }
             if (go != null) key.on(GuiEvent.CLICK_LEFT) { nodes(go) }
         }
 
-        public override fun updateComponent(delta: Double) {
+        fun update() {
             value.text = node.time.toString()
         }
     }

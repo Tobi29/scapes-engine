@@ -69,15 +69,16 @@ actual class ScapesEngine actual constructor(
         logger.info { "Creating backend" }
         sounds = container.createSoundSystem(this)
 
+        logger.info { "Creating graphics system" }
+        graphics = GraphicsSystem(this, container.gos)
+
         logger.info { "Setting up GUI" }
         guiStyle = defaultGuiStyle(this)
         notifications = GuiNotifications(guiStyle)
         guiStack.addUnfocused("90-Notifications", notifications)
         tooltip = GuiTooltip(guiStyle)
         guiStack.addUnfocused("80-Tooltip", tooltip)
-        val debugGui = object : Gui(guiStyle) {
-            override val isValid = true
-        }
+        val debugGui = Gui(guiStyle)
         debugValues = debugGui.add(32.0, 32.0, 360.0, 256.0,
                 ::GuiWidgetDebugValues)
         debugValues.visible = false
@@ -88,13 +89,14 @@ actual class ScapesEngine actual constructor(
         performance.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
         tpsDebug = debugValues["Engine-Tps"]
-        logger.info { "Creating graphics system" }
-        graphics = GraphicsSystem(this, container.gos)
+
         logger.info { "Initializing engine" }
         registerComponent(DeltaProfilerComponent.COMPONENT,
                 DeltaProfilerComponent(performance))
         registerComponent(MemoryProfilerComponent.COMPONENT,
                 MemoryProfilerComponent(debugValues))
+        graphics.initDebug(debugValues)
+
         logger.info { "Engine created" }
     }
 
@@ -171,10 +173,12 @@ actual class ScapesEngine actual constructor(
             logger.info { "Disposing last state" }
             stateMut?.dispose()
             stateMut = null
+            logger.info { "Disposing components" }
+            clearComponents()
+            logger.info { "Disposing GUI" }
+            guiStack.clear()
             logger.info { "Disposing sound system" }
             sounds.dispose()
-            logger.info { "Disposing game" }
-            clearComponents()
             logger.info { "Shutting down tasks" }
             taskExecutor[Job]?.cancel()
             logger.info { "Stopped Scapes-Engine" }
@@ -208,8 +212,7 @@ actual class ScapesEngine actual constructor(
             components.asSequence().filterIsInstance<ComponentStep>()
                     .forEach { it.step(delta) }
         }
-        profilerSection("Gui") {
-            guiStack.step(delta)
+        profilerSection("Gui-Controller") {
             guiController.update(delta)
         }
         val state = currentState

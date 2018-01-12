@@ -34,6 +34,7 @@ class GuiControllerMouse(
     private var dragRightX = 0.0
     private var dragRightY = 0.0
     private var activeCursor = true
+    private var hover: GuiComponent? = null
     private val events = EventDispatcher(engine.events) {
         listenAlive<ControllerButtons.PressEvent> { event ->
             if (when (event.action) {
@@ -81,9 +82,29 @@ class GuiControllerMouse(
         }
         val componentEvent = GuiComponentEvent(cursorX, cursorY)
         if (activeCursor) {
-            val hover = engine.guiStack.fireEvent(componentEvent,
-                    GuiComponent::hover)
-            engine.tooltip.setTooltip(hover?.let { Pair(it, cursor) })
+            val new = engine.guiStack.fireEvent(
+                    componentEvent) { _, _ -> true }
+            val old = this.hover
+            if (new != old) {
+                old?.let { component ->
+                    component.gui.sendNewEvent(componentEvent, component) {
+                        component.hoverEnd(it)
+                    }
+                }
+                new?.let { component ->
+                    component.gui.sendNewEvent(componentEvent, component) {
+                        component.hoverBegin(it)
+                    }
+                }
+                this.hover = new
+            } else {
+                new?.let { component ->
+                    component.gui.sendNewEvent(componentEvent, component) {
+                        component.hover(it)
+                    }
+                }
+            }
+            engine.tooltip.setTooltip(new?.let { Pair(it, cursor) })
         }
     }
 

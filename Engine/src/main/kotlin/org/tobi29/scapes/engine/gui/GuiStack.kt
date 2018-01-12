@@ -66,13 +66,19 @@ class GuiStack {
         }
     }
 
-    fun remove(previous: Gui): Boolean {
+    fun remove(gui: Gui): Boolean {
         return synchronized(this) {
-            if (!guis.values.remove(previous)) {
+            if (!guis.values.remove(gui)) {
                 return@synchronized false
             }
-            removed(previous)
+            removed(gui)
             return@synchronized true
+        }
+    }
+
+    fun clear() {
+        for (gui in guis.values) {
+            remove(gui)
         }
     }
 
@@ -100,16 +106,6 @@ class GuiStack {
             return true
         }
         return false
-    }
-
-    fun step(delta: Double) {
-        guis.values.forEach { gui ->
-            if (gui.isValid) {
-                gui.update(delta)
-            } else {
-                remove(gui)
-            }
-        }
     }
 
     fun <T : GuiComponentEvent> fireEvent(

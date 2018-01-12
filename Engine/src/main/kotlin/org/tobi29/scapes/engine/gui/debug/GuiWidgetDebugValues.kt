@@ -16,19 +16,20 @@
 
 package org.tobi29.scapes.engine.gui.debug
 
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.utils.AtomicReference
 import org.tobi29.scapes.engine.utils.ConcurrentHashMap
+import org.tobi29.scapes.engine.utils.task.Timer
+import org.tobi29.scapes.engine.utils.task.loopUntilCancel
 
 open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         parent, "Debug Values") {
     private val elements = ConcurrentHashMap<String, Element>()
-    private val scrollPane: GuiComponentScrollPaneViewport
-
-    init {
-        scrollPane = addVert(10.0, 10.0, -1.0,
-                -1.0) { GuiComponentScrollPane(it, 20) }.viewport
-    }
+    private val scrollPane: GuiComponentScrollPaneViewport = addVert(10.0, 10.0,
+            -1.0, -1.0) { GuiComponentScrollPane(it, 20) }.viewport
+    private var updateJob: Job? = null
 
     operator fun get(key: String): Element {
         return synchronized(this) {
@@ -57,11 +58,33 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         return elements.entries
     }
 
+    override fun init() = updateVisible()
+
+    override fun updateVisible() {
+        synchronized(this) {
+            dispose()
+            if (!isVisible) return@synchronized
+            updateJob = launch(engine.taskExecutor) {
+                Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
+                    for (component in elements.values) {
+                        component.update()
+                    }
+                }
+            }
+        }
+    }
+
+    override fun dispose() {
+        synchronized(this) {
+            updateJob?.cancel()
+        }
+    }
+
     class Element(parent: GuiLayoutData,
-                  key: String) : GuiComponentGroupSlabHeavy(
-            parent) {
+                  key: String) : GuiComponentGroupSlab(parent) {
         private val value: GuiComponentText
         private val text = AtomicReference<String?>(null)
+        private var updateJob: Job? = null
 
         init {
             addHori(2.0, 2.0, -1.0, -1.0) {
@@ -108,10 +131,18 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
             setValue(value.toString())
         }
 
-        public override fun updateComponent(delta: Double) {
+        override fun init() = updateVisible()
+
+        fun update() {
             val newText = text.getAndSet(null)
             if (newText != null) {
                 value.text = newText
+            }
+        }
+
+        override fun dispose() {
+            synchronized(this) {
+                updateJob?.cancel()
             }
         }
 

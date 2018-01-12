@@ -22,14 +22,10 @@ import org.tobi29.scapes.engine.gui.GuiLayoutData
 
 class GuiWidgetPerformance(parent: GuiLayoutData) : GuiComponentWidget(
         parent, "Performance Graph") {
-    private val graph: GuiComponentGraph
-
-    init {
-        graph = addVert(0.0, 0.0, -1.0, -1.0) {
-            GuiComponentGraph(it, 2, floatArrayOf(1.0f, 0.0f),
-                    floatArrayOf(0.0f, 0.0f), floatArrayOf(0.0f, 1.0f),
-                    floatArrayOf(1.0f, 1.0f))
-        }
+    private val graph: GuiComponentGraph = addVert(0.0, 0.0, -1.0, -1.0) {
+        GuiComponentGraph(it, 2, floatArrayOf(1.0f, 0.0f),
+                floatArrayOf(0.0f, 0.0f), floatArrayOf(0.0f, 1.0f),
+                floatArrayOf(1.0f, 1.0f))
     }
 
     fun renderTimestamp(delta: Double) {

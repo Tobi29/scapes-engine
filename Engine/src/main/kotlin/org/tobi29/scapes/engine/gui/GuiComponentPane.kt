@@ -112,7 +112,8 @@ open class GuiComponentPane(parent: GuiLayoutData) : GuiComponent(
                 ::GuiComponentGroup)
     }
 
-    override fun newLayoutManager(size: Vector2d): GuiLayoutManager {
+    override fun newLayoutManager(components: Collection<GuiComponent>,
+                                  size: Vector2d): GuiLayoutManager {
         return GuiLayoutManagerVertical(Vector2d.ZERO, size, components)
     }
 }

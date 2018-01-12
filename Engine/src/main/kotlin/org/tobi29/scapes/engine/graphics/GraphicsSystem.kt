@@ -34,15 +34,17 @@ import kotlin.coroutines.experimental.CoroutineContext
 class GraphicsSystem(
         val engine: ScapesEngine,
         private val gos: GraphicsObjectSupplier
-) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
-    private val fpsDebug: GuiWidgetDebugValues.Element
-    private val widthDebug: GuiWidgetDebugValues.Element
-    private val heightDebug: GuiWidgetDebugValues.Element
-    private val textureDebug: GuiWidgetDebugValues.Element
-    private val vaoDebug: GuiWidgetDebugValues.Element
-    private val fboDebug: GuiWidgetDebugValues.Element
-    private val shaderDebug: GuiWidgetDebugValues.Element
-    private val empty: Texture
+) : CoroutineDispatcher(),
+        GraphicsObjectSupplier by gos {
+    private lateinit var fpsDebug: GuiWidgetDebugValues.Element
+    private lateinit var widthDebug: GuiWidgetDebugValues.Element
+    private lateinit var heightDebug: GuiWidgetDebugValues.Element
+    private lateinit var textureDebug: GuiWidgetDebugValues.Element
+    private lateinit var vaoDebug: GuiWidgetDebugValues.Element
+    private lateinit var fboDebug: GuiWidgetDebugValues.Element
+    private lateinit var shaderDebug: GuiWidgetDebugValues.Element
+    private val empty: Texture = createTexture(1, 1,
+            byteArrayOf(-1, -1, -1, -1).view, 0)
     private val queue = TaskChannel<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
@@ -50,9 +52,7 @@ class GraphicsSystem(
 
     val textures = TextureManager(engine)
 
-    init {
-        empty = createTexture(1, 1, byteArrayOf(-1, -1, -1, -1).view, 0)
-        val debugValues = engine.debugValues
+    internal fun initDebug(debugValues: GuiWidgetDebugValues) {
         fpsDebug = debugValues["Graphics-Fps"]
         widthDebug = debugValues["Graphics-Width"]
         heightDebug = debugValues["Graphics-Height"]

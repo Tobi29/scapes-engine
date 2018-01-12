@@ -16,17 +16,45 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.AtomicReference
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.utils.AtomicReference
 
 class GuiTooltip(style: GuiStyle) : Gui(style) {
     private val currentTooltip = AtomicReference<Pair<GuiComponent, GuiCursor>?>(
             null)
     private var lastTooltip: Pair<GuiComponent, GuiCursor>? = null
     private var currentPane: Pair<GuiComponent, () -> Unit>? = null
+    private var updateJob: Job? = null
 
-    override fun update(delta: Double) {
-        super.update(delta)
+    fun setTooltip(component: Pair<GuiComponent, GuiCursor>?) {
+        currentTooltip.set(component)
+    }
+
+    override fun init() = updateVisible()
+
+    override fun updateVisible() {
+        synchronized(this) {
+            dispose()
+            if (!isVisible) return@synchronized
+            updateJob = launch(engine.graphics) {
+                while (true) {
+                    yield() // Wait for next frame
+                    update()
+                }
+            }
+        }
+    }
+
+    override fun dispose() {
+        synchronized(this) {
+            updateJob?.cancel()
+        }
+    }
+
+    private fun update() {
         val tooltip = currentTooltip.get()
         if (tooltip != lastTooltip) {
             lastTooltip = tooltip
@@ -52,11 +80,4 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
         }
         currentPane?.second?.invoke()
     }
-
-    fun setTooltip(component: Pair<GuiComponent, GuiCursor>?) {
-        currentTooltip.set(component)
-    }
-
-    override val isValid: Boolean
-        get() = true
 }

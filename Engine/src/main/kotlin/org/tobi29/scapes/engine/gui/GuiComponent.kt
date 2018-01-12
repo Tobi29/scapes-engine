@@ -28,22 +28,33 @@ import org.tobi29.scapes.engine.utils.*
 abstract class GuiComponent(val engine: ScapesEngine,
                             val parent: GuiLayoutData,
                             listenerParent: EventDispatcher) : Comparable<GuiComponent> {
-    @Suppress("LeakingThis")
-    val gui = gui(parent) ?: this as Gui
-    var visible = true
-        set(value) {
-            field = value
-            parent.parent?.dirty()
-        }
-    protected var hover = false
-    protected var hovering = false
-    protected var removing = false
-    internal var removedMut = true
-    protected val components =
+    private val _visible = AtomicBoolean(true)
+    private val hover = AtomicInteger(0)
+    private var removed = true
+    private val children =
             ConcurrentOrderedCollection(comparator<GuiComponent>())
     private val guiEvents = ConcurrentHashMap<GuiEvent<*>, MutableSet<(GuiComponentEvent) -> Unit>>()
-    private val hasActiveChild = AtomicBoolean(true)
-    val events = EventDispatcher(listenerParent) { listeners() }
+    @Suppress("LeakingThis")
+    val gui = gui(parent) ?: this as Gui
+    val events by lazy { EventDispatcher(listenerParent) { listeners() } }
+    var visible: Boolean
+        get() = _visible.get()
+        set(value) {
+            if (_visible.getAndSet(value) != value) {
+                updateVisiblePropagate()
+                parent.parent?.dirty()
+            }
+        }
+    val isVisible: Boolean
+        get() {
+            if (removed) return false
+            var current = this
+            while (true) {
+                if (!current.visible) return false
+                current = current.parent.parent ?: break
+            }
+            return true
+        }
 
     constructor(
             parent: GuiLayoutData
@@ -57,10 +68,10 @@ abstract class GuiComponent(val engine: ScapesEngine,
     ) : this(engine, parent, engine.events)
 
     init {
-        on(GuiEvent.CLICK_LEFT, { gui.currentSelection = this })
+        on(GuiEvent.CLICK_LEFT) { gui.currentSelection = this }
     }
 
-    open protected fun ListenerRegistrar.listeners() {}
+    protected open fun ListenerRegistrar.listeners() {}
 
     fun <T : GuiComponentEvent> on(
             event: GuiEvent<T>,
@@ -83,24 +94,28 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return true
     }
 
-    fun hover(event: GuiComponentEvent): Boolean {
-        if (!hovering) {
-            fireEvent(GuiEvent.HOVER_ENTER, event)
-            hovering = true
+    fun hoverBegin(event: GuiComponentEvent): Boolean {
+        if (hover.getAndIncrement() == 0) {
+            return fireEvent(GuiEvent.HOVER_ENTER, event)
         }
-        val success = fireEvent(GuiEvent.HOVER, event)
-        hover = true
-        parent.parent?.activeUpdate()
-        return success
+        return false
+    }
+
+    fun hover(event: GuiComponentEvent): Boolean {
+        return fireEvent(GuiEvent.HOVER, event)
+    }
+
+    fun hoverEnd(event: GuiComponentEvent): Boolean {
+        val result = hover.decrementAndGet()
+        if (result == 0) {
+            return fireEvent(GuiEvent.HOVER_LEAVE, event)
+        } else if (result < 0) {
+            throw IllegalStateException("Ended more hovers than got started")
+        }
+        return false
     }
 
     open fun tooltip(p: GuiContainerRow): (() -> Unit)? = null
-
-    protected fun checkInside(x: Double,
-                              y: Double,
-                              size: Vector2d): Boolean {
-        return x >= 0 && y >= 0 && x < size.x && y < size.y
-    }
 
     open fun ignoresEvents(): Boolean {
         return false
@@ -135,7 +150,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
                                       shader: Shader,
                                       pixelSize: Vector2d) {
         if (visible) {
-            components.forEach {
+            children.forEach {
                 it.renderOverlays(gl, shader, pixelSize)
             }
         }
@@ -170,42 +185,12 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return hasHeavy
     }
 
-    protected open fun update(delta: Double) {
-        if (visible) {
-            if (hovering && !hover) {
-                hovering = false
-                size()?.let { size ->
-                    fireEvent(GuiEvent.HOVER_LEAVE,
-                            GuiComponentEvent(size = size))
-                }
-            }
-            if (hover) {
-                parent.parent?.activeUpdate()
-                hover = false
-            }
-            if (hasActiveChild.getAndSet(false)) {
-                components.forEach { component ->
-                    if (component.removing) {
-                        remove(component)
-                    } else {
-                        component.update(delta)
-                    }
-                }
-            }
-        }
-    }
-
     protected open fun updateMesh(renderer: GuiRenderer,
                                   size: Vector2d) {
     }
 
     open fun dirty() {
         parent.parent?.dirty()
-    }
-
-    internal fun activeUpdate() {
-        hasActiveChild.set(true)
-        parent.parent?.activeUpdate()
     }
 
     protected fun <T : GuiComponentEvent> fireEvent(
@@ -263,70 +248,19 @@ abstract class GuiComponent(val engine: ScapesEngine,
         return null
     }
 
-    protected fun <T : GuiComponentEvent> sendEvent(
-            event: T,
-            destination: GuiComponent,
-            listener: (T) -> Unit
-    ): Boolean {
-        if (visible) {
-            val layout = layoutManager(event.size)
-            if (layout.layoutReversed().asSequence()
-                    .filterNot { it.first.parent.blocksEvents }
-                    .any {
-                        it.first.sendEvent(applyTransform(event, it),
-                                destination, listener)
-                    }) return true
-            if (destination == this) {
-                listener(event)
-                return true
-            }
-        }
-        return false
-    }
-
-    protected fun calculateSize(size: Vector2d,
-                                destination: GuiComponent): Vector2d? {
-        if (visible) {
-            if (destination == this) {
-                return size
-            }
-            val layout = layoutManager(size)
-            for ((component, _, size) in layout.layout()) {
-                component.calculateSize(size, destination)?.let { return it }
-            }
-        }
-        return null
-    }
-
-    fun size(): Vector2d? {
-        return gui.calculateSize(gui.baseSize(), this)
-    }
+    fun size(): Vector2d? =
+            foldTowards(this, Vector2d.ZERO) { _, _, _, _, size -> size }
 
     protected fun findSelectable(): GuiComponent? {
         if (parent.selectable) return this
-        for (child in components) {
+        for (child in children) {
             child.findSelectable()?.let { return it }
         }
         return null
     }
 
-    protected fun <T : GuiComponentEvent> applyTransform(
-            event: T,
-            component: Triple<GuiComponent, Vector2d, Vector2d>
-    ): T {
-        val pos = applyTransform(event.x - component.second.x,
-                event.y - component.second.y, component.third)
-        return event.copy(x = pos.x, y = pos.y, size = component.third)
-    }
-
-    protected fun applyTransform(x: Double,
-                                 y: Double,
-                                 size: Vector2d): Vector3d {
-        return applyTransform(Vector3d(x, y, 0.0), size)
-    }
-
-    protected fun applyTransform(pos: Vector3d,
-                                 size: Vector2d): Vector3d {
+    fun applyTransform(pos: Vector3d,
+                       size: Vector2d): Vector3d {
         val matrix = Matrix()
         matrix.identity()
         transform(matrix, size)
@@ -337,53 +271,70 @@ abstract class GuiComponent(val engine: ScapesEngine,
                                  size: Vector2d) {
     }
 
-    override fun compareTo(other: GuiComponent) =
-            if (parent.priority > other.parent.priority) -1
-            else if (parent.priority < other.parent.priority) 1
-            else 0
+    override fun compareTo(other: GuiComponent) = when {
+        parent.priority > other.parent.priority -> -1
+        parent.priority < other.parent.priority -> 1
+        else -> 0
+    }
 
     internal fun added() {
-        removedMut = false
+        removed = false
         events.enable()
+        init()
         gui.selectDefault()
     }
 
     fun remove() {
-        removing = true
+        // TODO: Handle guis
+        parent.parent?.remove(this)
     }
 
     fun remove(component: GuiComponent) {
-        components.remove(component)
+        children.remove(component)
         dirty()
         component.removed()
     }
 
     internal fun removed() {
-        removedMut = true
+        removed = true
         gui.deselect(this)
         events.disable()
-        components.forEach { it.removed() }
+        dispose()
+        children.forEach { it.removed() }
     }
 
     fun removeAll() {
-        components.forEach { remove(it) }
+        children.forEach { remove(it) }
+    }
+
+    private fun updateVisiblePropagate() {
+        updateVisible()
+        for (component in children) {
+            component.updateVisiblePropagate()
+        }
     }
 
     fun layoutManager(size: Vector2d): GuiLayoutManager {
-        if (components.isEmpty()) {
+        if (children.isEmpty()) {
             return GuiLayoutManagerEmpty
         }
-        return newLayoutManager(size)
+        return newLayoutManager(children, size)
     }
 
-    protected open fun newLayoutManager(size: Vector2d): GuiLayoutManager {
-        return GuiLayoutManagerAbsolute(Vector2d.ZERO, size, components)
+    protected open fun init() {}
+
+    protected open fun updateVisible() {}
+
+    protected open fun dispose() {}
+
+    protected open fun newLayoutManager(components: Collection<GuiComponent>,
+                                        size: Vector2d): GuiLayoutManager {
+        return GuiLayoutManagerAbsolute(Vector2d.ZERO, size, children)
     }
 
     protected fun append(component: GuiComponent) {
-        components.add(component)
+        children.add(component)
         component.added()
-        activeUpdate()
         dirty()
     }
 
@@ -400,16 +351,93 @@ abstract class GuiComponent(val engine: ScapesEngine,
         ): (T) -> Unit {
             return { event -> component.fireEvent(type, event) }
         }
+    }
+}
 
-        fun gui(parent: GuiLayoutData): Gui? {
-            var other = parent.parent ?: return null
-            while (true) {
-                if (other is Gui) {
-                    return other
-                }
-                other = other.parent.parent ?: throw IllegalArgumentException(
-                        "Non-Gui component has no parent")
+fun <T : GuiComponentEvent> GuiComponent.applyTransform(
+        event: T,
+        component: Triple<GuiComponent, Vector2d, Vector2d>
+): T {
+    val pos = applyTransform(event.x - component.second.x,
+            event.y - component.second.y, component.third)
+    return event.copy(x = pos.x, y = pos.y, size = component.third)
+}
+
+fun <T : GuiComponentEvent> GuiComponent.applyTransform(
+        event: T,
+        childOffset: Vector2d,
+        childSize: Vector2d
+): T {
+    val pos = applyTransform(event.x - childOffset.x,
+            event.y - childOffset.y, childSize)
+    return event.copy(x = pos.x, y = pos.y, size = childSize)
+}
+
+fun GuiComponent.applyTransform(x: Double,
+                                y: Double,
+                                size: Vector2d): Vector3d {
+    return applyTransform(Vector3d(x, y, 0.0), size)
+}
+
+fun <T : GuiComponentEvent, R> GuiComponent.sendEvent(
+        event: T,
+        listener: (T) -> R
+): R? = foldTowards(this, event) { e, parent, _, offset, size ->
+    parent.applyTransform(e, offset, size)
+}?.let { listener(it) }
+
+inline fun <T> foldTowards(
+        component: GuiComponent,
+        initial: T,
+        transform: (T, GuiComponent, GuiComponent, Vector2d, Vector2d) -> T
+): T? {
+    var current = initial
+    var size = component.gui.baseSize()
+    val path = component.pathTowards()
+    // We skip the last element, which is component
+    path@ for (i in 0 until path.lastIndex) {
+        val element = path[i]
+        if (!element.visible) return null
+        val layout = element.layoutManager(size)
+        val next = path[i + 1]
+        for ((child, childOffset, childSize) in layout.layoutReversed()) {
+            if (child === next) {
+                current = transform(current, element, child, childOffset,
+                        childSize)
+                size = childSize
+                continue@path
             }
         }
+        return null
+    }
+    return current
+}
+
+fun GuiComponent.pathTowards(): List<GuiComponent> =
+        pathOutwards().asReversed()
+
+fun GuiComponent.pathOutwards(): List<GuiComponent> =
+        ArrayList<GuiComponent>().apply {
+            var current = this@pathOutwards
+            while (true) {
+                add(current)
+                current = current.parent.parent ?: break
+            }
+        }
+
+private fun checkInside(x: Double,
+                        y: Double,
+                        size: Vector2d): Boolean {
+    return x >= 0 && y >= 0 && x < size.x && y < size.y
+}
+
+private fun gui(parent: GuiLayoutData): Gui? {
+    var other = parent.parent ?: return null
+    while (true) {
+        if (other is Gui) {
+            return other
+        }
+        other = other.parent.parent ?: throw IllegalArgumentException(
+                "Non-Gui component has no parent")
     }
 }
