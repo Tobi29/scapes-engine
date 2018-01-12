@@ -16,8 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.task
 
+import kotlinx.coroutines.experimental.NonCancellable
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.withContext
 import org.tobi29.scapes.engine.utils.SteadyClock
 import org.tobi29.scapes.engine.utils.steadyClock
+import org.tobi29.scapes.engine.utils.toIntClamped
 import kotlin.math.roundToLong
 
 @Suppress("NOTHING_TO_INLINE")
@@ -93,24 +97,60 @@ class Timer(val clock: SteadyClock = steadyClock) {
     }
 }
 
-inline fun Timer.loop(maxDiff: Long,
-                      park: (Long) -> Unit,
-                      step: (Double) -> Boolean) =
-        loop(maxDiff, park, 0L, {}, step)
+inline fun Timer.loop(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        step: (Double) -> Boolean
+) = loop(maxDiff, park, 0L, {}, step)
 
-inline fun Timer.loop(maxDiff: Long,
-                      park: (Long) -> Unit,
-                      minSkipDelay: Long,
-                      step: (Double) -> Boolean) =
-        loop(maxDiff, park, minSkipDelay, {}, step)
+inline fun Timer.loop(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        minSkipDelay: Long,
+        step: (Double) -> Boolean
+) = loop(maxDiff, park, minSkipDelay, {}, step)
 
-inline fun Timer.loop(maxDiff: Long,
-                      park: (Long) -> Unit,
-                      minSkipDelay: Long = 0L,
-                      logSkip: (Long) -> Unit,
-                      step: (Double) -> Boolean) {
+inline fun Timer.loop(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        minSkipDelay: Long = 0L,
+        logSkip: (Long) -> Unit,
+        step: (Double) -> Boolean
+) {
     while (true) {
         val tickDiff = cap(maxDiff, park, minSkipDelay, logSkip)
         if (!step(Timer.toDelta(tickDiff))) break
+    }
+}
+
+suspend fun Timer.loopUntilCancel(
+        maxDiff: Long,
+        step: suspend (Double) -> Unit
+) = loopUntilCancel(maxDiff, 0L, {}, step)
+
+suspend fun Timer.loopUntilCancel(
+        maxDiff: Long,
+        minSkipDelay: Long,
+        step: suspend (Double) -> Unit
+) = loopUntilCancel(maxDiff, minSkipDelay, {}, step)
+
+inline suspend fun Timer.loopUntilCancel(
+        maxDiff: Long,
+        minSkipDelay: Long = 0L,
+        logSkip: (Long) -> Unit,
+        noinline step: suspend (Double) -> Unit
+) = loopUntilCancel(maxDiff, { delay((it / 1000000L).toIntClamped()) },
+        minSkipDelay, logSkip, step)
+
+inline suspend fun Timer.loopUntilCancel(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        minSkipDelay: Long = 0L,
+        logSkip: (Long) -> Unit,
+        noinline step: suspend (Double) -> Unit
+) {
+    loop(maxDiff, park, minSkipDelay, logSkip) { delta ->
+        withContext(NonCancellable) { step(delta) }
+        true
     }
 }
