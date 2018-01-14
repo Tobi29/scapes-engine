@@ -23,6 +23,8 @@ import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.scapes.engine.utils.io._clear
+import org.tobi29.scapes.engine.utils.io._rewind
 import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.toRad
@@ -68,10 +70,10 @@ class LWJGL3OpenAL : OpenAL {
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED)
         stack.push {
             val listenerOrientation = stack.mallocFloat(6)
-            listenerOrientation.clear()
+            listenerOrientation._clear()
             listenerOrientation.put(
                     floatArrayOf(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f))
-            listenerOrientation.rewind()
+            listenerOrientation._rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
             AL10.alListener3f(AL10.AL_POSITION, 0.0f, 0.0f, 0.0f)
             AL10.alListener3f(AL10.AL_VELOCITY, 0.0f, 0.0f, 0.0f)
@@ -105,7 +107,7 @@ class LWJGL3OpenAL : OpenAL {
             listenerOrientation.put(0f)
             listenerOrientation.put(0f)
             listenerOrientation.put(1f)
-            listenerOrientation.rewind()
+            listenerOrientation._rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
         }
         AL10.alListener3f(AL10.AL_POSITION, position.x.toFloat(),

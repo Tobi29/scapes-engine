@@ -23,6 +23,7 @@ import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.graphics.FramebufferStatus
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.scapes.engine.utils.io._rewind
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.shader.CompiledShader
 import org.tobi29.scapes.engine.utils.shader.Expression
@@ -61,7 +62,7 @@ internal object GLUtils : KLogging() {
             for (i in 0 until attachments) {
                 attachBuffer.put(GLES20.GL_COLOR_ATTACHMENT0 + i)
             }
-            attachBuffer.rewind()
+            attachBuffer._rewind()
             GLES30.glDrawBuffers(attachBuffer)
         }
     }

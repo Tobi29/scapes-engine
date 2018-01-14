@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.utils
 
 import java.io.IOException
+import java.nio.Buffer
 import java.nio.CharBuffer
 
 /**
@@ -49,22 +50,22 @@ interface JavaReadable : Readable {
 
     override fun read(): Char {
         val single = single.get()
-        single.clear().limit(1)
+        single._clear()._limit(1)
         while (single.hasRemaining()) {
             // We have no access to EndOfStreamException in this module
             if (java.read(single) < 0) throw IOException("End of stream")
         }
-        single.flip()
+        single._flip()
         return single.get()
     }
 
     override fun readTry(): Int {
         val single = single.get()
-        single.clear().limit(1)
+        single._clear()._limit(1)
         while (single.hasRemaining()) {
             if (java.read(single) < 0) return -1
         }
-        single.flip()
+        single._flip()
         return single.get().toInt()
     }
 
@@ -94,7 +95,7 @@ interface SEReadable : java.lang.Readable {
         if (cb.hasArray()) {
             val read = se.readSome(cb.array(), cb.arrayOffset() + position,
                     cb.remaining())
-            if (read >= 0) cb.position(cb.position() + read)
+            if (read >= 0) cb._position(cb.position() + read)
             return read
         } else {
             var read = 0
@@ -113,3 +114,22 @@ interface SEReadable : java.lang.Readable {
 }
 
 private val single = ThreadLocal { CharBuffer.allocate(1) }
+
+// We do not have IOUtils in this module, so we use a local private copy
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun <B : Buffer> B._position(newPosition: Int): B =
+        apply { position(newPosition) }
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun <B : Buffer> B._limit(newLimit: Int): B =
+        apply { limit(newLimit) }
+
+@Suppress("NOTHING_TO_INLINE")
+
+private inline fun <B : Buffer> B._clear(): B =
+        apply { clear() }
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun <B : Buffer> B._flip(): B =
+        apply { flip() }

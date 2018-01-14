@@ -85,8 +85,8 @@ class ByteBufferViewBE(
                        size: Int) =
             ByteBufferViewBE(
                     buffer.duplicate().apply {
-                        position(index)
-                        limit(position() + size)
+                        _position(index)
+                        _limit(position() + size)
                     }.slice().order(
                             BIG_ENDIAN))
 
@@ -137,15 +137,15 @@ class ByteBufferViewBE(
         when (slice) {
             is HeapByteArraySlice -> {
                 val position = buffer.position()
-                buffer.position(index)
+                buffer._position(index)
                 buffer.put(slice.array, slice.offset, slice.size)
-                buffer.position(position)
+                buffer._position(position)
             }
             is ByteBufferView -> {
                 val position = buffer.position()
-                buffer.position(index)
+                buffer._position(index)
                 buffer.put(slice.byteBuffer)
-                buffer.position(position)
+                buffer._position(position)
             }
             else -> super<ByteBufferView>.setBytes(index, slice)
         }
@@ -165,8 +165,8 @@ class ByteBufferViewLE(
                        size: Int) =
             ByteBufferViewLE(
                     buffer.duplicate().apply {
-                        position(index)
-                        limit(position() + size)
+                        _position(index)
+                        _limit(position() + size)
                     }.slice().order(
                             LITTLE_ENDIAN))
 
@@ -217,15 +217,15 @@ class ByteBufferViewLE(
         when (slice) {
             is HeapByteArraySlice -> {
                 val position = buffer.position()
-                buffer.position(index)
+                buffer._position(index)
                 buffer.put(slice.array, slice.offset, slice.size)
-                buffer.position(position)
+                buffer._position(position)
             }
             is ByteBufferView -> {
                 val position = buffer.position()
-                buffer.position(index)
+                buffer._position(index)
                 buffer.put(slice.byteBuffer)
-                buffer.position(position)
+                buffer._position(position)
             }
             else -> super<ByteBufferView>.setBytes(index, slice)
         }

@@ -40,7 +40,7 @@ class STBFont(internal val container: ScapesEngineBackend,
                      font: ByteViewRO): STBFont {
             val fontBuffer = ByteBufferNative(font.size)
             fontBuffer.put(font.readAsByteBuffer())
-            fontBuffer.flip()
+            fontBuffer._flip()
             val infoBuffer = STBTTFontinfo.create()
             if (STBTruetype.stbtt_InitFont(infoBuffer, fontBuffer)) {
                 return STBFont(backend, fontBuffer, infoBuffer)

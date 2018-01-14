@@ -19,6 +19,7 @@
 package org.tobi29.scapes.engine.utils.io
 
 import org.tobi29.scapes.engine.utils.HeapByteArraySlice
+import java.nio.Buffer
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -107,10 +108,52 @@ fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
                     buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
                 }
                 buffer.put(it)
-                buffer.flip()
+                buffer._flip()
                 buffer
             } else it
         } ?: java.nio.ByteBuffer.allocateDirect(size)
                 .order(NATIVE_ENDIAN).also { buffer ->
             getBytes(0, buffer.viewE)
         }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._position(newPosition: Int): B =
+        apply { position(newPosition) }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._limit(newLimit: Int): B =
+        apply { limit(newLimit) }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._mark(): B =
+        apply { mark() }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._reset(): B =
+        apply { reset() }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._clear(): B =
+        apply { clear() }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._flip(): B =
+        apply { flip() }
+
+/**
+ * Compatibility extension avoiding the overridden versions added in Java 9
+ */
+inline fun <B : Buffer> B._rewind(): B =
+        apply { rewind() }

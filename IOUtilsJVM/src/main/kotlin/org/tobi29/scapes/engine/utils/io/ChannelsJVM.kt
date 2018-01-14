@@ -73,7 +73,7 @@ interface SEReadableByteChannel : SEChannel, java.nio.channels.ReadableByteChann
 
     override fun read(dst: java.nio.ByteBuffer): Int =
             se.read(dst.viewSliceE).also {
-                if (it > 0) dst.position(dst.position() + it)
+                if (it > 0) dst._position(dst.position() + it)
             }
 }
 
@@ -113,7 +113,7 @@ interface SEWritableByteChannel : SEChannel, java.nio.channels.WritableByteChann
 
     override fun write(src: java.nio.ByteBuffer): Int =
             se.write(src.viewSliceE).also {
-                if (it > 0) src.position(src.position() + it)
+                if (it > 0) src._position(src.position() + it)
             }
 }
 
@@ -136,14 +136,14 @@ fun ByteChannel.toJavaChannel(): java.nio.channels.ByteChannel =
 fun ReadableByteChannel.read(buffer: ByteBuffer): Int = when (this) {
     is JavaReadableByteChannel -> java.read(buffer)
     else -> read(buffer.viewSliceE).also {
-        if (it > 0) buffer.position(buffer.position() + it)
+        if (it > 0) buffer._position(buffer.position() + it)
     }
 }
 
 fun WritableByteChannel.write(buffer: ByteBuffer): Int = when (this) {
     is JavaWritableByteChannel -> java.write(buffer)
     else -> write(buffer.viewSliceE).also {
-        if (it > 0) buffer.position(buffer.position() + it)
+        if (it > 0) buffer._position(buffer.position() + it)
     }
 }
 

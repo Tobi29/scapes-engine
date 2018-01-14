@@ -19,6 +19,8 @@ import org.lwjgl.stb.STBTruetype
 import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import org.tobi29.scapes.engine.gui.GlyphRenderer
+import org.tobi29.scapes.engine.utils.io._position
+import org.tobi29.scapes.engine.utils.io._rewind
 import org.tobi29.scapes.engine.utils.isISOControl
 import org.tobi29.scapes.engine.utils.math.floorToInt
 import org.tobi29.scapes.engine.utils.math.sqr
@@ -117,7 +119,7 @@ class STBGlyphRenderer(private val font: STBFont,
                                     c)
                             for (yyy in 0 until sizeY) {
                                 var j = (renderY + yyy) * imageSize + renderX shl 2
-                                glyphBuffer.position(yyy * glyphSize)
+                                glyphBuffer._position(yyy * glyphSize)
                                 for (xxx in 0 until glyphSize) {
                                     val value = glyphBuffer.get()
                                     buffer[j++] = 0xFF.toByte()
@@ -126,7 +128,7 @@ class STBGlyphRenderer(private val font: STBFont,
                                     buffer[j++] = value
                                 }
                             }
-                            glyphBuffer.rewind()
+                            glyphBuffer._rewind()
                         }
                         i++
                     }

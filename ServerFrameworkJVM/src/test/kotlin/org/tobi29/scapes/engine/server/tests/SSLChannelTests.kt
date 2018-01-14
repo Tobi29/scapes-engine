@@ -66,7 +66,7 @@ object SSLChannelTests : Spek({
                             taskExecutor, true), taskExecutor, false)
 
             val job1 = launch(taskExecutor) {
-                val bufferSend = ByteBuffer(1024).apply { fill { 42 }.flip() }
+                val bufferSend = ByteBuffer(1024).apply { fill { 42 }._flip() }
                 val bufferReceive = ByteBuffer(1024)
                 while (bufferSend.hasRemaining()) {
                     channelLeft.write(bufferSend)
@@ -76,24 +76,24 @@ object SSLChannelTests : Spek({
                     channelLeft.read(bufferReceive)
                     yield()
                 }
-                bufferReceive.flip()
+                bufferReceive._flip()
                 while (bufferReceive.hasRemaining()) {
                     if (bufferReceive.get() != 43.toByte()) {
                         throw AssertionError("Invalid received byte")
                     }
                 }
-                bufferSend.clear().limit(123)
-                bufferSend.fill { 44 }.flip()
+                bufferSend._clear()._limit(123)
+                bufferSend.fill { 44 }._flip()
                 while (bufferSend.hasRemaining()) {
                     channelLeft.write(bufferSend)
                     yield()
                 }
-                bufferReceive.clear().limit(123)
+                bufferReceive._clear()._limit(123)
                 while (bufferReceive.hasRemaining()) {
                     channelLeft.read(bufferReceive)
                     yield()
                 }
-                bufferReceive.flip()
+                bufferReceive._flip()
                 while (bufferReceive.hasRemaining()) {
                     if (bufferReceive.get() != 45.toByte()) {
                         throw AssertionError("Invalid received byte")
@@ -105,7 +105,7 @@ object SSLChannelTests : Spek({
             }
 
             val job2 = launch(taskExecutor) {
-                val bufferSend = ByteBuffer(1024).apply { fill { 43 }.flip() }
+                val bufferSend = ByteBuffer(1024).apply { fill { 43 }._flip() }
                 while (bufferSend.hasRemaining()) {
                     channelRight.write(bufferSend)
                     yield()
@@ -115,24 +115,24 @@ object SSLChannelTests : Spek({
                     channelRight.read(bufferReceive)
                     yield()
                 }
-                bufferReceive.flip()
+                bufferReceive._flip()
                 while (bufferReceive.hasRemaining()) {
                     if (bufferReceive.get() != 42.toByte()) {
                         throw AssertionError("Invalid received byte")
                     }
                 }
-                bufferSend.clear().limit(123)
-                bufferSend.fill { 45 }.flip()
+                bufferSend._clear()._limit(123)
+                bufferSend.fill { 45 }._flip()
                 while (bufferSend.hasRemaining()) {
                     channelRight.write(bufferSend)
                     yield()
                 }
-                bufferReceive.clear().limit(123)
+                bufferReceive._clear()._limit(123)
                 while (bufferReceive.hasRemaining()) {
                     channelRight.read(bufferReceive)
                     yield()
                 }
-                bufferReceive.flip()
+                bufferReceive._flip()
                 while (bufferReceive.hasRemaining()) {
                     if (bufferReceive.get() != 44.toByte()) {
                         throw AssertionError("Invalid received byte")
