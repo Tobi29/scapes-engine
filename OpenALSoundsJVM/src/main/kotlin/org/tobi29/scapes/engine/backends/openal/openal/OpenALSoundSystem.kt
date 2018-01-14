@@ -32,7 +32,6 @@ import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.utils.io.ByteViewERO
-import org.tobi29.scapes.engine.utils.io.IOException
 import org.tobi29.scapes.engine.utils.io.ReadSource
 import org.tobi29.scapes.engine.utils.io.use
 import org.tobi29.scapes.engine.utils.logging.KLogging
@@ -289,14 +288,17 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
         val entry = cache[asset]
         return if (entry == null) {
             cache[asset] = EitherLeft(async(engine.taskExecutor) {
-                tryWrap<AudioData, IOException> {
+                try {
                     asset.channel().use { channel ->
                         AudioStream.create(channel,
                                 asset.mimeType()).use { stream ->
                             OpenALAudioData.read(engine, stream)
                         }
                     }
-                }.unwrapOr { null }
+                } catch (e: Exception) {
+                    logger.error(e) { "Failed decoding sound effect" }
+                    null
+                }
             })
             nil
         } else when (entry) {
