@@ -64,14 +64,8 @@ class SSLHandle(keyManagers: Array<KeyManager>?,
             val trustManagerFactory = TrustManagerFactory.getInstance(
                     TrustManagerFactory.getDefaultAlgorithm())
             trustManagerFactory.init(null as KeyStore?)
-            return trustManagerFactory.trustManagers.asSequence().map {
-                when (it) {
-                    is X509ExtendedTrustManager -> SavingExtendedTrustManager(
-                            it)
-                    is X509TrustManager -> SavingTrustManager(it)
-                    else -> it
-                }
-            }.toArray()
+            return trustManagerFactory.trustManagers.asSequence()
+                    .map(trustManagerWrap).toArray()
         } catch (e: NoSuchAlgorithmException) {
             throw IOException(e)
         } catch (e: KeyStoreException) {
@@ -146,3 +140,23 @@ class SSLHandle(keyManagers: Array<KeyManager>?,
     }
 }
 
+private val trustManagerWrap: (TrustManager) -> TrustManager =
+        if (isAndroidAPI(24)) {
+            { trustManager ->
+                when (trustManager) {
+                    is X509ExtendedTrustManager ->
+                        SavingExtendedTrustManager(trustManager)
+                    is X509TrustManager ->
+                        SavingTrustManager(trustManager)
+                    else -> trustManager
+                }
+            }
+        } else {
+            { trustManager ->
+                when (trustManager) {
+                    is X509TrustManager ->
+                        SavingTrustManager(trustManager)
+                    else -> trustManager
+                }
+            }
+        }
