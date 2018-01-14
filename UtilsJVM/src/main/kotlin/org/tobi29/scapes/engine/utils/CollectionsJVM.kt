@@ -25,7 +25,44 @@ actual typealias ArrayDeque<E> = java.util.ArrayDeque<E>
 
 actual typealias ConcurrentMap<K, V> = java.util.concurrent.ConcurrentMap<K, V>
 
-actual typealias ConcurrentHashMap<K, V> = java.util.concurrent.ConcurrentHashMap<K, V>
+actual class ConcurrentHashMap<K, V> private constructor(
+        private val map: java.util.concurrent.ConcurrentHashMap<K, V>
+) : ConcurrentMap<K, V> by map {
+    actual constructor() : this(java.util.concurrent.ConcurrentHashMap<K, V>())
+
+    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = map.entries
+    actual override val keys: MutableSet<K>
+    actual override val values: MutableCollection<V>
+
+    init {
+        val map: ConcurrentMap<K, V> = map
+        keys = map.keys
+        values = map.values
+    }
+
+    actual override fun put(key: K,
+                            value: V): V? = map.put(key, value)
+
+    actual override fun putAll(from: Map<out K, V>) = map.putAll(from)
+
+    actual override fun replace(key: K,
+                                value: V): V? = map.replace(key, value)
+
+    actual override fun replace(key: K,
+                                oldValue: V,
+                                newValue: V): Boolean =
+            map.replace(key, oldValue, newValue)
+
+    actual override fun putIfAbsent(key: K,
+                                    value: V): V? = map.putIfAbsent(key, value)
+
+    actual override fun remove(key: K): V? = map.remove(key)
+
+    actual override fun remove(key: K,
+                               value: V): Boolean = map.remove(key, value)
+
+    actual override fun clear() = map.clear()
+}
 
 actual class ConcurrentHashSet<E> : MutableSet<E> {
     actual override fun addAll(elements: Collection<E>): Boolean {
@@ -48,7 +85,8 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
 
     actual override fun isEmpty() = map.isEmpty()
 
-    private val map = ConcurrentHashMap<E, Unit>()
+    private val map: java.util.concurrent.ConcurrentMap<E, Unit> =
+            ConcurrentHashMap<E, Unit>()
 
     actual override val size get() = map.size
 
@@ -64,7 +102,8 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
 
 actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(),
         ConcurrentMap<K, V> {
-    private val map = ConcurrentSkipListMap<K, V>()
+    private val map: java.util.concurrent.ConcurrentMap<K, V> =
+            ConcurrentSkipListMap<K, V>()
 
     actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = map.entries
     actual override val keys: MutableSet<K> = map.keys
@@ -84,7 +123,7 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(),
             map.replace(key, oldValue, newValue)
 
     actual override fun putIfAbsent(key: K,
-                                    value: V): V? = putIfAbsent(key, value)
+                                    value: V): V? = map.putIfAbsent(key, value)
 
     actual override fun remove(key: K): V? = map.remove(key)
 
