@@ -24,7 +24,7 @@ fun java.nio.channels.FileChannel.toChannel(): FileChannel =
         }
 
 interface JavaFileChannel : JavaByteChannel, FileChannel {
-    override val java: java.nio.channels.SeekableByteChannel
+    override val java: java.nio.channels.FileChannel
 
     override fun position() = java.position()
 
