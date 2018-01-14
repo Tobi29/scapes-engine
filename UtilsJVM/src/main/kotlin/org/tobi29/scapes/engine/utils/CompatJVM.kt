@@ -20,7 +20,7 @@ package org.tobi29.scapes.engine.utils
 
 actual val ANDROID_API_LEVEL = run {
     try {
-        Class.forName("android.os.Build.VERSION")
+        Class.forName("android.os.Build\$VERSION")
                 .getField("SDK_INT").get(null) as? Int
     } catch (e: ReflectiveOperationException) {
         null
