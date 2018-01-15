@@ -19,14 +19,58 @@
 package org.tobi29.scapes.engine.utils
 
 /**
- * Arbitrary array segment
+ * Arbitrary 1-dimensional array
  */
-interface ArraySegment {
+interface Vars {
     /**
-     * Amount of elements in the slice
+     * Amount of elements in the array
      */
     val size: Int
+}
 
+/**
+ * Arbitrary 2-dimensional array
+ */
+interface Vars2 : Vars {
+    /**
+     * Amount of indices on the first axis
+     */
+    val width: Int
+
+    /**
+     * Amount of indices on the second axis
+     */
+    val height: Int
+
+    override val size: Int get() = width * height
+}
+
+/**
+ * Arbitrary 3-dimensional array
+ */
+interface Vars3 : Vars {
+    /**
+     * Amount of indices on the first axis
+     */
+    val width: Int
+
+    /**
+     * Amount of indices on the second axis
+     */
+    val height: Int
+
+    /**
+     * Amount of indices on the third axis
+     */
+    val depth: Int
+
+    override val size: Int get() = width * height * depth
+}
+
+/**
+ * Arbitrary 1-dimensional array segment
+ */
+interface ArraySegment : Vars {
     fun slice(index: Int): ArraySegment
 
     fun slice(index: Int,
@@ -34,9 +78,16 @@ interface ArraySegment {
 }
 
 /**
- * Arbitrary array slice
+ * Arbitrary 1-dimensional iterable array
  */
-interface ArrayVarSlice<out T> : ArraySegment, Iterable<T>
+interface VarsIterable<out T> : Vars,
+        Iterable<T>
+
+/**
+ * Arbitrary 1-dimensional array slice
+ */
+interface ArrayVarSlice<out T> : VarsIterable<T>,
+        ArraySegment
 
 /**
  * Arbitrary array slice based on some heap array with offset support

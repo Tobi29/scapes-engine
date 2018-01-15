@@ -23,20 +23,102 @@
 package org.tobi29.scapes.engine.utils
 
 /**
+ * 1-dimensional read-only array
+ */
+interface BooleansRO : Vars {
+    /**
+     * Returns the element at the given index in the array
+     * @param index Index of the element
+     * @return The value at the given index
+     */
+    operator fun get(index: Int): Boolean
+}
+
+/**
+ * 1-dimensional read-write array
+ */
+interface Booleans : BooleansRO {
+    /**
+     * Sets the element at the given index in the array
+     * @param index Index of the element
+     * @param value The value to set to
+     */
+    operator fun set(index: Int,
+                     value: Boolean)
+}
+
+/**
+ * 2-dimensional read-only array
+ */
+interface BooleansRO2 : Vars2 {
+    /**
+     * Returns the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @return The value at the given index
+     */
+    operator fun get(index1: Int,
+                     index2: Int): Boolean
+}
+
+/**
+ * 2-dimensional read-write array
+ */
+interface Booleans2 : BooleansRO2 {
+    /**
+     * Sets the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param value The value to set to
+     */
+    operator fun set(index1: Int,
+                     index2: Int,
+                     value: Boolean)
+}
+
+/**
+ * 3-dimensional read-only array
+ */
+interface BooleansRO3 : Vars3 {
+    /**
+     * Returns the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param index3 Index on the third axis of the element
+     * @return The value at the given index
+     */
+    operator fun get(index1: Int,
+                     index2: Int,
+                     index3: Int): Boolean
+}
+
+/**
+ * 3-dimensional read-write array
+ */
+interface Booleans3 : BooleansRO3 {
+    /**
+     * Sets the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param index3 Index on the third axis of the element
+     * @param value The value to set to
+     */
+    operator fun set(index1: Int,
+                     index2: Int,
+                     index3: Int,
+                     value: Boolean)
+}
+
+/**
  * Read-only slice of an array, indexed in elements
  */
-interface BooleanArraySliceRO : ArrayVarSlice<Boolean> {
+interface BooleanArraySliceRO : BooleansRO,
+        ArrayVarSlice<Boolean> {
     override fun slice(index: Int): BooleanArraySliceRO
 
     override fun slice(index: Int,
                        size: Int): BooleanArraySliceRO
 
-    /**
-     * Returns the element at the given index in the slice
-     * @param index Index of the element
-     * @return The value at the given index
-     */
-    operator fun get(index: Int): Boolean
 
     fun getBoolean(index: Int): Boolean = get(index)
 
@@ -57,19 +139,13 @@ interface BooleanArraySliceRO : ArrayVarSlice<Boolean> {
 /**
  * Slice of an array, indexed in elements
  */
-interface BooleanArraySlice : BooleanArraySliceRO {
+interface BooleanArraySlice : Booleans,
+        BooleanArraySliceRO {
     override fun slice(index: Int): BooleanArraySlice
 
     override fun slice(index: Int,
                        size: Int): BooleanArraySlice
 
-    /**
-     * Sets the element at the given index in the slice
-     * @param index Index of the element
-     * @param value The value to set to
-     */
-    operator fun set(index: Int,
-                     value: Boolean)
 
     fun setBoolean(index: Int,
                    value: Boolean) = set(index, value)
@@ -86,7 +162,8 @@ open class HeapBooleanArraySlice(
         val array: BooleanArray,
         override final val offset: Int,
         override final val size: Int
-) : HeapArrayVarSlice<Boolean>, BooleanArraySlice {
+) : HeapArrayVarSlice<Boolean>,
+        BooleanArraySlice {
     override fun slice(index: Int): HeapBooleanArraySlice =
             slice(index, size - index)
 
@@ -172,17 +249,13 @@ class BooleanArray2
         /**
          * Width of the wrapper.
          */
-        val width: Int,
+        override val width: Int,
         /**
          * Height of the wrapper.
          */
-        val height: Int,
-        private val array: BooleanArray) : Iterable<Boolean> {
-    /**
-     * Size of the array.
-     */
-    val size = width * height
-
+        override val height: Int,
+        private val array: BooleanArray) : Booleans2,
+        Iterable<Boolean> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
@@ -191,52 +264,36 @@ class BooleanArray2
     }
 
     /**
-     * Retrieve an element from the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @throws IndexOutOfBoundsException When accessing indices out of bounds
-     * @return The element at the given position
-     */
-    operator fun get(x: Int,
-                     y: Int): Boolean {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            throw IndexOutOfBoundsException("$x $y")
-        }
-        return array[y * width + x]
-    }
-
-    /**
      * Retrieve an element from the array or `null` if out of bounds.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(x: Int,
-                  y: Int): Boolean? {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
+    fun getOrNull(index1: Int,
+                  index2: Int): Boolean? {
+        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             return null
         }
-        return array[y * width + x]
+        return array[index2 * width + index1]
     }
 
-    /**
-     * Stores an element in the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param value The element to store
-     */
-    operator fun set(x: Int,
-                     y: Int,
-                     value: Boolean) {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            throw IndexOutOfBoundsException("$x $y")
+    override fun get(index1: Int,
+                     index2: Int): Boolean {
+        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
+            throw IndexOutOfBoundsException("$index1 $index2")
         }
-        array[y * width + x] = value
+        return array[index2 * width + index1]
     }
 
-    /**
-     * Creates an iterator for iterating over the elements of the array.
-     */
+    override fun set(index1: Int,
+                     index2: Int,
+                     value: Boolean) {
+        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
+            throw IndexOutOfBoundsException("$index1 $index2")
+        }
+        array[index2 * width + index1] = value
+    }
+
     override operator fun iterator() = array.iterator()
 
     /**
@@ -306,21 +363,17 @@ class BooleanArray3
         /**
          * Width of the wrapper.
          */
-        val width: Int,
+        override val width: Int,
         /**
          * Height of the wrapper.
          */
-        val height: Int,
+        override val height: Int,
         /**
          * Depth of the wrapper.
          */
-        val depth: Int,
-        private val array: BooleanArray) : Iterable<Boolean> {
-    /**
-     * Size of the array.
-     */
-    val size = width * height * depth
-
+        override val depth: Int,
+        private val array: BooleanArray) : Booleans3,
+        Iterable<Boolean> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
@@ -329,58 +382,43 @@ class BooleanArray3
     }
 
     /**
-     * Retrieve an element from the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param z Index on the third axis
-     * @throws IndexOutOfBoundsException When accessing indices out of bounds
-     * @return The element at the given position
-     */
-    operator fun get(x: Int,
-                     y: Int,
-                     z: Int): Boolean {
-        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= depth) {
-            throw IndexOutOfBoundsException("$x $y $z")
-        }
-        return array[(z * height + y) * width + x]
-    }
-
-    /**
      * Retrieve an element from the array or `null` if out of bounds.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param z Index on the third axis
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param index3 Index on the third axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(x: Int,
-                  y: Int,
-                  z: Int): Boolean? {
-        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= depth) {
+    fun getOrNull(index1: Int,
+                  index2: Int,
+                  index3: Int): Boolean? {
+        if (index1 < 0 || index2 < 0 || index3 < 0
+                || index1 >= width || index2 >= height || index3 >= depth) {
             return null
         }
-        return array[(z * height + y) * width + x]
+        return array[(index3 * height + index2) * width + index1]
     }
 
-    /**
-     * Stores an element in the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param z Index on the third axis
-     * @param value The element to store
-     */
-    operator fun set(x: Int,
-                     y: Int,
-                     z: Int,
-                     value: Boolean) {
-        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= depth) {
-            throw IndexOutOfBoundsException("$x $y $z")
+    override fun get(index1: Int,
+                     index2: Int,
+                     index3: Int): Boolean {
+        if (index1 < 0 || index2 < 0 || index3 < 0
+                || index1 >= width || index2 >= height || index3 >= depth) {
+            throw IndexOutOfBoundsException("$index1 $index2 $index3")
         }
-        array[(z * height + y) * width + x] = value
+        return array[(index3 * height + index2) * width + index1]
     }
 
-    /**
-     * Creates an iterator for iterating over the elements of the array.
-     */
+    override fun set(index1: Int,
+                     index2: Int,
+                     index3: Int,
+                     value: Boolean) {
+        if (index1 < 0 || index2 < 0 || index3 < 0
+                || index1 >= width || index2 >= height || index3 >= depth) {
+            throw IndexOutOfBoundsException("$index1 $index2")
+        }
+        array[(index3 * height + index2) * width + index1] = value
+    }
+
     override operator fun iterator() = array.iterator()
 
     /**
