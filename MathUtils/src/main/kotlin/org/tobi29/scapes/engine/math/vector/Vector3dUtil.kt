@@ -18,128 +18,163 @@
 
 package org.tobi29.scapes.engine.math.vector
 
-import kotlin.math.sqrt
+import org.tobi29.scapes.engine.utils.math.ceilToInt
+import org.tobi29.scapes.engine.utils.math.floorToInt
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.round
+import kotlin.math.roundToInt
+
+/**
+ * Maps all values of the given vector into a new one
+ * @receiver The vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector3d.map(transform: (Double) -> Double): Vector3d =
+        Vector3d(transform(x), transform(y), transform(z))
+
+/**
+ * Maps all values of two given vectors into a new one
+ * @receiver The first vector to take the initial values from
+ * @param other The second vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector3d.map(other: Vector3d,
+                        transform: (Double, Double) -> Double): Vector3d =
+        Vector3d(transform(x, other.x), transform(y, other.y),
+                transform(z, other.z))
+
+/**
+ * Maps all values of the given vector into a new one
+ * @receiver The vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector3d.mapToInt(transform: (Double) -> Int): Vector3i =
+        Vector3i(transform(x), transform(y), transform(z))
+
+/**
+ * Maps all values of two given vectors into a new one
+ * @receiver The first vector to take the initial values from
+ * @param other The second vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector3d.mapToInt(other: Vector3d,
+                             transform: (Double, Double) -> Int): Vector3i =
+        Vector3i(transform(x, other.x), transform(y, other.y),
+                transform(z, other.z))
 
 /**
  * Returns the sum of the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector3d] containing the sum
+ * @return A new vector containing the sum
  */
-inline operator fun Vector3d.plus(a: Double): Vector3d {
-    return Vector3d(x + a, y + a, z + a)
-}
+inline operator fun Vector3d.plus(a: Double): Vector3d =
+        map { it + a }
 
 /**
  * Returns the difference between the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector3d] containing the difference
+ * @return A new vector containing the difference
  */
-inline operator fun Vector3d.minus(a: Double): Vector3d {
-    return Vector3d(x - a, y - a, z - a)
-}
+inline operator fun Vector3d.minus(a: Double): Vector3d =
+        map { it - a }
 
 /**
  * Returns the product of the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector3d] containing the product
+ * @return A new vector containing the product
  */
-inline operator fun Vector3d.times(a: Double): Vector3d {
-    return Vector3d(x * a, y * a, z * a)
-}
+inline operator fun Vector3d.times(a: Double): Vector3d =
+        map { it * a }
 
 /**
  * Returns the quotient of the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector3d] containing the quotient
+ * @return A new vector containing the quotient
  */
-inline operator fun Vector3d.div(a: Double): Vector3d {
-    return Vector3d(x / a, y / a, z / a)
-}
+inline operator fun Vector3d.div(a: Double): Vector3d =
+        map { it / a }
 
 /**
  * Returns the sum of the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector3d] containing the sum
+ * @return A new vector containing the sum
  */
-inline operator fun Vector3d.plus(other: Vector3d): Vector3d {
-    return Vector3d(x + other.x, y + other.y, z + other.z)
-}
+inline operator fun Vector3d.plus(other: Vector3d): Vector3d =
+        map(other) { a, b -> a + b }
 
 /**
  * Returns the difference between the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector3d] containing the difference
+ * @return A new vector containing the difference
  */
-inline operator fun Vector3d.minus(other: Vector3d): Vector3d {
-    return Vector3d(x - other.x, y - other.y, z - other.z)
-}
+inline operator fun Vector3d.minus(other: Vector3d): Vector3d =
+        map(other) { a, b -> a - b }
 
 /**
  * Returns the product of the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector3d] containing the product
+ * @return A new vector containing the product
  */
-inline operator fun Vector3d.times(other: Vector3d): Vector3d {
-    return Vector3d(x * other.x, y * other.y, z * other.z)
-}
+inline operator fun Vector3d.times(other: Vector3d): Vector3d =
+        map(other) { a, b -> a * b }
 
 /**
  * Returns the quotient of the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector3d] containing the quotient
+ * @return A new vector containing the quotient
  */
-inline operator fun Vector3d.div(other: Vector3d): Vector3d {
-    return Vector3d(x / other.x, y / other.y, z / other.z)
-}
+inline operator fun Vector3d.div(other: Vector3d): Vector3d =
+        map(other) { a, b -> a / b }
 
 /**
- * Returns the length of the given [Vector3d]
+ * Returns the length of the given vector
  * @receiver The vector to use
- * @return Length of the given [Vector3d]
+ * @return Length of the given vector
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun Vector3d.length(): Double {
-    return sqrt(lengthSqr())
-}
+/*inline*/ fun Vector3d.length(): Double =
+        length(x, y, z)
 
 /**
- * Returns square of the length of the given [Vector3d]
+ * Returns square of the length of the given vector
  * @receiver The vector to use
- * @return Square of the length of the given [Vector3d]
+ * @return Square of the length of the given vector
  */
-inline fun Vector3d.lengthSqr(): Double {
-    return lengthSqr(x, y, z)
-}
+inline fun Vector3d.lengthSqr(): Double =
+        lengthSqr(x, y, z)
 
 /**
- * Returns the distance between the given [Vector3d]s
+ * Returns the distance between the given vectors
  * @receiver The first vector
  * @param other The second vector
- * @return Distance between the given [Vector3d]s
+ * @return Distance between the given vectors
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ infix fun Vector3d.distance(other: Vector3d): Double {
-    return sqrt(distanceSqr(other))
-}
+/*inline*/ infix fun Vector3d.distance(other: Vector3d): Double =
+        distance(x, y, z, other.x, other.y, other.z)
+
 
 /**
- * Returns square of the distance between the given [Vector3d]s
+ * Returns square of the distance between the given vectors
  * @receiver The first vector
  * @param other The second vector
- * @return Square of the distance between the given [Vector3d]s
+ * @return Square of the distance between the given vectors
  */
-inline infix fun Vector3d.distanceSqr(other: Vector3d): Double {
-    return distanceSqr(x, y, z, other.x,
-            other.y, other.z)
-}
+inline infix fun Vector3d.distanceSqr(other: Vector3d): Double =
+        distanceSqr(x, y, z, other.x, other.y, other.z)
 
 /**
  * Returns the dot product of the given vectors
@@ -147,10 +182,8 @@ inline infix fun Vector3d.distanceSqr(other: Vector3d): Double {
  * @param other The second vector
  * @return Dot product of the given vectors
  */
-inline infix fun Vector3d.dot(other: Vector3d): Double {
-    return dot(x, y, z, other.x,
-            other.y, other.z)
-}
+inline infix fun Vector3d.dot(other: Vector3d): Double =
+        dot(x, y, z, other.x, other.y, other.z)
 
 /**
  * Returns the cross product of the given vectors
@@ -170,11 +203,10 @@ inline infix fun Vector3d.cross(other: Vector3d): Vector3d =
  */
 inline fun inside(origin: Vector3d,
                   size: Vector3d,
-                  point: Vector3d): Boolean {
-    return inside(origin.x, origin.y, origin.z,
-            size.x, size.y, size.z, point.x,
-            point.y, point.z)
-}
+                  point: Vector3d): Boolean =
+        inside(origin.x, origin.y, origin.z,
+                size.x, size.y, size.z,
+                point.x, point.y, point.z)
 
 /**
  * Returns the normalized version of the vector
@@ -200,3 +232,15 @@ inline fun inside(origin: Vector3d,
     }
     return this / length
 }
+
+inline fun Vector3d.floor(): Vector3d = map { floor(it) }
+
+inline fun Vector3d.round(): Vector3d = map { round(it) }
+
+inline fun Vector3d.ceil(): Vector3d = map { ceil(it) }
+
+inline fun Vector3d.floorToInt(): Vector3i = mapToInt { it.floorToInt() }
+
+inline fun Vector3d.roundToInt(): Vector3i = mapToInt { it.roundToInt() }
+
+inline fun Vector3d.ceilToInt(): Vector3i = mapToInt { it.ceilToInt() }

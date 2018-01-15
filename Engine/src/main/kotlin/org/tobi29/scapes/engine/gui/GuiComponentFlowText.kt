@@ -19,14 +19,15 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.graphics.FontRenderer
 import org.tobi29.scapes.engine.math.vector.Vector2d
 
-class GuiComponentFlowText constructor(parent: GuiLayoutData,
-                                       private val textWidth: Int,
-                                       text: String,
-                                       private val r: Float = 1.0f,
-                                       private val g: Float = 1.0f,
-                                       private val b: Float = 1.0f,
-                                       private val a: Float = 1.0f) : GuiComponent(
-        parent) {
+class GuiComponentFlowText(
+        parent: GuiLayoutData,
+        private val textWidth: Double,
+        text: String,
+        private val r: Double = 1.0,
+        private val g: Double = 1.0,
+        private val b: Double = 1.0,
+        private val a: Double = 1.0
+) : GuiComponent(parent) {
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
@@ -40,33 +41,35 @@ class GuiComponentFlowText constructor(parent: GuiLayoutData,
             }
         }
 
-    constructor(parent: GuiLayoutData,
-                text: String) : this(parent,
-            Int.MAX_VALUE, text)
-
-    constructor(parent: GuiLayoutData,
-                text: String,
-                r: Float,
-                g: Float,
-                b: Float,
-                a: Float) : this(parent, Int.MAX_VALUE,
-            text, r, g, b, a)
-
     init {
         this.text = text
         parent.preferredSize = { size, maxSize ->
             val layoutSize = mangleSize(size, maxSize)
             val font = gui.style.font
             val textInfo = font.render(FontRenderer.to(), textFilter(text),
-                    layoutSize.y.toFloat(), textWidth.toFloat())
+                    layoutSize.y, textWidth)
             textInfo.size
         }
     }
 
+    constructor(
+            parent: GuiLayoutData,
+            text: String
+    ) : this(parent, Double.MAX_VALUE, text)
+
+    constructor(
+            parent: GuiLayoutData,
+            text: String,
+            r: Double,
+            g: Double,
+            b: Double,
+            a: Double
+    ) : this(parent, Double.MAX_VALUE, text, r, g, b, a)
+
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
         val font = gui.style.font
-        font.render(FontRenderer.to(renderer, r, g, b, a),
-                textFilter(text), size.floatY(), textWidth.toFloat())
+        font.render(FontRenderer.to(renderer, r, g, b, a), textFilter(text),
+                size.y, textWidth)
     }
 }

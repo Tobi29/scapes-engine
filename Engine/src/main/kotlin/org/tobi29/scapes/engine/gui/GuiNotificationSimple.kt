@@ -19,9 +19,9 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.math.vector.Vector2d
 import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.resource.Resource
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -57,7 +57,6 @@ class GuiNotificationSimple constructor(parent: GuiLayoutData,
         var sqr = sin * sin
         sqr *= sqr
         val start = matrix.modelView().multiply(Vector3d.ZERO)
-        matrix.translate(0.0f, sqr * sin * (start.floatY() + size.floatY()),
-                0.0f)
+        matrix.translate(0.0f, (sqr * sin * (start.y + size.y)).toFloat(), 0.0f)
     }
 }

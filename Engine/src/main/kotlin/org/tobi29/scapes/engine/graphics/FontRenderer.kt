@@ -35,7 +35,7 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               size: Float): TextInfo {
+               size: Double): TextInfo {
         if (text == null) {
             return EMPTY_TEXT_INFO
         }
@@ -44,19 +44,19 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               size: Float,
+               size: Double,
                start: Int,
                end: Int): TextInfo {
         if (text == null) {
             return EMPTY_TEXT_INFO
         }
-        return render(output, text, size, Float.MAX_VALUE, start, end)
+        return render(output, text, size, Double.MAX_VALUE, start, end)
     }
 
     fun render(output: MeshOutput,
                text: String?,
-               size: Float,
-               limit: Float): TextInfo {
+               size: Double,
+               limit: Double): TextInfo {
         if (text == null) {
             return EMPTY_TEXT_INFO
         }
@@ -65,8 +65,8 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               size: Float,
-               limit: Float,
+               size: Double,
+               limit: Double,
                start: Int,
                end: Int): TextInfo {
         if (text == null || start == -1) {
@@ -77,9 +77,9 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               width: Float,
-               height: Float,
-               limit: Float): TextInfo {
+               width: Double,
+               height: Double,
+               limit: Double): TextInfo {
         if (text == null) {
             return EMPTY_TEXT_INFO
         }
@@ -88,9 +88,9 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               width: Float,
-               height: Float,
-               limit: Float,
+               width: Double,
+               height: Double,
+               limit: Double,
                start: Int,
                end: Int): TextInfo {
         if (text == null || start == -1) {
@@ -101,10 +101,10 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               width: Float,
-               height: Float,
-               line: Float,
-               limit: Float): TextInfo {
+               width: Double,
+               height: Double,
+               line: Double,
+               limit: Double): TextInfo {
         if (text == null) {
             return EMPTY_TEXT_INFO
         }
@@ -114,17 +114,17 @@ class FontRenderer(private val engine: ScapesEngine,
 
     fun render(output: MeshOutput,
                text: String?,
-               width: Float,
-               height: Float,
-               line: Float,
-               limit: Float,
+               width: Double,
+               height: Double,
+               line: Double,
+               limit: Double,
                start: Int,
                end: Int): TextInfo {
         return synchronized(this) {
             if (text == null || start == -1) {
                 return@synchronized EMPTY_TEXT_INFO
             }
-            val size = output.size(height.toDouble())
+            val size = output.size(height)
             if (size <= 0) {
                 return@synchronized EMPTY_TEXT_INFO
             }
@@ -151,9 +151,8 @@ class FontRenderer(private val engine: ScapesEngine,
                         break
                     }
                     if (i in start..(end - 1)) {
-                        output.rectangle(floor(xx), floor(yy), width.toDouble(),
-                                height.toDouble(), actualWidth.toDouble(), page,
-                                pageLetter)
+                        output.rectangle(floor(xx), floor(yy), width, height,
+                                actualWidth, page, pageLetter)
                     }
                     xx += actualWidth
                     textWidth = max(textWidth, xx)
@@ -217,32 +216,32 @@ class FontRenderer(private val engine: ScapesEngine,
         val EMPTY_TEXT_INFO = TextInfo("", Vector2d.ZERO, 0)
 
         fun to(renderer: GuiRenderBatch,
-               r: Float,
-               g: Float,
-               b: Float,
-               a: Float): MeshOutput {
-            return to(renderer, 0.0f, 0.0f, r, g, b, a)
+               r: Double,
+               g: Double,
+               b: Double,
+               a: Double): MeshOutput {
+            return to(renderer, 0.0, 0.0, r, g, b, a)
         }
 
         fun to(renderer: GuiRenderBatch,
-               x: Float,
-               y: Float,
-               r: Float,
-               g: Float,
-               b: Float,
-               a: Float): MeshOutput {
+               x: Double,
+               y: Double,
+               r: Double,
+               g: Double,
+               b: Double,
+               a: Double): MeshOutput {
             return to(renderer, x, y, false, r, g, b, a)
         }
 
         fun to(renderer: GuiRenderBatch,
-               x: Float,
-               y: Float,
+               x: Double,
+               y: Double,
                cropped: Boolean,
-               r: Float,
-               g: Float,
-               b: Float,
-               a: Float): MeshOutput {
-            val pixelSize = renderer.pixelSize.floatY()
+               r: Double,
+               g: Double,
+               b: Double,
+               a: Double): MeshOutput {
+            val pixelSize = renderer.pixelSize.y
             if (cropped) {
                 return object : MeshOutput {
                     override fun size(height: Double): Int {
@@ -265,16 +264,9 @@ class FontRenderer(private val engine: ScapesEngine,
                         val tw = (letterWidth / width) * page.tileSize * 0.5
                         val th = page.tileSize * 0.5
                         renderer.texture(page.texture, 0)
-                        GuiUtils.rectangle(renderer,
-                                xxx.toFloat(),
-                                yyy.toFloat(),
-                                (xxx + w).toFloat(),
-                                (yyy + h).toFloat(),
-                                tx.toFloat(),
-                                ty.toFloat(),
-                                (tx + tw).toFloat(),
-                                (ty + th).toFloat(),
-                                r, g, b, a)
+                        GuiUtils.rectangle(renderer, xxx, yyy, (xxx + w),
+                                (yyy + h), tx, ty, (tx + tw), (ty + th), r, g,
+                                b, a)
                     }
                 }
             } else {
@@ -299,16 +291,9 @@ class FontRenderer(private val engine: ScapesEngine,
                         val tw = page.tileSize
                         val th = page.tileSize
                         renderer.texture(page.texture, 0)
-                        GuiUtils.rectangle(renderer,
-                                xxx.toFloat(),
-                                yyy.toFloat(),
-                                (xxx + w).toFloat(),
-                                (yyy + h).toFloat(),
-                                tx.toFloat(),
-                                ty.toFloat(),
-                                (tx + tw).toFloat(),
-                                (ty + th).toFloat(),
-                                r, g, b, a)
+                        GuiUtils.rectangle(renderer, xxx, yyy, (xxx + w),
+                                (yyy + h), tx, ty, (tx + tw), (ty + th), r, g,
+                                b, a)
                     }
                 }
             }

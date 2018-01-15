@@ -18,126 +18,154 @@
 
 package org.tobi29.scapes.engine.math.vector
 
-import kotlin.math.sqrt
+/**
+ * Maps all values of the given vector into a new one
+ * @receiver The vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector2d.map(transform: (Double) -> Double): Vector2d =
+        Vector2d(transform(x), transform(y))
+
+/**
+ * Maps all values of two given vectors into a new one
+ * @receiver The first vector to take the initial values from
+ * @param other The second vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector2d.map(other: Vector2d,
+                        transform: (Double, Double) -> Double): Vector2d =
+        Vector2d(transform(x, other.x), transform(y, other.y))
+
+/**
+ * Maps all values of the given vector into a new one
+ * @receiver The vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector2d.mapToInt(transform: (Double) -> Int): Vector2i =
+        Vector2i(transform(x), transform(y))
+
+/**
+ * Maps all values of two given vectors into a new one
+ * @receiver The first vector to take the initial values from
+ * @param other The second vector to take the initial values from
+ * @param transform Called on each value to form the new vector
+ * @return A new vector containing the transformed values
+ */
+inline fun Vector2d.mapToInt(other: Vector2d,
+                             transform: (Double, Double) -> Int): Vector2i =
+        Vector2i(transform(x, other.x), transform(y, other.y))
 
 /**
  * Returns the sum of the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector2d] containing the sum
+ * @return A new vector containing the sum
  */
-inline operator fun Vector2d.plus(a: Double): Vector2d {
-    return Vector2d(x + a, y + a)
-}
+inline operator fun Vector2d.plus(a: Double): Vector2d =
+        map { it + a }
 
 /**
  * Returns the difference between the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector2d] containing the difference
+ * @return A new vector containing the difference
  */
-inline operator fun Vector2d.minus(a: Double): Vector2d {
-    return Vector2d(x - a, y - a)
-}
+inline operator fun Vector2d.minus(a: Double): Vector2d =
+        map { it - a }
 
 /**
  * Returns the product of the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector2d] containing the product
+ * @return A new vector containing the product
  */
-inline operator fun Vector2d.times(a: Double): Vector2d {
-    return Vector2d(x * a, y * a)
-}
+inline operator fun Vector2d.times(a: Double): Vector2d =
+        map { it * a }
 
 /**
  * Returns the quotient of the given vector and [a]
  * @receiver The first vector
  * @param a The second value
- * @return A new [Vector2d] containing the quotient
+ * @return A new vector containing the quotient
  */
-inline operator fun Vector2d.div(a: Double): Vector2d {
-    return Vector2d(x / a, y / a)
-}
+inline operator fun Vector2d.div(a: Double): Vector2d =
+        map { it / a }
 
 /**
  * Returns the sum of the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector2d] containing the sum
+ * @return A new vector containing the sum
  */
-inline operator fun Vector2d.plus(other: Vector2d): Vector2d {
-    return Vector2d(x + other.x, y + other.y)
-}
+inline operator fun Vector2d.plus(other: Vector2d): Vector2d =
+        map(other) { a, b -> a + b }
 
 /**
  * Returns the difference between the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector2d] containing the sum
+ * @return A new vector containing the difference
  */
-inline operator fun Vector2d.minus(other: Vector2d): Vector2d {
-    return Vector2d(x - other.x, y - other.y)
-}
+inline operator fun Vector2d.minus(other: Vector2d): Vector2d =
+        map(other) { a, b -> a - b }
 
 /**
  * Returns the product of the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector2d] containing the sum
+ * @return A new vector containing the product
  */
-inline operator fun Vector2d.times(other: Vector2d): Vector2d {
-    return Vector2d(x * other.x, y * other.y)
-}
+inline operator fun Vector2d.times(other: Vector2d): Vector2d =
+        map(other) { a, b -> a * b }
 
 /**
  * Returns the quotient of the given vector and [other]
  * @receiver The first vector
  * @param other The second vector
- * @return A new [Vector2d] containing the sum
+ * @return A new vector containing the quotient
  */
-inline operator fun Vector2d.div(other: Vector2d): Vector2d {
-    return Vector2d(x / other.x, y / other.y)
-}
+inline operator fun Vector2d.div(other: Vector2d): Vector2d =
+        map(other) { a, b -> a / b }
 
 /**
- * Returns the length of the given [Vector2d]
+ * Returns the length of the given vector
  * @receiver The vector to use
- * @return Length of the given [Vector2d]
+ * @return Length of the given vector
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun Vector2d.length(): Double {
-    return sqrt(lengthSqr())
-}
+/*inline*/ fun Vector2d.length(): Double =
+        length(x, y)
 
 /**
- * Returns square of the length of the given [Vector2d]
+ * Returns square of the length of the given vector
  * @receiver The vector to use
- * @return Square of the length of the given [Vector2d]
+ * @return Square of the length of the given vector
  */
-inline fun Vector2d.lengthSqr(): Double {
-    return lengthSqr(x, y)
-}
+inline fun Vector2d.lengthSqr(): Double =
+        lengthSqr(x, y)
 
 /**
- * Returns the distance between the given [Vector2d]s
+ * Returns the distance between the given vectors
  * @receiver The first vector
  * @param other The second vector
- * @return Distance between the given [Vector2d]s
+ * @return Distance between the given vectors
  */
-inline infix fun Vector2d.distance(other: Vector2d): Double {
-    return sqrt(distanceSqr(other))
-}
+// TODO: Kotlin/JS Bug
+/*inline*/ infix fun Vector2d.distance(other: Vector2d): Double =
+        distance(x, y,
+                other.x, other.y)
 
 /**
- * Returns square of the distance between the given [Vector2d]s
+ * Returns square of the distance between the given vectors
  * @receiver The first vector
  * @param other The second vector
- * @return Square of the distance between the given [Vector2d]s
+ * @return Square of the distance between the given vectors
  */
-inline infix fun Vector2d.distanceSqr(other: Vector2d): Double {
-    return distanceSqr(x, y, other.x, other.y)
-}
+inline infix fun Vector2d.distanceSqr(other: Vector2d): Double =
+        distanceSqr(x, y, other.x, other.y)
 
 /**
  * Returns the direction between `(1,0)`, the given vector and [other]
@@ -145,9 +173,10 @@ inline infix fun Vector2d.distanceSqr(other: Vector2d): Double {
  * @param other The second vector
  * @return The direction in radians
  */
-inline fun Vector2d.direction(other: Vector2d): Double {
-    return direction(x, y, other.x, other.y)
-}
+// TODO: Kotlin/JS Bug
+/*inline*/ fun Vector2d.direction(other: Vector2d): Double =
+        direction(x, y,
+                other.x, other.y)
 
 /**
  * Returns the direction between `(1,0)`, `(0,0)` and the given vector
@@ -155,9 +184,8 @@ inline fun Vector2d.direction(other: Vector2d): Double {
  * @return The direction in radians
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun Vector2d.direction(): Double {
-    return direction(x, y)
-}
+/*inline*/ fun Vector2d.direction(): Double =
+        direction(x, y)
 
 /**
  * Returns the dot product of the given vectors
@@ -165,9 +193,8 @@ inline fun Vector2d.direction(other: Vector2d): Double {
  * @param other The second vector
  * @return Dot product of the given vectors
  */
-inline infix fun Vector2d.dot(other: Vector2d): Double {
-    return dot(x, y, other.x, other.y)
-}
+inline infix fun Vector2d.dot(other: Vector2d): Double =
+        dot(x, y, other.x, other.y)
 
 /**
  * Checks if [point] is inside the region [origin] and [size]
@@ -178,10 +205,9 @@ inline infix fun Vector2d.dot(other: Vector2d): Double {
  */
 inline fun inside(origin: Vector2d,
                   size: Vector2d,
-                  point: Vector2d): Boolean {
-    return inside(origin.x, origin.y, size.x,
-            size.y, point.x, point.y)
-}
+                  point: Vector2d): Boolean =
+        inside(origin.x, origin.y, size.x,
+                size.y, point.x, point.y)
 
 /**
  * Returns the normalized version of the vector

@@ -15,10 +15,10 @@
  */
 package org.tobi29.scapes.engine.utils.generation.maze
 
-import org.tobi29.scapes.engine.utils.*
 import org.tobi29.scapes.engine.math.Face
 import org.tobi29.scapes.engine.math.Random
 import org.tobi29.scapes.engine.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.utils.*
 
 /**
  * Maze generator using prim's algorithm
@@ -36,19 +36,19 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
         maze.setAt(startX, startY, 2, true)
         maze.setAt(startX, startY, 3, true)
         if (startY > 0) {
-            list.push().set(startX, startY - 1)
+            list.push().setXY(startX, startY - 1)
             maze.setAt(startX, startY - 1, 3, true)
         }
         if (startX < maxX) {
-            list.push().set(startX + 1, startY)
+            list.push().setXY(startX + 1, startY)
             maze.setAt(startX + 1, startY, 3, true)
         }
         if (startY < maxY) {
-            list.push().set(startX, startY + 1)
+            list.push().setXY(startX, startY + 1)
             maze.setAt(startX, startY + 1, 3, true)
         }
         if (startX > 0) {
-            list.push().set(startX - 1, startY)
+            list.push().setXY(startX - 1, startY)
             maze.setAt(startX - 1, startY, 3, true)
         }
         val directions = arrayOfNulls<Face>(4)
@@ -64,7 +64,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
                     directions[validDirections++] = Face.NORTH
                 }
                 if (!maze.getAt(x, y - 1, 3)) {
-                    list.push().set(x, y - 1)
+                    list.push().setXY(x, y - 1)
                     maze.setAt(x, y - 1, 3, true)
                 }
             }
@@ -73,7 +73,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
                     directions[validDirections++] = Face.EAST
                 }
                 if (!maze.getAt(x + 1, y, 3)) {
-                    list.push().set(x + 1, y)
+                    list.push().setXY(x + 1, y)
                     maze.setAt(x + 1, y, 3, true)
                 }
             }
@@ -82,7 +82,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
                     directions[validDirections++] = Face.SOUTH
                 }
                 if (!maze.getAt(x, y + 1, 3)) {
-                    list.push().set(x, y + 1)
+                    list.push().setXY(x, y + 1)
                     maze.setAt(x, y + 1, 3, true)
                 }
             }
@@ -91,7 +91,7 @@ object PrimsAlgorithmMazeGenerator : MazeGenerator {
                     directions[validDirections++] = Face.WEST
                 }
                 if (!maze.getAt(x - 1, y, 3)) {
-                    list.push().set(x - 1, y)
+                    list.push().setXY(x - 1, y)
                     maze.setAt(x - 1, y, 3, true)
                 }
             }

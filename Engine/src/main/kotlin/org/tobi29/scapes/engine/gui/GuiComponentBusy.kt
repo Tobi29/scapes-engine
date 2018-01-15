@@ -44,7 +44,8 @@ class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
                                         delta: Double) {
         gl.textureEmpty().bind(gl)
         gl.matrixStack.push { matrix ->
-            matrix.translate(size.floatX() * 0.5f, size.floatY() * 0.5f, 0.0f)
+            matrix.translate(size.x.toFloat() * 0.5f, size.y.toFloat() * 0.5f,
+                    0.0f)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
             model?.render(gl, shader)
         }

@@ -16,12 +16,13 @@
 
 package org.tobi29.scapes.engine.utils.generation.maze
 
-import org.tobi29.scapes.engine.utils.BitFieldGrid
-import org.tobi29.scapes.engine.utils.Pool
-import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.math.Face
 import org.tobi29.scapes.engine.math.vector.MutableVector3i
 import org.tobi29.scapes.engine.math.vector.Vector2i
+import org.tobi29.scapes.engine.math.vector.xy
+import org.tobi29.scapes.engine.utils.BitFieldGrid
+import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.setAt
 import kotlin.experimental.and
 
@@ -77,7 +78,7 @@ fun Maze.findPath(from: Vector2i,
 private fun BitFieldGrid.findPath(from: Vector2i,
                                   to: Vector2i): Array<Vector2i>? {
     val path = Pool { MutableVector3i() }
-    var current: MutableVector3i? = path.push().set(from.x, from.y, 0)
+    var current: MutableVector3i? = path.push().setXYZ(from.x, from.y, 0)
     val w = width
     val h = height
     val lw = w - 1
@@ -88,7 +89,7 @@ private fun BitFieldGrid.findPath(from: Vector2i,
         val x = current.x
         val y = current.y
         if (x == tx && y == ty) {
-            return Array(path.size) { path[it].now() }
+            return Array(path.size) { path[it].now().xy }
         }
         val dir = current.z
         if (dir < 4) {
@@ -97,17 +98,17 @@ private fun BitFieldGrid.findPath(from: Vector2i,
                 0 -> {
                     setAt(x, y, 2, true)
                     if (y > 0 && getAt(x, y, 0) && getAt(x, y - 1, 2)) {
-                        current = path.push().set(x, y - 1, 0)
+                        current = path.push().setXYZ(x, y - 1, 0)
                     }
                 }
                 1 -> if (x < lw && getAt(x + 1, y) and 0x6 == 0x6.toByte()) {
-                    current = path.push().set(x + 1, y, 0)
+                    current = path.push().setXYZ(x + 1, y, 0)
                 }
                 2 -> if (y < lh && getAt(x, y + 1) and 0x5 == 0x5.toByte()) {
-                    current = path.push().set(x, y + 1, 0)
+                    current = path.push().setXYZ(x, y + 1, 0)
                 }
                 3 -> if (x > 0 && getAt(x, y, 1) && getAt(x - 1, y, 2)) {
-                    current = path.push().set(x - 1, y, 0)
+                    current = path.push().setXYZ(x - 1, y, 0)
                 }
             }
         } else {
@@ -118,6 +119,7 @@ private fun BitFieldGrid.findPath(from: Vector2i,
 }
 
 // The inlined reference to [Face] breaks the resulting JavaScript code
+// FIXME: Check if bug is fixed
 object MazeUtilWorkaround {
     val FACE_NORTH = Face.NORTH
     val FACE_WEST = Face.WEST

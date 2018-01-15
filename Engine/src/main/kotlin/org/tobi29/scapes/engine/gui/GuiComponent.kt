@@ -135,8 +135,8 @@ abstract class GuiComponent(val engine: ScapesEngine,
                     if (-pos.x >= -childSize.x && -pos.y >= -childSize.y
                             && -pos.x <= size.x && -pos.y <= size.y) {
                         gl.matrixStack.push { childMatrix ->
-                            childMatrix.translate(position.floatX(),
-                                    position.floatY(), 0.0f)
+                            childMatrix.translate(position.x.toFloat(),
+                                    position.y.toFloat(), 0.0f)
                             component.render(gl, shader, childSize, pixelSize,
                                     delta)
                         }
@@ -173,8 +173,8 @@ abstract class GuiComponent(val engine: ScapesEngine,
                 val layout = layoutManager(size)
                 for ((component, position, childSize) in layout.layout()) {
                     matrixStack.push { childMatrix ->
-                        childMatrix.translate(position.floatX(),
-                                position.floatY(), 0.0f)
+                        childMatrix.translate(position.x.toFloat(),
+                                position.y.toFloat(), 0.0f)
                         hasHeavy = component.renderLightweight(renderer,
                                 childSize) || hasHeavy
                     }

@@ -74,7 +74,7 @@ class GuiLayoutManagerVertical(start: Vector2d,
             val data = component.parent
             mSize.set(maxSize)
             val asize = if (data is GuiLayoutDataFlow) {
-                pos.set(offset.x, offset.y)
+                pos.setXY(offset.x, offset.y)
                 val marginStart = data.marginStart
                 val marginEnd = data.marginEnd
                 val margin = data.margin
@@ -87,13 +87,13 @@ class GuiLayoutManagerVertical(start: Vector2d,
                 val asize = size(size, mPreferredSize, mSize)
                 pos.plus(marginStart)
                 offset.plusY(asize.y + margin.y)
-                posSize.set(pos.x, pos.y).plus(asize).plus(marginEnd)
+                posSize.setXY(pos.x, pos.y).plus(asize).plus(marginEnd)
                 setSize(posSize, outSize)
                 asize
             } else if (data is GuiLayoutDataAbsolute) {
                 pos.set(data.pos())
                 val asize = size(size, mSize, mSize)
-                posSize.set(pos.x, pos.y).plus(asize)
+                posSize.setXY(pos.x, pos.y).plus(asize)
                 setSize(posSize, outSize)
                 asize
             } else {

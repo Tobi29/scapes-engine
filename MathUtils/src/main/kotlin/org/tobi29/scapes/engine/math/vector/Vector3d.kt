@@ -14,57 +14,35 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.math.vector
 
-import org.tobi29.scapes.engine.utils.math.floorToInt
+import org.tobi29.scapes.engine.utils.DoublesRO
 import org.tobi29.scapes.engine.utils.tag.*
 import kotlin.collections.set
 
-class Vector3d(x: Double,
-               y: Double,
-               val z: Double) : Vector2d(x, y) {
+data class Vector3d(
+        val x: Double,
+        val y: Double,
+        val z: Double
+) : DoublesRO,
+        TagMapWrite {
+    constructor(vector: Vector3i) : this(vector.x.toDouble(),
+            vector.y.toDouble(), vector.z.toDouble())
 
-    constructor(vector: Vector3i) : this(vector.x + 0.5, vector.y + 0.5,
-            vector.z + 0.5)
+    override val size: Int get() = 3
 
-    override fun hasNaN(): Boolean {
-        return x.isNaN() || y.isNaN() || z.isNaN()
-    }
-
-    override fun hashCode(): Int {
-        var result = x.hashCode()
-        result = 31 * result + y.hashCode()
-        result = 31 * result + z.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null) {
-            return false
-        }
-        if (other is MutableVector3d) {
-            return x == other.doubleX() && y == other.doubleY() &&
-                    z == other.doubleZ()
-        }
-        if (other !is Vector3d) {
-            return false
-        }
-        return x == other.x && y == other.y && z == other.z
-    }
-
-    fun intZ(): Int {
-        return z.floorToInt()
-    }
-
-    fun floatZ(): Float {
-        return z.toFloat()
+    override fun get(index: Int): Double = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> throw IndexOutOfBoundsException("$index")
     }
 
     override fun write(map: ReadWriteTagMap) {
-        super.write(map)
+        map["X"] = x.toTag()
+        map["Y"] = y.toTag()
         map["Z"] = z.toTag()
     }
 
@@ -74,6 +52,9 @@ class Vector3d(x: Double,
         val ZERO = Vector3d(0.0, 0.0, 0.0)
     }
 }
+
+inline fun Vector3d.hasNaN(): Boolean =
+        x.isNaN() || y.isNaN() || z.isNaN()
 
 fun MutableTag.toVector3d(): Vector3d? {
     val map = toMap() ?: return null

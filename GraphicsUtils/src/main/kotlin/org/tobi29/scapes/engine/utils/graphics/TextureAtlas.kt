@@ -16,11 +16,11 @@
 
 package org.tobi29.scapes.engine.utils.graphics
 
-import org.tobi29.scapes.engine.utils.ArrayDeque
-import org.tobi29.scapes.engine.utils.math.ceilToInt
 import org.tobi29.scapes.engine.math.nextPowerOfTwo
 import org.tobi29.scapes.engine.math.vector.MutableVector2i
 import org.tobi29.scapes.engine.math.vector.Vector2i
+import org.tobi29.scapes.engine.utils.ArrayDeque
+import org.tobi29.scapes.engine.utils.math.ceilToInt
 import kotlin.math.sqrt
 
 fun assembleAtlas(textures: Sequence<Pair<Vector2i, MutableVector2i>>,
@@ -73,7 +73,7 @@ private fun insert(nodeStart: TextureNode,
                     val dw = node.rectangle.width - w
                     val dh = node.rectangle.height - h
                     if (dw == 0 && dh == 0) {
-                        texture.second.set(node.rectangle.left,
+                        texture.second.setXY(node.rectangle.left,
                                 node.rectangle.top)
                         node.swap(TextureNode.Texture(node.rectangle))
                         return true

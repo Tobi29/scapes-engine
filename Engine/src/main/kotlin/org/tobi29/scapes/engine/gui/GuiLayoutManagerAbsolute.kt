@@ -34,7 +34,7 @@ class GuiLayoutManagerAbsolute(start: Vector2d,
             val asize = if (data is GuiLayoutDataAbsolute) {
                 pos.set(data.pos())
                 val asize = size(size, maxSize, maxSize)
-                posSize.set(pos.x, pos.y).plus(asize)
+                posSize.setXY(pos.x, pos.y).plus(asize)
                 setSize(posSize, outSize)
                 asize
             } else {

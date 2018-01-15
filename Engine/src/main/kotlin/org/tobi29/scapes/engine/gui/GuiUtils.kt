@@ -25,213 +25,130 @@ import kotlin.math.sin
 object GuiUtils {
 
     fun rectangle(renderer: GuiRenderBatch,
-                  minX: Float,
-                  minY: Float,
-                  maxX: Float,
-                  maxY: Float,
-                  r: Float,
-                  g: Float,
-                  b: Float,
-                  a: Float) {
-        rectangle(renderer, minX, minY, maxX, maxY, 0.0f, 0.0f, 1.0f, 1.0f, r,
-                g, b, a)
+                  minX: Double,
+                  minY: Double,
+                  maxX: Double,
+                  maxY: Double,
+                  r: Double,
+                  g: Double,
+                  b: Double,
+                  a: Double) {
+        rectangle(renderer, minX, minY, maxX, maxY, 0.0, 0.0, 1.0, 1.0, r, g, b, a)
     }
 
     fun rectangle(renderer: GuiRenderBatch,
-                  minX: Float,
-                  minY: Float,
-                  maxX: Float,
-                  maxY: Float,
-                  minTX: Float,
-                  minTY: Float,
-                  maxTX: Float,
-                  maxTY: Float,
-                  r: Float,
-                  g: Float,
-                  b: Float,
-                  a: Float) {
+                  minX: Double,
+                  minY: Double,
+                  maxX: Double,
+                  maxY: Double,
+                  minTX: Double,
+                  minTY: Double,
+                  maxTX: Double,
+                  maxTY: Double,
+                  r: Double,
+                  g: Double,
+                  b: Double,
+                  a: Double) {
         val mesh = renderer.mesh()
-        val tl = renderer.vector(minX.toDouble(), minY.toDouble())
-        val tr = renderer.vector(maxX.toDouble(), minY.toDouble())
-        val bl = renderer.vector(minX.toDouble(), maxY.toDouble())
-        val br = renderer.vector(maxX.toDouble(), maxY.toDouble())
-        mesh.addVertex(tl.floatX().toDouble(), tl.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(),
-                minTX.toDouble(),
-                minTY.toDouble())
-        mesh.addVertex(tr.floatX().toDouble(), tr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(),
-                maxTX.toDouble(),
-                minTY.toDouble())
-        mesh.addVertex(bl.floatX().toDouble(), bl.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(),
-                minTX.toDouble(),
-                maxTY.toDouble())
-        mesh.addVertex(bl.floatX().toDouble(), bl.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(),
-                minTX.toDouble(),
-                maxTY.toDouble())
-        mesh.addVertex(tr.floatX().toDouble(), tr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(),
-                maxTX.toDouble(),
-                minTY.toDouble())
-        mesh.addVertex(br.floatX().toDouble(), br.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(),
-                maxTX.toDouble(),
-                maxTY.toDouble())
+        val tl = renderer.vector(minX, minY)
+        val tr = renderer.vector(maxX, minY)
+        val bl = renderer.vector(minX, maxY)
+        val br = renderer.vector(maxX, maxY)
+        mesh.addVertex(tl.x, tl.y, 0.0, r, g, b, a, minTX, minTY)
+        mesh.addVertex(tr.x, tr.y, 0.0, r, g, b, a, maxTX, minTY)
+        mesh.addVertex(bl.x, bl.y, 0.0, r, g, b, a, minTX, maxTY)
+        mesh.addVertex(bl.x, bl.y, 0.0, r, g, b, a, minTX, maxTY)
+        mesh.addVertex(tr.x, tr.y, 0.0, r, g, b, a, maxTX, minTY)
+        mesh.addVertex(br.x, br.y, 0.0, r, g, b, a, maxTX, maxTY)
     }
 
     fun shadow(renderer: GuiRenderBatch,
-               minX: Float,
-               minY: Float,
-               maxX: Float,
-               maxY: Float,
-               r: Float,
-               g: Float,
-               b: Float,
-               a: Float) {
-        shadow(renderer, minX, minY, maxX, maxY, 8.0f, r, g, b, a)
+               minX: Double,
+               minY: Double,
+               maxX: Double,
+               maxY: Double,
+               r: Double,
+               g: Double,
+               b: Double,
+               a: Double) {
+        shadow(renderer, minX, minY, maxX, maxY, 8.0, r, g, b, a)
     }
 
     fun shadow(renderer: GuiRenderBatch,
-               minX: Float,
-               minY: Float,
-               maxX: Float,
-               maxY: Float,
-               radius: Float,
-               r: Float,
-               g: Float,
-               b: Float,
-               a: Float) {
+               minX: Double,
+               minY: Double,
+               maxX: Double,
+               maxY: Double,
+               radius: Double,
+               r: Double,
+               g: Double,
+               b: Double,
+               a: Double) {
         val mesh = renderer.mesh()
-        val tli = renderer.vector(minX.toDouble(), minY.toDouble())
-        val tri = renderer.vector(maxX.toDouble(), minY.toDouble())
-        val bli = renderer.vector(minX.toDouble(), maxY.toDouble())
-        val bri = renderer.vector(maxX.toDouble(), maxY.toDouble())
-        val tlt = renderer.vector(minX.toDouble(), (minY - radius).toDouble())
-        val trt = renderer.vector(maxX.toDouble(), (minY - radius).toDouble())
-        val blb = renderer.vector(minX.toDouble(), (maxY + radius).toDouble())
-        val brb = renderer.vector(maxX.toDouble(), (maxY + radius).toDouble())
-        val tll = renderer.vector((minX - radius).toDouble(), minY.toDouble())
-        val trr = renderer.vector((maxX + radius).toDouble(), minY.toDouble())
-        val bll = renderer.vector((minX - radius).toDouble(), maxY.toDouble())
-        val brr = renderer.vector((maxX + radius).toDouble(), maxY.toDouble())
+        val tli = renderer.vector(minX, minY)
+        val tri = renderer.vector(maxX, minY)
+        val bli = renderer.vector(minX, maxY)
+        val bri = renderer.vector(maxX, maxY)
+        val tlt = renderer.vector(minX, (minY - radius))
+        val trt = renderer.vector(maxX, (minY - radius))
+        val blb = renderer.vector(minX, (maxY + radius))
+        val brb = renderer.vector(maxX, (maxY + radius))
+        val tll = renderer.vector((minX - radius), minY)
+        val trr = renderer.vector((maxX + radius), minY)
+        val bll = renderer.vector((minX - radius), maxY)
+        val brr = renderer.vector((maxX + radius), maxY)
+
         // Top
-        mesh.addVertex(tlt.floatX().toDouble(), tlt.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(trt.floatX().toDouble(), trt.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(tli.floatX().toDouble(), tli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(tli.floatX().toDouble(), tli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(trt.floatX().toDouble(), trt.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(tri.floatX().toDouble(), tri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
+        mesh.addVertex(tlt.x, tlt.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(trt.x, trt.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(tli.x, tli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(tli.x, tli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(trt.x, trt.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(tri.x, tri.y, 0.0, r, g, b, a, 0.0, 0.0)
+
         // Bottom
-        mesh.addVertex(bli.floatX().toDouble(), bli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(bri.floatX().toDouble(), bri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(blb.floatX().toDouble(), blb.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(blb.floatX().toDouble(), blb.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(bri.floatX().toDouble(), bri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(brb.floatX().toDouble(), brb.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
+        mesh.addVertex(bli.x, bli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(bri.x, bri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(blb.x, blb.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(blb.x, blb.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(bri.x, bri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(brb.x, brb.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+
         // Left
-        mesh.addVertex(tll.floatX().toDouble(), tll.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(tli.floatX().toDouble(), tli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(bll.floatX().toDouble(), bll.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(bll.floatX().toDouble(), bll.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(tli.floatX().toDouble(), tli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(bli.floatX().toDouble(), bli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
+        mesh.addVertex(tll.x, tll.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(tli.x, tli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(bll.x, bll.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(bll.x, bll.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(tli.x, tli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(bli.x, bli.y, 0.0, r, g, b, a, 0.0, 0.0)
+
         // Right
-        mesh.addVertex(tri.floatX().toDouble(), tri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(trr.floatX().toDouble(), trr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(bri.floatX().toDouble(), bri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(bri.floatX().toDouble(), bri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(trr.floatX().toDouble(), trr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(brr.floatX().toDouble(), brr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
+        mesh.addVertex(tri.x, tri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(trr.x, trr.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(bri.x, bri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(bri.x, bri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(trr.x, trr.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(brr.x, brr.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+
         // Top-left
-        mesh.addVertex(tli.floatX().toDouble(), tli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(tll.floatX().toDouble(), tll.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(tlt.floatX().toDouble(), tlt.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
+        mesh.addVertex(tli.x, tli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(tll.x, tll.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(tlt.x, tlt.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+
         // Top-right
-        mesh.addVertex(tri.floatX().toDouble(), tri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(trt.floatX().toDouble(), trt.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(trr.floatX().toDouble(), trr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
+        mesh.addVertex(tri.x, tri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(trt.x, trt.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(trr.x, trr.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+
         // Bottom-left
-        mesh.addVertex(bli.floatX().toDouble(), bli.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(blb.floatX().toDouble(), blb.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(bll.floatX().toDouble(), bll.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
+        mesh.addVertex(bli.x, bli.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(blb.x, blb.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(bll.x, bll.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+
         // Bottom-right
-        mesh.addVertex(bri.floatX().toDouble(), bri.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), a.toDouble(), 0.0,
-                0.0)
-        mesh.addVertex(brr.floatX().toDouble(), brr.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
-        mesh.addVertex(brb.floatX().toDouble(), brb.floatY().toDouble(), 0.0,
-                r.toDouble(), g.toDouble(), b.toDouble(), 0.0, 0.0,
-                0.0)
+        mesh.addVertex(bri.x, bri.y, 0.0, r, g, b, a, 0.0, 0.0)
+        mesh.addVertex(brr.x, brr.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
+        mesh.addVertex(brb.x, brb.y, 0.0, r, g, b, 0.0, 0.0, 0.0)
     }
 
     fun busy(mesh: Mesh,

@@ -77,8 +77,30 @@ inline fun length(value1: Double,
  * @param value2 The second value
  * @return Square of the length of the given vector
  */
+inline fun lengthSqr(value1: Int,
+                     value2: Int): Int {
+    return sqr(value1) + sqr(value2)
+}
+
+/**
+ * Returns square of the length of the given vector
+ * @param value1 The first value
+ * @param value2 The second value
+ * @return Square of the length of the given vector
+ */
 inline fun lengthSqr(value1: Float,
                      value2: Float): Float {
+    return sqr(value1) + sqr(value2)
+}
+
+/**
+ * Returns square of the length of the given vector
+ * @param value1 The first value
+ * @param value2 The second value
+ * @return Square of the length of the given vector
+ */
+inline fun lengthSqr(value1: Long,
+                     value2: Long): Long {
     return sqr(value1) + sqr(value2)
 }
 
@@ -91,6 +113,32 @@ inline fun lengthSqr(value1: Float,
 inline fun lengthSqr(value1: Double,
                      value2: Double): Double {
     return sqr(value1) + sqr(value2)
+}
+
+/**
+ * Returns square of the length of the given vector
+ * @param value1 The first value
+ * @param value2 The second value
+ * @param value3 The third value
+ * @return Square of the length of the given vector
+ */
+inline fun lengthSqr(value1: Int,
+                     value2: Int,
+                     value3: Int): Int {
+    return sqr(value1) + sqr(value2) + sqr(value3)
+}
+
+/**
+ * Returns square of the length of the given vector
+ * @param value1 The first value
+ * @param value2 The second value
+ * @param value3 The third value
+ * @return Square of the length of the given vector
+ */
+inline fun lengthSqr(value1: Long,
+                     value2: Long,
+                     value3: Long): Long {
+    return sqr(value1) + sqr(value2) + sqr(value3)
 }
 
 /**
@@ -215,6 +263,28 @@ inline fun distance(x1: Double,
  * @param x2 x value of the second vector
  * @return Square of the distance between the given vectors
  */
+inline fun distanceSqr(x1: Int,
+                       x2: Int): Int {
+    return sqr(x1 - x2)
+}
+
+/**
+ * Returns square of the distance between the given vectors
+ * @param x1 x value of the first vector
+ * @param x2 x value of the second vector
+ * @return Square of the distance between the given vectors
+ */
+inline fun distanceSqr(x1: Long,
+                       x2: Long): Long {
+    return sqr(x1 - x2)
+}
+
+/**
+ * Returns square of the distance between the given vectors
+ * @param x1 x value of the first vector
+ * @param x2 x value of the second vector
+ * @return Square of the distance between the given vectors
+ */
 inline fun distanceSqr(x1: Float,
                        x2: Float): Float {
     return sqr(x1 - x2)
@@ -229,6 +299,36 @@ inline fun distanceSqr(x1: Float,
 inline fun distanceSqr(x1: Double,
                        x2: Double): Double {
     return sqr(x1 - x2)
+}
+
+/**
+ * Returns square of the distance between the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @return Square of the distance between the given vectors
+ */
+inline fun distanceSqr(x1: Int,
+                       y1: Int,
+                       x2: Int,
+                       y2: Int): Int {
+    return sqr(x1 - x2) + sqr(y1 - y2)
+}
+
+/**
+ * Returns square of the distance between the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @return Square of the distance between the given vectors
+ */
+inline fun distanceSqr(x1: Long,
+                       y1: Long,
+                       x2: Long,
+                       y2: Long): Long {
+    return sqr(x1 - x2) + sqr(y1 - y2)
 }
 
 /**
@@ -259,6 +359,44 @@ inline fun distanceSqr(x1: Double,
                        x2: Double,
                        y2: Double): Double {
     return sqr(x1 - x2) + sqr(y1 - y2)
+}
+
+/**
+ * Returns square of the distance between the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @return Square of the distance between the given vectors
+ */
+inline fun distanceSqr(x1: Int,
+                       y1: Int,
+                       z1: Int,
+                       x2: Int,
+                       y2: Int,
+                       z2: Int): Int {
+    return sqr(x1 - x2) + sqr(y1 - y2) + sqr(z1 - z2)
+}
+
+/**
+ * Returns square of the distance between the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @return Square of the distance between the given vectors
+ */
+inline fun distanceSqr(x1: Long,
+                       y1: Long,
+                       z1: Long,
+                       x2: Long,
+                       y2: Long,
+                       z2: Long): Long {
+    return sqr(x1 - x2) + sqr(y1 - y2) + sqr(z1 - z2)
 }
 
 /**
@@ -333,6 +471,36 @@ inline fun direction(x: Double,
  * @param y2 y value of the second vector
  * @return Dot product of the given vectors
  */
+inline fun dot(x1: Int,
+               y1: Int,
+               x2: Int,
+               y2: Int): Int {
+    return x1 * x2 + y1 * y2
+}
+
+/**
+ * Returns the dot product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @return Dot product of the given vectors
+ */
+inline fun dot(x1: Long,
+               y1: Long,
+               x2: Long,
+               y2: Long): Long {
+    return x1 * x2 + y1 * y2
+}
+
+/**
+ * Returns the dot product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @return Dot product of the given vectors
+ */
 inline fun dot(x1: Float,
                y1: Float,
                x2: Float,
@@ -353,6 +521,44 @@ inline fun dot(x1: Double,
                x2: Double,
                y2: Double): Double {
     return x1 * x2 + y1 * y2
+}
+
+/**
+ * Returns the dot product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @return Dot product of the given vectors
+ */
+inline fun dot(x1: Int,
+               y1: Int,
+               z1: Int,
+               x2: Int,
+               y2: Int,
+               z2: Int): Int {
+    return x1 * x2 + y1 * y2 + z1 * z2
+}
+
+/**
+ * Returns the dot product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @return Dot product of the given vectors
+ */
+inline fun dot(x1: Long,
+               y1: Long,
+               z1: Long,
+               x2: Long,
+               y2: Long,
+               z2: Long): Long {
+    return x1 * x2 + y1 * y2 + z1 * z2
 }
 
 /**
@@ -391,6 +597,52 @@ inline fun dot(x1: Double,
                y2: Double,
                z2: Double): Double {
     return x1 * x2 + y1 * y2 + z1 * z2
+}
+
+/**
+ * Returns the dot product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param w1 w value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @param w2 w value of the second vector
+ * @return Dot product of the given vectors
+ */
+inline fun dot(x1: Int,
+               y1: Int,
+               z1: Int,
+               w1: Int,
+               x2: Int,
+               y2: Int,
+               z2: Int,
+               w2: Int): Int {
+    return x1 * x2 + y1 * y2 + z1 * z2 + w1 * w2
+}
+
+/**
+ * Returns the dot product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param w1 w value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @param w2 w value of the second vector
+ * @return Dot product of the given vectors
+ */
+inline fun dot(x1: Long,
+               y1: Long,
+               z1: Long,
+               w1: Long,
+               x2: Long,
+               y2: Long,
+               z2: Long,
+               w2: Long): Long {
+    return x1 * x2 + y1 * y2 + z1 * z2 + w1 * w2
 }
 
 /**
@@ -449,6 +701,24 @@ inline fun dot(x1: Double,
  * @param z2 z value of the second vector
  * @return Dot product of the given vectors
  */
+inline fun cross(x1: Int,
+                 y1: Int,
+                 z1: Int,
+                 x2: Int,
+                 y2: Int,
+                 z2: Int): Vector3i =
+        cross(x1, y1, z1, x2, y2, z2, ::Vector3i)
+
+/**
+ * Returns the cross product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @return Dot product of the given vectors
+ */
 inline fun cross(x1: Double,
                  y1: Double,
                  z1: Double,
@@ -456,6 +726,78 @@ inline fun cross(x1: Double,
                  y2: Double,
                  z2: Double): Vector3d =
         cross(x1, y1, z1, x2, y2, z2, ::Vector3d)
+
+/**
+ * Computes the cross product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @param output Called with the output values
+ * @return The return value of [output]
+ */
+inline fun <R> cross(x1: Int,
+                     y1: Int,
+                     z1: Int,
+                     x2: Int,
+                     y2: Int,
+                     z2: Int,
+                     output: (Int, Int, Int) -> R): R {
+    val x = y1 * z2 - z1 * y2
+    val y = z1 * x2 - x1 * z2
+    val z = x1 * y2 - y1 * x2
+    return output(x, y, z)
+}
+
+/**
+ * Computes the cross product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @param output Called with the output values
+ * @return The return value of [output]
+ */
+inline fun <R> cross(x1: Long,
+                     y1: Long,
+                     z1: Long,
+                     x2: Long,
+                     y2: Long,
+                     z2: Long,
+                     output: (Long, Long, Long) -> R): R {
+    val x = y1 * z2 - z1 * y2
+    val y = z1 * x2 - x1 * z2
+    val z = x1 * y2 - y1 * x2
+    return output(x, y, z)
+}
+
+/**
+ * Computes the cross product of the given vectors
+ * @param x1 x value of the first vector
+ * @param y1 y value of the first vector
+ * @param z1 z value of the first vector
+ * @param x2 x value of the second vector
+ * @param y2 y value of the second vector
+ * @param z2 z value of the second vector
+ * @param output Called with the output values
+ * @return The return value of [output]
+ */
+inline fun <R> cross(x1: Float,
+                     y1: Float,
+                     z1: Float,
+                     x2: Float,
+                     y2: Float,
+                     z2: Float,
+                     output: (Float, Float, Float) -> R): R {
+    val x = y1 * z2 - z1 * y2
+    val y = z1 * x2 - x1 * z2
+    val z = x1 * y2 - y1 * x2
+    return output(x, y, z)
+}
 
 /**
  * Computes the cross product of the given vectors

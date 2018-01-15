@@ -67,20 +67,106 @@ print("""// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 package org.tobi29.scapes.engine.utils
 
 /**
+ * 1-dimensional read-only array
+ */
+interface ${specializeOut(if (isReference) "ElementsRO" else "sRO")} : Vars {
+    /**
+     * Returns the element at the given index in the array
+     * @param index Index of the element
+     * @return The value at the given index
+     */
+    operator fun get(index: Int): $type
+}
+
+/**
+ * 1-dimensional read-write array
+ */
+interface ${specialize(if (isReference) "Elements" else "s")} : ${specialize(
+        if (isReference) "ElementsRO" else "sRO")} {
+    /**
+     * Sets the element at the given index in the array
+     * @param index Index of the element
+     * @param value The value to set to
+     */
+    operator fun set(index: Int,
+                     value: $type)
+}
+
+/**
+ * 2-dimensional read-only array
+ */
+interface ${specializeOut(if (isReference) "ElementsRO2" else "sRO2")} : Vars2 {
+    /**
+     * Returns the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @return The value at the given index
+     */
+    operator fun get(index1: Int,
+                     index2: Int): $type
+}
+
+/**
+ * 2-dimensional read-write array
+ */
+interface ${specialize(if (isReference) "Elements2" else "s2")} : ${specialize(
+        if (isReference) "ElementsRO2" else "sRO2")} {
+    /**
+     * Sets the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param value The value to set to
+     */
+    operator fun set(index1: Int,
+                     index2: Int,
+                     value: $type)
+}
+
+/**
+ * 3-dimensional read-only array
+ */
+interface ${specializeOut(if (isReference) "ElementsRO3" else "sRO3")} : Vars3 {
+    /**
+     * Returns the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param index3 Index on the third axis of the element
+     * @return The value at the given index
+     */
+    operator fun get(index1: Int,
+                     index2: Int,
+                     index3: Int): $type
+}
+
+/**
+ * 3-dimensional read-write array
+ */
+interface ${specialize(if (isReference) "Elements3" else "s3")} : ${specialize(
+        if (isReference) "ElementsRO3" else "sRO3")} {
+    /**
+     * Sets the element at the given index in the array
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param index3 Index on the third axis of the element
+     * @param value The value to set to
+     */
+    operator fun set(index1: Int,
+                     index2: Int,
+                     index3: Int,
+                     value: $type)
+}
+
+/**
  * Read-only slice of an array, indexed in elements
  */
-interface ${specialize("ArraySliceRO")} : ArrayVarSlice<$type> {
+interface ${specialize("ArraySliceRO")} : ${specialize(
+        if (isReference) "ElementsRO" else "sRO")},
+        ArrayVarSlice<$type> {
     override fun slice(index: Int): ${specialize("ArraySliceRO")}
 
     override fun slice(index: Int,
                        size: Int): ${specialize("ArraySliceRO")}
 
-    /**
-     * Returns the element at the given index in the slice
-     * @param index Index of the element
-     * @return The value at the given index
-     */
-    operator fun get(index: Int): $type
 ${if (!isReference) """
     fun get$type(index: Int): $type = get(index)
 """ else ""}
@@ -102,19 +188,14 @@ else type}s(index: Int,
 /**
  * Slice of an array, indexed in elements
  */
-interface ${specialize("ArraySlice")} : ${specialize("ArraySliceRO")} {
+interface ${specialize("ArraySlice")} : ${specialize(
+        if (isReference) "Elements" else "s")},
+        ${specialize("ArraySliceRO")} {
     override fun slice(index: Int): ${specialize("ArraySlice")}
 
     override fun slice(index: Int,
                        size: Int): ${specialize("ArraySlice")}
 
-    /**
-     * Sets the element at the given index in the slice
-     * @param index Index of the element
-     * @param value The value to set to
-     */
-    operator fun set(index: Int,
-                     value: $type)
 ${if (!isReference) """
     fun set$type(index: Int,
                  value: $type) = set(index, value)
@@ -216,17 +297,14 @@ class ${specialize("Array2")}
         /**
          * Width of the wrapper.
          */
-        val width: Int,
+        override val width: Int,
         /**
          * Height of the wrapper.
          */
-        val height: Int,
-        private val array: ${specialize("Array")}) : Iterable<$type> {
-    /**
-     * Size of the array.
-     */
-    val size = width * height
-
+        override val height: Int,
+        private val array: ${specialize("Array")}) : ${specialize(
+        if (isReference) "Elements2" else "s2")},
+        Iterable<$type> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
@@ -235,52 +313,36 @@ class ${specialize("Array2")}
     }
 
     /**
-     * Retrieve an element from the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @throws IndexOutOfBoundsException When accessing indices out of bounds
-     * @return The element at the given position
-     */
-    operator fun get(x: Int,
-                     y: Int): $type {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            throw IndexOutOfBoundsException("${'$'}x ${'$'}y")
-        }
-        return array[y * width + x]
-    }
-
-    /**
      * Retrieve an element from the array or `null` if out of bounds.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(x: Int,
-                  y: Int): $type? {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
+    fun getOrNull(index1: Int,
+                  index2: Int): $type? {
+        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             return null
         }
-        return array[y * width + x]
+        return array[index2 * width + index1]
     }
 
-    /**
-     * Stores an element in the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param value The element to store
-     */
-    operator fun set(x: Int,
-                     y: Int,
-                     value: $type) {
-        if (x < 0 || y < 0 || x >= width || y >= height) {
-            throw IndexOutOfBoundsException("${'$'}x ${'$'}y")
+    override fun get(index1: Int,
+                     index2: Int): $type {
+        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
+            throw IndexOutOfBoundsException("${'$'}index1 ${'$'}index2")
         }
-        array[y * width + x] = value
+        return array[index2 * width + index1]
     }
 
-    /**
-     * Creates an iterator for iterating over the elements of the array.
-     */
+    override fun set(index1: Int,
+                     index2: Int,
+                     value: $type) {
+        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
+            throw IndexOutOfBoundsException("${'$'}index1 ${'$'}index2")
+        }
+        array[index2 * width + index1] = value
+    }
+
     override operator fun iterator() = array.iterator()
 
     /**
@@ -352,21 +414,18 @@ class ${specialize("Array3")}
         /**
          * Width of the wrapper.
          */
-        val width: Int,
+        override val width: Int,
         /**
          * Height of the wrapper.
          */
-        val height: Int,
+        override val height: Int,
         /**
          * Depth of the wrapper.
          */
-        val depth: Int,
-        private val array: ${specialize("Array")}) : Iterable<$type> {
-    /**
-     * Size of the array.
-     */
-    val size = width * height * depth
-
+        override val depth: Int,
+        private val array: ${specialize("Array")}) : ${specialize(
+        if (isReference) "Elements3" else "s3")},
+        Iterable<$type> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
@@ -375,58 +434,43 @@ class ${specialize("Array3")}
     }
 
     /**
-     * Retrieve an element from the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param z Index on the third axis
-     * @throws IndexOutOfBoundsException When accessing indices out of bounds
-     * @return The element at the given position
-     */
-    operator fun get(x: Int,
-                     y: Int,
-                     z: Int): $type {
-        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= depth) {
-            throw IndexOutOfBoundsException("${'$'}x ${'$'}y ${'$'}z")
-        }
-        return array[(z * height + y) * width + x]
-    }
-
-    /**
      * Retrieve an element from the array or `null` if out of bounds.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param z Index on the third axis
+     * @param index1 Index on the first axis of the element
+     * @param index2 Index on the second axis of the element
+     * @param index3 Index on the third axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(x: Int,
-                  y: Int,
-                  z: Int): $type? {
-        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= depth) {
+    fun getOrNull(index1: Int,
+                  index2: Int,
+                  index3: Int): $type? {
+        if (index1 < 0 || index2 < 0 || index3 < 0
+                || index1 >= width || index2 >= height || index3 >= depth) {
             return null
         }
-        return array[(z * height + y) * width + x]
+        return array[(index3 * height + index2) * width + index1]
     }
 
-    /**
-     * Stores an element in the array.
-     * @param x Index on the first axis
-     * @param y Index on the second axis
-     * @param z Index on the third axis
-     * @param value The element to store
-     */
-    operator fun set(x: Int,
-                     y: Int,
-                     z: Int,
-                     value: $type) {
-        if (x < 0 || y < 0 || z < 0 || x >= width || y >= height || z >= depth) {
-            throw IndexOutOfBoundsException("${'$'}x ${'$'}y ${'$'}z")
+    override fun get(index1: Int,
+                     index2: Int,
+                     index3: Int): $type {
+        if (index1 < 0 || index2 < 0 || index3 < 0
+                || index1 >= width || index2 >= height || index3 >= depth) {
+            throw IndexOutOfBoundsException("${'$'}index1 ${'$'}index2 ${'$'}index3")
         }
-        array[(z * height + y) * width + x] = value
+        return array[(index3 * height + index2) * width + index1]
     }
 
-    /**
-     * Creates an iterator for iterating over the elements of the array.
-     */
+    override fun set(index1: Int,
+                     index2: Int,
+                     index3: Int,
+                     value: $type) {
+        if (index1 < 0 || index2 < 0 || index3 < 0
+                || index1 >= width || index2 >= height || index3 >= depth) {
+            throw IndexOutOfBoundsException("${'$'}index1 ${'$'}index2")
+        }
+        array[(index3 * height + index2) * width + index1] = value
+    }
+
     override operator fun iterator() = array.iterator()
 
     /**

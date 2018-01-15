@@ -17,8 +17,8 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.scapes.engine.resource.Resource
 
 class GuiComponentIcon(parent: GuiLayoutData,
                        texture: Resource<Texture>? = null) : GuiComponent(
@@ -28,19 +28,19 @@ class GuiComponentIcon(parent: GuiLayoutData,
             field = value
             value?.onLoaded { dirty() }
         }
-    private var r = 1.0f
-    private var g = 1.0f
-    private var b = 1.0f
-    private var a = 1.0f
+    private var r = 1.0
+    private var g = 1.0
+    private var b = 1.0
+    private var a = 1.0
 
     init {
         texture?.onLoaded { dirty() }
     }
 
-    fun setColor(r: Float,
-                 g: Float,
-                 b: Float,
-                 a: Float) {
+    fun setColor(r: Double,
+                 g: Double,
+                 b: Double,
+                 a: Double) {
         this.r = r
         this.g = g
         this.b = b
@@ -52,8 +52,7 @@ class GuiComponentIcon(parent: GuiLayoutData,
                             size: Vector2d) {
         texture?.tryGet()?.let { texture ->
             renderer.texture(texture, 0)
-            GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
-                    size.floatY(), r, g, b, a)
+            GuiUtils.rectangle(renderer, 0.0, 0.0, size.x, size.y, r, g, b, a)
         }
     }
 }

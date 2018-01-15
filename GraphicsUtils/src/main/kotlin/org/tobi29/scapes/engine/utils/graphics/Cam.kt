@@ -16,9 +16,9 @@
 package org.tobi29.scapes.engine.utils.graphics
 
 import org.tobi29.scapes.engine.math.Frustum
-import org.tobi29.scapes.engine.utils.math.toRad
 import org.tobi29.scapes.engine.math.vector.MutableVector3d
 import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.scapes.engine.utils.math.toRad
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -51,11 +51,11 @@ class Cam(var near: Float,
         this.pitch = pitch
         this.yaw = yaw
         this.tilt = tilt
-        val lookX = position.doubleX() + cos(yaw.toRad()) * cos(pitch.toRad())
-        val lookY = position.doubleY() + sin(yaw.toRad()) * cos(pitch.toRad())
-        val lookZ = position.doubleZ() + sin(pitch.toRad())
-        frustum.setView(position.doubleX(), position.doubleY(),
-                position.doubleZ(), lookX, lookY, lookZ, 0.0, 0.0, 1.0)
+        val lookX = position.x + cos(yaw.toRad()) * cos(pitch.toRad())
+        val lookY = position.y + sin(yaw.toRad()) * cos(pitch.toRad())
+        val lookZ = position.z + sin(pitch.toRad())
+        frustum.setView(position.x, position.y, position.z, lookX, lookY, lookZ,
+                0.0, 0.0, 1.0)
     }
 
     fun setView(position: Vector3d,

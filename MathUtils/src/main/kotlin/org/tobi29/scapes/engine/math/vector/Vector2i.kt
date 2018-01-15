@@ -16,33 +16,20 @@
 
 package org.tobi29.scapes.engine.math.vector
 
+import org.tobi29.scapes.engine.utils.IntsRO
 import org.tobi29.scapes.engine.utils.tag.*
 
-open class Vector2i(val x: Int,
-                    val y: Int) : TagMapWrite {
+data class Vector2i(
+        val x: Int,
+        val y: Int
+) : IntsRO,
+        TagMapWrite {
+    override val size: Int get() = 2
 
-    constructor(vector: Vector2d) : this(vector.intX(), vector.intY())
-
-    override fun hashCode(): Int {
-        var result = x
-        result = 31 * result + y
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null) {
-            return false
-        }
-        if (other is MutableVector2i) {
-            return x == other.x && y == other.y
-        }
-        if (other !is Vector2i) {
-            return false
-        }
-        return x == other.x && y == other.y
+    override fun get(index: Int): Int = when (index) {
+        0 -> x
+        1 -> y
+        else -> throw IndexOutOfBoundsException("$index")
     }
 
     override fun write(map: ReadWriteTagMap) {

@@ -188,7 +188,7 @@ class ContainerGLFW(
                         if (tracker != null) {
                             if (controllerDesktop.isDown(
                                     ControllerKey.BUTTON_0)) {
-                                tracker.pos.set(controllerDesktop.x,
+                                tracker.pos.setXY(controllerDesktop.x,
                                         controllerDesktop.y)
                             } else {
                                 this.tracker = null
@@ -196,7 +196,7 @@ class ContainerGLFW(
                         } else if (controllerDesktop.isDown(
                                 ControllerKey.BUTTON_0)) {
                             val newTracker = ControllerTracker.Tracker()
-                            newTracker.pos.set(controllerDesktop.x,
+                            newTracker.pos.setXY(controllerDesktop.x,
                                     controllerDesktop.y)
                             this.tracker = newTracker
                         }

@@ -52,12 +52,12 @@ fun hsvToRGB(h: Double,
     val q = v * (1.0 - f * s)
     val t = v * (1.0 - (1.0 - f) * s)
     when (c) {
-        0 -> o.set(v, t, p)
-        1 -> o.set(q, v, p)
-        2 -> o.set(p, v, t)
-        3 -> o.set(p, q, v)
-        4 -> o.set(t, p, v)
-        5 -> o.set(v, p, q)
+        0 -> o.setXYZ(v, t, p)
+        1 -> o.setXYZ(q, v, p)
+        2 -> o.setXYZ(p, v, t)
+        3 -> o.setXYZ(p, q, v)
+        4 -> o.setXYZ(t, p, v)
+        5 -> o.setXYZ(v, p, q)
         else -> throw IllegalArgumentException("Invalid hue: $h")
     }
 }

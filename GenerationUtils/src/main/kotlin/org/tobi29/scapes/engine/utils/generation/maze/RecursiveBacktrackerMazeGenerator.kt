@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.utils.generation.maze
 
-import org.tobi29.scapes.engine.utils.BitFieldGrid
-import org.tobi29.scapes.engine.utils.Pool
-import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.math.Face
 import org.tobi29.scapes.engine.math.Random
 import org.tobi29.scapes.engine.math.vector.MutableVector2i
+import org.tobi29.scapes.engine.utils.BitFieldGrid
+import org.tobi29.scapes.engine.utils.Pool
+import org.tobi29.scapes.engine.utils.getAt
 import org.tobi29.scapes.engine.utils.setAt
 
 /**
@@ -37,7 +37,7 @@ object RecursiveBacktrackerMazeGenerator : MazeGenerator {
         val maxX = width - 1
         val maxY = height - 1
         val path = Pool { MutableVector2i() }
-        var current: MutableVector2i? = path.push().set(startX, startY)
+        var current: MutableVector2i? = path.push().setXY(startX, startY)
         val directions = Array(4) { Face.NONE }
         while (current != null) {
             val x = current.x
@@ -56,7 +56,7 @@ object RecursiveBacktrackerMazeGenerator : MazeGenerator {
             if (y > 0 && !maze.getAt(x, y - 1, 2)) {
                 directions[validDirections++] = Face.NORTH
             }
-            if (validDirections > 0) {
+            current = if (validDirections > 0) {
                 val direction = directions[random.nextInt(validDirections)]
                 if (direction == Face.NORTH) {
                     maze.setAt(x, y, 0, true)
@@ -67,9 +67,9 @@ object RecursiveBacktrackerMazeGenerator : MazeGenerator {
                 } else if (direction == Face.WEST) {
                     maze.setAt(x, y, 1, true)
                 }
-                current = path.push().set(x + direction.x, y + direction.y)
+                path.push().setXY(x + direction.x, y + direction.y)
             } else {
-                current = path.pop()
+                path.pop()
             }
         }
         return Maze(maze)

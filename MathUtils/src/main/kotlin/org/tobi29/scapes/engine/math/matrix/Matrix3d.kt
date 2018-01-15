@@ -213,7 +213,7 @@ class Matrix3d() {
         val v1 = xx * x + yx * y + zx * z
         val v2 = xy * x + yy * y + zy * z
         val v3 = xz * x + yz * y + zz * z
-        out.set(v1, v2, v3)
+        out.setXYZ(v1, v2, v3)
         return out
     }
 

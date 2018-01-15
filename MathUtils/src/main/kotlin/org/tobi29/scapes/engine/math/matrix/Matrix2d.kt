@@ -97,7 +97,7 @@ class Matrix2d() {
         val y = v.y
         val v1 = xx * x + yx * y
         val v2 = xy * x + yy * y
-        out.set(v1, v2)
+        out.setXY(v1, v2)
         return out
     }
 

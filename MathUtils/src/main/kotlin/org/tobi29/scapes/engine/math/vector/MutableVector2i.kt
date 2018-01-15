@@ -16,128 +16,114 @@
 
 package org.tobi29.scapes.engine.math.vector
 
+import org.tobi29.scapes.engine.utils.Ints
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toInt
 
-open class MutableVector2i(var x: Int = 0,
-                           var y: Int = 0) {
-
-    constructor(vector: Vector2d) : this(vector.intX(), vector.intY())
-
+data class MutableVector2i(var x: Int = 0,
+                           var y: Int = 0) : Ints {
     constructor(vector: Vector2i) : this(vector.x, vector.y)
-
-    constructor(vector: MutableVector2d) : this(vector.intX(), vector.intY())
 
     constructor(vector: MutableVector2i) : this(vector.x, vector.y)
 
-    open operator fun plus(a: Int): MutableVector2i {
+    override val size: Int get() = 3
+
+    override fun get(index: Int): Int = when (index) {
+        0 -> x
+        1 -> y
+        else -> throw IndexOutOfBoundsException("$index")
+    }
+
+    override fun set(index: Int,
+                     value: Int): Unit = when (index) {
+        0 -> x = value
+        1 -> y = value
+        else -> throw IndexOutOfBoundsException("$index")
+    }
+
+    operator fun plus(a: Int) = apply {
         x += a
         y += a
         return this
     }
 
-    open operator fun minus(a: Int): MutableVector2i {
+    operator fun minus(a: Int) = apply {
         x -= a
         y -= a
         return this
     }
 
-    open fun multiply(a: Int): MutableVector2i {
+    fun multiply(a: Int) = apply {
         x *= a
         y *= a
         return this
     }
 
-    open operator fun div(a: Int): MutableVector2i {
+    operator fun div(a: Int) = apply {
         x /= a
         y /= a
         return this
     }
 
-    open fun set(x: Int,
-                 y: Int): MutableVector2i {
+    fun setXY(x: Int,
+              y: Int) = apply {
         setX(x)
         setY(y)
-        return this
     }
 
-    open fun plusX(x: Int): MutableVector2i {
+    fun plusX(x: Int) = apply {
         this.x += x
         return this
     }
 
-    open fun plusY(y: Int): MutableVector2i {
+    fun plusY(y: Int) = apply {
         this.y += y
         return this
     }
 
-    open fun setX(x: Int): MutableVector2i {
+    fun setX(x: Int) = apply {
         this.x = x
         return this
     }
 
-    open fun setY(y: Int): MutableVector2i {
+    fun setY(y: Int) = apply {
         this.y = y
         return this
     }
 
-    override fun hashCode(): Int {
-        var result = x
-        result = 31 * result + y
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null) {
-            return false
-        }
-        if (other is MutableVector2i) {
-            return x == other.x && y == other.y
-        }
-        if (other !is Vector2i) {
-            return false
-        }
-        return x == other.x && y == other.y
-    }
-
-    open operator fun plus(vector: Vector2i): MutableVector2i {
+    operator fun plus(vector: Vector2i) = apply {
         x += vector.x
         y += vector.y
         return this
     }
 
-    open operator fun minus(vector: Vector2i): MutableVector2i {
+    operator fun minus(vector: Vector2i) = apply {
         x -= vector.x
         y -= vector.y
         return this
     }
 
-    open fun multiply(vector: Vector2i): MutableVector2i {
+    fun multiply(vector: Vector2i) = apply {
         x *= vector.x
         y *= vector.y
         return this
     }
 
-    open operator fun div(vector: Vector2i): MutableVector2i {
+    operator fun div(vector: Vector2i) = apply {
         x /= vector.x
         y /= vector.y
         return this
     }
 
-    open fun set(a: Vector2i): MutableVector2i {
+    fun set(a: Vector2i) = apply {
         setX(a.x)
         setY(a.y)
         return this
     }
 
-    open fun now(): Vector2i {
-        return Vector2i(x, y)
-    }
+    fun now(): Vector2i = Vector2i(x, y)
 
-    open fun set(map: ReadTagMutableMap) {
+    fun set(map: ReadTagMutableMap) {
         map["X"]?.toInt()?.let { x = it }
         map["Y"]?.toInt()?.let { y = it }
     }

@@ -16,41 +16,28 @@
 
 package org.tobi29.scapes.engine.math.vector
 
+import org.tobi29.scapes.engine.utils.IntsRO
 import org.tobi29.scapes.engine.utils.tag.*
 import kotlin.collections.set
 
-class Vector3i(x: Int,
-               y: Int,
-               val z: Int) : Vector2i(x, y) {
+data class Vector3i(
+        val x: Int,
+        val y: Int,
+        val z: Int
+) : IntsRO,
+        TagMapWrite {
+    override val size: Int get() = 3
 
-    constructor(vector: Vector3d) : this(vector.intX(), vector.intY(),
-            vector.intZ())
-
-    override fun hashCode(): Int {
-        var result = x
-        result = 31 * result + y
-        result = 31 * result + z
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null) {
-            return false
-        }
-        if (other is MutableVector3i) {
-            return x == other.x && y == other.y && z == other.z
-        }
-        if (other !is Vector3i) {
-            return false
-        }
-        return x == other.x && y == other.y && z == other.z
+    override fun get(index: Int): Int = when (index) {
+        0 -> x
+        1 -> y
+        2 -> z
+        else -> throw IndexOutOfBoundsException("$index")
     }
 
     override fun write(map: ReadWriteTagMap) {
-        super.write(map)
+        map["X"] = x.toTag()
+        map["Y"] = y.toTag()
         map["Z"] = z.toTag()
     }
 

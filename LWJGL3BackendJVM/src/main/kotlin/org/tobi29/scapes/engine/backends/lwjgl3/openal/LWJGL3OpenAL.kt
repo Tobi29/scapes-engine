@@ -19,13 +19,13 @@ import org.lwjgl.openal.*
 import org.lwjgl.system.MemoryStack
 import org.tobi29.scapes.engine.backends.lwjgl3.push
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
+import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.utils.io.ByteViewRO
 import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
 import org.tobi29.scapes.engine.utils.logging.KLogging
 import org.tobi29.scapes.engine.utils.math.toRad
-import org.tobi29.scapes.engine.math.vector.Vector3d
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import kotlin.math.cos
@@ -93,10 +93,10 @@ class LWJGL3OpenAL : OpenAL {
                              orientation: Vector3d,
                              velocity: Vector3d) {
         val stack = MemoryStack.stackGet()
-        val cos = cos(orientation.floatX().toRad())
-        val lookX = cos(orientation.floatZ().toRad()) * cos
-        val lookY = sin(orientation.floatZ().toRad()) * cos
-        val lookZ = sin(orientation.floatX().toRad())
+        val cos = cos(orientation.x.toFloat().toRad())
+        val lookX = cos(orientation.z.toFloat().toRad()) * cos
+        val lookY = sin(orientation.z.toFloat().toRad()) * cos
+        val lookZ = sin(orientation.x.toFloat().toRad())
         stack.push {
             val listenerOrientation = stack.mallocFloat(6)
             listenerOrientation.put(lookX)
@@ -108,10 +108,10 @@ class LWJGL3OpenAL : OpenAL {
             listenerOrientation.rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
         }
-        AL10.alListener3f(AL10.AL_POSITION, position.floatX(),
-                position.floatY(), position.floatZ())
-        AL10.alListener3f(AL10.AL_VELOCITY, velocity.floatX(),
-                velocity.floatY(), velocity.floatZ())
+        AL10.alListener3f(AL10.AL_POSITION, position.x.toFloat(),
+                position.y.toFloat(), position.z.toFloat())
+        AL10.alListener3f(AL10.AL_VELOCITY, velocity.x.toFloat(),
+                velocity.y.toFloat(), velocity.z.toFloat())
     }
 
     override fun createSource(): Int {
@@ -151,14 +151,14 @@ class LWJGL3OpenAL : OpenAL {
 
     override fun setPosition(id: Int,
                              pos: Vector3d) {
-        AL10.alSource3f(id, AL10.AL_POSITION, pos.floatX(), pos.floatY(),
-                pos.floatZ())
+        AL10.alSource3f(id, AL10.AL_POSITION, pos.x.toFloat(), pos.y.toFloat(),
+                pos.z.toFloat())
     }
 
     override fun setVelocity(id: Int,
                              vel: Vector3d) {
-        AL10.alSource3f(id, AL10.AL_VELOCITY, vel.floatX(), vel.floatY(),
-                vel.floatZ())
+        AL10.alSource3f(id, AL10.AL_VELOCITY, vel.x.toFloat(), vel.y.toFloat(),
+                vel.z.toFloat())
     }
 
     override fun setReferenceDistance(id: Int,

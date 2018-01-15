@@ -163,7 +163,7 @@ class GuiStack {
             gl.matrixStack.push { matrix ->
                 matrix.identity()
                 matrix.modelViewProjection().orthogonal(0.0f, 0.0f,
-                        size.floatX(), size.floatY())
+                        size.x.toFloat(), size.y.toFloat())
                 it.render(gl, shader, size, pixelSize, delta)
             }
         }

@@ -14,55 +14,27 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.math.vector
 
-import org.tobi29.scapes.engine.utils.math.floorToInt
+import org.tobi29.scapes.engine.utils.DoublesRO
 import org.tobi29.scapes.engine.utils.tag.*
 
-open class Vector2d(val x: Double,
-                    val y: Double) : TagMapWrite {
-    constructor(vector: Vector2i) : this(vector.x + 0.5, vector.y + 0.5)
+data class Vector2d(
+        val x: Double,
+        val y: Double
+) : DoublesRO,
+        TagMapWrite {
+    constructor(vector: Vector2i) : this(vector.x.toDouble(),
+            vector.y.toDouble())
 
-    fun intX(): Int {
-        return x.floorToInt()
-    }
+    override val size: Int get() = 2
 
-    fun floatX(): Float {
-        return x.toFloat()
-    }
-
-    fun intY(): Int {
-        return y.floorToInt()
-    }
-
-    fun floatY(): Float {
-        return y.toFloat()
-    }
-
-    open fun hasNaN(): Boolean {
-        return x.isNaN() || y.isNaN()
-    }
-
-    override fun hashCode(): Int {
-        var result = x.hashCode()
-        result = 31 * result + y.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null) {
-            return false
-        }
-        if (other is MutableVector2d) {
-            return x == other.doubleX() && y == other.doubleY()
-        }
-        if (other !is Vector2d) {
-            return false
-        }
-        return x == other.x && y == other.y
+    override fun get(index: Int): Double = when (index) {
+        0 -> x
+        1 -> y
+        else -> throw IndexOutOfBoundsException("$index")
     }
 
     override fun write(map: ReadWriteTagMap) {
@@ -76,6 +48,9 @@ open class Vector2d(val x: Double,
         val ZERO = Vector2d(0.0, 0.0)
     }
 }
+
+inline fun Vector2d.hasNaN(): Boolean =
+        x.isNaN() || y.isNaN()
 
 fun MutableTag.toVector2d(): Vector2d? {
     val map = toMap() ?: return null

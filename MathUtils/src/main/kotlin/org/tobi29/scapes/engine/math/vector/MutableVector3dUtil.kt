@@ -80,7 +80,8 @@ inline infix fun MutableVector3d.dot(other: MutableVector3d): Double {
  */
 inline fun MutableVector3d.cross(other: MutableVector3d,
                                  output: MutableVector3d): MutableVector3d {
-    cross(x, y, z, other.x, other.y, other.z) { x, y, z -> output.set(x, y, z) }
+    cross(x, y, z, other.x, other.y, other.z) { x, y, z -> output.setXYZ(x, y,
+            z) }
     return output
 }
 
@@ -95,8 +96,8 @@ inline fun inside(origin: MutableVector3d,
                   size: MutableVector3d,
                   point: MutableVector3d): Boolean {
     return inside(origin.x, origin.y, origin.z,
-            size.x, size.y, size.z, point.x,
-            point.y, point.z)
+            size.x, size.y, size.z,
+            point.x, point.y, point.z)
 }
 
 /**
@@ -118,6 +119,6 @@ inline fun inside(origin: MutableVector3d,
 // TODO: Kotlin/JS Bug
 /*inline*/ fun MutableVector3d.normalizeSafe(): MutableVector3d {
     val length = length()
-    return if (length == 0.0) set(0.0, 0.0, 0.0)
+    return if (length == 0.0) setXYZ(0.0, 0.0, 0.0)
     else this / length
 }

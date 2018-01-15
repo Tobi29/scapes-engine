@@ -21,10 +21,10 @@ import org.tobi29.scapes.engine.math.vector.Vector2d
 
 class GuiComponentText constructor(parent: GuiLayoutData,
                                    text: String,
-                                   private val r: Float = 1.0f,
-                                   private val g: Float = 1.0f,
-                                   private val b: Float = 1.0f,
-                                   private val a: Float = 1.0f) : GuiComponent(
+                                   private val r: Double = 1.0,
+                                   private val g: Double = 1.0,
+                                   private val b: Double = 1.0,
+                                   private val a: Double = 1.0) : GuiComponent(
         parent) {
     var textFilter: (String) -> String = { it }
         set(value) {
@@ -46,7 +46,7 @@ class GuiComponentText constructor(parent: GuiLayoutData,
     override fun updateMesh(renderer: GuiRenderer,
                             size: Vector2d) {
         val font = gui.style.font
-        font.render(FontRenderer.to(renderer, r, g, b, a),
-                textFilter(text), size.floatY(), size.floatX())
+        font.render(FontRenderer.to(renderer, r, g, b, a), textFilter(text),
+                size.y, size.x)
     }
 }

@@ -28,10 +28,10 @@ class GuiComponentEditableText(
         text: String,
         private val maxLength: Int,
         private val active: () -> Boolean,
-        private val r: Float = 1.0f,
-        private val g: Float = 1.0f,
-        private val b: Float = 1.0f,
-        private val a: Float = 1.0f
+        private val r: Double = 1.0,
+        private val g: Double = 1.0,
+        private val b: Double = 1.0,
+        private val a: Double = 1.0
 ) : GuiComponentHeavy(parent) {
     private val data = GuiController.TextFieldData()
     private var vaoCursor: List<Pair<Model, Texture>>? = null
@@ -47,10 +47,10 @@ class GuiComponentEditableText(
     constructor(parent: GuiLayoutData,
                 text: String,
                 active: () -> Boolean,
-                r: Float = 1.0f,
-                g: Float = 1.0f,
-                b: Float = 1.0f,
-                a: Float = 1.0f
+                r: Double = 1.0,
+                g: Double = 1.0,
+                b: Double = 1.0,
+                a: Double = 1.0
     ) : this(parent, text, Int.MAX_VALUE, active, r, g, b, a)
 
     init {
@@ -82,23 +82,20 @@ class GuiComponentEditableText(
             selectionEnd = clamp(data.selectionEnd, 0, text.length)
         }
         val font = gui.style.font
-        font.render(FontRenderer.to(renderer, r, g, b, a),
-                textFilter(text), size.floatY(), size.floatX())
+        font.render(FontRenderer.to(renderer, r, g, b, a), textFilter(text),
+                size.y, size.x)
         val batch = GuiRenderBatch(renderer.pixelSize)
         val cursor = clamp(data.cursor, 0, text.length)
-        font.render(FontRenderer.to(batch, -size.floatY() * 0.1f,
-                -size.floatY() * 0.2f, 1.0f, 1.0f, 1.0f, 1.0f),
-                text.substring(0, cursor) + '|', size.floatY(),
-                size.floatY() * 1.2f, size.floatY(), Float.MAX_VALUE,
-                cursor,
-                cursor + 1)
+        font.render(
+                FontRenderer.to(batch, -size.y * 0.1f, -size.y * 0.2, 1.0, 1.0,
+                        1.0, 1.0), text.substring(0, cursor) + '|', size.y,
+                size.y * 1.2, size.y, Double.MAX_VALUE, cursor, cursor + 1)
         vaoCursor = batch.finish()
         vaoSelection = if (selectionStart >= 0) {
             font.render(
-                    FontRenderer.to(batch, 0.0f, 0.0f, true, 1.0f, 1.0f, 1.0f,
-                            1.0f), text,
-                    size.floatY(), size.floatY(), size.floatY(), size.floatX(),
-                    selectionStart, selectionEnd)
+                    FontRenderer.to(batch, 0.0, 0.0, true, 1.0, 1.0, 1.0, 1.0),
+                    text, size.y, size.y, size.y, size.x, selectionStart,
+                    selectionEnd)
             batch.finish()
         } else {
             null
@@ -147,7 +144,7 @@ class GuiComponentEditableText(
                     val font = gui.style.font
                     val textInfo = font.render(FontRenderer.to(),
                             textFilter(data.text.toString()),
-                            size.floatY(), size.floatX())
+                            size.y, size.x)
                     val maxLengthFont = textInfo.length
                     if (data.text.length > maxLengthFont) {
                         data.text.delete(maxLengthFont, data.text.length)

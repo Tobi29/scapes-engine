@@ -26,31 +26,23 @@ class GuiBasicStyle(override val engine: ScapesEngine,
     override fun pane(renderer: GuiRenderer,
                       size: Vector2d) {
         renderer.texture(engine.graphics.textureEmpty(), 0)
-        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.2f)
-        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.3f)
+        GuiUtils.shadow(renderer, 0.0, 0.0, size.x, size.y, 0.0, 0.0, 0.0, 0.2)
+        GuiUtils.rectangle(renderer, 0.0, 0.0, size.x, size.y, 0.0, 0.0, 0.0,
+                0.3)
     }
 
     override fun button(renderer: GuiRenderer,
                         size: Vector2d,
                         hover: Boolean) {
         renderer.texture(engine.graphics.textureEmpty(), 0)
-        val a: Float
-        if (hover) {
-            a = 1.0f
-        } else {
-            a = 0.5f
-        }
-        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, a)
+        val a = if (hover) 1.0 else 0.5
+        GuiUtils.rectangle(renderer, 0.0, 0.0, size.x, size.y, 0.0, 0.0, 0.0, a)
     }
 
     override fun border(renderer: GuiRenderer,
                         size: Vector2d) {
         renderer.texture(engine.graphics.textureEmpty(), 0)
-        GuiUtils.shadow(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, 0.2f)
+        GuiUtils.shadow(renderer, 0.0, 0.0, size.x, size.y, 0.0, 0.0, 0.0, 0.2)
     }
 
     override fun slider(renderer: GuiRenderer,
@@ -59,46 +51,45 @@ class GuiBasicStyle(override val engine: ScapesEngine,
                         value: Double,
                         sliderSize: Double,
                         hover: Boolean) {
-        var value = value
         renderer.texture(engine.graphics.textureEmpty(), 0)
-        val v: Float
-        val a: Float
-        val ab: Float
+        val v: Double
+        val a: Double
+        val ab: Double
         if (hover) {
             if (horizontal) {
-                v = 0.3f
-                a = 1.0f
-                ab = 1.0f
+                v = 0.3
+                a = 1.0
+                ab = 1.0
             } else {
-                v = 0.0f
-                a = 1.0f
-                ab = 0.3f
+                v = 0.0
+                a = 1.0
+                ab = 0.3
             }
         } else {
-            v = 0.0f
-            a = 0.5f
-            ab = 0.3f
+            v = 0.0
+            a = 0.5
+            ab = 0.3
         }
-        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(), size.floatY(),
-                0.0f, 0.0f, 0.0f, ab)
+        GuiUtils.rectangle(renderer, 0.0, 0.0, size.x, size.y,
+                0.0, 0.0, 0.0, ab)
         if (horizontal) {
-            value *= (size.x - sliderSize)
-            GuiUtils.rectangle(renderer, value.toFloat(), 0.0f,
-                    (value + sliderSize).toFloat(), size.floatY(), v, v, v, a)
+            val offset = value * (size.x - sliderSize)
+            GuiUtils.rectangle(renderer, offset, 0.0, offset + sliderSize,
+                    size.y, v, v, v, a)
         } else {
-            value *= (size.y - sliderSize)
-            GuiUtils.rectangle(renderer, 0.0f, value.toFloat(), size.floatX(),
-                    (value + sliderSize).toFloat(), v, v, v, a)
+            val offset = value * (size.y - sliderSize)
+            GuiUtils.rectangle(renderer, 0.0, offset, size.x,
+                    offset + sliderSize, v, v, v, a)
         }
     }
 
     override fun separator(renderer: GuiRenderer,
                            size: Vector2d) {
         renderer.texture(engine.graphics.textureEmpty(), 0)
-        GuiUtils.rectangle(renderer, 0.0f, 0.0f, size.floatX(),
-                size.floatY() * 0.5f, 0.0f, 0.0f, 0.0f, 0.3f)
-        GuiUtils.rectangle(renderer, 0.0f, size.floatY() * 0.5f, size.floatX(),
-                size.floatY(), 0.2f, 0.2f, 0.2f, 0.3f)
+        GuiUtils.rectangle(renderer, 0.0, 0.0, size.x, size.y * 0.5, 0.0, 0.0,
+                0.0, 0.3)
+        GuiUtils.rectangle(renderer, 0.0, size.y * 0.5, size.x, size.y, 0.2,
+                0.2, 0.2, 0.3)
     }
 
     override fun widget(renderer: GuiRenderer,

@@ -16,298 +16,139 @@
 
 package org.tobi29.scapes.engine.math.vector
 
-import org.tobi29.scapes.engine.utils.math.floorToInt
+import org.tobi29.scapes.engine.utils.Doubles
 import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
 import org.tobi29.scapes.engine.utils.tag.toDouble
 
-open class MutableVector2d(var x: Double = 0.0,
-                           var y: Double = 0.0) {
-
+data class MutableVector2d(
+        var x: Double = 0.0,
+        var y: Double = 0.0
+) : Doubles {
     constructor(vector: Vector2d) : this(vector.x, vector.y)
 
-    constructor(vector: Vector2i) : this(vector.x.toDouble() + 0.5,
-            vector.y.toDouble() + 0.5)
+    constructor(vector: Vector2i) : this(vector.x.toDouble(),
+            vector.y.toDouble())
 
-    constructor(vector: MutableVector2d) : this(vector.doubleX(),
-            vector.doubleY())
+    constructor(vector: MutableVector2d) : this(vector.x, vector.y)
 
-    constructor(vector: MutableVector2i) : this(vector.x.toDouble() + 0.5,
-            vector.y.toDouble() + 0.5)
+    constructor(vector: MutableVector2i) : this(vector.x.toDouble(),
+            vector.y.toDouble())
 
-    open operator fun plus(a: Int) = apply {
-        x += a.toDouble()
-        y += a.toDouble()
+    override val size: Int get() = 2
+
+    override fun get(index: Int): Double = when (index) {
+        0 -> x
+        1 -> y
+        else -> throw IndexOutOfBoundsException("$index")
     }
 
-    open operator fun plus(a: Long) = apply {
-        x += a.toDouble()
-        y += a.toDouble()
+    override fun set(index: Int,
+                     value: Double): Unit = when (index) {
+        0 -> x = value
+        1 -> y = value
+        else -> throw IndexOutOfBoundsException("$index")
     }
 
-    open operator fun plus(a: Float) = apply {
-        x += a.toDouble()
-        y += a.toDouble()
-    }
-
-    open operator fun plus(a: Double) = apply {
+    operator fun plus(a: Double) = apply {
         x += a
         y += a
     }
 
-    open operator fun minus(a: Int) = apply {
-        x -= a.toDouble()
-        y -= a.toDouble()
-    }
-
-    open operator fun minus(a: Long) = apply {
-        x -= a.toDouble()
-        y -= a.toDouble()
-    }
-
-    open operator fun minus(a: Float) = apply {
-        x -= a.toDouble()
-        y -= a.toDouble()
-    }
-
-    open operator fun minus(a: Double) = apply {
+    operator fun minus(a: Double) = apply {
         x -= a
         y -= a
     }
 
-    open fun times(a: Int) = apply {
-        x *= a.toDouble()
-        y *= a.toDouble()
-    }
-
-    open fun times(a: Long) = apply {
-        x *= a.toDouble()
-        y *= a.toDouble()
-    }
-
-    open fun times(a: Float) = apply {
-        x *= a.toDouble()
-        y *= a.toDouble()
-    }
-
-    open fun times(a: Double) = apply {
+    fun times(a: Double) = apply {
         x *= a
         y *= a
     }
 
-    open operator fun div(a: Int) = apply {
-        x /= a.toDouble()
-        y /= a.toDouble()
-    }
-
-    open operator fun div(a: Long) = apply {
-        x /= a.toDouble()
-        y /= a.toDouble()
-    }
-
-    open operator fun div(a: Float) = apply {
-        x /= a.toDouble()
-        y /= a.toDouble()
-    }
-
-    open operator fun div(a: Double) = apply {
+    operator fun div(a: Double) = apply {
         x /= a
         y /= a
     }
 
-    open operator fun unaryMinus() = apply {
+    operator fun unaryMinus() = apply {
         x = -x
         y = -y
     }
 
-    open fun set(x: Int,
-                 y: Int) = apply {
+    fun setXY(x: Double,
+              y: Double) = apply {
         setX(x)
         setY(y)
     }
 
-    open fun set(x: Long,
-                 y: Long) = apply {
-        setX(x)
-        setY(y)
-    }
-
-    open fun set(x: Float,
-                 y: Float) = apply {
-        setX(x)
-        setY(y)
-    }
-
-    open fun set(x: Double,
-                 y: Double) = apply {
-        setX(x)
-        setY(y)
-    }
-
-    open fun setX(x: Int) = apply {
-        this.x = x.toDouble()
-    }
-
-    open fun setX(x: Long) = apply {
-        this.x = x.toInt().toDouble()
-    }
-
-    open fun setX(x: Float) = apply {
-        this.x = x.toDouble()
-    }
-
-    open fun setX(x: Double) = apply {
+    fun setX(x: Double) = apply {
         this.x = x
     }
 
-    open fun plusX(x: Int) = apply {
-        this.x += x.toDouble()
-    }
-
-    open fun plusX(x: Long) = apply {
-        this.x += x.toDouble()
-    }
-
-    open fun plusX(x: Float) = apply {
-        this.x += x.toDouble()
-    }
-
-    open fun plusX(x: Double) = apply {
+    fun plusX(x: Double) = apply {
         this.x += x
     }
 
-    open fun setY(y: Int) = apply {
-        this.y = y.toDouble()
-    }
-
-    open fun setY(y: Long) = apply {
-        this.y = y.toInt().toDouble()
-    }
-
-    open fun setY(y: Float) = apply {
-        this.y = y.toDouble()
-    }
-
-    open fun setY(y: Double) = apply {
+    fun setY(y: Double) = apply {
         this.y = y
     }
 
-    open fun plusY(y: Int) = apply {
-        this.y += y.toDouble()
-    }
-
-    open fun plusY(y: Long) = apply {
-        this.y += y.toDouble()
-    }
-
-    open fun plusY(y: Float) = apply {
-        this.y += y.toDouble()
-    }
-
-    open fun plusY(y: Double) = apply {
+    fun plusY(y: Double) = apply {
         this.y += y
     }
 
-    fun intX(): Int {
-        return x.floorToInt()
-    }
-
-    fun floatX(): Float {
-        return x.toFloat()
-    }
-
-    fun doubleX(): Double {
-        return x
-    }
-
-    fun intY(): Int {
-        return y.floorToInt()
-    }
-
-    fun floatY(): Float {
-        return y.toFloat()
-    }
-
-    fun doubleY(): Double {
-        return y
-    }
-
-    override fun hashCode(): Int {
-        var result = x.hashCode()
-        result = 31 * result + y.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) {
-            return true
-        }
-        if (other == null) {
-            return false
-        }
-        if (other is MutableVector2d) {
-            return x == other.doubleX() && y == other.doubleY()
-        }
-        if (other !is Vector2d) {
-            return false
-        }
-        return x == other.x && y == other.y
-    }
-
-    open operator fun plus(vector: Vector2d) = apply {
+    operator fun plus(vector: Vector2d) = apply {
         x += vector.x
         y += vector.y
     }
 
-    open operator fun plus(vector: MutableVector2d) = apply {
+    operator fun plus(vector: MutableVector2d) = apply {
         x += vector.x
         y += vector.y
     }
 
-    open operator fun minus(vector: Vector2d) = apply {
+    operator fun minus(vector: Vector2d) = apply {
         x -= vector.x
         y -= vector.y
     }
 
-    open operator fun minus(vector: MutableVector2d) = apply {
+    operator fun minus(vector: MutableVector2d) = apply {
         x -= vector.x
         y -= vector.y
     }
 
-    open operator fun times(vector: Vector2d) = apply {
+    operator fun times(vector: Vector2d) = apply {
         x *= vector.x
         y *= vector.y
     }
 
-    open operator fun times(vector: MutableVector2d) = apply {
+    operator fun times(vector: MutableVector2d) = apply {
         x *= vector.x
         y *= vector.y
     }
 
-    open operator fun div(vector: Vector2d) = apply {
+    operator fun div(vector: Vector2d) = apply {
         x /= vector.x
         y /= vector.y
     }
 
-    open operator fun div(vector: MutableVector2d) = apply {
+    operator fun div(vector: MutableVector2d) = apply {
         x /= vector.x
         y /= vector.y
     }
 
-    open fun set(a: Vector2d) = apply {
+    fun set(a: Vector2d) = apply {
         setX(a.x)
         setY(a.y)
     }
 
-    open fun set(a: MutableVector2d) = apply {
+    fun set(a: MutableVector2d) = apply {
         setX(a.x)
         setY(a.y)
     }
 
-    open fun now(): Vector2d {
-        return Vector2d(x, y)
-    }
+    fun now(): Vector2d = Vector2d(x, y)
 
-    open fun set(map: ReadTagMutableMap) {
+    fun set(map: ReadTagMutableMap) {
         map["X"]?.toDouble()?.let { x = it }
         map["Y"]?.toDouble()?.let { y = it }
     }
