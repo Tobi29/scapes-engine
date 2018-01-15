@@ -29,7 +29,6 @@ actual class EventDispatcher actual internal constructor(
 
     actual constructor() : this(null)
 
-    @Synchronized
     actual fun enable() {
         val parent = parent ?: return
         if (!enabled.getAndSet(true)) {
@@ -45,7 +44,6 @@ actual class EventDispatcher actual internal constructor(
         }
     }
 
-    @Synchronized
     actual fun disable() {
         val parent = parent ?: return
         if (enabled.getAndSet(false)) {
