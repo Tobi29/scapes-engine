@@ -62,6 +62,10 @@ actual class ConcurrentHashMap<K, V> private constructor(
                                value: V): Boolean = map.remove(key, value)
 
     actual override fun clear() = map.clear()
+
+    override fun equals(other: Any?) = map == other
+    override fun hashCode() = map.hashCode()
+    override fun toString() = map.toString()
 }
 
 actual class ConcurrentHashSet<E> : MutableSet<E> {
