@@ -20,5 +20,4 @@ dependencies {
     compile project(":CodecsJVM")
     compile rootProject.ext.jorbis
     compile rootProject.ext.concentus
-    compileOnly project(":IOUtils")
 }

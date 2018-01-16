@@ -19,5 +19,4 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     compile project(":CodecsJVM")
     compile rootProject.ext.jlayer
-    compileOnly project(":IOUtils")
 }

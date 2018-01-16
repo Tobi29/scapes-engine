@@ -19,10 +19,4 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     compile project(":FileSystemsJVM")
     compile project(":ThreadUtilsJVM")
-    compileOnly project(":FileSystems")
-    compileOnly project(":ThreadUtils")
-    compileOnly rootProject.ext.kotlinxCoroutinesCore
-    testCompileOnly project(":FileSystems")
-    testCompileOnly project(":ThreadUtils")
-    testCompileOnly rootProject.ext.kotlinxCoroutinesCore
 }
