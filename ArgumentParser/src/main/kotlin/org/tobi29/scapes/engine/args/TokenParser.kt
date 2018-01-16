@@ -53,7 +53,7 @@ class TokenParser(command: CommandConfig) {
      */
     fun finish(): Pair<List<CommandConfig>, List<Token>> {
         currentOption?.let { option ->
-            tokensMut.add(Token.Parameter(option, currentArgs))
+            tokensMut.add(Token.Parameter(option, currentArgs.toList()))
             currentArgs.clear()
             currentOption = null
         }
