@@ -70,11 +70,11 @@ object UUIDTests : Spek({
                             Pair(0L, 0L),
                     "f-f-f-f-f" to
                             Pair(0x0000000F000F000FL, 0x000F00000000000FL),
-// FIXME: Fix and reenable with Java 9
-//                    "0-fffff-0-0-0" to
-//                            Pair(0x0000000FFFFF0000L, 0L),
-//                    "0-0-0-fffff-0" to
-//                            Pair(0L, -0x1000000000000L), // No comment on this
+                    // FIXME: This is bugged on OpenJDK (and presumable Oracle as well) before 1.9
+                    // "0-fffff-0-0-0" to
+                    //         Pair(0x00000000FFFF0000L, 0L),
+                    "0-0-0-fffff-0" to
+                            Pair(0L, -0x000000000000L),
                     "4e6b5321-3db6-4a0d-b724-9574ea6df2dc" to
                             Pair(5650701559700802061L, -5249906936225336612L),
                     "4b80d901-982f-4ee4-b896-c0f231d734c2" to

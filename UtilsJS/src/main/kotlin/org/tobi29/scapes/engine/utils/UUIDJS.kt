@@ -16,15 +16,14 @@
 
 package org.tobi29.scapes.engine.utils
 
-// TODO: Apply overflow semantics from Java 9 (which make more sense)
 actual fun String.toUUID(): UUID? {
     val split = split('-')
     if (split.size != 5) return null
-    val g0 = split[0].toLongOrNull(16) ?: return null
-    val g1 = split[1].toLongOrNull(16) ?: return null
-    val g2 = split[2].toLongOrNull(16) ?: return null
-    val g3 = split[3].toLongOrNull(16) ?: return null
-    val g4 = split[4].toLongOrNull(16) ?: return null
+    val g0 = (split[0].toLongOrNull(16) ?: return null) and 0xFFFFFFFFL
+    val g1 = (split[1].toLongOrNull(16) ?: return null) and 0xFFFFL
+    val g2 = (split[2].toLongOrNull(16) ?: return null) and 0xFFFFL
+    val g3 = (split[3].toLongOrNull(16) ?: return null) and 0xFFFFL
+    val g4 = (split[4].toLongOrNull(16) ?: return null) and 0xFFFFFFFFFFFFL
     return UUID((g0 shl 32) or (g1 shl 16) or (g2), (g3 shl 48) or (g4))
 }
 
