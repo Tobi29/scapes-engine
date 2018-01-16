@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.utils
 
+// TODO: Apply overflow semantics from Java 9 (which make more sense)
 actual fun String.toUUID(): UUID? {
     val split = split('-')
     if (split.size != 5) return null
