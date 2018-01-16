@@ -41,20 +41,6 @@ expect fun Codepoint.isISOControl(): Boolean
 expect fun Codepoint.isBmpCodepoint(): Boolean
 
 /**
- * Checks if the given character is a surrogate character
- * @receiver The character to check
- * @return `true` if the given character is a surrogate character
- */
-expect fun Char.isSurrogate(): Boolean
-
-/**
- * Checks if the given character is a high surrogate character
- * @receiver The character to check
- * @return `true` if the given character is a high surrogate character
- */
-expect fun Char.isHighSurrogate(): Boolean
-
-/**
  * Retrieve the high surrogate character from the given codepoint
  *
  * **Note:** This may return any [Char] if the given codepoint is not surrogate
@@ -62,13 +48,6 @@ expect fun Char.isHighSurrogate(): Boolean
  * @return The high surrogate character from the given codepoint
  */
 expect fun Codepoint.highSurrogate(): Char
-
-/**
- * Checks if the given character is a low surrogate character
- * @receiver The character to check
- * @return `true` if the given character is a low surrogate character
- */
-expect fun Char.isLowSurrogate(): Boolean
 
 /**
  * Retrieve the low surrogate character from the given codepoint

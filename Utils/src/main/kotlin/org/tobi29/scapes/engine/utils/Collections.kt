@@ -132,17 +132,6 @@ inline fun <K, V : Any> Map<K, V>.replace(
 }
 
 /**
- * Returns a [Comparator] using the compareTo method of the given type
- * @param T The type to compare
- * @return A [Comparator] calling compareTo of the given type
- */
-fun <T : Comparable<T>> comparator(): Comparator<T> =
-        object : Comparator<T> {
-            override fun compare(a: T,
-                                 b: T) = a.compareTo(b)
-        }
-
-/**
  * Generates a lazy iterator containing all permutations of the given elements
  * in lists of the same size as [size]
  *

@@ -32,7 +32,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
     private val hover = AtomicInteger(0)
     private var removed = true
     private val children =
-            ConcurrentOrderedCollection(comparator<GuiComponent>())
+            ConcurrentOrderedCollection(naturalOrder<GuiComponent>())
     private val guiEvents = ConcurrentHashMap<GuiEvent<*>, MutableSet<(GuiComponentEvent) -> Unit>>()
     @Suppress("LeakingThis")
     val gui = gui(parent) ?: this as Gui
