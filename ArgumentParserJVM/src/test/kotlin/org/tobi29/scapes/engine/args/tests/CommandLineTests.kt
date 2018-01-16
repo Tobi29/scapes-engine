@@ -49,7 +49,7 @@ private val argumentOption = CommandArgument(
 private val argument2Option = CommandArgument(
         "arg2", 0..1)
 private val subArgumentOption = CommandArgument(
-        "arg", 1..Integer.MAX_VALUE)
+        "arg", 1..Int.MAX_VALUE)
 
 private val subCommand = CommandConfig("sub", listOf(
         subPropertyOption, subSettingOption, subArgumentOption))
