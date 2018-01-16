@@ -27,7 +27,7 @@ data class CommandLine(
         /**
          * The string parameters from the options
          */
-        val parameters: Map<CommandOption, List<String>>,
+        val parameters: Map<CommandOption, List<List<String>>>,
         /**
          * The arguments in order they appeared in
          */
@@ -38,17 +38,10 @@ data class CommandLine(
  * @receiver The parsed tokens to assemble
  * @return A [CommandLine] instance containing the data from the tokens
  */
-fun Collection<TokenParser.Token>.assemble() = asSequence().assemble()
-
-/**
- * Assembles the given parsed tokens for easy access
- * @receiver The parsed tokens to assemble
- * @return A [CommandLine] instance containing the data from the tokens
- */
-fun Sequence<TokenParser.Token>.assemble(): CommandLine {
+fun Iterable<TokenParser.Token>.assemble(): CommandLine {
     val parameters = filterIsInstance<TokenParser.Token.Parameter>()
             .groupBy { it.option }.asSequence()
-            .map { Pair(it.key, it.value.flatMap { it.value }) }.toMap()
+            .map { Pair(it.key, it.value.map { it.value }) }.toMap()
     val arguments = filterIsInstance<TokenParser.Token.Argument>()
             .groupBy { it.argument }.asSequence()
             .map { Pair(it.key, it.value.map { it.value }) }.toMap()
@@ -64,10 +57,12 @@ fun Sequence<TokenParser.Token>.assemble(): CommandLine {
  * @throws InvalidCommandLineException An offending entry was found
  */
 fun CommandLine.validate() {
-    parameters.forEach { (option, values) ->
-        if (option.args.size > values.size) {
-            throw InvalidCommandLineException(
-                    "Not enough values supplied for ${option.simpleName}")
+    parameters.forEach { (option, instances) ->
+        instances.forEach { values ->
+            if (option.args.size > values.size) {
+                throw InvalidCommandLineException(
+                        "Not enough values supplied for ${option.simpleName}")
+            }
         }
     }
     arguments.forEach { (argument, values) ->

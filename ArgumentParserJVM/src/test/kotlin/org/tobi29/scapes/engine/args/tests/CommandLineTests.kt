@@ -23,29 +23,39 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.scapes.engine.args.*
 import org.tobi29.scapes.engine.test.assertions.shouldEqual
+import org.tobi29.scapes.engine.test.assertions.shouldThrow
 
 private val helpOption = CommandOption(
-        setOf('h'), setOf("help"), "Print this text and exit")
+        setOf('h'), setOf("help"),
+        "Print this text and exit")
 private val versionOption = CommandOption(
-        setOf('v'), setOf("version"), "Print version and exit")
+        setOf('v'), setOf("version"),
+        "Print version and exit")
 private val propertyOption = CommandOption(
-        setOf('p'), setOf("property"), listOf("arg"), "Set a property")
-private val argumentOption = CommandArgument(
-        "arg", 0..1)
-private val argument2Option = CommandArgument(
-        "arg2", 0..1)
+        setOf('p'), setOf("property"), listOf("arg"),
+        "Set a property")
+private val multiPropertyOption = CommandOption(
+        setOf('m'), setOf("multi-property"), listOf("arg1", "arg2"),
+        "Set two properties")
 private val subPropertyOption = CommandOption(
         setOf('p'), setOf("property"), listOf("arg"),
         "Set a subcommand property")
 private val subSettingOption = CommandOption(
-        setOf('s'), setOf("setting"), listOf("arg"), "Set a subcommand setting")
+        setOf('s'), setOf("setting"), listOf("arg"),
+        "Set a subcommand setting")
+
+private val argumentOption = CommandArgument(
+        "arg", 0..1)
+private val argument2Option = CommandArgument(
+        "arg2", 0..1)
 private val subArgumentOption = CommandArgument(
         "arg", 1..Integer.MAX_VALUE)
+
 private val subCommand = CommandConfig("sub", listOf(
         subPropertyOption, subSettingOption, subArgumentOption))
 private val command = CommandConfig("test", listOf(
-        helpOption, versionOption, propertyOption, argumentOption,
-        argument2Option, subCommand))
+        helpOption, versionOption, propertyOption, multiPropertyOption,
+        argumentOption, argument2Option, subCommand))
 
 object CommandLineTests : Spek({
     describe("parsing options from tokens") {
@@ -53,7 +63,7 @@ object CommandLineTests : Spek({
             for (test in listOf(
                     CommandParseTest(
                             args = listOf("--property", "first", "arg", "-v",
-                                    "arg2", "-p=second"),
+                                    "arg2", "-p=second", "-m", "1", "2"),
                             tokens = listOf(
                                     TokenParser.Token.Parameter(
                                             propertyOption,
@@ -67,15 +77,23 @@ object CommandLineTests : Spek({
                                             argument2Option, "arg2"),
                                     TokenParser.Token.Parameter(
                                             propertyOption,
-                                            listOf("second"))),
+                                            listOf("second")),
+                                    TokenParser.Token.Parameter(
+                                            multiPropertyOption,
+                                            listOf("1", "2"))),
                             commandLine = CommandLine(
                                     listOf(command),
-                                    mapOf(propertyOption to listOf("first",
-                                            "second"),
-                                            versionOption to listOf()),
-                                    mapOf(argumentOption to listOf("arg"),
-                                            argument2Option to listOf(
-                                                    "arg2")))),
+                                    mapOf(propertyOption to
+                                            listOf(listOf("first"),
+                                                    listOf("second")),
+                                            multiPropertyOption to
+                                                    listOf(listOf("1", "2")),
+                                            versionOption to
+                                                    listOf(listOf())),
+                                    mapOf(argumentOption to
+                                            listOf("arg"),
+                                            argument2Option to
+                                                    listOf("arg2")))),
                     CommandParseTest(
                             args = listOf("-p", "a", "sub", "arg", "-p", "b",
                                     "-s", "c"),
@@ -93,19 +111,62 @@ object CommandLineTests : Spek({
                                             listOf("c"))),
                             commandLine = CommandLine(
                                     listOf(command, subCommand),
-                                    mapOf(propertyOption to listOf("a"),
-                                            subPropertyOption to listOf("b"),
-                                            subSettingOption to listOf("c")),
+                                    mapOf(propertyOption to
+                                            listOf(listOf("a")),
+                                            subPropertyOption to
+                                                    listOf(listOf("b")),
+                                            subSettingOption to
+                                                    listOf(listOf("c"))),
                                     mapOf(subArgumentOption to listOf("arg")))
                     ))) {
                 on("parsing the command ${test.args}") {
                     val (subcommand, tokens) = command.parseTokens(test.args)
                     val commandLine = tokens.assemble()
                             .copy(command = subcommand)
-                    commandLine.validate()
 
                     it("should return the correct token sequence") {
                         tokens shouldEqual test.tokens
+                    }
+
+                    it("should return a valid command line") {
+                        commandLine.validate()
+                    }
+
+                    it("should contain the correct parameters and arguments in the command line") {
+                        commandLine shouldEqual test.commandLine
+                    }
+                }
+            }
+        }
+        given("a parser configuration with missing arguments") {
+            for (test in listOf(
+                    CommandParseTest(
+                            args = listOf("--multi-property=1", "-m", "2"),
+                            tokens = listOf(
+                                    TokenParser.Token.Parameter(
+                                            multiPropertyOption,
+                                            listOf("1")),
+                                    TokenParser.Token.Parameter(
+                                            multiPropertyOption,
+                                            listOf("2"))),
+                            commandLine = CommandLine(
+                                    listOf(command),
+                                    mapOf(multiPropertyOption to
+                                            listOf(listOf("1"), listOf("2"))),
+                                    mapOf())))) {
+                on("parsing the command ${test.args}") {
+                    val (subcommand, tokens) = command.parseTokens(test.args)
+                    val commandLine = tokens.assemble()
+                            .copy(command = subcommand)
+
+                    it("should return the correct token sequence") {
+                        tokens shouldEqual test.tokens
+                    }
+
+                    it("should return a invalid command line") {
+                        shouldThrow<InvalidCommandLineException> {
+                            commandLine.validate()
+                        }
                     }
 
                     it("should contain the correct parameters and arguments in the command line") {

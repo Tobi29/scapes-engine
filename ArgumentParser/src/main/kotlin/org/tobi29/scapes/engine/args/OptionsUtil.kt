@@ -22,8 +22,8 @@ package org.tobi29.scapes.engine.args
  * @param option The [CommandOption] to look for
  * @return A list of strings or `null` if the option was not found
  */
-fun CommandLine.getList(option: CommandOption) =
-        parameters[option]
+fun CommandLine.getList(option: CommandOption): List<String>? =
+        parameters[option]?.firstOrNull()
 
 /**
  * Fetches the first argument for the option from the given [CommandLine]
@@ -31,7 +31,7 @@ fun CommandLine.getList(option: CommandOption) =
  * @param option The [CommandOption] to look for
  * @return A string or `null` if the option was not found
  */
-fun CommandLine.get(option: CommandOption) =
+fun CommandLine.get(option: CommandOption): String? =
         getList(option)?.firstOrNull()
 
 /**
@@ -94,8 +94,8 @@ fun CommandLine.require(option: CommandOption) =
  * @return A string
  * @throws InvalidCommandLineException If the option was not found
  */
-inline fun CommandLine.require(option: CommandOption,
-                               block: (String?) -> String?) =
+inline fun <R> CommandLine.require(option: CommandOption,
+                                   block: (String?) -> R?): R =
         block(get(option)) ?: throw InvalidCommandLineException(
                 "Missing argument: ${option.simpleName}")
 
@@ -107,7 +107,7 @@ inline fun CommandLine.require(option: CommandOption,
  * @return An int
  * @throws InvalidCommandLineException If the option was not found
  */
-fun CommandLine.requireInt(option: CommandOption) =
+fun CommandLine.requireInt(option: CommandOption): Int =
         requireInt(option) { it }
 
 /**
@@ -120,8 +120,8 @@ fun CommandLine.requireInt(option: CommandOption) =
  * @return An int
  * @throws InvalidCommandLineException If the option was not found
  */
-inline fun CommandLine.requireInt(option: CommandOption,
-                                  block: (Int?) -> Int?) =
+inline fun <R> CommandLine.requireInt(option: CommandOption,
+                                      block: (Int?) -> R?): R =
         block(getInt(option)) ?: throw InvalidCommandLineException(
                 "Missing argument: ${option.simpleName}")
 
@@ -133,7 +133,7 @@ inline fun CommandLine.requireInt(option: CommandOption,
  * @return A long
  * @throws InvalidCommandLineException If the option was not found
  */
-fun CommandLine.requireLong(option: CommandOption) =
+fun CommandLine.requireLong(option: CommandOption): Long =
         requireLong(option) { it }
 
 /**
@@ -146,8 +146,8 @@ fun CommandLine.requireLong(option: CommandOption) =
  * @return A long
  * @throws InvalidCommandLineException If the option was not found
  */
-inline fun CommandLine.requireLong(option: CommandOption,
-                                   block: (Long?) -> Long?) =
+inline fun <R> CommandLine.requireLong(option: CommandOption,
+                                       block: (Long?) -> R?): R =
         block(getLong(option)) ?: throw InvalidCommandLineException(
                 "Missing argument: ${option.simpleName}")
 
@@ -159,7 +159,7 @@ inline fun CommandLine.requireLong(option: CommandOption,
  * @return A double
  * @throws InvalidCommandLineException If the option was not found
  */
-fun CommandLine.requireDouble(option: CommandOption) =
+fun CommandLine.requireDouble(option: CommandOption): Double =
         requireDouble(option) { it }
 
 /**
@@ -172,7 +172,7 @@ fun CommandLine.requireDouble(option: CommandOption) =
  * @return A double
  * @throws InvalidCommandLineException If the option was not found
  */
-inline fun CommandLine.requireDouble(option: CommandOption,
-                                     block: (Double?) -> Double?) =
+inline fun <R> CommandLine.requireDouble(option: CommandOption,
+                                         block: (Double?) -> R?): R =
         block(getDouble(option)) ?: throw InvalidCommandLineException(
                 "Missing argument: ${option.simpleName}")
