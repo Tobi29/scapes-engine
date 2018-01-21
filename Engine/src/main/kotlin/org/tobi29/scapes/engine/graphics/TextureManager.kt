@@ -18,14 +18,14 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.resource.Resource
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.graphics.decodePNG
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.tag.json.readJSON
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.tag.TagMap
-import org.tobi29.scapes.engine.utils.tag.toInt
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.computeAbsent
+import org.tobi29.graphics.decodePNG
+import org.tobi29.io.IOException
+import org.tobi29.io.tag.json.readJSON
+import org.tobi29.logging.KLogging
+import org.tobi29.io.tag.TagMap
+import org.tobi29.io.tag.toInt
 
 class TextureManager(private val engine: ScapesEngine) {
     private val cache = ConcurrentHashMap<String, Resource<Texture>>()

@@ -19,13 +19,13 @@ import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.input.ScrollDelta
-import org.tobi29.scapes.engine.math.Face
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.div
-import org.tobi29.scapes.engine.utils.AtomicReference
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.ConcurrentHashSet
-import org.tobi29.scapes.engine.utils.computeAbsent
+import org.tobi29.math.Face
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.div
+import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.stdex.computeAbsent
 
 open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         GuiLayoutDataRoot()) {

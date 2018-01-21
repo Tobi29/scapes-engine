@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.math.Face
-import org.tobi29.scapes.engine.math.vector.MutableVector2d
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.minus
+import org.tobi29.math.Face
+import org.tobi29.math.vector.MutableVector2d
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.minus
 
 class GuiLayoutManagerVertical(start: Vector2d,
                                maxSize: Vector2d,

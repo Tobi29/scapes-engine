@@ -16,11 +16,16 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
 
+import org.tobi29.arrays.sliceOver
 import org.tobi29.scapes.engine.input.ControllerButtons
 import org.tobi29.scapes.engine.input.ControllerGamepad
 import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.input.now
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.steadyClock
+import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.stdex.atomic.AtomicLong
+import org.tobi29.stdex.readOnly
 
 internal class GLFWControllerGamepad(override val name: String,
                                      axisCount: Int) : ControllerGamepad() {

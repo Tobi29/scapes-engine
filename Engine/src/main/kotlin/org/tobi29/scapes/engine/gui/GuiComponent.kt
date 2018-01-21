@@ -20,16 +20,23 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.Vector3d
-import org.tobi29.scapes.engine.math.vector.times
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector3d
+import org.tobi29.math.vector.times
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.ListenerRegistrar
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.stdex.ConcurrentOrderedCollection
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.stdex.atomic.AtomicInt
+import org.tobi29.stdex.computeAbsent
 
 abstract class GuiComponent(val engine: ScapesEngine,
                             val parent: GuiLayoutData,
                             listenerParent: EventDispatcher) : Comparable<GuiComponent> {
     private val _visible = AtomicBoolean(true)
-    private val hover = AtomicInteger(0)
+    private val hover = AtomicInt(0)
     private var removed = true
     private val children =
             ConcurrentOrderedCollection(naturalOrder<GuiComponent>())

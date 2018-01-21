@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.shader.*
+import org.tobi29.scapes.engine.shader.*
 
 val SHADER_TEXTURED: suspend () -> CompiledShader = { SHADER_TEXTURED_LAZY }
 private val SHADER_TEXTURED_LAZY by lazy {

@@ -22,13 +22,13 @@ import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
-import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.task.TaskChannel
-import org.tobi29.scapes.engine.utils.task.offer
-import org.tobi29.scapes.engine.utils.task.processCurrent
+import org.tobi29.graphics.Image
+import org.tobi29.io.view
+import org.tobi29.logging.KLogging
+import org.tobi29.profiler.profilerSection
+import org.tobi29.coroutines.TaskChannel
+import org.tobi29.coroutines.offer
+import org.tobi29.coroutines.processCurrent
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(

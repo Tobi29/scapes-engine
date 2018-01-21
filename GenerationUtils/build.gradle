@@ -17,5 +17,7 @@
 apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
+    compile project(":STDEx")
+    compile project(":Utils")
     compile project(":MathUtils")
 }

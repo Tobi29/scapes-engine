@@ -20,11 +20,11 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.gui.GuiRenderBatch
 import org.tobi29.scapes.engine.gui.GuiUtils
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.computeAbsent
-import org.tobi29.scapes.engine.utils.copy
-import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.stdex.computeAbsent
+import org.tobi29.stdex.copy
+import org.tobi29.io.view
+import org.tobi29.logging.KLogging
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.roundToInt

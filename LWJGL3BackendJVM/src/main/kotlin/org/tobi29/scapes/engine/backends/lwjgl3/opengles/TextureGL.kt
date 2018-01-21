@@ -17,14 +17,14 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.io.ByteView
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.graphics.generateMipMapsNullable
-import org.tobi29.scapes.engine.utils.io.ByteBufferNative
-import org.tobi29.scapes.engine.utils.io.ByteBufferView
-import org.tobi29.scapes.engine.utils.io.viewBufferE
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.io.ByteView
+import org.tobi29.io.ByteViewRO
+import org.tobi29.stdex.assert
+import org.tobi29.graphics.generateMipMapsNullable
+import org.tobi29.io.ByteBufferNative
+import org.tobi29.io.ByteBufferView
+import org.tobi29.io.viewBufferE
 import kotlin.math.max
 
 internal open class TextureGL(override val gos: GraphicsObjectSupplier,

@@ -19,10 +19,10 @@ package org.tobi29.scapes.engine
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
-import org.tobi29.scapes.engine.utils.ComponentRegisteredHolder
-import org.tobi29.scapes.engine.utils.ComponentTypeRegistered
-import org.tobi29.scapes.engine.utils.task.Timer
-import org.tobi29.scapes.engine.utils.task.loopUntilCancel
+import org.tobi29.utils.ComponentRegisteredHolder
+import org.tobi29.utils.ComponentTypeRegistered
+import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.loopUntilCancel
 
 class MemoryProfilerComponent(
         private val debugValues: GuiWidgetDebugValues

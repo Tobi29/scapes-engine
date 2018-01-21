@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2d
 
 open class GuiComponentVisibleSlabHeavy(parent: GuiLayoutData) : GuiComponentSlabHeavy(
         parent) {

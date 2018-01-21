@@ -21,8 +21,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.graphics.loadShader
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.task.LinkedListChannel
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.coroutines.LinkedListChannel
 
 abstract class GameState(val engine: ScapesEngine) {
     open val tps = 60.0

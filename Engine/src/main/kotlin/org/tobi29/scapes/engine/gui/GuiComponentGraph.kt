@@ -20,10 +20,10 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.createVCI
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.math.ceilToInt
-import org.tobi29.scapes.engine.utils.math.clamp
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.stdex.assert
+import org.tobi29.stdex.math.ceilToInt
+import org.tobi29.stdex.math.clamp
 import kotlin.math.pow
 
 class GuiComponentGraph(parent: GuiLayoutData,

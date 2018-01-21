@@ -16,14 +16,13 @@
 package org.tobi29.scapes.engine.backends.lwjgl3
 
 import org.lwjgl.stb.STBTruetype
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
+import org.tobi29.io._position
+import org.tobi29.io._rewind
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.utils.io._position
-import org.tobi29.scapes.engine.utils.io._rewind
-import org.tobi29.scapes.engine.utils.isISOControl
-import org.tobi29.scapes.engine.utils.math.floorToInt
-import org.tobi29.scapes.engine.utils.math.sqr
+import org.tobi29.stdex.isISOControl
+import org.tobi29.stdex.math.floorToInt
+import org.tobi29.stdex.math.sqr
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -63,27 +62,22 @@ class STBGlyphRenderer(private val font: STBFont,
     }
 
     override fun pageInfo(id: Int): GlyphRenderer.GlyphPage {
-        val stack = MemoryStack.stackGet()
-        stack.push {
-            MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
-                val width = IntArray(pageTiles)
-                val offset = id shl pageTileBits
-                val xb = stack.mallocInt(1)
-                val yb = stack.mallocInt(1)
-                for (i in 0 until pageTiles) {
-                    val c = i + offset
-                    STBTruetype.stbtt_GetCodepointHMetrics(font.info, c, xb, yb)
-                    width[i] = (xb.get(0) * scale).roundToInt()
-                }
-                return GlyphRenderer.GlyphPage(width, imageSize, tiles,
-                        tileSize)
+        stackFrame { stack ->
+            val width = IntArray(pageTiles)
+            val offset = id shl pageTileBits
+            val xb = stack.mallocInt(1)
+            val yb = stack.mallocInt(1)
+            for (i in 0 until pageTiles) {
+                val c = i + offset
+                STBTruetype.stbtt_GetCodepointHMetrics(font.info, c, xb, yb)
+                width[i] = (xb.get(0) * scale).roundToInt()
             }
+            return GlyphRenderer.GlyphPage(width, imageSize, tiles, tileSize)
         }
     }
 
     override suspend fun page(id: Int): ByteArray {
-        val stack = MemoryStack.stackGet()
-        stack.push {
+        stackFrame { stack ->
             MemoryUtil.memAlloc(sqr(glyphSize)).use { glyphBuffer ->
                 val buffer = ByteArray(imageSize * imageSize shl 2)
                 var i = 0

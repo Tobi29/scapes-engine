@@ -20,10 +20,10 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
-import org.tobi29.scapes.engine.math.FastMath
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteViewE
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.math.FastMath
+import org.tobi29.stdex.assert
+import org.tobi29.io.ByteViewE
+import org.tobi29.io.ByteViewRO
 import kotlin.math.round
 
 internal class VBO(val gos: GraphicsObjectSupplier,

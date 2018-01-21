@@ -16,12 +16,12 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.graphics.flipVertical
-import org.tobi29.scapes.engine.utils.io.ByteBufferNative
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
-import org.tobi29.scapes.engine.utils.io.viewSliceE
+import org.tobi29.graphics.Image
+import org.tobi29.graphics.flipVertical
+import org.tobi29.io.ByteBufferNative
+import org.tobi29.io.ByteViewRO
+import org.tobi29.io.readAsNativeByteBuffer
+import org.tobi29.io.viewSliceE
 
 class GLLWJGL3GLES(gos: GraphicsObjectSupplier) : GL(gos) {
     override fun checkError(message: String) {

@@ -20,29 +20,28 @@ import org.lwjgl.glfw.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
+import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.processCurrent
+import org.tobi29.io.filesystem.FilePath
+import org.tobi29.io.tag.toMap
+import org.tobi29.logging.KLogging
+import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.*
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerDesktop
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerGamepad
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllers
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWKeyMap
-import org.tobi29.scapes.engine.backends.lwjgl3.push
+import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.clamp
-import org.tobi29.scapes.engine.utils.profiler.profilerSection
-import org.tobi29.scapes.engine.utils.sleepNanos
-import org.tobi29.scapes.engine.utils.steadyClock
-import org.tobi29.scapes.engine.utils.tag.toMap
-import org.tobi29.scapes.engine.utils.task.Timer
-import org.tobi29.scapes.engine.utils.task.processCurrent
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.math.clamp
+import org.tobi29.utils.sleepNanos
+import org.tobi29.utils.steadyClock
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -231,8 +230,7 @@ class ContainerGLFW(
                         keyFun, charFun, mouseButtonFun, cursorPosFun,
                         scrollFun)
                 refreshRate = refreshRate(window) ?: 60
-                val stack = MemoryStack.stackGet()
-                stack.push {
+                stackFrame { stack ->
                     val widthBuffer = stack.mallocInt(1)
                     val heightBuffer = stack.mallocInt(1)
                     GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer)
@@ -383,56 +381,53 @@ class ContainerGLFW(
                                mouseButtonFun: GLFWMouseButtonCallback,
                                cursorPosFun: GLFWCursorPosCallback,
                                scrollFun: GLFWScrollCallback): Long {
-            val stack = MemoryStack.stackGet()
-            stack.push {
-                logger.info { "Creating GLFW window..." }
-                val monitor = GLFW.glfwGetPrimaryMonitor()
-                val videoMode = GLFW.glfwGetVideoMode(monitor)
-                val monitorWidth = videoMode.width()
-                val monitorHeight = videoMode.height()
-                val window = if (useGLES) {
+            logger.info { "Creating GLFW window..." }
+            val monitor = GLFW.glfwGetPrimaryMonitor()
+            val videoMode = GLFW.glfwGetVideoMode(monitor)
+            val monitorWidth = videoMode.width()
+            val monitorHeight = videoMode.height()
+            val window = if (useGLES) {
+                GLFW.glfwDefaultWindowHints()
+                initContextGLES()
+                val window = initWindow(title, fullscreen, monitor,
+                        monitorWidth, monitorHeight)
+                GLFW.glfwMakeContextCurrent(window)
+                GLES.createCapabilities()
+                checkContextGLES()?.let { throw GraphicsCheckException(it) }
+                window
+            } else {
+                GLFW.glfwDefaultWindowHints()
+                initContextGL()
+                var window = initWindow(title, fullscreen, monitor,
+                        monitorWidth, monitorHeight)
+                GLFW.glfwMakeContextCurrent(window)
+                GL.createCapabilities()
+                val tagMap = engine[ScapesEngine.CONFIG_MAP_COMPONENT]["Compatibility"]?.toMap()
+                workaroundLegacyProfile(tagMap)?.let {
+                    logger.warn { "Detected problem with using a core profile on this driver: $it" }
+                    logger.warn { "Recreating window with legacy context..." }
+                    GLFW.glfwDestroyWindow(window)
                     GLFW.glfwDefaultWindowHints()
-                    initContextGLES()
-                    val window = initWindow(title, fullscreen, monitor,
-                            monitorWidth, monitorHeight)
-                    GLFW.glfwMakeContextCurrent(window)
-                    GLES.createCapabilities()
-                    checkContextGLES()?.let { throw GraphicsCheckException(it) }
-                    window
-                } else {
-                    GLFW.glfwDefaultWindowHints()
-                    initContextGL()
-                    var window = initWindow(title, fullscreen, monitor,
+                    initContextGL(true)
+                    window = initWindow(title, fullscreen, monitor,
                             monitorWidth, monitorHeight)
                     GLFW.glfwMakeContextCurrent(window)
                     GL.createCapabilities()
-                    val tagMap = engine[ScapesEngine.CONFIG_MAP_COMPONENT]["Compatibility"]?.toMap()
-                    workaroundLegacyProfile(tagMap)?.let {
-                        logger.warn { "Detected problem with using a core profile on this driver: $it" }
-                        logger.warn { "Recreating window with legacy context..." }
-                        GLFW.glfwDestroyWindow(window)
-                        GLFW.glfwDefaultWindowHints()
-                        initContextGL(true)
-                        window = initWindow(title, fullscreen, monitor,
-                                monitorWidth, monitorHeight)
-                        GLFW.glfwMakeContextCurrent(window)
-                        GL.createCapabilities()
-                    }
-                    checkContextGL()?.let { throw GraphicsCheckException(it) }
-                    window
                 }
-                GLFW.glfwSetWindowSizeCallback(window, windowSizeFun)
-                GLFW.glfwSetWindowCloseCallback(window, windowCloseFun)
-                GLFW.glfwSetWindowFocusCallback(window, windowFocusFun)
-                GLFW.glfwSetFramebufferSizeCallback(window, frameBufferSizeFun)
-                GLFW.glfwSetKeyCallback(window, keyFun)
-                GLFW.glfwSetCharCallback(window, charFun)
-                GLFW.glfwSetMouseButtonCallback(window, mouseButtonFun)
-                GLFW.glfwSetCursorPosCallback(window, cursorPosFun)
-                GLFW.glfwSetScrollCallback(window, scrollFun)
-                GLFW.glfwSwapInterval(if (vSync) 1 else 0)
-                return window
+                checkContextGL()?.let { throw GraphicsCheckException(it) }
+                window
             }
+            GLFW.glfwSetWindowSizeCallback(window, windowSizeFun)
+            GLFW.glfwSetWindowCloseCallback(window, windowCloseFun)
+            GLFW.glfwSetWindowFocusCallback(window, windowFocusFun)
+            GLFW.glfwSetFramebufferSizeCallback(window, frameBufferSizeFun)
+            GLFW.glfwSetKeyCallback(window, keyFun)
+            GLFW.glfwSetCharCallback(window, charFun)
+            GLFW.glfwSetMouseButtonCallback(window, mouseButtonFun)
+            GLFW.glfwSetCursorPosCallback(window, cursorPosFun)
+            GLFW.glfwSetScrollCallback(window, scrollFun)
+            GLFW.glfwSwapInterval(if (vSync) 1 else 0)
+            return window
         }
 
         private fun initContextGL(contextLegacy: Boolean = false) {

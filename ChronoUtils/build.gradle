@@ -19,11 +19,3 @@ apply from: "$rootDir/resources/modulekotlin.gradle"
 dependencies {
     compile project(":Utils")
 }
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += ["src/headers/kotlin"]
-        }
-    }
-}

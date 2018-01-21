@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.math.matrix.Matrix3f
-import org.tobi29.scapes.engine.math.matrix.Matrix4f
-import org.tobi29.scapes.engine.utils.math.toRad
+import org.tobi29.math.matrix.Matrix3f
+import org.tobi29.math.matrix.Matrix4f
+import org.tobi29.stdex.math.toRad
 
 class Matrix {
     private val modelViewProjectionMatrix = Matrix4f()

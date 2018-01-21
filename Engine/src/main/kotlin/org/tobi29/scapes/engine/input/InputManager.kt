@@ -16,19 +16,31 @@
 
 package org.tobi29.scapes.engine.input
 
+import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.ComponentStep
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.scapes.engine.utils.*
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.tag.MutableTagMap
-import org.tobi29.scapes.engine.utils.tag.mapMut
+import org.tobi29.utils.ComponentRegistered
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.io.tag.MutableTagMap
+import org.tobi29.io.tag.mapMut
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.readOnly
+import kotlin.collections.asSequence
+import kotlin.collections.emptyList
+import kotlin.collections.firstOrNull
+import kotlin.collections.map
+import kotlin.collections.set
+import kotlin.collections.sortedByDescending
 
 abstract class InputManager<M : InputMode>(
         val engine: ScapesEngine,
         private val configMap: MutableTagMap,
         private val inputModeDummy: M
-) : ComponentRegistered, ComponentStep {
+) : ComponentRegistered,
+        ComponentStep {
     private val inputModesMut =
             ConcurrentHashMap<Controller, (MutableTagMap) -> M>()
     var inputModes = emptyList<M>()

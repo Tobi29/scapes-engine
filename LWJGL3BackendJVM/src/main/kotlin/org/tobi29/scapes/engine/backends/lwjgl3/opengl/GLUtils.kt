@@ -19,19 +19,18 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL30
-import org.lwjgl.system.MemoryStack
-import org.tobi29.scapes.engine.backends.lwjgl3.push
+import org.tobi29.io.IOException
+import org.tobi29.io._rewind
+import org.tobi29.logging.KLogging
+import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
 import org.tobi29.scapes.engine.graphics.FramebufferStatus
 import org.tobi29.scapes.engine.graphics.RenderType
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io._rewind
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.Expression
-import org.tobi29.scapes.engine.utils.shader.ShaderException
-import org.tobi29.scapes.engine.utils.shader.Uniform
-import org.tobi29.scapes.engine.utils.shader.backend.glsl.GLSLGenerator
-import org.tobi29.scapes.engine.utils.utf8ToString
+import org.tobi29.scapes.engine.shader.CompiledShader
+import org.tobi29.scapes.engine.shader.Expression
+import org.tobi29.scapes.engine.shader.ShaderException
+import org.tobi29.scapes.engine.shader.Uniform
+import org.tobi29.scapes.engine.shader.backend.glsl.GLSLGenerator
+import org.tobi29.stdex.utf8ToString
 
 internal object GLUtils : KLogging() {
     fun renderType(renderType: RenderType): Int {
@@ -58,8 +57,7 @@ internal object GLUtils : KLogging() {
             throw IllegalArgumentException(
                     "Attachments must be 0-15, was " + attachments)
         }
-        val stack = MemoryStack.stackGet()
-        stack.push {
+        stackFrame { stack ->
             val attachBuffer = stack.mallocInt(attachments)
             for (i in 0 until attachments) {
                 attachBuffer.put(GL30.GL_COLOR_ATTACHMENT0 + i)
@@ -70,10 +68,9 @@ internal object GLUtils : KLogging() {
     }
 
     fun printLogShader(id: Int) {
-        val stack = MemoryStack.stackGet()
         val length = GL20.glGetShaderi(id, GL20.GL_INFO_LOG_LENGTH)
         if (length > 1) {
-            stack.push {
+            stackFrame { stack ->
                 val lengthBuffer = stack.mallocInt(1)
                 lengthBuffer.put(0, length)
                 val buffer = stack.malloc(length)
@@ -87,10 +84,9 @@ internal object GLUtils : KLogging() {
     }
 
     fun printLogProgram(id: Int) {
-        val stack = MemoryStack.stackGet()
         val length = GL20.glGetProgrami(id, GL20.GL_INFO_LOG_LENGTH)
         if (length > 1) {
-            stack.push {
+            stackFrame { stack ->
                 val lengthBuffer = stack.mallocInt(1)
                 lengthBuffer.put(0, length)
                 val buffer = stack.malloc(length)

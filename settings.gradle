@@ -14,6 +14,41 @@
  * limitations under the License.
  */
 
+// STDEx
+include "STDEx"
+include "STDExJS"
+include "STDExJVM"
+
+// Logging
+include "Logging"
+include "LoggingJS"
+include "LoggingJVM"
+
+// Tag
+include "Tag"
+include "TagJS"
+include "TagJVM"
+
+// Uuid
+include "Uuid"
+include "UuidJS"
+include "UuidJVM"
+
+// Arrays
+include "Arrays"
+include "ArraysJS"
+include "ArraysJVM"
+
+// Profiler
+include "Profiler"
+include "ProfilerJS"
+include "ProfilerJVM"
+
+// Coroutines
+include "Coroutines"
+include "CoroutinesJS"
+include "CoroutinesJVM"
+
 // Utils
 include "Utils"
 include "UtilsJS"
@@ -31,9 +66,6 @@ include "GenerationUtilsJVM"
 include "GraphicsUtils"
 include "GraphicsUtilsJS"
 include "GraphicsUtilsJVM"
-include "ThreadUtils"
-include "ThreadUtilsJS"
-include "ThreadUtilsJVM"
 include "ChronoUtils"
 include "ChronoUtilsJS"
 include "ChronoUtilsJVM"

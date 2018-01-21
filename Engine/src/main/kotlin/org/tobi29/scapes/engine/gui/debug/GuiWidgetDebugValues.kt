@@ -19,10 +19,10 @@ package org.tobi29.scapes.engine.gui.debug
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.gui.*
-import org.tobi29.scapes.engine.utils.AtomicReference
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.task.Timer
-import org.tobi29.scapes.engine.utils.task.loopUntilCancel
+import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.loopUntilCancel
 
 open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         parent, "Debug Values") {

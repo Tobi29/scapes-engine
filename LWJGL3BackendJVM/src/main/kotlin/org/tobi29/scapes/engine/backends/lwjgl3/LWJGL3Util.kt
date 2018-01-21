@@ -20,10 +20,15 @@ import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil
 import java.nio.ByteBuffer
 
-inline fun <R> MemoryStack.push(block: () -> R): R {
-    push()
+inline val memoryStack: MemoryStack get() = MemoryStack.stackGet()
+
+inline fun <R> stackFrame(block: (MemoryStack) -> R): R =
+        memoryStack.frame(block)
+
+inline fun <R> MemoryStack.frame(block: (MemoryStack) -> R): R {
+    val stack = push()
     return try {
-        block()
+        block(stack)
     } finally {
         pop()
     }

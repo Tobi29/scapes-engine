@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.io.ByteViewRO
 
 interface ModelHybrid : Model {
     fun strideStream(): Int

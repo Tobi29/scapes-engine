@@ -17,11 +17,11 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.scapes.engine.Container
-import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.Expression
+import org.tobi29.graphics.Image
+import org.tobi29.io.ByteViewRO
+import org.tobi29.io.view
+import org.tobi29.scapes.engine.shader.CompiledShader
+import org.tobi29.scapes.engine.shader.Expression
 
 interface GraphicsObjectSupplier {
     val container: Container

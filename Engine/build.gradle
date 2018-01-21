@@ -17,8 +17,11 @@
 apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile project(":IOUtils")
     compile project(":GraphicsUtils")
+    compile project(":IOUtils")
+    compile project(":Profiler")
+    compile project(":Logging")
     compile project(":ShaderCompiler")
-    compile project(":ThreadUtils")
+    compile project(":Coroutines")
+    compile project(":Utils")
 }

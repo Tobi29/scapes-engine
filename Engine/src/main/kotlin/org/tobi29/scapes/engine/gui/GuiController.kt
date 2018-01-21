@@ -17,8 +17,8 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.MutableString
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.utils.MutableString
 
 abstract class GuiController(protected val engine: ScapesEngine) {
     open fun update(delta: Double) {}

@@ -17,10 +17,10 @@ package org.tobi29.scapes.engine.backends.lwjgl3
 
 import org.lwjgl.stb.STBTTFontinfo
 import org.lwjgl.stb.STBTruetype
+import org.tobi29.io.*
 import org.tobi29.scapes.engine.ScapesEngineBackend
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.utils.io.*
 import java.nio.ByteBuffer
 
 class STBFont(internal val container: ScapesEngineBackend,

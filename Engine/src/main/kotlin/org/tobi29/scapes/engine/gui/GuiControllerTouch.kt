@@ -20,10 +20,10 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerTouch
 import org.tobi29.scapes.engine.input.ControllerTracker
 import org.tobi29.scapes.engine.input.ScrollDelta
-import org.tobi29.scapes.engine.math.vector.MutableVector2d
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.steadyClock
+import org.tobi29.math.vector.MutableVector2d
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.utils.steadyClock
 
 class GuiControllerTouch(
         engine: ScapesEngine,

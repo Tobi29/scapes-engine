@@ -18,9 +18,9 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.AtomicBoolean
-import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.stdex.ThreadLocal
+import org.tobi29.stdex.atomic.AtomicBoolean
 
 abstract class GuiComponentHeavy : GuiComponent {
     private val dirty = AtomicBoolean(true)

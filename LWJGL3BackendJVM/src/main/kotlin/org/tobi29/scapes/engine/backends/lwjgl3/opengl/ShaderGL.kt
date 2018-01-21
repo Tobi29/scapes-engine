@@ -16,13 +16,13 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
+import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.Expression
+import org.tobi29.scapes.engine.shader.CompiledShader
+import org.tobi29.scapes.engine.shader.Expression
+import org.tobi29.stdex.assert
 
 internal class ShaderGL(override val gos: GraphicsObjectSupplier,
                         shader: CompiledShader,

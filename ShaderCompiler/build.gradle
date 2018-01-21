@@ -17,5 +17,6 @@
 apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
+    compile project(":Tag")
     compile project(":Utils")
 }

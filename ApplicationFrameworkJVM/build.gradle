@@ -20,5 +20,6 @@ dependencies {
     expectedBy project(":ApplicationFramework")
     sources project(path: ":ApplicationFramework", configuration: "sources")
     compile project(":ArgumentParserJVM")
-    compile project(":ThreadUtilsJVM")
+    compile project(":UtilsJVM")
+    compile project(":CoroutinesJVM")
 }

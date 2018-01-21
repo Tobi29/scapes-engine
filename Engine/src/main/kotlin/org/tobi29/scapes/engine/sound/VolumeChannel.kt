@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.sound
 
-import org.tobi29.scapes.engine.utils.io.StandardPathEnvironment
+import org.tobi29.io.StandardPathEnvironment
 
 typealias VolumeChannel = String
 

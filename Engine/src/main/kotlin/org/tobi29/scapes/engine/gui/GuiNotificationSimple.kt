@@ -19,8 +19,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.resource.Resource
 import kotlin.math.PI
 import kotlin.math.sin

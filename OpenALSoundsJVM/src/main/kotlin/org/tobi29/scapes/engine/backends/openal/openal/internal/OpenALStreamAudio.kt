@@ -23,18 +23,18 @@ import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.codec.AudioBuffer
-import org.tobi29.scapes.engine.codec.AudioStream
-import org.tobi29.scapes.engine.codec.ReadableAudioStream
-import org.tobi29.scapes.engine.codec.toPCM16
-import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.codec.AudioBuffer
+import org.tobi29.codec.AudioStream
+import org.tobi29.codec.ReadableAudioStream
+import org.tobi29.codec.toPCM16
+import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.*
-import org.tobi29.scapes.engine.utils.logging.KLogging
+import org.tobi29.stdex.assert
+import org.tobi29.io.*
+import org.tobi29.logging.KLogging
 import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(

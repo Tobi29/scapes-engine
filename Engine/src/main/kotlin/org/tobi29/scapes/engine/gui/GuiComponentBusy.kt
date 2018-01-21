@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2d
 
 class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
     private var r = 1.0f

@@ -19,8 +19,8 @@ import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.math.clamp
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.stdex.math.clamp
 import kotlin.math.min
 
 class GuiComponentEditableText(

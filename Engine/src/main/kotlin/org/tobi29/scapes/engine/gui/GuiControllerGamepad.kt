@@ -18,8 +18,8 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.listenAlive
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.listenAlive
 
 class GuiControllerGamepad(
         engine: ScapesEngine,

@@ -20,8 +20,8 @@ import org.lwjgl.glfw.GLFW
 import org.tobi29.scapes.engine.input.Controller
 import org.tobi29.scapes.engine.input.ControllerButtons
 import org.tobi29.scapes.engine.input.ControllerKey
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.EventDispatcher
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.utils.EventDispatcher
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 

@@ -19,6 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     expectedBy project(":ShaderCLike")
     sources project(path: ":ShaderCLike", configuration: "sources")
+    compile project(":ProfilerJVM")
     compile project(":ShaderCompilerJVM")
     compile project(":ShaderParser")
 }

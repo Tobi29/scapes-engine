@@ -16,7 +16,7 @@
 
 package kotlin.io
 
-import org.tobi29.scapes.engine.utils.io.IOException
+import org.tobi29.io.IOException
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
 expect abstract class FileSystemException(deny: Nothing) : IOException

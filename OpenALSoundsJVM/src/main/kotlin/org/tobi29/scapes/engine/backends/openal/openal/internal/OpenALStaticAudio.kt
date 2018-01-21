@@ -18,13 +18,13 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ReadSource
-import org.tobi29.scapes.engine.utils.tryUnwrap
+import org.tobi29.stdex.assert
+import org.tobi29.io.ReadSource
+import org.tobi29.utils.tryUnwrap
 
 internal class OpenALStaticAudio(
         private val asset: ReadSource,

@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.utils.copyToString
+import org.tobi29.stdex.copyToString
 
 class GuiComponentTextField(
         parent: GuiLayoutData,

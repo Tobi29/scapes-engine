@@ -16,8 +16,8 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.MatrixStack
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector3d
 
 class GuiRenderer : GuiRenderBatch(Vector2d(1.0, 1.0)) {
     private val matrixStack = MatrixStack(64)

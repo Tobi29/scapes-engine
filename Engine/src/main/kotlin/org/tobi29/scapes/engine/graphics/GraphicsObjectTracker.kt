@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.stdex.assert
 
 class GraphicsObjectTracker<in O : GraphicsObject> {
     private val objects = ArrayList<O>()

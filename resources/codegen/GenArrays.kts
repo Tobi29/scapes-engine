@@ -1,6 +1,6 @@
 #!/usr/bin/kotlinc -script
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,10 @@ print("""// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package org.tobi29.scapes.engine.utils
+package org.tobi29.arrays
+
+import org.tobi29.stdex.copy
+import org.tobi29.stdex.primitiveHashCode
 
 /**
  * 1-dimensional read-only array
@@ -260,7 +263,7 @@ open class Heap${specialize("ArraySlice")}(
     override fun hashCode(): Int {
         var h = 1
         for (i in 0 until size) {
-            h = h * 31 + ${if (isReference) "(this[i]?.hashCode() ?: 0)" else "this[i].hashCodePrimitive()"}
+            h = h * 31 + ${if (isReference) "(this[i]?.hashCode() ?: 0)" else "this[i].primitiveHashCode()"}
         }
         return h
     }
@@ -565,21 +568,6 @@ inline $genericFun ${specializeIn(
         "Array3")}.fill(block: (Int, Int, Int) -> $type) = indices { x, y, z ->
     this[x, y, z] = block(x, y, z)
 }
-
-/**
- * Copy data from the [src] array to [dest]
- * @param src The array to copy from
- * @param dest The array to copy to
- * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
- */
-inline $genericFun copy(src: ${specializeOut("Array")},
-                        dest: ${specializeIn("Array")},
-                        length: Int = src.size.coerceAtMost(dest.size),
-                        offsetSrc: Int = 0,
-                        offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
 """)
 
 if (isReference) {

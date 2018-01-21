@@ -17,8 +17,8 @@
 package org.tobi29.scapes.engine.backends.openal.openal
 
 import org.tobi29.scapes.engine.sound.AudioFormat
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.math.vector.Vector3d
+import org.tobi29.io.ByteViewRO
+import org.tobi29.math.vector.Vector3d
 
 interface OpenAL {
     fun checkError(message: String)

@@ -19,7 +19,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.input.ScrollDelta
-import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2d
 
 open class GuiComponentEvent(val x: Double = Double.NaN,
                              val y: Double = Double.NaN,

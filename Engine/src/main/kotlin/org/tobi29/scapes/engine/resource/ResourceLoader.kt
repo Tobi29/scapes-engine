@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
-import org.tobi29.scapes.engine.utils.task.TaskLock
+import org.tobi29.coroutines.TaskLock
 import kotlin.coroutines.experimental.CoroutineContext
 
 class ResourceLoader(private val taskExecutor: CoroutineContext) {

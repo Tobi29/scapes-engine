@@ -17,13 +17,5 @@
 apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile rootProject.ext.kotlinSTD
-}
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += ["src/headers/kotlin"]
-        }
-    }
+    compile project(":STDEx")
 }

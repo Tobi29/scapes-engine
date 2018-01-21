@@ -16,6 +16,6 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2d
 
 class GuiLayoutDataRoot : GuiLayoutData(null, Vector2d(-1.0, -1.0), 0, false)

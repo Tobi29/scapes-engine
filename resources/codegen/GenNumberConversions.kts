@@ -1,6 +1,6 @@
 #!/usr/bin/kotlinc -script
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ print("""// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package org.tobi29.scapes.engine.utils
+package org.tobi29.stdex
 """)
 
 val types = setOf(
@@ -38,17 +38,13 @@ val types = setOf(
                 "Int",
         (BigInteger(Long.MIN_VALUE.toString()) to
                 BigInteger(Long.MAX_VALUE.toString())) to
-                "Long",
-        (BigInteger("-170141183460469231731687303715884105728") to
-                BigInteger("170141183460469231731687303715884105727")) to
-                "Int128",
-        (BigInteger("0") to
-                BigInteger("340282366920938463463374607431768211455")) to
-                "UInt128")
+                "Long")
+val whitelist = setOf("Byte", "Short", "Int", "Long")
 
 for ((fromRange, from) in types) {
     val (fromMin, fromMax) = fromRange
     for ((toRange, to) in types) {
+        if (from !in whitelist && to !in whitelist) continue
         val (toMin, toMax) = toRange
         print("""
 /**

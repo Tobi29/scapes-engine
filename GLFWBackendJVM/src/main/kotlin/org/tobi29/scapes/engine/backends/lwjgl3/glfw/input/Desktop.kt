@@ -18,8 +18,12 @@ package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
 
 import org.lwjgl.system.Platform
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.steadyClock
+import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.stdex.atomic.AtomicLong
+import org.tobi29.stdex.readOnly
 
 internal class GLFWControllerDesktop : ControllerDesktop() {
     private val pressedMut = ConcurrentHashSet<ControllerKey>()

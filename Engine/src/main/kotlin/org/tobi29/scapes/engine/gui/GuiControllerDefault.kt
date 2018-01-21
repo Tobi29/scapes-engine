@@ -18,10 +18,10 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.*
-import org.tobi29.scapes.engine.utils.AtomicReference
-import org.tobi29.scapes.engine.utils.EventDispatcher
-import org.tobi29.scapes.engine.utils.isISOControl
-import org.tobi29.scapes.engine.utils.listenAlive
+import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.stdex.isISOControl
+import org.tobi29.utils.listenAlive
 
 abstract class GuiControllerDefault(
         engine: ScapesEngine,

@@ -15,12 +15,12 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.math.Face
-import org.tobi29.scapes.engine.math.vector.MutableVector2d
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.minus
-import org.tobi29.scapes.engine.utils.Pool
-import org.tobi29.scapes.engine.utils.ThreadLocal
+import org.tobi29.math.Face
+import org.tobi29.math.vector.MutableVector2d
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.minus
+import org.tobi29.utils.Pool
+import org.tobi29.stdex.ThreadLocal
 import kotlin.math.max
 import kotlin.math.min
 

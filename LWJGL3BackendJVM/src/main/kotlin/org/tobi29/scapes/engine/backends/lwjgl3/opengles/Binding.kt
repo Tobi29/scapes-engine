@@ -20,8 +20,8 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengles
 
 import org.lwjgl.opengles.GLES20
 import org.lwjgl.opengles.GLES30
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
+import org.tobi29.io.ByteViewRO
+import org.tobi29.io.readAsNativeByteBuffer
 import java.nio.ByteBuffer
 
 const val NOOP = -1

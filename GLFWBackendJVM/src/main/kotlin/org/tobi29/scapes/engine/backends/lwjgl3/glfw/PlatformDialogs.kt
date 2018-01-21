@@ -18,31 +18,29 @@ package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.GLFW
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.Platform
 import org.lwjgl.util.tinyfd.TinyFileDialogs
+import org.tobi29.io.IOException
+import org.tobi29.io.ReadableByteStream
+import org.tobi29.io.filesystem.FilePath
+import org.tobi29.io.filesystem.path
+import org.tobi29.io.filesystem.read
+import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.Container
+import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.scapes.engine.utils.io.IOException
-import org.tobi29.scapes.engine.utils.io.ReadableByteStream
-import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
-import org.tobi29.scapes.engine.utils.io.filesystem.path
-import org.tobi29.scapes.engine.utils.io.filesystem.read
-import org.tobi29.scapes.engine.utils.io.use
-import org.tobi29.scapes.engine.utils.logging.KLogging
 
 object PlatformDialogs : KLogging() {
     private inline fun <R> filter(extensions: Array<Pair<String, String>>,
-                                  block: (PointerBuffer) -> R): R {
-        MemoryStack.stackPush().use { stack ->
-            val buffer = stack.mallocPointer(extensions.size)
-            extensions.forEach { (filter) ->
-                buffer.put(stack.UTF8(filter))
+                                  block: (PointerBuffer) -> R): R =
+            stackFrame { stack ->
+                val buffer = stack.mallocPointer(extensions.size)
+                extensions.forEach { (filter) ->
+                    buffer.put(stack.UTF8(filter))
+                }
+                buffer.flip()
+                block(buffer)
             }
-            buffer.flip()
-            return block(buffer)
-        }
-    }
 
     fun openFileDialog(window: ContainerGLFW,
                        extensions: Array<Pair<String, String>>,

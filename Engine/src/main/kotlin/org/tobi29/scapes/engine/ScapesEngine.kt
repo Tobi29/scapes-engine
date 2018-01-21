@@ -25,10 +25,10 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.scapes.engine.utils.*
-import org.tobi29.scapes.engine.utils.io.FileSystemContainer
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.tag.MutableTagMap
+import org.tobi29.utils.*
+import org.tobi29.io.FileSystemContainer
+import org.tobi29.logging.KLogging
+import org.tobi29.io.tag.MutableTagMap
 import kotlin.coroutines.experimental.CoroutineContext
 
 expect class ScapesEngine(

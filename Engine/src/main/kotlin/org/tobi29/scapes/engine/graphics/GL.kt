@@ -15,12 +15,12 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.graphics.Cam
-import org.tobi29.scapes.engine.utils.graphics.Image
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.io.view
-import org.tobi29.scapes.engine.math.matrix.Matrix4f
+import org.tobi29.stdex.assert
+import org.tobi29.graphics.Cam
+import org.tobi29.graphics.Image
+import org.tobi29.io.ByteViewRO
+import org.tobi29.io.view
+import org.tobi29.math.matrix.Matrix4f
 import kotlin.math.max
 import kotlin.math.roundToLong
 

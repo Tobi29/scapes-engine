@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.graphics.Mesh
-import org.tobi29.scapes.engine.utils.math.toRad
+import org.tobi29.stdex.math.toRad
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.sin

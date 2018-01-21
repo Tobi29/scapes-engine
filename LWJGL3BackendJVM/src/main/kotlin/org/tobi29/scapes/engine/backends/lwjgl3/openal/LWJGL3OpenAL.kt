@@ -16,18 +16,17 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.openal
 
 import org.lwjgl.openal.*
-import org.lwjgl.system.MemoryStack
-import org.tobi29.scapes.engine.backends.lwjgl3.push
+import org.tobi29.io.ByteViewRO
+import org.tobi29.io._clear
+import org.tobi29.io._rewind
+import org.tobi29.io.readAsNativeByteBuffer
+import org.tobi29.logging.KLogging
+import org.tobi29.math.vector.Vector3d
+import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
-import org.tobi29.scapes.engine.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.SoundException
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.io._clear
-import org.tobi29.scapes.engine.utils.io._rewind
-import org.tobi29.scapes.engine.utils.io.readAsNativeByteBuffer
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.math.toRad
+import org.tobi29.stdex.math.toRad
 import java.nio.ByteBuffer
 import java.nio.IntBuffer
 import kotlin.math.cos
@@ -46,7 +45,6 @@ class LWJGL3OpenAL : OpenAL {
     }
 
     override fun create(speedOfSound: Double) {
-        val stack = MemoryStack.stackGet()
         device = ALC10.alcOpenDevice(null as ByteBuffer?)
         if (device == 0L) {
             throw IllegalStateException(
@@ -68,7 +66,7 @@ class LWJGL3OpenAL : OpenAL {
         }
         AL11.alSpeedOfSound(speedOfSound.toFloat())
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED)
-        stack.push {
+        stackFrame { stack ->
             val listenerOrientation = stack.mallocFloat(6)
             listenerOrientation._clear()
             listenerOrientation.put(
@@ -94,12 +92,11 @@ class LWJGL3OpenAL : OpenAL {
     override fun setListener(position: Vector3d,
                              orientation: Vector3d,
                              velocity: Vector3d) {
-        val stack = MemoryStack.stackGet()
         val cos = cos(orientation.x.toFloat().toRad())
         val lookX = cos(orientation.z.toFloat().toRad()) * cos
         val lookY = sin(orientation.z.toFloat().toRad()) * cos
         val lookZ = sin(orientation.x.toFloat().toRad())
-        stack.push {
+        stackFrame { stack ->
             val listenerOrientation = stack.mallocFloat(6)
             listenerOrientation.put(lookX)
             listenerOrientation.put(lookY)

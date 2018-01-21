@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.ConcurrentHashMap
-import org.tobi29.scapes.engine.utils.shader.Expression
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.scapes.engine.shader.Expression
 
 class ShaderPreprocessor {
     private val properties = ConcurrentHashMap<String, Expression>()

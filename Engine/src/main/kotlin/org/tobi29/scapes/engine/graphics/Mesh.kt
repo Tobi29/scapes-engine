@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.scapes.engine.utils.copy
+import org.tobi29.stdex.copy
 
 class Mesh(private val triangles: Boolean = false,
            private val color: Boolean = true) {

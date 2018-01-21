@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2d
 
 object GuiLayoutManagerEmpty : GuiLayoutManager(Vector2d.ZERO, Vector2d.ZERO,
         emptySet()) {

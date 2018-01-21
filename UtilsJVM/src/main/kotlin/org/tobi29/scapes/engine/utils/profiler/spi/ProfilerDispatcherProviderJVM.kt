@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.utils.profiler.spi
 
-import org.tobi29.scapes.engine.utils.profiler.ProfilerDispatcher
-
 interface ProfilerDispatcherProvider {
-    fun dispatcher(): ProfilerDispatcher?
+    fun dispatcher(): ProfilerDispatcherProvider?
 }

@@ -20,8 +20,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.stdex.assert
+import org.tobi29.io.ByteViewRO
 
 internal class VAOHybrid(private val vbo1: VBO,
                          private val vbo2: VBO,

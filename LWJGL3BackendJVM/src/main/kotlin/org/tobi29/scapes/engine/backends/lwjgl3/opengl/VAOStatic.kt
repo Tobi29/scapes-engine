@@ -20,9 +20,9 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelIndexed
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.io.ByteView
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
+import org.tobi29.stdex.assert
+import org.tobi29.io.ByteView
+import org.tobi29.io.ByteViewRO
 
 internal class VAOStatic(private val vbo: VBO,
                          index: IntArray,

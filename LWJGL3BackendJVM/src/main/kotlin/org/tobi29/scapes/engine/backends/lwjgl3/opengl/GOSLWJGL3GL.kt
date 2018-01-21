@@ -19,9 +19,9 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.utils.io.ByteViewRO
-import org.tobi29.scapes.engine.utils.shader.CompiledShader
-import org.tobi29.scapes.engine.utils.shader.Expression
+import org.tobi29.io.ByteViewRO
+import org.tobi29.scapes.engine.shader.CompiledShader
+import org.tobi29.scapes.engine.shader.Expression
 
 class GOSLWJGL3GL(override val container: Container) : GraphicsObjectSupplier {
     override val vaoTracker = GraphicsObjectTracker<Model>()

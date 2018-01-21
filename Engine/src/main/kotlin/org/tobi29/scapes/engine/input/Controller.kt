@@ -18,11 +18,15 @@
 
 package org.tobi29.scapes.engine.input
 
-import org.tobi29.scapes.engine.math.vector.MutableVector2d
-import org.tobi29.scapes.engine.math.vector.Vector2d
-import org.tobi29.scapes.engine.math.vector.Vector2i
-import org.tobi29.scapes.engine.math.vector.times
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.arrays.DoubleArraySliceRO
+import org.tobi29.arrays.sliceOver
+import org.tobi29.math.vector.MutableVector2d
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2i
+import org.tobi29.math.vector.times
+import org.tobi29.utils.EventMuteable
+import org.tobi29.utils.steadyClock
+import org.tobi29.stdex.readOnly
 
 interface Controller {
     val id: String get() = name.replace(idRemove, "")
@@ -148,25 +152,29 @@ interface ControllerTrackerState : ControllerState {
     val fingers: Set<ControllerTracker.Tracker>
 }
 
-abstract class ControllerDesktop : ControllerKeyboard, ControllerMouse
+abstract class ControllerDesktop : ControllerKeyboard,
+        ControllerMouse
 
 inline fun ControllerDesktop.now() = ControllerDesktopState(this)
 
 class ControllerDesktopState(
         override val controller: ControllerDesktop
-) : ControllerKeyboardState, ControllerMouseState {
+) : ControllerKeyboardState,
+        ControllerMouseState {
     override val pressed = controller.pressed.toSet().readOnly()
     override val position = controller.position
     override val isModifierDown = controller.isModifierDown
 }
 
-abstract class ControllerGamepad : ControllerJoystick, ControllerButtons
+abstract class ControllerGamepad : ControllerJoystick,
+        ControllerButtons
 
 inline fun ControllerGamepad.now() = ControllerGamepadState(this)
 
 class ControllerGamepadState(
         override val controller: ControllerGamepad
-) : ControllerJoystickState, ControllerButtonsState {
+) : ControllerJoystickState,
+        ControllerButtonsState {
     override val pressed = controller.pressed.toSet().readOnly()
 
     // TODO: Make secure?

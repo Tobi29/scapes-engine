@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.FontRenderer
-import org.tobi29.scapes.engine.math.vector.Vector2d
+import org.tobi29.math.vector.Vector2d
 
 interface GuiStyle {
     val engine: ScapesEngine

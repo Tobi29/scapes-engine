@@ -18,9 +18,9 @@ package org.tobi29.scapes.engine.gui.debug
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.gui.*
-import org.tobi29.scapes.engine.utils.profiler.*
-import org.tobi29.scapes.engine.utils.task.Timer
-import org.tobi29.scapes.engine.utils.task.loopUntilCancel
+import org.tobi29.profiler.*
+import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.loopUntilCancel
 
 class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         "Profiler") {

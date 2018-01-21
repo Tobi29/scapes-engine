@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
-import org.tobi29.scapes.engine.utils.assert
+import org.tobi29.stdex.assert
 
 internal class TextureFBODepth(
         gos: GraphicsObjectSupplier,

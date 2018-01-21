@@ -16,9 +16,9 @@
 package org.tobi29.scapes.engine
 
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
-import org.tobi29.scapes.engine.utils.ComponentType
-import org.tobi29.scapes.engine.utils.access
-import org.tobi29.scapes.engine.utils.tag.*
+import org.tobi29.utils.ComponentType
+import org.tobi29.io.tag.*
+import org.tobi29.stdex.access
 
 class ScapesEngineConfig(val configMap: MutableTagMap) {
     companion object {

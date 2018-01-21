@@ -21,18 +21,18 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
 import org.lwjgl.opengles.GLES20
 import org.lwjgl.system.Platform
+import org.tobi29.coroutines.TaskChannel
+import org.tobi29.coroutines.offer
+import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngineBackend
 import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GLLWJGL3GL
 import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GOSLWJGL3GL
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
 import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
-import org.tobi29.scapes.engine.utils.logging.KLogging
-import org.tobi29.scapes.engine.utils.sleep
-import org.tobi29.scapes.engine.utils.tag.ReadTagMutableMap
-import org.tobi29.scapes.engine.utils.tag.toBoolean
-import org.tobi29.scapes.engine.utils.task.TaskChannel
-import org.tobi29.scapes.engine.utils.task.offer
+import org.tobi29.io.tag.ReadTagMutableMap
+import org.tobi29.io.tag.toBoolean
+import org.tobi29.utils.sleep
 
 abstract class ContainerLWJGL3(
         protected val useGLES: Boolean = false

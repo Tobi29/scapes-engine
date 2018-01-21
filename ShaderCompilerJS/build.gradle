@@ -19,5 +19,6 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 dependencies {
     expectedBy project(":ShaderCompiler")
     sources project(path: ":ShaderCompiler", configuration: "sources")
+    compile project(":TagJS")
     compile project(":UtilsJS")
 }

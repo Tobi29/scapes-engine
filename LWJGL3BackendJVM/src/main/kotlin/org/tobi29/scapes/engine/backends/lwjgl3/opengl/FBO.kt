@@ -18,8 +18,8 @@ package org.tobi29.scapes.engine.backends.lwjgl3.opengl
 
 import org.tobi29.scapes.engine.backends.lwjgl3.CurrentFBO
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.scapes.engine.utils.assert
-import org.tobi29.scapes.engine.utils.readOnly
+import org.tobi29.stdex.assert
+import org.tobi29.stdex.readOnly
 
 internal class FBO(override val gos: GraphicsObjectSupplier,
                    private val currentFBO: CurrentFBO,

@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.sound
 
-import org.tobi29.scapes.engine.utils.fromBase64
-import org.tobi29.scapes.engine.utils.io.HeapResource
-import org.tobi29.scapes.engine.utils.io.ro
-import org.tobi29.scapes.engine.utils.io.view
+import org.tobi29.utils.fromBase64
+import org.tobi29.io.HeapResource
+import org.tobi29.io.ro
+import org.tobi29.io.view
 
 // Base64 encoded OGG/Vorbis file
 // Original audio by Kenney Vleugels (kenney.nl)

@@ -19,5 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 dependencies {
     expectedBy project(":GenerationUtils")
     sources project(path: ":GenerationUtils", configuration: "sources")
+    compile project(":STDExJS")
+    compile project(":UtilsJS")
     compile project(":MathUtilsJS")
 }

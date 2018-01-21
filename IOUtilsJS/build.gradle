@@ -19,5 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 dependencies {
     expectedBy project(":IOUtils")
     sources project(path: ":IOUtils", configuration: "sources")
+    compile project(":ArraysJS")
+    compile project(":TagJS")
     compile project(":UtilsJS")
 }
