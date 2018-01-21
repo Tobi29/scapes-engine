@@ -39,65 +39,64 @@ include "Arrays"
 include "ArraysJS"
 include "ArraysJVM"
 
-// Profiler
-include "Profiler"
-include "ProfilerJS"
-include "ProfilerJVM"
-
-// Coroutines
-include "Coroutines"
-include "CoroutinesJS"
-include "CoroutinesJVM"
+// Argument Parser
+include "ArgumentParser"
+include "ArgumentParserJS"
+include "ArgumentParserJVM"
 
 // Utils
 include "Utils"
 include "UtilsJS"
 include "UtilsJVM"
 include "MBeansCPUReaderJVM"
-include "MathUtils"
-include "MathUtilsJS"
-include "MathUtilsJVM"
+
+// Coroutines
+include "Coroutines"
+include "CoroutinesJS"
+include "CoroutinesJVM"
+
+// IO Utils
 include "IOUtils"
 include "IOUtilsJS"
 include "IOUtilsJVM"
-include "GenerationUtils"
-include "GenerationUtilsJS"
-include "GenerationUtilsJVM"
-include "GraphicsUtils"
-include "GraphicsUtilsJS"
-include "GraphicsUtilsJVM"
-include "ChronoUtils"
-include "ChronoUtilsJS"
-include "ChronoUtilsJVM"
-include "ArgumentParser"
-include "ArgumentParserJS"
-include "ArgumentParserJVM"
-
-// Testing
-include "TestAssertionsJVM"
-
-// File systems
 include "FileSystems"
 include "FileSystemsJVM"
 include "NIOFileSystemJVM"
 include "IOFileSystemJVM"
 
-// Platform integration
+// Math Utils
+include "MathUtils"
+include "MathUtilsJS"
+include "MathUtilsJVM"
+
+// Graphics Utils
+include "GraphicsUtils"
+include "GraphicsUtilsJS"
+include "GraphicsUtilsJVM"
+
+// Generation Utils
+include "GenerationUtils"
+include "GenerationUtilsJS"
+include "GenerationUtilsJVM"
+
+// Chrono Utils
+include "ChronoUtils"
+include "ChronoUtilsJS"
+include "ChronoUtilsJVM"
+
+// Platform Integration
 include "PlatformIntegration"
 include "PlatformIntegrationJVM"
 
-// Application framework
+// Application Framework
 include "ApplicationFramework"
 include "ApplicationFrameworkJVM"
 
-// Server framework
-include "ServerFrameworkJVM"
+// SWT Utils
+include "SWTUtilsJVM"
 
-// SQL
-include "SQLFrameworkJVM"
-include "MariaDBJVM"
-include "SQLiteJVM"
-include "SQLJetJVM"
+// Server Framework
+include "ServerFrameworkJVM"
 
 // Codecs
 include "CodecsJVM"
@@ -105,7 +104,13 @@ include "CodecMP3JVM"
 include "CodecOGGJVM"
 include "CodecWAVJVM"
 
-// Tile maps
+// SQL Framework
+include "SQLFrameworkJVM"
+include "MariaDBJVM"
+include "SQLiteJVM"
+include "SQLJetJVM"
+
+// Tile Maps
 include "TileMaps"
 include "TileMapsJS"
 include "TileMapsJVM"
@@ -127,5 +132,10 @@ include "GLFWBackendJVM"
 include "OpenALSoundsJVM"
 include "LWJGL3BackendJVM"
 
-// SWT
-include "SWTUtilsJVM"
+// Profiler
+include "Profiler"
+include "ProfilerJS"
+include "ProfilerJVM"
+
+// Test Assertions
+include "TestAssertionsJVM"
