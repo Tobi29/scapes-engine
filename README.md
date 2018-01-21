@@ -37,9 +37,9 @@ however there is no backend for it that is in a usable state. There might be one
 added in the future, but this is rather low priority.
 
 ### Kotlin/JS
-Kotlin/JS is not supported at the moment, but various modules have been
-partially ported, waiting for more stable multiplatform support in Kotlin for
-public upload.
+Partial Kotlin/JS support is available and given some care with weird Kotlin/JS
+bugs works quite well. The engine has been successfully ported with public
+upload being prepared.
 
 Current efforts are targeted at browser support, Node.js not being planned (Use
 JVM for server code).
@@ -63,103 +63,257 @@ build.
 
 # Modules
 
-## Utils
-Base library used by all other modules
+## STDEx
+Random extensions to the Kotlin stdlib to make multiplatform code easier.
 
+### Artifacts
+  * STDEx
+  * STDExJS
+  * STDExJVM
+
+## Logging
+Basic logging facade, backing into a platform specific implementaion.
+
+### Artifacts
+  * Logging
+  * LoggingJS
+  * LoggingJVM
+
+### Dependencies
+  * [SLF4J](http://www.slf4j.org) (JVM only)
+
+## Tag
+Tag structure classes as a universal JSON-like memory structure for
+dynamic hierarchical data.
+
+### Artifacts
+  * Tag
+  * TagJS
+  * TagJVM
+
+## Uuid
+A cross-platform Uuid class.
+
+### Artifacts
+  * Uuid
+  * UuidJS
+  * UuidJVM
+
+## Arrays
+Various interfaces for arrays and slices mostly useful for creating
+very generic parameter types (whilst avoiding the more complex collections
+from Kotlin).
+
+### Artifacts
+  * Arrays
+  * ArraysJS
+  * ArraysJVM
+
+## Argument Parser
+Simple lightweight argument parser both for parsing command line arguments
+as well as internal interactive commands (e.g. for remotely controlling a
+server or in-game commands).
+
+Allows building metadata once and parsing commands using that on threads
+in parallel multiple times.
+
+### Artifacts
+  * ArgumentParser
+  * ArgumentParserJS
+  * ArgumentParserJVM
+
+## Utils
 Contains various convenience functions and provides a common foundation
-for everything else to use
+for everything else to use.
 
 Depends on various libraries that provide features available in Java 8 to
-allow easier Android support
-### Dependencies
-  * [Kotlin](https://kotlinlang.org)
-  * [SLF4J](http://www.slf4j.org)
-  * [ThreeTen](http://www.threeten.org)
-  * [Base64](https://github.com/karlroberts/base64)
-  * [JUnit 5](http://junit.org/junit5) (testing only)
-  * [Spek](http://spekframework.org) (testing only)
-### For JSON support
-  * [JSON Processing](https://jsonp.java.net)
+allow easier Android support.
 
-## Math utils
-Various math primitives and utils
-
-Contains concise wrappers for `java.lang.Math` and faster approximations
-(e.g. lookup table based trigonometric functions), simple vectors and matrices
-useful for game development, as well as wrappers around `java.util.Random`.
-### Dependencies
+### Artifacts
   * Utils
+  * UtilsJS
+  * UtilsJVM
 
-## IO utils
-Base library for IO operations using `java.nio`
+## Coroutines
+Various coroutine and thread related utilities.
 
-Contains various interfaces and utilities for doing IO work
+In particular useful to write cross-platform code that takes advantage of
+threads on the JVM but relies on coroutines on JS.
 
-Uses Apache Tika for cross-platform mime-type support
-### Dependencies
-  * Utils
-  * [Apache Tika](https://tika.apache.org)
+### Artifacts
+  * Coroutines
+  * CoroutinesJS
+  * CoroutinesJVM
 
-## File system api
-File system api designed as a basic alternative to `java.nio.file`
+## IO Utils
+Base library for IO operations inspired by `java.nio`.
+
+Contains various interfaces and utilities for doing IO work.
+
+A file system api designed as a basic alternative to `java.nio.file` is
+also available for Kotlin/JVM (and later Kotlin/Native).
 
 Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
-Android or other platforms lacking support for `java.nio.file`
+Android or other platforms lacking support for `java.nio.file`.
+
+### Artifacts
+  * IOUtils
+  * IOUtilsJS
+  * IOUtilsJVM
+  * FileSystems
+  * FileSystemsJVM
+  * NIOFileSystemJVM (not recommended on Android)
+  * IOFileSystemJVM (only recommended on Android)
+  
 ### Dependencies
-  * IO utils
+  * [Apache Tika](https://tika.apache.org) (JVM only)
 
-## Audio codecs
-Audio decoding library that can use mime-types to identify the format
-and load an appropriate decoder through an SPI
+## Math Utils
+Various math primitives and utils
+
+Contains faster approximations
+(e.g. lookup table based trigonometric functions), simple vectors and matrices
+useful for game development, as well as a cross platform alternative to
+`java.util.Random`.
+
+### Artifacts
+  * MathUtils
+  * MathUtilsJS
+  * MathUtilsJVM
+
+## Graphics Utils
+Library for image loading, writing and very basic manipulations.
+
+Contains a PNG decoder and encoder function and a simple
+Image class to pass around images and do copy paste operations on them.
+
+### Artifacts
+  * GraphicsUtils
+  * GraphicsUtilsJS
+  * GraphicsUtilsJVM
+  
 ### Dependencies
-  * File system api
-### For OGG Vorbis and Opus support
-  * [JOrbis](http://www.jcraft.com/jorbis)
-  * [Concentus](https://github.com/lostromb/concentus) (Code is currently stored
-    [here](https://github.com/Tobi29/Concentus))
-### For MP3 support
-  * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
+  * [PNGJ](https://github.com/leonbloy/pngj) (JVM only)
 
-## SQL api
-Simple SQL api to allow basic database access without manually writing
-SQL statements
+## Generation Utils
+Various utilities for procedural generation, such as Perlin and Simplex
+noise, noise transformations and maze generators
 
-Allows abstracting over different backends more reliably
+### Artifacts
+  * GenerationUtils
+  * GenerationUtilsJS
+  * GenerationUtilsJVM
+
+## Chrono Utils
+Basic calendar classes and convertion from time instants to dates and time.
+
+### Artifacts
+  * ChronoUtils
+  * ChronoUtilsJS
+  * ChronoUtilsJVM
+
 ### Dependencies
-  * Utils
-### For SQLite support
-  * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
-### For pure Java SQLIte support
-  * [SQLJet](https://sqljet.com)
-### For MariaDB support
-  * [MariaDB](https://mariadb.org)
+  * [ThreeTen](http://www.threeten.org) (JVM only)
 
-## Graphics utils
-Library for image loading, writing and very basic manipulations
+## Platform Integration
+Various utilities to allow integrating with the host platform.
 
-Contains a PNG decoder and encoder function implemented by PNGJ and a simple
-Image class to pass around images and do copy paste operations on them
+Includes cross-platform functions for retrieving platform info,
+environment variables and standard paths.
+
+### Artifacts
+  * PlatformIntegration
+  * PlatformIntegrationJVM
+
+## Application Framework
+Simple entry point framework for as an easy starting point for all kinds
+of applications.
+
+Automatically provides infrastructure for command line parsing, exit codes
+and program metadata.
+
+### Artifacts
+  * ApplicationFramework
+  * ApplicationFrameworkJVM
+
+## SWT Utils
+Framework for multi-document SWT based gui applications.
+
+### Artifacts
+  * SWTUtils
+  * SWTUtilsJVM
+  
 ### Dependencies
-  * IO utils
-  * [PNGJ](https://github.com/leonbloy/pngj)
-
-## SWT utils
-Base library for making GUI applications using SWT
-
-Contains various utilities and a simple framework for an application
-### Dependencies
-  * File system api
   * [SWT](https://www.eclipse.org/swt)
+
+## Server Framework
+Various utilities for non-blocking protocol implementations and
+encryption using SSL/TLS.
+
+### Artifacts
+  * ServerFrameworkJVM
+
+## Codecs
+Audio decoding library that can use mime-types to identify the format
+and load an appropriate decoder through an SPI.
+
+### Artifacts
+  * CodecsJVM
+  * CodecMP3JVM
+  * CodecOGGJVM (Includes both Vorbis and Opus support)
+  * CodecWAVJVM
+### Dependencies
+  * [JOrbis](http://www.jcraft.com/jorbis) (OGG Vorbis and Opus, JVM only)
+  * [Concentus](https://github.com/lostromb/concentus) (Code is currently stored
+    [here](https://github.com/Tobi29/Concentus)) (OGG Vorbis and Opus, JVM only)
+  * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
+    (MP3, JVM only)
+
+## SQL Framework
+Simple SQL api to allow basic database access without manually writing
+SQL statements.
+
+Allows abstracting over different backends more reliably.
+### Dependencies
+  * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
+    (SQLite, JVM only)
+  * [SQLJet](https://sqljet.com) (SQLJet, JVM only)
+  * [MariaDB](https://mariadb.org) (MariaDB, JVM only)
+
+## Tile Maps
+Basic classes for storing tile maps
+
+### Artifacts
+  * TileMaps
+  * TileMapsJS
+  * TileMapsJVM
 
 ## Engine
 General purpose engine foundation
 
 Straps together a backend and various utilities to allow cross-platform
 development of games or more sophisticated engines
+
+### Artifacts
+  * Engine
+  * EngineJVM
+  * GLFWBackend (Backend supporting OpenGL 3.3, OpenGLES 3.0 using LWJGL
+    for bindings)
+
 ### Dependencies
-  * [Antlr](http://www.antlr.org)
-  * OpenGL 3.3
-  * OpenAL 1.1
-  * A binding for OpenGL, OpenAL, dialogs and font rendering
-### Default Backend
   * [LWJGL](http://lwjgl.org)
+
+## Profiler
+Tracing profiler facade to allow cross platform code to take advantage
+of platform specific trace apis (e.g. Android).
+
+### Artifacts
+  * Profiler
+  * ProfilerJS
+  * ProfilerJVM
+
+## Test Assertions
+Basic test assertions, in particular useful for Spek.
+
+### Artifacts
+  * TestAssertionsJVM
