@@ -17,8 +17,8 @@
 package org.tobi29.application
 
 import org.tobi29.args.*
-import org.tobi29.utils.Version
 import org.tobi29.stdex.printerrln
+import org.tobi29.utils.Version
 
 interface Named {
     val execName: String
@@ -34,30 +34,34 @@ interface Versioned {
     val version: Version
 }
 
-abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
+abstract class BareApplication : EntryPoint(),
+        Identified,
+        Named,
+        Versioned {
     private val optionsMut = ArrayList<CommandElement>()
     val commandConfig by lazy { CommandConfig(execName, optionsMut) }
 
     abstract suspend fun execute(commandLine: CommandLine): StatusCode
 
     override suspend fun execute(args: Array<String>): StatusCode {
-        val commandLine = try {
-            commandConfig.parseDirtyCommandLine(args.asIterable())
-        } catch (e: InvalidCommandLineException) {
+        val (subcommand, tokens) = try {
+            commandConfig.parseTokens(args.asIterable())
+        } catch (e: InvalidTokensException) {
             printerrln(e.message)
             return 255
         }
+        val commandLine = tokens.assemble()
         handleEarly(commandLine)?.let { return it }
         try {
-            commandLine.validate()
-        } catch (e: InvalidCommandLineException) {
+            withArgs(args.asIterable()) { commandLine.validate(tokens) }
+        } catch (e: InvalidTokensException) {
             printerrln(e.message)
             return 255
         }
         return execute(commandLine)
     }
 
-    open protected fun handleEarly(commandLine: CommandLine): StatusCode? {
+    protected open fun handleEarly(commandLine: CommandLine): StatusCode? {
         return null
     }
 

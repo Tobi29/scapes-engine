@@ -53,7 +53,10 @@ fun CommandLine.getBoolean(option: CommandOption): Boolean {
  * @return An int or `null` if the option was not found
  */
 fun CommandLine.getInt(option: CommandOption) =
-        get(option)?.toIntOrNull()
+        get(option)?.let {
+            it.toIntOrNull() ?: throw InvalidOptionArgumentException(
+                    null, this, option, listOf(it))
+        }
 
 /**
  * Fetches the first argument for the option from the given [CommandLine] and
@@ -63,7 +66,10 @@ fun CommandLine.getInt(option: CommandOption) =
  * @return A long or `null` if the option was not found
  */
 fun CommandLine.getLong(option: CommandOption) =
-        get(option)?.toLongOrNull()
+        get(option)?.let {
+            it.toLongOrNull() ?: throw InvalidOptionArgumentException(
+                    null, this, option, listOf(it))
+        }
 
 /**
  * Fetches the first argument for the option from the given [CommandLine] and
@@ -73,14 +79,17 @@ fun CommandLine.getLong(option: CommandOption) =
  * @return A double or `null` if the option was not found
  */
 fun CommandLine.getDouble(option: CommandOption) =
-        get(option)?.toDoubleOrNull()
+        get(option)?.let {
+            it.toDoubleOrNull() ?: throw InvalidOptionArgumentException(
+                    null, this, option, listOf(it))
+        }
 
 /**
  * Fetches the first argument for the option from the given [CommandLine]
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @return A string
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 fun CommandLine.require(option: CommandOption) =
         require(option) { it }
@@ -92,12 +101,12 @@ fun CommandLine.require(option: CommandOption) =
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
  * @return A string
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 inline fun <R> CommandLine.require(option: CommandOption,
                                    block: (String?) -> R?): R =
-        block(get(option)) ?: throw InvalidCommandLineException(
-                "Missing argument: ${option.simpleName}")
+        block(get(option))
+                ?: throw MissingOptionException(null, this, option)
 
 /**
  * Fetches the first argument for the option from the given [CommandLine] and
@@ -105,7 +114,7 @@ inline fun <R> CommandLine.require(option: CommandOption,
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @return An int
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 fun CommandLine.requireInt(option: CommandOption): Int =
         requireInt(option) { it }
@@ -118,12 +127,12 @@ fun CommandLine.requireInt(option: CommandOption): Int =
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
  * @return An int
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 inline fun <R> CommandLine.requireInt(option: CommandOption,
                                       block: (Int?) -> R?): R =
-        block(getInt(option)) ?: throw InvalidCommandLineException(
-                "Missing argument: ${option.simpleName}")
+        block(getInt(option))
+                ?: throw MissingOptionException(null, this, option)
 
 /**
  * Fetches the first argument for the option from the given [CommandLine] and
@@ -131,7 +140,7 @@ inline fun <R> CommandLine.requireInt(option: CommandOption,
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @return A long
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 fun CommandLine.requireLong(option: CommandOption): Long =
         requireLong(option) { it }
@@ -144,12 +153,12 @@ fun CommandLine.requireLong(option: CommandOption): Long =
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
  * @return A long
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 inline fun <R> CommandLine.requireLong(option: CommandOption,
                                        block: (Long?) -> R?): R =
-        block(getLong(option)) ?: throw InvalidCommandLineException(
-                "Missing argument: ${option.simpleName}")
+        block(getLong(option))
+                ?: throw MissingOptionException(null, this, option)
 
 /**
  * Fetches the first argument for the option from the given [CommandLine] and
@@ -157,7 +166,7 @@ inline fun <R> CommandLine.requireLong(option: CommandOption,
  * @receiver The [CommandLine] to read
  * @param option The [CommandOption] to look for
  * @return A double
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 fun CommandLine.requireDouble(option: CommandOption): Double =
         requireDouble(option) { it }
@@ -170,9 +179,9 @@ fun CommandLine.requireDouble(option: CommandOption): Double =
  * @param option The [CommandOption] to look for
  * @param block Called right after retrieving the value
  * @return A double
- * @throws InvalidCommandLineException If the option was not found
+ * @throws MissingOptionException If the option was not found
  */
 inline fun <R> CommandLine.requireDouble(option: CommandOption,
                                          block: (Double?) -> R?): R =
-        block(getDouble(option)) ?: throw InvalidCommandLineException(
-                "Missing argument: ${option.simpleName}")
+        block(getDouble(option))
+                ?: throw MissingOptionException(null, this, option)

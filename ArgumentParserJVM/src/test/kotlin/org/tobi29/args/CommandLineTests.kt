@@ -46,7 +46,9 @@ private val subSettingOption = CommandOption(
 private val argumentOption = CommandArgument(
         "arg", 0..1)
 private val argument2Option = CommandArgument(
-        "arg2", 0..1)
+        "arg2", 0..2)
+private val argumentMinOption = CommandArgument(
+        "arg2", 1..1)
 private val subArgumentOption = CommandArgument(
         "arg", 1..Int.MAX_VALUE)
 
@@ -62,14 +64,16 @@ private val command = CommandConfig("test", listOf(
         argumentOption,
         argument2Option,
         subCommand))
+private val command2 = CommandConfig("test", listOf(
+        argumentMinOption))
 
 object CommandLineTests : Spek({
     describe("parsing options from tokens") {
         given("a parser configuration") {
             for (test in listOf(
-                    CommandParseTest(
-                            args = listOf("--property", "first", "arg", "-v",
-                                    "arg2", "-p=second", "-m", "1", "2"),
+                    CommandParseTest(command = command,
+                            args = listOf("--property", "first", "arg", "-hv",
+                                    "arg2", "-p=second", "-m", "1", "2", "-pv"),
                             tokens = listOf(
                                     TokenParser.Token.Parameter(
                                             propertyOption,
@@ -77,6 +81,9 @@ object CommandLineTests : Spek({
                                     TokenParser.Token.Argument(
                                             argumentOption,
                                             "arg"),
+                                    TokenParser.Token.Parameter(
+                                            helpOption,
+                                            listOf()),
                                     TokenParser.Token.Parameter(
                                             versionOption,
                                             listOf()),
@@ -88,21 +95,27 @@ object CommandLineTests : Spek({
                                             listOf("second")),
                                     TokenParser.Token.Parameter(
                                             multiPropertyOption,
-                                            listOf("1", "2"))),
+                                            listOf("1", "2")),
+                                    TokenParser.Token.Parameter(
+                                            propertyOption,
+                                            listOf("v"))),
                             commandLine = CommandLine(
                                     listOf(command),
                                     mapOf(propertyOption to
                                             listOf(listOf("first"),
-                                                    listOf("second")),
+                                                    listOf("second"),
+                                                    listOf("v")),
                                             multiPropertyOption to
                                                     listOf(listOf("1", "2")),
+                                            helpOption to
+                                                    listOf(listOf()),
                                             versionOption to
                                                     listOf(listOf())),
                                     mapOf(argumentOption to
                                             listOf("arg"),
                                             argument2Option to
                                                     listOf("arg2")))),
-                    CommandParseTest(
+                    CommandParseTest(command = command,
                             args = listOf("-p", "a", "sub", "arg", "-p", "b",
                                     "-s", "c"),
                             tokens = listOf(
@@ -131,7 +144,8 @@ object CommandLineTests : Spek({
                                             "arg")))
                     ))) {
                 on("parsing the command ${test.args}") {
-                    val (subcommand, tokens) = command.parseTokens(test.args)
+                    val (subcommand, tokens) =
+                            test.command.parseTokens(test.args)
                     val commandLine = tokens.assemble()
                             .copy(command = subcommand)
 
@@ -140,7 +154,7 @@ object CommandLineTests : Spek({
                     }
 
                     it("should return a valid command line") {
-                        commandLine.validate()
+                        commandLine.validate(tokens)
                     }
 
                     it("should contain the correct parameters and arguments in the command line") {
@@ -151,7 +165,7 @@ object CommandLineTests : Spek({
         }
         given("a parser configuration with missing arguments") {
             for (test in listOf(
-                    CommandParseTest(
+                    CommandParseTest(command = command,
                             args = listOf("--multi-property=1", "-m", "2"),
                             tokens = listOf(
                                     TokenParser.Token.Parameter(
@@ -164,9 +178,17 @@ object CommandLineTests : Spek({
                                     listOf(command),
                                     mapOf(multiPropertyOption to
                                             listOf(listOf("1"), listOf("2"))),
+                                    mapOf())),
+                    CommandParseTest(command = command2,
+                            args = listOf(),
+                            tokens = listOf(),
+                            commandLine = CommandLine(
+                                    listOf(command2),
+                                    mapOf(),
                                     mapOf())))) {
                 on("parsing the command ${test.args}") {
-                    val (subcommand, tokens) = command.parseTokens(test.args)
+                    val (subcommand, tokens) =
+                            test.command.parseTokens(test.args)
                     val commandLine = tokens.assemble()
                             .copy(command = subcommand)
 
@@ -175,8 +197,8 @@ object CommandLineTests : Spek({
                     }
 
                     it("should return a invalid command line") {
-                        shouldThrow<InvalidCommandLineException> {
-                            commandLine.validate()
+                        shouldThrow<InvalidTokensException> {
+                            commandLine.validate(tokens)
                         }
                     }
 
@@ -187,10 +209,25 @@ object CommandLineTests : Spek({
             }
         }
     }
+    given("a parser configuration with stray arguments") {
+        for (test in listOf(
+                CommandParseTest(command = command,
+                        args = listOf("1", "2", "3", "4")))) {
+            on("parsing the command ${test.args}") {
+                it("should fails to parse") {
+                    shouldThrow<InvalidTokensException> {
+                        test.command.parseTokens(test.args)
+                    }
+                }
+            }
+        }
+    }
 })
 
 private data class CommandParseTest(
+        val command: CommandConfig,
         val args: List<String>,
-        val tokens: List<TokenParser.Token>,
-        val commandLine: CommandLine
+        val tokens: List<TokenParser.Token> = emptyList(),
+        val commandLine: CommandLine = CommandLine(emptyList(), emptyMap(),
+                emptyMap())
 )
