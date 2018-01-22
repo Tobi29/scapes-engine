@@ -15,15 +15,12 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.2.20-eap-71"
+    def kotlinVersion = "1.2.20"
     def dokkaVersion = "0.9.15"
     def junitPlatformVersion = "1.0.2"
 
     repositories {
         jcenter()
-        maven {
-            url "https://dl.bintray.com/kotlin/kotlin-eap"
-        }
     }
 
     dependencies {
@@ -45,9 +42,6 @@ allprojects {
     repositories {
         jcenter()
         maven {
-            url "https://dl.bintray.com/kotlin/kotlin-eap"
-        }
-        maven {
             url "https://dl.bintray.com/jetbrains/spek"
         }
         maven {
@@ -66,7 +60,7 @@ task wrapper(type: Wrapper) {
 }
 
 ext {
-    kotlinVersion = "1.2.20-eap-71"
+    kotlinVersion = "1.2.20"
     kotlinxCoroutinesVersion = "0.21"
     slf4jVersion = "1.7.25"
     spekVersion = "1.1.5"
