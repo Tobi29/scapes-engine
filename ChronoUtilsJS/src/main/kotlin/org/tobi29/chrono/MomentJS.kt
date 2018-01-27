@@ -75,21 +75,29 @@ external object Moment {
 
     fun utc(date: String): Moment
 
-    fun utc(date: String,
-            format: dynamic /* MomentFormatSpecification */): Moment
+    fun utc(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */
+    ): Moment
 
-    fun utc(date: String,
-            format: dynamic /* MomentFormatSpecification */,
-            strict: Boolean): Moment
+    fun utc(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        strict: Boolean
+    ): Moment
 
-    fun utc(date: String,
-            format: dynamic /* MomentFormatSpecification */,
-            language: String): Moment
+    fun utc(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        language: String
+    ): Moment
 
-    fun utc(date: String,
-            format: dynamic /* MomentFormatSpecification */,
-            language: String,
-            strict: Boolean): Moment
+    fun utc(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        language: String,
+        strict: Boolean
+    ): Moment
 
     fun utc(date: Date): Moment
 
@@ -103,82 +111,110 @@ external object Moment {
 
     fun tz(timezone: String): Moment
 
-    fun tz(date: Number,
-           timezone: String): Moment
+    fun tz(
+        date: Number,
+        timezone: String
+    ): Moment
 
-    fun tz(date: Array<Number>,
-           timezone: String): Moment
+    fun tz(
+        date: Array<Number>,
+        timezone: String
+    ): Moment
 
-    fun tz(date: String,
-           timezone: String): Moment
+    fun tz(
+        date: String,
+        timezone: String
+    ): Moment
 
-    fun tz(date: String,
-           format: dynamic /* MomentFormatSpecification */,
-           timezone: String): Moment
+    fun tz(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        timezone: String
+    ): Moment
 
-    fun tz(date: String,
-           format: dynamic /* MomentFormatSpecification */,
-           strict: Boolean,
-           timezone: String): Moment
+    fun tz(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        strict: Boolean,
+        timezone: String
+    ): Moment
 
-    fun tz(date: String,
-           format: dynamic /* MomentFormatSpecification */,
-           language: String,
-           timezone: String): Moment
+    fun tz(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        language: String,
+        timezone: String
+    ): Moment
 
-    fun tz(date: String,
-           format: dynamic /* MomentFormatSpecification */,
-           language: String,
-           strict: Boolean,
-           timezone: String): Moment
+    fun tz(
+        date: String,
+        format: dynamic /* MomentFormatSpecification */,
+        language: String,
+        strict: Boolean,
+        timezone: String
+    ): Moment
 
-    fun tz(date: Date,
-           timezone: String): Moment
+    fun tz(
+        date: Date,
+        timezone: String
+    ): Moment
 
-    fun tz(date: Moment,
-           timezone: String): Moment
+    fun tz(
+        date: Moment,
+        timezone: String
+    ): Moment
 
-    fun tz(date: Any,
-           timezone: String): Moment
+    fun tz(
+        date: Any,
+        timezone: String
+    ): Moment
 }
 
 inline operator fun Moment.invoke(): Moment.Moment =
-        asDynamic()()
+    asDynamic()()
 
 inline operator fun Moment.invoke(date: Number): Moment.Moment =
-        asDynamic()(date)
+    asDynamic()(date)
 
 inline operator fun Moment.invoke(date: Array<Number>): Moment.Moment =
-        asDynamic()(date)
+    asDynamic()(date)
 
 inline operator fun Moment.invoke(date: String): Moment.Moment =
-        asDynamic()(date)
+    asDynamic()(date)
 
-inline operator fun Moment.invoke(date: String,
-                                  format: dynamic /* MomentFormatSpecification */): Moment.Moment =
-        asDynamic()(date, format)
+inline operator fun Moment.invoke(
+    date: String,
+    format: dynamic /* MomentFormatSpecification */
+): Moment.Moment =
+    asDynamic()(date, format)
 
-inline operator fun Moment.invoke(date: String,
-                                  format: dynamic /* MomentFormatSpecification */,
-                                  strict: Boolean): Moment.Moment =
-        asDynamic()(date, format, strict)
+inline operator fun Moment.invoke(
+    date: String,
+    format: dynamic /* MomentFormatSpecification */,
+    strict: Boolean
+): Moment.Moment =
+    asDynamic()(date, format, strict)
 
-inline operator fun Moment.invoke(date: String,
-                                  format: dynamic /* MomentFormatSpecification */,
-                                  language: String): Moment.Moment =
-        asDynamic()(date, format, language)
+inline operator fun Moment.invoke(
+    date: String,
+    format: dynamic /* MomentFormatSpecification */,
+    language: String
+): Moment.Moment =
+    asDynamic()(date, format, language)
 
-inline operator fun Moment.invoke(date: String,
-                                  format: dynamic /* MomentFormatSpecification */,
-                                  language: String,
-                                  strict: Boolean): Moment.Moment =
-        asDynamic()(date, format, language, strict)
+inline operator fun Moment.invoke(
+    date: String,
+    format: dynamic /* MomentFormatSpecification */,
+    language: String,
+    strict: Boolean
+): Moment.Moment =
+    asDynamic()(date, format, language, strict)
 
 inline operator fun Moment.invoke(date: Date): Moment.Moment =
-        asDynamic()(date)
+    asDynamic()(date)
 
 inline operator fun Moment.invoke(date: Moment.Moment): Moment.Moment =
-        asDynamic()(date)
+    asDynamic()(date)
 
 inline operator fun Moment.invoke(date: Any): Moment.Moment =
-        asDynamic()(date)
+    asDynamic()(date)

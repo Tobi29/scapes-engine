@@ -16,8 +16,8 @@
 
 package org.tobi29.chrono
 
-import org.tobi29.utils.*
 import org.tobi29.stdex.prefixToLength
+import org.tobi29.utils.*
 
 /**
  * Prints a date time in ISO 8601 format excluding milliseconds:
@@ -47,9 +47,10 @@ fun isoOffsetDateTime(offsetDateTime: OffsetDateTime) = offsetDateTime.run {
  * Prints a date time and offset in ISO 8601 format including milliseconds:
  * [+-]?Y*YYYY-MM-DDThh:mm:ss.sss(Z|[+-]hh:mm)
  */
-fun isoOffsetDateTimeWithMillis(offsetDateTime: OffsetDateTime) = offsetDateTime.run {
-    "${isoDateTimeWithMillis(dateTime)}${isoOffset(offset)}"
-}
+fun isoOffsetDateTimeWithMillis(offsetDateTime: OffsetDateTime) =
+    offsetDateTime.run {
+        "${isoDateTimeWithMillis(dateTime)}${isoOffset(offset)}"
+    }
 
 /**
  * Prints a date in ISO 8601 format: [+-]?Y*YYYY-MM-DD
@@ -61,9 +62,11 @@ fun isoDate(date: Date): String = date.run {
 /**
  * Prints a year in ISO 8601 format: [+-]?Y*YYYY
  */
-fun isoYear(year: Year,
-            maxLength: Int = Int.MAX_VALUE,
-            allowNegative: Boolean = true): String {
+fun isoYear(
+    year: Year,
+    maxLength: Int = Int.MAX_VALUE,
+    allowNegative: Boolean = true
+): String {
     if (maxLength < 4)
         throw IllegalArgumentException("Invalid max length: $maxLength")
 
@@ -144,7 +147,7 @@ fun isoSecond(second: Second): String {
  * Prints a millisecond in ISO 8601 format: sss
  */
 fun isoMillisecondFromNanos(nanosecond: Nanosecond): String =
-        isoMillisecond(nanosecond / 1000000)
+    isoMillisecond(nanosecond / 1000000)
 
 /**
  * Prints a millisecond in ISO 8601 format: sss
@@ -175,5 +178,6 @@ fun isoOffset(offset: DurationNanos): String {
     val minutes = (abs.minutes % 60.toInt128()).toInt()
 
     return "${if (negative) '-' else '+'}${isoHour(hours)}:${isoMinute(
-            minutes)}"
+        minutes
+    )}"
 }

@@ -20,7 +20,7 @@ import org.tobi29.utils.InstantNanos
 
 interface TimeZone {
     fun encode(instant: InstantNanos): Set<DateTime> = encodeWithOffset(instant)
-            .asSequence().map { it.dateTime }.toSet()
+        .asSequence().map { it.dateTime }.toSet()
 
     fun encodeWithOffset(instant: InstantNanos): Set<OffsetDateTime>
 

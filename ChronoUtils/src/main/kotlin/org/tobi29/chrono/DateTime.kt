@@ -17,33 +17,34 @@
 package org.tobi29.chrono
 
 import org.tobi29.utils.DurationNanos
-import org.tobi29.utils.InstantNanos
 
 /**
  * Date and time combined with time zone offset
  */
 data class OffsetDateTime(
-        /**
-         * Data and time
-         */
-        val dateTime: DateTime,
-        /**
-         * Time zone offset
-         */
-        val offset: DurationNanos)
+    /**
+     * Data and time
+     */
+    val dateTime: DateTime,
+    /**
+     * Time zone offset
+     */
+    val offset: DurationNanos
+)
 
 /**
  * Date and time combined
  */
 data class DateTime(
-        /**
-         * Date
-         */
-        val date: Date,
-        /**
-         * Time
-         */
-        val time: Time)
+    /**
+     * Date
+     */
+    val date: Date,
+    /**
+     * Time
+     */
+    val time: Time
+)
 
 /**
  * Date made up from year, month and day
@@ -51,24 +52,25 @@ data class DateTime(
  * No information within that day is stored, use [Time] or [DateTime] for that
  */
 data class Date(
-        /**
-         * Year
-         */
-        val year: Year,
-        /**
-         * Month
-         */
-        val month: Month,
-        /**
-         * Day
-         */
-        val day: Day)
+    /**
+     * Year
+     */
+    val year: Year,
+    /**
+     * Month
+     */
+    val month: Month,
+    /**
+     * Day
+     */
+    val day: Day
+)
 
-/**
- * Year value
- *
- * Any value is valid
- */
+        /**
+         * Year value
+         *
+         * Any value is valid
+         */
 typealias Year = Int
 
 /**
@@ -146,16 +148,17 @@ enum class Month(val value: Int) {
             11 -> NOVEMBER
             12 -> DECEMBER
             else -> throw IllegalArgumentException(
-                    "Invalid month value: $value")
+                "Invalid month value: $value"
+            )
         }
     }
 }
 
-/**
- * Day value
- *
- * Valid range is `1` to `31`
- */
+        /**
+         * Day value
+         *
+         * Valid range is `1` to `31`
+         */
 typealias Day = Int
 
 /**
@@ -164,53 +167,54 @@ typealias Day = Int
  * No information about which day is stored, use [Date] or [DateTime] for that
  */
 data class Time(
-        /**
-         * Hour
-         */
-        val hour: Hour,
-        /**
-         * Minute
-         */
-        val minute: Minute,
-        /**
-         * Second
-         */
-        val second: Second,
-        /**
-         * Nanosecond
-         */
-        val nanosecond: Nanosecond)
+    /**
+     * Hour
+     */
+    val hour: Hour,
+    /**
+     * Minute
+     */
+    val minute: Minute,
+    /**
+     * Second
+     */
+    val second: Second,
+    /**
+     * Nanosecond
+     */
+    val nanosecond: Nanosecond
+)
 
-/**
- * Hour value
- *
- * Valid range is `0` to `24`
- *
- * A value of `24` is only valid for formatting and may never appear when doing
- * calculations
- */
+        /**
+         * Hour value
+         *
+         * Valid range is `0` to `24`
+         *
+         * A value of `24` is only valid for formatting and may never appear when doing
+         * calculations
+         */
 typealias Hour = Int
 
-/**
- * Minute value
- *
- * Valid range is `0` to `59`
- */
+        /**
+         * Minute value
+         *
+         * Valid range is `0` to `59`
+         */
 typealias Minute = Int
 
-/**
- * Second value
- *
- * Valid range is `0` to `60`
- *
- * A value of `60` is used for leap seconds and normally will rarely occur, but
- * must be handled correctly whenever is appears
- */
+        /**
+         * Second value
+         *
+         * Valid range is `0` to `60`
+         *
+         * A value of `60` is used for leap seconds and normally will rarely occur, but
+         * must be handled correctly whenever is appears
+         */
 typealias Second = Int
 
-/**
- * Nanosecond value
- *
- * Valid range is `0` to `999999999`
- */
+        /**
+         * Nanosecond value
+         *
+         * Valid range is `0` to `999999999`
+         */
 typealias Nanosecond = Int
