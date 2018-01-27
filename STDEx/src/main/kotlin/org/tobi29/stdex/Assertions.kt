@@ -28,9 +28,8 @@ expect object Assertions {
  * @param message The message to display in the [AssertionError]
  * @param block The code to assert
  */
-inline fun assert(message: String? = null,
-                  block: () -> Boolean) =
-        assert(Assertions.ENABLED, message, block)
+inline fun assert(message: String? = null, block: () -> Boolean) =
+    assert(Assertions.ENABLED, message, block)
 
 /**
  * Throw [AssertionError] in case [block] returns false
@@ -40,9 +39,8 @@ inline fun assert(message: String? = null,
  * @param message The message to display in the [AssertionError]
  * @param block The code to assert
  */
-inline fun assert(message: () -> String?,
-                  block: () -> Boolean) =
-        assert(Assertions.ENABLED, message, block)
+inline fun assert(message: () -> String?, block: () -> Boolean) =
+    assert(Assertions.ENABLED, message, block)
 
 /**
  * Throw [AssertionError] in case [block] returns false
@@ -51,7 +49,8 @@ inline fun assert(message: () -> String?,
  * effects in it
  * @param block The code to assert
  */
-inline fun assert(block: () -> Boolean) = assert(Assertions.ENABLED, block)
+inline fun assert(block: () -> Boolean) =
+    assert(Assertions.ENABLED, block)
 
 /**
  * Throw [AssertionError] in case [block] returns false
@@ -59,9 +58,11 @@ inline fun assert(block: () -> Boolean) = assert(Assertions.ENABLED, block)
  * @param message The message to display in the [AssertionError]
  * @param block The code to assert
  */
-inline fun assert(enabled: Boolean,
-                  message: String? = null,
-                  block: () -> Boolean) = assert(enabled, { message }, block)
+inline fun assert(
+    enabled: Boolean,
+    message: String? = null,
+    block: () -> Boolean
+) = assert(enabled, { message }, block)
 
 /**
  * Throw [AssertionError] in case [block] returns false
@@ -69,22 +70,21 @@ inline fun assert(enabled: Boolean,
  * @param message The message to display in the [AssertionError]
  * @param block The code to assert
  */
-inline fun assert(enabled: Boolean,
-                  message: () -> String?,
-                  block: () -> Boolean): Boolean {
+inline fun assert(
+    enabled: Boolean,
+    message: () -> String?,
+    block: () -> Boolean
+): Boolean =
     if (enabled) {
-        if (!block()) {
+        if (!block())
             throw message()?.let { AssertionError(it) } ?: AssertionError()
-        }
-        return true
-    }
-    return false
-}
+        true
+    } else false
 
 /**
  * Throw [AssertionError] in case [block] returns false
  * @param enabled Whether or not to actually run the assertion
  * @param block The code to assert
  */
-inline fun assert(enabled: Boolean,
-                  block: () -> Boolean) = assert(enabled, null, block)
+inline fun assert(enabled: Boolean, block: () -> Boolean) =
+    assert(enabled, null, block)

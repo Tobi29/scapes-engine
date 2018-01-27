@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.stdex
 
 /**
@@ -21,15 +23,108 @@ package org.tobi29.stdex
  * @param src The array to copy from
  * @param dest The array to copy to
  * @param length The amount of elements to copy
- * @param offsetSrc Offset in the source array
- * @param offsetDest Offset in the destination array
  */
-inline fun <T> copy(src: Array<out T>,
-                    dest: Array<in T>,
-                    length: Int = src.size.coerceAtMost(dest.size),
-                    offsetSrc: Int = 0,
-                    offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun <T> copy(
+    src: Array<out T>,
+    dest: Array<in T>,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: BooleanArray,
+    dest: BooleanArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: ByteArray,
+    dest: ByteArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: ShortArray,
+    dest: ShortArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: IntArray,
+    dest: IntArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: LongArray,
+    dest: LongArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: FloatArray,
+    dest: FloatArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: DoubleArray,
+    dest: DoubleArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ */
+inline fun copy(
+    src: CharArray,
+    dest: CharArray,
+    length: Int = src.size.coerceAtMost(dest.size)
+) = copy(src, dest, length, 0, 0)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -39,12 +134,13 @@ inline fun <T> copy(src: Array<out T>,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: BooleanArray,
-                dest: BooleanArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun <T> copy(
+    src: Array<out T>,
+    dest: Array<in T>,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -54,12 +150,13 @@ inline fun copy(src: BooleanArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: ByteArray,
-                dest: ByteArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: BooleanArray,
+    dest: BooleanArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -69,12 +166,13 @@ inline fun copy(src: ByteArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: ShortArray,
-                dest: ShortArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: ByteArray,
+    dest: ByteArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -84,12 +182,13 @@ inline fun copy(src: ShortArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: IntArray,
-                dest: IntArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: ShortArray,
+    dest: ShortArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -99,12 +198,13 @@ inline fun copy(src: IntArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: LongArray,
-                dest: LongArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: IntArray,
+    dest: IntArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -114,12 +214,13 @@ inline fun copy(src: LongArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: FloatArray,
-                dest: FloatArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: LongArray,
+    dest: LongArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -129,12 +230,13 @@ inline fun copy(src: FloatArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: DoubleArray,
-                dest: DoubleArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: FloatArray,
+    dest: FloatArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -144,12 +246,13 @@ inline fun copy(src: DoubleArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-inline fun copy(src: CharArray,
-                dest: CharArray,
-                length: Int = src.size.coerceAtMost(dest.size),
-                offsetSrc: Int = 0,
-                offsetDest: Int = 0) =
-        copyArray(src, dest, length, offsetSrc, offsetDest)
+inline fun copy(
+    src: DoubleArray,
+    dest: DoubleArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -159,11 +262,13 @@ inline fun copy(src: CharArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun <T> copyArray(src: Array<out T>,
-                         dest: Array<in T>,
-                         length: Int,
-                         offsetSrc: Int,
-                         offsetDest: Int)
+inline fun copy(
+    src: CharArray,
+    dest: CharArray,
+    length: Int,
+    offsetSrc: Int = 0,
+    offsetDest: Int = 0
+) = copyArray(src, dest, length, offsetSrc, offsetDest)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -173,11 +278,14 @@ expect fun <T> copyArray(src: Array<out T>,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: BooleanArray,
-                     dest: BooleanArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun <T> copyArray(
+    src: Array<out T>,
+    dest: Array<in T>,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -187,11 +295,14 @@ expect fun copyArray(src: BooleanArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: ByteArray,
-                     dest: ByteArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: BooleanArray,
+    dest: BooleanArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -201,11 +312,14 @@ expect fun copyArray(src: ByteArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: ShortArray,
-                     dest: ShortArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: ByteArray,
+    dest: ByteArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -215,11 +329,14 @@ expect fun copyArray(src: ShortArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: IntArray,
-                     dest: IntArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: ShortArray,
+    dest: ShortArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -229,11 +346,14 @@ expect fun copyArray(src: IntArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: LongArray,
-                     dest: LongArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: IntArray,
+    dest: IntArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -243,11 +363,14 @@ expect fun copyArray(src: LongArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: FloatArray,
-                     dest: FloatArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: LongArray,
+    dest: LongArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -257,11 +380,14 @@ expect fun copyArray(src: FloatArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: DoubleArray,
-                     dest: DoubleArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: FloatArray,
+    dest: FloatArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
 
 /**
  * Copy data from the [src] array to [dest]
@@ -271,8 +397,28 @@ expect fun copyArray(src: DoubleArray,
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
-expect fun copyArray(src: CharArray,
-                     dest: CharArray,
-                     length: Int,
-                     offsetSrc: Int,
-                     offsetDest: Int)
+@PublishedApi
+internal expect fun copyArray(
+    src: DoubleArray,
+    dest: DoubleArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)
+
+/**
+ * Copy data from the [src] array to [dest]
+ * @param src The array to copy from
+ * @param dest The array to copy to
+ * @param length The amount of elements to copy
+ * @param offsetSrc Offset in the source array
+ * @param offsetDest Offset in the destination array
+ */
+@PublishedApi
+internal expect fun copyArray(
+    src: CharArray,
+    dest: CharArray,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+)

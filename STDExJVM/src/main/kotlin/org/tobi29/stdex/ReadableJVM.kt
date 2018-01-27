@@ -69,9 +69,7 @@ interface JavaReadable : Readable {
         return single.get().toInt()
     }
 
-    override fun read(array: CharArray,
-                      offset: Int,
-                      size: Int) {
+    override fun read(array: CharArray, offset: Int, size: Int) {
         val buffer = CharBuffer.wrap(array, offset, size)
         while (buffer.hasRemaining()) {
             // We have no access to EndOfStreamException in this module
@@ -79,9 +77,7 @@ interface JavaReadable : Readable {
         }
     }
 
-    override fun readSome(array: CharArray,
-                          offset: Int,
-                          size: Int): Int {
+    override fun readSome(array: CharArray, offset: Int, size: Int): Int {
         val buffer = CharBuffer.wrap(array, offset, size)
         return java.read(buffer)
     }
@@ -93,8 +89,11 @@ interface SEReadable : java.lang.Readable {
     override fun read(cb: CharBuffer): Int {
         val position = cb.position()
         if (cb.hasArray()) {
-            val read = se.readSome(cb.array(), cb.arrayOffset() + position,
-                    cb.remaining())
+            val read = se.readSome(
+                cb.array(),
+                cb.arrayOffset() + position,
+                cb.remaining()
+            )
             if (read >= 0) cb._position(cb.position() + read)
             return read
         } else {
@@ -119,17 +118,17 @@ private val single = ThreadLocal { CharBuffer.allocate(1) }
 
 @Suppress("NOTHING_TO_INLINE")
 private inline fun <B : Buffer> B._position(newPosition: Int): B =
-        apply { position(newPosition) }
+    apply { position(newPosition) }
 
 @Suppress("NOTHING_TO_INLINE")
 private inline fun <B : Buffer> B._limit(newLimit: Int): B =
-        apply { limit(newLimit) }
+    apply { limit(newLimit) }
 
 @Suppress("NOTHING_TO_INLINE")
 
 private inline fun <B : Buffer> B._clear(): B =
-        apply { clear() }
+    apply { clear() }
 
 @Suppress("NOTHING_TO_INLINE")
 private inline fun <B : Buffer> B._flip(): B =
-        apply { flip() }
+    apply { flip() }

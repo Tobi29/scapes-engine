@@ -51,11 +51,8 @@ const val DEG_2_RAD = PI / 180.0
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: Int,
-                 value2: Int,
-                 value3: Int): Int {
-    return max(value2, min(value3, value1))
-}
+inline fun clamp(value1: Int, value2: Int, value3: Int): Int =
+    max(value2, min(value3, value1))
 
 /**
  * Returns [value2] if [value1] is less than [value2], [value3] if [value1] is
@@ -65,11 +62,8 @@ inline fun clamp(value1: Int,
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: Long,
-                 value2: Long,
-                 value3: Long): Long {
-    return max(value2, min(value3, value1))
-}
+inline fun clamp(value1: Long, value2: Long, value3: Long): Long =
+    max(value2, min(value3, value1))
 
 /**
  * Returns [value2] if [value1] is less than [value2], [value3] if [value1] is
@@ -79,11 +73,8 @@ inline fun clamp(value1: Long,
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: Float,
-                 value2: Float,
-                 value3: Float): Float {
-    return max(value2, min(value3, value1))
-}
+inline fun clamp(value1: Float, value2: Float, value3: Float): Float =
+    max(value2, min(value3, value1))
 
 /**
  * Returns [value2] if [value1] is less than [value2], [value3] if [value1] is
@@ -93,11 +84,8 @@ inline fun clamp(value1: Float,
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: Double,
-                 value2: Double,
-                 value3: Double): Double {
-    return max(value2, min(value3, value1))
-}
+inline fun clamp(value1: Double, value2: Double, value3: Double): Double =
+    max(value2, min(value3, value1))
 
 /**
  * Returns [value1] and [value2] mixed together using [ratio]
@@ -108,11 +96,9 @@ inline fun clamp(value1: Double,
  * @param ratio The ratio, should be in range `0.0` to `1.0`
  * @return [value1] and [value2] mixed together
  */
-inline fun mix(value1: Float,
-               value2: Float,
-               ratio: Float): Float {
-    return (1.0f - ratio) * value1 + ratio * value2
-}
+inline fun mix(value1: Float, value2: Float, ratio: Float): Float =
+    (1.0f - ratio) * value1 + ratio * value2
+
 
 /**
  * Returns [value1] and [value2] mixed together using [ratio]
@@ -123,47 +109,36 @@ inline fun mix(value1: Float,
  * @param ratio The ratio, should be in range `0.0` to `1.0`
  * @return [value1] and [value2] mixed together
  */
-inline fun mix(value1: Double,
-               value2: Double,
-               ratio: Double): Double {
-    return (1.0 - ratio) * value1 + ratio * value2
-}
+inline fun mix(value1: Double, value2: Double, ratio: Double): Double =
+    (1.0 - ratio) * value1 + ratio * value2
 
 /**
  * Returns the square value of [value]
  * @param value The value
  * @return Square value of [value]
  */
-inline fun sqr(value: Int): Int {
-    return value * value
-}
+inline fun sqr(value: Int): Int = value * value
 
 /**
  * Returns the square value of [value]
  * @param value The value
  * @return Square value of [value]
  */
-inline fun sqr(value: Long): Long {
-    return value * value
-}
+inline fun sqr(value: Long): Long = value * value
 
 /**
  * Returns the square value of [value]
  * @param value The value
  * @return Square value of [value]
  */
-inline fun sqr(value: Float): Float {
-    return value * value
-}
+inline fun sqr(value: Float): Float = value * value
 
 /**
  * Returns the square value of [value]
  * @param value The value
  * @return Square value of [value]
  */
-inline fun sqr(value: Double): Double {
-    return value * value
-}
+inline fun sqr(value: Double): Double = value * value
 
 /**
  * Returns the square value of [value], negative if [value] is negative
@@ -210,36 +185,28 @@ inline fun sqrNoAbs(value: Float): Float {
  * @param value The value
  * @return Square value of [value]
  */
-inline fun cbe(value: Int): Int {
-    return value * value * value
-}
+inline fun cbe(value: Int): Int = value * value * value
 
 /**
  * Returns the cube value of [value]
  * @param value The value
  * @return Cube value of [value]
  */
-inline fun cbe(value: Long): Long {
-    return value * value * value
-}
+inline fun cbe(value: Long): Long = value * value * value
 
 /**
  * Returns the cube value of [value]
  * @param value The value
  * @return Cube value of [value]
  */
-inline fun cbe(value: Float): Float {
-    return value * value * value
-}
+inline fun cbe(value: Float): Float = value * value * value
 
 /**
  * Returns the cube value of [value]
  * @param value The value
  * @return Cube value of [value]
  */
-inline fun cbe(value: Double): Double {
-    return value * value * value
-}
+inline fun cbe(value: Double): Double = value * value * value
 
 /**
  * Computes the logarithm with base 2 of [value]
@@ -398,30 +365,22 @@ expect fun clz(value: Int): Int
  * Converts the [Float] from degrees into radians
  * @return Value of the [Float] in radians
  */
-inline fun Float.toRad(): Float {
-    return toDouble().toRad().toFloat()
-}
+inline fun Float.toRad(): Float = this * DEG_2_RAD.toFloat()
 
 /**
  * Converts the [Double] from degrees into radians
  * @return Value of the [Double] in radians
  */
-inline fun Double.toRad(): Double {
-    return this * DEG_2_RAD
-}
+inline fun Double.toRad(): Double = this * DEG_2_RAD
 
 /**
  * Converts the [Float] from radians into degrees
  * @return Value of the [Float] in degrees
  */
-inline fun Float.toDeg(): Float {
-    return toDouble().toDeg().toFloat()
-}
+inline fun Float.toDeg(): Float = this * RAD_2_DEG.toFloat()
 
 /**
  * Converts the [Double] from radians into degrees
  * @return Value of the [Double] in degrees
  */
-inline fun Double.toDeg(): Double {
-    return this * RAD_2_DEG
-}
+inline fun Double.toDeg(): Double = this * RAD_2_DEG

@@ -18,11 +18,11 @@
 
 package org.tobi29.stdex
 
-/**
- * 32-bit codepoint
- *
- * Values in range 0x0..0xFFFF match those of [Char]
- */
+        /**
+         * 32-bit codepoint
+         *
+         * Values in range 0x0..0xFFFF match those of [Char]
+         */
 typealias Codepoint = Int
 
 /**
@@ -46,8 +46,8 @@ const val digitsArabic = "0123456789"
 inline fun Char.toCP(): Codepoint = toInt()
 
 fun Codepoint.toCPString(): String =
-        if (isBmpCodepoint()) "${toChar()}"
-        else "${highSurrogate()}${lowSurrogate()}"
+    if (isBmpCodepoint()) "${toChar()}"
+    else "${highSurrogate()}${lowSurrogate()}"
 
 /**
  * Checks if the given character is an ISO control character
@@ -100,8 +100,7 @@ expect fun Codepoint.lowSurrogate(): Char
  * @param low Low surrogate
  * @return Codepoint for the given surrogate characters
  */
-expect fun surrogateCodepoint(high: Char,
-                              low: Char): Codepoint
+expect fun surrogateCodepoint(high: Char, low: Char): Codepoint
 
 /**
  * Creates an [Iterator] over all codepoints in a [CharSequence]
@@ -125,7 +124,8 @@ fun CharSequence.codepoints(): Iterator<Int> = object : Iterator<Int> {
 
     override fun next(): Int {
         if (!hasNext()) throw NoSuchElementException(
-                "Iterator has no more elements")
+            "Iterator has no more elements"
+        )
         q = false
         return c
     }
@@ -140,10 +140,10 @@ fun CharSequence.codepoints(): Iterator<Int> = object : Iterator<Int> {
 inline fun CharSequence.forEachCodepoint(block: (Codepoint) -> Unit) {
     var i = 0
     while (progressCodepoint(i) { n, c ->
-        i = n
-        block(c)
-        true
-    } == true);
+            i = n
+            block(c)
+            true
+        } == true);
 }
 
 /**
@@ -161,8 +161,8 @@ inline fun CharSequence.forEachCodepoint(block: (Codepoint) -> Unit) {
  * @see CharSequence.forEachCodepoint
  */
 inline fun <R> CharSequence.progressCodepoint(
-        i: Int,
-        output: (Int, Codepoint) -> R
+    i: Int,
+    output: (Int, Codepoint) -> R
 ): R? {
     if (i >= length) return null
     val c0 = this[i]

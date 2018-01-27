@@ -20,7 +20,7 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 actual class ThreadLocal<T> actual constructor(
-        initial: () -> T
+    initial: () -> T
 ) : ReadWriteProperty<Any?, T> {
     private val tl = object : java.lang.ThreadLocal<T>() {
         override fun initialValue(): T {
@@ -29,13 +29,11 @@ actual class ThreadLocal<T> actual constructor(
     }
 
     actual fun get(): T = tl.get()
-    override fun getValue(thisRef: Any?,
-                          property: KProperty<*>): T = get()
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
 
     actual fun set(value: T) = tl.set(value)
-    override fun setValue(thisRef: Any?,
-                          property: KProperty<*>,
-                          value: T) = set(value)
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
+        set(value)
 
     actual fun remove() = tl.remove()
 }

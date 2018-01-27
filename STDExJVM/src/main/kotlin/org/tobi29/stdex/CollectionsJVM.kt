@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.stdex
 
 import java.util.*
@@ -27,11 +29,12 @@ actual typealias ArrayDeque<E> = java.util.ArrayDeque<E>
 actual typealias ConcurrentMap<K, V> = java.util.concurrent.ConcurrentMap<K, V>
 
 actual class ConcurrentHashMap<K, V> private constructor(
-        private val map: java.util.concurrent.ConcurrentHashMap<K, V>
+    private val map: java.util.concurrent.ConcurrentHashMap<K, V>
 ) : ConcurrentMap<K, V> by map {
     actual constructor() : this(java.util.concurrent.ConcurrentHashMap<K, V>())
 
-    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = map.entries
+    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> =
+        map.entries
     actual override val keys: MutableSet<K>
     actual override val values: MutableCollection<V>
 
@@ -41,26 +44,22 @@ actual class ConcurrentHashMap<K, V> private constructor(
         values = map.values
     }
 
-    actual override fun put(key: K,
-                            value: V): V? = map.put(key, value)
+    actual override fun put(key: K, value: V): V? = map.put(key, value)
 
     actual override fun putAll(from: Map<out K, V>) = map.putAll(from)
 
-    actual override fun replace(key: K,
-                                value: V): V? = map.replace(key, value)
+    actual override fun replace(key: K, value: V): V? = map.replace(key, value)
 
-    actual override fun replace(key: K,
-                                oldValue: V,
-                                newValue: V): Boolean =
-            map.replace(key, oldValue, newValue)
+    actual override fun replace(key: K, oldValue: V, newValue: V): Boolean =
+        map.replace(key, oldValue, newValue)
 
-    actual override fun putIfAbsent(key: K,
-                                    value: V): V? = map.putIfAbsent(key, value)
+    actual override fun putIfAbsent(key: K, value: V): V? =
+        map.putIfAbsent(key, value)
 
     actual override fun remove(key: K): V? = map.remove(key)
 
-    actual override fun remove(key: K,
-                               value: V): Boolean = map.remove(key, value)
+    actual override fun remove(key: K, value: V): Boolean =
+        map.remove(key, value)
 
     actual override fun clear() = map.clear()
 
@@ -79,19 +78,19 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
     }
 
     actual override fun removeAll(elements: Collection<E>) =
-            map.keys.removeAll(elements)
+        map.keys.removeAll(elements)
 
     actual override fun retainAll(elements: Collection<E>) =
-            map.keys.retainAll(elements)
+        map.keys.retainAll(elements)
 
     actual override fun contains(element: E) = map.keys.contains(element)
     actual override fun containsAll(elements: Collection<E>) =
-            map.keys.containsAll(elements)
+        map.keys.containsAll(elements)
 
     actual override fun isEmpty() = map.isEmpty()
 
     private val map: java.util.concurrent.ConcurrentMap<E, Unit> =
-            ConcurrentHashMap<E, Unit>()
+        ConcurrentHashMap<E, Unit>()
 
     actual override val size get() = map.size
 
@@ -106,40 +105,43 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
 }
 
 actual class ConcurrentSortedMap<K : Comparable<K>, V> : AbstractMap<K, V>(),
-        ConcurrentMap<K, V> {
+    ConcurrentMap<K, V> {
     private val map: java.util.concurrent.ConcurrentMap<K, V> =
-            ConcurrentSkipListMap<K, V>()
+        ConcurrentSkipListMap<K, V>()
 
-    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> = map.entries
+    actual override val entries: MutableSet<MutableMap.MutableEntry<K, V>> =
+        map.entries
     actual override val keys: MutableSet<K> = map.keys
     actual override val values: MutableCollection<V> = map.values
 
-    actual override fun put(key: K,
-                            value: V): V? = map.put(key, value)
+    actual override fun put(
+        key: K,
+        value: V
+    ): V? = map.put(key, value)
 
     actual override fun putAll(from: Map<out K, V>) = map.putAll(from)
 
-    actual override fun replace(key: K,
-                                value: V): V? = map.replace(key, value)
+    actual override fun replace(
+        key: K,
+        value: V
+    ): V? = map.replace(key, value)
 
-    actual override fun replace(key: K,
-                                oldValue: V,
-                                newValue: V): Boolean =
-            map.replace(key, oldValue, newValue)
+    actual override fun replace(key: K, oldValue: V, newValue: V): Boolean =
+        map.replace(key, oldValue, newValue)
 
-    actual override fun putIfAbsent(key: K,
-                                    value: V): V? = map.putIfAbsent(key, value)
+    actual override fun putIfAbsent(key: K, value: V): V? =
+        map.putIfAbsent(key, value)
 
     actual override fun remove(key: K): V? = map.remove(key)
 
-    actual override fun remove(key: K,
-                               value: V): Boolean = map.remove(key, value)
+    actual override fun remove(key: K, value: V): Boolean =
+        map.remove(key, value)
 
     actual override fun clear() = map.clear()
 }
 
 actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(),
-        MutableSet<T> {
+    MutableSet<T> {
     private val set = ConcurrentSkipListSet<T>()
 
     actual override val size get() = set.size
@@ -157,15 +159,15 @@ actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(),
     actual override fun remove(element: T) = set.remove(element)
 
     actual override fun removeAll(elements: Collection<T>) =
-            set.removeAll(elements)
+        set.removeAll(elements)
 
     actual override fun retainAll(elements: Collection<T>) =
-            set.retainAll(elements)
+        set.retainAll(elements)
 
     actual override fun contains(element: T) = set.contains(element)
 
     actual override fun containsAll(elements: Collection<T>) =
-            set.containsAll(elements)
+        set.containsAll(elements)
 
     override fun equals(other: Any?): Boolean {
         if (other !is ConcurrentSortedSet<*>) {
@@ -180,52 +182,49 @@ actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractSet<T>(),
 }
 
 actual inline fun <T> Collection<T>.readOnly(): Collection<T> =
-        Collections.unmodifiableCollection(this)
+    Collections.unmodifiableCollection(this)
 
 actual inline fun <T> List<T>.readOnly(): List<T> =
-        Collections.unmodifiableList(this)
+    Collections.unmodifiableList(this)
 
 actual inline fun <T> Set<T>.readOnly(): Set<T> =
-        Collections.unmodifiableSet(this)
+    Collections.unmodifiableSet(this)
 
 actual inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> =
-        Collections.unmodifiableMap(this)
+    Collections.unmodifiableMap(this)
 
 actual inline fun <T> Collection<T>.synchronized(): Collection<T> =
-        Collections.synchronizedCollection(this)
+    Collections.synchronizedCollection(this)
 
 @JvmName("synchronizedMut")
 actual inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> =
-        Collections.synchronizedCollection(this)
+    Collections.synchronizedCollection(this)
 
 actual inline fun <T> List<T>.synchronized(): List<T> =
-        Collections.synchronizedList(this)
+    Collections.synchronizedList(this)
 
 @JvmName("synchronizedMut")
 actual inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
-        Collections.synchronizedList(this)
+    Collections.synchronizedList(this)
 
 actual inline fun <T> Set<T>.synchronized(): Set<T> =
-        Collections.synchronizedSet(this)
+    Collections.synchronizedSet(this)
 
 @JvmName("synchronizedMut")
 actual inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> =
-        Collections.synchronizedSet(this)
+    Collections.synchronizedSet(this)
 
 actual inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> =
-        Collections.synchronizedMap(this)
+    Collections.synchronizedMap(this)
 
 @JvmName("synchronizedMut")
 actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
-        Collections.synchronizedMap(this)
+    Collections.synchronizedMap(this)
 
 actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
-        java.util.EnumMap<E, V>(E::class.java)
+    java.util.EnumMap<E, V>(E::class.java)
 
-actual fun <K, V> MutableMap<K, V>.putAbsent(
-        key: K,
-        value: V
-): V? {
+actual fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
     return if (this is ConcurrentMap) {
         this.putAbsent(key, value)
     } else {
@@ -235,14 +234,12 @@ actual fun <K, V> MutableMap<K, V>.putAbsent(
     }
 }
 
-actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(
-        key: K,
-        value: V
-): V? = putIfAbsent(key, value)
+actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
+    putIfAbsent(key, value)
 
-actual fun <K, V : Any> MutableMap<K, V>.computeAlways(
-        key: K,
-        block: (K, V?) -> V
+actual inline fun <K, V : Any> MutableMap<K, V>.computeAlways(
+    key: K,
+    block: (K, V?) -> V
 ): V {
     return if (this is ConcurrentMap) {
         this.computeAlways(key, block)
@@ -254,9 +251,9 @@ actual fun <K, V : Any> MutableMap<K, V>.computeAlways(
     }
 }
 
-actual fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
-        key: K,
-        block: (K, V?) -> V
+actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
+    key: K,
+    block: (K, V?) -> V
 ): V {
     while (true) {
         var old = this[key]
@@ -280,9 +277,9 @@ actual fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
 }
 
 @JvmName("computeAlwaysNullable")
-actual fun <K, V> MutableMap<K, V>.computeAlways(
-        key: K,
-        block: (K, V?) -> V?
+actual inline fun <K, V> MutableMap<K, V>.computeAlways(
+    key: K,
+    block: (K, V?) -> V?
 ): V? {
     return if (this is ConcurrentMap) {
         this.computeAlways(key, block)
@@ -299,9 +296,9 @@ actual fun <K, V> MutableMap<K, V>.computeAlways(
 }
 
 @JvmName("computeAlwaysNullable")
-actual fun <K, V> ConcurrentMap<K, V>.computeAlways(
-        key: K,
-        block: (K, V?) -> V?
+actual inline fun <K, V> ConcurrentMap<K, V>.computeAlways(
+    key: K,
+    block: (K, V?) -> V?
 ): V? {
     while (true) {
         var old = this[key]
@@ -331,8 +328,8 @@ actual fun <K, V> ConcurrentMap<K, V>.computeAlways(
 }
 
 actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
-        key: K,
-        block: (K) -> V
+    key: K,
+    block: (K) -> V
 ): V {
     return if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
@@ -345,8 +342,8 @@ actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
 }
 
 actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
-        key: K,
-        block: (K) -> V
+    key: K,
+    block: (K) -> V
 ): V {
     this[key]?.let { return it }
     val new = block(key)
@@ -355,8 +352,8 @@ actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
 
 @JvmName("computeAbsentNullable")
 actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
-        key: K,
-        block: (K) -> V?
+    key: K,
+    block: (K) -> V?
 ): V? {
     return if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
@@ -370,8 +367,8 @@ actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
 
 @JvmName("computeAbsentNullable")
 actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
-        key: K,
-        block: (K) -> V?
+    key: K,
+    block: (K) -> V?
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
@@ -380,6 +377,6 @@ actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
 
 @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 actual inline fun <K, V> MutableMap<K, V>.removeEqual(
-        key: K,
-        value: V
+    key: K,
+    value: V
 ): Boolean = remove(key, value)

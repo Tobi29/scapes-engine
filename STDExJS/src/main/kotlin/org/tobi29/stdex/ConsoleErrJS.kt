@@ -16,6 +16,8 @@
 
 // Based on println implementation for Kotlin/JS
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.stdex
 
 private abstract class BaseOutputErr {
@@ -35,7 +37,7 @@ private abstract class BaseOutputErr {
 
 private class NodeJsOutputErr(val outputStream: dynamic) : BaseOutputErr() {
     override fun print(message: Any?): dynamic =
-            outputStream.write(String(message))
+        outputStream.write(String(message))
 }
 
 private open class BufferedOutputErr : BaseOutputErr() {
@@ -69,13 +71,17 @@ private class BufferedOutputToConsoleErr : BufferedOutputErr() {
 }
 
 private var outputErr = run {
+    @Suppress("UnsafeCastFromDynamic")
     val isNode: Boolean = js(
-            "typeof process !== 'undefined' && process.versions && !!process.versions.node")
-    if (isNode) NodeJsOutputErr(
-            js("process.stderr")) else BufferedOutputToConsoleErr()
+        "typeof process !== 'undefined' && process.versions && !!process.versions.node"
+    )
+    if (isNode) NodeJsOutputErr(js("process.stderr"))
+    else BufferedOutputToConsoleErr()
 }
 
-private inline fun String(value: Any?): String = js("String")(value)
+private inline fun String(value: Any?): String =
+    @Suppress("UnsafeCastFromDynamic")
+    js("String")(value)
 
 actual fun printerr(message: Any?) {
     outputErr.print(message)

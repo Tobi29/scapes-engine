@@ -20,8 +20,8 @@ package org.tobi29.stdex
 
 @Suppress("UnsafeCastFromDynamic")
 actual inline fun Int.toString(radix: Int): String =
-        asDynamic().toString(radix)
+    asDynamic().toString(radix)
 
 @Suppress("UnsafeCastFromDynamic")
 actual inline fun Long.toString(radix: Int): String =
-        asDynamic().toString(radix)
+    asDynamic().toString(radix)

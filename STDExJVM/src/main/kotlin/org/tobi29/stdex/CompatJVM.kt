@@ -21,7 +21,7 @@ package org.tobi29.stdex
 actual val ANDROID_API_LEVEL = run {
     try {
         Class.forName("android.os.Build\$VERSION")
-                .getField("SDK_INT").get(null) as? Int
+            .getField("SDK_INT").get(null) as? Int
     } catch (e: ReflectiveOperationException) {
         null
     }
@@ -33,4 +33,4 @@ actual inline val IS_JS get() = false
 actual inline val IS_NATIVE get() = false
 
 actual inline fun isAndroidAPI(level: Int) =
-        ANDROID_API_LEVEL ?: Int.MAX_VALUE >= level
+    ANDROID_API_LEVEL ?: Int.MAX_VALUE >= level

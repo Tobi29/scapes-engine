@@ -19,7 +19,7 @@
 package org.tobi29.stdex
 
 actual inline fun Int.toString(radix: Int): String =
-        java.lang.Integer.toString(this, radix)
+    java.lang.Integer.toString(this, radix)
 
 actual inline fun Long.toString(radix: Int): String =
-        java.lang.Long.toString(this, radix)
+    java.lang.Long.toString(this, radix)

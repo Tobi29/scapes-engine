@@ -38,9 +38,7 @@ interface Readable {
      * @param offset First index in the array to write to
      * @param size Amount of characters to read
      */
-    fun read(array: CharArray,
-             offset: Int,
-             size: Int) {
+    fun read(array: CharArray, offset: Int, size: Int) {
         if (offset < 0 || size < 0 || offset + size > array.size)
             throw IndexOutOfBoundsException("Invalid offset or size")
         for (i in offset until offset + size) {
@@ -55,9 +53,7 @@ interface Readable {
      * @param size Maximum amount of characters to read
      * @return The amount of characters read or -1 on end of stream
      */
-    fun readSome(array: CharArray,
-                 offset: Int,
-                 size: Int): Int {
+    fun readSome(array: CharArray, offset: Int, size: Int): Int {
         if (offset < 0 || size < 0 || offset + size > array.size)
             throw IndexOutOfBoundsException("Invalid offset or size")
         for (i in offset until offset + size) {

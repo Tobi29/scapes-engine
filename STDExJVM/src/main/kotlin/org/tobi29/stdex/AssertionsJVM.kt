@@ -18,5 +18,6 @@ package org.tobi29.stdex
 
 actual object Assertions {
     @JvmStatic
-    actual var ENABLED: Boolean = Assertions::class.java.desiredAssertionStatus()
+    actual var ENABLED: Boolean =
+        Assertions::class.java.desiredAssertionStatus()
 }

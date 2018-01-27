@@ -19,9 +19,9 @@ package org.tobi29.stdex
 import org.khronos.webgl.*
 
 @PublishedApi
-actual internal fun ByteArray.utf8ToStringImpl(
-        offset: Int,
-        size: Int
+internal actual fun ByteArray.utf8ToStringImpl(
+    offset: Int,
+    size: Int
 ): String {
     val buffer = ArrayBuffer(size)
     val byteBuffer = Uint8Array(buffer)
@@ -33,14 +33,15 @@ actual internal fun ByteArray.utf8ToStringImpl(
 }
 
 @PublishedApi
-actual internal fun String.utf8ToArrayImpl(
-        destination: ByteArray?,
-        offset: Int,
-        size: Int
+internal actual fun String.utf8ToArrayImpl(
+    destination: ByteArray?,
+    offset: Int,
+    size: Int
 ): ByteArray {
     val byteBuffer = TextEncoder().encode(this)
     val array = destination ?: ByteArray(
-            if (size < 0) byteBuffer.length else size)
+        if (size < 0) byteBuffer.length else size
+    )
     var j = offset
     repeat(size.coerceAtMost(array.size)) {
         array[j++] = byteBuffer[it]
@@ -49,9 +50,9 @@ actual internal fun String.utf8ToArrayImpl(
 }
 
 @PublishedApi
-actual internal fun CharArray.copyToStringImpl(
-        offset: Int,
-        size: Int
+internal actual fun CharArray.copyToStringImpl(
+    offset: Int,
+    size: Int
 ) = StringBuilder(size).apply {
     for (i in offset until offset + size) {
         append(this@copyToStringImpl[i])
@@ -59,11 +60,11 @@ actual internal fun CharArray.copyToStringImpl(
 }.toString()
 
 @PublishedApi
-actual internal fun String.copyToArrayImpl(
-        destination: CharArray,
-        offset: Int,
-        startIndex: Int,
-        endIndex: Int
+internal actual fun String.copyToArrayImpl(
+    destination: CharArray,
+    offset: Int,
+    startIndex: Int,
+    endIndex: Int
 ): CharArray {
     val destOffset = offset - startIndex
     for (i in startIndex until endIndex) {
@@ -79,14 +80,14 @@ private external class TextDecodeOptions {
 private external class TextDecoder {
     val encoding: String
     fun decode(
-            input: BufferDataSource? = definedExternally,
-            options: TextDecodeOptions? = definedExternally
+        input: BufferDataSource? = definedExternally,
+        options: TextDecodeOptions? = definedExternally
     ): String
 }
 
 private external class TextEncoder(
-        label: String? = definedExternally,
-        options: TextDecodeOptions? = definedExternally
+    label: String? = definedExternally,
+    options: TextDecodeOptions? = definedExternally
 ) {
     val encoding: String
     fun encode(input: String? = definedExternally): Uint8Array

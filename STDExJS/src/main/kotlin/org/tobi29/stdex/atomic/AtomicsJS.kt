@@ -23,14 +23,13 @@ actual class AtomicReference<V> actual constructor(private var value: V) {
         value = newValue
     }
 
-    actual fun compareAndSet(expect: V,
-                             update: V) =
-            if (value === expect) {
-                value = update
-                true
-            } else {
-                false
-            }
+    actual fun compareAndSet(expect: V, update: V) =
+        if (value === expect) {
+            value = update
+            true
+        } else {
+            false
+        }
 
     actual fun getAndSet(newValue: V) = value.also { value = newValue }
 
@@ -38,18 +37,15 @@ actual class AtomicReference<V> actual constructor(private var value: V) {
 }
 
 actual class AtomicBoolean actual constructor(private var value: Boolean) {
-    constructor() : this(false)
-
     actual fun get() = value
 
-    actual fun compareAndSet(expect: Boolean,
-                             update: Boolean) =
-            if (value == expect) {
-                value = update
-                true
-            } else {
-                false
-            }
+    actual fun compareAndSet(expect: Boolean, update: Boolean) =
+        if (value == expect) {
+            value = update
+            true
+        } else {
+            false
+        }
 
     actual fun set(newValue: Boolean) {
         value = newValue
@@ -67,8 +63,6 @@ actual class AtomicBoolean actual constructor(private var value: Boolean) {
 }
 
 actual class AtomicInt actual constructor(private var value: Int)/* : Number() */ {
-    constructor() : this(0)
-
     actual fun get() = value
 
     actual fun set(newValue: Int) {
@@ -77,14 +71,13 @@ actual class AtomicInt actual constructor(private var value: Int)/* : Number() *
 
     actual fun getAndSet(newValue: Int) = value.also { value = newValue }
 
-    actual fun compareAndSet(expect: Int,
-                             update: Int) =
-            if (value == expect) {
-                value = update
-                true
-            } else {
-                false
-            }
+    actual fun compareAndSet(expect: Int, update: Int) =
+        if (value == expect) {
+            value = update
+            true
+        } else {
+            false
+        }
 
     actual fun getAndIncrement() = addAndGet(1)
 
@@ -109,8 +102,6 @@ actual class AtomicInt actual constructor(private var value: Int)/* : Number() *
 }
 
 actual class AtomicLong actual constructor(private var value: Long)/* : Number() */ {
-    constructor() : this(0L)
-
     actual fun get() = value
 
     actual fun set(newValue: Long) {
@@ -119,14 +110,13 @@ actual class AtomicLong actual constructor(private var value: Long)/* : Number()
 
     actual fun getAndSet(newValue: Long) = value.also { value = newValue }
 
-    actual fun compareAndSet(expect: Long,
-                             update: Long) =
-            if (value == expect) {
-                value = update
-                true
-            } else {
-                false
-            }
+    actual fun compareAndSet(expect: Long, update: Long) =
+        if (value == expect) {
+            value = update
+            true
+        } else {
+            false
+        }
 
     actual fun getAndIncrement() = addAndGet(1)
 

@@ -20,19 +20,17 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 actual class ThreadLocal<T> actual constructor(
-        private val initial: () -> T
+    private val initial: () -> T
 ) : ReadWriteProperty<Any?, T> {
     private val instanceMut = mutableLazy(initial)
     private val instance by instanceMut
 
     actual fun get(): T = instance
-    override fun getValue(thisRef: Any?,
-                          property: KProperty<*>): T = get()
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T = get()
 
     actual fun set(value: T) = instanceMut.set { value }
-    override fun setValue(thisRef: Any?,
-                          property: KProperty<*>,
-                          value: T) = set(value)
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
+        set(value)
 
     actual fun remove() = instanceMut.set(initial)
 }

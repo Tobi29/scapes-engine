@@ -24,7 +24,7 @@ import kotlin.properties.ReadWriteProperty
  * @param T: The type of the elements in the [ThreadLocal]
  */
 expect class ThreadLocal<T>(
-        initial: () -> T
+    initial: () -> T
 ) : ReadWriteProperty<Any?, T> {
     fun set(value: T)
     fun get(): T

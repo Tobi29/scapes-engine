@@ -39,38 +39,42 @@ fun String.longHashCode(start: Long = 0L): Long {
  * @return A [Regex] matching like the wildcard expression
  */
 fun wildcard(exp: String) = Regex.escape(exp).replace("?", "\\E.?\\Q").replace(
-        "*", "\\E.*\\Q").toRegex()
+    "*", "\\E.*\\Q"
+).toRegex()
 
 /**
  * Assembles a sequence of string replace operations into a function
  * @receiver List of string patterns and replacements
  * @return Callable function applying all the replacement on a given string
  */
-fun Collection<Pair<String, String>>.toReplace(): (String) -> String = { str ->
-    fold(str) { str, (pattern, replace) ->
-        str.replace(pattern, replace)
+fun Collection<Pair<String, String>>.toReplace(): (String) -> String =
+    { initialStr ->
+        fold(initialStr) { str, (pattern, replace) ->
+            str.replace(pattern, replace)
+        }
     }
-}
 
 /**
  * Assembles a sequence of regex replace operations into a function
  * @receiver Sequence of regex patterns and replacements
  * @return Callable function applying all the replacement on a given string
  */
-fun Sequence<Pair<String, String>>.toRegexReplace() = map { (pattern, replace) ->
-    pattern.toRegex() to replace
-}.toList().toRegexReplace()
+fun Sequence<Pair<String, String>>.toRegexReplace() =
+    map { (pattern, replace) ->
+        pattern.toRegex() to replace
+    }.toList().toRegexReplace()
 
 /**
  * Assembles a sequence of regex replace operations into a function
  * @receiver List of regex patterns and replacements
  * @return Callable function applying all the replacement on a given string
  */
-fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str ->
-    fold(str) { str, (regex, replace) ->
-        str.replace(regex, replace)
+fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String =
+    { initialStr ->
+        fold(initialStr) { str, (regex, replace) ->
+            str.replace(regex, replace)
+        }
     }
-}
 
 /**
  * Reads UTF-8 data from the given array and returns a string
@@ -83,8 +87,8 @@ fun Collection<Pair<Regex, String>>.toRegexReplace(): (String) -> String = { str
  * @return A string containing the encoded characters
  */
 inline fun ByteArray.utf8ToString(
-        offset: Int = 0,
-        size: Int = this.size - offset
+    offset: Int = 0,
+    size: Int = this.size - offset
 ): String = utf8ToStringImpl(offset, size)
 
 /**
@@ -95,9 +99,9 @@ inline fun ByteArray.utf8ToString(
  * @receiver The string to encode
  */
 inline fun String.utf8ToArray(
-        destination: ByteArray? = null,
-        offset: Int = 0,
-        size: Int = -1
+    destination: ByteArray? = null,
+    offset: Int = 0,
+    size: Int = -1
 ): ByteArray = utf8ToArrayImpl(destination, offset, size)
 
 /**
@@ -108,8 +112,8 @@ inline fun String.utf8ToArray(
  * @return A new string containing the copied characters
  */
 inline fun CharArray.copyToString(
-        offset: Int = 0,
-        size: Int = this.size - offset
+    offset: Int = 0,
+    size: Int = this.size - offset
 ): String = copyToStringImpl(offset, size)
 
 /**
@@ -122,10 +126,10 @@ inline fun CharArray.copyToString(
  * @return A new string containing the copied characters
  */
 inline fun String.copyToArray(
-        destination: CharArray = CharArray(length),
-        offset: Int = 0,
-        startIndex: Int = 0,
-        endIndex: Int = length
+    destination: CharArray = CharArray(length),
+    offset: Int = 0,
+    startIndex: Int = 0,
+    endIndex: Int = length
 ): CharArray = copyToArrayImpl(destination, offset, startIndex, endIndex)
 
 /**
@@ -137,11 +141,14 @@ inline fun String.copyToArray(
  * @throws IllegalArgumentException If initial string was already too long
  * @return String with length between minLength and maxLength (inclusive)
  */
-fun String.prefixToLength(char: Char,
-                          minLength: Int,
-                          maxLength: Int = Int.MAX_VALUE): String {
+fun String.prefixToLength(
+    char: Char,
+    minLength: Int,
+    maxLength: Int = Int.MAX_VALUE
+): String {
     if (length > maxLength) throw IllegalArgumentException(
-            "String already too long")
+        "String already too long"
+    )
     if (length >= minLength) return this
     val output = StringBuilder(minLength)
     repeat(minLength - length) {
@@ -160,11 +167,14 @@ fun String.prefixToLength(char: Char,
  * @throws IllegalArgumentException If initial string was already too long
  * @return String with length between minLength and maxLength (inclusive)
  */
-fun String.suffixToLength(char: Char,
-                          minLength: Int,
-                          maxLength: Int = Int.MAX_VALUE): String {
+fun String.suffixToLength(
+    char: Char,
+    minLength: Int,
+    maxLength: Int = Int.MAX_VALUE
+): String {
     if (length > maxLength) throw IllegalArgumentException(
-            "String already too long")
+        "String already too long"
+    )
     if (length >= minLength) return this
     val output = StringBuilder(minLength)
     output.append(this)
@@ -208,8 +218,10 @@ fun String.substringAfterOrNull(delimiter: Char): String? {
  */
 fun String.substringAfterOrNull(delimiter: String): String? {
     val index = indexOf(delimiter)
-    return if (index == -1) null else substring(index + delimiter.length,
-            length)
+    return if (index == -1) null else substring(
+        index + delimiter.length,
+        length
+    )
 }
 
 /**
@@ -245,8 +257,10 @@ fun String.substringAfterLastOrNull(delimiter: Char): String? {
  */
 fun String.substringAfterLastOrNull(delimiter: String): String? {
     val index = lastIndexOf(delimiter)
-    return if (index == -1) null else substring(index + delimiter.length,
-            length)
+    return if (index == -1) null else substring(
+        index + delimiter.length,
+        length
+    )
 }
 
 /**
@@ -269,20 +283,28 @@ fun CharSequence.toReadable(): Readable = object : Readable {
 }
 
 @PublishedApi
-expect internal fun ByteArray.utf8ToStringImpl(offset: Int,
-                                               size: Int): String
+expect internal fun ByteArray.utf8ToStringImpl(
+    offset: Int,
+    size: Int
+): String
 
 @PublishedApi
-expect internal fun String.utf8ToArrayImpl(destination: ByteArray?,
-                                           offset: Int,
-                                           size: Int): ByteArray
+expect internal fun String.utf8ToArrayImpl(
+    destination: ByteArray?,
+    offset: Int,
+    size: Int
+): ByteArray
 
 @PublishedApi
-expect internal fun CharArray.copyToStringImpl(offset: Int,
-                                               size: Int): String
+expect internal fun CharArray.copyToStringImpl(
+    offset: Int,
+    size: Int
+): String
 
 @PublishedApi
-expect internal fun String.copyToArrayImpl(destination: CharArray,
-                                           offset: Int,
-                                           startIndex: Int,
-                                           endIndex: Int): CharArray
+expect internal fun String.copyToArrayImpl(
+    destination: CharArray,
+    offset: Int,
+    startIndex: Int,
+    endIndex: Int
+): CharArray

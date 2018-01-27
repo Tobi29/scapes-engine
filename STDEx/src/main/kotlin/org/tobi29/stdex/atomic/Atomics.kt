@@ -21,8 +21,7 @@ expect class AtomicReference<V>(value: V) {
 
     fun set(newValue: V)
 
-    fun compareAndSet(expect: V,
-                      update: V): Boolean
+    fun compareAndSet(expect: V, update: V): Boolean
 
     fun getAndSet(newValue: V): V
 }
@@ -30,8 +29,7 @@ expect class AtomicReference<V>(value: V) {
 expect class AtomicBoolean(value: Boolean) {
     fun get(): Boolean
 
-    fun compareAndSet(expect: Boolean,
-                      update: Boolean): Boolean
+    fun compareAndSet(expect: Boolean, update: Boolean): Boolean
 
     fun set(newValue: Boolean)
 
@@ -45,8 +43,7 @@ expect class AtomicInt(value: Int) {
 
     fun getAndSet(newValue: Int): Int
 
-    fun compareAndSet(expect: Int,
-                      update: Int): Boolean
+    fun compareAndSet(expect: Int, update: Int): Boolean
 
     fun getAndIncrement(): Int
 
@@ -68,8 +65,7 @@ expect class AtomicLong(value: Long) {
 
     fun getAndSet(newValue: Long): Long
 
-    fun compareAndSet(expect: Long,
-                      update: Long): Boolean
+    fun compareAndSet(expect: Long, update: Long): Boolean
 
     fun getAndIncrement(): Long
 
@@ -92,17 +88,14 @@ class AtomicDouble(initial: Double) {
     fun set(newValue: Double) = long.set(newValue.toRawBits())
 
     fun getAndSet(newValue: Double): Double =
-            Double.fromBits(long.getAndSet(newValue.toRawBits()))
+        Double.fromBits(long.getAndSet(newValue.toRawBits()))
 
-    fun compareAndSet(expect: Double,
-                      update: Double): Boolean =
-            long.compareAndSet(expect.toRawBits(), update.toRawBits())
+    fun compareAndSet(expect: Double, update: Double): Boolean =
+        long.compareAndSet(expect.toRawBits(), update.toRawBits())
 
-    fun getAndAdd(delta: Double): Double =
-            getAndUpdate { it + delta }
+    fun getAndAdd(delta: Double): Double = getAndUpdate { it + delta }
 
-    fun addAndGet(delta: Double): Double =
-            updateAndGet { it + delta }
+    fun addAndGet(delta: Double): Double = updateAndGet { it + delta }
 }
 
 inline fun <V> AtomicReference<V>.getAndUpdate(update: (V) -> V): V {

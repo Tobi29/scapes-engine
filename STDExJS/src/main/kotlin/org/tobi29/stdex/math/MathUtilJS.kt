@@ -27,42 +27,42 @@ actual inline fun cbrt(value: Double) = value.pow(1.0 / 3.0)
 
 actual fun Float.floorToInt(): Int = toInt().let { int ->
     if (this >= 0.0f || int.toFloat() == this
-            || int == Int.MIN_VALUE) int else int - 1
+        || int == Int.MIN_VALUE) int else int - 1
 }
 
 actual fun Float.floorToLong(): Long = toLong().let { int ->
     if (this >= 0.0f || int.toFloat() == this
-            || int == Long.MIN_VALUE) int else int - 1L
+        || int == Long.MIN_VALUE) int else int - 1L
 }
 
 actual fun Double.floorToInt(): Int = toInt().let { int ->
     if (this >= 0.0 || int.toDouble() == this
-            || int == Int.MIN_VALUE) int else int - 1
+        || int == Int.MIN_VALUE) int else int - 1
 }
 
 actual fun Double.floorToLong(): Long = toLong().let { int ->
     if (this >= 0.0 || int.toDouble() == this
-            || int == Long.MIN_VALUE) int else int - 1L
+        || int == Long.MIN_VALUE) int else int - 1L
 }
 
 actual fun Float.ceilToInt(): Int = toInt().let { int ->
     if (this <= 0.0 || int.toFloat() == this
-            || int == Int.MAX_VALUE) int else int + 1
+        || int == Int.MAX_VALUE) int else int + 1
 }
 
 actual fun Float.ceilToLong(): Long = toLong().let { int ->
     if (this <= 0.0 || int.toFloat() == this
-            || int == Long.MAX_VALUE) int else int + 1L
+        || int == Long.MAX_VALUE) int else int + 1L
 }
 
 actual fun Double.ceilToInt(): Int = toInt().let { int ->
     if (this <= 0.0 || int.toDouble() == this
-            || int == Int.MAX_VALUE) int else int + 1
+        || int == Int.MAX_VALUE) int else int + 1
 }
 
 actual fun Double.ceilToLong(): Long = toLong().let { int ->
     if (this <= 0.0 || int.toDouble() == this
-            || int == Long.MAX_VALUE) int else int + 1L
+        || int == Long.MAX_VALUE) int else int + 1L
 }
 
 actual fun clz(value: Int) = clzImpl(value)
@@ -71,8 +71,8 @@ actual fun clz(value: Int) = clzImpl(value)
 private val clzImpl: (Int) -> Int = if (Math.clz !== undefined) Math.clz
 else { value: Int ->
     if (value == 0) 32
-    else (ln(
-            (value ushr 0).toDouble()) * Math.LOG2E).floorToInt().let { it: Int -> 31 - it }
+    else (ln((value ushr 0).toDouble()) * Math.LOG2E)
+        .floorToInt().let { it: Int -> 31 - it }
 }
 
 private external object Math {

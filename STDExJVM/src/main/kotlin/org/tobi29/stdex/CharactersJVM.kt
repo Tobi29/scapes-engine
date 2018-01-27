@@ -19,20 +19,19 @@
 package org.tobi29.stdex
 
 actual inline fun Char.isISOControl(): Boolean =
-        java.lang.Character.isISOControl(this)
+    java.lang.Character.isISOControl(this)
 
 actual inline fun Codepoint.isISOControl(): Boolean =
-        java.lang.Character.isISOControl(this)
+    java.lang.Character.isISOControl(this)
 
 actual inline fun Codepoint.isBmpCodepoint(): Boolean =
-        java.lang.Character.isBmpCodePoint(this)
+    java.lang.Character.isBmpCodePoint(this)
 
 actual inline fun Codepoint.highSurrogate(): Char =
-        java.lang.Character.highSurrogate(this)
+    java.lang.Character.highSurrogate(this)
 
 actual inline fun Codepoint.lowSurrogate(): Char =
-        java.lang.Character.lowSurrogate(this)
+    java.lang.Character.lowSurrogate(this)
 
-actual inline fun surrogateCodepoint(high: Char,
-                                     low: Char): Codepoint =
-        java.lang.Character.toCodePoint(high, low)
+actual inline fun surrogateCodepoint(high: Char, low: Char): Codepoint =
+    java.lang.Character.toCodePoint(high, low)

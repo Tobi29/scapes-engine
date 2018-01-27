@@ -30,10 +30,12 @@ expect fun Long.toString(radix: Int): String
  * @return Return value of [output]
  */
 inline fun <R> Short.splitToBytes(output: (Byte, Byte) -> R): R =
-        toInt().let { s ->
-            output((s ushr 8).toByte(),
-                    (s ushr 0).toByte())
-        }
+    toInt().let { s ->
+        output(
+            (s ushr 8).toByte(),
+            (s ushr 0).toByte()
+        )
+    }
 
 /**
  * Combines the given bytes into a number, going from high bytes to low
@@ -41,10 +43,9 @@ inline fun <R> Short.splitToBytes(output: (Byte, Byte) -> R): R =
  * @param b0 2nd byte (if big-endian)
  * @return Combined number
  */
-inline fun combineToShort(b1: Byte,
-                          b0: Byte): Short =
-        ((b1.toInt() and 0xFF shl 8) or
-                (b0.toInt() and 0xFF shl 0)).toShort()
+inline fun combineToShort(b1: Byte, b0: Byte): Short =
+    ((b1.toInt() and 0xFF shl 8) or
+            (b0.toInt() and 0xFF shl 0)).toShort()
 
 /**
  * Splits the given number into bytes, going from high bytes to low
@@ -54,12 +55,14 @@ inline fun combineToShort(b1: Byte,
  * @return Return value of [output]
  */
 inline fun <R> Int.splitToBytes(output: (Byte, Byte, Byte, Byte) -> R): R =
-        let { i ->
-            output((i ushr 24).toByte(),
-                    (i ushr 16).toByte(),
-                    (i ushr 8).toByte(),
-                    (i ushr 0).toByte())
-        }
+    let { i ->
+        output(
+            (i ushr 24).toByte(),
+            (i ushr 16).toByte(),
+            (i ushr 8).toByte(),
+            (i ushr 0).toByte()
+        )
+    }
 
 /**
  * Splits the given number into bytes, going from high shorts to low
@@ -69,10 +72,12 @@ inline fun <R> Int.splitToBytes(output: (Byte, Byte, Byte, Byte) -> R): R =
  * @return Return value of [output]
  */
 inline fun <R> Int.splitToShorts(output: (Short, Short) -> R): R =
-        let { l ->
-            output((l ushr 16).toShort(),
-                    (l ushr 0).toShort())
-        }
+    let { l ->
+        output(
+            (l ushr 16).toShort(),
+            (l ushr 0).toShort()
+        )
+    }
 
 /**
  * Combines the given bytes into a number, going from high bytes to low
@@ -82,14 +87,11 @@ inline fun <R> Int.splitToShorts(output: (Short, Short) -> R): R =
  * @param b0 4th byte (if big-endian)
  * @return Combined number
  */
-inline fun combineToInt(b3: Byte,
-                        b2: Byte,
-                        b1: Byte,
-                        b0: Byte): Int =
-        (b3.toInt() and 0xFF shl 24) or
-                (b2.toInt() and 0xFF shl 16) or
-                (b1.toInt() and 0xFF shl 8) or
-                (b0.toInt() and 0xFF shl 0)
+inline fun combineToInt(b3: Byte, b2: Byte, b1: Byte, b0: Byte): Int =
+    (b3.toInt() and 0xFF shl 24) or
+            (b2.toInt() and 0xFF shl 16) or
+            (b1.toInt() and 0xFF shl 8) or
+            (b0.toInt() and 0xFF shl 0)
 
 /**
  * Combines the given shorts into a number, going from high bytes to low
@@ -97,10 +99,9 @@ inline fun combineToInt(b3: Byte,
  * @param s9 2nd short (if big-endian)
  * @return Combined number
  */
-inline fun combineToInt(s1: Short,
-                        s0: Short): Int =
-        (s1.toInt() and 0xFFFF shl 16) or
-                (s0.toInt() and 0xFFFF shl 0)
+inline fun combineToInt(s1: Short, s0: Short): Int =
+    (s1.toInt() and 0xFFFF shl 16) or
+            (s0.toInt() and 0xFFFF shl 0)
 
 /**
  * Splits the given number into bytes, going from high bytes to low
@@ -110,16 +111,18 @@ inline fun combineToInt(s1: Short,
  * @return Return value of [output]
  */
 inline fun <R> Long.splitToBytes(output: (Byte, Byte, Byte, Byte, Byte, Byte, Byte, Byte) -> R): R =
-        let { l ->
-            output((l ushr 56).toByte(),
-                    (l ushr 48).toByte(),
-                    (l ushr 40).toByte(),
-                    (l ushr 32).toByte(),
-                    (l ushr 24).toByte(),
-                    (l ushr 16).toByte(),
-                    (l ushr 8).toByte(),
-                    (l ushr 0).toByte())
-        }
+    let { l ->
+        output(
+            (l ushr 56).toByte(),
+            (l ushr 48).toByte(),
+            (l ushr 40).toByte(),
+            (l ushr 32).toByte(),
+            (l ushr 24).toByte(),
+            (l ushr 16).toByte(),
+            (l ushr 8).toByte(),
+            (l ushr 0).toByte()
+        )
+    }
 
 /**
  * Splits the given number into bytes, going from high shorts to low
@@ -129,12 +132,14 @@ inline fun <R> Long.splitToBytes(output: (Byte, Byte, Byte, Byte, Byte, Byte, By
  * @return Return value of [output]
  */
 inline fun <R> Long.splitToShorts(output: (Short, Short, Short, Short) -> R): R =
-        let { l ->
-            output((l ushr 48).toShort(),
-                    (l ushr 32).toShort(),
-                    (l ushr 16).toShort(),
-                    (l ushr 0).toShort())
-        }
+    let { l ->
+        output(
+            (l ushr 48).toShort(),
+            (l ushr 32).toShort(),
+            (l ushr 16).toShort(),
+            (l ushr 0).toShort()
+        )
+    }
 
 /**
  * Splits the given number into bytes, going from high ints to low
@@ -144,10 +149,12 @@ inline fun <R> Long.splitToShorts(output: (Short, Short, Short, Short) -> R): R 
  * @return Return value of [output]
  */
 inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
-        let { l ->
-            output((l ushr 32).toInt(),
-                    (l ushr 0).toInt())
-        }
+    let { l ->
+        output(
+            (l ushr 32).toInt(),
+            (l ushr 0).toInt()
+        )
+    }
 
 /**
  * Combines the given bytes into a number, going from high bytes to low
@@ -161,22 +168,24 @@ inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
  * @param b0 8th byte (if big-endian)
  * @return Combined number
  */
-inline fun combineToLong(b7: Byte,
-                         b6: Byte,
-                         b5: Byte,
-                         b4: Byte,
-                         b3: Byte,
-                         b2: Byte,
-                         b1: Byte,
-                         b0: Byte): Long =
-        (b7.toLong() and 0xFF shl 56) or
-                (b6.toLong() and 0xFF shl 48) or
-                (b5.toLong() and 0xFF shl 40) or
-                (b4.toLong() and 0xFF shl 32) or
-                (b3.toLong() and 0xFF shl 24) or
-                (b2.toLong() and 0xFF shl 16) or
-                (b1.toLong() and 0xFF shl 8) or
-                (b0.toLong() and 0xFF shl 0)
+inline fun combineToLong(
+    b7: Byte,
+    b6: Byte,
+    b5: Byte,
+    b4: Byte,
+    b3: Byte,
+    b2: Byte,
+    b1: Byte,
+    b0: Byte
+): Long =
+    (b7.toLong() and 0xFF shl 56) or
+            (b6.toLong() and 0xFF shl 48) or
+            (b5.toLong() and 0xFF shl 40) or
+            (b4.toLong() and 0xFF shl 32) or
+            (b3.toLong() and 0xFF shl 24) or
+            (b2.toLong() and 0xFF shl 16) or
+            (b1.toLong() and 0xFF shl 8) or
+            (b0.toLong() and 0xFF shl 0)
 
 /**
  * Combines the given shorts into a number, going from high bytes to low
@@ -186,14 +195,11 @@ inline fun combineToLong(b7: Byte,
  * @param s0 4th short (if big-endian)
  * @return Combined number
  */
-inline fun combineToLong(s3: Short,
-                         s2: Short,
-                         s1: Short,
-                         s0: Short): Long =
-        (s3.toLong() and 0xFFFF shl 48) or
-                (s2.toLong() and 0xFFFF shl 32) or
-                (s1.toLong() and 0xFFFF shl 16) or
-                (s0.toLong() and 0xFFFF shl 0)
+inline fun combineToLong(s3: Short, s2: Short, s1: Short, s0: Short): Long =
+    (s3.toLong() and 0xFFFF shl 48) or
+            (s2.toLong() and 0xFFFF shl 32) or
+            (s1.toLong() and 0xFFFF shl 16) or
+            (s0.toLong() and 0xFFFF shl 0)
 
 /**
  * Combines the given ints into a number, going from high bytes to low
@@ -201,10 +207,9 @@ inline fun combineToLong(s3: Short,
  * @param i0 2nd int (if big-endian)
  * @return Combined number
  */
-inline fun combineToLong(i1: Int,
-                         i0: Int): Long =
-        (i1.toLong() and 0xFFFFFFFF shl 32) or
-                (i0.toLong() and 0xFFFFFFFF shl 0)
+inline fun combineToLong(i1: Int, i0: Int): Long =
+    (i1.toLong() and 0xFFFFFFFF shl 32) or
+            (i0.toLong() and 0xFFFFFFFF shl 0)
 
 inline fun Boolean.primitiveHashCode(): Int = if (this) 1231 else 1237
 

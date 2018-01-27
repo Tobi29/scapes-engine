@@ -18,9 +18,9 @@ package org.tobi29.stdex
 
 // TODO: Is it viable to make a compact but efficient implementation for this on js?
 actual class ArrayDeque<E : Any> private constructor(
-        private var array: ArrayList<E>
+    private var array: ArrayList<E>
 ) : Deque<E>,
-        MutableCollection<E> by array {
+    MutableCollection<E> by array {
     actual constructor() : this(ArrayList<E>())
 
     actual constructor(size: Int) : this()
@@ -28,10 +28,10 @@ actual class ArrayDeque<E : Any> private constructor(
     actual override fun addFirst(element: E) = array.add(0, element)
 
     actual override fun pollFirst(): E? =
-            if (isEmpty()) null else array.removeAt(0)
+        if (isEmpty()) null else array.removeAt(0)
 
     actual override fun pollLast(): E? =
-            if (isEmpty()) null else array.removeAt(array.lastIndex)
+        if (isEmpty()) null else array.removeAt(array.lastIndex)
 
     actual override fun getFirst(): E = array[0]
 
@@ -58,15 +58,15 @@ actual class ArrayDeque<E : Any> private constructor(
     }
 
     actual override fun descendingIterator(): MutableIterator<E> =
-            array.listIterator(array.lastIndex).let { iterator ->
-                object : MutableIterator<E> {
-                    override fun hasNext(): Boolean = iterator.hasPrevious()
+        array.listIterator(array.lastIndex).let { iterator ->
+            object : MutableIterator<E> {
+                override fun hasNext(): Boolean = iterator.hasPrevious()
 
-                    override fun next(): E = iterator.previous()
+                override fun next(): E = iterator.previous()
 
-                    override fun remove() = iterator.remove()
-                }
+                override fun remove() = iterator.remove()
             }
+        }
 
     // Boilerplate following
 
