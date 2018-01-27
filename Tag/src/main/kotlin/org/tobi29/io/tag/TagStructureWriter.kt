@@ -17,63 +17,57 @@
 package org.tobi29.io.tag
 
 interface TagStructureWriter {
-    // TODO: @Throws(IOException::class)
     fun begin(root: TagMap)
 
-    // TODO: @Throws(IOException::class)
     fun end()
 
-    // TODO: @Throws(IOException::class)
-    fun beginStructure()
-
-    // TODO: @Throws(IOException::class)
     fun beginStructure(key: String)
 
-    // TODO: @Throws(IOException::class)
+    fun beginStructure()
+
     fun endStructure()
 
-    // TODO: @Throws(IOException::class)
-    fun structureEmpty()
+    fun structureEmpty(key: String) {
+        beginStructure(key)
+        endStructure()
+    }
 
-    // TODO: @Throws(IOException::class)
-    fun structureEmpty(key: String)
+    fun structureEmpty() {
+        beginStructure()
+        endStructure()
+    }
 
-    // TODO: @Throws(IOException::class)
     fun beginList(key: String)
 
-    // TODO: @Throws(IOException::class)
     fun beginList()
 
-    // TODO: @Throws(IOException::class)
     fun beginListStructure() {
         beginStructure()
     }
 
-    // TODO: @Throws(IOException::class)
     fun endListWithTerminate() {
         endStructure()
         endList()
     }
 
-    // TODO: @Throws(IOException::class)
     fun endListWithEmpty() {
         structureEmpty()
         endList()
     }
 
-    // TODO: @Throws(IOException::class)
     fun endList()
 
-    // TODO: @Throws(IOException::class)
-    fun listEmpty(key: String)
+    fun listEmpty(key: String) {
+        beginList(key)
+        endList()
+    }
 
-    // TODO: @Throws(IOException::class)
-    fun listEmpty()
+    fun listEmpty() {
+        beginList()
+        endList()
+    }
 
-    // TODO: @Throws(IOException::class)
-    fun writePrimitiveTag(key: String,
-                          tag: TagPrimitive)
+    fun writePrimitiveTag(key: String, tag: TagPrimitive)
 
-    // TODO: @Throws(IOException::class)
     fun writePrimitiveTag(tag: TagPrimitive)
 }

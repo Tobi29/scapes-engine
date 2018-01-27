@@ -16,5 +16,4 @@
 
 package org.tobi29.io.tag
 
-expect internal fun convertNumberToType(type: Number,
-                                        convert: Number): Number
+internal expect fun convertNumberToType(type: Number, convert: Number): Number

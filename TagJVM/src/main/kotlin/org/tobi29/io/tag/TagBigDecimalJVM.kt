@@ -27,7 +27,7 @@ class TagBigDecimal
 /**
  * Get the tag for the given value
  */
-(override val value: BigDecimal) : TagDecimal()
+    (override val value: BigDecimal) : TagDecimal()
 
 /**
  * Get the tag for the given value
@@ -46,9 +46,10 @@ inline fun tagListOf(vararg elements: BigDecimal) = TagList {
  * @param default The default value in case the map does not contain the key
  * @return An object for property delegation
  */
-fun MutableTagMap.tagBigDecimal(key: String,
-                                                         default: BigDecimal) =
-        tagBigDecimal(key, default) { this }
+fun MutableTagMap.tagBigDecimal(
+    key: String,
+    default: BigDecimal
+) = tagBigDecimal(key, default) { this }
 
 /**
  * Delegates a property to an entry at [key] in the tag map return from [access]
@@ -57,12 +58,14 @@ fun MutableTagMap.tagBigDecimal(key: String,
  * @param access On each invocation it fetches the backing tag map from this
  * @return An object for property delegation
  */
-inline fun tagBigDecimal(key: String,
-                         default: BigDecimal,
-                         crossinline access: () -> MutableTagMap) =
-        tag(key,
-                { it?.toBigDecimal() ?: default }, BigDecimal::toTag, access)
+inline fun tagBigDecimal(
+    key: String,
+    default: BigDecimal,
+    crossinline access: () -> MutableTagMap
+) = tag(
+    key, { it?.toBigDecimal() ?: default },
+    BigDecimal::toTag, access
+)
 
-inline fun MutableTag.toBigDecimal() = toNumber()?.let {
-    BigDecimal(it.toString())
-}
+inline fun MutableTag.toBigDecimal() =
+    toNumber()?.let { BigDecimal(it.toString()) }

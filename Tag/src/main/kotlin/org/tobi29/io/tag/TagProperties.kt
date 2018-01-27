@@ -20,35 +20,34 @@ import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
 class MutableTagProperty(
-        private val key: String,
-        private val access: () -> MutableTagMap?
+    private val key: String,
+    private val access: () -> MutableTagMap?
 ) : ReadWriteProperty<Any?, MutableTag?> {
-    override fun getValue(thisRef: Any?,
-                          property: KProperty<*>) = getTag(
-            key, access)
+    override fun getValue(thisRef: Any?, property: KProperty<*>) =
+        getTag(key, access)
 
-    override fun setValue(thisRef: Any?,
-                          property: KProperty<*>,
-                          value: MutableTag?) = setTag(
-            key, access, value)
+    override fun setValue(
+        thisRef: Any?,
+        property: KProperty<*>,
+        value: MutableTag?
+    ) = setTag(key, access, value)
 }
 
 class MutableTagPropertyStatic(
-        private val key: String,
-        private val tag: MutableTagMap
+    private val key: String,
+    private val tag: MutableTagMap
 ) : ReadWriteProperty<Any?, MutableTag?> {
-    override fun getValue(thisRef: Any?,
-                          property: KProperty<*>) = getTag(
-            key, { tag })
+    override fun getValue(thisRef: Any?, property: KProperty<*>) =
+        getTag(key, { tag })
 
-    override fun setValue(thisRef: Any?,
-                          property: KProperty<*>,
-                          value: MutableTag?) = setTag(
-            key, { tag }, value)
+    override fun setValue(
+        thisRef: Any?,
+        property: KProperty<*>,
+        value: MutableTag?
+    ) = setTag(key, { tag }, value)
 }
 
-fun MutableTagMap.setTag(key: String,
-                                                  value: MutableTag?) {
+fun MutableTagMap.setTag(key: String, value: MutableTag?) {
     if (value == null) {
         remove(key)
     } else {
@@ -56,71 +55,69 @@ fun MutableTagMap.setTag(key: String,
     }
 }
 
-inline fun getTag(key: String,
-                  access: () -> MutableTagMap?) = access()?.get(key)
+inline fun getTag(key: String, access: () -> MutableTagMap?) =
+    access()?.get(key)
 
-inline fun setTag(key: String,
-                  access: () -> MutableTagMap?,
-                  value: MutableTag?) {
+inline fun setTag(
+    key: String,
+    access: () -> MutableTagMap?,
+    value: MutableTag?
+) {
     val parent = access() ?: return
     if (value == null) {
         parent.remove(key)
     } else {
-        parent.put(key, value)
+        parent[key] = value
     }
 }
 
-fun MutableTagMap.tag(key: String) = MutableTagPropertyStatic(
-        key, this)
+fun MutableTagMap.tag(key: String) = MutableTagPropertyStatic(key, this)
 
 inline fun <T> MutableTagMap.tag(
-        key: String,
-        crossinline map: (MutableTag?) -> T,
-        crossinline unmap: (T) -> MutableTag?) =
-        object : ReadWriteProperty<Any?, T> {
-            override fun getValue(thisRef: Any?,
-                                  property: KProperty<*>) =
-                    map(getTag(key, { this@tag }))
+    key: String,
+    crossinline map: (MutableTag?) -> T,
+    crossinline unmap: (T) -> MutableTag?
+) = object : ReadWriteProperty<Any?, T> {
+    override fun getValue(
+        thisRef: Any?,
+        property: KProperty<*>
+    ) = map(getTag(key, { this@tag }))
 
-            override fun setValue(thisRef: Any?,
-                                  property: KProperty<*>,
-                                  value: T) =
-                    setTag(key, { this@tag },
-                            unmap(value))
-        }
+    override fun setValue(
+        thisRef: Any?,
+        property: KProperty<*>,
+        value: T
+    ) = setTag(key, { this@tag }, unmap(value))
+}
 
-fun tag(key: String,
-        access: () -> MutableTagMap) = MutableTagProperty(
-        key, access)
+fun tag(key: String, access: () -> MutableTagMap) =
+    MutableTagProperty(key, access)
 
 inline fun <T> tag(
-        key: String,
-        crossinline map: (MutableTag?) -> T,
-        crossinline unmap: (T) -> MutableTag?,
-        crossinline access: () -> MutableTagMap) =
-        object : ReadWriteProperty<Any?, T> {
-            private fun doAccess() = access()
+    key: String,
+    crossinline map: (MutableTag?) -> T,
+    crossinline unmap: (T) -> MutableTag?,
+    crossinline access: () -> MutableTagMap
+) = object : ReadWriteProperty<Any?, T> {
+    private fun doAccess() = access()
 
-            override fun getValue(thisRef: Any?,
-                                  property: KProperty<*>) =
-                    map(getTag(key, { doAccess() }))
+    override fun getValue(thisRef: Any?, property: KProperty<*>) =
+        map(getTag(key, { doAccess() }))
 
-            override fun setValue(thisRef: Any?,
-                                  property: KProperty<*>,
-                                  value: T) =
-                    setTag(key, { doAccess() },
-                            unmap(value))
-        }
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
+        setTag(key, { doAccess() }, unmap(value))
+}
 
 fun MutableTagMap.tagMap(key: String) =
-        object : ReadWriteProperty<Any?, MutableTagMap> {
-            override fun getValue(thisRef: Any?,
-                                  property: KProperty<*>) =
-                    mapMut(key)
+    object : ReadWriteProperty<Any?, MutableTagMap> {
+        override fun getValue(thisRef: Any?, property: KProperty<*>) =
+            mapMut(key)
 
-            override fun setValue(thisRef: Any?,
-                                  property: KProperty<*>,
-                                  value: MutableTagMap) {
-                this@tagMap[key] = value
-            }
+        override fun setValue(
+            thisRef: Any?,
+            property: KProperty<*>,
+            value: MutableTagMap
+        ) {
+            this@tagMap[key] = value
         }
+    }

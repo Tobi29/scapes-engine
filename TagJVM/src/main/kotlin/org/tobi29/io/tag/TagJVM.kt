@@ -19,8 +19,10 @@ package org.tobi29.io.tag
 import java.math.BigDecimal
 import java.math.BigInteger
 
-actual internal fun convertNumberToType(type: Number,
-                                        convert: Number): Number {
+internal actual fun convertNumberToType(
+    type: Number,
+    convert: Number
+): Number {
     return when (type) {
         is Byte -> convert.toByte()
         is Short -> convert.toShort()
@@ -35,6 +37,7 @@ actual internal fun convertNumberToType(type: Number,
         }
         is BigDecimal -> BigDecimal(convert.toString())
         else -> throw IllegalArgumentException(
-                "Invalid number type: ${type::class}")
+            "Invalid number type: ${type::class}"
+        )
     }
 }

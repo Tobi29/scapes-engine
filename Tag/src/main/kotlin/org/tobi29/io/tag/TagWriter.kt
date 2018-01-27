@@ -36,8 +36,7 @@ fun TagMap.write(writer: TagStructureWriter) {
     }
 }
 
-fun TagList.write(writer: TagStructureWriter,
-                                           key: String) {
+fun TagList.write(writer: TagStructureWriter, key: String) {
     if (size > 0) {
         writer.beginList(key)
         for (i in 0 until size - 1) {
