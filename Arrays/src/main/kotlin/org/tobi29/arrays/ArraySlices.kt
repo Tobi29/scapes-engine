@@ -73,21 +73,20 @@ interface Vars3 : Vars {
 interface ArraySegment : Vars {
     fun slice(index: Int): ArraySegment
 
-    fun slice(index: Int,
-              size: Int): ArraySegment
+    fun slice(index: Int, size: Int): ArraySegment
 }
 
 /**
  * Arbitrary 1-dimensional iterable array
  */
 interface VarsIterable<out T> : Vars,
-        Iterable<T>
+    Iterable<T>
 
 /**
  * Arbitrary 1-dimensional array slice
  */
 interface ArrayVarSlice<out T> : VarsIterable<T>,
-        ArraySegment
+    ArraySegment
 
 /**
  * Arbitrary array slice based on some heap array with offset support
@@ -99,40 +98,45 @@ interface HeapArrayVarSlice<out T> : ArrayVarSlice<T> {
     val offset: Int
 }
 
-inline internal fun <T, R : HeapArrayVarSlice<*>> R.prepareSlice(
-        index: Int,
-        size: Int,
-        array: T,
-        supplier: (T, Int, Int) -> R
+internal inline fun <T, R : HeapArrayVarSlice<*>> R.prepareSlice(
+    index: Int,
+    size: Int,
+    array: T,
+    supplier: (T, Int, Int) -> R
 ): R = prepareSlice(this.offset, this.size, index, size) { offset, size ->
     supplier(array, offset, size)
 }
 
-fun checkSliceBounds(srcLength: Int,
-                     index: Int,
-                     length: Int) {
+fun checkSliceBounds(
+    srcLength: Int,
+    index: Int,
+    length: Int
+) {
     if (index < 0 || length < 0 || index + length > srcLength) {
         throw IndexOutOfBoundsException(
-                "Invalid slice bounds: srcLength = $srcLength index = $index length = $length")
+            "Invalid slice bounds: srcLength = $srcLength index = $index length = $length"
+        )
     }
 }
 
 inline fun <R> R.prepareSlice(
-        srcOffset: Int,
-        srcLength: Int,
-        index: Int,
-        size: Int,
-        supplier: (Int, Int) -> R
+    srcOffset: Int,
+    srcLength: Int,
+    index: Int,
+    size: Int,
+    supplier: (Int, Int) -> R
 ): R {
     checkSliceBounds(srcLength, index, size)
     return if (index == 0 && srcLength == size) this
     else supplier(srcOffset + index, size)
 }
 
-inline fun index(offset: Int,
-                 size: Int,
-                 index: Int,
-                 dataLength: Int = 1): Int {
+inline fun index(
+    offset: Int,
+    size: Int,
+    index: Int,
+    dataLength: Int = 1
+): Int {
     if (index < 0 || index + dataLength > size)
         throw IndexOutOfBoundsException("Invalid index")
     return index + offset
@@ -144,7 +148,8 @@ internal abstract class SliceIterator<out T>(size: Int) : Iterator<T> {
     override fun hasNext() = index < end
     override fun next(): T {
         if (index >= end) throw NoSuchElementException(
-                "No more elements in iterator")
+            "No more elements in iterator"
+        )
         return access(index++)
     }
 

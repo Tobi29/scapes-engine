@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-2017 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 // Generation script can be found in `resources/codegen/GenArrays.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
@@ -29,8 +45,7 @@ interface Elements<T> : ElementsRO<T> {
      * @param index Index of the element
      * @param value The value to set to
      */
-    operator fun set(index: Int,
-                     value: T)
+    operator fun set(index: Int, value: T)
 }
 
 /**
@@ -43,8 +58,7 @@ interface ElementsRO2<out T> : Vars2 {
      * @param index2 Index on the second axis of the element
      * @return The value at the given index
      */
-    operator fun get(index1: Int,
-                     index2: Int): T
+    operator fun get(index1: Int, index2: Int): T
 }
 
 /**
@@ -57,9 +71,7 @@ interface Elements2<T> : ElementsRO2<T> {
      * @param index2 Index on the second axis of the element
      * @param value The value to set to
      */
-    operator fun set(index1: Int,
-                     index2: Int,
-                     value: T)
+    operator fun set(index1: Int, index2: Int, value: T)
 }
 
 /**
@@ -73,9 +85,7 @@ interface ElementsRO3<out T> : Vars3 {
      * @param index3 Index on the third axis of the element
      * @return The value at the given index
      */
-    operator fun get(index1: Int,
-                     index2: Int,
-                     index3: Int): T
+    operator fun get(index1: Int, index2: Int, index3: Int): T
 }
 
 /**
@@ -89,25 +99,19 @@ interface Elements3<T> : ElementsRO3<T> {
      * @param index3 Index on the third axis of the element
      * @param value The value to set to
      */
-    operator fun set(index1: Int,
-                     index2: Int,
-                     index3: Int,
-                     value: T)
+    operator fun set(index1: Int, index2: Int, index3: Int, value: T)
 }
 
 /**
  * Read-only slice of an array, indexed in elements
  */
 interface ArraySliceRO<T> : ElementsRO<T>,
-        ArrayVarSlice<T> {
+    ArrayVarSlice<T> {
     override fun slice(index: Int): ArraySliceRO<T>
 
-    override fun slice(index: Int,
-                       size: Int): ArraySliceRO<T>
+    override fun slice(index: Int, size: Int): ArraySliceRO<T>
 
-
-    fun getElements(index: Int,
-                    slice: ArraySlice<in T>) {
+    fun getElements(index: Int, slice: ArraySlice<in T>) {
         var j = index
         for (i in 0 until slice.size) {
             slice.set(i, get(j++))
@@ -115,51 +119,51 @@ interface ArraySliceRO<T> : ElementsRO<T>,
     }
 
     override fun iterator(): Iterator<T> =
-            object : SliceIterator<T>(size) {
-                override fun access(index: Int) = get(index)
-            }
+        object : SliceIterator<T>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
  * Slice of an array, indexed in elements
  */
 interface ArraySlice<T> : Elements<T>,
-        ArraySliceRO<T> {
+    ArraySliceRO<T> {
     override fun slice(index: Int): ArraySlice<T>
 
-    override fun slice(index: Int,
-                       size: Int): ArraySlice<T>
+    override fun slice(index: Int, size: Int): ArraySlice<T>
 
-
-    fun setElements(index: Int,
-                    slice: ArraySliceRO<out T>) =
-            slice.getElements(0, slice(index, slice.size))
+    fun setElements(index: Int, slice: ArraySliceRO<out T>) =
+        slice.getElements(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
 open class HeapArraySlice<T>(
-        val array: Array<T>,
-        override final val offset: Int,
-        override final val size: Int
-) : HeapArrayVarSlice<T>,
-        ArraySlice<T> {
+    val array: Array<T>,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<T>, ArraySlice<T> {
     override fun slice(index: Int): HeapArraySlice<T> =
-            slice(index, size - index)
+        slice(index, size - index)
 
-    override fun slice(index: Int,
-                       size: Int): HeapArraySlice<T> =
-            prepareSlice(index, size, array,
-                    ::HeapArraySlice)
+    override fun slice(index: Int, size: Int): HeapArraySlice<T> =
+        prepareSlice(
+            index, size, array,
+            ::HeapArraySlice
+        )
 
-    override final fun get(index: Int): T = array[index(offset, size, index)]
-    override final fun set(index: Int,
-                           value: T) = array.set(index(offset, size, index),
-            value)
+    final override fun get(index: Int): T =
+        array[index(offset, size, index)]
 
-    override final fun getElements(index: Int,
-                                   slice: ArraySlice<in T>) {
+    final override fun set(index: Int, value: T) =
+        array.set(index(offset, size, index), value)
+
+    final override fun getElements(
+        index: Int,
+        slice: ArraySlice<in T>
+    ) {
         if (slice !is HeapArraySlice) return super.getElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -168,8 +172,7 @@ open class HeapArraySlice<T>(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override final fun setElements(index: Int,
-                                   slice: ArraySliceRO<out T>) {
+    final override fun setElements(index: Int, slice: ArraySliceRO<out T>) {
         if (slice !is HeapArraySlice) return super.setElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -205,8 +208,8 @@ open class HeapArraySlice<T>(
  * @return A slice from the given array
  */
 inline fun <T> Array<T>.sliceOver(
-        index: Int = 0,
-        size: Int = this.size - index
+    index: Int = 0,
+    size: Int = this.size - index
 ): HeapArraySlice<T> = HeapArraySlice(this, index, size)
 
 /**
@@ -215,28 +218,17 @@ inline fun <T> Array<T>.sliceOver(
  * The layout for the dimensions is as follows:
  * `index = y * width + x`
  */
-class Array2<T>
-/**
- * Creates a new wrapper around the given array.
- * @param width Width of the wrapper
- * @param height Height of the wrapper
- * @param array Array for storing elements
- */
-(
-        /**
-         * Width of the wrapper.
-         */
-        override val width: Int,
-        /**
-         * Height of the wrapper.
-         */
-        override val height: Int,
-        private val array: Array<T>) : Elements2<T>,
-        Iterable<T> {
+class Array2<T>(
+    override val width: Int,
+    override val height: Int,
+    private val array: Array<T>
+) : Elements2<T>,
+    Iterable<T> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
-                    "Array has invalid size: ${array.size} (should be $size)")
+                "Array has invalid size: ${array.size} (should be $size)"
+            )
         }
     }
 
@@ -246,25 +238,21 @@ class Array2<T>
      * @param index2 Index on the second axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(index1: Int,
-                  index2: Int): T? {
+    fun getOrNull(index1: Int, index2: Int): T? {
         if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             return null
         }
         return array[index2 * width + index1]
     }
 
-    override fun get(index1: Int,
-                     index2: Int): T {
+    override fun get(index1: Int, index2: Int): T {
         if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             throw IndexOutOfBoundsException("$index1 $index2")
         }
         return array[index2 * width + index1]
     }
 
-    override fun set(index1: Int,
-                     index2: Int,
-                     value: T) {
+    override fun set(index1: Int, index2: Int, value: T) {
         if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             throw IndexOutOfBoundsException("$index1 $index2")
         }
@@ -301,14 +289,12 @@ inline fun Array2<*>.indices(block: (Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun <reified T> Array2(width: Int,
-                              height: Int,
-                              init: (Int, Int) -> T) =
-        Array2(width, height) { i ->
-            val x = i % width
-            val y = i / width
-            init(x, y)
-        }
+inline fun <reified T> Array2(width: Int, height: Int, init: (Int, Int) -> T) =
+    Array2(width, height) { i ->
+        val x = i % width
+        val y = i / width
+        init(x, y)
+    }
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -317,10 +303,8 @@ inline fun <reified T> Array2(width: Int,
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun <reified T> Array2(width: Int,
-                              height: Int,
-                              init: (Int) -> T) =
-        Array2(width, height, Array(width * height) { init(it) })
+inline fun <reified T> Array2(width: Int, height: Int, init: (Int) -> T) =
+    Array2(width, height, Array(width * height) { init(it) })
 
 /**
  * Class wrapping an array to provide nicer support for 3-dimensional data.
@@ -328,33 +312,18 @@ inline fun <reified T> Array2(width: Int,
  * The layout for the dimensions is as follows:
  * `index = (z * height + y) * width + x`
  */
-class Array3<T>
-/**
- * Creates a new wrapper around the given array.
- * @param width Width of the wrapper
- * @param height Height of the wrapper
- * @param depth Depth of the wrapper
- * @param array Array for storing elements
- */
-(
-        /**
-         * Width of the wrapper.
-         */
-        override val width: Int,
-        /**
-         * Height of the wrapper.
-         */
-        override val height: Int,
-        /**
-         * Depth of the wrapper.
-         */
-        override val depth: Int,
-        private val array: Array<T>) : Elements3<T>,
-        Iterable<T> {
+class Array3<T>(
+    override val width: Int,
+    override val height: Int,
+    override val depth: Int,
+    private val array: Array<T>
+) : Elements3<T>,
+    Iterable<T> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
-                    "Array has invalid size: ${array.size} (should be $size)")
+                "Array has invalid size: ${array.size} (should be $size)"
+            )
         }
     }
 
@@ -365,32 +334,25 @@ class Array3<T>
      * @param index3 Index on the third axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(index1: Int,
-                  index2: Int,
-                  index3: Int): T? {
+    fun getOrNull(index1: Int, index2: Int, index3: Int): T? {
         if (index1 < 0 || index2 < 0 || index3 < 0
-                || index1 >= width || index2 >= height || index3 >= depth) {
+            || index1 >= width || index2 >= height || index3 >= depth) {
             return null
         }
         return array[(index3 * height + index2) * width + index1]
     }
 
-    override fun get(index1: Int,
-                     index2: Int,
-                     index3: Int): T {
+    override fun get(index1: Int, index2: Int, index3: Int): T {
         if (index1 < 0 || index2 < 0 || index3 < 0
-                || index1 >= width || index2 >= height || index3 >= depth) {
+            || index1 >= width || index2 >= height || index3 >= depth) {
             throw IndexOutOfBoundsException("$index1 $index2 $index3")
         }
         return array[(index3 * height + index2) * width + index1]
     }
 
-    override fun set(index1: Int,
-                     index2: Int,
-                     index3: Int,
-                     value: T) {
+    override fun set(index1: Int, index2: Int, index3: Int, value: T) {
         if (index1 < 0 || index2 < 0 || index3 < 0
-                || index1 >= width || index2 >= height || index3 >= depth) {
+            || index1 >= width || index2 >= height || index3 >= depth) {
             throw IndexOutOfBoundsException("$index1 $index2")
         }
         array[(index3 * height + index2) * width + index1] = value
@@ -429,17 +391,19 @@ inline fun Array3<*>.indices(block: (Int, Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun <reified T> Array3(width: Int,
-                              height: Int,
-                              depth: Int,
-                              init: (Int, Int, Int) -> T) =
-        Array3(width, height, depth) { i ->
-            val x = i % width
-            val j = i / width
-            val y = j % height
-            val z = j / height
-            init(x, y, z)
-        }
+inline fun <reified T> Array3(
+    width: Int,
+    height: Int,
+    depth: Int,
+    init: (Int, Int, Int) -> T
+) =
+    Array3(width, height, depth) { i ->
+        val x = i % width
+        val j = i / width
+        val y = j % height
+        val z = j / height
+        init(x, y, z)
+    }
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -449,11 +413,13 @@ inline fun <reified T> Array3(width: Int,
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun <reified T> Array3(width: Int,
-                              height: Int,
-                              depth: Int,
-                              init: (Int) -> T) =
-        Array3(width, height, depth, Array(width * height * depth) { init(it) })
+inline fun <reified T> Array3(
+    width: Int,
+    height: Int,
+    depth: Int,
+    init: (Int) -> T
+) =
+    Array3(width, height, depth, Array(width * height * depth) { init(it) })
 
 /**
  * Fills the given array with values
@@ -472,9 +438,8 @@ inline fun <T> Array<in T>.fill(supplier: (Int) -> T) {
  * @receiver The wrapper to iterate through
  * @param block Called with x and y coords of the element
  */
-inline fun <T> Array2<in T>.fill(block: (Int, Int) -> T) = indices { x, y ->
-    this[x, y] = block(x, y)
-}
+inline fun <T> Array2<in T>.fill(block: (Int, Int) -> T) =
+    indices { x, y -> this[x, y] = block(x, y) }
 
 /**
  * Calls the given [block] with all indices of the given wrapper ordered by
@@ -482,9 +447,8 @@ inline fun <T> Array2<in T>.fill(block: (Int, Int) -> T) = indices { x, y ->
  * @receiver The wrapper to iterate through
  * @param block Called with x, y and z coords of the element
  */
-inline fun <T> Array3<in T>.fill(block: (Int, Int, Int) -> T) = indices { x, y, z ->
-    this[x, y, z] = block(x, y, z)
-}
+inline fun <T> Array3<in T>.fill(block: (Int, Int, Int) -> T) =
+    indices { x, y, z -> this[x, y, z] = block(x, y, z) }
 
 /**
  * Creates a new array and makes it accessible using a wrapper initialized with
@@ -493,9 +457,8 @@ inline fun <T> Array3<in T>.fill(block: (Int, Int, Int) -> T) = indices { x, y, 
  * @param height Height of the wrapper
  * @return Wrapper around a new array
  */
-inline fun <reified T> array2OfNulls(width: Int,
-                                     height: Int) =
-        Array2(width, height, arrayOfNulls<T>(width * height))
+inline fun <reified T> array2OfNulls(width: Int, height: Int) =
+    Array2(width, height, arrayOfNulls<T>(width * height))
 
 /**
  * Creates a new array and makes it accessible using a wrapper initialized with
@@ -505,7 +468,5 @@ inline fun <reified T> array2OfNulls(width: Int,
  * @param depth Depth of the wrapper
  * @return Wrapper around a new array
  */
-inline fun <reified T> array3OfNulls(width: Int,
-                                     height: Int,
-                                     depth: Int) =
-        Array3(width, height, depth, arrayOfNulls<T>(width * height))
+inline fun <reified T> array3OfNulls(width: Int, height: Int, depth: Int) =
+    Array3(width, height, depth, arrayOfNulls<T>(width * height))

@@ -30,7 +30,7 @@ fun ByteArray.toHexadecimal(): String {
     val text = StringBuilder(size shl 1)
     for (value in this) {
         val append = (if (value < 0) value + 256 else value.toInt())
-                .toString(16)
+            .toString(16)
         if (append.length == 1) {
             text.append('0').append(append)
         } else {
@@ -53,7 +53,7 @@ fun ByteArray.toHexadecimal(groups: Int): String {
     for (i in indices) {
         val value = get(i)
         val append = (if (value < 0) value + 256 else value.toInt())
-                .toString(16)
+            .toString(16)
         if (append.length == 1) {
             text.append('0').append(append)
         } else {

@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-2017 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 // GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 // Generation script can be found in `resources/codegen/GenArrays.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
@@ -30,8 +46,7 @@ interface Bytes : BytesRO {
      * @param index Index of the element
      * @param value The value to set to
      */
-    operator fun set(index: Int,
-                     value: Byte)
+    operator fun set(index: Int, value: Byte)
 }
 
 /**
@@ -44,8 +59,7 @@ interface BytesRO2 : Vars2 {
      * @param index2 Index on the second axis of the element
      * @return The value at the given index
      */
-    operator fun get(index1: Int,
-                     index2: Int): Byte
+    operator fun get(index1: Int, index2: Int): Byte
 }
 
 /**
@@ -58,9 +72,7 @@ interface Bytes2 : BytesRO2 {
      * @param index2 Index on the second axis of the element
      * @param value The value to set to
      */
-    operator fun set(index1: Int,
-                     index2: Int,
-                     value: Byte)
+    operator fun set(index1: Int, index2: Int, value: Byte)
 }
 
 /**
@@ -74,9 +86,7 @@ interface BytesRO3 : Vars3 {
      * @param index3 Index on the third axis of the element
      * @return The value at the given index
      */
-    operator fun get(index1: Int,
-                     index2: Int,
-                     index3: Int): Byte
+    operator fun get(index1: Int, index2: Int, index3: Int): Byte
 }
 
 /**
@@ -90,27 +100,20 @@ interface Bytes3 : BytesRO3 {
      * @param index3 Index on the third axis of the element
      * @param value The value to set to
      */
-    operator fun set(index1: Int,
-                     index2: Int,
-                     index3: Int,
-                     value: Byte)
+    operator fun set(index1: Int, index2: Int, index3: Int, value: Byte)
 }
 
 /**
  * Read-only slice of an array, indexed in elements
  */
 interface ByteArraySliceRO : BytesRO,
-        ArrayVarSlice<Byte> {
+    ArrayVarSlice<Byte> {
     override fun slice(index: Int): ByteArraySliceRO
 
-    override fun slice(index: Int,
-                       size: Int): ByteArraySliceRO
-
-
+    override fun slice(index: Int, size: Int): ByteArraySliceRO
     fun getByte(index: Int): Byte = get(index)
 
-    fun getBytes(index: Int,
-                 slice: ByteArraySlice) {
+    fun getBytes(index: Int, slice: ByteArraySlice) {
         var j = index
         for (i in 0 until slice.size) {
             slice.set(i, get(j++))
@@ -118,54 +121,52 @@ interface ByteArraySliceRO : BytesRO,
     }
 
     override fun iterator(): Iterator<Byte> =
-            object : SliceIterator<Byte>(size) {
-                override fun access(index: Int) = get(index)
-            }
+        object : SliceIterator<Byte>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
  * Slice of an array, indexed in elements
  */
 interface ByteArraySlice : Bytes,
-        ByteArraySliceRO {
+    ByteArraySliceRO {
     override fun slice(index: Int): ByteArraySlice
 
-    override fun slice(index: Int,
-                       size: Int): ByteArraySlice
+    override fun slice(index: Int, size: Int): ByteArraySlice
+    fun setByte(index: Int, value: Byte) = set(index, value)
 
-
-    fun setByte(index: Int,
-                value: Byte) = set(index, value)
-
-    fun setBytes(index: Int,
-                 slice: ByteArraySliceRO) =
-            slice.getBytes(0, slice(index, slice.size))
+    fun setBytes(index: Int, slice: ByteArraySliceRO) =
+        slice.getBytes(0, slice(index, slice.size))
 }
 
 /**
  * Slice of a normal heap array
  */
 open class HeapByteArraySlice(
-        val array: ByteArray,
-        override final val offset: Int,
-        override final val size: Int
-) : HeapArrayVarSlice<Byte>,
-        ByteArraySlice {
+    val array: ByteArray,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Byte>, ByteArraySlice {
     override fun slice(index: Int): HeapByteArraySlice =
-            slice(index, size - index)
+        slice(index, size - index)
 
-    override fun slice(index: Int,
-                       size: Int): HeapByteArraySlice =
-            prepareSlice(index, size, array,
-                    ::HeapByteArraySlice)
+    override fun slice(index: Int, size: Int): HeapByteArraySlice =
+        prepareSlice(
+            index, size, array,
+            ::HeapByteArraySlice
+        )
 
-    override final fun get(index: Int): Byte = array[index(offset, size, index)]
-    override final fun set(index: Int,
-                           value: Byte) = array.set(index(offset, size, index),
-            value)
+    final override fun get(index: Int): Byte =
+        array[index(offset, size, index)]
 
-    override final fun getBytes(index: Int,
-                                slice: ByteArraySlice) {
+    final override fun set(index: Int, value: Byte) =
+        array.set(index(offset, size, index), value)
+
+    final override fun getBytes(
+        index: Int,
+        slice: ByteArraySlice
+    ) {
         if (slice !is HeapByteArraySlice) return super.getBytes(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -174,8 +175,7 @@ open class HeapByteArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    override final fun setBytes(index: Int,
-                                slice: ByteArraySliceRO) {
+    final override fun setBytes(index: Int, slice: ByteArraySliceRO) {
         if (slice !is HeapByteArraySlice) return super.setBytes(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -211,8 +211,8 @@ open class HeapByteArraySlice(
  * @return A slice from the given array
  */
 inline fun ByteArray.sliceOver(
-        index: Int = 0,
-        size: Int = this.size - index
+    index: Int = 0,
+    size: Int = this.size - index
 ): HeapByteArraySlice = HeapByteArraySlice(this, index, size)
 
 /**
@@ -221,28 +221,17 @@ inline fun ByteArray.sliceOver(
  * The layout for the dimensions is as follows:
  * `index = y * width + x`
  */
-class ByteArray2
-/**
- * Creates a new wrapper around the given array.
- * @param width Width of the wrapper
- * @param height Height of the wrapper
- * @param array Array for storing elements
- */
-(
-        /**
-         * Width of the wrapper.
-         */
-        override val width: Int,
-        /**
-         * Height of the wrapper.
-         */
-        override val height: Int,
-        private val array: ByteArray) : Bytes2,
-        Iterable<Byte> {
+class ByteArray2(
+    override val width: Int,
+    override val height: Int,
+    private val array: ByteArray
+) : Bytes2,
+    Iterable<Byte> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
-                    "Array has invalid size: ${array.size} (should be $size)")
+                "Array has invalid size: ${array.size} (should be $size)"
+            )
         }
     }
 
@@ -252,25 +241,21 @@ class ByteArray2
      * @param index2 Index on the second axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(index1: Int,
-                  index2: Int): Byte? {
+    fun getOrNull(index1: Int, index2: Int): Byte? {
         if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             return null
         }
         return array[index2 * width + index1]
     }
 
-    override fun get(index1: Int,
-                     index2: Int): Byte {
+    override fun get(index1: Int, index2: Int): Byte {
         if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             throw IndexOutOfBoundsException("$index1 $index2")
         }
         return array[index2 * width + index1]
     }
 
-    override fun set(index1: Int,
-                     index2: Int,
-                     value: Byte) {
+    override fun set(index1: Int, index2: Int, value: Byte) {
         if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
             throw IndexOutOfBoundsException("$index1 $index2")
         }
@@ -307,14 +292,12 @@ inline fun ByteArray2.indices(block: (Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun ByteArray2(width: Int,
-                      height: Int,
-                      init: (Int, Int) -> Byte) =
-        ByteArray2(width, height) { i ->
-            val x = i % width
-            val y = i / width
-            init(x, y)
-        }
+inline fun ByteArray2(width: Int, height: Int, init: (Int, Int) -> Byte) =
+    ByteArray2(width, height) { i ->
+        val x = i % width
+        val y = i / width
+        init(x, y)
+    }
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -323,10 +306,8 @@ inline fun ByteArray2(width: Int,
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun ByteArray2(width: Int,
-                      height: Int,
-                      init: (Int) -> Byte) =
-        ByteArray2(width, height, ByteArray(width * height) { init(it) })
+inline fun ByteArray2(width: Int, height: Int, init: (Int) -> Byte) =
+    ByteArray2(width, height, ByteArray(width * height) { init(it) })
 
 /**
  * Class wrapping an array to provide nicer support for 3-dimensional data.
@@ -334,33 +315,18 @@ inline fun ByteArray2(width: Int,
  * The layout for the dimensions is as follows:
  * `index = (z * height + y) * width + x`
  */
-class ByteArray3
-/**
- * Creates a new wrapper around the given array.
- * @param width Width of the wrapper
- * @param height Height of the wrapper
- * @param depth Depth of the wrapper
- * @param array Array for storing elements
- */
-(
-        /**
-         * Width of the wrapper.
-         */
-        override val width: Int,
-        /**
-         * Height of the wrapper.
-         */
-        override val height: Int,
-        /**
-         * Depth of the wrapper.
-         */
-        override val depth: Int,
-        private val array: ByteArray) : Bytes3,
-        Iterable<Byte> {
+class ByteArray3(
+    override val width: Int,
+    override val height: Int,
+    override val depth: Int,
+    private val array: ByteArray
+) : Bytes3,
+    Iterable<Byte> {
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
-                    "Array has invalid size: ${array.size} (should be $size)")
+                "Array has invalid size: ${array.size} (should be $size)"
+            )
         }
     }
 
@@ -371,32 +337,25 @@ class ByteArray3
      * @param index3 Index on the third axis of the element
      * @return The element at the given position or `null` if out of bounds
      */
-    fun getOrNull(index1: Int,
-                  index2: Int,
-                  index3: Int): Byte? {
+    fun getOrNull(index1: Int, index2: Int, index3: Int): Byte? {
         if (index1 < 0 || index2 < 0 || index3 < 0
-                || index1 >= width || index2 >= height || index3 >= depth) {
+            || index1 >= width || index2 >= height || index3 >= depth) {
             return null
         }
         return array[(index3 * height + index2) * width + index1]
     }
 
-    override fun get(index1: Int,
-                     index2: Int,
-                     index3: Int): Byte {
+    override fun get(index1: Int, index2: Int, index3: Int): Byte {
         if (index1 < 0 || index2 < 0 || index3 < 0
-                || index1 >= width || index2 >= height || index3 >= depth) {
+            || index1 >= width || index2 >= height || index3 >= depth) {
             throw IndexOutOfBoundsException("$index1 $index2 $index3")
         }
         return array[(index3 * height + index2) * width + index1]
     }
 
-    override fun set(index1: Int,
-                     index2: Int,
-                     index3: Int,
-                     value: Byte) {
+    override fun set(index1: Int, index2: Int, index3: Int, value: Byte) {
         if (index1 < 0 || index2 < 0 || index3 < 0
-                || index1 >= width || index2 >= height || index3 >= depth) {
+            || index1 >= width || index2 >= height || index3 >= depth) {
             throw IndexOutOfBoundsException("$index1 $index2")
         }
         array[(index3 * height + index2) * width + index1] = value
@@ -435,17 +394,19 @@ inline fun ByteArray3.indices(block: (Int, Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun ByteArray3(width: Int,
-                      height: Int,
-                      depth: Int,
-                      init: (Int, Int, Int) -> Byte) =
-        ByteArray3(width, height, depth) { i ->
-            val x = i % width
-            val j = i / width
-            val y = j % height
-            val z = j / height
-            init(x, y, z)
-        }
+inline fun ByteArray3(
+    width: Int,
+    height: Int,
+    depth: Int,
+    init: (Int, Int, Int) -> Byte
+) =
+    ByteArray3(width, height, depth) { i ->
+        val x = i % width
+        val j = i / width
+        val y = j % height
+        val z = j / height
+        init(x, y, z)
+    }
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -455,12 +416,17 @@ inline fun ByteArray3(width: Int,
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun ByteArray3(width: Int,
-                      height: Int,
-                      depth: Int,
-                      init: (Int) -> Byte) =
-        ByteArray3(width, height, depth,
-                ByteArray(width * height * depth) { init(it) })
+inline fun ByteArray3(
+    width: Int,
+    height: Int,
+    depth: Int,
+    init: (Int) -> Byte
+) =
+    ByteArray3(
+        width,
+        height,
+        depth,
+        ByteArray(width * height * depth) { init(it) })
 
 /**
  * Fills the given array with values
@@ -479,9 +445,8 @@ inline fun ByteArray.fill(supplier: (Int) -> Byte) {
  * @receiver The wrapper to iterate through
  * @param block Called with x and y coords of the element
  */
-inline fun ByteArray2.fill(block: (Int, Int) -> Byte) = indices { x, y ->
-    this[x, y] = block(x, y)
-}
+inline fun ByteArray2.fill(block: (Int, Int) -> Byte) =
+    indices { x, y -> this[x, y] = block(x, y) }
 
 /**
  * Calls the given [block] with all indices of the given wrapper ordered by
@@ -489,9 +454,8 @@ inline fun ByteArray2.fill(block: (Int, Int) -> Byte) = indices { x, y ->
  * @receiver The wrapper to iterate through
  * @param block Called with x, y and z coords of the element
  */
-inline fun ByteArray3.fill(block: (Int, Int, Int) -> Byte) = indices { x, y, z ->
-    this[x, y, z] = block(x, y, z)
-}
+inline fun ByteArray3.fill(block: (Int, Int, Int) -> Byte) =
+    indices { x, y, z -> this[x, y, z] = block(x, y, z) }
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -499,9 +463,8 @@ inline fun ByteArray3.fill(block: (Int, Int, Int) -> Byte) = indices { x, y, z -
  * @param height Height of the wrapper
  * @return Wrapper around a new array
  */
-inline fun ByteArray2(width: Int,
-                      height: Int) =
-        ByteArray2(width, height, ByteArray(width * height))
+inline fun ByteArray2(width: Int, height: Int) =
+    ByteArray2(width, height, ByteArray(width * height))
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -510,7 +473,5 @@ inline fun ByteArray2(width: Int,
  * @param depth Depth of the wrapper
  * @return Wrapper around a new array
  */
-inline fun ByteArray3(width: Int,
-                      height: Int,
-                      depth: Int) =
-        ByteArray3(width, height, depth, ByteArray(width * height * depth))
+inline fun ByteArray3(width: Int, height: Int, depth: Int) =
+    ByteArray3(width, height, depth, ByteArray(width * height * depth))

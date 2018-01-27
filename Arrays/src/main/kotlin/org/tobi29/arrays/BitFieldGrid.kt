@@ -19,35 +19,28 @@ package org.tobi29.arrays
 /**
  * Class for conveniently managing an 8-bit bit field mapped as a 2d grid
  */
-class BitFieldGrid
-/**
- * Constructs a new bit field
- * @param data The original data for the bit field
- * @param width The width of the grid
- * @param height The height of the grid
- */
-(
-        /**
-         * The data of the bit field, exposed for inlined functions
-         */
-        val data: ByteArray,
-        /**
-         * The width of the grid
-         */
-        val width: Int,
-        /**
-         * The width of the grid
-         */
-        val height: Int) {
+class BitFieldGrid(
+    /**
+     * The data of the bit field, exposed for inlined functions
+     */
+    val data: ByteArray,
+    /**
+     * The width of the grid
+     */
+    val width: Int,
+    /**
+     * The width of the grid
+     */
+    val height: Int
+) {
 
     /**
      * Constructs a new bit field and allocates the data for it
      * @param width The width of the grid
      * @param height The height of the grid
      */
-    constructor(width: Int,
-                height: Int) : this(
-            ByteArray(width * height), width, height)
+    constructor(width: Int, height: Int) :
+            this(ByteArray(width * height), width, height)
 
     /**
      * Checks if the given coordinates are inside of the grid
@@ -55,10 +48,8 @@ class BitFieldGrid
      * @param y y-coordinate of the cell
      * @return `true` if x and y are inside the grid
      */
-    fun isInside(x: Int,
-                 y: Int): Boolean {
-        return x >= 0 && y >= 0 && x < width && y < height
-    }
+    fun isInside(x: Int, y: Int): Boolean =
+        x >= 0 && y >= 0 && x < width && y < height
 
     /**
      * Changes the cell at the given coordinates
@@ -68,9 +59,7 @@ class BitFieldGrid
      * @param y y-coordinate of the cell
      * @param block change operation to execute
      */
-    inline fun changeAt(x: Int,
-                        y: Int,
-                        block: (Byte) -> Byte) {
+    inline fun changeAt(x: Int, y: Int, block: (Byte) -> Byte) {
         if (!isInside(x, y)) {
             return
         }
@@ -85,8 +74,7 @@ class BitFieldGrid
      * @throws IndexOutOfBoundsException if the given coords are outside of the grid
      * @return the value of the cell
      */
-    fun getAt(x: Int,
-              y: Int): Byte {
+    fun getAt(x: Int, y: Int): Byte {
         if (!isInside(x, y)) {
             throw IndexOutOfBoundsException("$x $y")
         }
@@ -101,9 +89,7 @@ class BitFieldGrid
      * @param y y-coordinate of the cell
      * @param value the value to set to the cell
      */
-    fun setAt(x: Int,
-              y: Int,
-              value: Byte) {
+    fun setAt(x: Int, y: Int, value: Byte) {
         if (!isInside(x, y)) {
             return
         }
@@ -126,8 +112,7 @@ class BitFieldGrid
      * @param y y-coordinate of the cell
      */
     @Suppress("NOTHING_TO_INLINE")
-    inline fun index(x: Int,
-                     y: Int): Int {
+    inline fun index(x: Int, y: Int): Int {
         return y * width + x
     }
 }
@@ -141,9 +126,7 @@ class BitFieldGrid
  * @return the value of the flag
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun BitFieldGrid.getAt(x: Int,
-                              y: Int,
-                              i: Int): Boolean {
+inline fun BitFieldGrid.getAt(x: Int, y: Int, i: Int): Boolean {
     if (i < 0 || i >= 8) {
         throw IllegalArgumentException("Invalid flag index: $i")
     }
@@ -158,9 +141,6 @@ inline fun BitFieldGrid.getAt(x: Int,
  * @param y y-coordinate of the cell
  * @param value the value to set to the cell
  */
-fun BitFieldGrid.setAt(x: Int,
-                       y: Int,
-                       i: Int,
-                       value: Boolean) {
+fun BitFieldGrid.setAt(x: Int, y: Int, i: Int, value: Boolean) {
     changeAt(x, y) { if (value) it.setAt(i) else it.unsetAt(i) }
 }
