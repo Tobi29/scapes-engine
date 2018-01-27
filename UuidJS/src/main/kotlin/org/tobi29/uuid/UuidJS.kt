@@ -26,29 +26,33 @@ actual fun String.toUuid(): Uuid? {
     val g2 = (split[2].toLongOrNull(16) ?: return null) and 0xFFFFL
     val g3 = (split[3].toLongOrNull(16) ?: return null) and 0xFFFFL
     val g4 = (split[4].toLongOrNull(16) ?: return null) and 0xFFFFFFFFFFFFL
-    return Uuid((g0 shl 32) or (g1 shl 16) or (g2),
-            (g3 shl 48) or (g4))
+    return Uuid(
+        (g0 shl 32) or (g1 shl 16) or (g2),
+        (g3 shl 48) or (g4)
+    )
 }
 
-actual class Uuid actual constructor(private val mostSignificantBits: Long,
-                                     private val leastSignificantBits: Long) {
+actual class Uuid actual constructor(
+    private val mostSignificantBits: Long,
+    private val leastSignificantBits: Long
+) {
     actual open fun getMostSignificantBits() = mostSignificantBits
     actual open fun getLeastSignificantBits() = leastSignificantBits
 
     override fun toString(): String =
-            "${(mostSignificantBits ushr 32
-                    and 0xFFFFFFFFL
-                    or 0x100000000L).toString(16).substring(1)}-${
-            ((mostSignificantBits ushr 16).toInt()
-                    and 0xFFFF
-                    or 0x10000).toString(16).substring(1)}-${
-            ((mostSignificantBits ushr 0).toInt()
-                    and 0xFFFF
-                    or 0x10000).toString(16).substring(1)}-${
-            ((leastSignificantBits ushr 48).toInt()
-                    and 0xFFFF
-                    or 0x10000).toString(16).substring(1)}-${
-            (leastSignificantBits ushr 0
-                    and 0xFFFFFFFFFFFFL
-                    or 0x1000000000000L).toString(16).substring(1)}"
+        "${(mostSignificantBits ushr 32
+                and 0xFFFFFFFFL
+                or 0x100000000L).toString(16).substring(1)}-${
+        ((mostSignificantBits ushr 16).toInt()
+                and 0xFFFF
+                or 0x10000).toString(16).substring(1)}-${
+        ((mostSignificantBits ushr 0).toInt()
+                and 0xFFFF
+                or 0x10000).toString(16).substring(1)}-${
+        ((leastSignificantBits ushr 48).toInt()
+                and 0xFFFF
+                or 0x10000).toString(16).substring(1)}-${
+        (leastSignificantBits ushr 0
+                and 0xFFFFFFFFFFFFL
+                or 0x1000000000000L).toString(16).substring(1)}"
 }

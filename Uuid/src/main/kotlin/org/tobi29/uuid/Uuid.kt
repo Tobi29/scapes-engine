@@ -20,8 +20,10 @@ import org.tobi29.io.tag.*
 
 expect fun String.toUuid(): Uuid?
 
-expect class Uuid(mostSignificantBits: Long,
-                  leastSignificantBits: Long) {
+expect class Uuid(
+    mostSignificantBits: Long,
+    leastSignificantBits: Long
+) {
     open fun getMostSignificantBits(): Long
     open fun getLeastSignificantBits(): Long
 }
