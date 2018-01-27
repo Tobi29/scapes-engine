@@ -25,31 +25,33 @@ sealed class CommandElement
  * An option for parsing command line arguments
  */
 data class CommandOption(
-        /**
-         * Set of characters used as short names
-         */
-        val shortNames: Set<Char>,
-        /**
-         * The amount of arguments this option requires
-         */
-        val longNames: Set<String>,
-        /**
-         * The names of arguments this option requires
-         */
-        val args: List<String>,
-        /**
-         * Description used for printing usage
-         */
-        val description: String) : CommandElement() {
+    /**
+     * Set of characters used as short names
+     */
+    val shortNames: Set<Char>,
+    /**
+     * The amount of arguments this option requires
+     */
+    val longNames: Set<String>,
+    /**
+     * The names of arguments this option requires
+     */
+    val args: List<String>,
+    /**
+     * Description used for printing usage
+     */
+    val description: String
+) : CommandElement() {
     /**
      * Creates a new option with the given names, no arguments and description
      * @param shortNames Set of characters used as short names
      * @param longNames Set of strings used as long names
      * @param description Description used for printing usage
      */
-    constructor(shortNames: Set<Char>,
-                longNames: Set<String>,
-                description: String
+    constructor(
+        shortNames: Set<Char>,
+        longNames: Set<String>,
+        description: String
     ) : this(shortNames, longNames, emptyList(), description)
 
     /**
@@ -64,28 +66,28 @@ data class CommandOption(
  * A subcommand for separating command line arguments
  */
 data class CommandConfig(
-        /**
-         * Name of the subcommand
-         */
-        val name: String,
-        /**
-         * Command elements available in the subcommand
-         */
-        val elements: Iterable<CommandElement>
+    /**
+     * Name of the subcommand
+     */
+    val name: String,
+    /**
+     * Command elements available in the subcommand
+     */
+    val elements: Iterable<CommandElement>
 ) : CommandElement()
 
 /**
  * An argument for otherwise unmatched tokens
  */
 data class CommandArgument(
-        /**
-         * Name of the argument
-         */
-        val name: String,
-        /**
-         * Range of valid number of arguments
-         */
-        val count: IntRange = 0..1
+    /**
+     * Name of the argument
+     */
+    val name: String,
+    /**
+     * Range of valid number of arguments
+     */
+    val count: IntRange = 0..1
 ) : CommandElement()
 
 /**
@@ -112,7 +114,7 @@ fun CommandOption.matches(name: String) = name in longNames
  * @return The help info in a string
  */
 fun Iterable<CommandConfig>.printHelp() =
-        StringBuilder().also { printHelp(it) }.toString()
+    StringBuilder().also { printHelp(it) }.toString()
 
 /**
  * Generate a help text for the given options with descriptions aligned
@@ -162,7 +164,7 @@ fun Iterable<CommandConfig>.printHelp(appendable: Appendable) {
  * @return The usage info in a string
  */
 fun CommandOption.printUsage() =
-        StringBuilder().also { printUsage(it) }.toString()
+    StringBuilder().also { printUsage(it) }.toString()
 
 /**
  * Generate a usage text for the given option from its parameters

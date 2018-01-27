@@ -173,7 +173,8 @@ class TokenParser(command: CommandConfig) {
                 if (option.args.size != 1) return@let
 
                 tokensMut.add(
-                        Token.Parameter(option, listOf(token.substring(1))))
+                    Token.Parameter(option, listOf(token.substring(1)))
+                )
                 return
             }
         }
@@ -252,27 +253,29 @@ class TokenParser(command: CommandConfig) {
          * An argument not attached to any [CommandOption]
          */
         data class Argument(
-                /**
-                 * The [CommandArgument] of the argument
-                 */
-                val argument: CommandArgument,
-                /**
-                 * The argument strings
-                 */
-                val value: String) : Token()
+            /**
+             * The [CommandArgument] of the argument
+             */
+            val argument: CommandArgument,
+            /**
+             * The argument strings
+             */
+            val value: String
+        ) : Token()
 
         /**
          * A parameter combining a [CommandOption] and its values
          */
         data class Parameter(
-                /**
-                 * The [CommandOption] of the parameter
-                 */
-                val option: CommandOption,
-                /**
-                 * The argument strings
-                 */
-                val value: List<String>) : Token()
+            /**
+             * The [CommandOption] of the parameter
+             */
+            val option: CommandOption,
+            /**
+             * The argument strings
+             */
+            val value: List<String>
+        ) : Token()
     }
 }
 
@@ -283,11 +286,11 @@ class TokenParser(command: CommandConfig) {
  * @return A list of parameters, flags and arguments
  */
 fun CommandConfig.parseTokens(
-        tokens: Iterable<String>
+    tokens: Iterable<String>
 ): Pair<List<CommandConfig>, List<TokenParser.Token>> =
-        withArgs(tokens) {
-            TokenParser(this).let { parser ->
-                tokens.forEach { parser.append(it) }
-                parser.finish()
-            }
+    withArgs(tokens) {
+        TokenParser(this).let { parser ->
+            tokens.forEach { parser.append(it) }
+            parser.finish()
         }
+    }

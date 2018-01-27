@@ -22,18 +22,19 @@ import org.tobi29.stdex.assert
  * Result from parsing and assembling command line options
  */
 data class CommandLine(
-        /**
-         * The innermost subcommand matched
-         */
-        val command: List<CommandConfig>,
-        /**
-         * The string parameters from the options
-         */
-        val parameters: Map<CommandOption, List<List<String>>>,
-        /**
-         * The arguments in order they appeared in
-         */
-        val arguments: Map<CommandArgument, List<String>>)
+    /**
+     * The innermost subcommand matched
+     */
+    val command: List<CommandConfig>,
+    /**
+     * The string parameters from the options
+     */
+    val parameters: Map<CommandOption, List<List<String>>>,
+    /**
+     * The arguments in order they appeared in
+     */
+    val arguments: Map<CommandArgument, List<String>>
+)
 
 /**
  * Assembles the given parsed tokens for easy access
@@ -42,11 +43,11 @@ data class CommandLine(
  */
 fun Iterable<TokenParser.Token>.assemble(command: List<CommandConfig> = emptyList()): CommandLine {
     val parameters = filterIsInstance<TokenParser.Token.Parameter>()
-            .groupBy { it.option }.asSequence()
-            .map { Pair(it.key, it.value.map { it.value }) }.toMap()
+        .groupBy { it.option }.asSequence()
+        .map { Pair(it.key, it.value.map { it.value }) }.toMap()
     val arguments = filterIsInstance<TokenParser.Token.Argument>()
-            .groupBy { it.argument }.asSequence()
-            .map { Pair(it.key, it.value.map { it.value }) }.toMap()
+        .groupBy { it.argument }.asSequence()
+        .map { Pair(it.key, it.value.map { it.value }) }.toMap()
     return CommandLine(command, parameters, arguments)
 }
 
@@ -64,42 +65,46 @@ fun CommandLine.validate(tokens: Iterable<TokenParser.Token>) {
     assert { this == tokens.assemble(command) }
 
     val parameterTokens = tokens.asSequence()
-            .filterIsInstance<TokenParser.Token.Parameter>()
+        .filterIsInstance<TokenParser.Token.Parameter>()
     val argumentTokens = tokens.asSequence()
-            .filterIsInstance<TokenParser.Token.Argument>()
+        .filterIsInstance<TokenParser.Token.Argument>()
 
     parameters.forEach { (parameter, instances) ->
         instances.forEach { values ->
             if (parameter.args.size < values.size)
                 throw ExtraOptionArgumentException(null, this,
-                        parameterTokens.first {
-                            println("${it.option} $parameter ${it.value} $values")
-                            it.option == parameter && it.value == values
-                        })
+                    parameterTokens.first {
+                        println("${it.option} $parameter ${it.value} $values")
+                        it.option == parameter && it.value == values
+                    })
             if (parameter.args.size > values.size)
                 throw MissingOptionArgumentException(null, this,
-                        parameterTokens.first {
-                            it.option == parameter && it.value == values
-                        })
+                    parameterTokens.first {
+                        it.option == parameter && it.value == values
+                    })
         }
     }
 
     arguments.forEach { (argument, values) ->
         if (argument.count.last < values.size)
             throw ExtraArgumentException(null, this,
-                    argumentTokens.filter {
-                        it.argument == argument
-                    }.drop(argument.count.last).first())
+                argumentTokens.filter {
+                    it.argument == argument
+                }.drop(argument.count.last).first()
+            )
     }
 
     command.forEach { (_, elements) ->
-        elements.asSequence().mapNotNull { it as? CommandArgument }.forEach { argument ->
-            val count = arguments[argument]?.size ?: 0
-            if (argument.count.start > count) {
-                throw MissingArgumentException(null, this,
-                        argument, argument.count.start - count)
+        elements.asSequence().mapNotNull { it as? CommandArgument }
+            .forEach { argument ->
+                val count = arguments[argument]?.size ?: 0
+                if (argument.count.start > count) {
+                    throw MissingArgumentException(
+                        null, this,
+                        argument, argument.count.start - count
+                    )
+                }
             }
-        }
     }
 }
 
@@ -110,8 +115,8 @@ fun CommandLine.validate(tokens: Iterable<TokenParser.Token>) {
  * @return An assembled valid command line instance
  */
 fun CommandConfig.parseCommandLine(args: Iterable<String>): CommandLine =
-        parseTokens(args).let { (subcommand, tokens) ->
-            tokens.assemble(subcommand).also { commandLine ->
-                withArgs(args) { commandLine.validate(tokens) }
-            }
+    parseTokens(args).let { (subcommand, tokens) ->
+        tokens.assemble(subcommand).also { commandLine ->
+            withArgs(args) { commandLine.validate(tokens) }
         }
+    }
