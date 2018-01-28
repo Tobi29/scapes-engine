@@ -30,9 +30,8 @@ import org.tobi29.stdex.toString
  * @throws IllegalArgumentException When number is too great
  * @return String with exact length of [length] or with leading dash when negative
  */
-fun Int.toString(radix: Int = 10,
-                 length: Int): String =
-        toString(radix).forceDigits(length)
+fun Int.toString(radix: Int = 10, length: Int): String =
+    toString(radix).forceDigits(length)
 
 /**
  * Converts the given number to a string, forcing a certain number of digits,
@@ -43,12 +42,10 @@ fun Int.toString(radix: Int = 10,
  * @throws IllegalArgumentException When number is too great
  * @return String with exact length of [length] or with leading dash when negative
  */
-fun Long.toString(radix: Int = 10,
-                  length: Int): String =
-        toString(radix).forceDigits(length)
+fun Long.toString(radix: Int = 10, length: Int): String =
+    toString(radix).forceDigits(length)
 
-private fun String.forceDigits(length: Int,
-                               zero: Char = '0'): String {
+private fun String.forceDigits(length: Int, zero: Char = '0'): String {
     val negative = getOrNull(0) == '-'
     val str = if (negative) substring(1) else this
     val output = str.prefixToLength(zero, length, length)

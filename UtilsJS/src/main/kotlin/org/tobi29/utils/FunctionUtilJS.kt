@@ -17,32 +17,35 @@
 package org.tobi29.utils
 
 actual infix fun (() -> Unit).chain(other: () -> Unit): () -> Unit =
-        chainFunctions(arrayOf(*unchain(), *other.unchain()))
+    chainFunctions(arrayOf(*unchain(), *other.unchain()))
 
 actual fun chain(vararg functions: () -> Unit): () -> Unit =
-        chainFunctions(
-                functions.flatMap { it.unchain().asIterable() }.toTypedArray())
+    chainFunctions(
+        functions.flatMap { it.unchain().asIterable() }.toTypedArray()
+    )
 
 actual infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit =
-        chainFunctions(arrayOf(*unchain(), *other.unchain()))
+    chainFunctions(arrayOf(*unchain(), *other.unchain()))
 
 actual fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit =
-        chainFunctions(
-                functions.flatMap { it.unchain().asIterable() }.toTypedArray())
+    chainFunctions(
+        functions.flatMap { it.unchain().asIterable() }.toTypedArray()
+    )
 
 actual infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1, P2) -> Unit =
-        chainFunctions(arrayOf(*unchain(), *other.unchain()))
+    chainFunctions(arrayOf(*unchain(), *other.unchain()))
 
 actual fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit =
-        chainFunctions(
-                functions.flatMap { it.unchain().asIterable() }.toTypedArray())
+    chainFunctions(
+        functions.flatMap { it.unchain().asIterable() }.toTypedArray()
+    )
 
 private fun <T : Function<Unit>> T.unchain(): Array<T> =
-        if (isChained(this)) {
-            asDynamic()._ScapesEngine_ChainedFunctions
-        } else {
-            arrayOf(this)
-        }
+    if (isChained(this)) {
+        asDynamic()._ScapesEngine_ChainedFunctions
+    } else {
+        arrayOf(this)
+    }
 
 private fun <T : Function<Unit>> chainFunctions(functions: Array<T>): T {
     val function = {
@@ -50,22 +53,29 @@ private fun <T : Function<Unit>> chainFunctions(functions: Array<T>): T {
             element.asDynamic().apply(null, js("(arguments)"))
         }
     }
-    Object.defineProperty(function, "_ScapesEngine_ChainedFunctions",
-            DataDescriptor(functions))
+    Object.defineProperty(
+        function, "_ScapesEngine_ChainedFunctions",
+        DataDescriptor(functions)
+    )
+    @Suppress("UnsafeCastFromDynamic")
     return function.asDynamic()
 }
 
 private fun isChained(function: Function<Unit>) =
-        function.asDynamic()._ScapesEngine_ChainedFunctions !== undefined
+    function.asDynamic()._ScapesEngine_ChainedFunctions !== undefined
 
 external object Object {
-    fun defineProperty(obj: Any?,
-                       name: String,
-                       descriptor: dynamic)
+    fun defineProperty(
+        obj: Any?,
+        name: String,
+        descriptor: dynamic
+    )
 }
 
-fun DataDescriptor(value: dynamic,
-                   writeable: Boolean = false): dynamic {
+fun DataDescriptor(
+    value: dynamic,
+    writeable: Boolean = false
+): dynamic {
     val descriptor = object {}.asDynamic()
     descriptor.value = value
     descriptor.writeable = writeable

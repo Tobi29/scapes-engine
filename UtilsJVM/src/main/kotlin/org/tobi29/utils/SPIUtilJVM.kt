@@ -20,14 +20,14 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 inline fun <S> spiLoadFirst(
-        iterator: Iterator<S>,
-        error: (ServiceConfigurationError) -> Unit
+    iterator: Iterator<S>,
+    error: (ServiceConfigurationError) -> Unit
 ): S? = spiLoadFirst(iterator, error, { true })
 
 inline fun <S> spiLoadFirst(
-        iterator: Iterator<S>,
-        error: (ServiceConfigurationError) -> Unit,
-        predicate: (S) -> Boolean
+    iterator: Iterator<S>,
+    error: (ServiceConfigurationError) -> Unit,
+    predicate: (S) -> Boolean
 ): S? {
     while (true) {
         try {
@@ -41,8 +41,8 @@ inline fun <S> spiLoadFirst(
 }
 
 inline fun <S> spiLoad(
-        iterator: Iterator<S>,
-        error: (ServiceConfigurationError) -> Unit
+    iterator: Iterator<S>,
+    error: (ServiceConfigurationError) -> Unit
 ): List<S> {
     val providers = ArrayList<S>()
     while (true) {
@@ -63,7 +63,7 @@ inline fun <reified S> spiLoad(classLoader: ClassLoader? = null): Iterator<S> {
 }
 
 inline fun <reified S> spiLoadFromDefault(): Iterator<S> =
-        ServiceLoader.load(S::class.java).iterator()
+    ServiceLoader.load(S::class.java).iterator()
 
 inline fun <reified S> spiLoadFromClassLoader(classLoader: ClassLoader): Iterator<S> =
-        ServiceLoader.load(S::class.java, classLoader).iterator()
+    ServiceLoader.load(S::class.java, classLoader).iterator()

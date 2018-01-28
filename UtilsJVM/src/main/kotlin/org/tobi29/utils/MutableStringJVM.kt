@@ -17,9 +17,9 @@
 package org.tobi29.utils
 
 actual class MutableString(
-        val builder: StringBuilder
+    val builder: StringBuilder
 ) : CharSequence,
-        Appendable {
+    Appendable {
     actual override val length get() = builder.length
 
     actual constructor() : this(0)
@@ -35,9 +35,8 @@ actual class MutableString(
         return builder[index]
     }
 
-    actual override fun subSequence(startIndex: Int,
-                                    endIndex: Int) =
-            substring(startIndex, endIndex)
+    actual override fun subSequence(startIndex: Int, endIndex: Int) =
+        substring(startIndex, endIndex)
 
     actual override fun append(c: Char): MutableString = apply {
         builder.append(c)
@@ -47,56 +46,61 @@ actual class MutableString(
         builder.append(csq)
     }
 
-    actual override fun append(csq: CharSequence?,
-                               start: Int,
-                               end: Int): MutableString = apply {
+    actual override fun append(
+        csq: CharSequence?,
+        start: Int,
+        end: Int
+    ): MutableString = apply {
         builder.append(csq, start, end)
     }
 
-    actual fun insert(position: Int,
-                      char: Char): MutableString = apply {
+    actual fun insert(position: Int, char: Char): MutableString = apply {
         if (position < 0 || position > builder.length) {
             throw IndexOutOfBoundsException("$position")
         }
         builder.insert(position, char)
     }
 
-    actual fun insert(position: Int,
-                      str: String): MutableString = apply {
+    actual fun insert(
+        position: Int,
+        str: String
+    ): MutableString = apply {
         if (position < 0 || position > builder.length) {
             throw IndexOutOfBoundsException("$position")
         }
         builder.insert(position, str)
     }
 
-    actual fun insert(position: Int,
-                      array: CharArray): MutableString = apply {
+    actual fun insert(position: Int, array: CharArray): MutableString = apply {
         builder.insert(position, array)
     }
 
-    actual fun insert(position: Int,
-                      array: CharArray,
-                      offset: Int): MutableString =
-            insert(position, array, offset, array.size - offset)
+    actual fun insert(
+        position: Int,
+        array: CharArray,
+        offset: Int
+    ): MutableString = insert(position, array, offset, array.size - offset)
 
-    actual fun insert(position: Int,
-                      array: CharArray,
-                      offset: Int,
-                      length: Int): MutableString = apply {
+    actual fun insert(
+        position: Int,
+        array: CharArray,
+        offset: Int,
+        length: Int
+    ): MutableString = apply {
         builder.insert(position, array, offset, length)
     }
 
     actual fun delete(range: IntRange): MutableString =
-            delete(range.start, range.endInclusive + 1)
+        delete(range.start, range.endInclusive + 1)
 
     actual fun delete(startIndex: Int): MutableString =
-            delete(startIndex, startIndex + 1)
+        delete(startIndex, startIndex + 1)
 
-    actual fun delete(startIndex: Int,
-                      endIndex: Int): MutableString = apply {
+    actual fun delete(startIndex: Int, endIndex: Int): MutableString = apply {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
-                    "End index less than start index: $endIndex < $startIndex")
+                "End index less than start index: $endIndex < $startIndex"
+            )
         }
         builder.delete(startIndex, endIndex)
     }
@@ -106,13 +110,13 @@ actual class MutableString(
     }
 
     actual fun substring(startIndex: Int): String =
-            substring(startIndex, builder.length)
+        substring(startIndex, builder.length)
 
-    actual fun substring(startIndex: Int,
-                         endIndex: Int): String {
+    actual fun substring(startIndex: Int, endIndex: Int): String {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
-                    "End index less than start index: $endIndex < $startIndex")
+                "End index less than start index: $endIndex < $startIndex"
+            )
         }
         return builder.substring(startIndex, endIndex)
     }
@@ -122,4 +126,5 @@ actual class MutableString(
 
 @Suppress("NOTHING_TO_INLINE")
 inline fun StringBuilder.toMutableString(): MutableString = MutableString(
-        this)
+    this
+)

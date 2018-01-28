@@ -18,13 +18,13 @@ package org.tobi29.utils
 
 @PublishedApi
 internal fun eventDispatcher(
-        parent: EventDispatcher? = null
+    parent: EventDispatcher? = null
 ): Pair<EventDispatcher, ListenerRegistrar> =
-        EventDispatcher(parent).let { it to ListenerRegistrar(it) }
+    EventDispatcher(parent).let { it to ListenerRegistrar(it) }
 
 inline fun EventDispatcher(
-        parent: EventDispatcher,
-        init: ListenerRegistrar.() -> Unit
+    parent: EventDispatcher,
+    init: ListenerRegistrar.() -> Unit
 ): EventDispatcher {
     val (listener, registrar) = eventDispatcher(parent)
     init(registrar)
@@ -36,21 +36,21 @@ interface EventMuteable {
 }
 
 inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
-        noinline listener: (E) -> Unit) =
-        listenAlive(0, listener)
+    noinline listener: (E) -> Unit
+) = listenAlive(0, listener)
 
 inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
-        priority: Int,
-        noinline listener: (E) -> Unit) =
-        listenAlive(0, { true }, listener)
+    priority: Int,
+    noinline listener: (E) -> Unit
+) = listenAlive(0, { true }, listener)
 
 inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
-        noinline accepts: (E) -> Boolean,
-        noinline listener: (E) -> Unit) =
-        listenAlive(0, accepts, listener)
+    noinline accepts: (E) -> Boolean,
+    noinline listener: (E) -> Unit
+) = listenAlive(0, accepts, listener)
 
 inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
-        priority: Int,
-        noinline accepts: (E) -> Boolean,
-        noinline listener: (E) -> Unit) =
-        listen(priority, { !it.muted && accepts(it) }, listener)
+    priority: Int,
+    noinline accepts: (E) -> Boolean,
+    noinline listener: (E) -> Unit
+) = listen(priority, { !it.muted && accepts(it) }, listener)

@@ -30,7 +30,7 @@ expect infix fun <P1> ((P1) -> Unit).chain(other: (P1) -> Unit): (P1) -> Unit
 /**
  * Chains all given functions into a single function
  * @param functions The functions to use
- * @param I First argument type of the functions
+ * @param P1 First argument type of the functions
  * @return A function calling all given functions in order
  */
 expect fun <P1> chain(vararg functions: (P1) -> Unit): (P1) -> Unit
@@ -40,7 +40,8 @@ expect infix fun <P1, P2> ((P1, P2) -> Unit).chain(other: (P1, P2) -> Unit): (P1
 /**
  * Chains all given functions into a single function
  * @param functions The functions to use
- * @param J Second argument type of the functions
+ * @param P1 First argument type of the functions
+ * @param P2 Second argument type of the functions
  * @return A function calling all given functions in order
  */
 expect fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit

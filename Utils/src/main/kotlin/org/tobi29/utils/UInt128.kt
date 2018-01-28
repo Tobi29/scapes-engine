@@ -17,45 +17,47 @@
 package org.tobi29.utils
 
 // FIXME: Cannot extend due to Kotlin/JS bug
-data class UInt128(val high: Long,
-                   val low: Long) /* : Number() */ : Comparable<UInt128> {
+data class UInt128(
+    val high: Long,
+    val low: Long
+) /* : Number() */ : Comparable<UInt128> {
     operator fun plus(other: UInt128): UInt128 =
-            plusImpl(high, low, other.high, other.low, ::UInt128)
+        plusImpl(high, low, other.high, other.low, ::UInt128)
 
     operator fun minus(other: UInt128): UInt128 =
-            minusImpl(high, low, other.high, other.low, ::UInt128)
+        minusImpl(high, low, other.high, other.low, ::UInt128)
 
     operator fun times(other: UInt128): UInt128 =
-            timesImpl(high, low, other.high, other.low, ::UInt128)
+        timesImpl(high, low, other.high, other.low, ::UInt128)
 
     operator fun div(other: UInt128): UInt128 =
-            divImpl(high, low, other.high, other.low)
+        divImpl(high, low, other.high, other.low)
 
     operator fun rem(other: UInt128): UInt128 =
-            this - this / other * other
+        this - this / other * other
 
     operator fun unaryPlus(): UInt128 = this
 
     infix fun and(other: UInt128): UInt128 =
-            andImpl(high, low, other.high, other.low, ::UInt128)
+        andImpl(high, low, other.high, other.low, ::UInt128)
 
     infix fun or(other: UInt128): UInt128 =
-            orImpl(high, low, other.high, other.low, ::UInt128)
+        orImpl(high, low, other.high, other.low, ::UInt128)
 
     infix fun xor(other: UInt128): UInt128 =
-            xorImpl(high, low, other.high, other.low, ::UInt128)
+        xorImpl(high, low, other.high, other.low, ::UInt128)
 
     fun inv(): UInt128 =
-            invImpl(high, low, ::UInt128)
+        invImpl(high, low, ::UInt128)
 
     infix fun shl(bitCount: Int): UInt128 =
-            shlImpl(high, low, bitCount, ::UInt128)
+        shlImpl(high, low, bitCount, ::UInt128)
 
     infix fun shr(bitCount: Int): UInt128 =
-            shrImpl(high, low, bitCount, ::UInt128)
+        shrImpl(high, low, bitCount, ::UInt128)
 
     override fun compareTo(other: UInt128) =
-            compareImpl(high, low, other.high, other.low)
+        compareImpl(high, low, other.high, other.low)
 
     override fun toString() = toString(10)
 
@@ -88,8 +90,8 @@ data class UInt128(val high: Long,
 }
 
 fun String.toUInt128(radix: Int = 10): UInt128 =
-        toUInt128OrNull(radix)
-                ?: throw IllegalArgumentException("Invalid number: $this")
+    toUInt128OrNull(radix)
+            ?: throw IllegalArgumentException("Invalid number: $this")
 
 fun String.toUInt128OrNull(radix: Int = 10): UInt128? {
     var oh = 0L
@@ -117,11 +119,13 @@ fun Short.toUInt128(): UInt128 = toLong().toUInt128()
 
 fun Int.toUInt128(): UInt128 = toLong().toUInt128()
 
-fun Long.toUInt128(): UInt128 = if (this < 0) UInt128(-1L, this)
-else UInt128(0L, this)
+fun Long.toUInt128(): UInt128 =
+    if (this < 0) UInt128(-1L, this) else UInt128(0L, this)
 
 fun Double.toUInt128(): UInt128 =
-        UInt128((this / (256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong(),
-                (rem(256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong())
+    UInt128(
+        (this / (256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong(),
+        (rem(256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0 * 256.0)).toLong()
+    )
 
 fun UInt128.toInt128(): Int128 = Int128(high, low)

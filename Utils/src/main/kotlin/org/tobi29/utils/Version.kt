@@ -20,29 +20,31 @@ package org.tobi29.utils
  * Class representing a semantic version
  */
 data class Version(
-        /**
-         * Major version component
-         */
-        val major: Int = 0,
-        /**
-         * Minor version component
-         */
-        val minor: Int = 0,
-        /**
-         * Revision version component
-         */
-        val revision: Int = 0) {
+    /**
+     * Major version component
+     */
+    val major: Int = 0,
+    /**
+     * Minor version component
+     */
+    val minor: Int = 0,
+    /**
+     * Revision version component
+     */
+    val revision: Int = 0
+) {
     override fun toString(): String = "$major.$minor.$revision"
 
     /**
      * Comparison results when comparing versions
      */
     enum class Comparison(
-            /**
-             * Level of comparison, absolute value describes magnitude and sign
-             * describes direction
-             */
-            val level: Int) {
+        /**
+         * Level of comparison, absolute value describes magnitude and sign
+         * describes direction
+         */
+        val level: Int
+    ) {
         /**
          * Major version component is lower
          */
@@ -98,9 +100,11 @@ data class Version(
          * @param upper The maximum level to check for
          * @return `true` if `lower.level <= this.level <= upper.level`
          */
-        fun inside(lower: Comparison,
-                   upper: Comparison): Boolean =
-                atLeast(lower) && atMost(upper)
+        fun inside(
+            lower: Comparison,
+            upper: Comparison
+        ): Boolean =
+            atLeast(lower) && atMost(upper)
     }
 }
 
@@ -112,8 +116,10 @@ data class Version(
  * @param current Primary version used as baseline
  * @param check Secondary version
  */
-fun compare(current: Version,
-            check: Version): Version.Comparison = when {
+fun compare(
+    current: Version,
+    check: Version
+): Version.Comparison = when {
     check.major > current.major -> Version.Comparison.HIGHER_MAJOR
     check.major < current.major -> Version.Comparison.LOWER_MAJOR
     check.minor > current.minor -> Version.Comparison.HIGHER_MINOR
@@ -155,13 +161,16 @@ fun versionParse(str: String): Version {
     var minor = 0
     var revision = 0
     major = split[0].toIntOrNull() ?: throw VersionException(
-            "Invalid major: ${split[0]}")
+        "Invalid major: ${split[0]}"
+    )
     if (split.size >= 2) {
         minor = split[1].toIntOrNull() ?: throw VersionException(
-                "Invalid minor: ${split[1]}")
+            "Invalid minor: ${split[1]}"
+        )
         if (split.size == 3) {
             revision = split[2].toIntOrNull() ?: throw VersionException(
-                    "Invalid revision: ${split[2]}")
+                "Invalid revision: ${split[2]}"
+            )
         }
     }
     return Version(major, minor, revision)

@@ -28,38 +28,38 @@ interface ComponentHolder<T : Any> {
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> registerComponent(
-            type: ComponentTypeRegistered<H, C, T>,
-            component: C
+        type: ComponentTypeRegistered<H, C, T>,
+        component: C
     ): C = componentStorage.registerComponent(this as H, type, component)
 
     @Suppress("UNCHECKED_CAST")
     operator fun <H : ComponentHolder<out T>, C : T> get(
-            type: ComponentType<H, C, T>
+        type: ComponentType<H, C, T>
     ): C = componentStorage.get(this as H, type)
 
     fun <H : ComponentHolder<out T>, C : T> getOrNull(
-            type: ComponentType<H, C, T>
+        type: ComponentType<H, C, T>
     ): C? = componentStorage.getOrNull(type)
 
     fun <H : ComponentHolder<out T>, C : T> unregisterComponent(
-            type: ComponentType<H, C, T>
+        type: ComponentType<H, C, T>
     ): Boolean = componentStorage.unregisterComponent(type)
 
     fun clearComponents() = componentStorage.clearComponents()
 }
 
 class ComponentStorage<T : Any>(
-        private val verifyAdd: (ComponentType<*, T, T>) -> Unit = {},
-        private val verifyRemove: (ComponentType<*, T, T>) -> Unit = verifyAdd
+    private val verifyAdd: (ComponentType<*, T, T>) -> Unit = {},
+    private val verifyRemove: (ComponentType<*, T, T>) -> Unit = verifyAdd
 ) {
     private val components = ConcurrentHashMap<ComponentType<*, T, T>, T>()
     internal val componentsCollection = components.values.readOnly()
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> registerComponent(
-            holder: H,
-            type: ComponentTypeRegistered<H, C, T>,
-            component: C
+        holder: H,
+        type: ComponentTypeRegistered<H, C, T>,
+        component: C
     ): C {
         type.permission?.let { checkPermission(it) }
         verifyAdd(type as ComponentType<H, T, T>)
@@ -78,8 +78,8 @@ class ComponentStorage<T : Any>(
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> get(
-            holder: H,
-            type: ComponentType<H, C, T>
+        holder: H,
+        type: ComponentType<H, C, T>
     ): C {
         type.permission?.let { checkPermission(it) }
 
@@ -99,7 +99,7 @@ class ComponentStorage<T : Any>(
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> getOrNull(
-            type: ComponentType<H, C, T>
+        type: ComponentType<H, C, T>
     ): C? {
         type.permission?.let { checkPermission(it) }
 
@@ -110,7 +110,7 @@ class ComponentStorage<T : Any>(
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> unregisterComponent(
-            type: ComponentType<H, C, T>
+        type: ComponentType<H, C, T>
     ): Boolean {
         type.permission?.let { checkPermission(it) }
         verifyRemove(type)
@@ -139,19 +139,20 @@ interface ComponentType<in H : ComponentHolder<out T>, out C : T, out T : Any> {
 
     companion object {
         fun <H : ComponentHolder<out T>, C : T, T : Any> of(supplier: (H) -> C): ComponentType<H, C, T> =
-                object : ComponentType<H, C, T> {
-                    override fun create(holder: H): C = supplier(holder)
-                }
+            object : ComponentType<H, C, T> {
+                override fun create(holder: H): C = supplier(holder)
+            }
     }
 }
 
-open class ComponentTypeRegistered<in H : ComponentHolder<out T>, out C : T, out T : Any> : ComponentType<H, C, T> {
+open class ComponentTypeRegistered<in H : ComponentHolder<out T>, out C : T, out T : Any> :
+    ComponentType<H, C, T> {
     override fun create(holder: H): C =
-            throw IllegalStateException("Component not registered")
+        throw IllegalStateException("Component not registered")
 }
 
 class ComponentTypeRegisteredPermission<in H : ComponentHolder<out T>, out C : T, out T : Any>(
-        override val permission: String
+    override val permission: String
 ) : ComponentTypeRegistered<H, C, T>()
 
 interface ComponentRegisteredHolder<in H : ComponentHolder<out Any>> {
@@ -159,17 +160,18 @@ interface ComponentRegisteredHolder<in H : ComponentHolder<out Any>> {
     fun dispose() {}
 }
 
-interface ComponentRegistered : ComponentRegisteredHolder<ComponentHolder<out Any>> {
+interface ComponentRegistered :
+    ComponentRegisteredHolder<ComponentHolder<out Any>> {
     fun init() {}
 
     override fun init(holder: ComponentHolder<out Any>) = init()
 }
 
 typealias ComponentTypeUniversal<C> =
-ComponentType<ComponentHolder<out C>, C, C>
+        ComponentType<ComponentHolder<out C>, C, C>
 
 typealias ComponentTypeRegisteredUniversal<C> =
-ComponentTypeRegistered<ComponentHolder<out C>, C, C>
+        ComponentTypeRegistered<ComponentHolder<out C>, C, C>
 
 typealias ComponentTypeRegisteredPermissionUniversal<C> =
-ComponentTypeRegisteredPermission<ComponentHolder<out C>, C, C>
+        ComponentTypeRegisteredPermission<ComponentHolder<out C>, C, C>

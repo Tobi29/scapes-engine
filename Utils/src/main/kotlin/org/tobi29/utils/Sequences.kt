@@ -22,9 +22,8 @@ package org.tobi29.utils
  * @receiver The sequence of elements to collect
  * @return A new array containing
  */
-inline fun <reified T> Sequence<T>.toArray(): Array<T> {
-    return toList().toTypedArray()
-}
+inline fun <reified T> Sequence<T>.toArray(): Array<T> =
+    toList().toTypedArray()
 
 /**
  * Constructs an infinite sequence starting with all the elements in the given
@@ -96,7 +95,7 @@ inline fun <reified T : Any> Sequence<*>.findMap(): T? {
  * until the next element from [other] is taken.
  */
 operator fun <T, U> Sequence<T>.times(
-        other: Sequence<U>
+    other: Sequence<U>
 ): Sequence<Pair<T, U>> = Sequence {
     asIterable().times(other.iterator())
 }

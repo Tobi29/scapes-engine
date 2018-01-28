@@ -66,21 +66,21 @@ inline fun <T> EitherLeft<T>.get(): T = value
  */
 inline fun <T> EitherRight<T>.get(): T = value
 
-/**
- * Option type, left for value, right for no value
- * @param T Optional value type
- */
+        /**
+         * Option type, left for value, right for no value
+         * @param T Optional value type
+         */
 typealias Option<T> = Either<T, Nothing?>
 
-/**
- * Option type with value
- * @param T Value type
- */
+        /**
+         * Option type with value
+         * @param T Value type
+         */
 typealias OptionSome<T> = EitherLeft<T>
 
-/**
- * Option type without value
- */
+        /**
+         * Option type without value
+         */
 typealias OptionNone = EitherRight<Nothing?>
 
 /**
@@ -88,27 +88,27 @@ typealias OptionNone = EitherRight<Nothing?>
  */
 val nil: OptionNone = EitherRight(null)
 
-/**
- * Result type, left for value, right for error
- *
- * **Note:** `E` should always be a subclass of [Throwable]
- * @param T Optional value type
- * @param E Error type
- */
+        /**
+         * Result type, left for value, right for error
+         *
+         * **Note:** `E` should always be a subclass of [Throwable]
+         * @param T Optional value type
+         * @param E Error type
+         */
 typealias Result<T, E> = Either<T, E>
 
-/**
- * Result type with value
- * @param T Value type
- */
+        /**
+         * Result type with value
+         * @param T Value type
+         */
 typealias ResultOk<T> = EitherLeft<T>
 
-/**
- * Result type with error
- *
- * **Note:** `E` should always be a subclass of [Throwable]
- * @param E Error type
- */
+        /**
+         * Result type with error
+         *
+         * **Note:** `E` should always be a subclass of [Throwable]
+         * @param E Error type
+         */
 typealias ResultError<E> = EitherRight<E>
 
 /**
@@ -169,10 +169,11 @@ inline fun <T> ResultOk<T>.tryUnwrap(): T = get()
 @Suppress("unused")
 inline fun <E> ResultError<E>.tryUnwrap(): Nothing? = null
 
-inline fun <T : R, E, R> Result<T, E>.unwrapOr(error: (E) -> R): R = when (this) {
-    is ResultOk<T> -> this.get()
-    is ResultError<E> -> error(this.get())
-}
+inline fun <T : R, E, R> Result<T, E>.unwrapOr(error: (E) -> R): R =
+    when (this) {
+        is ResultOk<T> -> this.get()
+        is ResultError<E> -> error(this.get())
+    }
 
 /**
  * Run the given [block] and return normally or catch an exception of type [E]
@@ -182,9 +183,10 @@ inline fun <T : R, E, R> Result<T, E>.unwrapOr(error: (E) -> R): R = when (this)
  * @param E Error type
  * @return [ResultOk] with return value of [block] on success, [ResultError] with caught exception otherwise
  */
-inline fun <R, reified E : Throwable> tryWrap(block: () -> R): Result<R, E> = try {
-    ResultOk(block())
-} catch (e: Throwable) {
-    if (e !is E) throw e
-    ResultError(e)
-}
+inline fun <R, reified E : Throwable> tryWrap(block: () -> R): Result<R, E> =
+    try {
+        ResultOk(block())
+    } catch (e: Throwable) {
+        if (e !is E) throw e
+        ResultError(e)
+    }

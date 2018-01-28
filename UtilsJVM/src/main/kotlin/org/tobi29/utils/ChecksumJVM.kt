@@ -25,17 +25,13 @@ import java.security.NoSuchAlgorithmException
 /**
  * Class representing a checksum hash
  */
-class Checksum
-/**
- * Construct new checksum from the given array
- * @param array Byte array containing hash
- */
-(
-        /**
-         * Algorithm of this checksum, might be [Algorithm.UNKNOWN]
-         */
-        val algorithm: Algorithm,
-        private val array: ByteArray) : TagMapWrite {
+class Checksum(
+    /**
+     * Algorithm of this checksum, might be [Algorithm.UNKNOWN]
+     */
+    val algorithm: Algorithm,
+    private val array: ByteArray
+) : TagMapWrite {
 
     /**
      * Returns byte array containing checksum hash
@@ -71,7 +67,8 @@ class Checksum
     init {
         if (array.size != algorithm.bytes) {
             throw IllegalArgumentException(
-                    "Byte array size different from algorithm: ${array.size} (Should be: ${algorithm.bytes})")
+                "Byte array size different from algorithm: ${array.size} (Should be: ${algorithm.bytes})"
+            )
         }
     }
 }
@@ -79,11 +76,11 @@ class Checksum
 fun MutableTag.toChecksum(): Checksum? {
     val map = toMap() ?: return null
     val algorithm =
-            try {
-                Algorithm.valueOf(map["Algorithm"].toString())
-            } catch (e: IllegalArgumentException) {
-                return null
-            }
+        try {
+            Algorithm.valueOf(map["Algorithm"].toString())
+        } catch (e: IllegalArgumentException) {
+            return null
+        }
     val array = map["Array"]?.toByteArray() ?: return null
     if (array.size != algorithm.bytes) {
         return null
@@ -94,8 +91,10 @@ fun MutableTag.toChecksum(): Checksum? {
 /**
  * Enum containing available checksum algorithms
  */
-enum class Algorithm(private val digestName: String,
-                     val bytes: Int) {
+enum class Algorithm(
+    private val digestName: String,
+    val bytes: Int
+) {
     UNKNOWN("UNKNOWN", 0),
     SHA256("SHA-256", 32),
     SHA1("SHA1", 20),

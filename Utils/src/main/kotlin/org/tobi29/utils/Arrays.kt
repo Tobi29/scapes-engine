@@ -33,9 +33,8 @@ inline fun <reified T : Any> Array<*>.findMap(): T? {
  * @param size The size of each list
  * @receiver The elements to use
  */
-fun <T> Array<T>.permutations(
-        size: Int
-): Iterator<List<T>> = Array(size) { this }.permutations()
+fun <T> Array<T>.permutations(size: Int): Iterator<List<T>> =
+    Array(size) { this }.permutations()
 
 /**
  * Generates a lazy iterator containing all permutations of the given elements
@@ -47,11 +46,12 @@ fun <T> Array<Array<T>>.permutations(): Iterator<List<T>> {
     val elements: Array<Array<T>> = this@permutations
     return object : Iterator<List<T>> {
         private val indices = IntArray(elements.size)
-                .also { if (it.isNotEmpty()) it[it.lastIndex] = -1 }
+            .also { if (it.isNotEmpty()) it[it.lastIndex] = -1 }
 
         override fun hasNext(): Boolean {
             if (indices.isEmpty() || elements.last().isEmpty()) return false
-            return indices.withIndex().any { (i, current) -> current < elements[i].lastIndex }
+            return indices.withIndex()
+                .any { (i, current) -> current < elements[i].lastIndex }
         }
 
         override fun next(): List<T> {
@@ -66,7 +66,8 @@ fun <T> Array<Array<T>>.permutations(): Iterator<List<T>> {
                         indices[j] = elements.lastIndex
                     }
                     throw NoSuchElementException(
-                            "Iterator has no more elements")
+                        "Iterator has no more elements"
+                    )
                 }
             }
             return (0 until indices.size).map { elements[it][indices[it]] }

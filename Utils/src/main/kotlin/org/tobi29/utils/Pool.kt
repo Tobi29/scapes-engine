@@ -30,12 +30,7 @@ import org.tobi29.stdex.copy
  * one thread at a time
  * @param E of elements stored
  */
-class Pool<E>
-/**
- * Creates a new instance using the given [supplier]
- * @param supplier Called to create new objects in case the pool ran out of reusable ones
- */
-(private val supplier: () -> E) : AbstractMutableList<E>() {
+class Pool<E>(private val supplier: () -> E) : AbstractMutableList<E>() {
     /**
      * Returns the current size of this [Pool]
      */
@@ -65,17 +60,17 @@ class Pool<E>
      * @return A possibly reused object
      */
     fun push(): E =
-            if (filled <= size) {
-                supplier().also {
-                    ensure(1)
-                    array[size] = it
-                    size++
-                    filled++
-                }
-            } else {
-                @Suppress("UNCHECKED_CAST")
-                array[size++] as E
+        if (filled <= size) {
+            supplier().also {
+                ensure(1)
+                array[size] = it
+                size++
+                filled++
             }
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            array[size++] as E
+        }
 
     /**
      * Discards the last element in the pool and returns the second to last one
@@ -140,9 +135,20 @@ class Pool<E>
         if (index < 0 || index >= size) {
             throw IndexOutOfBoundsException("Index: $index Size: $size")
         }
-        @Suppress("UNCHECKED_CAST")
-        return array[index] as E
+        return getUnsafe(index)
     }
+
+    /**
+     * Returns an element in the pool with no error checking at all,
+     * likely tripping into unsafe cast issues when misused
+     *
+     * **Note**: This can be used to safely retrieve unused elements in the pool
+     * as long as [index] is less than [filled]
+     * @param index The index of the element to retrieve
+     * @see get
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun getUnsafe(index: Int): E = array[index] as E
 
     override fun removeAt(index: Int): E {
         if (index > size)
@@ -160,14 +166,13 @@ class Pool<E>
             private var i = 0
             private var j = -1
 
-            override fun hasNext(): Boolean {
-                return i < size
-            }
+            override fun hasNext() = i < size
 
             override fun next(): E {
                 if (i >= size) {
                     throw NoSuchElementException(
-                            "Reached limit: $i of $size")
+                        "Reached limit: $i of $size"
+                    )
                 }
                 @Suppress("UNCHECKED_CAST")
                 val element = array[i] as E
@@ -178,18 +183,19 @@ class Pool<E>
 
             override fun remove() {
                 if (j < 0) throw IllegalStateException(
-                        "Cannot remove element before calling next")
+                    "Cannot remove element before calling next"
+                )
                 if (j < i) removeAt(j++)
             }
         }
     }
 
-    override fun addAll(index: Int,
-                        elements: Collection<E>): Boolean {
+    override fun addAll(index: Int, elements: Collection<E>): Boolean {
         val count = elements.size
         if (index - 1 + elements.size > size)
             throw IndexOutOfBoundsException(
-                    "Index: $index Size: $size Elements: $count")
+                "Index: $index Size: $size Elements: $count"
+            )
         ensure(count)
         copy(array, array, filled - index, index, index + count)
         var i = index
@@ -201,8 +207,7 @@ class Pool<E>
         return true
     }
 
-    override fun add(index: Int,
-                     element: E) {
+    override fun add(index: Int, element: E) {
         if (index > size)
             throw IndexOutOfBoundsException("Index: $index Size: $size")
         ensure(1)
@@ -218,8 +223,7 @@ class Pool<E>
         filled = 0
     }
 
-    override fun set(index: Int,
-                     element: E): E {
+    override fun set(index: Int, element: E): E {
         if (index > size)
             throw IndexOutOfBoundsException("Index: $index Size: $size")
         @Suppress("UNCHECKED_CAST")
@@ -228,11 +232,12 @@ class Pool<E>
 
     @Suppress("NOTHING_TO_INLINE")
     private inline fun ensure(elements: Int = 1) =
-            ensureCapacity(size + elements)
+        ensureCapacity(size + elements)
 
     private fun resize(capacity: Int) {
         if (capacity < size) throw IllegalArgumentException(
-                "Capacity is smaller than size: $capacity < $size")
+            "Capacity is smaller than size: $capacity < $size"
+        )
         val newArray = arrayOfNulls<Any>(capacity)
         copy(array, newArray, filled)
         array = newArray
@@ -245,6 +250,6 @@ class Pool<E>
 inline fun <E> Pool<E>.forAllObjects(action: (E) -> Unit) {
     for (i in 0 until filled) {
         @Suppress("UNCHECKED_CAST")
-        action(this[i])
+        action(getUnsafe(i))
     }
 }

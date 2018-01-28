@@ -18,20 +18,20 @@ package org.tobi29.utils
 
 actual val systemClock = object : Clock {
     override fun timeMillis(): InstantMillis =
-            Date.now().toLong()
+        Date.now().toLong()
 
     override fun timeNanos(): InstantNanos =
-            (Date.now() * 1000000.0).toInt128()
+        (Date.now() * 1000000.0).toInt128()
 }
 
 actual val steadyClock = object : SteadyClock {
     override fun timeSteadyNanos(): InstantSteadyNanos =
-            (performance.now() * 1000000.0).toLong()
+        (performance.now() * 1000000.0).toLong()
 }
 
 private external val performance: Performance
 
-private external abstract class Performance {
+private abstract external class Performance {
     fun now(): Double
 }
 

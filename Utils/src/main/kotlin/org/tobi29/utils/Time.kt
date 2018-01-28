@@ -16,45 +16,45 @@
 
 package org.tobi29.utils
 
-/**
- * Time instant using nanoseconds as unit
- *
- * **Note:** The value shall be consistent with unix timestamps with UTC
- * as the timezone
- */
+        /**
+         * Time instant using nanoseconds as unit
+         *
+         * **Note:** The value shall be consistent with unix timestamps with UTC
+         * as the timezone
+         */
 typealias InstantNanos = Int128
 
-/**
- * Time duration using nanoseconds as unit
- */
+        /**
+         * Time duration using nanoseconds as unit
+         */
 typealias DurationNanos = Int128
 
-/**
- * Time duration using nanoseconds as unit
- */
+        /**
+         * Time duration using nanoseconds as unit
+         */
 typealias Duration64Nanos = Long
 
-/**
- * Time instant using milliseconds as unit
- *
- * **Note:** The value shall be consistent with unix timestamps with UTC
- * as the timezone
- */
+        /**
+         * Time instant using milliseconds as unit
+         *
+         * **Note:** The value shall be consistent with unix timestamps with UTC
+         * as the timezone
+         */
 typealias InstantMillis = Long
 
-/**
- * Time duration using milliseconds as unit
- */
+        /**
+         * Time duration using milliseconds as unit
+         */
 typealias DurationMillis = Long
 
-/**
- * Time instant using nanoseconds as unit
- *
- * **Note:** The origin and exact resolution may differ based on implementation,
- * however it should return usable values for calculating deltas in the range
- * of about a millisecond to a few years, however absolute values have no
- * meaning across multiple processes
- */
+        /**
+         * Time instant using nanoseconds as unit
+         *
+         * **Note:** The origin and exact resolution may differ based on implementation,
+         * however it should return usable values for calculating deltas in the range
+         * of about a millisecond to a few years, however absolute values have no
+         * meaning across multiple processes
+         */
 typealias InstantSteadyNanos = Long
 
 /**
@@ -117,7 +117,7 @@ object Instant {
      * @return Timestamp in nanoseconds
      */
     fun fromMillis(millis: Int128): InstantNanos =
-            millis * NANOS_PER_MILLISECOND
+        millis * NANOS_PER_MILLISECOND
 
     /**
      * Convert a millisecond timestamp to nanoseconds
@@ -125,7 +125,7 @@ object Instant {
      * @return Timestamp in nanoseconds
      */
     fun fromMillis(millis: InstantMillis): InstantNanos =
-            fromMillis(millis.toInt128())
+        fromMillis(millis.toInt128())
 
     /**
      * Convert a second timestamp to nanoseconds
@@ -133,7 +133,7 @@ object Instant {
      * @return Timestamp in nanoseconds
      */
     fun fromSeconds(seconds: Int128): InstantNanos =
-            seconds * NANOS_PER_SECOND
+        seconds * NANOS_PER_SECOND
 
     /**
      * Convert a second timestamp to nanoseconds
@@ -141,7 +141,7 @@ object Instant {
      * @return Timestamp in nanoseconds
      */
     fun fromSeconds(seconds: Long): InstantNanos =
-            fromSeconds(seconds.toInt128())
+        fromSeconds(seconds.toInt128())
 }
 
 /*
@@ -201,7 +201,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromNanos(nanos: Duration64Nanos): DurationNanos =
-            nanos.toInt128()
+        nanos.toInt128()
 
     /**
      * Convert a millisecond duration to nanoseconds
@@ -209,7 +209,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromMillis(millis: Int128): DurationNanos =
-            millis * NANOS_PER_MILLISECOND
+        millis * NANOS_PER_MILLISECOND
 
     /**
      * Convert a millisecond duration to nanoseconds
@@ -217,7 +217,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromMillis(millis: DurationMillis): DurationNanos =
-            fromMillis(millis.toInt128())
+        fromMillis(millis.toInt128())
 
     /**
      * Convert a second duration to nanoseconds
@@ -225,7 +225,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromSeconds(seconds: Int128): DurationNanos =
-            seconds * NANOS_PER_SECOND
+        seconds * NANOS_PER_SECOND
 
     /**
      * Convert a second duration to nanoseconds
@@ -233,7 +233,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromSeconds(seconds: Long): DurationNanos =
-            fromSeconds(seconds.toInt128())
+        fromSeconds(seconds.toInt128())
 
     /**
      * Convert a minute duration to nanoseconds
@@ -241,7 +241,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromMinutes(minutes: Int128): DurationNanos =
-            minutes * NANOS_PER_MINUTE
+        minutes * NANOS_PER_MINUTE
 
     /**
      * Convert a minute duration to nanoseconds
@@ -249,7 +249,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromMinutes(minutes: Long): DurationNanos =
-            fromMinutes(minutes.toInt128())
+        fromMinutes(minutes.toInt128())
 
     /**
      * Convert an hour duration to nanoseconds
@@ -257,7 +257,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromHours(hours: Int128): DurationNanos =
-            hours * NANOS_PER_HOUR
+        hours * NANOS_PER_HOUR
 
     /**
      * Convert an hour duration to nanoseconds
@@ -265,7 +265,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromHours(hours: Long): DurationNanos =
-            fromHours(hours.toInt128())
+        fromHours(hours.toInt128())
 
     /**
      * Convert a day duration to nanoseconds
@@ -273,7 +273,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromDays(days: Int128): DurationNanos =
-            days * NANOS_PER_DAY
+        days * NANOS_PER_DAY
 
     /**
      * Convert a day duration to nanoseconds
@@ -281,7 +281,7 @@ object Duration {
      * @return Duration in nanoseconds
      */
     fun fromDays(days: Long): DurationNanos =
-            fromDays(days.toInt128())
+        fromDays(days.toInt128())
 }
 
 
@@ -294,7 +294,7 @@ interface Clock {
      * @return Current time in milliseconds
      */
     fun timeMillis(): InstantMillis =
-            (timeNanos() / 1000000L.toInt128()).toLongClamped()
+        (timeNanos() / 1000000L.toInt128()).toLongClamped()
 
     /**
      * Returns time instant in nanoseconds

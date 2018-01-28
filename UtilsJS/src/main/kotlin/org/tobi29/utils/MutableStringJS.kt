@@ -18,8 +18,9 @@ package org.tobi29.utils
 
 import org.tobi29.stdex.copyToString
 
-actual class MutableString actual constructor(private var str: String) : CharSequence,
-        Appendable {
+actual class MutableString actual constructor(private var str: String) :
+    CharSequence,
+    Appendable {
     actual override val length get() = str.length
 
     actual constructor() : this("")
@@ -33,9 +34,8 @@ actual class MutableString actual constructor(private var str: String) : CharSeq
         return str[index]
     }
 
-    actual override fun subSequence(startIndex: Int,
-                                    endIndex: Int) =
-            substring(startIndex, endIndex)
+    actual override fun subSequence(startIndex: Int, endIndex: Int) =
+        substring(startIndex, endIndex)
 
     actual override fun append(c: Char): MutableString = apply {
         str += c
@@ -45,55 +45,63 @@ actual class MutableString actual constructor(private var str: String) : CharSeq
         str += csq ?: "null"
     }
 
-    actual override fun append(csq: CharSequence?,
-                               start: Int,
-                               end: Int): MutableString = apply {
+    actual override fun append(
+        csq: CharSequence?,
+        start: Int,
+        end: Int
+    ): MutableString = apply {
         str += (csq ?: "null").subSequence(start, end)
     }
 
-    actual fun insert(position: Int,
-                      char: Char): MutableString = apply {
+    actual fun insert(
+        position: Int,
+        char: Char
+    ): MutableString = apply {
         if (position < 0 || position > str.length) {
             throw IndexOutOfBoundsException("$position")
         }
         str = "${str.substring(0, position)}$char${str.substring(position)}"
     }
 
-    actual fun insert(position: Int,
-                      str: String): MutableString = apply {
+    actual fun insert(
+        position: Int,
+        str: String
+    ): MutableString = apply {
         if (position < 0 || position > this.str.length) {
             throw IndexOutOfBoundsException("$position")
         }
         this.str = "${this.str.substring(0, position)}$str${this.str.substring(
-                position)}"
+            position
+        )}"
     }
 
-    actual fun insert(position: Int,
-                      array: CharArray): MutableString =
-            insert(position, array, 0)
+    actual fun insert(position: Int, array: CharArray): MutableString =
+        insert(position, array, 0)
 
-    actual fun insert(position: Int,
-                      array: CharArray,
-                      offset: Int): MutableString =
-            insert(position, array, offset, array.size - offset)
+    actual fun insert(
+        position: Int,
+        array: CharArray,
+        offset: Int
+    ): MutableString = insert(position, array, offset, array.size - offset)
 
-    actual fun insert(position: Int,
-                      array: CharArray,
-                      offset: Int,
-                      length: Int): MutableString =
-            insert(position, array.copyToString(offset, length))
+    actual fun insert(
+        position: Int,
+        array: CharArray,
+        offset: Int,
+        length: Int
+    ): MutableString = insert(position, array.copyToString(offset, length))
 
     actual fun delete(range: IntRange): MutableString =
-            delete(range.start, range.endInclusive + 1)
+        delete(range.start, range.endInclusive + 1)
 
     actual fun delete(startIndex: Int): MutableString =
-            delete(startIndex, startIndex + 1)
+        delete(startIndex, startIndex + 1)
 
-    actual fun delete(startIndex: Int,
-                      endIndex: Int): MutableString = apply {
+    actual fun delete(startIndex: Int, endIndex: Int): MutableString = apply {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
-                    "End index less than start index: $endIndex < $startIndex")
+                "End index less than start index: $endIndex < $startIndex"
+            )
         }
         if (startIndex < 0 || endIndex > str.length) {
             throw IndexOutOfBoundsException("$startIndex..$endIndex")
@@ -104,13 +112,16 @@ actual class MutableString actual constructor(private var str: String) : CharSeq
     actual fun clear(): MutableString = apply { str = "" }
 
     actual fun substring(startIndex: Int): String =
-            substring(startIndex, str.length)
+        substring(startIndex, str.length)
 
-    actual fun substring(startIndex: Int,
-                         endIndex: Int): String {
+    actual fun substring(
+        startIndex: Int,
+        endIndex: Int
+    ): String {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
-                    "End index less than start index: $endIndex < $startIndex")
+                "End index less than start index: $endIndex < $startIndex"
+            )
         }
         if (startIndex < 0 || endIndex > str.length) {
             throw IndexOutOfBoundsException("$startIndex..$endIndex")

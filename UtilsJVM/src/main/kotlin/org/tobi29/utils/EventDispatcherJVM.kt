@@ -24,13 +24,15 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentSkipListSet
 import kotlin.reflect.KClass
 
-actual class EventDispatcher actual internal constructor(
-        private val parent: EventDispatcher?
+actual class EventDispatcher internal actual constructor(
+    private val parent: EventDispatcher?
 ) {
     private val root = findRoot()
     private val children = ConcurrentHashSet<EventDispatcher>()
-    private val activeListeners = ConcurrentHashMap<KClass<*>, MutableSet<Listener<*>>>()
-    internal val listeners = ConcurrentHashMap<KClass<*>, MutableSet<Listener<*>>>()
+    private val activeListeners =
+        ConcurrentHashMap<KClass<*>, MutableSet<Listener<*>>>()
+    internal val listeners =
+        ConcurrentHashMap<KClass<*>, MutableSet<Listener<*>>>()
     private val enabled = AtomicBoolean(parent == null)
 
     actual constructor() : this(null)
@@ -63,7 +65,8 @@ actual class EventDispatcher actual internal constructor(
     private fun activate() {
         for ((clazz, set) in listeners) {
             val activeList = root.activeListeners.computeAbsent(
-                    clazz) { ConcurrentSkipListSet<Listener<*>>() }
+                clazz
+            ) { ConcurrentSkipListSet<Listener<*>>() }
             activeList.addAll(set)
         }
         children.forEach { it.activate() }
@@ -99,10 +102,12 @@ actual class EventDispatcher actual internal constructor(
 }
 
 actual class ListenerRegistrar actual internal constructor(actual val events: EventDispatcher) {
-    fun <E : Any> listen(clazz: KClass<E>,
-                         priority: Int,
-                         accepts: (E) -> Boolean,
-                         listener: (E) -> Unit) {
+    fun <E : Any> listen(
+        clazz: KClass<E>,
+        priority: Int,
+        accepts: (E) -> Boolean,
+        listener: (E) -> Unit
+    ) {
         val list = events.listeners.computeAbsent(clazz) {
             ConcurrentSkipListSet<Listener<*>>()
         }
@@ -111,34 +116,39 @@ actual class ListenerRegistrar actual internal constructor(actual val events: Ev
     }
 
     actual inline fun <reified E : Any> listen(
-            noinline listener: (E) -> Unit) {
+        noinline listener: (E) -> Unit
+    ) {
         listen(0, listener)
     }
 
     actual inline fun <reified E : Any> listen(
-            priority: Int,
-            noinline listener: (E) -> Unit) {
+        priority: Int,
+        noinline listener: (E) -> Unit
+    ) {
         listen(priority, { true }, listener)
     }
 
     actual inline fun <reified E : Any> listen(
-            noinline accepts: (E) -> Boolean,
-            noinline listener: (E) -> Unit) {
+        noinline accepts: (E) -> Boolean,
+        noinline listener: (E) -> Unit
+    ) {
         listen(0, accepts, listener)
     }
 
     actual inline fun <reified E : Any> listen(
-            priority: Int,
-            noinline accepts: (E) -> Boolean,
-            noinline listener: (E) -> Unit) {
+        priority: Int,
+        noinline accepts: (E) -> Boolean,
+        noinline listener: (E) -> Unit
+    ) {
         listen(E::class, priority, accepts, listener)
     }
 }
 
 internal data class Listener<in E : Any>(
-        internal val priority: Int,
-        internal val accepts: (E) -> Boolean,
-        internal val listener: (E) -> Unit) : Comparable<Listener<*>> {
+    internal val priority: Int,
+    internal val accepts: (E) -> Boolean,
+    internal val listener: (E) -> Unit
+) : Comparable<Listener<*>> {
     private val uid = UID_COUNTER.andIncrement
 
     @Suppress("KDocMissingDocumentation")

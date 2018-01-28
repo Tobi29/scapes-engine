@@ -19,20 +19,25 @@ package org.tobi29.utils
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
-fun <R, V> accessSynchronized(lock: Any,
-                              accessor: R.() -> ReadWriteProperty<Any?, V>) =
-        object : ReadWriteProperty<R, V> {
-            override fun getValue(thisRef: R,
-                                  property: KProperty<*>) =
-                    synchronized(lock) {
-                        accessor(thisRef).getValue(thisRef, property)
-                    }
+fun <R, V> accessSynchronized(
+    lock: Any,
+    accessor: R.() -> ReadWriteProperty<Any?, V>
+) =
+    object : ReadWriteProperty<R, V> {
+        override fun getValue(
+            thisRef: R,
+            property: KProperty<*>
+        ) = synchronized(lock) {
+            accessor(thisRef).getValue(thisRef, property)
+        }
 
-            override fun setValue(thisRef: R,
-                                  property: KProperty<*>,
-                                  value: V) {
-                synchronized(lock) {
-                    accessor(thisRef).setValue(thisRef, property, value)
-                }
+        override fun setValue(
+            thisRef: R,
+            property: KProperty<*>,
+            value: V
+        ) {
+            synchronized(lock) {
+                accessor(thisRef).setValue(thisRef, property, value)
             }
         }
+    }

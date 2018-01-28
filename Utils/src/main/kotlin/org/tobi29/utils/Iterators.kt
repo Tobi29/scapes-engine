@@ -21,7 +21,7 @@ package org.tobi29.utils
  * function to each element in the original iterator.
  */
 inline fun <T, R> Iterator<T>.map(
-        crossinline transform: (T) -> R
+    crossinline transform: (T) -> R
 ): Iterator<R> = object : Iterator<R> {
     override fun hasNext() = this@map.hasNext()
 
@@ -55,7 +55,7 @@ operator fun <T> Iterator<T>.plus(other: Iterator<T>) = object : Iterator<T> {
     private var finishedFirst = false
 
     override fun hasNext() =
-            (!finishedFirst && this@plus.hasNext()) || other.hasNext()
+        (!finishedFirst && this@plus.hasNext()) || other.hasNext()
 
     override fun next(): T {
         if (finishedFirst) return other.next()
@@ -73,13 +73,13 @@ operator fun <T> Iterator<T>.plus(other: Iterator<T>) = object : Iterator<T> {
  * @return A normal iterator that goes backwards
  */
 fun <E> ListIterator<E>.descendingIterator(): Iterator<E> =
-        object : Iterator<E> {
-            override fun hasNext(): Boolean =
-                    this@descendingIterator.hasPrevious()
+    object : Iterator<E> {
+        override fun hasNext(): Boolean =
+            this@descendingIterator.hasPrevious()
 
-            override fun next(): E =
-                    this@descendingIterator.previous()
-        }
+        override fun next(): E =
+            this@descendingIterator.previous()
+    }
 
 /**
  * Returns a normal iterator that goes backwards through the list iterator
@@ -87,16 +87,16 @@ fun <E> ListIterator<E>.descendingIterator(): Iterator<E> =
  * @return A normal iterator that goes backwards
  */
 fun <E> MutableListIterator<E>.descendingMutableIterator(): MutableIterator<E> =
-        object : MutableIterator<E> {
-            override fun hasNext(): Boolean =
-                    this@descendingMutableIterator.hasPrevious()
+    object : MutableIterator<E> {
+        override fun hasNext(): Boolean =
+            this@descendingMutableIterator.hasPrevious()
 
-            override fun next(): E =
-                    this@descendingMutableIterator.previous()
+        override fun next(): E =
+            this@descendingMutableIterator.previous()
 
-            override fun remove() =
-                    this@descendingMutableIterator.remove()
-        }
+        override fun remove() =
+            this@descendingMutableIterator.remove()
+    }
 
 /**
  * Constructs an iterator from the given [supplier], stopping at the first
@@ -132,7 +132,8 @@ inline fun <T> Iterator(crossinline supplier: () -> T?): Iterator<T> {
         override fun next(): T {
             touch()
             val element = next ?: throw NoSuchElementException(
-                    "No more elements in iterator")
+                "No more elements in iterator"
+            )
             iterate()
             return element
         }

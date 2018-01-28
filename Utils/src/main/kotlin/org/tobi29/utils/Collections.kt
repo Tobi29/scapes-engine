@@ -36,7 +36,7 @@ inline fun <reified T : Any> Iterable<*>.findMap(): T? {
  * until the next element from [other] is taken.
  */
 operator fun <T, U> Iterable<T>.times(
-        other: Iterator<U>
+    other: Iterator<U>
 ): Iterator<Pair<T, U>> = object : Iterator<Pair<T, U>> {
     private var left: Iterator<T>? = null
     private var right: U? = null
@@ -69,7 +69,7 @@ operator fun <T, U> Iterable<T>.times(
  * until the next element from [other] is taken.
  */
 operator fun <T, U> Iterable<T>.times(
-        other: Sequence<U>
+    other: Sequence<U>
 ): Sequence<Pair<T, U>> = Sequence {
     asIterable().times(other.iterator())
 }
@@ -82,7 +82,7 @@ operator fun <T, U> Iterable<T>.times(
  * until the next element from [other] is taken.
  */
 operator fun <T, U> Iterable<T>.times(
-        other: Iterable<U>
+    other: Iterable<U>
 ): Iterable<Pair<T, U>> = object : Iterable<Pair<T, U>> {
     override fun iterator() = this@times.times(other.iterator())
 }
@@ -100,8 +100,8 @@ operator fun <T, U> Iterable<T>.times(
  * @see replace
  */
 inline fun <K, V> Map<K, V>.substitute(
-        key: K,
-        transform: (V?) -> V
+    key: K,
+    transform: (V?) -> V
 ): Map<K, V> {
     val map = HashMap<K, V>()
     map.putAll(this)
@@ -122,8 +122,8 @@ inline fun <K, V> Map<K, V>.substitute(
  * @see substitute
  */
 inline fun <K, V : Any> Map<K, V>.replace(
-        key: K,
-        transform: (V) -> V
+    key: K,
+    transform: (V) -> V
 ): Map<K, V> {
     val map = HashMap<K, V>()
     map.putAll(this)
@@ -139,7 +139,7 @@ inline fun <K, V : Any> Map<K, V>.replace(
  * @receiver The elements to use
  */
 inline fun <reified T> Iterable<T>.permutations(size: Int): Iterator<List<T>> =
-        toList().toTypedArray().permutations(size)
+    toList().toTypedArray().permutations(size)
 
 /**
  * Generates a lazy iterator containing all permutations of the given elements
@@ -148,4 +148,4 @@ inline fun <reified T> Iterable<T>.permutations(size: Int): Iterator<List<T>> =
  * @receiver The elements for each index in the resulting lists to use
  */
 inline fun <reified T> Iterable<Iterable<T>>.permutations(): Iterator<List<T>> =
-        map { it.toList().toTypedArray() }.toTypedArray().permutations()
+    map { it.toList().toTypedArray() }.toTypedArray().permutations()
