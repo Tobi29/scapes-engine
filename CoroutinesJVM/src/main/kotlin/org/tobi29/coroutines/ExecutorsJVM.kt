@@ -25,13 +25,14 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
 private val commonExecutor by lazy {
-    (tryGetForkJoinPoolCommon() ?:
-            run {
-                val parallelism = defaultParallelism()
-                tryCreateForkJoinPool(parallelism)
-                        ?: createScheduledExecutor("Background-Executor",
-                        parallelism) { isDaemon = true }
-            }).asCoroutineDispatcher()
+    (tryGetForkJoinPoolCommon() ?: run {
+        val parallelism = defaultParallelism()
+        tryCreateForkJoinPool(parallelism)
+                ?: createScheduledExecutor(
+                    "Background-Executor",
+                    parallelism
+                ) { isDaemon = true }
+    }).asCoroutineDispatcher()
 }
 
 val defaultBackgroundExecutor
@@ -41,48 +42,52 @@ val defaultBackgroundExecutor
     }
 
 fun ExecutorService.convertToCoroutineDispatcher(parent: Job? = null) =
-        asCoroutineDispatcher().let { dispatcher ->
-            val job = Job(parent)
-            job.invokeOnCompletion { shutdown() }
-            dispatcher + job
-        }
+    asCoroutineDispatcher().let { dispatcher ->
+        val job = Job(parent)
+        job.invokeOnCompletion { shutdown() }
+        dispatcher + job
+    }
 
-fun createScheduledExecutor(name: String,
-                            parallelism: Int,
-                            threadInit: Thread.() -> Unit): ScheduledExecutorService {
+fun createScheduledExecutor(
+    name: String,
+    parallelism: Int,
+    threadInit: Thread.() -> Unit
+): ScheduledExecutorService {
     val i = AtomicInt(1)
     return createScheduledExecutor(parallelism) {
         Thread(it, "$name-${i.incrementAndGet()}").apply { threadInit() }
     }
 }
 
-fun createScheduledExecutor(parallelism: Int,
-                            threadFactory: (Runnable) -> Thread): ScheduledExecutorService =
-        Executors.newScheduledThreadPool(parallelism) { threadFactory(it) }
+fun createScheduledExecutor(
+    parallelism: Int,
+    threadFactory: (Runnable) -> Thread
+): ScheduledExecutorService =
+    Executors.newScheduledThreadPool(parallelism) { threadFactory(it) }
 
 private fun tryGetForkJoinPoolCommon() =
-        try {
-            val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
-            val fjpCommonPool = fjp.getMethod("commonPool")
-            fjpCommonPool.invoke(null) as? ExecutorService
-        } catch (e: Throwable) {
-            null
-        }
+    try {
+        val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
+        val fjpCommonPool = fjp.getMethod("commonPool")
+        fjpCommonPool.invoke(null) as? ExecutorService
+    } catch (e: Throwable) {
+        null
+    }
 
 private fun tryCreateForkJoinPool(parallelism: Int) =
-        try {
-            val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
-            val fjpNew = fjp.getConstructor(Int::class.java)
-            fjpNew.newInstance(parallelism) as? ExecutorService
-        } catch (e: Throwable) {
-            null
-        }
+    try {
+        val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
+        val fjpNew = fjp.getConstructor(Int::class.java)
+        fjpNew.newInstance(parallelism) as? ExecutorService
+    } catch (e: Throwable) {
+        null
+    }
 
 private fun defaultParallelism() =
-        try {
-            val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
-            val fjpParallelism = fjp.getMethod("getCommonPoolParallelism")
-            fjpParallelism.invoke(null) as? Int
-        } catch (e: Throwable) {
-            null
-        } ?: (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
+    try {
+        val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
+        val fjpParallelism = fjp.getMethod("getCommonPoolParallelism")
+        fjpParallelism.invoke(null) as? Int
+    } catch (e: Throwable) {
+        null
+    } ?: (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.coroutines
 
 import org.tobi29.utils.Option
 import org.tobi29.utils.OptionSome
 import org.tobi29.utils.nil
 
-/**
- * A queue of tasks or [nil] indicating the end of a batch.
- */
+        /**
+         * A queue of tasks or [nil] indicating the end of a batch.
+         */
 typealias TaskChannel<T> = UnboundChannel<Option<T>>
 
 inline fun <T> TaskChannel(): TaskChannel<T> = LinkedListChannel()
@@ -42,7 +44,7 @@ inline fun <T> TaskChannel<T>.offer(block: T) {
  * @receiver The queue to iterate through
  */
 inline fun <T : () -> Any?> TaskChannel<T>.processDrain() =
-        processDrain { it() }
+    processDrain { it() }
 
 /**
  * Calls [execute] on all element and removes them in the queue, even if added
@@ -61,7 +63,7 @@ inline fun <T> TaskChannel<T>.processDrain(execute: (T) -> Unit) {
  * @receiver The queue to iterate through
  */
 inline fun <T : () -> Any?> TaskChannel<T>.processCurrent() =
-        processCurrent { it() }
+    processCurrent { it() }
 
 /**
  * Calls [execute] on all element and removes them in the queue before starting

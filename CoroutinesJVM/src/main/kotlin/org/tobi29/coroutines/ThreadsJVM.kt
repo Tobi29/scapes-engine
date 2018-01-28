@@ -35,14 +35,16 @@ import kotlinx.coroutines.experimental.channels.SendChannel
  * @param block Code to execute on thread context
  * @return ThreadJob for the running [block]
  */
-fun launchThread(name: String,
-                 block: suspend CoroutineScope.() -> Unit): ThreadJob {
+fun launchThread(
+    name: String,
+    block: suspend CoroutineScope.() -> Unit
+): ThreadJob {
     val context = newSingleThreadContext(name)
     val thread = runBlocking(context) { Thread.currentThread() }
     val job = launch(context, block = block)
     job.invokeOnCompletion { context.close() }
     return object : ThreadJob,
-            Job by job {
+        Job by job {
         override val thread = thread
     }
 }
@@ -56,21 +58,23 @@ fun launchThread(name: String,
  * @param block Code to execute on thread context
  * @return ActorThreadJob for the running [block]
  */
-fun <E> actorThread(name: String,
-                    capacity: Int = 0,
-                    block: suspend ActorScope<E>.() -> Unit): ActorThreadJob<E> {
+fun <E> actorThread(
+    name: String,
+    capacity: Int = 0,
+    block: suspend ActorScope<E>.() -> Unit
+): ActorThreadJob<E> {
     val channel = Channel<E>(capacity)
     val job = launchThread(name) {
         val scope = object : ActorScope<E>,
-                CoroutineScope by this,
-                ReceiveChannel<E> by channel {
+            CoroutineScope by this,
+            ReceiveChannel<E> by channel {
             override val channel get() = channel
         }
         block(scope)
     }
     return object : ActorThreadJob<E>,
-            ThreadJob by job,
-            SendChannel<E> by channel {
+        ThreadJob by job,
+        SendChannel<E> by channel {
     }
 }
 
@@ -79,4 +83,4 @@ interface ThreadJob : Job {
 }
 
 interface ActorThreadJob<in E> : SendChannel<E>,
-        ThreadJob
+    ThreadJob

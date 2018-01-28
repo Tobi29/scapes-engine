@@ -17,13 +17,13 @@
 package org.tobi29.coroutines
 
 actual typealias Channel<E> =
-kotlinx.coroutines.experimental.channels.Channel<E>
+        kotlinx.coroutines.experimental.channels.Channel<E>
 
 actual typealias ClosedSendChannelException =
-kotlinx.coroutines.experimental.channels.ClosedSendChannelException
+        kotlinx.coroutines.experimental.channels.ClosedSendChannelException
 
 actual typealias ClosedReceiveChannelException =
-kotlinx.coroutines.experimental.channels.ClosedReceiveChannelException
+        kotlinx.coroutines.experimental.channels.ClosedReceiveChannelException
 
 actual inline fun <E> LinkedListChannel(): Channel<E> =
-        kotlinx.coroutines.experimental.channels.LinkedListChannel()
+    kotlinx.coroutines.experimental.channels.LinkedListChannel()

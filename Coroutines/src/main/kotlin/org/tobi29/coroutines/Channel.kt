@@ -43,8 +43,10 @@ expect interface Channel<E> {
 
 typealias UnboundChannel<E> = Channel<E>
 
-expect class ClosedSendChannelException(message: String?) : CancellationException
+expect class ClosedSendChannelException(message: String?) :
+    CancellationException
 
-expect class ClosedReceiveChannelException(message: String?) : NoSuchElementException
+expect class ClosedReceiveChannelException(message: String?) :
+    NoSuchElementException
 
 expect fun <E> LinkedListChannel(): UnboundChannel<E>

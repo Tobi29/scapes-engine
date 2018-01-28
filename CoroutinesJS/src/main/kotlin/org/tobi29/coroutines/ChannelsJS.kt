@@ -45,197 +45,205 @@ actual interface Channel<E> {
 }
 
 actual class ClosedSendChannelException actual constructor(
-        message: String?
+    message: String?
 ) : CancellationException(message ?: "Channel was closed")
 
 actual class ClosedReceiveChannelException actual constructor(
-        message: String?
+    message: String?
 ) : NoSuchElementException(message)
 
 // TODO: This desperately needs testing
 actual fun <E> LinkedListChannel(): UnboundChannel<E> =
-        object : UnboundChannel<E> {
-            private var head: Node<E>? = null
-            private var tail: Node<E>? = null
-            private var receiveHead: ReceiveNode<E>? = null
-            private var receiveTail: ReceiveNode<E>? = null
+    object : UnboundChannel<E> {
+        private var head: Node<E>? = null
+        private var tail: Node<E>? = null
+        private var receiveHead: ReceiveNode<E>? = null
+        private var receiveTail: ReceiveNode<E>? = null
 
-            override val isClosedForSend get() = tail is Node.End
-            override val isClosedForReceive get() = head is Node.End
-            override val isFull get() = false
-            override val isEmpty get() = tail == null
+        override val isClosedForSend get() = tail is Node.End
+        override val isClosedForReceive get() = head is Node.End
+        override val isFull get() = false
+        override val isEmpty get() = tail == null
 
-            suspend override fun send(element: E) {
-                offer(element)
-            }
+        override suspend fun send(element: E) {
+            offer(element)
+        }
 
-            override fun offer(element: E): Boolean {
-                checkSend()
-                if (receiveHead == null) append(Node.Element(element))
-                else receive(element)
-                return true
-            }
+        override fun offer(element: E): Boolean {
+            checkSend()
+            if (receiveHead == null) append(Node.Element(element))
+            else receive(element)
+            return true
+        }
 
-            suspend override fun receive(): E {
-                checkReceive()
-                val head = head
-                if (head != null) {
-                    head as Node.Element
-                    if (head.next == null) {
-                        this.head = null
-                        this.tail = null
-                    } else this.head = head.next
-                    head.next = null
-                    return head.value
-                }
-                return receiveSuspend()
-            }
-
-            suspend override fun receiveOrNull(): E? {
-                checkReceive()
-                val head = head
-                if (head != null) {
-                    head as Node.Element
-                    if (head.next == null) {
-                        this.head = null
-                        this.tail = null
-                    } else this.head = head.next
-                    head.next = null
-                    return head.value
-                }
-                return receiveSuspendOrNull()
-            }
-
-            override fun poll(): E? {
-                checkReceive()
-                val head = head
-                if (head != null) {
-                    head as Node.Element
-                    if (head.next == null) {
-                        this.head = null
-                        this.tail = null
-                    } else this.head = head.next
-                    head.next = null
-                    return head.value
-                }
-                return null
-            }
-
-            override fun close(cause: Throwable?): Boolean {
-                if (isClosedForSend) return false
-                if (receiveHead == null) append(Node.End(cause))
-                else receive(cause)
-                return true
-            }
-
-            override fun cancel(cause: Throwable?): Boolean {
-                if (isClosedForSend) return false
-                head = Node.End(cause)
-                tail = null
-                receive(cause)
-                return true
-            }
-
-            private suspend fun receiveSuspend(): E =
-                    suspendAtomicCancellableCoroutine(
-                            holdCancellability = true) sc@ { cont ->
-                        appendReceive(ReceiveNode {
-                            when (it) {
-                                is EitherLeft -> cont.resume(it.value)
-                                is EitherRight -> cont.resumeWithException(
-                                        it.value ?: ClosedReceiveChannelException(
-                                                "Channel was closed"))
-                            }
-                        })
-                    }
-
-            private suspend fun receiveSuspendOrNull(): E? =
-                    suspendAtomicCancellableCoroutine(
-                            holdCancellability = true) sc@ { cont ->
-                        appendReceive(ReceiveNode {
-                            when (it) {
-                                is EitherLeft -> cont.resume(it.value)
-                                is EitherRight -> {
-                                    val cause = it.value
-                                    if (cause == null) cont.resume(null)
-                                    else cont.resumeWithException(cause)
-                                }
-                            }
-                        })
-                    }
-
-            private fun checkSend() {
-                val tail = tail
-                if (tail is Node.End) {
-                    throw tail.cause ?: ClosedSendChannelException(
-                            "Channel was closed")
-                }
-            }
-
-            private fun checkReceive() {
-                val head = head
-                if (head is Node.End) {
-                    throw head.cause ?: ClosedReceiveChannelException(
-                            "Channel was closed")
-                }
-            }
-
-            private fun receive(element: E) {
-                val head = receiveHead
-                head as ReceiveNode
+        override suspend fun receive(): E {
+            checkReceive()
+            val head = head
+            if (head != null) {
+                head as Node.Element
                 if (head.next == null) {
-                    receiveHead = null
-                    receiveTail = null
-                } else this.receiveHead = head.next
+                    this.head = null
+                    this.tail = null
+                } else this.head = head.next
                 head.next = null
-                head.callback(ResultOk(element))
+                return head.value
+            }
+            return receiveSuspend()
+        }
+
+        override suspend fun receiveOrNull(): E? {
+            checkReceive()
+            val head = head
+            if (head != null) {
+                head as Node.Element
+                if (head.next == null) {
+                    this.head = null
+                    this.tail = null
+                } else this.head = head.next
+                head.next = null
+                return head.value
+            }
+            return receiveSuspendOrNull()
+        }
+
+        override fun poll(): E? {
+            checkReceive()
+            val head = head
+            if (head != null) {
+                head as Node.Element
+                if (head.next == null) {
+                    this.head = null
+                    this.tail = null
+                } else this.head = head.next
+                head.next = null
+                return head.value
+            }
+            return null
+        }
+
+        override fun close(cause: Throwable?): Boolean {
+            if (isClosedForSend) return false
+            if (receiveHead == null) append(Node.End(cause))
+            else receive(cause)
+            return true
+        }
+
+        override fun cancel(cause: Throwable?): Boolean {
+            if (isClosedForSend) return false
+            head = Node.End(cause)
+            tail = null
+            receive(cause)
+            return true
+        }
+
+        private suspend fun receiveSuspend(): E =
+            suspendAtomicCancellableCoroutine(
+                holdCancellability = true
+            ) sc@ { cont ->
+                appendReceive(ReceiveNode {
+                    when (it) {
+                        is EitherLeft -> cont.resume(it.value)
+                        is EitherRight -> cont.resumeWithException(
+                            it.value ?: ClosedReceiveChannelException(
+                                "Channel was closed"
+                            )
+                        )
+                    }
+                })
             }
 
-            private fun receive(cause: Throwable?) {
-                var head = receiveHead
-                if (head != null) {
-                    val error = ResultError(cause)
-                    do {
-                        head!!.callback(error)
-                        head = head!!.next
-                    } while (head != null)
-                    receiveHead = null
-                    receiveTail = null
-                }
+        private suspend fun receiveSuspendOrNull(): E? =
+            suspendAtomicCancellableCoroutine(
+                holdCancellability = true
+            ) sc@ { cont ->
+                appendReceive(ReceiveNode {
+                    when (it) {
+                        is EitherLeft -> cont.resume(it.value)
+                        is EitherRight -> {
+                            val cause = it.value
+                            if (cause == null) cont.resume(null)
+                            else cont.resumeWithException(cause)
+                        }
+                    }
+                })
             }
 
-            private fun append(node: Node<E>) {
-                val tail = tail
-                if (tail == null) {
-                    this.head = node
-                    this.tail = node
-                } else {
-                    (tail as Node.Element).next = node
-                    this.tail = node
-                }
-            }
-
-            private fun appendReceive(node: ReceiveNode<E>) {
-                val tail = receiveTail
-                if (tail == null) {
-                    receiveHead = node
-                    receiveTail = node
-                } else {
-                    tail.next = node
-                    receiveTail = node
-                }
+        private fun checkSend() {
+            val tail = tail
+            if (tail is Node.End) {
+                throw tail.cause ?: ClosedSendChannelException(
+                    "Channel was closed"
+                )
             }
         }
+
+        private fun checkReceive() {
+            val head = head
+            if (head is Node.End) {
+                throw head.cause ?: ClosedReceiveChannelException(
+                    "Channel was closed"
+                )
+            }
+        }
+
+        private fun receive(element: E) {
+            val head = receiveHead
+            head as ReceiveNode
+            if (head.next == null) {
+                receiveHead = null
+                receiveTail = null
+            } else this.receiveHead = head.next
+            head.next = null
+            head.callback(ResultOk(element))
+        }
+
+        private fun receive(cause: Throwable?) {
+            var head = receiveHead
+            if (head != null) {
+                val error = ResultError(cause)
+                do {
+                    head!!.callback(error)
+                    head = head!!.next
+                } while (head != null)
+                receiveHead = null
+                receiveTail = null
+            }
+        }
+
+        private fun append(node: Node<E>) {
+            val tail = tail
+            if (tail == null) {
+                this.head = node
+                this.tail = node
+            } else {
+                (tail as Node.Element).next = node
+                this.tail = node
+            }
+        }
+
+        private fun appendReceive(node: ReceiveNode<E>) {
+            val tail = receiveTail
+            if (tail == null) {
+                receiveHead = node
+                receiveTail = node
+            } else {
+                tail.next = node
+                receiveTail = node
+            }
+        }
+    }
 
 @Suppress("unused")
 private sealed class Node<out E> {
     class Element<E>(
-            val value: E) : Node<E>() {
+        val value: E
+    ) : Node<E>() {
         var next: Node<E>? = null
     }
 
     class End(
-            val cause: Throwable?) : Node<Nothing>()
+        val cause: Throwable?
+    ) : Node<Nothing>()
 }
 
 private class ReceiveNode<E>(val callback: (Result<E, Throwable?>) -> Unit) {

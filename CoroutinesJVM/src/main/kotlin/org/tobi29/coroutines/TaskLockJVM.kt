@@ -16,9 +16,12 @@
 
 package org.tobi29.coroutines
 
-import org.tobi29.utils.*
 import org.tobi29.stdex.atomic.AtomicLong
 import org.tobi29.stdex.toIntClamped
+import org.tobi29.utils.Option
+import org.tobi29.utils.OptionSome
+import org.tobi29.utils.get
+import org.tobi29.utils.nil
 import java.util.concurrent.ConcurrentLinkedQueue
 
 actual class TaskLock {

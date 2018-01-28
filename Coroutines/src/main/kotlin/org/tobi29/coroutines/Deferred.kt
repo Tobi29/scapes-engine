@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.CompletableDeferred
@@ -30,7 +32,7 @@ import kotlinx.coroutines.experimental.Deferred
  * @return A deferred value available as soon as the given one is available
  */
 inline fun <T, R> Deferred<T>.map(
-        crossinline transform: (T) -> R
+    crossinline transform: (T) -> R
 ): Deferred<R> = CompletableDeferred<R>().also { deferred ->
     invokeOnCompletion(true) { cause ->
         if (cause == null) {
@@ -44,4 +46,4 @@ inline fun <T, R> Deferred<T>.map(
 }
 
 inline fun <T> Deferred<T>.tryGet(): T? =
-        if (isCompleted) getCompleted() else null
+    if (isCompleted) getCompleted() else null

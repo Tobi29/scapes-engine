@@ -34,26 +34,32 @@ class Timer(val clock: SteadyClock = steadyClock) {
         lastTimestamp = lastSync
     }
 
-    inline fun cap(maxDiff: Long,
-                   park: (Long) -> Unit,
-                   minSkipDelay: Long = 0L): Long =
-            cap(maxDiff, park, minSkipDelay, {})
+    inline fun cap(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        minSkipDelay: Long = 0L
+    ): Long =
+        cap(maxDiff, park, minSkipDelay, {})
 
-    inline fun cap(maxDiff: Long,
-                   park: (Long) -> Unit,
-                   minSkipDelay: Long = 0L,
-                   logSkip: (Long) -> Unit): Long {
+    inline fun cap(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        minSkipDelay: Long = 0L,
+        logSkip: (Long) -> Unit
+    ): Long {
         var tickDiff = 0L
         cap(maxDiff, park, minSkipDelay, logSkip, {}, { tickDiff = it })
         return tickDiff
     }
 
-    inline fun cap(maxDiff: Long,
-                   park: (Long) -> Unit,
-                   minSkipDelay: Long = 0L,
-                   logSkip: (Long) -> Unit,
-                   diff: (Long) -> Unit,
-                   tickDiff: (Long) -> Unit) {
+    inline fun cap(
+        maxDiff: Long,
+        park: (Long) -> Unit,
+        minSkipDelay: Long = 0L,
+        logSkip: (Long) -> Unit,
+        diff: (Long) -> Unit,
+        tickDiff: (Long) -> Unit
+    ) {
         tick(maxDiff, { nextSync ->
             val sleep = nextSync - clock.timeSteadyNanos()
             when {
@@ -68,19 +74,23 @@ class Timer(val clock: SteadyClock = steadyClock) {
     }
 
     inline fun tick(maxDiff: Long = 0L): Long =
-            tick(maxDiff, { clock.timeSteadyNanos() })
+        tick(maxDiff, { clock.timeSteadyNanos() })
 
-    inline fun tick(maxDiff: Long = 0L,
-                    park: (Long) -> Long): Long {
+    inline fun tick(
+        maxDiff: Long = 0L,
+        park: (Long) -> Long
+    ): Long {
         var tickDiff = 0L
         tick(maxDiff, park, {}, { tickDiff = it })
         return tickDiff
     }
 
-    inline fun tick(maxDiff: Long = 0L,
-                    park: (Long) -> Long,
-                    diff: (Long) -> Unit,
-                    tickDiff: (Long) -> Unit) {
+    inline fun tick(
+        maxDiff: Long = 0L,
+        park: (Long) -> Long,
+        diff: (Long) -> Unit,
+        tickDiff: (Long) -> Unit
+    ) {
         val current = clock.timeSteadyNanos()
         lastSync = park(lastSync + maxDiff)
         val newSync = clock.timeSteadyNanos()
@@ -98,24 +108,24 @@ class Timer(val clock: SteadyClock = steadyClock) {
 }
 
 inline fun Timer.loop(
-        maxDiff: Long,
-        park: (Long) -> Unit,
-        step: (Double) -> Boolean
+    maxDiff: Long,
+    park: (Long) -> Unit,
+    step: (Double) -> Boolean
 ) = loop(maxDiff, park, 0L, {}, step)
 
 inline fun Timer.loop(
-        maxDiff: Long,
-        park: (Long) -> Unit,
-        minSkipDelay: Long,
-        step: (Double) -> Boolean
+    maxDiff: Long,
+    park: (Long) -> Unit,
+    minSkipDelay: Long,
+    step: (Double) -> Boolean
 ) = loop(maxDiff, park, minSkipDelay, {}, step)
 
 inline fun Timer.loop(
-        maxDiff: Long,
-        park: (Long) -> Unit,
-        minSkipDelay: Long = 0L,
-        logSkip: (Long) -> Unit,
-        step: (Double) -> Boolean
+    maxDiff: Long,
+    park: (Long) -> Unit,
+    minSkipDelay: Long = 0L,
+    logSkip: (Long) -> Unit,
+    step: (Double) -> Boolean
 ) {
     while (true) {
         val tickDiff = cap(maxDiff, park, minSkipDelay, logSkip)
@@ -124,30 +134,32 @@ inline fun Timer.loop(
 }
 
 suspend fun Timer.loopUntilCancel(
-        maxDiff: Long,
-        step: suspend (Double) -> Unit
+    maxDiff: Long,
+    step: suspend (Double) -> Unit
 ) = loopUntilCancel(maxDiff, 0L, {}, step)
 
 suspend fun Timer.loopUntilCancel(
-        maxDiff: Long,
-        minSkipDelay: Long,
-        step: suspend (Double) -> Unit
+    maxDiff: Long,
+    minSkipDelay: Long,
+    step: suspend (Double) -> Unit
 ) = loopUntilCancel(maxDiff, minSkipDelay, {}, step)
 
 inline suspend fun Timer.loopUntilCancel(
-        maxDiff: Long,
-        minSkipDelay: Long = 0L,
-        logSkip: (Long) -> Unit,
-        noinline step: suspend (Double) -> Unit
-) = loopUntilCancel(maxDiff, { delay((it / 1000000L).toIntClamped()) },
-        minSkipDelay, logSkip, step)
+    maxDiff: Long,
+    minSkipDelay: Long = 0L,
+    logSkip: (Long) -> Unit,
+    noinline step: suspend (Double) -> Unit
+) = loopUntilCancel(
+    maxDiff, { delay((it / 1000000L).toIntClamped()) },
+    minSkipDelay, logSkip, step
+)
 
 inline suspend fun Timer.loopUntilCancel(
-        maxDiff: Long,
-        park: (Long) -> Unit,
-        minSkipDelay: Long = 0L,
-        logSkip: (Long) -> Unit,
-        noinline step: suspend (Double) -> Unit
+    maxDiff: Long,
+    park: (Long) -> Unit,
+    minSkipDelay: Long = 0L,
+    logSkip: (Long) -> Unit,
+    noinline step: suspend (Double) -> Unit
 ) {
     loop(maxDiff, park, minSkipDelay, logSkip) { delta ->
         withContext(NonCancellable) { step(delta) }
