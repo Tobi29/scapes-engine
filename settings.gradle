@@ -119,6 +119,7 @@ include "TileMapsRendererJVM"
 
 // Engine
 include "Engine"
+include "EngineJS"
 include "EngineJVM"
 include "ShaderCLike"
 include "ShaderCLikeJVM"
@@ -130,6 +131,7 @@ include "ShaderParser"
 // Backend
 include "GLBackend"
 include "GLESBackend"
+include "GLESWebGL2BackendJS"
 include "GLLWJGL3BackendJVM"
 include "GLESLWJGL3BackendJVM"
 include "GLFWBackendJVM"

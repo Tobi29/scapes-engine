@@ -62,6 +62,7 @@ task wrapper(type: Wrapper) {
 ext {
     kotlinVersion = "1.2.21"
     kotlinxCoroutinesVersion = "0.21"
+    webKTBindingsVersion = "0.0.2"
     slf4jVersion = "1.7.25"
     spekVersion = "1.1.5"
     junitJupiterVersion = "5.0.2"
@@ -89,6 +90,9 @@ ext {
             "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$kotlinxCoroutinesVersion"
     kotlinxCoroutinesCoreJVM =
             "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
+    webKTAudio =
+            "com.github.Tobi29.WebKTBindings:WebAudio:$webKTBindingsVersion"
+    webKTGL2 = "com.github.Tobi29.WebKTBindings:WebGL2:$webKTBindingsVersion"
     slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
     threeten = "org.threeten:threetenbp:$threetenbpVersion"
