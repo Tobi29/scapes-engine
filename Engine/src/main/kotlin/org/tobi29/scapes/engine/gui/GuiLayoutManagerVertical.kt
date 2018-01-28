@@ -20,6 +20,7 @@ import org.tobi29.math.Face
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.minus
+import org.tobi29.utils.forAllObjects
 
 class GuiLayoutManagerVertical(start: Vector2d,
                                maxSize: Vector2d,

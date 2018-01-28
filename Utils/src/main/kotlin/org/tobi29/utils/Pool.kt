@@ -41,8 +41,12 @@ class Pool<E>
      */
     override var size = 0
         private set
+    /**
+     * Amount of allocated elements in this [Pool]
+     */
+    var filled = 0
+        private set
     private var array = emptyArray<Any?>()
-    private var filled = 0
 
     /**
      * Resets the pool so it can be reused
@@ -53,16 +57,6 @@ class Pool<E>
      */
     fun reset() {
         size = 0
-    }
-
-    /**
-     * Performs the given [action] on each object referenced by the pool
-     */
-    fun forAllObjects(action: (E) -> Unit) {
-        for (i in 0 until filled) {
-            @Suppress("UNCHECKED_CAST")
-            action(array[i] as E)
-        }
     }
 
     /**
@@ -242,5 +236,15 @@ class Pool<E>
         val newArray = arrayOfNulls<Any>(capacity)
         copy(array, newArray, filled)
         array = newArray
+    }
+}
+
+/**
+ * Performs the given [action] on each object referenced by the pool
+ */
+inline fun <E> Pool<E>.forAllObjects(action: (E) -> Unit) {
+    for (i in 0 until filled) {
+        @Suppress("UNCHECKED_CAST")
+        action(this[i])
     }
 }
