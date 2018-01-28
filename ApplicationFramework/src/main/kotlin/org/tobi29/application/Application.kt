@@ -35,9 +35,9 @@ interface Versioned {
 }
 
 abstract class BareApplication : EntryPoint(),
-        Identified,
-        Named,
-        Versioned {
+    Identified,
+    Named,
+    Versioned {
     private val optionsMut = ArrayList<CommandElement>()
     val commandConfig by lazy { CommandConfig(execName, optionsMut) }
 
@@ -66,30 +66,32 @@ abstract class BareApplication : EntryPoint(),
     }
 
     protected fun <E : CommandElement> commandElement(option: E) =
-            option.also { optionsMut.add(it) }
+        option.also { optionsMut.add(it) }
 
     protected fun commandOption(
-            shortNames: Set<Char> = emptySet(),
-            longNames: Set<String> = emptySet(),
-            args: List<String> = emptyList(),
-            description: String
+        shortNames: Set<Char> = emptySet(),
+        longNames: Set<String> = emptySet(),
+        args: List<String> = emptyList(),
+        description: String
     ) = commandElement(CommandOption(shortNames, longNames, args, description))
 
     protected fun commandArgument(
-            name: String,
-            count: IntRange = 0..1
+        name: String,
+        count: IntRange = 0..1
     ) = commandElement(CommandArgument(name, count))
 }
 
 abstract class Application : BareApplication() {
     private val helpOption = commandOption(
-            shortNames = setOf('h'),
-            longNames = setOf("help"),
-            description = "Print this text and exit")
+        shortNames = setOf('h'),
+        longNames = setOf("help"),
+        description = "Print this text and exit"
+    )
     private val versionOption = commandOption(
-            shortNames = setOf('v'),
-            longNames = setOf("version"),
-            description = "Print version and exit")
+        shortNames = setOf('v'),
+        longNames = setOf("version"),
+        description = "Print version and exit"
+    )
 
     override fun handleEarly(commandLine: CommandLine): StatusCode? {
         super.handleEarly(commandLine)?.let { return it }

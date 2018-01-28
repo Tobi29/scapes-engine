@@ -20,11 +20,3 @@ dependencies {
     compile project(":ArgumentParser")
     compile project(":Utils")
 }
-
-sourceSets {
-    main {
-        kotlin {
-            srcDirs += ["src/headers/kotlin"]
-        }
-    }
-}

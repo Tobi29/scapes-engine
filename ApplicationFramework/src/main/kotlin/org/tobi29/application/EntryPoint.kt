@@ -16,5 +16,4 @@
 
 package org.tobi29.application
 
-expect abstract class EntryPoint() : Program {
-}
+expect abstract class EntryPoint() : Program
