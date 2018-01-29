@@ -17,12 +17,13 @@
 package org.tobi29.profiler
 
 import org.tobi29.logging.KLogging
-import org.tobi29.utils.spiLoad
-import org.tobi29.utils.steadyClock
+import org.tobi29.profiler.spi.ProfilerDispatcherProvider
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.computeAbsent
 import org.tobi29.stdex.readOnly
+import org.tobi29.utils.spiLoad
+import org.tobi29.utils.steadyClock
 import kotlin.collections.set
 
 actual class Profiler {
@@ -65,8 +66,9 @@ actual internal val dispatchers = Dispatchers.i
 
 private object Dispatchers : KLogging() {
     val i = spiLoad(
-            spiLoad<ProfilerDispatcher>(
-                    Dispatchers::class.java.classLoader), { e ->
-        logger.warn(e) { "Service configuration error" }
-    }).readOnly()
+        spiLoad<ProfilerDispatcherProvider>(
+            Dispatchers::class.java.classLoader
+        ), { e ->
+            logger.warn(e) { "Service configuration error" }
+        }).mapNotNull { it.dispatcher() }.readOnly()
 }
