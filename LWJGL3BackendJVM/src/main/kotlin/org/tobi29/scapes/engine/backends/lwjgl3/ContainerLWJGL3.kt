@@ -23,28 +23,37 @@ import org.lwjgl.opengles.GLES20
 import org.lwjgl.system.Platform
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
+import org.tobi29.io.tag.ReadTagMutableMap
+import org.tobi29.io.tag.toBoolean
 import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngineBackend
-import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GLLWJGL3GL
-import org.tobi29.scapes.engine.backends.lwjgl3.opengl.GOSLWJGL3GL
-import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GLLWJGL3GLES
-import org.tobi29.scapes.engine.backends.lwjgl3.opengles.GOSLWJGL3GLES
-import org.tobi29.io.tag.ReadTagMutableMap
-import org.tobi29.io.tag.toBoolean
+import org.tobi29.scapes.engine.backends.opengl.GLHandle
+import org.tobi29.scapes.engine.backends.opengl.GLImpl
+import org.tobi29.scapes.engine.backends.opengles.GLESHandle
+import org.tobi29.scapes.engine.backends.opengles.GLESImpl
+import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.utils.sleep
 
 abstract class ContainerLWJGL3(
-        protected val useGLES: Boolean = false
+    protected val useGLES: Boolean = false
 ) : Container, ScapesEngineBackend by ScapesEngineLWJGL3 {
     protected val tasks = TaskChannel<() -> Unit>()
     protected val mainThread: Thread = Thread.currentThread()
-    override final val gos = if (useGLES) GOSLWJGL3GLES(this)
-    else GOSLWJGL3GL(this)
-    protected val gl = if (useGLES) GLLWJGL3GLES(gos) else GLLWJGL3GL(gos)
-
+    final override val gos: GraphicsObjectSupplier
+    protected val gl: GL
 
     init {
+        if (useGLES) {
+            val glh = GLESHandle(this)
+            gos = glh
+            gl = GLESImpl(glh)
+        } else {
+            val glh = GLHandle(this)
+            gos = glh
+            gl = GLImpl(glh)
+        }
         logger.info { "LWJGL version: ${Version.getVersion()}" }
 
         // It's 2017 and this is still a thing...
@@ -88,7 +97,7 @@ abstract class ContainerLWJGL3(
             // Note: This does not affect the macOS driver or radeonsi
             // Note: Untested with AMDGPU-Pro
             if ((platform == Platform.LINUX || platform == Platform.WINDOWS) &&
-                    vendor == "ATI Technologies Inc.") {
+                vendor == "ATI Technologies Inc.") {
                 // AMD is bloody genius with their names
                 return "Crashes on AMD Radeon Software Crimson"
             }
@@ -98,9 +107,12 @@ abstract class ContainerLWJGL3(
         fun checkContextGL(): String? {
             logger.info {
                 "OpenGL: ${GL11.glGetString(
-                        GL11.GL_VERSION)} (Vendor: ${GL11.glGetString(
-                        GL11.GL_VENDOR)}, Renderer: ${GL11.glGetString(
-                        GL11.GL_RENDERER)})"
+                    GL11.GL_VERSION
+                )} (Vendor: ${GL11.glGetString(
+                    GL11.GL_VENDOR
+                )}, Renderer: ${GL11.glGetString(
+                    GL11.GL_RENDERER
+                )})"
             }
             val capabilities = org.lwjgl.opengl.GL.getCapabilities()
             if (!capabilities.OpenGL11) {
@@ -142,9 +154,12 @@ abstract class ContainerLWJGL3(
         fun checkContextGLES(): String? {
             logger.info {
                 "OpenGL ES: ${GLES20.glGetString(
-                        GLES20.GL_VERSION)} (Vendor: ${GLES20.glGetString(
-                        GLES20.GL_VENDOR)}, Renderer: ${GLES20.glGetString(
-                        GLES20.GL_RENDERER)})"
+                    GLES20.GL_VERSION
+                )} (Vendor: ${GLES20.glGetString(
+                    GLES20.GL_VENDOR
+                )}, Renderer: ${GLES20.glGetString(
+                    GLES20.GL_RENDERER
+                )})"
             }
             val capabilities = GLES.getCapabilities()
             if (!capabilities.GLES20) {

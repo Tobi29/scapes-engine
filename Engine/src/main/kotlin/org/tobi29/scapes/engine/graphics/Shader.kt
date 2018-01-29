@@ -21,8 +21,6 @@ interface Shader : GraphicsObject {
 
     fun updateUniforms(gl: GL)
 
-    fun uniformLocation(uniform: Int): Int
-
     fun setUniform1f(gl: GL,
                      uniform: Int,
                      v0: Float)

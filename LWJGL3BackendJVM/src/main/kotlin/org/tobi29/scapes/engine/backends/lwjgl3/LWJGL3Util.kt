@@ -23,7 +23,7 @@ import java.nio.ByteBuffer
 inline val memoryStack: MemoryStack get() = MemoryStack.stackGet()
 
 inline fun <R> stackFrame(block: (MemoryStack) -> R): R =
-        memoryStack.frame(block)
+    memoryStack.frame(block)
 
 inline fun <R> MemoryStack.frame(block: (MemoryStack) -> R): R {
     val stack = push()
@@ -40,8 +40,4 @@ inline fun <R> ByteBuffer.use(block: (ByteBuffer) -> R): R {
     } finally {
         MemoryUtil.memFree(this)
     }
-}
-
-internal class CurrentFBO {
-    var current: Int = 0
 }

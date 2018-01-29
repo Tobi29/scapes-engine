@@ -15,20 +15,25 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.stdex.assert
 import org.tobi29.graphics.Cam
 import org.tobi29.graphics.Image
 import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 import org.tobi29.math.matrix.Matrix4f
+import org.tobi29.stdex.assert
 import kotlin.math.max
 import kotlin.math.roundToLong
 
-abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSupplier by gos {
+abstract class GL(private val gos: GraphicsObjectSupplier) :
+    GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)
     var contentWidth = 1
         protected set
     var contentHeight = 1
+        protected set
+    var containerWidth = 1
+        protected set
+    var containerHeight = 1
         protected set
     var timer = 0.0
         private set
@@ -42,10 +47,16 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         return empty
     }
 
-    fun reshape(contentWidth: Int,
-                contentHeight: Int) {
+    fun reshape(
+        contentWidth: Int,
+        contentHeight: Int,
+        containerWidth: Int,
+        containerHeight: Int
+    ) {
         this.contentWidth = contentWidth
         this.contentHeight = contentHeight
+        this.containerWidth = containerWidth
+        this.containerHeight = containerHeight
         shaderTracker.disposeAll(this)
     }
 
@@ -58,12 +69,11 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         timestamp += max((1000000000.0 * delta).roundToLong(), 1L)
     }
 
-    fun aspectRatio() =
-            container.run { containerWidth.toDouble() / containerHeight }
+    fun aspectRatio(): Double = containerWidth.toDouble() / containerHeight
 
-    fun contentSpace(): Double {
-        return max(contentWidth, contentHeight) / 1920.0
-    }
+    fun space(): Double = max(containerWidth, containerHeight) / 1920.0
+
+    fun contentSpace(): Double = max(contentWidth, contentHeight) / 1920.0
 
     fun isRenderCall() = container.isRenderCall()
 
@@ -73,10 +83,12 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
 
     abstract fun checkError(message: String)
 
-    abstract fun clear(r: Float,
-                       g: Float,
-                       b: Float,
-                       a: Float)
+    abstract fun clear(
+        r: Float,
+        g: Float,
+        b: Float,
+        a: Float
+    )
 
     abstract fun clearDepth()
 
@@ -98,29 +110,50 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
 
     abstract fun enableWireframe()
 
-    abstract fun enableScissor(x: Int,
-                               y: Int,
-                               width: Int,
-                               height: Int)
+    abstract fun enableScissor(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    )
 
     abstract fun setBlending(mode: BlendingMode)
 
-    abstract fun setViewport(x: Int,
-                             y: Int,
-                             width: Int,
-                             height: Int)
+    abstract fun setViewport(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    )
 
     abstract fun getViewport(output: IntArray)
 
-    abstract fun screenShot(x: Int,
-                            y: Int,
-                            width: Int,
-                            height: Int): Image
+    abstract fun screenShot(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): Image
 
-    abstract fun screenShotFBO(fbo: Framebuffer): Image
+    abstract fun screenShotFBOColor(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        attachment: Int = 0
+    ): Image
 
-    fun into(framebuffer: Framebuffer,
-             block: (Double) -> Unit): (Double) -> Unit {
+    abstract fun screenShotFBODepth(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): Image
+
+    fun into(
+        framebuffer: Framebuffer,
+        block: (Double) -> Unit
+    ): (Double) -> Unit {
         val viewport = IntArray(4)
         return { delta ->
             getViewport(viewport)
@@ -132,47 +165,67 @@ abstract class GL(private val gos: GraphicsObjectSupplier) : GraphicsObjectSuppl
         }
     }
 
-    abstract fun setAttribute1f(id: Int,
-                                v0: Float)
+    abstract fun setAttribute1f(
+        id: Int,
+        v0: Float
+    )
 
-    abstract fun setAttribute2f(id: Int,
-                                v0: Float,
-                                v1: Float)
+    abstract fun setAttribute2f(
+        id: Int,
+        v0: Float,
+        v1: Float
+    )
 
-    abstract fun setAttribute3f(id: Int,
-                                v0: Float,
-                                v1: Float,
-                                v2: Float)
+    abstract fun setAttribute3f(
+        id: Int,
+        v0: Float,
+        v1: Float,
+        v2: Float
+    )
 
-    abstract fun setAttribute4f(id: Int,
-                                v0: Float,
-                                v1: Float,
-                                v2: Float,
-                                v3: Float)
+    abstract fun setAttribute4f(
+        id: Int,
+        v0: Float,
+        v1: Float,
+        v2: Float,
+        v3: Float
+    )
 
-    abstract fun setAttribute1f(uniform: Int,
-                                values: FloatArray)
+    abstract fun setAttribute1f(
+        uniform: Int,
+        values: FloatArray
+    )
 
-    abstract fun setAttribute2f(uniform: Int,
-                                values: FloatArray)
+    abstract fun setAttribute2f(
+        uniform: Int,
+        values: FloatArray
+    )
 
-    abstract fun setAttribute3f(uniform: Int,
-                                values: FloatArray)
+    abstract fun setAttribute3f(
+        uniform: Int,
+        values: FloatArray
+    )
 
-    abstract fun setAttribute4f(uniform: Int,
-                                values: FloatArray)
+    abstract fun setAttribute4f(
+        uniform: Int,
+        values: FloatArray
+    )
 
-    abstract fun replaceTexture(x: Int,
-                                y: Int,
-                                width: Int,
-                                height: Int,
-                                buffer: ByteViewRO)
+    abstract fun replaceTexture(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        buffer: ByteViewRO
+    )
 
-    abstract fun replaceTextureMipMap(x: Int,
-                                      y: Int,
-                                      width: Int,
-                                      height: Int,
-                                      vararg buffers: ByteViewRO)
+    abstract fun replaceTextureMipMap(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        vararg buffers: ByteViewRO
+    )
 
     abstract fun activeTexture(i: Int)
 

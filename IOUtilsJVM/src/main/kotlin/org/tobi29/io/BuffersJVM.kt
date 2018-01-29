@@ -100,21 +100,44 @@ fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
     else -> null
 }
 
-fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
-        asByteBuffer()?.let {
-            if (!it.isDirect) {
-                val buffer = ByteBuffer.allocateDirect(it.remaining())
-                if (this is MemorySegmentE) {
-                    buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
-                }
-                buffer.put(it)
-                buffer._flip()
-                buffer
-            } else it
-        } ?: java.nio.ByteBuffer.allocateDirect(size)
-                .order(NATIVE_ENDIAN).also { buffer ->
-            getBytes(0, buffer.viewE)
+inline fun <R> ByteView.mutateAsNativeByteBuffer(block: (ByteBuffer) -> R): R {
+    var buffer = asNativeByteBuffer()
+    val view = if (buffer == null) {
+        buffer = ByteBufferNative(size)
+        if (this is MemorySegmentE) {
+            buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
         }
+        buffer.viewE.also { getBytes(0, it) }
+    } else this
+    return try {
+        block(buffer)
+    } finally {
+        if (view !== this) view.getBytes(0, this)
+    }
+}
+
+fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
+    asNativeByteBuffer()?.let {
+        if (!it.isDirect) {
+            val buffer = ByteBuffer.allocateDirect(it.remaining())
+            if (this is MemorySegmentE) {
+                buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
+            }
+            buffer.put(it)
+            buffer._flip()
+            buffer
+        } else it
+    } ?: java.nio.ByteBuffer.allocateDirect(size)
+        .order(NATIVE_ENDIAN).also { buffer ->
+        getBytes(0, buffer.viewE)
+    }
+
+fun ByteViewRO.asNativeByteBuffer(): ByteBuffer? = when (this) {
+    is ByteBufferView ->
+        if (byteBuffer.isDirect) byteBuffer.slice().order(byteBuffer.order())
+        else null
+    else -> null
+}
 
 /**
  * Compatibility extension avoiding the overridden versions added in Java 9

@@ -28,6 +28,17 @@ interface Framebuffer : GraphicsObject {
 
     fun height(): Int
 
-    fun setSize(width: Int,
-                height: Int)
+    fun setSize(
+        width: Int,
+        height: Int
+    )
+}
+
+inline fun <R> Framebuffer.activate(gl: GL, block: () -> R): R {
+    activate(gl)
+    try {
+        return block()
+    } finally {
+        deactivate(gl)
+    }
 }

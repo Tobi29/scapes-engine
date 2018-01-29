@@ -46,17 +46,18 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 class ContainerGLFW(
-        private val title: String,
-        private val emulateTouch: Boolean = false,
-        private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
-        useGLES: Boolean = false
+    private val title: String,
+    private val emulateTouch: Boolean = false,
+    private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0,
+    useGLES: Boolean = false
 ) : ContainerLWJGL3(useGLES) {
     override var containerWidth = 0
         private set
     override var containerHeight = 0
         private set
     private val controllerDesktop = GLFWControllerDesktop()
-    private val virtualJoysticks = ConcurrentHashMap<Int, GLFWControllerGamepad>()
+    private val virtualJoysticks =
+        ConcurrentHashMap<Int, GLFWControllerGamepad>()
     private val errorFun = GLFWErrorCallback.createPrint()
     internal var window = 0L
         private set
@@ -97,11 +98,13 @@ class ContainerGLFW(
             containerHeight = (height * density).roundToInt()
         }
         val windowCloseFun = GLFWWindowCloseCallback.create { stop() }
-        val windowFocusFun = GLFWWindowFocusCallback.create { _, focused -> focus = focused }
-        val frameBufferSizeFun = GLFWFramebufferSizeCallback.create { _, width, height ->
-            contentWidth = width
-            contentHeight = height
-        }
+        val windowFocusFun =
+            GLFWWindowFocusCallback.create { _, focused -> focus = focused }
+        val frameBufferSizeFun =
+            GLFWFramebufferSizeCallback.create { _, width, height ->
+                contentWidth = width
+                contentHeight = height
+            }
         val keyFun = GLFWKeyCallback.create { _, key, _, action, _ ->
             val virtualKey = GLFWKeyMap.key(key)
             if (virtualKey != null) {
@@ -110,14 +113,17 @@ class ContainerGLFW(
                 }
                 when (action) {
                     GLFW.GLFW_PRESS -> controllerDesktop.addPressEvent(
-                            virtualKey, ControllerButtons.Action.PRESS,
-                            engine.events)
+                        virtualKey, ControllerButtons.Action.PRESS,
+                        engine.events
+                    )
                     GLFW.GLFW_REPEAT -> controllerDesktop.addPressEvent(
-                            virtualKey, ControllerButtons.Action.REPEAT,
-                            engine.events)
+                        virtualKey, ControllerButtons.Action.REPEAT,
+                        engine.events
+                    )
                     GLFW.GLFW_RELEASE -> controllerDesktop.addPressEvent(
-                            virtualKey, ControllerButtons.Action.RELEASE,
-                            engine.events)
+                        virtualKey, ControllerButtons.Action.RELEASE,
+                        engine.events
+                    )
                 }
             }
             if (key == GLFW.GLFW_KEY_GRAVE_ACCENT && action == GLFW.GLFW_PRESS) {
@@ -127,19 +133,22 @@ class ContainerGLFW(
         val charFun = GLFWCharCallback.create { _, codepoint ->
             controllerDesktop.addTypeEvent(codepoint.toChar(), engine.events)
         }
-        val mouseButtonFun = GLFWMouseButtonCallback.create { _, button, action, _ ->
-            val virtualKey = ControllerKey.button(button)
-            if (virtualKey != null) {
-                when (action) {
-                    GLFW.GLFW_PRESS -> controllerDesktop.addPressEvent(
+        val mouseButtonFun =
+            GLFWMouseButtonCallback.create { _, button, action, _ ->
+                val virtualKey = ControllerKey.button(button)
+                if (virtualKey != null) {
+                    when (action) {
+                        GLFW.GLFW_PRESS -> controllerDesktop.addPressEvent(
                             virtualKey, ControllerButtons.Action.PRESS,
-                            engine.events)
-                    GLFW.GLFW_RELEASE -> controllerDesktop.addPressEvent(
+                            engine.events
+                        )
+                        GLFW.GLFW_RELEASE -> controllerDesktop.addPressEvent(
                             virtualKey, ControllerButtons.Action.RELEASE,
-                            engine.events)
+                            engine.events
+                        )
+                    }
                 }
             }
-        }
         val cursorPosFun = GLFWCursorPosCallback.create { window, xpos, ypos ->
             val dx = xpos - mouseX
             val dy = ypos - mouseY
@@ -186,17 +195,23 @@ class ContainerGLFW(
                         val tracker = tracker
                         if (tracker != null) {
                             if (controllerDesktop.isDown(
-                                    ControllerKey.BUTTON_0)) {
-                                tracker.pos.setXY(controllerDesktop.x,
-                                        controllerDesktop.y)
+                                    ControllerKey.BUTTON_0
+                                )) {
+                                tracker.pos.setXY(
+                                    controllerDesktop.x,
+                                    controllerDesktop.y
+                                )
                             } else {
                                 this.tracker = null
                             }
                         } else if (controllerDesktop.isDown(
-                                ControllerKey.BUTTON_0)) {
+                                ControllerKey.BUTTON_0
+                            )) {
                             val newTracker = ControllerTracker.Tracker()
-                            newTracker.pos.setXY(controllerDesktop.x,
-                                    controllerDesktop.y)
+                            newTracker.pos.setXY(
+                                controllerDesktop.x,
+                                controllerDesktop.y
+                            )
                             this.tracker = newTracker
                         }
                         return tracker?.let {
@@ -224,11 +239,13 @@ class ContainerGLFW(
                 if (window != 0L) {
                     GLFW.glfwDestroyWindow(window)
                 }
-                window = initWindow(engine, title, engineConfig.fullscreen,
-                        engineConfig.vSync, useGLES, windowSizeFun,
-                        windowCloseFun, windowFocusFun, frameBufferSizeFun,
-                        keyFun, charFun, mouseButtonFun, cursorPosFun,
-                        scrollFun)
+                window = initWindow(
+                    engine, title, engineConfig.fullscreen,
+                    engineConfig.vSync, useGLES, windowSizeFun,
+                    windowCloseFun, windowFocusFun, frameBufferSizeFun,
+                    keyFun, charFun, mouseButtonFun, cursorPosFun,
+                    scrollFun
+                )
                 refreshRate = refreshRate(window) ?: 60
                 stackFrame { stack ->
                     val widthBuffer = stack.mallocInt(1)
@@ -236,9 +253,12 @@ class ContainerGLFW(
                     GLFW.glfwGetWindowSize(window, widthBuffer, heightBuffer)
                     containerWidth = (widthBuffer.get(0) * density).roundToInt()
                     containerHeight = (heightBuffer.get(
-                            0) * density).roundToInt()
-                    GLFW.glfwGetFramebufferSize(window, widthBuffer,
-                            heightBuffer)
+                        0
+                    ) * density).roundToInt()
+                    GLFW.glfwGetFramebufferSize(
+                        window, widthBuffer,
+                        heightBuffer
+                    )
                     contentWidth = widthBuffer.get(0)
                     contentHeight = heightBuffer.get(0)
                 }
@@ -256,9 +276,11 @@ class ContainerGLFW(
             GLFW.glfwPollEvents()
             controllers.poll()
             val swap = profilerSection("Render") {
-                engine.graphics.render(gl,
-                        Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
-                        contentWidth, contentHeight)
+                engine.graphics.render(
+                    gl,
+                    Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
+                    contentWidth, contentHeight, containerWidth, containerHeight
+                )
             }
             val mouseGrabbed = !emulateTouch && engine.isMouseGrabbed()
             if (mouseGrabbed != this.mouseGrabbed) {
@@ -266,14 +288,18 @@ class ContainerGLFW(
                 mouseX = containerWidth / density * 0.5
                 mouseY = containerHeight / density * 0.5
                 if (mouseGrabbed) {
-                    GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
-                            GLFW.GLFW_CURSOR_DISABLED)
+                    GLFW.glfwSetInputMode(
+                        window, GLFW.GLFW_CURSOR,
+                        GLFW.GLFW_CURSOR_DISABLED
+                    )
                     mouseDeltaSkip = true
                 } else {
                     mouseX = containerWidth / density * 0.5
                     mouseY = containerHeight / density * 0.5
-                    GLFW.glfwSetInputMode(window, GLFW.GLFW_CURSOR,
-                            GLFW.GLFW_CURSOR_NORMAL)
+                    GLFW.glfwSetInputMode(
+                        window, GLFW.GLFW_CURSOR,
+                        GLFW.GLFW_CURSOR_NORMAL
+                    )
                     GLFW.glfwSetCursorPos(window, mouseX, mouseY)
                 }
                 controllerDesktop.set(mouseX, mouseY)
@@ -281,8 +307,10 @@ class ContainerGLFW(
             if (vSync) {
                 tickDiff = timer.tick()
             } else {
-                tickDiff = timer.cap(Timer.toDiff(engineConfig.fps),
-                        ::sleepNanos)
+                tickDiff = timer.cap(
+                    Timer.toDiff(engineConfig.fps),
+                    ::sleepNanos
+                )
             }
             if (swap) {
                 GLFW.glfwSwapBuffers(window)
@@ -337,17 +365,21 @@ class ContainerGLFW(
         return GLFW.glfwGetClipboardString(window)
     }
 
-    override fun message(messageType: Container.MessageType,
-                         title: String,
-                         message: String) {
+    override fun message(
+        messageType: Container.MessageType,
+        title: String,
+        message: String
+    ) {
         exec {
             PlatformDialogs.message(this, messageType, title, message)
         }
     }
 
-    override fun dialog(title: String,
-                        text: GuiController.TextFieldData,
-                        multiline: Boolean) {
+    override fun dialog(
+        title: String,
+        text: GuiController.TextFieldData,
+        multiline: Boolean
+    ) {
         exec {
             PlatformDialogs.dialog(this, title, text, multiline)
         }
@@ -367,20 +399,22 @@ class ContainerGLFW(
             PlatformDialogs.openFile(path)
         }
 
-        private fun initWindow(engine: ScapesEngine,
-                               title: String,
-                               fullscreen: Boolean,
-                               vSync: Boolean,
-                               useGLES: Boolean,
-                               windowSizeFun: GLFWWindowSizeCallback,
-                               windowCloseFun: GLFWWindowCloseCallback,
-                               windowFocusFun: GLFWWindowFocusCallback,
-                               frameBufferSizeFun: GLFWFramebufferSizeCallback,
-                               keyFun: GLFWKeyCallback,
-                               charFun: GLFWCharCallback,
-                               mouseButtonFun: GLFWMouseButtonCallback,
-                               cursorPosFun: GLFWCursorPosCallback,
-                               scrollFun: GLFWScrollCallback): Long {
+        private fun initWindow(
+            engine: ScapesEngine,
+            title: String,
+            fullscreen: Boolean,
+            vSync: Boolean,
+            useGLES: Boolean,
+            windowSizeFun: GLFWWindowSizeCallback,
+            windowCloseFun: GLFWWindowCloseCallback,
+            windowFocusFun: GLFWWindowFocusCallback,
+            frameBufferSizeFun: GLFWFramebufferSizeCallback,
+            keyFun: GLFWKeyCallback,
+            charFun: GLFWCharCallback,
+            mouseButtonFun: GLFWMouseButtonCallback,
+            cursorPosFun: GLFWCursorPosCallback,
+            scrollFun: GLFWScrollCallback
+        ): Long {
             logger.info { "Creating GLFW window..." }
             val monitor = GLFW.glfwGetPrimaryMonitor()
             val videoMode = GLFW.glfwGetVideoMode(monitor)
@@ -389,8 +423,10 @@ class ContainerGLFW(
             val window = if (useGLES) {
                 GLFW.glfwDefaultWindowHints()
                 initContextGLES()
-                val window = initWindow(title, fullscreen, monitor,
-                        monitorWidth, monitorHeight)
+                val window = initWindow(
+                    title, fullscreen, monitor,
+                    monitorWidth, monitorHeight
+                )
                 GLFW.glfwMakeContextCurrent(window)
                 GLES.createCapabilities()
                 checkContextGLES()?.let { throw GraphicsCheckException(it) }
@@ -398,19 +434,24 @@ class ContainerGLFW(
             } else {
                 GLFW.glfwDefaultWindowHints()
                 initContextGL()
-                var window = initWindow(title, fullscreen, monitor,
-                        monitorWidth, monitorHeight)
+                var window = initWindow(
+                    title, fullscreen, monitor,
+                    monitorWidth, monitorHeight
+                )
                 GLFW.glfwMakeContextCurrent(window)
                 GL.createCapabilities()
-                val tagMap = engine[ScapesEngine.CONFIG_MAP_COMPONENT]["Compatibility"]?.toMap()
+                val tagMap =
+                    engine[ScapesEngine.CONFIG_MAP_COMPONENT]["Compatibility"]?.toMap()
                 workaroundLegacyProfile(tagMap)?.let {
                     logger.warn { "Detected problem with using a core profile on this driver: $it" }
                     logger.warn { "Recreating window with legacy context..." }
                     GLFW.glfwDestroyWindow(window)
                     GLFW.glfwDefaultWindowHints()
                     initContextGL(true)
-                    window = initWindow(title, fullscreen, monitor,
-                            monitorWidth, monitorHeight)
+                    window = initWindow(
+                        title, fullscreen, monitor,
+                        monitorWidth, monitorHeight
+                    )
                     GLFW.glfwMakeContextCurrent(window)
                     GL.createCapabilities()
                 }
@@ -434,10 +475,14 @@ class ContainerGLFW(
             if (!contextLegacy) {
                 GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MAJOR, 3)
                 GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 3)
-                GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_PROFILE,
-                        GLFW.GLFW_OPENGL_CORE_PROFILE)
-                GLFW.glfwWindowHint(GLFW.GLFW_OPENGL_FORWARD_COMPAT,
-                        GL11.GL_TRUE)
+                GLFW.glfwWindowHint(
+                    GLFW.GLFW_OPENGL_PROFILE,
+                    GLFW.GLFW_OPENGL_CORE_PROFILE
+                )
+                GLFW.glfwWindowHint(
+                    GLFW.GLFW_OPENGL_FORWARD_COMPAT,
+                    GL11.GL_TRUE
+                )
             }
         }
 
@@ -447,20 +492,25 @@ class ContainerGLFW(
             GLFW.glfwWindowHint(GLFW.GLFW_CONTEXT_VERSION_MINOR, 0)
         }
 
-        private fun initWindow(title: String,
-                               fullscreen: Boolean,
-                               monitor: Long,
-                               monitorWidth: Int,
-                               monitorHeight: Int): Long {
+        private fun initWindow(
+            title: String,
+            fullscreen: Boolean,
+            monitor: Long,
+            monitorWidth: Int,
+            monitorHeight: Int
+        ): Long {
             GLFW.glfwWindowHint(GLFW.GLFW_VISIBLE, GL11.GL_FALSE)
             // >:V Seriously, stop with this crap!
             GLFW.glfwWindowHint(GLFW.GLFW_AUTO_ICONIFY, GL11.GL_FALSE)
             return if (fullscreen) {
-                val window = GLFW.glfwCreateWindow(monitorWidth, monitorHeight,
-                        title, monitor, 0L)
+                val window = GLFW.glfwCreateWindow(
+                    monitorWidth, monitorHeight,
+                    title, monitor, 0L
+                )
                 if (window == 0L) {
                     throw GraphicsCheckException(
-                            "Failed to create fullscreen window")
+                        "Failed to create fullscreen window"
+                    )
                 }
                 window
             } else {
@@ -499,7 +549,8 @@ class ContainerGLFW(
             while (monitors.hasRemaining()) {
                 val otherMonitor = monitors.get()
                 val otherRefreshRate = GLFW.glfwGetVideoMode(
-                        otherMonitor).refreshRate()
+                    otherMonitor
+                ).refreshRate()
                 refreshRate = max(refreshRate, otherRefreshRate)
             }
             return refreshRate

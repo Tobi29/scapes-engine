@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile project(":GLLWJGL3BackendJVM")
-    compile project(":GLESLWJGL3BackendJVM")
-    compile project(":OpenALSoundsJVM")
-    compile rootProject.ext.lwjgl
-    compile rootProject.ext.lwjglEGL
-    compile rootProject.ext.lwjglOpenAL
-    compile rootProject.ext.lwjglSTB
+    compile project(":Engine")
 }

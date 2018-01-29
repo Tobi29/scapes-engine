@@ -19,23 +19,23 @@ package org.tobi29.scapes.engine.graphics
 import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.Runnable
-import org.tobi29.scapes.engine.GameState
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
+import org.tobi29.coroutines.TaskChannel
+import org.tobi29.coroutines.offer
+import org.tobi29.coroutines.processCurrent
 import org.tobi29.graphics.Image
 import org.tobi29.io.view
 import org.tobi29.logging.KLogging
 import org.tobi29.profiler.profilerSection
-import org.tobi29.coroutines.TaskChannel
-import org.tobi29.coroutines.offer
-import org.tobi29.coroutines.processCurrent
+import org.tobi29.scapes.engine.GameState
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(
-        val engine: ScapesEngine,
-        private val gos: GraphicsObjectSupplier
+    val engine: ScapesEngine,
+    private val gos: GraphicsObjectSupplier
 ) : CoroutineDispatcher(),
-        GraphicsObjectSupplier by gos {
+    GraphicsObjectSupplier by gos {
     private lateinit var fpsDebug: GuiWidgetDebugValues.Element
     private lateinit var widthDebug: GuiWidgetDebugValues.Element
     private lateinit var heightDebug: GuiWidgetDebugValues.Element
@@ -43,12 +43,16 @@ class GraphicsSystem(
     private lateinit var vaoDebug: GuiWidgetDebugValues.Element
     private lateinit var fboDebug: GuiWidgetDebugValues.Element
     private lateinit var shaderDebug: GuiWidgetDebugValues.Element
-    private val empty: Texture = createTexture(1, 1,
-            byteArrayOf(-1, -1, -1, -1).view, 0)
+    private val empty: Texture = createTexture(
+        1, 1,
+        byteArrayOf(-1, -1, -1, -1).view, 0
+    )
     private val queue = TaskChannel<(GL) -> Unit>()
     private var renderState: GameState? = null
     private var lastContentWidth = 0
     private var lastContentHeight = 0
+    private var lastContainerWidth = 0
+    private var lastContainerHeight = 0
 
     val textures = TextureManager(engine)
 
@@ -75,24 +79,35 @@ class GraphicsSystem(
         return empty
     }
 
-    fun render(gl: GL,
-               delta: Double,
-               contentWidth: Int,
-               contentHeight: Int): Boolean {
+    fun render(
+        gl: GL,
+        delta: Double,
+        contentWidth: Int,
+        contentHeight: Int,
+        containerWidth: Int,
+        containerHeight: Int
+    ): Boolean {
         return synchronized(this) {
             try {
                 gl.checkError("Pre-Render")
                 gl.step(delta)
                 val fboSizeDirty: Boolean
-                if (lastContentWidth != contentWidth ||
-                        lastContentHeight != contentHeight) {
+                if (lastContentWidth != contentWidth
+                    || lastContentHeight != contentHeight
+                    || lastContainerWidth != containerWidth
+                    || lastContainerHeight != containerHeight) {
                     lastContentWidth = contentWidth
                     lastContentHeight = contentHeight
+                    lastContainerWidth = containerWidth
+                    lastContainerHeight = containerHeight
                     fboSizeDirty = true
                     widthDebug.setValue(contentWidth)
                     heightDebug.setValue(contentHeight)
                     profilerSection("Reshape") {
-                        gl.reshape(contentWidth, contentHeight)
+                        gl.reshape(
+                            contentWidth, contentHeight,
+                            containerWidth, containerHeight
+                        )
                     }
                 } else {
                     fboSizeDirty = false
@@ -107,8 +122,10 @@ class GraphicsSystem(
                 executeDispatched(gl)
                 gl.setViewport(0, 0, gl.contentWidth, gl.contentHeight)
                 profilerSection("State") {
-                    if (!state.renderState(gl, delta,
-                            fboSizeDirty)) return@synchronized false
+                    if (!state.renderState(
+                            gl, delta,
+                            fboSizeDirty
+                        )) return@synchronized false
                 }
                 fpsDebug.setValue(1.0 / delta)
                 textureDebug.setValue(gos.textureTracker.count())
@@ -147,8 +164,10 @@ class GraphicsSystem(
         queue.processCurrent { it(gl) }
     }
 
-    override fun dispatch(context: CoroutineContext,
-                          block: Runnable) {
+    override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable
+    ) {
         queue.offer {
             try {
                 block.run()
