@@ -16,10 +16,6 @@
 
 package org.tobi29.profiler
 
-import org.tobi29.utils.steadyClock
-import org.tobi29.stdex.assert
-import org.tobi29.stdex.computeAbsent
-
 actual class Profiler {
     actual val root = Node("JS Runtime")
 
@@ -28,21 +24,4 @@ actual class Profiler {
     actual fun current() = handle
 }
 
-actual class ProfilerHandle actual internal constructor(private var node: Node) {
-    actual fun enterNode(name: String) {
-        node = node.children.computeAbsent(name) { Node(it, node) }
-        node.lastEnter = steadyClock.timeSteadyNanos()
-        dispatchers.forEach { it.enterNode(name) }
-    }
-
-    actual fun exitNode(name: String) {
-        val parentNode = node.parent ?: throw IllegalStateException(
-                "Profiler stack popped on root node")
-        assert { name == node.name() }
-        node.timeNanos += steadyClock.timeSteadyNanos() - node.lastEnter
-        dispatchers.forEach { it.exitNode(name) }
-        node = parentNode
-    }
-}
-
-actual internal val dispatchers: List<ProfilerDispatcher> = emptyList()
+internal actual val dispatchers: List<ProfilerDispatcher> = emptyList()

@@ -17,17 +17,17 @@ package org.tobi29.scapes.engine.gui.debug
 
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
-import org.tobi29.scapes.engine.gui.*
-import org.tobi29.profiler.*
 import org.tobi29.coroutines.Timer
 import org.tobi29.coroutines.loopUntilCancel
+import org.tobi29.profiler.*
+import org.tobi29.scapes.engine.gui.*
 
 class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         "Profiler") {
     private val scrollPane: GuiComponentScrollPaneViewport
     private val profilerNotEnabled: GuiComponentText
     private var elements: List<Element> = emptyList()
-    private var node: Node? = PROFILER.get()?.root
+    private var node: Node? = PROFILER?.root
     private var updateJob: Job? = null
 
     init {
@@ -56,16 +56,16 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
                 toggle.setText("Disable")
                 profilerEnable()
             }
-            node = PROFILER.get()?.root
+            node = PROFILER?.root
             nodes()
         }
         refresh.on(GuiEvent.CLICK_LEFT) {
-            node = PROFILER.get()?.root
+            node = PROFILER?.root
             nodes()
         }
         reset.on(GuiEvent.CLICK_LEFT) {
             profilerReset()
-            node = PROFILER.get()?.root
+            node = PROFILER?.root
             nodes()
         }
         nodes()

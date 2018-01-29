@@ -19,52 +19,28 @@ package org.tobi29.profiler
 import org.tobi29.logging.KLogging
 import org.tobi29.profiler.spi.ProfilerDispatcherProvider
 import org.tobi29.stdex.ThreadLocal
-import org.tobi29.stdex.assert
-import org.tobi29.stdex.computeAbsent
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.spiLoad
-import org.tobi29.utils.steadyClock
 import kotlin.collections.set
 
 actual class Profiler {
-    private val INSTANCE = ThreadLocal {
+    private val instance by ThreadLocal {
         val thread = Thread.currentThread()
         val node = Node({ "${thread.id}-${thread.name}" }, root)
-        ProfilerHandle(node, thread).also {
+        ProfilerHandle(node).also {
             root.children[node.name()] = node
         }
     }
 
     actual val root = Node("Threads")
 
-    actual fun current() = INSTANCE.get()
+    actual fun current() = instance
 }
 
-actual class ProfilerHandle internal constructor(
-        private var node: Node,
-        internal val thread: Thread) {
-
-    actual internal constructor(node: Node) : this(node, Thread.currentThread())
-
-    actual fun enterNode(name: String) {
-        node = node.children.computeAbsent(name) { Node(it, node) }
-        node.lastEnter = steadyClock.timeSteadyNanos()
-        dispatchers.forEach { it.enterNode(name) }
-    }
-
-    actual fun exitNode(name: String) {
-        val parentNode = node.parent ?: throw IllegalStateException(
-                "Profiler stack popped on root node")
-        assert { name == node.name() }
-        node.timeNanos += steadyClock.timeSteadyNanos() - node.lastEnter
-        dispatchers.forEach { it.exitNode(name) }
-        node = parentNode
-    }
-}
-
-actual internal val dispatchers = Dispatchers.i
+internal actual val dispatchers get() = Dispatchers.i
 
 private object Dispatchers : KLogging() {
+    @JvmStatic
     val i = spiLoad(
         spiLoad<ProfilerDispatcherProvider>(
             Dispatchers::class.java.classLoader

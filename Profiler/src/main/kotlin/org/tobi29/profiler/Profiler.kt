@@ -17,30 +17,60 @@
 package org.tobi29.profiler
 
 import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.assert
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.computeAbsent
+import org.tobi29.utils.steadyClock
 
-val PROFILER: AtomicReference<Profiler?> = AtomicReference(null)
+expect class Profiler() {
+    val root: Node
 
-inline val PROFILER_ENABLED: Boolean get() = PROFILER.get() != null
-
-fun profilerEnable() {
-    PROFILER.compareAndSet(null, Profiler())
+    fun current(): ProfilerHandle
 }
 
-fun profilerDisable() {
-    PROFILER.set(null)
-}
+class ProfilerHandle internal constructor(private var node: Node) {
+    fun enterNode(name: String) {
+        node = node.children.computeAbsent(name) { Node(it, node) }
+        node.lastEnter = steadyClock.timeSteadyNanos()
+        dispatchers.forEach { it.enterNode(name) }
+    }
 
-fun profilerReset() {
-    PROFILER.getAndSet(null)?.let {
-        profilerEnable()
+    fun exitNode(name: String) {
+        val parentNode = node.parent
+                ?: throw IllegalStateException("Profiler stack popped on root node")
+        assert { name == node.name() }
+        node.timeNanos += steadyClock.timeSteadyNanos() - node.lastEnter
+        dispatchers.forEach { it.exitNode(name) }
+        node = parentNode
     }
 }
 
-class Node(val name: () -> String,
-           val parent: Node? = null) {
-    constructor(name: String,
-                parent: Node? = null) : this({ name }, parent)
+internal expect val dispatchers: List<ProfilerDispatcher>
+
+private val profiler: AtomicReference<Profiler?> = AtomicReference(null)
+
+val PROFILER: Profiler? get() = profiler.get()
+val PROFILER_CURRENT: ProfilerHandle? get() = PROFILER?.current()
+
+inline val PROFILER_ENABLED: Boolean get() = PROFILER != null
+
+fun profilerEnable() {
+    profiler.compareAndSet(null, Profiler())
+}
+
+fun profilerDisable() {
+    profiler.set(null)
+}
+
+fun profilerReset() {
+    profiler.getAndSet(null)?.let { profilerEnable() }
+}
+
+class Node(val name: () -> String, val parent: Node? = null) {
+    constructor(
+        name: String,
+        parent: Node? = null
+    ) : this({ name }, parent)
 
     val children = ConcurrentHashMap<String, Node>()
     var lastEnter = 0L
@@ -49,16 +79,15 @@ class Node(val name: () -> String,
     val time get() = timeNanos
 }
 
-inline fun <R> profilerSection(name: String,
-                               receiver: () -> R): R {
-    val instance = PROFILER.get()?.current()
-    instance?.enterNode(name)
-    return try {
-        receiver()
-    } finally {
-        instance?.exitNode(name)
+inline fun <R> profilerSection(name: String, receiver: () -> R): R =
+    PROFILER_CURRENT.let { handle ->
+        handle?.enterNode(name)
+        try {
+            receiver()
+        } finally {
+            handle?.exitNode(name)
+        }
     }
-}
 
 interface ProfilerDispatcher {
     fun enterNode(name: String)
