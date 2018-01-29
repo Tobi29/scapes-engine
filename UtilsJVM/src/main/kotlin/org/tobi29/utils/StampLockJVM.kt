@@ -17,7 +17,7 @@
 package org.tobi29.utils
 
 import org.tobi29.stdex.assert
-import org.tobi29.stdex.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 import java.util.concurrent.locks.ReentrantLock
 
 /**
@@ -31,9 +31,11 @@ class StampLock {
      *
      * **Note:** Exposed to allow inlining
      */
-    val counterCurrent get() = counter.get()
+    val counterCurrent get() = counterFU.get(this)
 
-    private val counter = AtomicLong(Long.MIN_VALUE)
+    @Volatile
+    @Suppress("UNUSED")
+    private var _counter = 0
 
     private val writeLock = ReentrantLock()
 
@@ -50,10 +52,10 @@ class StampLock {
                 lockForceRead()
             }
             try {
-                val stamp = if (held || force) 0L else counterCurrent
+                val stamp = if (held || force) 0 else counterCurrent
                 val output = block()
-                val validate = if (held || force) 0L else counterCurrent
-                if (stamp == validate && validate and 1L == 0L) {
+                val validate = if (held || force) 0 else counterCurrent
+                if (stamp == validate && validate and 1 == 0) {
                     return output
                 }
             } finally {
@@ -91,18 +93,18 @@ class StampLock {
     fun lock() {
         writeLock.lock()
         if (writeLock.holdCount == 1) {
-            counter.incrementAndGet()
+            counterFU.incrementAndGet(this)
         }
-        assert { counterCurrent and 1L != 0L }
+        assert { counterCurrent and 1 != 0 }
     }
 
     /**
      * Releases a write lock
      */
     fun unlock() {
-        assert { counterCurrent and 1L != 0L }
+        assert { counterCurrent and 1 != 0 }
         if (writeLock.holdCount == 1) {
-            counter.incrementAndGet()
+            counterFU.incrementAndGet(this)
         }
         writeLock.unlock()
     }
@@ -123,5 +125,12 @@ class StampLock {
      */
     fun unlockForceRead() {
         writeLock.unlock()
+    }
+
+    companion object {
+        @JvmStatic
+        private val counterFU = AtomicIntegerFieldUpdater.newUpdater(
+            StampLock::class.java, "_counter"
+        )
     }
 }
