@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.sound
 
-import org.tobi29.utils.fromBase64
+import org.tobi29.base64.fromBase64
 import org.tobi29.io.HeapResource
 import org.tobi29.io.ro
 import org.tobi29.io.view

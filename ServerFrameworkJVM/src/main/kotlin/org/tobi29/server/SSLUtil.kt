@@ -16,12 +16,12 @@
 
 package org.tobi29.server
 
-import org.tobi29.utils.fromBase64
+import org.tobi29.base64.fromBase64
 import org.tobi29.io.ByteStreamInputStream
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteStream
 import org.tobi29.stdex.readOnly
-import org.tobi29.utils.toBase64
+import org.tobi29.base64.toBase64
 import java.io.BufferedReader
 import java.io.ByteArrayInputStream
 import java.io.InputStream

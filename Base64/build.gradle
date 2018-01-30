@@ -14,18 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjs.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    expectedBy project(":Engine")
-    sources project(path: ":Engine", configuration: "sources")
-    compile project(":Base64JS")
-    compile project(":GraphicsUtilsJS")
-    compile project(":IOUtilsJS")
-    compile project(":ProfilerJS")
-    compile project(":LoggingJS")
-    compile project(":ShaderCompilerJS")
-    compile project(":CoroutinesJS")
-    compile project(":UtilsJS")
-    compile rootProject.ext.webKTAudio
+    compile project(":STDEx")
 }

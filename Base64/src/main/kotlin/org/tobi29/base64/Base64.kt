@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package org.tobi29.utils
+package org.tobi29.base64
 
 import org.tobi29.stdex.Readable
 import org.tobi29.stdex.alphabetLatinLowercase
 import org.tobi29.stdex.alphabetLatinUppercase
 import org.tobi29.stdex.digitsArabic
 
-fun Appendable.appendBase64(array: ByteArray,
-                            offset: Int = 0,
-                            length: Int = array.size - offset) {
+fun Appendable.appendBase64(
+    array: ByteArray,
+    offset: Int = 0,
+    length: Int = array.size - offset
+) {
     if (offset < 0 || length < 0 || offset + length > array.size)
         throw IndexOutOfBoundsException("Offset or length are out of bounds")
 
@@ -41,7 +43,7 @@ fun Appendable.appendBase64(array: ByteArray,
  * @return String containing the data
  */
 fun ByteArray.toBase64(): String = StringBuilder((size + 2) / 3 * 4)
-        .apply { appendBase64(this@toBase64) }.toString()
+    .apply { appendBase64(this@toBase64) }.toString()
 
 /**
  * Returns the data length of the given base64 encoded string
@@ -77,10 +79,13 @@ fun CharSequence.paddingBase64(): Int? {
  * @return Array containing decoded bytes
  */
 fun CharSequence.fromBase64(): ByteArray =
-        ByteArray(lengthBase64() ?: throw IllegalArgumentException(
-                "Unable to determine output length")).also {
-            fromBase64(it, 0, it.size)
-        }
+    ByteArray(
+        lengthBase64() ?: throw IllegalArgumentException(
+            "Unable to determine output length"
+        )
+    ).also {
+        fromBase64(it, 0, it.size)
+    }
 
 /**
  * Converts a base64 encoded string to a byte array
@@ -92,9 +97,11 @@ fun CharSequence.fromBase64(): ByteArray =
  * @return Amount of byte written to the array
  * @see [lengthBase64]
  */
-fun CharSequence.fromBase64(array: ByteArray,
-                            offset: Int = 0,
-                            length: Int = lengthBase64() ?: 0): Int {
+fun CharSequence.fromBase64(
+    array: ByteArray,
+    offset: Int = 0,
+    length: Int = lengthBase64() ?: 0
+): Int {
     if (offset < 0 || length < 0 || offset + length > array.size)
         throw IndexOutOfBoundsException("Offset or length are out of bounds")
     if (this.length % 4 != 0)
@@ -111,7 +118,7 @@ fun CharSequence.fromBase64(array: ByteArray,
 }
 
 inline fun Readable.fromBase64(output: (Byte) -> Unit): Base64Result =
-        decodeBase64({ readTry() }, output)
+    decodeBase64({ readTry() }, output)
 
 const val BASE64_DATA_END = Int.MIN_VALUE
 
@@ -131,9 +138,12 @@ const val BASE64_DATA_END = Int.MIN_VALUE
  * @param output Output character consumer
  * @param padding Padding character to use or `null` for no padding
  */
-inline fun encodeBase64(input: () -> Int,
-                        output: (Char) -> Unit,
-                        padding: Nothing?) {
+@Suppress("UNUSED_PARAMETER")
+inline fun encodeBase64(
+    input: () -> Int,
+    output: (Char) -> Unit,
+    padding: Nothing?
+) {
     while (true) {
         val b0 = input()
         val b1 = input()
@@ -174,9 +184,11 @@ inline fun encodeBase64(input: () -> Int,
  * @param output Output character consumer
  * @param padding Padding character to use or `null` for no padding
  */
-inline fun encodeBase64(input: () -> Int,
-                        output: (Char) -> Unit) =
-        encodeBase64(input, output, 61.toChar() /* '=' */)
+inline fun encodeBase64(
+    input: () -> Int,
+    output: (Char) -> Unit
+) =
+    encodeBase64(input, output, 61.toChar() /* '=' */)
 
 /**
  * Encodes data in base64
@@ -194,9 +206,11 @@ inline fun encodeBase64(input: () -> Int,
  * @param output Output character consumer
  * @param padding Padding character to use or `null` for no padding
  */
-inline fun encodeBase64(input: () -> Int,
-                        output: (Char) -> Unit,
-                        padding: Char) {
+inline fun encodeBase64(
+    input: () -> Int,
+    output: (Char) -> Unit,
+    padding: Char
+) {
     while (true) {
         val b0 = input()
         val b1 = input()
@@ -243,8 +257,8 @@ inline fun encodeBase64(input: () -> Int,
  * @return Reason for data end
  */
 inline fun decodeBase64(
-        input: () -> Int,
-        output: (Byte) -> Unit
+    input: () -> Int,
+    output: (Byte) -> Unit
 ): Base64Result {
     while (true) {
         val c0 = input()
@@ -275,7 +289,8 @@ enum class Base64Result {
 }
 
 @PublishedApi
-internal const val ENCODE_TABLE = "$alphabetLatinUppercase$alphabetLatinLowercase$digitsArabic+/"
+internal const val ENCODE_TABLE =
+    "$alphabetLatinUppercase$alphabetLatinLowercase$digitsArabic+/"
 
 @PublishedApi
 internal val base64DecodeTable = ByteArray(128) { -1 }.apply {
@@ -286,13 +301,13 @@ internal val base64DecodeTable = ByteArray(128) { -1 }.apply {
 
 @PublishedApi
 internal inline fun <R> base64EncodeBatch(
-        b0: Int,
-        b1: Int,
-        b2: Int,
-        end: () -> R,
-        outputPadding2: (Char, Char) -> R,
-        outputPadding1: (Char, Char, Char) -> R,
-        outputFull: (Char, Char, Char, Char) -> R
+    b0: Int,
+    b1: Int,
+    b2: Int,
+    end: () -> R,
+    outputPadding2: (Char, Char) -> R,
+    outputPadding1: (Char, Char, Char) -> R,
+    outputFull: (Char, Char, Char, Char) -> R
 ): R = if (b0 == BASE64_DATA_END) {
     end()
 } else if (b1 == BASE64_DATA_END) {
@@ -305,14 +320,14 @@ internal inline fun <R> base64EncodeBatch(
 
 @PublishedApi
 internal inline fun <R> base64DecodeBatch(
-        c0: Int,
-        c1: Int,
-        c2: Int,
-        c3: Int,
-        outputFull: (Byte, Byte, Byte) -> R,
-        outputPadding2: (Byte, Boolean) -> R,
-        outputPadding1: (Byte, Byte, Boolean) -> R,
-        end: () -> R
+    c0: Int,
+    c1: Int,
+    c2: Int,
+    c3: Int,
+    outputFull: (Byte, Byte, Byte) -> R,
+    outputPadding2: (Byte, Boolean) -> R,
+    outputPadding1: (Byte, Byte, Boolean) -> R,
+    end: () -> R
 ): R = if (c0 < 0 || c1 < 0) {
     end()
 } else if (c3 < 0 || c3.toChar() == 61.toChar() /* '=' */) {
@@ -326,48 +341,56 @@ internal inline fun <R> base64DecodeBatch(
         }
     }
 } else {
-    base64DecodeFull(c0.toChar(), c1.toChar(), c2.toChar(), c3.toChar(),
-            outputFull)
+    base64DecodeFull(
+        c0.toChar(), c1.toChar(), c2.toChar(), c3.toChar(),
+        outputFull
+    )
 }
 
 @PublishedApi
 internal inline fun <R> base64EncodeFull(
-        b0: Byte,
-        b1: Byte,
-        b2: Byte,
-        output: (Char, Char, Char, Char) -> R
+    b0: Byte,
+    b1: Byte,
+    b2: Byte,
+    output: (Char, Char, Char, Char) -> R
 ): R {
     val i0 = b0.toInt()
     val i1 = b1.toInt()
     val i2 = b2.toInt()
-    return output(ENCODE_TABLE[(i0 ushr 2) and 0b00111111],
-            ENCODE_TABLE[((i0 shl 4) and 0b00110000) or ((i1 ushr 4) and 0b00001111)],
-            ENCODE_TABLE[((i1 shl 2) and 0b00111100) or ((i2 ushr 6) and 0b00000011)],
-            ENCODE_TABLE[(i2 ushr 0) and 0b00111111])
+    return output(
+        ENCODE_TABLE[(i0 ushr 2) and 0b00111111],
+        ENCODE_TABLE[((i0 shl 4) and 0b00110000) or ((i1 ushr 4) and 0b00001111)],
+        ENCODE_TABLE[((i1 shl 2) and 0b00111100) or ((i2 ushr 6) and 0b00000011)],
+        ENCODE_TABLE[(i2 ushr 0) and 0b00111111]
+    )
 
 }
 
 @PublishedApi
 internal inline fun <R> base64EncodePadding1(
-        b0: Byte,
-        b1: Byte,
-        output: (Char, Char, Char) -> R
+    b0: Byte,
+    b1: Byte,
+    output: (Char, Char, Char) -> R
 ): R {
     val i0 = b0.toInt()
     val i1 = b1.toInt()
-    return output(ENCODE_TABLE[(i0 ushr 2) and 0b00111111],
-            ENCODE_TABLE[((i0 shl 4) and 0b00110000) or ((i1 ushr 4) and 0b00001111)],
-            ENCODE_TABLE[(i1 shl 2) and 0b00111100])
+    return output(
+        ENCODE_TABLE[(i0 ushr 2) and 0b00111111],
+        ENCODE_TABLE[((i0 shl 4) and 0b00110000) or ((i1 ushr 4) and 0b00001111)],
+        ENCODE_TABLE[(i1 shl 2) and 0b00111100]
+    )
 }
 
 @PublishedApi
 internal inline fun <R> base64EncodePadding2(
-        b0: Byte,
-        output: (Char, Char) -> R
+    b0: Byte,
+    output: (Char, Char) -> R
 ): R {
     val i0 = b0.toInt()
-    return output(ENCODE_TABLE[(i0 ushr 2) and 0b00111111],
-            ENCODE_TABLE[(i0 shl 4) and 0b00110000])
+    return output(
+        ENCODE_TABLE[(i0 ushr 2) and 0b00111111],
+        ENCODE_TABLE[(i0 shl 4) and 0b00110000]
+    )
 }
 
 @PublishedApi
@@ -381,40 +404,44 @@ internal fun base64DecodeChar(c: Char): Byte {
 
 @PublishedApi
 internal inline fun <R> base64DecodeFull(
-        c0: Char,
-        c1: Char,
-        c2: Char,
-        c3: Char,
-        output: (Byte, Byte, Byte) -> R
+    c0: Char,
+    c1: Char,
+    c2: Char,
+    c3: Char,
+    output: (Byte, Byte, Byte) -> R
 ): R {
     val d0 = base64DecodeChar(c0).toInt()
     val d1 = base64DecodeChar(c1).toInt()
     val d2 = base64DecodeChar(c2).toInt()
     val d3 = base64DecodeChar(c3).toInt()
-    return output(((d0 shl 2) or (d1 ushr 4)).toByte(),
-            ((d1 shl 4) or (d2 ushr 2)).toByte(),
-            ((d2 shl 6) or (d3 ushr 0)).toByte())
+    return output(
+        ((d0 shl 2) or (d1 ushr 4)).toByte(),
+        ((d1 shl 4) or (d2 ushr 2)).toByte(),
+        ((d2 shl 6) or (d3 ushr 0)).toByte()
+    )
 }
 
 @PublishedApi
 internal inline fun <R> base64DecodePadding1(
-        c0: Char,
-        c1: Char,
-        c2: Char,
-        output: (Byte, Byte) -> R
+    c0: Char,
+    c1: Char,
+    c2: Char,
+    output: (Byte, Byte) -> R
 ): R {
     val d0 = base64DecodeChar(c0).toInt()
     val d1 = base64DecodeChar(c1).toInt()
     val d2 = base64DecodeChar(c2).toInt()
-    return output(((d0 shl 2) or (d1 ushr 4)).toByte(),
-            ((d1 shl 4) or (d2 ushr 2)).toByte())
+    return output(
+        ((d0 shl 2) or (d1 ushr 4)).toByte(),
+        ((d1 shl 4) or (d2 ushr 2)).toByte()
+    )
 }
 
 @PublishedApi
 internal inline fun <R> base64DecodePadding2(
-        c0: Char,
-        c1: Char,
-        output: (Byte) -> R
+    c0: Char,
+    c1: Char,
+    output: (Byte) -> R
 ): R {
     val d0 = base64DecodeChar(c0).toInt()
     val d1 = base64DecodeChar(c1).toInt()

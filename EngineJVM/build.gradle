@@ -19,6 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     expectedBy project(":Engine")
     sources project(path: ":Engine", configuration: "sources")
+    compile project(":Base64JVM")
     compile project(":GraphicsUtilsJVM")
     compile project(":IOUtilsJVM")
     compile project(":ProfilerJVM")

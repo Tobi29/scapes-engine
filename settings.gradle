@@ -44,6 +44,11 @@ include "ArgumentParser"
 include "ArgumentParserJS"
 include "ArgumentParserJVM"
 
+// Base64
+include "Base64"
+include "Base64JS"
+include "Base64JVM"
+
 // Utils
 include "Utils"
 include "UtilsJS"

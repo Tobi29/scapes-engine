@@ -17,15 +17,7 @@
 apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
 dependencies {
-    expectedBy project(":Engine")
-    sources project(path: ":Engine", configuration: "sources")
-    compile project(":Base64JS")
-    compile project(":GraphicsUtilsJS")
-    compile project(":IOUtilsJS")
-    compile project(":ProfilerJS")
-    compile project(":LoggingJS")
-    compile project(":ShaderCompilerJS")
-    compile project(":CoroutinesJS")
-    compile project(":UtilsJS")
-    compile rootProject.ext.webKTAudio
+    expectedBy project(":Base64")
+    sources project(path: ":Base64", configuration: "sources")
+    compile project(":STDExJS")
 }
