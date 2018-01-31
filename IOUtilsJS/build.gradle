@@ -20,6 +20,7 @@ dependencies {
     expectedBy project(":IOUtils")
     sources project(path: ":IOUtils", configuration: "sources")
     compile project(":ArraysJS")
+    compile project(":ChecksumsJS")
     compile project(":TagJS")
     compile project(":UtilsJS")
 }

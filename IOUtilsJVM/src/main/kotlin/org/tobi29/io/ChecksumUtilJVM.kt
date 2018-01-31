@@ -16,8 +16,8 @@
 
 package org.tobi29.io
 
-import org.tobi29.utils.Algorithm
-import org.tobi29.utils.Checksum
+import org.tobi29.checksums.Algorithm
+import org.tobi29.checksums.Checksum
 import java.nio.ByteBuffer
 
 /**

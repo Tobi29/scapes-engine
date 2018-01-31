@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.utils
+package org.tobi29.checksums
 
 import org.tobi29.arrays.toHexadecimal
 import org.tobi29.io.tag.*

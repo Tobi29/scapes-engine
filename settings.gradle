@@ -49,6 +49,11 @@ include "Base64"
 include "Base64JS"
 include "Base64JVM"
 
+// Checksums
+include "Checksums"
+include "ChecksumsJS"
+include "ChecksumsJVM"
+
 // Utils
 include "Utils"
 include "UtilsJS"

@@ -18,7 +18,7 @@ package org.tobi29.io.filesystem
 
 import org.tobi29.arrays.toHexadecimal
 import org.tobi29.logging.KLogging
-import org.tobi29.utils.Algorithm
+import org.tobi29.checksums.Algorithm
 import org.tobi29.utils.DurationNanos
 import org.tobi29.io.*
 import org.tobi29.utils.systemClock

@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    expectedBy project(":IOUtils")
-    sources project(path: ":IOUtils", configuration: "sources")
-    compile project(":ArraysJVM")
-    compile project(":ChecksumsJVM")
-    compile project(":TagJVM")
-    compile project(":UtilsJVM")
-    compile rootProject.ext.tika
+    compile project(":STDEx")
+    compile project(":Arrays")
+    compile project(":Tag")
 }

@@ -17,11 +17,9 @@
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
-    expectedBy project(":IOUtils")
-    sources project(path: ":IOUtils", configuration: "sources")
+    expectedBy project(":Checksums")
+    sources project(path: ":Checksums", configuration: "sources")
+    compile project(":STDExJVM")
     compile project(":ArraysJVM")
-    compile project(":ChecksumsJVM")
     compile project(":TagJVM")
-    compile project(":UtilsJVM")
-    compile rootProject.ext.tika
 }

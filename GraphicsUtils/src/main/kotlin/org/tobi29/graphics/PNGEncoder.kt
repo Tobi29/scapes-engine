@@ -16,6 +16,10 @@
 
 package org.tobi29.graphics
 
+import org.tobi29.checksums.chainCRC32
+import org.tobi29.checksums.finishChainCRC32
+import org.tobi29.checksums.initChainCRC32
+import org.tobi29.checksums.tableCRC32
 import org.tobi29.io.*
 
 // TODO: @Throws(IOException::class)
@@ -147,9 +151,7 @@ private fun WritableByteStream.writeChunk(type: Int,
         putInt(0)
         putInt(type)
     } else {
-        repeat(chunk.size) {
-            crc = chainCRC32(crc, chunk[it], zlibTable)
-        }
+        crc = chainCRC32(crc, chunk, zlibTable)
         putInt(chunk.size)
         putInt(type)
         put(chunk)
