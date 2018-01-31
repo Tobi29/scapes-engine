@@ -130,6 +130,15 @@ handling.
   * Base64JS
   * Base64JVM
 
+## Checksums
+Contains a CRC32 implementation and a wrapper around the jvm MessageDigest.
+Cross platform support for the latter may come eventually.
+
+### Artifacts
+  * Checksums
+  * ChecksumsS
+  * ChecksumsJVM
+
 ## Utils
 Contains various convenience functions and provides a common foundation
 for everything else to use.
