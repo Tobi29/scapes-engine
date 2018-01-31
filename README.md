@@ -121,6 +121,15 @@ in parallel multiple times.
   * ArgumentParserJS
   * ArgumentParserJVM
 
+## Base64
+Simple base 64 encoder and decoder with very flexible input and output
+handling.
+
+### Artifacts
+  * Base64
+  * Base64JS
+  * Base64JVM
+
 ## Utils
 Contains various convenience functions and provides a common foundation
 for everything else to use.
