@@ -31,18 +31,17 @@ releases to now, the engine probably will not run smoothly on older devices.
 Embedding into existing applications can be achieved using the available classes
 in the backend module.
 
+### Kotlin/JS
+An initial port of the engine to run on Kotlin/JS allows running a decent
+subset of the engine in the browser. There are known issues and limitations
+as this is still a work in progress. Assets can be loaded through
+XMLHttpRequests as well as 2d audio (music can be streamed and even looped, as
+long as Chrome fixes looping streams one day).
+
 ### iOS
 The engine can run on the [Multi OS Engine](https://multi-os-engine.org),
 however there is no backend for it that is in a usable state. There might be one
 added in the future, but this is rather low priority.
-
-### Kotlin/JS
-Partial Kotlin/JS support is available and given some care with weird Kotlin/JS
-bugs works quite well. The engine has been successfully ported with public
-upload being prepared.
-
-Current efforts are targeted at browser support, Node.js not being planned (Use
-JVM for server code).
 
 ### Kotlin/Native
 Kotlin/Native is not supported at the moment, using some of the Kotlin/JS code
@@ -296,6 +295,8 @@ development of games or more sophisticated engines
 
 ### Artifacts
   * Engine
+  * EngineJS
+  * GLESWebGL2BackendJS (Backend supporting WebGL 2 and WebAudio)
   * EngineJVM
   * GLFWBackend (Backend supporting OpenGL 3.3, OpenGLES 3.0 using LWJGL
     for bindings)
