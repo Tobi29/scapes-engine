@@ -17,10 +17,10 @@
 package org.tobi29.io.filesystem
 
 import org.tobi29.arrays.toHexadecimal
-import org.tobi29.logging.KLogging
-import org.tobi29.checksums.Algorithm
-import org.tobi29.utils.DurationNanos
+import org.tobi29.checksums.ChecksumAlgorithm
 import org.tobi29.io.*
+import org.tobi29.logging.KLogging
+import org.tobi29.utils.DurationNanos
 import org.tobi29.utils.systemClock
 import org.tobi29.utils.toInt128
 
@@ -31,17 +31,15 @@ object FileCache : KLogging() {
         try {
             channel(write, options = arrayOf(OPEN_READ, OPEN_WRITE, OPEN_CREATE,
                     OPEN_TRUNCATE_EXISTING)).use { channel ->
-                val digest = Algorithm.SHA256.digest()
+                val ctx = ChecksumAlgorithm.Sha256.createContext()
                 val streamOut = BufferedWriteChannelStream(channel)
-                stream.process { buffer ->
-                    buffer.readAsByteArray { array, offset, size ->
-                        digest.update(array, offset, size)
-                    }
-                    streamOut.put(buffer)
+                stream.process {
+                    ctx.update(it)
+                    streamOut.put(it)
                 }
                 streamOut.flush()
                 channel.position(0)
-                val checksum = digest.digest()
+                val checksum = ctx.finish()
                 createDirectories(root)
                 val name = checksum.toHexadecimal()
                 val streamIn = BufferedReadChannelStream(channel)

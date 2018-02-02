@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.checksums
 
+import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.arrays.toHexadecimal
 import org.tobi29.io.tag.*
-import org.tobi29.stdex.UnsupportedJVMException
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
 
 /**
  * Class representing a checksum hash
  */
 class Checksum(
     /**
-     * Algorithm of this checksum, might be [Algorithm.UNKNOWN]
+     * Algorithm of this checksum
      */
-    val algorithm: Algorithm,
+    val algorithm: ChecksumAlgorithm,
     private val array: ByteArray
 ) : TagMapWrite {
 
@@ -73,14 +74,16 @@ class Checksum(
     }
 }
 
+interface ChecksumContext {
+    fun update(data: ByteArray) = update(data.sliceOver())
+    fun update(data: BytesRO)
+    fun finish(): ByteArray
+}
+
 fun MutableTag.toChecksum(): Checksum? {
     val map = toMap() ?: return null
-    val algorithm =
-        try {
-            Algorithm.valueOf(map["Algorithm"].toString())
-        } catch (e: IllegalArgumentException) {
-            return null
-        }
+    val algorithm = map["Algorithm"]?.toString()
+        ?.let { checksumAlgorithmOrNull(it) } ?: return null
     val array = map["Array"]?.toByteArray() ?: return null
     if (array.size != algorithm.bytes) {
         return null
@@ -88,28 +91,54 @@ fun MutableTag.toChecksum(): Checksum? {
     return Checksum(algorithm, array)
 }
 
-/**
- * Enum containing available checksum algorithms
- */
-enum class Algorithm(
-    private val digestName: String,
+expect sealed class ChecksumAlgorithm {
     val bytes: Int
-) {
-    UNKNOWN("UNKNOWN", 0),
-    SHA256("SHA-256", 32),
-    SHA1("SHA1", 20),
-    @Deprecated("")
-    MD5("MD5", 16);
+    val name: String
 
-    /**
-     * Creates a new [MessageDigest]
-     * @return [MessageDigest] using the specified algorithm
-     */
-    fun digest(): MessageDigest {
-        return try {
-            MessageDigest.getInstance(digestName)
-        } catch (e: NoSuchAlgorithmException) {
-            throw UnsupportedJVMException(e)
-        }
+    abstract fun createContext(): ChecksumContext
+
+    // TODO: object Sha512 : ChecksumAlgorithm
+    object Sha256 : ChecksumAlgorithm {
+        override fun createContext(): ChecksumContext
     }
+    // TODO: object Md5 : ChecksumAlgorithm
+}
+
+fun checksumAlgorithm(name: String): ChecksumAlgorithm =
+    checksumAlgorithmOrNull(name)
+            ?: throw IllegalArgumentException("Unknown checksum algorithm: $name")
+
+fun checksumAlgorithmOrNull(name: String): ChecksumAlgorithm? = when (name) {
+    "SHA256" -> ChecksumAlgorithm.Sha256
+    else -> null
+}
+
+/**
+ * Creates a checksum from the given array
+ * @param array     Byte array that will be used to create the checksum
+ * @param algorithm The algorithm that will be used to create the checksum
+ * @return A [Checksum] containing the checksum
+ */
+inline fun checksum(
+    array: ByteArray,
+    algorithm: ChecksumAlgorithm = ChecksumAlgorithm.Sha256
+): Checksum {
+    val ctx = algorithm.createContext()
+    ctx.update(array)
+    return Checksum(algorithm, ctx.finish())
+}
+
+/**
+ * Creates a checksum from the given array
+ * @param array     Byte array that will be used to create the checksum
+ * @param algorithm The algorithm that will be used to create the checksum
+ * @return A [Checksum] containing the checksum
+ */
+inline fun checksum(
+    array: BytesRO,
+    algorithm: ChecksumAlgorithm = ChecksumAlgorithm.Sha256
+): Checksum {
+    val ctx = algorithm.createContext()
+    ctx.update(array)
+    return Checksum(algorithm, ctx.finish())
 }

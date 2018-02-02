@@ -18,19 +18,19 @@ package org.tobi29.io
 
 import org.tobi29.checksums.Checksum
 import org.tobi29.checksums.ChecksumAlgorithm
-import java.nio.ByteBuffer
 
 /**
- * Creates a checksum from the given [ByteBuffer]
- * @param buffer    [ByteBuffer] that will be used to create the checksum
+ * Creates a checksum from the given [ReadableByteStream]
+ * @param input     [ReadableByteStream] that will be used to create the checksum
  * @param algorithm The algorithm that will be used to create the checksum
  * @return A [Checksum] containing the checksum
+ * @throws IOException When an IO error occurs
  */
 fun checksum(
-    buffer: ByteBuffer,
+    input: ReadableByteStream,
     algorithm: ChecksumAlgorithm = ChecksumAlgorithm.Sha256
 ): Checksum {
-    val digest = algorithm.digest()
-    digest.update(buffer)
-    return Checksum(algorithm, digest.digest())
+    val ctx = algorithm.createContext()
+    input.process { ctx.update(it) }
+    return Checksum(algorithm, ctx.finish())
 }
