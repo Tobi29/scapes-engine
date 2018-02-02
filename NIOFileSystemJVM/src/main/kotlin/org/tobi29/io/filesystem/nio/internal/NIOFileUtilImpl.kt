@@ -16,7 +16,6 @@
 
 package org.tobi29.io.filesystem.nio.internal
 
-import org.tobi29.arrays.setAt
 import org.tobi29.utils.*
 import org.tobi29.io.*
 import org.tobi29.io.filesystem.*
@@ -25,6 +24,7 @@ import org.tobi29.io.filesystem.FileAttribute
 import org.tobi29.io.filesystem.LinkOption
 import org.tobi29.io.filesystem.OpenOption
 import org.tobi29.stdex.readOnly
+import org.tobi29.stdex.setAt
 import java.io.File
 import java.nio.file.*
 import java.nio.file.Path
