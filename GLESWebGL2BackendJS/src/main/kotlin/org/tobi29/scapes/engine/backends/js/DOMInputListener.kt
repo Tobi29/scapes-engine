@@ -162,9 +162,8 @@ class DOMInputListener(engine: ScapesEngine) {
         private inline fun <reified E : Event> listener(
             crossinline block: (E) -> Unit
         ): (Event) -> Unit = { event ->
-            if (event is E) {
-                block(event)
-            }
+            @Suppress("UnsafeCastFromDynamic")
+            block(event.asDynamic())
         }
     }
 }
