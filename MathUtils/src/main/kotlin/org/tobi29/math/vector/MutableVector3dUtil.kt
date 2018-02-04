@@ -108,7 +108,7 @@ inline fun inside(origin: MutableVector3d,
 // TODO: Kotlin/JS Bug
 /*inline*/ fun MutableVector3d.normalize(): MutableVector3d {
     val length = length()
-    return this / length
+    return this.divide(length)
 }
 
 /**
@@ -120,5 +120,5 @@ inline fun inside(origin: MutableVector3d,
 /*inline*/ fun MutableVector3d.normalizeSafe(): MutableVector3d {
     val length = length()
     return if (length == 0.0) setXYZ(0.0, 0.0, 0.0)
-    else this / length
+    else this.divide(length)
 }

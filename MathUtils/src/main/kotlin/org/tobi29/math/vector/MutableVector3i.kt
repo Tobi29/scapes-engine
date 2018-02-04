@@ -20,14 +20,18 @@ import org.tobi29.arrays.Ints
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toInt
 
-data class MutableVector3i(var x: Int = 0,
-                           var y: Int = 0,
-                           var z: Int = 0) : Ints {
+data class MutableVector3i(
+    var x: Int = 0,
+    var y: Int = 0,
+    var z: Int = 0
+) : Ints {
     constructor(vector: Vector3i) : this(vector.x, vector.y, vector.z)
 
     constructor(vector: MutableVector3i) : this(vector.x, vector.y, vector.z)
 
     override val size: Int get() = 3
+
+    fun now(): Vector3i = Vector3i(x, y, z)
 
     override fun get(index: Int): Int = when (index) {
         0 -> x
@@ -36,44 +40,14 @@ data class MutableVector3i(var x: Int = 0,
         else -> throw IndexOutOfBoundsException("$index")
     }
 
-    override fun set(index: Int,
-                     value: Int): Unit = when (index) {
+    override fun set(
+        index: Int,
+        value: Int
+    ): Unit = when (index) {
         0 -> x = value
         1 -> y = value
         2 -> z = value
         else -> throw IndexOutOfBoundsException("$index")
-    }
-
-    fun plus(a: Int) = apply {
-        x += a
-        y += a
-        z += a
-    }
-
-    fun minus(a: Int) = apply {
-        x -= a
-        y -= a
-        z -= a
-    }
-
-    fun multiply(a: Int) = apply {
-        x *= a
-        y *= a
-        z *= a
-    }
-
-    fun div(a: Int) = apply {
-        x /= a
-        y /= a
-        z /= a
-    }
-
-    fun plusX(x: Int) = apply {
-        this.x += x
-    }
-
-    fun plusY(y: Int) = apply {
-        this.y += y
     }
 
     fun setX(x: Int) = apply {
@@ -84,59 +58,84 @@ data class MutableVector3i(var x: Int = 0,
         this.y = y
     }
 
-    fun plus(vector: Vector2i) = apply {
-        x += vector.x
-        y += vector.y
-    }
-
-    fun minus(vector: Vector2i) = apply {
-        x -= vector.x
-        y -= vector.y
-    }
-
-    fun multiply(vector: Vector2i) = apply {
-        x *= vector.x
-        y *= vector.y
-    }
-
-    fun div(vector: Vector2i) = apply {
-        x /= vector.x
-        y /= vector.y
-    }
-
-    fun set(a: Vector2i) = apply {
-        x = a.x
-        y = a.y
-    }
-
-    fun now(): Vector3i = Vector3i(x, y, z)
-
-    fun setXYZ(x: Int,
-               y: Int,
-               z: Int) = apply {
-        setX(x)
-        setY(y)
-        setZ(z)
-    }
-
-    fun plusZ(z: Int) = apply {
-        this.z += z
-    }
-
     fun setZ(z: Int) = apply {
         this.z = z
     }
 
-    operator fun plus(vector: Vector3i) = apply {
+    fun setXYZ(
+        x: Int,
+        y: Int,
+        z: Int
+    ) = apply {
+        this.x = x
+        this.y = y
+        this.z = z
+    }
+
+    fun set(a: Vector3i) = apply {
+        x = a.x
+        y = a.y
+        z = a.z
+    }
+
+    fun negate() = apply {
+        x = -x
+        y = -y
+        z = -z
+    }
+
+    fun add(a: Int) = apply {
+        x += a
+        y += a
+        z += a
+    }
+
+    fun addX(x: Int) = apply {
+        this.x += x
+    }
+
+    fun addY(y: Int) = apply {
+        this.y += y
+    }
+
+    fun addZ(z: Int) = apply {
+        this.z += z
+    }
+
+    fun add(vector: Vector3i) = apply {
         x += vector.x
         y += vector.y
         z += vector.z
     }
 
-    operator fun minus(vector: Vector3i) = apply {
+    fun add(vector: MutableVector3i) = apply {
+        x += vector.x
+        y += vector.y
+        z += vector.z
+    }
+
+    fun subtract(a: Int) = apply {
+        x -= a
+        y -= a
+        z -= a
+    }
+
+    fun subtract(vector: Vector3i) = apply {
         x -= vector.x
         y -= vector.y
         z -= vector.z
+    }
+
+    fun subtract(vector: MutableVector3i) = apply {
+        x -= vector.x
+        y -= vector.y
+        z -= vector.z
+    }
+
+    fun multiply(a: Int) = apply {
+        x *= a
+        y *= a
+        z *= a
     }
 
     fun multiply(vector: Vector3i) = apply {
@@ -145,16 +144,28 @@ data class MutableVector3i(var x: Int = 0,
         z *= vector.z
     }
 
-    operator fun div(vector: Vector3i) = apply {
+    fun multiply(vector: MutableVector3i) = apply {
+        x *= vector.x
+        y *= vector.y
+        z *= vector.z
+    }
+
+    fun divide(a: Int) = apply {
+        x /= a
+        y /= a
+        z /= a
+    }
+
+    fun divide(vector: Vector3i) = apply {
         x /= vector.x
         y /= vector.y
         z /= vector.z
     }
 
-    fun set(a: Vector3i) = apply {
-        setX(a.x)
-        setY(a.y)
-        setZ(a.z)
+    fun divide(vector: MutableVector3i) = apply {
+        x /= vector.x
+        y /= vector.y
+        z /= vector.z
     }
 
     fun set(map: ReadTagMutableMap) {

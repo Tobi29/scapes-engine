@@ -20,13 +20,17 @@ import org.tobi29.arrays.Ints
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toInt
 
-data class MutableVector2i(var x: Int = 0,
-                           var y: Int = 0) : Ints {
+data class MutableVector2i(
+    var x: Int = 0,
+    var y: Int = 0
+) : Ints {
     constructor(vector: Vector2i) : this(vector.x, vector.y)
 
     constructor(vector: MutableVector2i) : this(vector.x, vector.y)
 
-    override val size: Int get() = 3
+    override val size: Int get() = 2
+
+    fun now(): Vector2i = Vector2i(x, y)
 
     override fun get(index: Int): Int = when (index) {
         0 -> x
@@ -34,94 +38,113 @@ data class MutableVector2i(var x: Int = 0,
         else -> throw IndexOutOfBoundsException("$index")
     }
 
-    override fun set(index: Int,
-                     value: Int): Unit = when (index) {
+    override fun set(
+        index: Int,
+        value: Int
+    ): Unit = when (index) {
         0 -> x = value
         1 -> y = value
         else -> throw IndexOutOfBoundsException("$index")
     }
 
-    operator fun plus(a: Int) = apply {
-        x += a
-        y += a
-        return this
+    fun setX(x: Int) = apply {
+        this.x = x
     }
 
-    operator fun minus(a: Int) = apply {
+    fun setY(y: Int) = apply {
+        this.y = y
+    }
+
+    fun setXY(
+        x: Int,
+        y: Int
+    ) = apply {
+        this.x = x
+        this.y = y
+    }
+
+    fun set(a: Vector2i) = apply {
+        x = a.x
+        y = a.y
+    }
+
+    fun set(a: MutableVector2i) = apply {
+        x = a.x
+        y = a.y
+    }
+
+    fun negate() = apply {
+        x = -x
+        y = -y
+    }
+
+    fun add(a: Int) = apply {
+        x += a
+        y += a
+    }
+
+    fun addX(x: Int) = apply {
+        this.x += x
+    }
+
+    fun addY(y: Int) = apply {
+        this.y += y
+    }
+
+    fun add(vector: Vector2i) = apply {
+        x += vector.x
+        y += vector.y
+    }
+
+    fun add(vector: MutableVector2i) = apply {
+        x += vector.x
+        y += vector.y
+    }
+
+    fun subtract(a: Int) = apply {
         x -= a
         y -= a
-        return this
+    }
+
+    fun subtract(vector: Vector2i) = apply {
+        x -= vector.x
+        y -= vector.y
+    }
+
+    fun subtract(vector: MutableVector2i) = apply {
+        x -= vector.x
+        y -= vector.y
     }
 
     fun multiply(a: Int) = apply {
         x *= a
         y *= a
-        return this
-    }
-
-    operator fun div(a: Int) = apply {
-        x /= a
-        y /= a
-        return this
-    }
-
-    fun setXY(x: Int,
-              y: Int) = apply {
-        setX(x)
-        setY(y)
-    }
-
-    fun plusX(x: Int) = apply {
-        this.x += x
-        return this
-    }
-
-    fun plusY(y: Int) = apply {
-        this.y += y
-        return this
-    }
-
-    fun setX(x: Int) = apply {
-        this.x = x
-        return this
-    }
-
-    fun setY(y: Int) = apply {
-        this.y = y
-        return this
-    }
-
-    operator fun plus(vector: Vector2i) = apply {
-        x += vector.x
-        y += vector.y
-        return this
-    }
-
-    operator fun minus(vector: Vector2i) = apply {
-        x -= vector.x
-        y -= vector.y
-        return this
     }
 
     fun multiply(vector: Vector2i) = apply {
         x *= vector.x
         y *= vector.y
-        return this
     }
 
-    operator fun div(vector: Vector2i) = apply {
+    fun multiply(vector: MutableVector2i) = apply {
+        x *= vector.x
+        y *= vector.y
+    }
+
+    fun divide(a: Int) = apply {
+        x /= a
+        y /= a
+    }
+
+    fun divide(vector: Vector2i) = apply {
         x /= vector.x
         y /= vector.y
-        return this
     }
 
-    fun set(a: Vector2i) = apply {
-        setX(a.x)
-        setY(a.y)
-        return this
+    fun divide(vector: MutableVector2i) = apply {
+        x /= vector.x
+        y /= vector.y
     }
-
-    fun now(): Vector2i = Vector2i(x, y)
 
     fun set(map: ReadTagMutableMap) {
         map["X"]?.toInt()?.let { x = it }
