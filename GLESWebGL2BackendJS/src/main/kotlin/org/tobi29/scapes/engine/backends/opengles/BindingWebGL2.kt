@@ -244,7 +244,7 @@ actual inline fun GLESHandle.glTexSubImage2D(
     type: Int,
     pixels: ByteViewRO
 ) {
-    val data = pixels?.asDataView()
+    val data = pixels.asDataView()
     val buffer = when (type) {
         GL_UNSIGNED_BYTE -> data?.let {
             Uint8Array(data.buffer, data.byteOffset, data.byteLength)
