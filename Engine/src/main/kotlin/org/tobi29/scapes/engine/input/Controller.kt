@@ -128,12 +128,12 @@ interface ControllerKeyboardState : ControllerButtonsState {
     val isModifierDown: Boolean
 }
 
-interface ControllerJoystick : Controller {
+interface ControllerAxes : Controller {
     val axes: DoubleArraySliceRO
 }
 
-interface ControllerJoystickState : ControllerState {
-    override val controller: ControllerJoystick
+interface ControllerAxesState : ControllerState {
+    override val controller: ControllerAxes
 
     val axes: DoubleArraySliceRO
 }
@@ -166,14 +166,23 @@ class ControllerDesktopState(
     override val isModifierDown = controller.isModifierDown
 }
 
-abstract class ControllerGamepad : ControllerJoystick,
-        ControllerButtons
+abstract class ControllerJoystick : ControllerAxes,
+        ControllerButtons {
+    open val type: Type get() = Type.UNKNOWN
 
-inline fun ControllerGamepad.now() = ControllerGamepadState(this)
+    enum class Type {
+        UNKNOWN,
+        GAMEPAD,
+        STEERING_WHEEL,
+        JOYSTICK
+    }
+}
 
-class ControllerGamepadState(
-        override val controller: ControllerGamepad
-) : ControllerJoystickState,
+inline fun ControllerJoystick.now() = ControllerJoystickState(this)
+
+class ControllerJoystickState(
+        override val controller: ControllerJoystick
+) : ControllerAxesState,
         ControllerButtonsState {
     override val pressed = controller.pressed.toSet().readOnly()
 

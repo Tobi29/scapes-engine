@@ -236,6 +236,8 @@ class ControllerKey private constructor(val name: String,
         val BUTTON_TRIGGER_RIGHT = of("BUTTON_TRIGGER_RIGHT", "Right Trigger")
         val BUTTON_START = of("BUTTON_START", "Start")
         val BUTTON_SELECT = of("BUTTON_SELECT", "Select")
+        val BUTTON_BACK = of("BUTTON_BACK", "Back")
+        val BUTTON_GUIDE = of("BUTTON_GUIDE", "Guide")
         val BUTTON_OPTIONS = of("BUTTON_OPTIONS", "Options")
         val BUTTON_SHARE = of("BUTTON_SHARE", "Share")
         val BUTTON_THUMB_LEFT = of("BUTTON_THUMB_LEFT", "Left Thumb")
@@ -313,4 +315,13 @@ class ControllerKey private constructor(val name: String,
 
         fun axisNegative(i: Int) = AXES_NEG.getOrNull(i)
     }
+}
+
+object ControllerAxis {
+    val X_LEFT = 0
+    val X_RIGHT = 3
+    val Y_LEFT = 1
+    val Y_RIGHT = 4
+    val TRIGGER_LEFT = 2
+    val TRIGGER_RIGHT = 5
 }

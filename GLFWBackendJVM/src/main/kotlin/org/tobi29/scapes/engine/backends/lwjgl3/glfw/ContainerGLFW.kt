@@ -30,7 +30,7 @@ import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.*
 import org.tobi29.scapes.engine.backends.lwjgl3.ContainerLWJGL3
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerDesktop
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerGamepad
+import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerJoystick
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllers
 import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWKeyMap
 import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
@@ -56,8 +56,8 @@ class ContainerGLFW(
     override var containerHeight = 0
         private set
     private val controllerDesktop = GLFWControllerDesktop()
-    private val virtualJoysticks =
-        ConcurrentHashMap<Int, GLFWControllerGamepad>()
+    private val joysticks =
+        ConcurrentHashMap<Int, GLFWControllerJoystick>()
     private val errorFun = GLFWErrorCallback.createPrint()
     internal var window = 0L
         private set
@@ -92,7 +92,7 @@ class ContainerGLFW(
     }
 
     fun run(engine: ScapesEngine) {
-        val controllers = GLFWControllers(engine.events, virtualJoysticks)
+        val controllers = GLFWControllers(engine.events, joysticks)
         val windowSizeFun = GLFWWindowSizeCallback.create { _, width, height ->
             containerWidth = (width * density).roundToInt()
             containerHeight = (height * density).roundToInt()
@@ -178,6 +178,7 @@ class ContainerGLFW(
             refreshRate = Companion.refreshRate(window) ?: 60
         }
         GLFW.glfwSetMonitorCallback(monitorFun)
+        controllers.init()
         val latencyDebug = engine.debugValues["Input-Latency"]
         val plebSyncDebug = engine.debugValues["PlebSync™-Sleep"]
         var plebSync = 0L
@@ -342,6 +343,7 @@ class ContainerGLFW(
         engine.graphics.dispose(gl)
         GLFW.glfwDestroyWindow(window)
         GLFW.glfwTerminate()
+        controllers.dispose()
         windowSizeFun.close()
         windowCloseFun.close()
         windowFocusFun.close()
@@ -351,6 +353,7 @@ class ContainerGLFW(
         mouseButtonFun.close()
         cursorPosFun.close()
         scrollFun.close()
+        monitorFun.close()
     }
 
     override fun stop() {

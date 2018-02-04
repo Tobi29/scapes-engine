@@ -23,7 +23,7 @@ import org.tobi29.utils.listenAlive
 
 class GuiControllerGamepad(
         engine: ScapesEngine,
-        private val controller: ControllerGamepad,
+        private val controller: ControllerJoystick,
         private val primaryButton: ControllerKeyReference?,
         private val secondaryButton: ControllerKeyReference?,
         private val upButton: ControllerKeyReference?,

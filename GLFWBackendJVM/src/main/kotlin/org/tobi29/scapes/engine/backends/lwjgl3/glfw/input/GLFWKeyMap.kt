@@ -17,10 +17,16 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
 
 import org.lwjgl.glfw.GLFW
+import org.tobi29.scapes.engine.input.ControllerAxis
 import org.tobi29.scapes.engine.input.ControllerKey
 
 object GLFWKeyMap {
-    private val KEYS = arrayOfNulls<ControllerKey>(GLFW.GLFW_KEY_LAST + 1)
+    private val KEYS =
+        arrayOfNulls<ControllerKey>(GLFW.GLFW_KEY_LAST + 1)
+    private val GAMEPAD_AXES =
+        IntArray(GLFW.GLFW_GAMEPAD_AXIS_LAST + 1) { -1 }
+    private val GAMEPAD_BUTTONS =
+        arrayOfNulls<ControllerKey>(GLFW.GLFW_GAMEPAD_BUTTON_LAST + 1)
 
     init {
         KEYS[GLFW.GLFW_KEY_SPACE] = ControllerKey.KEY_SPACE
@@ -71,10 +77,8 @@ object GLFWKeyMap {
         KEYS[GLFW.GLFW_KEY_BACKSLASH] = ControllerKey.KEY_BACKSLASH
         KEYS[GLFW.GLFW_KEY_RIGHT_BRACKET] = ControllerKey.KEY_BRACKET_RIGHT
         KEYS[GLFW.GLFW_KEY_GRAVE_ACCENT] = ControllerKey.KEY_GRAVE_ACCENT
-        KEYS[GLFW.GLFW_KEY_WORLD_1] = c(
-                "KEY_WORLD_1", "World 1")
-        KEYS[GLFW.GLFW_KEY_WORLD_2] = c(
-                "KEY_WORLD_2", "World 2")
+        KEYS[GLFW.GLFW_KEY_WORLD_1] = c("KEY_WORLD_1", "World 1")
+        KEYS[GLFW.GLFW_KEY_WORLD_2] = c("KEY_WORLD_2", "World 2")
         KEYS[GLFW.GLFW_KEY_ESCAPE] = ControllerKey.KEY_ESCAPE
         KEYS[GLFW.GLFW_KEY_ENTER] = ControllerKey.KEY_ENTER
         KEYS[GLFW.GLFW_KEY_TAB] = ControllerKey.KEY_TAB
@@ -145,11 +149,53 @@ object GLFWKeyMap {
         KEYS[GLFW.GLFW_KEY_RIGHT_ALT] = ControllerKey.KEY_ALT_RIGHT
         KEYS[GLFW.GLFW_KEY_RIGHT_SUPER] = ControllerKey.KEY_SUPER_RIGHT
         KEYS[GLFW.GLFW_KEY_MENU] = ControllerKey.KEY_MENU
+
+        GAMEPAD_AXES[GLFW.GLFW_GAMEPAD_AXIS_LEFT_X] = ControllerAxis.X_LEFT
+        GAMEPAD_AXES[GLFW.GLFW_GAMEPAD_AXIS_LEFT_Y] = ControllerAxis.Y_LEFT
+        GAMEPAD_AXES[GLFW.GLFW_GAMEPAD_AXIS_RIGHT_X] = ControllerAxis.X_RIGHT
+        GAMEPAD_AXES[GLFW.GLFW_GAMEPAD_AXIS_RIGHT_Y] = ControllerAxis.Y_RIGHT
+        GAMEPAD_AXES[GLFW.GLFW_GAMEPAD_AXIS_LEFT_TRIGGER] =
+                ControllerAxis.TRIGGER_LEFT
+        GAMEPAD_AXES[GLFW.GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER] =
+                ControllerAxis.TRIGGER_RIGHT
+
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_A] = ControllerKey.BUTTON_A
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_B] = ControllerKey.BUTTON_B
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_X] = ControllerKey.BUTTON_X
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_Y] = ControllerKey.BUTTON_Y
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_LEFT_BUMPER] =
+                ControllerKey.BUTTON_BUMPER_LEFT
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] =
+                ControllerKey.BUTTON_BUMPER_RIGHT
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_BACK] =
+                ControllerKey.BUTTON_BACK
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_START] =
+                ControllerKey.BUTTON_START
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_GUIDE] =
+                ControllerKey.BUTTON_GUIDE
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_LEFT_THUMB] =
+                ControllerKey.BUTTON_THUMB_LEFT
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_RIGHT_THUMB] =
+                ControllerKey.BUTTON_THUMB_RIGHT
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_DPAD_UP] =
+                ControllerKey.BUTTON_DPAD_UP
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_DPAD_RIGHT] =
+                ControllerKey.BUTTON_DPAD_RIGHT
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_DPAD_DOWN] =
+                ControllerKey.BUTTON_DPAD_DOWN
+        GAMEPAD_BUTTONS[GLFW.GLFW_GAMEPAD_BUTTON_DPAD_LEFT] =
+                ControllerKey.BUTTON_DPAD_LEFT
     }
 
     fun key(id: Int) = KEYS.getOrNull(id)
 
-    private fun c(name: String,
-                  humanName: String) =
-            ControllerKey.of("GLFW_$name", "$humanName (GLFW)")
+    fun gamepadAxis(id: Int) = GAMEPAD_AXES.getOrElse(id) { -1 }
+
+    fun gamepadButton(id: Int) = GAMEPAD_BUTTONS.getOrNull(id)
+
+    private fun c(
+        name: String,
+        humanName: String
+    ) =
+        ControllerKey.of("GLFW_$name", "$humanName (GLFW)")
 }
