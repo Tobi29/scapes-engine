@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
+import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL11
@@ -365,7 +366,7 @@ class ContainerGLFW(
     }
 
     override fun clipboardPaste(): String {
-        return GLFW.glfwGetClipboardString(window)
+        return GLFW.glfwGetClipboardString(window) ?: ""
     }
 
     override fun message(
@@ -421,8 +422,8 @@ class ContainerGLFW(
             logger.info { "Creating GLFW window..." }
             val monitor = GLFW.glfwGetPrimaryMonitor()
             val videoMode = GLFW.glfwGetVideoMode(monitor)
-            val monitorWidth = videoMode.width()
-            val monitorHeight = videoMode.height()
+            val monitorWidth = videoMode?.width() ?: 1280
+            val monitorHeight = videoMode?.height() ?: 720
             val window = if (useGLES) {
                 GLFW.glfwDefaultWindowHints()
                 initContextGLES()
@@ -537,26 +538,25 @@ class ContainerGLFW(
         private fun refreshRate(window: Long): Int? {
             val monitor = GLFW.glfwGetWindowMonitor(window)
             if (monitor != 0L) {
-                return GLFW.glfwGetVideoMode(monitor).refreshRate()
-            }
-            val monitors = GLFW.glfwGetMonitors()
-            if (!monitors.hasRemaining()) {
-                return null
+                return GLFW.glfwGetVideoMode(monitor)?.refreshRate() ?: 60
             }
             // We use the maximum refresh rate to avoid slowing rendering in
             // case of different rates
             // GLFW sadly does not seem to support fetching the current monitor
             // of non-fullscreen windows
-            val firstMonitor = monitors.get()
-            var refreshRate = GLFW.glfwGetVideoMode(firstMonitor).refreshRate()
-            while (monitors.hasRemaining()) {
-                val otherMonitor = monitors.get()
-                val otherRefreshRate = GLFW.glfwGetVideoMode(
-                    otherMonitor
-                ).refreshRate()
-                refreshRate = max(refreshRate, otherRefreshRate)
+            val monitors = GLFW.glfwGetMonitors() ?: return null
+            return monitors.iterator().asSequence().mapNotNull {
+                GLFW.glfwGetVideoMode(monitors.get())
+            }.maxBy { it.refreshRate() }?.refreshRate()
+        }
+
+        private fun PointerBuffer.iterator() = object : Iterator<Long> {
+            override fun hasNext() = hasRemaining()
+
+            override fun next(): Long {
+                if (!hasNext()) throw NoSuchElementException()
+                return get()
             }
-            return refreshRate
         }
     }
 }

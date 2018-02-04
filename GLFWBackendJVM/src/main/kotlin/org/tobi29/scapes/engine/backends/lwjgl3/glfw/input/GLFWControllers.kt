@@ -55,7 +55,9 @@ internal class GLFWControllers(
                     updateState(joystick, state.axes(), state.buttons())
                 } else {
                     val axes = GLFW.glfwGetJoystickAxes(jid)
+                            ?: throw IllegalArgumentException("Failed getting axes of joystick")
                     val buttons = GLFW.glfwGetJoystickButtons(jid)
+                            ?: throw IllegalArgumentException("Failed getting buttons of joystick")
                     updateState(joystick, axes, buttons)
                 }
             }
@@ -72,13 +74,16 @@ internal class GLFWControllers(
     private fun connected(jid: Int) {
         val joystick = if (GLFW.glfwJoystickIsGamepad(jid)) {
             val name = GLFW.glfwGetGamepadName(jid)
+                    ?: throw IllegalArgumentException("Failed getting name of gamepad")
             val gamepad =
                 GLFWControllerGamepad(name, GLFW.GLFW_GAMEPAD_AXIS_LAST + 1)
             logger.info { "Connected gamepad $jid \"${gamepad.name}\"" }
             gamepad
         } else {
             val name = GLFW.glfwGetJoystickName(jid)
+                    ?: throw IllegalArgumentException("Failed getting name of joystick")
             val axes = GLFW.glfwGetJoystickAxes(jid)
+                    ?: throw IllegalArgumentException("Failed getting axes of joystick")
             val joystick = GLFWControllerJoystick(name, axes.capacity())
             logger.info { "Connected joystick $jid \"${joystick.name}\" with ${joystick.axes.size} axes" }
             joystick
