@@ -24,8 +24,9 @@ package org.tobi29.math.vector
  * @param transform Called on each value to form the new vector
  * @return A new vector containing the transformed values
  */
-inline fun Vector2i.map(transform: (Int) -> Int): Vector2i =
-        Vector2i(transform(x), transform(y))
+inline fun ReadVector2i.map(
+    transform: (Int) -> Int
+): Vector2i = Vector2i(transform(x), transform(y))
 
 /**
  * Maps all values of two given vectors into a new one
@@ -34,9 +35,10 @@ inline fun Vector2i.map(transform: (Int) -> Int): Vector2i =
  * @param transform Called on each value to form the new vector
  * @return A new vector containing the transformed values
  */
-inline fun Vector2i.map(other: Vector2i,
-                        transform: (Int, Int) -> Int): Vector2i =
-        Vector2i(transform(x, other.x), transform(y, other.y))
+inline fun ReadVector2i.map(
+    other: ReadVector2i,
+    transform: (Int, Int) -> Int
+): Vector2i = Vector2i(transform(x, other.x), transform(y, other.y))
 
 /**
  * Maps all values of the given vector into a new one
@@ -44,8 +46,9 @@ inline fun Vector2i.map(other: Vector2i,
  * @param transform Called on each value to form the new vector
  * @return A new vector containing the transformed values
  */
-inline fun Vector2i.mapToDouble(transform: (Int) -> Double): Vector2d =
-        Vector2d(transform(x), transform(y))
+inline fun ReadVector2i.mapToDouble(
+    transform: (Int) -> Double
+): Vector2d = Vector2d(transform(x), transform(y))
 
 /**
  * Maps all values of two given vectors into a new one
@@ -54,9 +57,10 @@ inline fun Vector2i.mapToDouble(transform: (Int) -> Double): Vector2d =
  * @param transform Called on each value to form the new vector
  * @return A new vector containing the transformed values
  */
-inline fun Vector2i.mapToDouble(other: Vector2i,
-                                transform: (Int, Int) -> Double): Vector2d =
-        Vector2d(transform(x, other.x), transform(y, other.y))
+inline fun ReadVector2i.mapToDouble(
+    other: ReadVector2i,
+    transform: (Int, Int) -> Double
+): Vector2d = Vector2d(transform(x, other.x), transform(y, other.y))
 
 /**
  * Returns the sum of the given vector and [a]
@@ -64,8 +68,8 @@ inline fun Vector2i.mapToDouble(other: Vector2i,
  * @param a The second value
  * @return A new vector containing the sum
  */
-inline operator fun Vector2i.plus(a: Int): Vector2i =
-        map { it + a }
+inline operator fun ReadVector2i.plus(a: Int): Vector2i =
+    map { it + a }
 
 /**
  * Returns the difference between the given vector and [a]
@@ -73,8 +77,8 @@ inline operator fun Vector2i.plus(a: Int): Vector2i =
  * @param a The second value
  * @return A new vector containing the difference
  */
-inline operator fun Vector2i.minus(a: Int): Vector2i =
-        map { it - a }
+inline operator fun ReadVector2i.minus(a: Int): Vector2i =
+    map { it - a }
 
 /**
  * Returns the product of the given vector and [a]
@@ -82,8 +86,8 @@ inline operator fun Vector2i.minus(a: Int): Vector2i =
  * @param a The second value
  * @return A new vector containing the product
  */
-inline operator fun Vector2i.times(a: Int): Vector2i =
-        map { it * a }
+inline operator fun ReadVector2i.times(a: Int): Vector2i =
+    map { it * a }
 
 /**
  * Returns the quotient of the given vector and [a]
@@ -91,8 +95,8 @@ inline operator fun Vector2i.times(a: Int): Vector2i =
  * @param a The second value
  * @return A new vector containing the quotient
  */
-inline operator fun Vector2i.div(a: Int): Vector2i =
-        map { it / a }
+inline operator fun ReadVector2i.div(a: Int): Vector2i =
+    map { it / a }
 
 /**
  * Returns the sum of the given vector and [other]
@@ -100,8 +104,8 @@ inline operator fun Vector2i.div(a: Int): Vector2i =
  * @param other The second vector
  * @return A new vector containing the sum
  */
-inline operator fun Vector2i.plus(other: Vector2i): Vector2i =
-        map(other) { a, b -> a + b }
+inline operator fun ReadVector2i.plus(other: ReadVector2i): Vector2i =
+    map(other) { a, b -> a + b }
 
 /**
  * Returns the difference between the given vector and [other]
@@ -109,8 +113,8 @@ inline operator fun Vector2i.plus(other: Vector2i): Vector2i =
  * @param other The second vector
  * @return A new vector containing the difference
  */
-inline operator fun Vector2i.minus(other: Vector2i): Vector2i =
-        map(other) { a, b -> a - b }
+inline operator fun ReadVector2i.minus(other: ReadVector2i): Vector2i =
+    map(other) { a, b -> a - b }
 
 /**
  * Returns the product of the given vector and [other]
@@ -118,8 +122,8 @@ inline operator fun Vector2i.minus(other: Vector2i): Vector2i =
  * @param other The second vector
  * @return A new vector containing the product
  */
-inline operator fun Vector2i.times(other: Vector2i): Vector2i =
-        map(other) { a, b -> a * b }
+inline operator fun ReadVector2i.times(other: ReadVector2i): Vector2i =
+    map(other) { a, b -> a * b }
 
 /**
  * Returns the quotient of the given vector and [other]
@@ -127,8 +131,8 @@ inline operator fun Vector2i.times(other: Vector2i): Vector2i =
  * @param other The second vector
  * @return A new vector containing the quotient
  */
-inline operator fun Vector2i.div(other: Vector2i): Vector2i =
-        map(other) { a, b -> a / b }
+inline operator fun ReadVector2i.div(other: ReadVector2i): Vector2i =
+    map(other) { a, b -> a / b }
 
 /**
  * Returns the length of the given vector
@@ -136,16 +140,16 @@ inline operator fun Vector2i.div(other: Vector2i): Vector2i =
  * @return Length of the given vector
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun Vector2i.length(): Double =
-        length(x.toDouble(), y.toDouble())
+/*inline*/ fun ReadVector2i.length(): Double =
+    length(x.toDouble(), y.toDouble())
 
 /**
  * Returns square of the length of the given vector
  * @receiver The vector to use
  * @return Square of the length of the given vector
  */
-inline fun Vector2i.lengthSqr(): Int =
-        lengthSqr(x, y)
+inline fun ReadVector2i.lengthSqr(): Int =
+    lengthSqr(x, y)
 
 /**
  * Returns the distance between the given vectors
@@ -154,9 +158,11 @@ inline fun Vector2i.lengthSqr(): Int =
  * @return Distance between the given vectors
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ infix fun Vector2i.distance(other: Vector2i): Double =
-        distance(x.toDouble(), y.toDouble(),
-                other.x.toDouble(), other.y.toDouble())
+/*inline*/ infix fun ReadVector2i.distance(other: ReadVector2i): Double =
+    distance(
+        x.toDouble(), y.toDouble(),
+        other.x.toDouble(), other.y.toDouble()
+    )
 
 /**
  * Returns square of the distance between the given vectors
@@ -164,8 +170,8 @@ inline fun Vector2i.lengthSqr(): Int =
  * @param other The second vector
  * @return Square of the distance between the given vectors
  */
-inline infix fun Vector2i.distanceSqr(other: Vector2i): Int =
-        distanceSqr(x, y, other.x, other.y)
+inline infix fun ReadVector2i.distanceSqr(other: ReadVector2i): Int =
+    distanceSqr(x, y, other.x, other.y)
 
 /**
  * Returns the direction between `(1,0)`, the given vector and [other]
@@ -174,9 +180,11 @@ inline infix fun Vector2i.distanceSqr(other: Vector2i): Int =
  * @return The direction in radians
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun Vector2i.direction(other: Vector2i): Double =
-        direction(x.toDouble(), y.toDouble(),
-                other.x.toDouble(), other.y.toDouble())
+/*inline*/ fun ReadVector2i.direction(other: ReadVector2i): Double =
+    direction(
+        x.toDouble(), y.toDouble(),
+        other.x.toDouble(), other.y.toDouble()
+    )
 
 /**
  * Returns the direction between `(1,0)`, `(0,0)` and the given vector
@@ -184,8 +192,8 @@ inline infix fun Vector2i.distanceSqr(other: Vector2i): Int =
  * @return The direction in radians
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun Vector2i.direction(): Double =
-        direction(x.toDouble(), y.toDouble())
+/*inline*/ fun ReadVector2i.direction(): Double =
+    direction(x.toDouble(), y.toDouble())
 
 /**
  * Returns the dot product of the given vectors
@@ -193,8 +201,8 @@ inline infix fun Vector2i.distanceSqr(other: Vector2i): Int =
  * @param other The second vector
  * @return Dot product of the given vectors
  */
-inline infix fun Vector2i.dot(other: Vector2i): Int =
-        dot(x, y, other.x, other.y)
+inline infix fun ReadVector2i.dot(other: ReadVector2i): Int =
+    dot(x, y, other.x, other.y)
 
 /**
  * Checks if [point] is inside the region [origin] and [size]
@@ -203,8 +211,11 @@ inline infix fun Vector2i.dot(other: Vector2i): Int =
  * @param point The point to check
  * @return True if the point is inside, inclusive on lower end, exclusive on greater
  */
-inline fun inside(origin: Vector2i,
-                  size: Vector2i,
-                  point: Vector2i): Boolean =
-        inside(origin.x.toDouble(), origin.y.toDouble(), size.x.toDouble(),
-                size.y.toDouble(), point.x.toDouble(), point.y.toDouble())
+inline fun inside(
+    origin: ReadVector2i,
+    size: ReadVector2i,
+    point: ReadVector2i
+): Boolean = inside(
+    origin.x.toDouble(), origin.y.toDouble(), size.x.toDouble(),
+    size.y.toDouble(), point.x.toDouble(), point.y.toDouble()
+)

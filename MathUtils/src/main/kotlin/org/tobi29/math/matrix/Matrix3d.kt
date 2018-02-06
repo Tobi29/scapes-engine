@@ -16,6 +16,7 @@
 package org.tobi29.math.matrix
 
 import org.tobi29.arrays.DoubleArray2
+import org.tobi29.arrays.Doubles2
 import org.tobi29.math.cosTable
 import org.tobi29.math.sinTable
 import org.tobi29.math.vector.MutableVector3d
@@ -26,29 +27,26 @@ import org.tobi29.stdex.math.toRad
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Matrix3d() {
+class Matrix3d() : Doubles2 {
     val values = DoubleArray(9)
     private val values2 = DoubleArray2(3, 3, values)
 
-    constructor(xx: Double,
-                xy: Double,
-                xz: Double,
-                yx: Double,
-                yy: Double,
-                yz: Double,
-                zx: Double,
-                zy: Double,
-                zz: Double) : this() {
+    constructor(
+        xx: Double, xy: Double, xz: Double,
+        yx: Double, yy: Double, yz: Double,
+        zx: Double, zy: Double, zz: Double
+    ) : this() {
         set(xx, xy, xz, yx, yy, yz, zx, zy, zz)
     }
 
-    operator fun get(x: Int,
-                     y: Int) = values2[y, x]
+    override val width: Int get() = 3
+    override val height: Int get() = 3
 
-    operator fun set(x: Int,
-                     y: Int,
-                     value: Double) {
-        values2[y, x] = value
+    override fun get(index1: Int, index2: Int): Double =
+        values2[index2, index1]
+
+    override fun set(index1: Int, index2: Int, value: Double) {
+        values2[index2, index1] = value
     }
 
     fun set(matrix: Matrix3d) {
@@ -57,15 +55,11 @@ class Matrix3d() {
 
     fun identity() = set(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
 
-    fun set(xx: Double,
-            xy: Double,
-            xz: Double,
-            yx: Double,
-            yy: Double,
-            yz: Double,
-            zx: Double,
-            zy: Double,
-            zz: Double) {
+    fun set(
+        xx: Double, xy: Double, xz: Double,
+        yx: Double, yy: Double, yz: Double,
+        zx: Double, zy: Double, zz: Double
+    ) {
         values[0] = xx
         values[1] = yx
         values[2] = zx
@@ -77,9 +71,7 @@ class Matrix3d() {
         values[8] = zz
     }
 
-    fun scale(x: Double,
-              y: Double,
-              z: Double) {
+    fun scale(x: Double, y: Double, z: Double) {
         for (i in 0..2) {
             values[i] = values[i] * x
         }
@@ -91,43 +83,42 @@ class Matrix3d() {
         }
     }
 
-    fun rotate(angle: Double,
-               x: Double,
-               y: Double,
-               z: Double) {
+    fun rotate(
+        angle: Double,
+        x: Double, y: Double, z: Double
+    ) {
         rotateRad(angle.toRad(), x, y, z)
     }
 
-    fun rotateRad(angle: Double,
-                  x: Double,
-                  y: Double,
-                  z: Double) {
+    fun rotateRad(
+        angle: Double,
+        x: Double, y: Double, z: Double
+    ) {
         val cos = cosTable(angle)
         val sin = sinTable(angle)
         rotate(cos, sin, x, y, z)
     }
 
-    fun rotateAccurate(angle: Double,
-                       x: Double,
-                       y: Double,
-                       z: Double) {
+    fun rotateAccurate(
+        angle: Double,
+        x: Double, y: Double, z: Double
+    ) {
         rotateAccurateRad(angle.toRad(), x, y, z)
     }
 
-    fun rotateAccurateRad(angle: Double,
-                          x: Double,
-                          y: Double,
-                          z: Double) {
+    fun rotateAccurateRad(
+        angle: Double,
+        x: Double, y: Double, z: Double
+    ) {
         val cos = cos(angle)
         val sin = sin(angle)
         rotate(cos, sin, x, y, z)
     }
 
-    private fun rotate(cos: Double,
-                       sin: Double,
-                       x: Double,
-                       y: Double,
-                       z: Double) {
+    private fun rotate(
+        cos: Double, sin: Double,
+        x: Double, y: Double, z: Double
+    ) {
         val oneMinusCos = 1.0 - cos
         val mxy = x * y
         val myz = y * z
@@ -170,8 +161,7 @@ class Matrix3d() {
         yz = t12
     }
 
-    fun multiply(o: Matrix3d,
-                 d: Matrix3d) {
+    fun multiply(o: Matrix3d, d: Matrix3d) {
         val v00 = xx
         val v01 = xy
         val v02 = xz
@@ -202,11 +192,14 @@ class Matrix3d() {
     }
 
     fun multiply(v: Vector3d): Vector3d =
-            matrix3dMultiply(xx, xy, xz, yx, yy, yz, zx, zy, zz, v.x, v.y, v.z,
-                    ::Vector3d)
+        matrix3dMultiply(
+            xx, xy, xz, yx, yy, yz, zx, zy, zz, v.x, v.y, v.z,
+            ::Vector3d
+        )
 
-    fun multiply(v: MutableVector3d,
-                 out: MutableVector3d = v): MutableVector3d {
+    fun multiply(
+        v: MutableVector3d, out: MutableVector3d = v
+    ): MutableVector3d {
         val x = v.x
         val y = v.y
         val z = v.z
@@ -227,21 +220,16 @@ class Matrix3d() {
 }
 
 inline fun <R> matrix3dMultiply(
-        xx: Double,
-        xy: Double,
-        xz: Double,
-        yx: Double,
-        yy: Double,
-        yz: Double,
-        zx: Double,
-        zy: Double,
-        zz: Double,
-        x: Double,
-        y: Double,
-        z: Double,
-        output: (Double, Double, Double) -> R): R =
-        output(dot(xx, yx, zx, x, y, z), dot(xy, yy, zy, x, y, z),
-                dot(xz, yz, zz, x, y, z))
+    xx: Double, xy: Double, xz: Double,
+    yx: Double, yy: Double, yz: Double,
+    zx: Double, zy: Double, zz: Double,
+    x: Double, y: Double, z: Double,
+    output: (Double, Double, Double) -> R
+): R = output(
+    dot(xx, yx, zx, x, y, z),
+    dot(xy, yy, zy, x, y, z),
+    dot(xz, yz, zz, x, y, z)
+)
 
 inline var Matrix3d.xx: Double
     get() = get(0, 0)

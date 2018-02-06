@@ -20,18 +20,17 @@ import org.tobi29.arrays.IntsRO
 import org.tobi29.io.tag.*
 import kotlin.collections.set
 
-data class Vector3i(
-        val x: Int,
-        val y: Int,
-        val z: Int
-) : IntsRO,
-        TagMapWrite {
+interface ReadVector3i : IntsRO, TagMapWrite {
+    val x: Int
+    val y: Int
+    val z: Int
+
     override val size: Int get() = 3
 
     override fun get(index: Int): Int = when (index) {
         0 -> x
         1 -> y
-        2 -> z
+        2 -> y
         else -> throw IndexOutOfBoundsException("$index")
     }
 
@@ -40,7 +39,13 @@ data class Vector3i(
         map["Y"] = y.toTag()
         map["Z"] = z.toTag()
     }
+}
 
+data class Vector3i(
+    override val x: Int,
+    override val y: Int,
+    override val z: Int
+) : ReadVector3i {
     override fun toString() = "$x $y $z"
 
     companion object {

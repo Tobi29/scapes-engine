@@ -21,24 +21,15 @@ import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toInt
 
 data class MutableVector3i(
-    var x: Int = 0,
-    var y: Int = 0,
-    var z: Int = 0
-) : Ints {
+    override var x: Int = 0,
+    override var y: Int = 0,
+    override var z: Int = 0
+) : ReadVector3i, Ints {
     constructor(vector: Vector3i) : this(vector.x, vector.y, vector.z)
 
     constructor(vector: MutableVector3i) : this(vector.x, vector.y, vector.z)
 
-    override val size: Int get() = 3
-
     fun now(): Vector3i = Vector3i(x, y, z)
-
-    override fun get(index: Int): Int = when (index) {
-        0 -> x
-        1 -> y
-        2 -> z
-        else -> throw IndexOutOfBoundsException("$index")
-    }
 
     override fun set(
         index: Int,

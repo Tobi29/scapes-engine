@@ -22,14 +22,10 @@ import org.tobi29.arrays.DoublesRO
 import org.tobi29.io.tag.*
 import kotlin.collections.set
 
-data class Vector3d(
-        val x: Double,
-        val y: Double,
-        val z: Double
-) : DoublesRO,
-        TagMapWrite {
-    constructor(vector: Vector3i) : this(vector.x.toDouble(),
-            vector.y.toDouble(), vector.z.toDouble())
+interface ReadVector3d : DoublesRO, TagMapWrite {
+    val x: Double
+    val y: Double
+    val z: Double
 
     override val size: Int get() = 3
 
@@ -45,6 +41,16 @@ data class Vector3d(
         map["Y"] = y.toTag()
         map["Z"] = z.toTag()
     }
+}
+
+data class Vector3d(
+    override val x: Double,
+    override val y: Double,
+    override val z: Double
+) : ReadVector3d {
+    constructor(vector: Vector3i) : this(
+        vector.x.toDouble(), vector.y.toDouble(), vector.z.toDouble()
+    )
 
     override fun toString() = "$x $y $z"
 
@@ -54,7 +60,7 @@ data class Vector3d(
 }
 
 inline fun Vector3d.hasNaN(): Boolean =
-        x.isNaN() || y.isNaN() || z.isNaN()
+    x.isNaN() || y.isNaN() || z.isNaN()
 
 fun MutableTag.toVector3d(): Vector3d? {
     val map = toMap() ?: return null

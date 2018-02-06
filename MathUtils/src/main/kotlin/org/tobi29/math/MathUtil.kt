@@ -18,10 +18,7 @@
 
 package org.tobi29.math
 
-import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.Vector2i
-import org.tobi29.math.vector.Vector3d
-import org.tobi29.math.vector.Vector3i
+import org.tobi29.math.vector.*
 import org.tobi29.stdex.math.clamp
 import kotlin.math.abs
 import kotlin.math.max
@@ -32,7 +29,7 @@ import kotlin.math.min
  * @param value The value
  * @return [Vector2d] with absolute values of [value]
  */
-inline fun abs(value: Vector2d): Vector2d {
+inline fun abs(value: ReadVector2d): Vector2d {
     return Vector2d(abs(value.x), abs(value.y))
 }
 
@@ -41,7 +38,7 @@ inline fun abs(value: Vector2d): Vector2d {
  * @param value The value
  * @return [Vector3d] with absolute values of [value]
  */
-inline fun abs(value: Vector3d): Vector3d {
+inline fun abs(value: ReadVector3d): Vector3d {
     return Vector3d(abs(value.x), abs(value.y), abs(value.z))
 }
 
@@ -50,7 +47,7 @@ inline fun abs(value: Vector3d): Vector3d {
  * @param value The values
  * @return Smallest value in [value]
  */
-inline fun min(value: Vector2d): Double {
+inline fun min(value: ReadVector2d): Double {
     return min(value.x, value.y)
 }
 
@@ -60,8 +57,8 @@ inline fun min(value: Vector2d): Double {
  * @param value2 The second value
  * @return [Vector2d] with smaller values between [value1] and [value2]
  */
-inline fun min(value1: Vector2d,
-               value2: Vector2d): Vector2d {
+inline fun min(value1: ReadVector2d,
+               value2: ReadVector2d): Vector2d {
     return Vector2d(min(value1.x, value2.x),
             min(value1.y, value2.y))
 }
@@ -72,8 +69,8 @@ inline fun min(value1: Vector2d,
  * @param value2 The second value
  * @return [Vector3d] with smaller values between [value1] and [value2]
  */
-inline fun min(value1: Vector3d,
-               value2: Vector3d): Vector3d {
+inline fun min(value1: ReadVector3d,
+               value2: ReadVector3d): Vector3d {
     return Vector3d(min(value1.x, value2.x),
             min(value1.y, value2.y),
             min(value1.z, value2.z))
@@ -84,7 +81,7 @@ inline fun min(value1: Vector3d,
  * @param value The values
  * @return Smallest value in [value]
  */
-inline fun max(value: Vector2d): Double {
+inline fun max(value: ReadVector2d): Double {
     return max(value.x, value.y)
 }
 
@@ -93,7 +90,7 @@ inline fun max(value: Vector2d): Double {
  * @param value The values
  * @return Smallest value in [value]
  */
-inline fun max(value: Vector3d): Double {
+inline fun max(value: ReadVector3d): Double {
     return max(max(value.x, value.y), value.z)
 }
 
@@ -103,8 +100,8 @@ inline fun max(value: Vector3d): Double {
  * @param value2 The second value
  * @return [Vector2d] with greater values between [value1] and [value2]
  */
-inline fun max(value1: Vector2d,
-               value2: Vector2d): Vector2d {
+inline fun max(value1: ReadVector2d,
+               value2: ReadVector2d): Vector2d {
     return Vector2d(max(value1.x, value2.x),
             max(value1.y, value2.y))
 }
@@ -115,8 +112,8 @@ inline fun max(value1: Vector2d,
  * @param value2 The second value
  * @return [Vector3d] with greater values between [value1] and [value2]
  */
-inline fun max(value1: Vector3d,
-               value2: Vector3d): Vector3d {
+inline fun max(value1: ReadVector3d,
+               value2: ReadVector3d): Vector3d {
     return Vector3d(max(value1.x, value2.x),
             max(value1.y, value2.y),
             max(value1.z, value2.z))
@@ -128,8 +125,8 @@ inline fun max(value1: Vector3d,
  * @param value2 The second value
  * @return [Vector2i] with greater values between [value1] and [value2]
  */
-inline fun max(value1: Vector2i,
-               value2: Vector2i): Vector2i {
+inline fun max(value1: ReadVector2i,
+               value2: ReadVector2i): Vector2i {
     return Vector2i(max(value1.x, value2.x),
             max(value1.y, value2.y))
 }
@@ -140,8 +137,8 @@ inline fun max(value1: Vector2i,
  * @param value2 The second value
  * @return [Vector3i] with greater values between [value1] and [value2]
  */
-inline fun max(value1: Vector3i,
-               value2: Vector3i): Vector3i {
+inline fun max(value1: ReadVector3i,
+               value2: ReadVector3i): Vector3i {
     return Vector3i(max(value1.x, value2.x),
             max(value1.y, value2.y),
             max(value1.z, value2.z))
@@ -153,7 +150,7 @@ inline fun max(value1: Vector3i,
  * @param value The values
  * @return Clamped value of x in [value]
  */
-inline fun clamp(value: Vector3d): Double {
+inline fun clamp(value: ReadVector3d): Double {
     return clamp(value.x, value.y, value.z)
 }
 
@@ -165,9 +162,9 @@ inline fun clamp(value: Vector3d): Double {
  * @param value3 The maximum value
  * @return [Vector2d] with [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: Vector2d,
-                 value2: Vector2d,
-                 value3: Vector2d): Vector2d {
+inline fun clamp(value1: ReadVector2d,
+                 value2: ReadVector2d,
+                 value3: ReadVector2d): Vector2d {
     return Vector2d(clamp(value1.x, value2.x, value3.x),
             clamp(value1.y, value2.y, value3.y))
 }
@@ -180,9 +177,9 @@ inline fun clamp(value1: Vector2d,
  * @param value3 The maximum value
  * @return [Vector3d] with [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: Vector3d,
-                 value2: Vector3d,
-                 value3: Vector3d): Vector3d {
+inline fun clamp(value1: ReadVector3d,
+                 value2: ReadVector3d,
+                 value3: ReadVector3d): Vector3d {
     return Vector3d(clamp(value1.x, value2.x, value3.x),
             clamp(value1.y, value2.y, value3.y),
             clamp(value1.z, value2.z, value3.z))

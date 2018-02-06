@@ -17,293 +17,305 @@
 package org.tobi29.math.vector
 
 // Vector2d
-inline val Vector2d.xx: Vector2d
+inline val ReadVector2d.xx: Vector2d
     get() = Vector2d(x, x)
+
+inline val ReadVector2d.xy: Vector2d
+    get() = Vector2d(x, y)
 
 inline val Vector2d.xy: Vector2d
     get() = this
 
-inline val Vector2d.yx: Vector2d
+inline val ReadVector2d.yx: Vector2d
     get() = Vector2d(y, x)
 
-inline val Vector2d.yy: Vector2d
+inline val ReadVector2d.yy: Vector2d
     get() = Vector2d(y, y)
 
-inline val Vector2d.xxx: Vector3d
+inline val ReadVector2d.xxx: Vector3d
     get() = Vector3d(x, x, x)
 
-inline val Vector2d.xxy: Vector3d
+inline val ReadVector2d.xxy: Vector3d
     get() = Vector3d(x, x, y)
 
-inline val Vector2d.xyx: Vector3d
+inline val ReadVector2d.xyx: Vector3d
     get() = Vector3d(x, y, x)
 
-inline val Vector2d.xyy: Vector3d
+inline val ReadVector2d.xyy: Vector3d
     get() = Vector3d(x, y, y)
 
-inline val Vector2d.yxx: Vector3d
+inline val ReadVector2d.yxx: Vector3d
     get() = Vector3d(y, x, x)
 
-inline val Vector2d.yxy: Vector3d
+inline val ReadVector2d.yxy: Vector3d
     get() = Vector3d(y, x, y)
 
-inline val Vector2d.yyx: Vector3d
+inline val ReadVector2d.yyx: Vector3d
     get() = Vector3d(y, y, x)
 
-inline val Vector2d.yyy: Vector3d
+inline val ReadVector2d.yyy: Vector3d
     get() = Vector3d(y, y, y)
 
 // Vector3d
-inline val Vector3d.xx: Vector2d
+inline val ReadVector3d.xx: Vector2d
     get() = Vector2d(x, x)
 
-inline val Vector3d.xy: Vector2d
+inline val ReadVector3d.xy: Vector2d
     get() = Vector2d(x, y)
 
-inline val Vector3d.xz: Vector2d
+inline val ReadVector3d.xz: Vector2d
     get() = Vector2d(x, z)
 
-inline val Vector3d.yx: Vector2d
+inline val ReadVector3d.yx: Vector2d
     get() = Vector2d(y, x)
 
-inline val Vector3d.yy: Vector2d
+inline val ReadVector3d.yy: Vector2d
     get() = Vector2d(y, y)
 
-inline val Vector3d.yz: Vector2d
+inline val ReadVector3d.yz: Vector2d
     get() = Vector2d(y, z)
 
-inline val Vector3d.zx: Vector2d
+inline val ReadVector3d.zx: Vector2d
     get() = Vector2d(z, x)
 
-inline val Vector3d.zy: Vector2d
+inline val ReadVector3d.zy: Vector2d
     get() = Vector2d(y, z)
 
-inline val Vector3d.zz: Vector2d
+inline val ReadVector3d.zz: Vector2d
     get() = Vector2d(z, z)
 
-inline val Vector3d.xxx: Vector3d
+inline val ReadVector3d.xxx: Vector3d
     get() = Vector3d(x, x, x)
 
-inline val Vector3d.xxy: Vector3d
+inline val ReadVector3d.xxy: Vector3d
     get() = Vector3d(x, x, y)
 
-inline val Vector3d.xxz: Vector3d
+inline val ReadVector3d.xxz: Vector3d
     get() = Vector3d(x, x, z)
 
-inline val Vector3d.xyx: Vector3d
+inline val ReadVector3d.xyx: Vector3d
     get() = Vector3d(x, y, x)
 
-inline val Vector3d.xyy: Vector3d
+inline val ReadVector3d.xyy: Vector3d
     get() = Vector3d(x, y, y)
+
+inline val ReadVector3d.xyz: Vector3d
+    get() = Vector3d(x, y, z)
 
 inline val Vector3d.xyz: Vector3d
     get() = this
 
-inline val Vector3d.xzx: Vector3d
+inline val ReadVector3d.xzx: Vector3d
     get() = Vector3d(x, z, x)
 
-inline val Vector3d.xzy: Vector3d
+inline val ReadVector3d.xzy: Vector3d
     get() = Vector3d(x, y, z)
 
-inline val Vector3d.xzz: Vector3d
+inline val ReadVector3d.xzz: Vector3d
     get() = Vector3d(x, z, z)
 
-inline val Vector3d.yxx: Vector3d
+inline val ReadVector3d.yxx: Vector3d
     get() = Vector3d(y, x, x)
 
-inline val Vector3d.yxy: Vector3d
+inline val ReadVector3d.yxy: Vector3d
     get() = Vector3d(y, x, y)
 
-inline val Vector3d.yxz: Vector3d
+inline val ReadVector3d.yxz: Vector3d
     get() = Vector3d(y, x, z)
 
-inline val Vector3d.yyx: Vector3d
+inline val ReadVector3d.yyx: Vector3d
     get() = Vector3d(y, y, x)
 
-inline val Vector3d.yyy: Vector3d
+inline val ReadVector3d.yyy: Vector3d
     get() = Vector3d(y, y, y)
 
-inline val Vector3d.yyz: Vector3d
+inline val ReadVector3d.yyz: Vector3d
     get() = Vector3d(y, y, z)
 
-inline val Vector3d.yzx: Vector3d
+inline val ReadVector3d.yzx: Vector3d
     get() = Vector3d(y, z, x)
 
-inline val Vector3d.yzy: Vector3d
+inline val ReadVector3d.yzy: Vector3d
     get() = Vector3d(y, y, z)
 
-inline val Vector3d.yzz: Vector3d
+inline val ReadVector3d.yzz: Vector3d
     get() = Vector3d(y, z, z)
 
-inline val Vector3d.zxx: Vector3d
+inline val ReadVector3d.zxx: Vector3d
     get() = Vector3d(z, x, x)
 
-inline val Vector3d.zxy: Vector3d
+inline val ReadVector3d.zxy: Vector3d
     get() = Vector3d(z, x, y)
 
-inline val Vector3d.zxz: Vector3d
+inline val ReadVector3d.zxz: Vector3d
     get() = Vector3d(z, x, z)
 
-inline val Vector3d.zyx: Vector3d
+inline val ReadVector3d.zyx: Vector3d
     get() = Vector3d(z, y, x)
 
-inline val Vector3d.zyy: Vector3d
+inline val ReadVector3d.zyy: Vector3d
     get() = Vector3d(z, y, y)
 
-inline val Vector3d.zyz: Vector3d
+inline val ReadVector3d.zyz: Vector3d
     get() = Vector3d(z, y, z)
 
-inline val Vector3d.zzx: Vector3d
+inline val ReadVector3d.zzx: Vector3d
     get() = Vector3d(z, z, x)
 
-inline val Vector3d.zzy: Vector3d
+inline val ReadVector3d.zzy: Vector3d
     get() = Vector3d(z, y, z)
 
-inline val Vector3d.zzz: Vector3d
+inline val ReadVector3d.zzz: Vector3d
     get() = Vector3d(z, z, z)
 
 // Vector2i
-inline val Vector2i.xx: Vector2i
+inline val ReadVector2i.xx: Vector2i
     get() = Vector2i(x, x)
+
+inline val ReadVector2i.xy: Vector2i
+    get() = Vector2i(x, y)
 
 inline val Vector2i.xy: Vector2i
     get() = this
 
-inline val Vector2i.yx: Vector2i
+inline val ReadVector2i.yx: Vector2i
     get() = Vector2i(y, x)
 
-inline val Vector2i.yy: Vector2i
+inline val ReadVector2i.yy: Vector2i
     get() = Vector2i(y, y)
 
-inline val Vector2i.xxx: Vector3i
+inline val ReadVector2i.xxx: Vector3i
     get() = Vector3i(x, x, x)
 
-inline val Vector2i.xxy: Vector3i
+inline val ReadVector2i.xxy: Vector3i
     get() = Vector3i(x, x, y)
 
-inline val Vector2i.xyx: Vector3i
+inline val ReadVector2i.xyx: Vector3i
     get() = Vector3i(x, y, x)
 
-inline val Vector2i.xyy: Vector3i
+inline val ReadVector2i.xyy: Vector3i
     get() = Vector3i(x, y, y)
 
-inline val Vector2i.yxx: Vector3i
+inline val ReadVector2i.yxx: Vector3i
     get() = Vector3i(y, x, x)
 
-inline val Vector2i.yxy: Vector3i
+inline val ReadVector2i.yxy: Vector3i
     get() = Vector3i(y, x, y)
 
-inline val Vector2i.yyx: Vector3i
+inline val ReadVector2i.yyx: Vector3i
     get() = Vector3i(y, y, x)
 
-inline val Vector2i.yyy: Vector3i
+inline val ReadVector2i.yyy: Vector3i
     get() = Vector3i(y, y, y)
 
 // Vector3i
-inline val Vector3i.xx: Vector2i
+inline val ReadVector3i.xx: Vector2i
     get() = Vector2i(x, x)
 
-inline val Vector3i.xy: Vector2i
+inline val ReadVector3i.xy: Vector2i
     get() = Vector2i(x, y)
 
-inline val Vector3i.xz: Vector2i
+inline val ReadVector3i.xz: Vector2i
     get() = Vector2i(x, z)
 
-inline val Vector3i.yx: Vector2i
+inline val ReadVector3i.yx: Vector2i
     get() = Vector2i(y, x)
 
-inline val Vector3i.yy: Vector2i
+inline val ReadVector3i.yy: Vector2i
     get() = Vector2i(y, y)
 
-inline val Vector3i.yz: Vector2i
+inline val ReadVector3i.yz: Vector2i
     get() = Vector2i(y, z)
 
-inline val Vector3i.zx: Vector2i
+inline val ReadVector3i.zx: Vector2i
     get() = Vector2i(z, x)
 
-inline val Vector3i.zy: Vector2i
+inline val ReadVector3i.zy: Vector2i
     get() = Vector2i(y, z)
 
-inline val Vector3i.zz: Vector2i
+inline val ReadVector3i.zz: Vector2i
     get() = Vector2i(z, z)
 
-inline val Vector3i.xxx: Vector3i
+inline val ReadVector3i.xxx: Vector3i
     get() = Vector3i(x, x, x)
 
-inline val Vector3i.xxy: Vector3i
+inline val ReadVector3i.xxy: Vector3i
     get() = Vector3i(x, x, y)
 
-inline val Vector3i.xxz: Vector3i
+inline val ReadVector3i.xxz: Vector3i
     get() = Vector3i(x, x, z)
 
-inline val Vector3i.xyx: Vector3i
+inline val ReadVector3i.xyx: Vector3i
     get() = Vector3i(x, y, x)
 
-inline val Vector3i.xyy: Vector3i
+inline val ReadVector3i.xyy: Vector3i
     get() = Vector3i(x, y, y)
+
+inline val ReadVector3i.xyz: Vector3i
+    get() = Vector3i(x, y, z)
 
 inline val Vector3i.xyz: Vector3i
     get() = this
 
-inline val Vector3i.xzx: Vector3i
+inline val ReadVector3i.xzx: Vector3i
     get() = Vector3i(x, z, x)
 
-inline val Vector3i.xzy: Vector3i
+inline val ReadVector3i.xzy: Vector3i
     get() = Vector3i(x, y, z)
 
-inline val Vector3i.xzz: Vector3i
+inline val ReadVector3i.xzz: Vector3i
     get() = Vector3i(x, z, z)
 
-inline val Vector3i.yxx: Vector3i
+inline val ReadVector3i.yxx: Vector3i
     get() = Vector3i(y, x, x)
 
-inline val Vector3i.yxy: Vector3i
+inline val ReadVector3i.yxy: Vector3i
     get() = Vector3i(y, x, y)
 
-inline val Vector3i.yxz: Vector3i
+inline val ReadVector3i.yxz: Vector3i
     get() = Vector3i(y, x, z)
 
-inline val Vector3i.yyx: Vector3i
+inline val ReadVector3i.yyx: Vector3i
     get() = Vector3i(y, y, x)
 
-inline val Vector3i.yyy: Vector3i
+inline val ReadVector3i.yyy: Vector3i
     get() = Vector3i(y, y, y)
 
-inline val Vector3i.yyz: Vector3i
+inline val ReadVector3i.yyz: Vector3i
     get() = Vector3i(y, y, z)
 
-inline val Vector3i.yzx: Vector3i
+inline val ReadVector3i.yzx: Vector3i
     get() = Vector3i(y, z, x)
 
-inline val Vector3i.yzy: Vector3i
+inline val ReadVector3i.yzy: Vector3i
     get() = Vector3i(y, y, z)
 
-inline val Vector3i.yzz: Vector3i
+inline val ReadVector3i.yzz: Vector3i
     get() = Vector3i(y, z, z)
 
-inline val Vector3i.zxx: Vector3i
+inline val ReadVector3i.zxx: Vector3i
     get() = Vector3i(z, x, x)
 
-inline val Vector3i.zxy: Vector3i
+inline val ReadVector3i.zxy: Vector3i
     get() = Vector3i(z, x, y)
 
-inline val Vector3i.zxz: Vector3i
+inline val ReadVector3i.zxz: Vector3i
     get() = Vector3i(z, x, z)
 
-inline val Vector3i.zyx: Vector3i
+inline val ReadVector3i.zyx: Vector3i
     get() = Vector3i(z, y, x)
 
-inline val Vector3i.zyy: Vector3i
+inline val ReadVector3i.zyy: Vector3i
     get() = Vector3i(z, y, y)
 
-inline val Vector3i.zyz: Vector3i
+inline val ReadVector3i.zyz: Vector3i
     get() = Vector3i(z, y, z)
 
-inline val Vector3i.zzx: Vector3i
+inline val ReadVector3i.zzx: Vector3i
     get() = Vector3i(z, z, x)
 
-inline val Vector3i.zzy: Vector3i
+inline val ReadVector3i.zzy: Vector3i
     get() = Vector3i(z, y, z)
 
-inline val Vector3i.zzz: Vector3i
+inline val ReadVector3i.zzz: Vector3i
     get() = Vector3i(z, z, z)

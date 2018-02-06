@@ -22,13 +22,9 @@ import org.tobi29.arrays.DoublesRO
 import org.tobi29.io.tag.*
 import kotlin.collections.set
 
-data class Vector2d(
-        val x: Double,
-        val y: Double
-) : DoublesRO,
-        TagMapWrite {
-    constructor(vector: Vector2i) : this(vector.x.toDouble(),
-            vector.y.toDouble())
+interface ReadVector2d : DoublesRO, TagMapWrite {
+    val x: Double
+    val y: Double
 
     override val size: Int get() = 2
 
@@ -42,6 +38,15 @@ data class Vector2d(
         map["X"] = x.toTag()
         map["Y"] = y.toTag()
     }
+}
+
+data class Vector2d(
+    override val x: Double,
+    override val y: Double
+) : ReadVector2d {
+    constructor(vector: Vector2i) : this(
+        vector.x.toDouble(), vector.y.toDouble()
+    )
 
     override fun toString() = "$x $y"
 
@@ -51,7 +56,7 @@ data class Vector2d(
 }
 
 inline fun Vector2d.hasNaN(): Boolean =
-        x.isNaN() || y.isNaN()
+    x.isNaN() || y.isNaN()
 
 fun MutableTag.toVector2d(): Vector2d? {
     val map = toMap() ?: return null

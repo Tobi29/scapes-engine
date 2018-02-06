@@ -21,22 +21,14 @@ import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toInt
 
 data class MutableVector2i(
-    var x: Int = 0,
-    var y: Int = 0
-) : Ints {
+    override var x: Int = 0,
+    override var y: Int = 0
+) : ReadVector2i, Ints {
     constructor(vector: Vector2i) : this(vector.x, vector.y)
 
     constructor(vector: MutableVector2i) : this(vector.x, vector.y)
 
-    override val size: Int get() = 2
-
     fun now(): Vector2i = Vector2i(x, y)
-
-    override fun get(index: Int): Int = when (index) {
-        0 -> x
-        1 -> y
-        else -> throw IndexOutOfBoundsException("$index")
-    }
 
     override fun set(
         index: Int,

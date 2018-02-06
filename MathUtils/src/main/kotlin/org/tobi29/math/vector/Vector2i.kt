@@ -20,11 +20,10 @@ import org.tobi29.arrays.IntsRO
 import org.tobi29.io.tag.*
 import kotlin.collections.set
 
-data class Vector2i(
-        val x: Int,
-        val y: Int
-) : IntsRO,
-        TagMapWrite {
+interface ReadVector2i : IntsRO, TagMapWrite {
+    val x: Int
+    val y: Int
+
     override val size: Int get() = 2
 
     override fun get(index: Int): Int = when (index) {
@@ -37,7 +36,12 @@ data class Vector2i(
         map["X"] = x.toTag()
         map["Y"] = y.toTag()
     }
+}
 
+data class Vector2i(
+    override val x: Int,
+    override val y: Int
+) : ReadVector2i {
     override fun toString() = "$x $y"
 
     companion object {

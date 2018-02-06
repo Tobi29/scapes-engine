@@ -16,29 +16,31 @@
 package org.tobi29.math.matrix
 
 import org.tobi29.arrays.DoubleArray2
+import org.tobi29.arrays.Doubles2
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.dot
 import org.tobi29.stdex.copy
 
-class Matrix2d() {
+class Matrix2d() : Doubles2 {
     val values = DoubleArray(4)
     private val values2 = DoubleArray2(2, 2, values)
 
-    constructor(xx: Double,
-                xy: Double,
-                yx: Double,
-                yy: Double) : this() {
+    constructor(
+        xx: Double, xy: Double,
+        yx: Double, yy: Double
+    ) : this() {
         set(xx, xy, yx, yy)
     }
 
-    operator fun get(x: Int,
-                     y: Int) = values2[y, x]
+    override val width: Int get() = 2
+    override val height: Int get() = 2
 
-    operator fun set(x: Int,
-                     y: Int,
-                     value: Double) {
-        values2[y, x] = value
+    override fun get(index1: Int, index2: Int): Double =
+        values2[index2, index1]
+
+    override fun set(index1: Int, index2: Int, value: Double) {
+        values2[index2, index1] = value
     }
 
     fun set(matrix: Matrix2d) {
@@ -47,18 +49,17 @@ class Matrix2d() {
 
     fun identity() = set(1.0, 0.0, 0.0, 1.0)
 
-    fun set(xx: Double,
-            xy: Double,
-            yx: Double,
-            yy: Double) {
+    fun set(
+        xx: Double, xy: Double,
+        yx: Double, yy: Double
+    ) {
         values[0] = xx
         values[1] = yx
         values[2] = xy
         values[3] = yy
     }
 
-    fun scale(x: Double,
-              y: Double) {
+    fun scale(x: Double, y: Double) {
         for (i in 0..1) {
             values[i] = values[i] * x
         }
@@ -67,8 +68,7 @@ class Matrix2d() {
         }
     }
 
-    fun multiply(o: Matrix2d,
-                 d: Matrix2d = o) {
+    fun multiply(o: Matrix2d, d: Matrix2d = o) {
         val v00 = xx
         val v01 = xy
         val v10 = yx
@@ -91,8 +91,9 @@ class Matrix2d() {
         return Vector2d(v1, v2)
     }
 
-    fun multiply(v: MutableVector2d,
-                 out: MutableVector2d = v): MutableVector2d {
+    fun multiply(
+        v: MutableVector2d, out: MutableVector2d = v
+    ): MutableVector2d {
         val x = v.x
         val y = v.y
         val v1 = xx * x + yx * y
@@ -111,14 +112,14 @@ class Matrix2d() {
 }
 
 inline fun <R> matrix2dMultiply(
-        xx: Double,
-        xy: Double,
-        yx: Double,
-        yy: Double,
-        x: Double,
-        y: Double,
-        output: (Double, Double) -> R): R =
-        output(dot(xx, yx, x, y), dot(xy, yy, x, y))
+    xx: Double, xy: Double,
+    yx: Double, yy: Double,
+    x: Double, y: Double,
+    output: (Double, Double) -> R
+): R = output(
+    dot(xx, yx, x, y),
+    dot(xy, yy, x, y)
+)
 
 inline var Matrix2d.xx: Double
     get() = get(0, 0)

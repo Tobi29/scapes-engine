@@ -21,10 +21,10 @@ import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toDouble
 
 data class MutableVector3d(
-    var x: Double = 0.0,
-    var y: Double = 0.0,
-    var z: Double = 0.0
-) : Doubles {
+    override var x: Double = 0.0,
+    override var y: Double = 0.0,
+    override var z: Double = 0.0
+) : ReadVector3d, Doubles {
     constructor(vector: Vector3d) : this(vector.x, vector.y, vector.z)
 
     constructor(vector: Vector3i) : this(
@@ -39,16 +39,7 @@ data class MutableVector3d(
         vector.y.toDouble(), vector.z.toDouble()
     )
 
-    override val size: Int get() = 3
-
     fun now(): Vector3d = Vector3d(x, y, z)
-
-    override fun get(index: Int): Double = when (index) {
-        0 -> x
-        1 -> y
-        2 -> z
-        else -> throw IndexOutOfBoundsException("$index")
-    }
 
     override fun set(
         index: Int,
