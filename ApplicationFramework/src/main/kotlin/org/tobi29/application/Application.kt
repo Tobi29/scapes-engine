@@ -50,7 +50,7 @@ abstract class BareApplication : EntryPoint(),
             printerrln(e.message)
             return 255
         }
-        val commandLine = tokens.assemble()
+        val commandLine = tokens.assemble(subcommand)
         handleEarly(commandLine)?.let { return it }
         try {
             withArgs(args.asIterable()) { commandLine.validate(tokens) }
