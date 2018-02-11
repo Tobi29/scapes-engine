@@ -21,10 +21,7 @@ package org.tobi29.scapes.engine.backends.opengles
 import org.khronos.webgl.Int32Array
 import org.khronos.webgl.Uint8Array
 import org.tobi29.io.*
-import org.tobi29.stdex.asArray
-import org.tobi29.stdex.asTypedArray
-import org.tobi29.stdex.copy
-import org.tobi29.stdex.toIntClamped
+import org.tobi29.stdex.*
 import org.khronos.webgl.WebGLRenderingContext as WGL1
 import org.khronos.webgl2.WebGL2RenderingContext as WGL2
 

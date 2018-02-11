@@ -19,9 +19,11 @@
 package org.tobi29.io
 
 import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.stdex.BIG_ENDIAN
+import org.tobi29.stdex.LITTLE_ENDIAN
+import org.tobi29.stdex.NATIVE_ENDIAN
 import java.nio.Buffer
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 /**
  * Returns a view on the given array
@@ -33,14 +35,6 @@ import java.nio.ByteOrder
 inline fun ByteArray.asByteBuffer(offset: Int = 0,
                                   size: Int = this.size - offset): ByteBuffer =
         ByteBuffer.wrap(this, offset, size)
-
-actual typealias ByteOrder = java.nio.ByteOrder
-
-actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
-
-actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
-
-actual inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
 
 /**
  * Creates a [ByteBuffer] with big-endian byte-order

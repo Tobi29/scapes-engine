@@ -14,22 +14,12 @@
  * limitations under the License.
  */
 
-package org.tobi29.io
+package org.tobi29.stdex
 
-expect class ByteOrder private constructor(name: String)
+actual typealias ByteOrder = java.nio.ByteOrder
 
-/**
- * Big endian byte order
- */
-expect val BIG_ENDIAN: ByteOrder
+actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
 
-/**
- * Little endian byte order
- */
-expect val LITTLE_ENDIAN: ByteOrder
+actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
 
-/**
- * Native endianness depending on current hardware, either [BIG_ENDIAN] or
- * [LITTLE_ENDIAN]
- */
-expect val NATIVE_ENDIAN: ByteOrder
+actual inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()

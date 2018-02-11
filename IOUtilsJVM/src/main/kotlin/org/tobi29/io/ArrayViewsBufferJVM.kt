@@ -18,6 +18,8 @@ package org.tobi29.io
 
 import org.tobi29.arrays.ByteArraySliceRO
 import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.stdex.BIG_ENDIAN
+import org.tobi29.stdex.LITTLE_ENDIAN
 import org.tobi29.stdex.primitiveHashCode
 import java.nio.ByteBuffer
 
@@ -78,7 +80,8 @@ class ByteBufferViewBE(
         ByteViewBE {
     override val byteBuffer: ByteBuffer
         get() = buffer.duplicate().order(
-                BIG_ENDIAN)
+            BIG_ENDIAN
+        )
 
     override fun slice(index: Int) = slice(index, size - index)
 
@@ -89,7 +92,8 @@ class ByteBufferViewBE(
                         _position(index)
                         _limit(position() + size)
                     }.slice().order(
-                            BIG_ENDIAN))
+                        BIG_ENDIAN
+                    ))
 
     override fun get(index: Int) = buffer.get(index)
     override fun set(index: Int,
@@ -159,7 +163,8 @@ class ByteBufferViewLE(
         ByteViewLE {
     override val byteBuffer: ByteBuffer
         get() = buffer.duplicate().order(
-                LITTLE_ENDIAN)
+            LITTLE_ENDIAN
+        )
 
     override fun slice(index: Int) = slice(index, size - index)
 
@@ -170,7 +175,8 @@ class ByteBufferViewLE(
                         _position(index)
                         _limit(position() + size)
                     }.slice().order(
-                            LITTLE_ENDIAN))
+                        LITTLE_ENDIAN
+                    ))
 
     override fun get(index: Int) = buffer.get(index)
     override fun set(index: Int,

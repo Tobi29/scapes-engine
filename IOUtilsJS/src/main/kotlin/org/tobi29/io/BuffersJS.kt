@@ -16,8 +16,13 @@
 
 package org.tobi29.io
 
-import org.khronos.webgl.*
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.DataView
+import org.khronos.webgl.Int8Array
+import org.khronos.webgl.Uint8Array
 import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.stdex.BIG_ENDIAN
+import org.tobi29.stdex.NATIVE_ENDIAN
 import org.tobi29.stdex.asTypedArray
 
 fun ByteViewRO.asDataView(): DataView? = asInt8Array()?.let {
@@ -65,31 +70,3 @@ val DataView.viewBE: TypedViewBE
 
 val DataView.viewLE: TypedViewLE
     get() = TypedViewLE(buffer, byteOffset, 0, byteLength)
-
-actual class ByteOrder actual private constructor(private val name: String) {
-    override fun toString(): String {
-        return name
-    }
-
-    companion object {
-        val BIG_ENDIAN = ByteOrder("BIG_ENDIAN")
-        val LITTLE_ENDIAN = ByteOrder("LITTLE_ENDIAN")
-    }
-}
-
-actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
-
-actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
-
-actual val NATIVE_ENDIAN = run {
-    val buffer = ArrayBuffer(4)
-    val buffer8 = Uint8Array(buffer)
-    val buffer32 = Uint32Array(buffer)
-    buffer32[0] = 0x01020304
-    when (buffer8[0]) {
-        0x01.toByte() -> BIG_ENDIAN
-        0x04.toByte() -> LITTLE_ENDIAN
-        else -> throw UnsupportedOperationException(
-                "Endianness detection failed")
-    }
-}

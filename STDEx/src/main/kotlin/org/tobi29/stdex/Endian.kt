@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package org.tobi29.io
+package org.tobi29.stdex
 
-import org.tobi29.stdex.BIG_ENDIAN
-import java.nio.ByteBuffer
+expect class ByteOrder private constructor(name: String)
 
-val DefaultJavaBufferMemoryViewProvider: MemoryViewProvider<ByteBufferView> =
-        JavaBufferMemoryViewProvider(::ByteBuffer)
+/**
+ * Big endian byte order
+ */
+expect val BIG_ENDIAN: ByteOrder
 
-fun JavaBufferMemoryViewProvider(
-        bufferProvider: (Int) -> ByteBuffer
-): MemoryViewProvider<ByteBufferView> = {
-    bufferProvider(it).let {
-        if (it.order() == BIG_ENDIAN) ByteBufferViewBE(
-                it)
-        else ByteBufferViewLE(it)
-    }
-}
+/**
+ * Little endian byte order
+ */
+expect val LITTLE_ENDIAN: ByteOrder
+
+/**
+ * Native endianness depending on current hardware, either [BIG_ENDIAN] or
+ * [LITTLE_ENDIAN]
+ */
+expect val NATIVE_ENDIAN: ByteOrder
