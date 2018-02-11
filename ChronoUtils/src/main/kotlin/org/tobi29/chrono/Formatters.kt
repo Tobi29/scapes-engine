@@ -181,3 +181,24 @@ fun isoOffset(offset: DurationNanos): String {
         minutes
     )}"
 }
+
+/**
+ * Prints an offset in plain format: (Z|[+-]hhmm)
+ */
+fun plainOffset(offset: DurationNanos): String {
+    if (offset.nanos == 0.toInt128())
+        return "Z"
+
+    if (offset.nanos % NANOS_PER_MINUTE != 0.toInt128()) {
+        throw IllegalArgumentException("Offset not aligned to minutes: $offset")
+    }
+
+    val negative = offset.nanos < 0.toInt128()
+
+    val abs = if (negative) -offset else offset
+
+    val hours = abs.hours.toInt()
+    val minutes = (abs.minutes % 60.toInt128()).toInt()
+
+    return "${if (negative) '-' else '+'}${isoHour(hours)}${isoMinute(minutes)}"
+}
