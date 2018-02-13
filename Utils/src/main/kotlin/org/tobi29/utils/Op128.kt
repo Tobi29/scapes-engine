@@ -361,7 +361,7 @@ internal fun scompareImpl(
 
     assert { thisNegative == otherNegative }
 
-    return compareImpl(ah, al, bh, bl).let { if (thisNegative) -it else it }
+    return compareImpl(ah, al, bh, bl)
 }
 
 @Suppress("NAME_SHADOWING")
