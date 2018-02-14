@@ -19,13 +19,13 @@ package kotlin.io
 import org.tobi29.io.IOException
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect abstract class FileSystemException(deny: Nothing) : IOException
+expect open class FileSystemException(deny: Nothing) : IOException
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect abstract class FileAlreadyExistsException(deny: Nothing) : FileSystemException
+expect class FileAlreadyExistsException(deny: Nothing) : FileSystemException
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect abstract class AccessDeniedException(deny: Nothing) : FileSystemException
+expect class AccessDeniedException(deny: Nothing) : FileSystemException
 
 @Suppress("NO_ACTUAL_FOR_EXPECT")
-expect abstract class NoSuchFileException(deny: Nothing) : FileSystemException
+expect class NoSuchFileException(deny: Nothing) : FileSystemException
