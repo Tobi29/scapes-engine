@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,10 +149,7 @@ open class HeapArraySlice<T>(
         slice(index, size - index)
 
     override fun slice(index: Int, size: Int): HeapArraySlice<T> =
-        prepareSlice(
-            index, size, array,
-            ::HeapArraySlice
-        )
+        prepareSlice(index, size, array, ::HeapArraySlice)
 
     final override fun get(index: Int): T =
         array[index(offset, size, index)]
@@ -211,6 +208,101 @@ inline fun <T> Array<T>.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
 ): HeapArraySlice<T> = HeapArraySlice(this, index, size)
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read
+ * @return Return value of [block]
+ */
+inline fun <reified T, R> ArraySliceRO<T>.readAsArray(block: (Array<T>, Int, Int) -> R): R {
+    val array: Array<T>
+    val offset: Int
+    when (this) {
+        is HeapArraySlice<T> -> {
+            array = this.array
+            offset = this.offset
+        }
+        else -> {
+            array = toArray()
+            offset = 0
+        }
+    }
+    return block(array, offset, size)
+}
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so reading
+ * or modifying the original slice during this call can lead to surprising
+ * results
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read and modify
+ * @return Return value of [block]
+ */
+inline fun <reified T, R> ArraySlice<T>.mutateAsArray(block: (Array<T>, Int, Int) -> R): R {
+    val array: Array<T>
+    val offset: Int
+    val mapped = when (this) {
+        is HeapArraySlice<T> -> {
+            array = this.array
+            offset = this.offset
+            true
+        }
+        else -> {
+            array = toArray()
+            offset = 0
+            false
+        }
+    }
+    return try {
+        block(array, offset, size)
+    } finally {
+        if (!mapped) getElements(0, array.sliceOver())
+    }
+}
+
+/**
+ * Exposes the contents of the slice in an array
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ * @receiver The slice to read
+ * @return Array containing the data of the slice
+ */
+inline fun <reified T> ArraySliceRO<T>.readAsArray(): Array<T> =
+    if (this is HeapArraySlice<T> && size == array.size && offset == 0) array
+    else Array(size) { get(it) }
+
+/**
+ * Copies the contents of the slice into an array
+ * @receiver The slice to copy
+ * @return Array containing the data of the slice
+ */
+inline fun <reified T> ArraySliceRO<T>.toArray(): Array<T> =
+    Array(size) { get(it) }
 
 /**
  * Class wrapping an array to provide nicer support for 2-dimensional data.
@@ -289,12 +381,14 @@ inline fun Array2<*>.indices(block: (Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun <reified T> Array2(width: Int, height: Int, init: (Int, Int) -> T) =
-    Array2(width, height) { i ->
-        val x = i % width
-        val y = i / width
-        init(x, y)
-    }
+inline fun <reified T> Array2(
+    width: Int, height: Int,
+    init: (Int, Int) -> T
+) = Array2(width, height) { i ->
+    val x = i % width
+    val y = i / width
+    init(x, y)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -303,8 +397,13 @@ inline fun <reified T> Array2(width: Int, height: Int, init: (Int, Int) -> T) =
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun <reified T> Array2(width: Int, height: Int, init: (Int) -> T) =
-    Array2(width, height, Array(width * height) { init(it) })
+inline fun <reified T> Array2(
+    width: Int, height: Int,
+    init: (Int) -> T
+) = Array2(
+    width, height,
+    Array(width * height) { init(it) }
+)
 
 /**
  * Class wrapping an array to provide nicer support for 3-dimensional data.
@@ -392,18 +491,15 @@ inline fun Array3<*>.indices(block: (Int, Int, Int) -> Unit) {
  * @return Wrapper around a new array
  */
 inline fun <reified T> Array3(
-    width: Int,
-    height: Int,
-    depth: Int,
+    width: Int, height: Int, depth: Int,
     init: (Int, Int, Int) -> T
-) =
-    Array3(width, height, depth) { i ->
-        val x = i % width
-        val j = i / width
-        val y = j % height
-        val z = j / height
-        init(x, y, z)
-    }
+) = Array3(width, height, depth) { i ->
+    val x = i % width
+    val j = i / width
+    val y = j % height
+    val z = j / height
+    init(x, y, z)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -414,12 +510,12 @@ inline fun <reified T> Array3(
  * @return Wrapper around a new array
  */
 inline fun <reified T> Array3(
-    width: Int,
-    height: Int,
-    depth: Int,
+    width: Int, height: Int, depth: Int,
     init: (Int) -> T
-) =
-    Array3(width, height, depth, Array(width * height * depth) { init(it) })
+) = Array3(
+    width, height, depth,
+    Array(width * height * depth) { init(it) }
+)
 
 /**
  * Fills the given array with values
@@ -457,8 +553,12 @@ inline fun <T> Array3<in T>.fill(block: (Int, Int, Int) -> T) =
  * @param height Height of the wrapper
  * @return Wrapper around a new array
  */
-inline fun <reified T> array2OfNulls(width: Int, height: Int) =
-    Array2(width, height, arrayOfNulls<T>(width * height))
+inline fun <reified T> array2OfNulls(
+    width: Int, height: Int
+) = Array2(
+    width, height,
+    arrayOfNulls<T>(width * height)
+)
 
 /**
  * Creates a new array and makes it accessible using a wrapper initialized with
@@ -468,5 +568,9 @@ inline fun <reified T> array2OfNulls(width: Int, height: Int) =
  * @param depth Depth of the wrapper
  * @return Wrapper around a new array
  */
-inline fun <reified T> array3OfNulls(width: Int, height: Int, depth: Int) =
-    Array3(width, height, depth, arrayOfNulls<T>(width * height))
+inline fun <reified T> array3OfNulls(
+    width: Int, height: Int, depth: Int
+) = Array3(
+    width, height, depth,
+    arrayOfNulls<T>(width * height)
+)

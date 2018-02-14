@@ -15,26 +15,99 @@
  * limitations under the License.
  */
 
-val isReference =
-    if (args.isEmpty()) true else false
+val isReference = args.isEmpty()
 val type =
     if (args.isEmpty()) "T" else args[0]
-val generic =
-    if (args.isEmpty()) "<$type>" else ""
-val genericOut =
-    if (args.isEmpty()) "<out $type>" else generic
-val genericIn =
-    if (args.isEmpty()) "<in $type>" else generic
-val genericReified =
-    if (args.isEmpty()) "<reified $type>" else generic
-val genericReifiedOut =
-    if (args.isEmpty()) "<reified out $type>" else generic
-val genericReifiedIn =
-    if (args.isEmpty()) "<reified in $type>" else generic
-val genericFun =
-    if (args.isEmpty()) "fun $generic" else "fun"
-val genericFunReified =
-    if (args.isEmpty()) "fun $genericReified" else genericFun
+
+fun rawGeneric(vararg elements: String) =
+    if (elements.isEmpty()) ""
+    else elements.joinToString(", ", "<", ">")
+
+fun appendedRawGeneric(vararg elements: String) =
+    if (elements.isEmpty()) ""
+    else " ${rawGeneric(*elements)}"
+
+fun generic(vararg others: String) =
+    rawGeneric(
+        *(if (args.isEmpty()) arrayOf(type) else emptyArray()),
+        *others
+    )
+
+fun appendedGeneric(vararg others: String) =
+    appendedRawGeneric(
+        *(if (args.isEmpty()) arrayOf(type) else emptyArray()),
+        *others
+    )
+
+fun genericOut(vararg others: String) =
+    rawGeneric(
+        *(if (args.isEmpty()) arrayOf("out $type") else emptyArray()),
+        *others
+    )
+
+fun appendedGenericOut(vararg others: String) =
+    appendedRawGeneric(
+        *(if (args.isEmpty()) arrayOf("out $type") else emptyArray()),
+        *others
+    )
+
+fun genericIn(vararg others: String) =
+    rawGeneric(
+        *(if (args.isEmpty()) arrayOf("in $type") else emptyArray()),
+        *others
+    )
+
+fun appendedGenericIn(vararg others: String) =
+    appendedRawGeneric(
+        *(if (args.isEmpty()) arrayOf("in $type") else emptyArray()),
+        *others
+    )
+
+fun genericReified(vararg others: String) =
+    rawGeneric(
+        *(if (args.isEmpty()) arrayOf("reified $type") else emptyArray()),
+        *others
+    )
+
+fun appendedGenericReified(vararg others: String) =
+    appendedRawGeneric(
+        *(if (args.isEmpty()) arrayOf("reified $type") else emptyArray()),
+        *others
+    )
+
+fun genericReifiedOut(vararg others: String) =
+    rawGeneric(
+        *(if (args.isEmpty()) arrayOf("reified out $type") else emptyArray()),
+        *others
+    )
+
+fun appendedGenericReifiedOut(vararg others: String) =
+    appendedRawGeneric(
+        *(if (args.isEmpty()) arrayOf("reified out $type") else emptyArray()),
+        *others
+    )
+
+fun genericReifiedIn(vararg others: String) =
+    rawGeneric(
+        *(if (args.isEmpty()) arrayOf("reified in $type") else emptyArray()),
+        *others
+    )
+
+fun appendedGenericReifiedIn(vararg others: String) =
+    appendedRawGeneric(
+        *(if (args.isEmpty()) arrayOf("reified in $type") else emptyArray()),
+        *others
+    )
+
+val generic = generic()
+val genericOut = genericOut()
+val genericIn = genericIn()
+val genericReified = genericReified()
+val genericReifiedOut = genericReifiedOut()
+val genericReifiedIn = genericReifiedIn()
+
+val genericFun = "fun${appendedGeneric()}"
+val genericFunReified = "fun${appendedGenericReified()}"
 val specialize: (String) -> String =
     if (args.isEmpty()) {
         { "$it<$type>" }
@@ -59,7 +132,23 @@ val specializeName: (String) -> String =
     } else specialize
 
 print(
-    """// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
+    """/*
+ * Copyright 2012-2018 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
 // Generation script can be found in `resources/codegen/GenArrays.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
 
@@ -68,8 +157,8 @@ print(
 package org.tobi29.arrays
 
 import org.tobi29.stdex.copy
-import org.tobi29.stdex.primitiveHashCode
-
+${if (!isReference) "import org.tobi29.stdex.primitiveHashCode\n"
+    else ""}
 /**
  * 1-dimensional read-only array
  */
@@ -160,7 +249,7 @@ interface ${specialize("ArraySliceRO")} : ${specialize(if (isReference) "Element
     override fun slice(index: Int): ${specialize("ArraySliceRO")}
 
     override fun slice(index: Int, size: Int): ${specialize("ArraySliceRO")}
-    ${if (!isReference) """fun get$type(index: Int): $type = get(index)
+${if (!isReference) """    fun get$type(index: Int): $type = get(index)
 """ else ""}
     fun get${if (isReference) "Element" else type}s(index: Int, slice: ${specializeIn(
         "ArraySlice"
@@ -185,7 +274,7 @@ interface ${specialize("ArraySlice")} : ${specialize(if (isReference) "Elements"
     override fun slice(index: Int): ${specialize("ArraySlice")}
 
     override fun slice(index: Int, size: Int): ${specialize("ArraySlice")}
-    ${if (!isReference) """fun set$type(index: Int, value: $type) = set(index, value)
+${if (!isReference) """    fun set$type(index: Int, value: $type) = set(index, value)
 """ else ""}
     fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specializeOut(
         "ArraySliceRO"
@@ -205,8 +294,7 @@ open class Heap${specialize("ArraySlice")}(
         slice(index, size - index)
 
     override fun slice(index: Int, size: Int): Heap${specialize("ArraySlice")} =
-        prepareSlice(index, size, array,
-            ::Heap${specializeName("ArraySlice")})
+        prepareSlice(index, size, array, ::Heap${specializeName("ArraySlice")})
 
     final override fun get(index: Int): $type =
         array[index(offset, size, index)]
@@ -273,6 +361,126 @@ inline $genericFun ${specialize("Array")}.sliceOver(
 ): Heap${specialize("ArraySlice")} = Heap${specializeName("ArraySlice")}(this, index, size)
 
 /**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read
+ * @return Return value of [block]
+ */
+inline fun${appendedGenericReified("R")} ${specialize("ArraySliceRO")}.readAs${specializeName(
+        "Array"
+    )}(block: (${specialize(
+        "Array"
+    )}, Int, Int) -> R): R {
+    val array: ${specialize("Array")}
+    val offset: Int
+    when (this) {
+        is Heap${specialize("ArraySlice")} -> {
+            array = this.array
+            offset = this.offset
+        }
+        else -> {
+            array = to${specializeName("Array")}()
+            offset = 0
+        }
+    }
+    return block(array, offset, size)
+}
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so reading
+ * or modifying the original slice during this call can lead to surprising
+ * results
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read and modify
+ * @return Return value of [block]
+ */
+inline fun${appendedGenericReified("R")} ${specialize("ArraySlice")}.mutateAs${specializeName(
+        "Array"
+    )}(block: (${specialize(
+        "Array"
+    )}, Int, Int) -> R): R {
+    val array: ${specialize("Array")}
+    val offset: Int
+    val mapped = when (this) {
+        is Heap${specialize("ArraySlice")} -> {
+            array = this.array
+            offset = this.offset
+            true
+        }
+        else -> {
+            array = to${specializeName("Array")}()
+            offset = 0
+            false
+        }
+    }
+    return try {
+        block(array, offset, size)
+    } finally {
+        if (!mapped) get${specializeName(if (isReference) "Elements" else "s")}(0, array.sliceOver())
+    }
+}
+
+/**
+ * Exposes the contents of the slice in an array
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ * @receiver The slice to read
+ * @return Array containing the data of the slice
+ */
+${if (isReference) "inline " else ""}$genericFunReified ${specialize("ArraySliceRO")
+    }.readAs${specializeName("Array")}(): ${specialize("Array")} =${
+    if (args.isEmpty()) """
+    if (this is Heap${specialize("ArraySlice")} && size == array.size && offset == 0) array
+    else ${specializeName("Array")}(size) { get${specializeName("")}(it) }"""
+    else """ when (this) {
+    is Heap${specialize("ArraySlice")} ->
+        if (size == array.size && offset == 0) array else {
+            ${specializeName("Array")}(size)
+                .also { copy(array, it, size, offset) }
+        }
+    else -> ${specializeName("Array")}(size) { get${specializeName("")}(it) }
+}"""}
+
+/**
+ * Copies the contents of the slice into an array
+ * @receiver The slice to copy
+ * @return Array containing the data of the slice
+ */
+${if (isReference) "inline " else ""}$genericFunReified ${specialize("ArraySliceRO")
+    }.to${specializeName("Array")}(): ${specialize("Array")} =${
+    if (args.isEmpty()) """
+    ${specializeName("Array")}(size) { get${specializeName("")}(it) }"""
+    else """ when (this) {
+    is Heap${specialize("ArraySlice")} -> ${specializeName("Array")}(size)
+        .also { copy(array, it, size, offset) }
+    else -> ${specializeName("Array")}(size) { get${specializeName("")}(it) }
+}"""}
+
+/**
  * Class wrapping an array to provide nicer support for 2-dimensional data.
  *
  * The layout for the dimensions is as follows:
@@ -287,7 +495,8 @@ class ${specialize("Array2")}(
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
-                "Array has invalid size: ${'$'}{array.size} (should be ${'$'}size)")
+                "Array has invalid size: ${'$'}{array.size} (should be ${'$'}size)"
+            )
         }
     }
 
@@ -348,12 +557,14 @@ inline fun ${specializeAny("Array2")}.indices(block: (Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline $genericFunReified ${specializeName("Array2")}(width: Int, height: Int, init: (Int, Int) -> $type) =
-    ${specializeName("Array2")}(width, height) { i ->
-        val x = i % width
-        val y = i / width
-        init(x, y)
-    }
+inline $genericFunReified ${specializeName("Array2")}(
+    width: Int, height: Int,
+    init: (Int, Int) -> $type
+) = ${specializeName("Array2")}(width, height) { i ->
+    val x = i % width
+    val y = i / width
+    init(x, y)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -362,8 +573,13 @@ inline $genericFunReified ${specializeName("Array2")}(width: Int, height: Int, i
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline $genericFunReified ${specializeName("Array2")}(width: Int, height: Int, init: (Int) -> $type) =
-    ${specializeName("Array2")}(width, height, ${specializeName("Array")}(width * height) { init(it) })
+inline $genericFunReified ${specializeName("Array2")}(
+    width: Int, height: Int,
+    init: (Int) -> $type
+) = ${specializeName("Array2")}(
+    width, height,
+    ${specializeName("Array")}(width * height) { init(it) }
+)
 
 /**
  * Class wrapping an array to provide nicer support for 3-dimensional data.
@@ -381,7 +597,8 @@ class ${specialize("Array3")}(
     init {
         if (size != array.size) {
             throw IllegalArgumentException(
-                "Array has invalid size: ${'$'}{array.size} (should be ${'$'}size)")
+                "Array has invalid size: ${'$'}{array.size} (should be ${'$'}size)"
+            )
         }
     }
 
@@ -451,14 +668,16 @@ inline fun ${specializeAny("Array3")}.indices(block: (Int, Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline $genericFunReified ${specializeName("Array3")}(width: Int, height: Int, depth: Int, init: (Int, Int, Int) -> $type) =
-    ${specializeName("Array3")}(width, height, depth) { i ->
-        val x = i % width
-        val j = i / width
-        val y = j % height
-        val z = j / height
-        init(x, y, z)
-    }
+inline $genericFunReified ${specializeName("Array3")}(
+    width: Int, height: Int, depth: Int,
+    init: (Int, Int, Int) -> $type
+) = ${specializeName("Array3")}(width, height, depth) { i ->
+    val x = i % width
+    val j = i / width
+    val y = j % height
+    val z = j / height
+    init(x, y, z)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -468,8 +687,13 @@ inline $genericFunReified ${specializeName("Array3")}(width: Int, height: Int, d
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline $genericFunReified ${specializeName("Array3")}(width: Int, height: Int, depth: Int, init: (Int) -> $type) =
-    ${specializeName("Array3")}(width, height, depth, ${specializeName("Array")}(width * height * depth) { init(it) })
+inline $genericFunReified ${specializeName("Array3")}(
+    width: Int, height: Int, depth: Int,
+    init: (Int) -> $type
+) = ${specializeName("Array3")}(
+    width, height, depth,
+    ${specializeName("Array")}(width * height * depth) { init(it) }
+)
 
 /**
  * Fills the given array with values
@@ -512,8 +736,12 @@ if (isReference) {
  * @param height Height of the wrapper
  * @return Wrapper around a new array
  */
-inline $genericFunReified array2OfNulls(width: Int, height: Int) =
-    ${specializeName("Array2")}(width, height, arrayOfNulls$generic(width * height))
+inline $genericFunReified array2OfNulls(
+    width: Int, height: Int
+) = ${specializeName("Array2")}(
+    width, height,
+    arrayOfNulls$generic(width * height)
+)
 
 /**
  * Creates a new array and makes it accessible using a wrapper initialized with
@@ -523,8 +751,12 @@ inline $genericFunReified array2OfNulls(width: Int, height: Int) =
  * @param depth Depth of the wrapper
  * @return Wrapper around a new array
  */
-inline $genericFunReified array3OfNulls(width: Int, height: Int, depth: Int) =
-    ${specializeName("Array3")}(width, height, depth, arrayOfNulls$generic(width * height))
+inline $genericFunReified array3OfNulls(
+    width: Int, height: Int, depth: Int
+) = ${specializeName("Array3")}(
+    width, height, depth,
+    arrayOfNulls$generic(width * height)
+)
 """
     )
 } else {

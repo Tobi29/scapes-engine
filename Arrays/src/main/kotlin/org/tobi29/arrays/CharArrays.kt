@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,10 +152,7 @@ open class HeapCharArraySlice(
         slice(index, size - index)
 
     override fun slice(index: Int, size: Int): HeapCharArraySlice =
-        prepareSlice(
-            index, size, array,
-            ::HeapCharArraySlice
-        )
+        prepareSlice(index, size, array, ::HeapCharArraySlice)
 
     final override fun get(index: Int): Char =
         array[index(offset, size, index)]
@@ -214,6 +211,109 @@ inline fun CharArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
 ): HeapCharArraySlice = HeapCharArraySlice(this, index, size)
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read
+ * @return Return value of [block]
+ */
+inline fun <R> CharArraySliceRO.readAsCharArray(block: (CharArray, Int, Int) -> R): R {
+    val array: CharArray
+    val offset: Int
+    when (this) {
+        is HeapCharArraySlice -> {
+            array = this.array
+            offset = this.offset
+        }
+        else -> {
+            array = toCharArray()
+            offset = 0
+        }
+    }
+    return block(array, offset, size)
+}
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so reading
+ * or modifying the original slice during this call can lead to surprising
+ * results
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read and modify
+ * @return Return value of [block]
+ */
+inline fun <R> CharArraySlice.mutateAsCharArray(block: (CharArray, Int, Int) -> R): R {
+    val array: CharArray
+    val offset: Int
+    val mapped = when (this) {
+        is HeapCharArraySlice -> {
+            array = this.array
+            offset = this.offset
+            true
+        }
+        else -> {
+            array = toCharArray()
+            offset = 0
+            false
+        }
+    }
+    return try {
+        block(array, offset, size)
+    } finally {
+        if (!mapped) getChars(0, array.sliceOver())
+    }
+}
+
+/**
+ * Exposes the contents of the slice in an array
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ * @receiver The slice to read
+ * @return Array containing the data of the slice
+ */
+fun CharArraySliceRO.readAsCharArray(): CharArray = when (this) {
+    is HeapCharArraySlice ->
+        if (size == array.size && offset == 0) array else {
+            CharArray(size)
+                .also { copy(array, it, size, offset) }
+        }
+    else -> CharArray(size) { getChar(it) }
+}
+
+/**
+ * Copies the contents of the slice into an array
+ * @receiver The slice to copy
+ * @return Array containing the data of the slice
+ */
+fun CharArraySliceRO.toCharArray(): CharArray = when (this) {
+    is HeapCharArraySlice -> CharArray(size)
+        .also { copy(array, it, size, offset) }
+    else -> CharArray(size) { getChar(it) }
+}
 
 /**
  * Class wrapping an array to provide nicer support for 2-dimensional data.
@@ -292,12 +392,14 @@ inline fun CharArray2.indices(block: (Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun CharArray2(width: Int, height: Int, init: (Int, Int) -> Char) =
-    CharArray2(width, height) { i ->
-        val x = i % width
-        val y = i / width
-        init(x, y)
-    }
+inline fun CharArray2(
+    width: Int, height: Int,
+    init: (Int, Int) -> Char
+) = CharArray2(width, height) { i ->
+    val x = i % width
+    val y = i / width
+    init(x, y)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -306,8 +408,13 @@ inline fun CharArray2(width: Int, height: Int, init: (Int, Int) -> Char) =
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun CharArray2(width: Int, height: Int, init: (Int) -> Char) =
-    CharArray2(width, height, CharArray(width * height) { init(it) })
+inline fun CharArray2(
+    width: Int, height: Int,
+    init: (Int) -> Char
+) = CharArray2(
+    width, height,
+    CharArray(width * height) { init(it) }
+)
 
 /**
  * Class wrapping an array to provide nicer support for 3-dimensional data.
@@ -395,18 +502,15 @@ inline fun CharArray3.indices(block: (Int, Int, Int) -> Unit) {
  * @return Wrapper around a new array
  */
 inline fun CharArray3(
-    width: Int,
-    height: Int,
-    depth: Int,
+    width: Int, height: Int, depth: Int,
     init: (Int, Int, Int) -> Char
-) =
-    CharArray3(width, height, depth) { i ->
-        val x = i % width
-        val j = i / width
-        val y = j % height
-        val z = j / height
-        init(x, y, z)
-    }
+) = CharArray3(width, height, depth) { i ->
+    val x = i % width
+    val j = i / width
+    val y = j % height
+    val z = j / height
+    init(x, y, z)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -417,16 +521,12 @@ inline fun CharArray3(
  * @return Wrapper around a new array
  */
 inline fun CharArray3(
-    width: Int,
-    height: Int,
-    depth: Int,
+    width: Int, height: Int, depth: Int,
     init: (Int) -> Char
-) =
-    CharArray3(
-        width,
-        height,
-        depth,
-        CharArray(width * height * depth) { init(it) })
+) = CharArray3(
+    width, height, depth,
+    CharArray(width * height * depth) { init(it) }
+)
 
 /**
  * Fills the given array with values

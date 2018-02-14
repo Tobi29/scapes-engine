@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -152,10 +152,7 @@ open class HeapShortArraySlice(
         slice(index, size - index)
 
     override fun slice(index: Int, size: Int): HeapShortArraySlice =
-        prepareSlice(
-            index, size, array,
-            ::HeapShortArraySlice
-        )
+        prepareSlice(index, size, array, ::HeapShortArraySlice)
 
     final override fun get(index: Int): Short =
         array[index(offset, size, index)]
@@ -214,6 +211,109 @@ inline fun ShortArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
 ): HeapShortArraySlice = HeapShortArraySlice(this, index, size)
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read
+ * @return Return value of [block]
+ */
+inline fun <R> ShortArraySliceRO.readAsShortArray(block: (ShortArray, Int, Int) -> R): R {
+    val array: ShortArray
+    val offset: Int
+    when (this) {
+        is HeapShortArraySlice -> {
+            array = this.array
+            offset = this.offset
+        }
+        else -> {
+            array = toShortArray()
+            offset = 0
+        }
+    }
+    return block(array, offset, size)
+}
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
+ * **Note:** The array may or may not be a copy of the slice, so reading
+ * or modifying the original slice during this call can lead to surprising
+ * results
+ *
+ * **Note:** The lifecycle of the exposed array does *not* extend outside
+ * of this call, so storing the array for later use is not supported
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read and modify
+ * @return Return value of [block]
+ */
+inline fun <R> ShortArraySlice.mutateAsShortArray(block: (ShortArray, Int, Int) -> R): R {
+    val array: ShortArray
+    val offset: Int
+    val mapped = when (this) {
+        is HeapShortArraySlice -> {
+            array = this.array
+            offset = this.offset
+            true
+        }
+        else -> {
+            array = toShortArray()
+            offset = 0
+            false
+        }
+    }
+    return try {
+        block(array, offset, size)
+    } finally {
+        if (!mapped) getShorts(0, array.sliceOver())
+    }
+}
+
+/**
+ * Exposes the contents of the slice in an array
+ *
+ * **Note:** The array may or may not be a copy of the slice, so modifying it
+ * is under no circumstances supported
+ * @receiver The slice to read
+ * @return Array containing the data of the slice
+ */
+fun ShortArraySliceRO.readAsShortArray(): ShortArray = when (this) {
+    is HeapShortArraySlice ->
+        if (size == array.size && offset == 0) array else {
+            ShortArray(size)
+                .also { copy(array, it, size, offset) }
+        }
+    else -> ShortArray(size) { getShort(it) }
+}
+
+/**
+ * Copies the contents of the slice into an array
+ * @receiver The slice to copy
+ * @return Array containing the data of the slice
+ */
+fun ShortArraySliceRO.toShortArray(): ShortArray = when (this) {
+    is HeapShortArraySlice -> ShortArray(size)
+        .also { copy(array, it, size, offset) }
+    else -> ShortArray(size) { getShort(it) }
+}
 
 /**
  * Class wrapping an array to provide nicer support for 2-dimensional data.
@@ -292,12 +392,14 @@ inline fun ShortArray2.indices(block: (Int, Int) -> Unit) {
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun ShortArray2(width: Int, height: Int, init: (Int, Int) -> Short) =
-    ShortArray2(width, height) { i ->
-        val x = i % width
-        val y = i / width
-        init(x, y)
-    }
+inline fun ShortArray2(
+    width: Int, height: Int,
+    init: (Int, Int) -> Short
+) = ShortArray2(width, height) { i ->
+    val x = i % width
+    val y = i / width
+    init(x, y)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -306,8 +408,13 @@ inline fun ShortArray2(width: Int, height: Int, init: (Int, Int) -> Short) =
  * @param init Returns values to be inserted by default
  * @return Wrapper around a new array
  */
-inline fun ShortArray2(width: Int, height: Int, init: (Int) -> Short) =
-    ShortArray2(width, height, ShortArray(width * height) { init(it) })
+inline fun ShortArray2(
+    width: Int, height: Int,
+    init: (Int) -> Short
+) = ShortArray2(
+    width, height,
+    ShortArray(width * height) { init(it) }
+)
 
 /**
  * Class wrapping an array to provide nicer support for 3-dimensional data.
@@ -395,18 +502,15 @@ inline fun ShortArray3.indices(block: (Int, Int, Int) -> Unit) {
  * @return Wrapper around a new array
  */
 inline fun ShortArray3(
-    width: Int,
-    height: Int,
-    depth: Int,
+    width: Int, height: Int, depth: Int,
     init: (Int, Int, Int) -> Short
-) =
-    ShortArray3(width, height, depth) { i ->
-        val x = i % width
-        val j = i / width
-        val y = j % height
-        val z = j / height
-        init(x, y, z)
-    }
+) = ShortArray3(width, height, depth) { i ->
+    val x = i % width
+    val j = i / width
+    val y = j % height
+    val z = j / height
+    init(x, y, z)
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
@@ -417,16 +521,12 @@ inline fun ShortArray3(
  * @return Wrapper around a new array
  */
 inline fun ShortArray3(
-    width: Int,
-    height: Int,
-    depth: Int,
+    width: Int, height: Int, depth: Int,
     init: (Int) -> Short
-) =
-    ShortArray3(
-        width,
-        height,
-        depth,
-        ShortArray(width * height * depth) { init(it) })
+) = ShortArray3(
+    width, height, depth,
+    ShortArray(width * height * depth) { init(it) }
+)
 
 /**
  * Fills the given array with values
