@@ -29,13 +29,13 @@ sealed class Either<out L, out R>
  * Left version of [Either]
  * @param T Value type
  */
-class EitherLeft<out T>(val value: T) : Either<T, Nothing>()
+data class EitherLeft<out T>(val value: T) : Either<T, Nothing>()
 
 /**
  * Right version of [Either]
  * @param T Value type
  */
-class EitherRight<out T>(val value: T) : Either<Nothing, T>()
+data class EitherRight<out T>(val value: T) : Either<Nothing, T>()
 
 /**
  * Returns the value, using a common type between two sides
