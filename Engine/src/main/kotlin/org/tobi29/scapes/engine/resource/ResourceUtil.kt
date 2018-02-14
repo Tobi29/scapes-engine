@@ -17,9 +17,9 @@
 package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.Deferred
-import org.tobi29.io.ReadSource
-import org.tobi29.io.readAsByteArray
+import org.tobi29.arrays.readAsByteArray
 import org.tobi29.coroutines.map
+import org.tobi29.io.ReadSource
 import org.tobi29.stdex.utf8ToString
 
 fun ResourceLoader.loadString(source: ReadSource) =

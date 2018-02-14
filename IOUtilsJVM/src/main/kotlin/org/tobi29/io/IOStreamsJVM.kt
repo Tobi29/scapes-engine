@@ -17,6 +17,7 @@
 package org.tobi29.io
 
 import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.readAsByteArray
 import java.io.InputStream
 import java.io.OutputStream
 
