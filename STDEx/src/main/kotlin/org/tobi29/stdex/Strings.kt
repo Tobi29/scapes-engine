@@ -105,6 +105,21 @@ inline fun String.utf8ToArray(
 ): ByteArray = utf8ToArrayImpl(destination, offset, size)
 
 /**
+ * Encodes the given string into an array
+ * @param destination Array to write to or `null` to allocate one
+ * @param offset First byte in the array to write into
+ * @param size Maximum amount of bytes to write or `-1` to write everything or throw
+ * @receiver The string to encode
+ */
+// TODO: Optimize non-string cases
+@Suppress("IfThenToElvis") // The result is disgusting
+fun CharSequence.utf8ToArray(
+    destination: ByteArray? = null,
+    offset: Int = 0,
+    size: Int = -1
+): ByteArray = toString().utf8ToArray(destination, offset, size)
+
+/**
  * Copies the characters of the given array into a new string
  * @param offset First index to read in the array
  * @param size Number of characters to read
@@ -131,6 +146,29 @@ inline fun String.copyToArray(
     startIndex: Int = 0,
     endIndex: Int = length
 ): CharArray = copyToArrayImpl(destination, offset, startIndex, endIndex)
+
+/**
+ * Copies the characters of the given string into an array
+ * @param destination Array to write to
+ * @param offset First index to write into in the array
+ * @param startIndex First index to copy from (inclusive)
+ * @param endIndex Last index to copy from (exclusive)
+ * @receiver String to read from
+ * @return A new string containing the copied characters
+ */
+@Suppress("IfThenToElvis") // The result is disgusting
+fun CharSequence.copyToArray(
+    destination: CharArray = CharArray(length),
+    offset: Int = 0,
+    startIndex: Int = 0,
+    endIndex: Int = length
+): CharArray = if (this is String)
+    copyToArray(destination, offset, startIndex, endIndex)
+else destination.also {
+    for (i in startIndex until endIndex) {
+        destination[i + offset] = this[i + offset]
+    }
+}
 
 /**
  * Ensures a certain length of the string by prefixing or throwing an exception
