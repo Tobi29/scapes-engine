@@ -18,9 +18,9 @@ package org.tobi29.utils
 
 import org.tobi29.stdex.copyToString
 
-actual class MutableString actual constructor(private var str: String) :
-    CharSequence,
-    Appendable {
+actual class MutableString actual constructor(
+    private var str: String
+) : CharSequence, Appendable {
     actual override val length get() = str.length
 
     actual constructor() : this("")
@@ -37,26 +37,22 @@ actual class MutableString actual constructor(private var str: String) :
     actual override fun subSequence(startIndex: Int, endIndex: Int) =
         substring(startIndex, endIndex)
 
-    actual override fun append(c: Char): MutableString = apply {
+    actual override fun append(
+        c: Char
+    ) = apply {
         str += c
     }
 
-    actual override fun append(csq: CharSequence?): MutableString = apply {
-        str += csq ?: "null"
-    }
-
     actual override fun append(
-        csq: CharSequence?,
-        start: Int,
-        end: Int
-    ): MutableString = apply {
-        str += (csq ?: "null").subSequence(start, end)
+        csq: CharSequence?
+    ) = apply {
+        str += csq ?: "null"
     }
 
     actual fun insert(
         position: Int,
         char: Char
-    ): MutableString = apply {
+    ) = apply {
         if (position < 0 || position > str.length) {
             throw IndexOutOfBoundsException("$position")
         }
@@ -65,39 +61,19 @@ actual class MutableString actual constructor(private var str: String) :
 
     actual fun insert(
         position: Int,
-        str: String
-    ): MutableString = apply {
+        csq: CharSequence?
+    ) = apply {
         if (position < 0 || position > this.str.length) {
             throw IndexOutOfBoundsException("$position")
         }
-        this.str = "${this.str.substring(0, position)}$str${this.str.substring(
-            position
-        )}"
+        this.str = "${this.str.substring(0, position)}$str${
+        this.str.substring(position)}"
     }
 
-    actual fun insert(position: Int, array: CharArray): MutableString =
-        insert(position, array, 0)
-
-    actual fun insert(
-        position: Int,
-        array: CharArray,
-        offset: Int
-    ): MutableString = insert(position, array, offset, array.size - offset)
-
-    actual fun insert(
-        position: Int,
-        array: CharArray,
-        offset: Int,
-        length: Int
-    ): MutableString = insert(position, array.copyToString(offset, length))
-
-    actual fun delete(range: IntRange): MutableString =
-        delete(range.start, range.endInclusive + 1)
-
-    actual fun delete(startIndex: Int): MutableString =
-        delete(startIndex, startIndex + 1)
-
-    actual fun delete(startIndex: Int, endIndex: Int): MutableString = apply {
+    actual fun delete(
+        startIndex: Int,
+        endIndex: Int
+    ) = apply {
         if (endIndex < startIndex) {
             throw IllegalArgumentException(
                 "End index less than start index: $endIndex < $startIndex"
@@ -110,9 +86,6 @@ actual class MutableString actual constructor(private var str: String) :
     }
 
     actual fun clear(): MutableString = apply { str = "" }
-
-    actual fun substring(startIndex: Int): String =
-        substring(startIndex, str.length)
 
     actual fun substring(
         startIndex: Int,
@@ -130,4 +103,39 @@ actual class MutableString actual constructor(private var str: String) :
     }
 
     actual override fun toString() = str
+
+    // Delegates
+    actual override fun append(csq: CharSequence?, start: Int, end: Int) =
+        append((csq ?: "null").subSequence(start, end))
+
+    actual fun append(array: CharArray): MutableString =
+        append(array, 0)
+
+    actual fun append(array: CharArray, offset: Int): MutableString =
+        append(array, offset, array.size - offset)
+
+    actual fun append(array: CharArray, offset: Int, length: Int) =
+        append(array.copyToString(offset, length))
+
+    actual fun insert(position: Int, csq: CharSequence?, start: Int, end: Int) =
+        insert(position, (str ?: "null").subSequence(start, end))
+
+    actual fun insert(position: Int, array: CharArray): MutableString =
+        insert(position, array, 0)
+
+    actual fun insert(position: Int, array: CharArray, offset: Int) =
+        insert(position, array, offset, array.size - offset)
+
+    actual fun insert(
+        position: Int, array: CharArray, offset: Int, length: Int
+    ) = insert(position, array.copyToString(offset, length))
+
+    actual fun delete(range: IntRange) =
+        delete(range.start, range.endInclusive + 1)
+
+    actual fun delete(startIndex: Int) =
+        delete(startIndex, startIndex + 1)
+
+    actual fun substring(startIndex: Int): String =
+        substring(startIndex, str.length)
 }

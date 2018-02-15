@@ -18,8 +18,7 @@ package org.tobi29.utils
 
 actual class MutableString(
     val builder: StringBuilder
-) : CharSequence,
-    Appendable {
+) : CharSequence, Appendable {
     actual override val length get() = builder.length
 
     actual constructor() : this(0)
@@ -38,57 +37,54 @@ actual class MutableString(
     actual override fun subSequence(startIndex: Int, endIndex: Int) =
         substring(startIndex, endIndex)
 
-    actual override fun append(c: Char): MutableString = apply {
-        builder.append(c)
-    }
-
-    actual override fun append(csq: CharSequence?): MutableString = apply {
-        builder.append(csq)
-    }
+    actual override fun append(
+        c: Char
+    ) = apply { builder.append(c) }
 
     actual override fun append(
+        csq: CharSequence?
+    ) = apply { builder.append(csq) }
+
+    actual override fun append(
+        csq: CharSequence?, start: Int, end: Int
+    ) = apply { builder.append(csq, start, end) }
+
+    actual fun append(
+        array: CharArray
+    ) = apply { builder.append(array) }
+
+    actual fun append(
+        array: CharArray, offset: Int, length: Int
+    ) = apply { builder.append(array, offset, length) }
+
+    actual fun insert(
+        position: Int,
+        char: Char
+    ) = apply { builder.insert(position, char) }
+
+    actual fun insert(
+        position: Int,
+        csq: CharSequence?
+    ) = apply { builder.insert(position, csq) }
+
+    actual fun insert(
+        position: Int,
         csq: CharSequence?,
         start: Int,
         end: Int
-    ): MutableString = apply {
-        builder.append(csq, start, end)
-    }
-
-    actual fun insert(position: Int, char: Char): MutableString = apply {
-        if (position < 0 || position > builder.length) {
-            throw IndexOutOfBoundsException("$position")
-        }
-        builder.insert(position, char)
-    }
+    ) = apply { builder.insert(position, csq, start, end) }
 
     actual fun insert(
         position: Int,
-        str: String
-    ): MutableString = apply {
-        if (position < 0 || position > builder.length) {
-            throw IndexOutOfBoundsException("$position")
-        }
-        builder.insert(position, str)
-    }
-
-    actual fun insert(position: Int, array: CharArray): MutableString = apply {
-        builder.insert(position, array)
-    }
-
-    actual fun insert(
-        position: Int,
-        array: CharArray,
-        offset: Int
-    ): MutableString = insert(position, array, offset, array.size - offset)
+        array: CharArray
+    ) = apply { builder.insert(position, array) }
 
     actual fun insert(
         position: Int,
         array: CharArray,
         offset: Int,
         length: Int
-    ): MutableString = apply {
-        builder.insert(position, array, offset, length)
-    }
+    ) = apply { builder.insert(position, array, offset, length) }
 
     actual fun delete(range: IntRange): MutableString =
         delete(range.start, range.endInclusive + 1)
@@ -106,11 +102,8 @@ actual class MutableString(
     }
 
     actual fun clear(): MutableString = apply {
-        builder.delete(0, builder.length)
+        builder.setLength(0)
     }
-
-    actual fun substring(startIndex: Int): String =
-        substring(startIndex, builder.length)
 
     actual fun substring(startIndex: Int, endIndex: Int): String {
         if (endIndex < startIndex) {
@@ -122,6 +115,16 @@ actual class MutableString(
     }
 
     actual override fun toString() = builder.toString()
+
+    // Delegates
+    actual fun append(array: CharArray, offset: Int) =
+        append(array, offset, array.size - offset)
+
+    actual fun insert(position: Int, array: CharArray, offset: Int) =
+        insert(position, array, offset, array.size - offset)
+
+    actual fun substring(startIndex: Int): String =
+        substring(startIndex, builder.length)
 }
 
 @Suppress("NOTHING_TO_INLINE")

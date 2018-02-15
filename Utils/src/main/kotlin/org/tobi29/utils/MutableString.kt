@@ -30,17 +30,26 @@ expect class MutableString() : CharSequence,
 
     override fun append(c: Char): MutableString
     override fun append(csq: CharSequence?): MutableString
-    override fun append(csq: CharSequence?, start: Int, end: Int): MutableString
+    override fun append(
+        csq: CharSequence?, start: Int, end: Int
+    ): MutableString
+
+    fun append(array: CharArray): MutableString
+    fun append(array: CharArray, offset: Int): MutableString
+    fun append(
+        array: CharArray, offset: Int, length: Int
+    ): MutableString
 
     fun insert(position: Int, char: Char): MutableString
-    fun insert(position: Int, str: String): MutableString
+    fun insert(position: Int, csq: CharSequence?): MutableString
+    fun insert(
+        position: Int, csq: CharSequence?, start: Int, end: Int
+    ): MutableString
+
     fun insert(position: Int, array: CharArray): MutableString
     fun insert(position: Int, array: CharArray, offset: Int): MutableString
     fun insert(
-        position: Int,
-        array: CharArray,
-        offset: Int,
-        length: Int
+        position: Int, array: CharArray, offset: Int, length: Int
     ): MutableString
 
     fun delete(range: IntRange): MutableString
