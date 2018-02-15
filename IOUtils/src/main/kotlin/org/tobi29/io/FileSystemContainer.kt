@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,8 +44,6 @@ class FileSystemContainer : Path {
 
     override fun channel() =
             throw IOException("File system container cannot have data")
-
-    override suspend fun mimeType() = "application/x-empty"
 
     private fun fileSystem(id: String): Path {
         val fileSystem = fileSystems[id] ?: throw IllegalArgumentException(

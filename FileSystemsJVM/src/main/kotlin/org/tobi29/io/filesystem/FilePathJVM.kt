@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.io.File
 
 actual interface FilePath : Path, Comparable<FilePath> {
     actual override fun toUri(): Uri
+
+    override val name: String? get() = fileName?.toString()
 
     fun toFile(): File
 

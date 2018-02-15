@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile project(":CodecsJVM")
-    compile project(":ContentInfoJVM")
-    compile project(":EngineJVM")
+    compile project(":STDEx")
+    compile project(":IOUtils")
 }

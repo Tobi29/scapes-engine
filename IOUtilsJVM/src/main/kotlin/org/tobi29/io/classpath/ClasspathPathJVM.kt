@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,16 @@ package org.tobi29.io.classpath
 
 import org.tobi29.io.*
 
-data class ClasspathPath(private val classLoader: ClassLoader,
-                         private val path: String) : PathLocal {
+data class ClasspathPath(
+    private val classLoader: ClassLoader,
+    private val path: String
+) : PathLocal {
     override fun get(path: String): PathLocal {
         UnixPathEnvironment.run {
-            return ClasspathPath(classLoader,
-                    this@ClasspathPath.path.resolve(path))
+            return ClasspathPath(
+                classLoader,
+                this@ClasspathPath.path.resolve(path)
+            )
         }
     }
 
@@ -36,11 +40,5 @@ data class ClasspathPath(private val classLoader: ClassLoader,
         val stream = classLoader.getResourceAsStream(path)
                 ?: throw IOException("Classpath entry not found: $path")
         return Channels.newChannel(stream).toChannel()
-    }
-
-    override suspend fun mimeType(): String {
-        return classLoader.getResourceAsStream(path).use {
-            detectMimeIO(it, path)
-        }
     }
 }

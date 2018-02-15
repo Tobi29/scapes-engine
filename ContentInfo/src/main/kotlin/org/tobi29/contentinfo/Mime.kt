@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package org.tobi29.io
+package org.tobi29.contentinfo
+
+import org.tobi29.io.ReadSource
+import org.tobi29.io.ReadSourceLocal
+import org.tobi29.io.ReadableByteStream
 
 /**
  * Detect the mime type of the given resource
@@ -23,8 +27,9 @@ package org.tobi29.io
  * @param name The name of the resource or `null`
  * @return a mime-type string
  */
-fun detectMime(name: String? = null) =
-        detectMime(null, name)
+fun detectMime(
+    name: String? = null
+): String = detectMime(null, name)
 
 /**
  * Detect the mime type of the given resource
@@ -34,6 +39,17 @@ fun detectMime(name: String? = null) =
  * @param name The name of the resource or `null`
  * @return a mime-type string
  */
-fun detectMime(stream: ReadableByteStream? = null,
-               name: String? = null) =
-        detectMimeImpl(stream, name)
+fun detectMime(
+    stream: ReadableByteStream? = null,
+    name: String? = null
+): String = detectMimeImpl(stream, name)
+
+
+suspend fun ReadSource.mimeType(): String = readAsync { detectMime(it, name) }
+
+fun ReadSourceLocal.mimeTypeNow(): String = readNow { detectMime(it, name) }
+
+internal expect fun detectMimeImpl(
+    stream: ReadableByteStream?,
+    name: String?
+): String

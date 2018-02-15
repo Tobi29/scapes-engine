@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,22 @@ import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
-import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.AudioStream
 import org.tobi29.codec.ReadableAudioStream
 import org.tobi29.codec.toPCM16
+import org.tobi29.contentinfo.mimeType
+import org.tobi29.io.*
+import org.tobi29.logging.KLogging
 import org.tobi29.math.vector.Vector3d
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
+import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.stdex.assert
-import org.tobi29.io.*
-import org.tobi29.logging.KLogging
 import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.tobi29.io
 interface ReadSource {
     fun toUri(): Uri? = null
 
+    val name: String? get() = null
+
     // TODO: @Throws(IOException::class)
     fun channel(): ReadableByteChannel
 
@@ -29,9 +31,6 @@ interface ReadSource {
 
     // TODO: @Throws(IOException::class)
     suspend fun data(): ByteViewRO = readAsync { it.asByteView() }
-
-    // TODO: @Throws(IOException::class)
-    suspend fun mimeType(): String = readAsync { detectMime(it) }
 }
 
 interface ReadSourceLocal : ReadSource {
@@ -44,9 +43,4 @@ interface ReadSourceLocal : ReadSource {
 
     // TODO: @Throws(IOException::class)
     fun dataNow(): ByteViewRO = readNow { it.asByteView() }
-
-    override suspend fun mimeType() = mimeTypeNow()
-
-    // TODO: @Throws(IOException::class)
-    fun mimeTypeNow(): String = readNow { detectMime(it) }
 }

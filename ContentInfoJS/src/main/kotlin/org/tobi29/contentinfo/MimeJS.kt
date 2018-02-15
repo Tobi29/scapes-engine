@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,21 @@
  * limitations under the License.
  */
 
-package org.tobi29.io
+package org.tobi29.contentinfo
 
-expect internal fun detectMimeImpl(stream: ReadableByteStream?,
-                                   name: String?): String
+import org.khronos.webgl.Int8Array
+import org.tobi29.io.ReadableByteStream
+import org.tobi29.io.asByteView
+import org.tobi29.io.readAsInt8Array
+import org.w3c.files.File
+
+internal actual fun detectMimeImpl(
+    stream: ReadableByteStream?,
+    name: String?
+): String {
+    val data = stream?.let {
+        stream.asByteView().readAsInt8Array()
+    } ?: Int8Array(0)
+    val file = File(arrayOf(data), name ?: "")
+    return file.type
+}

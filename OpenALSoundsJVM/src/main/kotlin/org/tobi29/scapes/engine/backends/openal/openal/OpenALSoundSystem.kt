@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,29 @@ package org.tobi29.scapes.engine.backends.openal.openal
 
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.LinkedListChannel
-import org.tobi29.logging.KLogging
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.ScapesEngineConfig
-import org.tobi29.scapes.engine.backends.openal.openal.internal.*
 import org.tobi29.codec.AudioStream
+import org.tobi29.contentinfo.mimeType
+import org.tobi29.coroutines.ThreadJob
+import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.launchThread
+import org.tobi29.io.ByteViewERO
+import org.tobi29.io.ReadSource
+import org.tobi29.io.use
+import org.tobi29.logging.KLogging
 import org.tobi29.math.threadLocalRandom
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.math.vector.distanceSqr
 import org.tobi29.math.vector.minus
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.ScapesEngineConfig
+import org.tobi29.scapes.engine.backends.openal.openal.internal.*
 import org.tobi29.scapes.engine.sound.SoundException
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.sound.VolumeChannel
-import org.tobi29.utils.*
-import org.tobi29.io.ByteViewERO
-import org.tobi29.io.ReadSource
-import org.tobi29.io.use
-import org.tobi29.coroutines.ThreadJob
-import org.tobi29.coroutines.Timer
-import org.tobi29.coroutines.launchThread
 import org.tobi29.scapes.engine.volume
 import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.utils.*
 import java.util.concurrent.locks.LockSupport
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.math.roundToLong
