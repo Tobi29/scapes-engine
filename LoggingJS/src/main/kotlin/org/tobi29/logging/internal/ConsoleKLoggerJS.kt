@@ -23,11 +23,11 @@ actual internal fun createDefaultLogger(name: String): KLogger =
         ConsoleKLogger(name)
 
 internal class ConsoleKLogger(val name: String) : KLogger() {
-    override val isTraceEnabled get() = logLevel >= KLogLevel.TRACE
-    override val isDebugEnabled get() = logLevel >= KLogLevel.DEBUG
-    override val isInfoEnabled get() = logLevel >= KLogLevel.INFO
-    override val isWarnEnabled get() = logLevel >= KLogLevel.WARN
-    override val isErrorEnabled get() = logLevel >= KLogLevel.ERROR
+    override val isTraceEnabled get() = logLevel <= KLogLevel.TRACE
+    override val isDebugEnabled get() = logLevel <= KLogLevel.DEBUG
+    override val isInfoEnabled get() = logLevel <= KLogLevel.INFO
+    override val isWarnEnabled get() = logLevel <= KLogLevel.WARN
+    override val isErrorEnabled get() = logLevel <= KLogLevel.ERROR
 
     override fun trace(msg: String) {
         if (isTraceEnabled) console.log("[TRACE] $name: $msg")
