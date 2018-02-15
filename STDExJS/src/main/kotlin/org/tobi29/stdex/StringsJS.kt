@@ -66,6 +66,9 @@ internal actual fun String.copyToArrayImpl(
     startIndex: Int,
     endIndex: Int
 ): CharArray {
+    if (startIndex < 0 || endIndex >= length || endIndex < startIndex
+        || offset < 0 || offset + (endIndex - startIndex) >= destination.size)
+        throw IndexOutOfBoundsException("Invalid offset or indices")
     val destOffset = offset - startIndex
     for (i in startIndex until endIndex) {
         destination[i + destOffset] = this[i]
