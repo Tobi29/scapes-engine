@@ -18,8 +18,15 @@
 
 package org.tobi29.stdex
 
-actual inline fun Int.toString(radix: Int): String =
-    java.lang.Integer.toString(this, radix)
+actual inline fun Int.toString(radix: Int): String {
+    if (radix !in 1..36)
+        throw IllegalArgumentException("Invalid radix: $radix")
+    if (radix > 36) throw IllegalArgumentException("Invalid radix: $radix")
+    return java.lang.Integer.toString(this, radix)
+}
 
-actual inline fun Long.toString(radix: Int): String =
-    java.lang.Long.toString(this, radix)
+actual inline fun Long.toString(radix: Int): String {
+    if (radix !in 1L..36L)
+        throw IllegalArgumentException("Invalid radix: $radix")
+    return java.lang.Long.toString(this, radix)
+}

@@ -18,10 +18,17 @@
 
 package org.tobi29.stdex
 
-@Suppress("UnsafeCastFromDynamic")
-actual inline fun Int.toString(radix: Int): String =
-    asDynamic().toString(radix)
 
-@Suppress("UnsafeCastFromDynamic")
-actual inline fun Long.toString(radix: Int): String =
-    asDynamic().toString(radix)
+actual inline fun Int.toString(radix: Int): String {
+    if (radix !in 1..36)
+        throw IllegalArgumentException("Invalid radix: $radix")
+    @Suppress("UnsafeCastFromDynamic")
+    return asDynamic().toString(radix)
+}
+
+actual inline fun Long.toString(radix: Int): String {
+    if (radix !in 1L..36L)
+        throw IllegalArgumentException("Invalid radix: $radix")
+    @Suppress("UnsafeCastFromDynamic")
+    return asDynamic().toString(radix)
+}
