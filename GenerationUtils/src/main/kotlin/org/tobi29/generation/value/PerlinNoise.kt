@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,12 @@
 package org.tobi29.generation.value
 
 import org.tobi29.math.Random
+import org.tobi29.math.vector.dot
 import org.tobi29.stdex.math.floorToInt
 import org.tobi29.stdex.math.mix
-import org.tobi29.math.vector.dot
 
 class PerlinNoise(random: Random) : ValueNoise {
     private val perm = IntArray(512)
-    private val grad3 = GRAD_3 // Avoid getter call in noise functions
 
     constructor(seed: Long) : this(Random(seed))
 
@@ -47,10 +46,10 @@ class PerlinNoise(random: Random) : ValueNoise {
         val gi010 = perm[xx + perm[yy + 1]] % 12
         val gi100 = perm[xx + 1 + perm[yy]] % 12
         val gi110 = perm[xx + 1 + perm[yy + 1]] % 12
-        val n000 = dot(grad3[gi000][0], grad3[gi000][1], xxx, yyy)
-        val n100 = dot(grad3[gi100][0], grad3[gi100][1], xxx - 1, yyy)
-        val n010 = dot(grad3[gi010][0], grad3[gi010][1], xxx, yyy - 1)
-        val n110 = dot(grad3[gi110][0], grad3[gi110][1], xxx - 1, yyy - 1)
+        val n000 = dot(GRAD_3[gi000][0], GRAD_3[gi000][1], xxx, yyy)
+        val n100 = dot(GRAD_3[gi100][0], GRAD_3[gi100][1], xxx - 1, yyy)
+        val n010 = dot(GRAD_3[gi010][0], GRAD_3[gi010][1], xxx, yyy - 1)
+        val n110 = dot(GRAD_3[gi110][0], GRAD_3[gi110][1], xxx - 1, yyy - 1)
         val u = fade(xxx)
         val v = fade(yyy)
         val nx00 = mix(n000, n100, u)
@@ -78,21 +77,21 @@ class PerlinNoise(random: Random) : ValueNoise {
         val gi101 = perm[xx + 1 + perm[yy + perm[zz + 1]]] % 12
         val gi110 = perm[xx + 1 + perm[yy + 1 + perm[zz]]] % 12
         val gi111 = perm[xx + 1 + perm[yy + 1 + perm[zz + 1]]] % 12
-        val n000 = dot(grad3[gi000][0], grad3[gi000][1], grad3[gi000][2],
+        val n000 = dot(GRAD_3[gi000][0], GRAD_3[gi000][1], GRAD_3[gi000][2],
                 xxx, yyy, zzz)
-        val n100 = dot(grad3[gi100][0], grad3[gi100][1], grad3[gi100][2],
+        val n100 = dot(GRAD_3[gi100][0], GRAD_3[gi100][1], GRAD_3[gi100][2],
                 xxx - 1, yyy, zzz)
-        val n010 = dot(grad3[gi010][0], grad3[gi010][1], grad3[gi010][2],
+        val n010 = dot(GRAD_3[gi010][0], GRAD_3[gi010][1], GRAD_3[gi010][2],
                 xxx, yyy - 1, zzz)
-        val n110 = dot(grad3[gi110][0], grad3[gi110][1], grad3[gi110][2],
+        val n110 = dot(GRAD_3[gi110][0], GRAD_3[gi110][1], GRAD_3[gi110][2],
                 xxx - 1, yyy - 1, zzz)
-        val n001 = dot(grad3[gi001][0], grad3[gi001][1], grad3[gi001][2],
+        val n001 = dot(GRAD_3[gi001][0], GRAD_3[gi001][1], GRAD_3[gi001][2],
                 xxx, yyy, zzz - 1)
-        val n101 = dot(grad3[gi101][0], grad3[gi101][1], grad3[gi101][2],
+        val n101 = dot(GRAD_3[gi101][0], GRAD_3[gi101][1], GRAD_3[gi101][2],
                 xxx - 1, yyy, zzz - 1)
-        val n011 = dot(grad3[gi011][0], grad3[gi011][1], grad3[gi011][2],
+        val n011 = dot(GRAD_3[gi011][0], GRAD_3[gi011][1], GRAD_3[gi011][2],
                 xxx, yyy - 1, zzz - 1)
-        val n111 = dot(grad3[gi111][0], grad3[gi111][1], grad3[gi111][2],
+        val n111 = dot(GRAD_3[gi111][0], GRAD_3[gi111][1], GRAD_3[gi111][2],
                 xxx - 1, yyy - 1, zzz - 1)
         val u = fade(xxx)
         val v = fade(yyy)
@@ -105,23 +104,21 @@ class PerlinNoise(random: Random) : ValueNoise {
         val nxy1 = mix(nx01, nx11, v)
         return mix(nxy0, nxy1, w)
     }
-
-    companion object {
-        private val GRAD_3 = arrayOf(
-                doubleArrayOf(1.0, 1.0, 0.0),
-                doubleArrayOf(-1.0, 1.0, 0.0),
-                doubleArrayOf(1.0, -1.0, 0.0),
-                doubleArrayOf(-1.0, -1.0, 0.0),
-                doubleArrayOf(1.0, 0.0, 1.0),
-                doubleArrayOf(-1.0, 0.0, 1.0),
-                doubleArrayOf(1.0, 0.0, -1.0),
-                doubleArrayOf(-1.0, 0.0, -1.0),
-                doubleArrayOf(0.0, 1.0, 1.0),
-                doubleArrayOf(0.0, -1.0, 1.0),
-                doubleArrayOf(0.0, 1.0, -1.0),
-                doubleArrayOf(0.0, -1.0, -1.0))
-    }
 }
+
+private val GRAD_3 = arrayOf(
+    doubleArrayOf(1.0, 1.0, 0.0),
+    doubleArrayOf(-1.0, 1.0, 0.0),
+    doubleArrayOf(1.0, -1.0, 0.0),
+    doubleArrayOf(-1.0, -1.0, 0.0),
+    doubleArrayOf(1.0, 0.0, 1.0),
+    doubleArrayOf(-1.0, 0.0, 1.0),
+    doubleArrayOf(1.0, 0.0, -1.0),
+    doubleArrayOf(-1.0, 0.0, -1.0),
+    doubleArrayOf(0.0, 1.0, 1.0),
+    doubleArrayOf(0.0, -1.0, 1.0),
+    doubleArrayOf(0.0, 1.0, -1.0),
+    doubleArrayOf(0.0, -1.0, -1.0))
 
 @Suppress("NOTHING_TO_INLINE")
 // Not placed in the companion object due to wonky bytecode generation from
