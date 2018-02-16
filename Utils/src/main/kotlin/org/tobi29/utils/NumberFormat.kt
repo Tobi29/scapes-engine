@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,34 @@ fun Int.toString(radix: Int = 10, length: Int): String =
  */
 fun Long.toString(radix: Int = 10, length: Int): String =
     toString(radix).forceDigits(length)
+
+/**
+ * Formats the given number as (-)d.ddd
+ *
+ * **Note:** The rounding behaviour may differ between platforms, consult a
+ * nearby plushy for anger relief
+ * @param
+ */
+inline fun Double.toStringDecimal(
+    precision: Int = 6
+): String = toStringDecimalImpl(precision)
+
+/**
+ *
+ */
+inline fun Double.toStringExponential(
+    precision: Int = 6
+): String = toStringExponentialImpl(precision)
+
+@PublishedApi
+internal expect fun Double.toStringDecimalImpl(
+    precision: Int
+): String
+
+@PublishedApi
+internal expect fun Double.toStringExponentialImpl(
+    precision: Int
+): String
 
 private fun String.forceDigits(length: Int, zero: Char = '0'): String {
     val negative = getOrNull(0) == '-'
