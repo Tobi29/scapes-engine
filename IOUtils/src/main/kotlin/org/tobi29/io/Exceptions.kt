@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,5 +15,29 @@
  */
 
 package org.tobi29.io
+
+expect open class IOException : Exception {
+    constructor()
+    constructor(message: String)
+    constructor(cause: Throwable)
+}
+
+expect class ClosedChannelException : IOException {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor()
+}
+
+expect class BufferOverflowException : RuntimeException {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor()
+}
+
+expect class BufferUnderflowException : RuntimeException {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor()
+}
 
 class EndOfStreamException : IOException()

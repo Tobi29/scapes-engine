@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,4 +90,25 @@ object CompressionUtil {
 
         override fun close()
     }
+}
+
+expect class ZDeflater(level: Int,
+                       buffer: Int = 8192) : CompressionUtil.Filter {
+    override fun input(buffer: ReadableByteStream): Boolean
+    override fun output(buffer: WritableByteStream): Int
+    override fun finish()
+    override fun needsInput(): Boolean
+    override fun finished(): Boolean
+    override fun reset()
+    override fun close()
+}
+
+expect class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
+    override fun input(buffer: ReadableByteStream): Boolean
+    override fun output(buffer: WritableByteStream): Int
+    override fun finish()
+    override fun needsInput(): Boolean
+    override fun finished(): Boolean
+    override fun reset()
+    override fun close()
 }

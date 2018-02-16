@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,17 @@
 package org.tobi29.io
 
 import org.tobi29.stdex.toIntClamped
+
+expect interface Channel : Closeable {
+    fun isOpen(): Boolean
+
+    /**
+     * @throws IOException
+     */
+    override fun close()
+}
+
+expect interface InterruptibleChannel : Channel
 
 interface ReadableByteChannel : Channel {
     fun read(buffer: ByteView): Int

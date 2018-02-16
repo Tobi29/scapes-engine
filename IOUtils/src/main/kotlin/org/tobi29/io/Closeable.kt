@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,20 @@
  */
 
 package org.tobi29.io
+
+expect interface AutoCloseable {
+    /**
+     * @throws Exception
+     */
+    fun close()
+}
+
+expect interface Closeable : AutoCloseable {
+    /**
+     * @throws IOException
+     */
+    override fun close()
+}
 
 inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
     var closed = false

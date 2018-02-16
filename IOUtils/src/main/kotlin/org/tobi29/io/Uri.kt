@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,16 @@ expect sealed class UriHierarchical : UriAbsolute {
 /**
  * Class representing a hierarchical non-network URI
  */
-expect class UriHierarchicalAbsolute(scheme: String,
-                                     path: String,
-                                     query: String?,
-                                     fragment: String?) : UriHierarchical {
+expect class UriHierarchicalAbsolute : UriHierarchical {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(
+        scheme: String,
+        path: String,
+        query: String?,
+        fragment: String?
+    )
+
     override val path: String
 
     override fun toString(): String
@@ -60,13 +66,19 @@ expect class UriHierarchicalAbsolute(scheme: String,
 /**
  * Class representing a hierarchical network URI
  */
-expect class UriHierarchicalNet(scheme: String,
-                                userInfo: String?,
-                                host: String?,
-                                port: Int?,
-                                path: String?,
-                                query: String?,
-                                fragment: String?) : UriHierarchical {
+expect class UriHierarchicalNet : UriHierarchical {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(
+        scheme: String,
+        userInfo: String?,
+        host: String?,
+        port: Int?,
+        path: String?,
+        query: String?,
+        fragment: String?
+    )
+
     val userInfo: String?
     val host: String?
     val port: Int?
@@ -80,9 +92,15 @@ expect class UriHierarchicalNet(scheme: String,
 /**
  * Class representing an opaque URI
  */
-expect class UriOpaque(scheme: String,
-                       opaque: String,
-                       fragment: String?) : UriAbsolute {
+expect class UriOpaque : UriAbsolute {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(
+        scheme: String,
+        opaque: String,
+        fragment: String?
+    )
+
     val opaque: String
 
     override fun toString(): String
@@ -94,9 +112,15 @@ expect class UriOpaque(scheme: String,
 /**
  * Class representing a relative URI
  */
-expect class UriRelative(path: String,
-                         query: String?,
-                         fragment: String?) : Uri {
+expect class UriRelative : Uri {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(
+        path: String,
+        query: String?,
+        fragment: String?
+    )
+
     val path: String
     val query: String?
 

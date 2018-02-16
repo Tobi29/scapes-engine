@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,36 @@ package org.tobi29.io
 import org.tobi29.arrays.HeapByteArraySlice
 import org.tobi29.arrays.index
 import org.tobi29.arrays.prepareSlice
+
+expect sealed class HeapViewByte : HeapByteArraySlice, HeapView {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(array: ByteArray, offset: Int, size: Int)
+
+    override abstract fun slice(index: Int): HeapViewByte
+
+    override abstract fun slice(index: Int, size: Int): HeapViewByte
+}
+
+expect class HeapViewByteBE : HeapViewByte, ByteViewBE {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(array: ByteArray, offset: Int, size: Int)
+
+    override fun slice(index: Int): HeapViewByteBE
+
+    override fun slice(index: Int, size: Int): HeapViewByteBE
+}
+
+expect class HeapViewByteLE : HeapViewByte, ByteViewLE {
+    // FIXME: Kotlin/Native bug
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(array: ByteArray, offset: Int, size: Int)
+
+    override fun slice(index: Int): HeapViewByteLE
+
+    override fun slice(index: Int, size: Int): HeapViewByteLE
+}
 
 val ByteViewRO.viewBE: ByteViewBERO
     get() = when (this) {
