@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,13 @@
 
 package org.tobi29.chrono
 
+import org.tobi29.stdex.math.remP
 import org.tobi29.utils.DurationNanos
+import org.tobi29.utils.Int128
+import org.tobi29.utils.toInt128
+import org.tobi29.utils.toLongClamped
+
+typealias EpochNanos = Int128
 
 /**
  * Date and time combined with time zone offset
@@ -128,6 +134,21 @@ enum class Month(val value: Int) {
      */
     val maxLength: Int get() = length(true)
 
+    fun firstDayInYear(leapYear: Boolean = false): Int = when (this) {
+        JANUARY -> 0
+        FEBRUARY -> 31
+        MARCH -> 31 + FEBRUARY.length(leapYear)
+        APRIL -> 31 + FEBRUARY.length(leapYear) + 31
+        MAY -> 31 + FEBRUARY.length(leapYear) + 31 + 30
+        JUNE -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31
+        JULY -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31 + 30
+        AUGUST -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31 + 30 + 31
+        SEPTEMBER -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31 + 30 + 31 + 31
+        OCTOBER -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31 + 30 + 31 + 31 + 30
+        NOVEMBER -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31
+        DECEMBER -> 31 + FEBRUARY.length(leapYear) + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30
+    }
+
     companion object {
         /**
          * Returns month for given numeric value
@@ -218,3 +239,83 @@ typealias Second = Int
          * Valid range is `0` to `999999999`
          */
 typealias Nanosecond = Int
+
+fun DateTime.toEpochNanos(): EpochNanos {
+    var days = date.day - 1L + date.month.firstDayInYear(date.year.isLeap)
+
+    var year = date.year
+    if (year >= 400) {
+        days += (year / 400) * 146097L
+    } else if (year <= -400) {
+        days += ((year + 399) / 400 - 1) * 146097L
+    }
+    year %= 400
+    days += (epochYear until year)
+        .sumBy { if (it.isLeap) 366 else 365 }
+    days -= (year until epochYear)
+        .sumBy { if (it.isLeap) 366 else 365 }
+
+    return (((days * 24L + time.hour) * 60L + time.minute) * 60L +
+            time.second).toInt128() * 1000000000L.toInt128() +
+            time.nanosecond.toInt128()
+}
+
+fun EpochNanos.toDateTime(): DateTime {
+    // We return the maximum/minimum values possible in a DateTime
+    // to avoid surprising overflows or expections
+    if (this >= "67767976233532799999999999".toInt128())
+        return DateTime(
+            Date(Int.MAX_VALUE, Month.DECEMBER, 31),
+            Time(23, 59, 59, 999999999)
+        )
+    else if (this <= "-67768100567971200000000000".toInt128())
+        return DateTime(
+            Date(Int.MIN_VALUE, Month.JANUARY, 1),
+            Time(0, 0, 0, 0)
+        )
+
+    val nanosecond128 = this remP 1000000000L.toInt128()
+    val nanosecond = nanosecond128.toInt()
+    var remaining =
+        ((this - nanosecond128) / 1000000000L.toInt128()).toLongClamped()
+    val second = (remaining remP 60L).toInt()
+    remaining -= second
+    remaining /= 60L
+    val minute = (remaining remP 60L).toInt()
+    remaining -= minute
+    remaining /= 60L
+    val hour = (remaining remP 24L).toInt()
+    remaining -= hour
+    remaining /= 24L
+
+    var year = epochYear
+    if (remaining >= 146097L) {
+        year += (remaining / 146097L).toInt() * 400
+    } else if (remaining <= -146097L) {
+        year += ((remaining + 146096L) / 146097L - 1L).toInt() * 400
+    }
+    remaining %= 146097L
+    if (remaining > 0) {
+        while (true) {
+            val length = if (year.isLeap) 366 else 365
+            if (remaining < length) break
+            remaining -= length
+            year++
+        }
+    } else {
+        while (remaining < 0) {
+            year--
+            remaining += if (year.isLeap) 366 else 365
+        }
+    }
+
+    val month = Month.values()
+        .last { it.firstDayInYear(year.isLeap) <= remaining }
+    remaining -= month.firstDayInYear(year.isLeap)
+    val day = remaining.toInt() + 1
+    val date = Date(year, month, day)
+    val time = Time(hour, minute, second, nanosecond)
+    return DateTime(date, time)
+}
+
+private const val epochYear = 1970
