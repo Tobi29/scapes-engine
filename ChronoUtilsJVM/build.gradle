@@ -20,5 +20,4 @@ dependencies {
     expectedBy project(":ChronoUtils")
     sources project(path: ":ChronoUtils", configuration: "sources")
     compile project(":UtilsJVM")
-    compile rootProject.ext.threeten
 }

@@ -16,21 +16,15 @@
 
 package org.tobi29.chrono
 
+import org.tobi29.utils.DurationNanos
 import org.tobi29.utils.InstantNanos
-
-interface TimeZone {
-    fun encode(instant: InstantNanos): Set<DateTime> = encodeWithOffset(instant)
-        .asSequence().map { it.dateTime }.toSet()
-
-    fun encodeWithOffset(instant: InstantNanos): Set<OffsetDateTime>
-
-    fun decode(dateTime: DateTime): Set<InstantNanos>
-}
+import org.tobi29.utils.toInt128
+import org.tobi29.utils.toLongClamped
 
 /**
  * UTC time zone, behaves the same across all systems
  */
-expect val timeZoneUTC: TimeZone
+val timeZoneUtc: TimeZone get() = timeZoneOf("UTC")
 
 /**
  * Local system time zone
@@ -42,4 +36,101 @@ expect val timeZoneLocal: TimeZone
  * @param name Name of timezone, currently implementation dependant
  * @return Time zone handle
  */
-expect fun timeZoneOf(name: String): TimeZone
+fun timeZoneOf(name: String): TimeZone = tzdata[name]
+        ?: throw IllegalArgumentException("Invalid zone: $name")
+
+val timeZones: Sequence<TimeZone>
+    get() = tzdata.asSequence().map { timeZoneOf(it.key) }
+
+class TimeZone internal constructor(
+    val id: String,
+    private val data: Lazy<TzEntry>
+) {
+    private val initial: OffsetZone get() = data.value.first
+    private val sinceData: List<SinceData> get() = data.value.second
+
+    fun offsetAt(instant: InstantNanos): DurationNanos {
+        val instantFast = (instant / 1000000000L.toInt128()).toLongClamped()
+        windows { start, end, offset ->
+            if (instantFast < end)
+                return offset.offset.toInt128() * 1000000000L.toInt128()
+        }
+        throw IllegalStateException("Internal error")
+    }
+
+    fun offsetsInto(epoch: EpochNanos): Set<DurationNanos> {
+        val epochFast = (epoch / 1000000000L.toInt128()).toLongClamped()
+        val offsets = HashSet<DurationNanos>()
+        windows { start, end, offset ->
+            if (epochFast - offset.offset in start until end)
+                offsets.add(offset.offset.toInt128() * 1000000000L.toInt128())
+        }
+        return offsets
+    }
+
+    fun dumpRanges(): List<Triple<DateTime, DateTime, DurationNanos>> {
+        val ranges =
+            ArrayList<Triple<DateTime, DateTime, DurationNanos>>(sinceData.size + 1)
+        windows { start, end, offset ->
+            ranges.add(
+                Triple(
+                    (start.toInt128() * 1000000000L.toInt128()).toDateTime(),
+                    (end.toInt128() * 1000000000L.toInt128()).toDateTime(),
+                    offset.offset.toInt128() * 1000000000L.toInt128()
+                )
+            )
+        }
+        return ranges
+    }
+
+    private inline fun windows(block: (Long, Long, OffsetZone) -> Unit) {
+        var begin = Long.MIN_VALUE
+        var end = 0L
+        var offset = initial
+        repeat(sinceData.size + 1) { i ->
+            val since = sinceData.getOrNull(i)
+            end = if (since != null) end + since.since else Long.MAX_VALUE
+            block(begin, end, offset)
+            begin = end
+            if (since != null) {
+                offset = sinceData[i].offset
+            }
+        }
+    }
+}
+
+fun TimeZone.encode(instant: InstantNanos): DateTime =
+    offsetAt(instant).let { (instant + it).toDateTime() }
+
+fun TimeZone.encodeWithOffset(instant: InstantNanos): OffsetDateTime =
+    offsetAt(instant).let { OffsetDateTime((instant + it).toDateTime(), it) }
+
+fun TimeZone.decode(dateTime: DateTime): Set<InstantNanos> {
+    val epoch = dateTime.toEpochNanos()
+    return offsetsInto(epoch).mapTo(HashSet()) {
+        epoch - it
+    }
+}
+
+val TimeZone.isEtc: Boolean
+    get() = id.startsWith("Etc/") || id.startsWith("GMT")
+            || id == "Universal" || id == "UTC"
+
+inline fun timeZoneForOffset(
+    instant: InstantNanos,
+    offset: DurationNanos,
+    filter: (TimeZone) -> Boolean = { true }
+): TimeZone? =
+    timeZones.firstOrNull { it.offsetAt(instant) == offset && filter(it) }
+
+internal data class OffsetZone(
+    val name: String,
+    val offset: Int
+)
+
+internal data class SinceData(
+    val since: Long,
+    val offset: OffsetZone
+)
+
+internal typealias TzEntry = Pair<OffsetZone, List<SinceData>>
