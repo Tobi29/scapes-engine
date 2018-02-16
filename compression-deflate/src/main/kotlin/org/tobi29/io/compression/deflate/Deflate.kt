@@ -56,10 +56,12 @@ expect class InflateHandle(
 
 fun deflate(
     input: ReadableByteStream,
-    level: Int = -1
+    level: Int = -1,
+    inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
+    outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
 ): ByteView {
     val stream = MemoryViewStreamDefault()
-    deflate(input, stream, level)
+    deflate(input, stream, level, inputBuffer, outputBuffer)
     stream.flip()
     return stream.bufferSlice()
 }
@@ -67,22 +69,32 @@ fun deflate(
 fun deflate(
     input: ReadableByteStream,
     output: WritableByteStream,
-    level: Int = -1
-) = DeflateHandle(level).use { it.process(input, output) }
+    level: Int = -1,
+    inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
+    outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
+) = DeflateHandle(level).use {
+    it.process(input, output, inputBuffer, outputBuffer)
+}
 
 fun inflate(
-    input: ReadableByteStream
+    input: ReadableByteStream,
+    inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
+    outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
 ): ByteView {
     val stream = MemoryViewStreamDefault()
-    inflate(input, stream)
+    inflate(input, stream, inputBuffer, outputBuffer)
     stream.flip()
     return stream.bufferSlice()
 }
 
 fun inflate(
     input: ReadableByteStream,
-    output: WritableByteStream
-) = InflateHandle().use { it.process(input, output) }
+    output: WritableByteStream,
+    inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
+    outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
+) = InflateHandle().use {
+    it.process(input, output, inputBuffer, outputBuffer)
+}
 
 fun FilterHandle.process(
     input: ReadableByteStream,
