@@ -19,6 +19,8 @@ package org.tobi29.io.filesystem
 import org.tobi29.io.*
 import org.tobi29.utils.findMap
 
+expect fun path(path: String): FilePath
+
 // TODO: @Throws(IOException::class)
 fun channel(path: FilePath,
             options: Array<out OpenOption> = emptyArray(),
