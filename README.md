@@ -43,13 +43,13 @@ The engine can run on the [Multi OS Engine](https://multi-os-engine.org),
 however there is no backend for it that is in a usable state. There might be one
 added in the future, but this is rather low priority.
 
-### Kotlin/Native
-Kotlin/Native is not supported at the moment, using some of the Kotlin/JS code
-and monkey-patching the incomplete stdlib already works fairly well, however
-waiting for multiplatform support for public upload.
+A Kotlin/Native based port seems feasible as well by now, but requires quite a
+bit more work.
 
-Due to the early stage of development of Kotlin/Native, no scope has been
-decided on for future support.
+### Kotlin/Native
+Many modules run on Kotlin/Native by now, however things are still very fast
+moving and unstable. Currently the last showstopper that needs to be overcome
+is `kotlinx.coroutines` support.
 
 ## Build
 The project uses Gradle to build all modules.
@@ -131,8 +131,9 @@ handling.
   * Base64JVM
 
 ## Checksums
-Contains a CRC32 implementation and a wrapper around the jvm MessageDigest.
-Cross platform support for the latter may come eventually.
+Contains CRC32 and SHA-256 implementations. Additional algorithms may come
+eventually. The JVM version uses the `MessageDigest` class in order to keep
+things lightweight.
 
 ### Artifacts
   * Checksums
@@ -181,6 +182,15 @@ Android or other platforms lacking support for `java.nio.file`.
   * FileSystemsJVM
   * NIOFileSystemJVM (not recommended on Android)
   * IOFileSystemJVM (only recommended on Android)
+
+## Content Info
+Utilities for inspecting file contents, such as guessing the
+MIME types (aka Media Types) of some data.
+
+### Artifacts
+  * ContentInfo
+  * ContentInfoJS
+  * ContentInfoJVM
   
 ### Dependencies
   * [Apache Tika](https://tika.apache.org) (JVM only)
@@ -213,7 +223,7 @@ Image class to pass around images and do copy paste operations on them.
   * [PNGJ](https://github.com/leonbloy/pngj) (JVM only)
 
 ## Generation Utils
-Various utilities for procedural generation, such as Perlin and Simplex
+Various utilities for procedural generation, such as Perlin and OpenSimplex
 noise, noise transformations and maze generators
 
 ### Artifacts
@@ -228,9 +238,6 @@ Basic calendar classes and convertion from time instants to dates and time.
   * ChronoUtils
   * ChronoUtilsJS
   * ChronoUtilsJVM
-
-### Dependencies
-  * [ThreeTen](http://www.threeten.org) (JVM only)
 
 ## Platform Integration
 Various utilities to allow integrating with the host platform.
