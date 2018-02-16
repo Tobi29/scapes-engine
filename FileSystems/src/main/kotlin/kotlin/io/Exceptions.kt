@@ -14,10 +14,26 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+package kotlin.io
 
-dependencies {
-    compile project(":STDEx")
-    compile project(":IOUtils")
-    compile project(":Logging")
+import org.tobi29.io.IOException
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect open class FileSystemException : IOException {
+    constructor(deny: Nothing)
+}
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect class FileAlreadyExistsException : FileSystemException {
+    constructor(deny: Nothing)
+}
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect class AccessDeniedException : FileSystemException {
+    constructor(deny: Nothing)
+}
+
+@Suppress("NO_ACTUAL_FOR_EXPECT")
+expect class NoSuchFileException : FileSystemException {
+    constructor(deny: Nothing)
 }

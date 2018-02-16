@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,3 +47,38 @@ fun NoSuchFileException(path: FilePath,
                         otherPath: FilePath? = null,
                         reason: String? = null): FileSystemException =
         NoSuchFileExceptionImpl(path, otherPath, reason)
+
+/**
+ * the path on which the failed operation was performed.
+ */
+expect val FileSystemException.path: FilePath
+
+/**
+ * the second path involved in the operation, if any (for example, the target of
+ * a copy or move)
+ */
+expect val FileSystemException.otherPath: FilePath?
+
+internal expect fun FileSystemExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): FileSystemException
+
+internal expect fun FileAlreadyExistsExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): FileAlreadyExistsException
+
+internal expect fun AccessDeniedExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): AccessDeniedException
+
+internal expect fun NoSuchFileExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): NoSuchFileException

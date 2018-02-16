@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-package kotlin.io
+package org.tobi29.io.filesystem
 
-import org.tobi29.io.IOException
+import org.tobi29.io.Path
+import org.tobi29.io.Uri
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-expect open class FileSystemException(deny: Nothing) : IOException
+expect interface FilePath : Path, Comparable<FilePath> {
+    override fun toUri(): Uri
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-expect class FileAlreadyExistsException(deny: Nothing) : FileSystemException
+    fun normalize(): FilePath
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-expect class AccessDeniedException(deny: Nothing) : FileSystemException
+    fun resolve(other: String): FilePath
 
-@Suppress("NO_ACTUAL_FOR_EXPECT")
-expect class NoSuchFileException(deny: Nothing) : FileSystemException
+    fun resolve(other: FilePath): FilePath
+
+    fun startsWith(other: String): Boolean
+
+    fun startsWith(other: FilePath): Boolean
+
+    fun relativize(other: FilePath): FilePath?
+
+    val fileName: FilePath?
+
+    override val parent: FilePath?
+
+    fun toAbsolutePath(): FilePath
+}

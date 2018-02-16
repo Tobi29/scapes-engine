@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,34 @@
 
 package org.tobi29.io.filesystem
 
-actual internal fun FileSystemExceptionImpl(path: FilePath,
-                                          otherPath: FilePath?,
-                                          reason: String?): FileSystemException =
-        FileSystemException(path.toFile(), otherPath?.toFile(), reason)
-
-actual internal fun FileAlreadyExistsExceptionImpl(path: FilePath,
-                                                 otherPath: FilePath?,
-                                                 reason: String?): FileAlreadyExistsException =
-        FileAlreadyExistsException(path.toFile(), otherPath?.toFile(), reason)
-
-actual internal fun AccessDeniedExceptionImpl(path: FilePath,
-                                            otherPath: FilePath?,
-                                            reason: String?): AccessDeniedException =
-        AccessDeniedException(path.toFile(), otherPath?.toFile(), reason)
-
-actual internal fun NoSuchFileExceptionImpl(path: FilePath,
-                                          otherPath: FilePath?,
-                                          reason: String?): NoSuchFileException =
-        NoSuchFileException(path.toFile(), otherPath?.toFile(), reason)
-
 actual val FileSystemException.path get() = path(file)
 
 actual val FileSystemException.otherPath get() = other?.let { path(it) }
+
+internal actual fun FileSystemExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): FileSystemException =
+    FileSystemException(path.toFile(), otherPath?.toFile(), reason)
+
+internal actual fun FileAlreadyExistsExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): FileAlreadyExistsException =
+    FileAlreadyExistsException(path.toFile(), otherPath?.toFile(), reason)
+
+internal actual fun AccessDeniedExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): AccessDeniedException =
+    AccessDeniedException(path.toFile(), otherPath?.toFile(), reason)
+
+internal actual fun NoSuchFileExceptionImpl(
+    path: FilePath,
+    otherPath: FilePath?,
+    reason: String?
+): NoSuchFileException =
+    NoSuchFileException(path.toFile(), otherPath?.toFile(), reason)
