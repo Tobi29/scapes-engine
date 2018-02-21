@@ -261,48 +261,17 @@ import org.tobi29.stdex.readOnly
 import org.tobi29.stdex.toIntCaseSensitive
 import org.tobi29.stdex.toLongCaseSensitive
 
-private fun parseOffsets(str: String): List<OffsetZone> =
-    str.split(',').map { pattern ->
-        val equals = pattern.lastIndexOf('=')
-        val name = pattern.substring(0, equals)
-        val offset = pattern.substring(equals + 1).toIntCaseSensitive(62)
-        OffsetZone(name, offset)
-    }
+object TzData {
+    private val unknownZone = OffsetZone("?", 0)
 
-private fun parseTzEntry(str: String): TzEntry =
-    str.split(',', limit = 2).let { initialSplit ->
-        val initial =
-            offsets.getOrElse(initialSplit[0].toIntCaseSensitive(62)) { unknownZone }
-        val sinces = if (initialSplit[1].isNotEmpty())
-            initialSplit[1].splitToSequence(',').map {
-                val split = it.split('=', limit = 2)
-                val since = split[0].toLongCaseSensitive(62)
-                val offsetZone =
-                    offsets.getOrElse(split[1].toIntCaseSensitive(62)) { unknownZone }
-                SinceData(since, offsetZone)
-            }.toList() else emptyList()
-        initial to sinces
-    }
+    private val offsets: List<OffsetZone> = parseOffsets(
+        "${offsetZones.joinToString(",") { "${it.timezoneAbbr}=${it.offset.toStringCaseSensitive(idBase)}" }}"
+    )
 
-private val unknownZone = OffsetZone("?", 0)
+    private val _tzdata = ConcurrentHashMap<String, TimeZone>()
+    internal val tzdata = _tzdata.readOnly()
 
-private val offsets: List<OffsetZone> = parseOffsets(
-    "${offsetZones.joinToString(",") { "${it.timezoneAbbr}=${it.offset.toStringCaseSensitive(idBase)}" }}"
-)
-
-private fun insert(
-    map: MutableMap<String, TimeZone>,
-    name: String,
-    str: String
-) = map.put(name, TimeZone(name, lazy { parseTzEntry(str) }))
-
-private fun link(
-    map: MutableMap<String, TimeZone>,
-    name: String,
-    other: String
-) = map.put(name, map[other]!!)
-
-internal val tzdata = ConcurrentHashMap<String, TimeZone>().apply {""")
+    init {""")
 
 val inserted = HashMap<String, String>()
 
@@ -311,16 +280,50 @@ data.forEach {
     val share = inserted[entry]
     if (share != null) {
         println("""
-    link(this, "${it.key}", "$share")""")
+        link("${it.key}", "$share")""")
     } else {
         println("""
-    insert(
-        this, "${it.key}",
-        "$entry"
-    )""")
+        insert(
+            "${it.key}",
+            "$entry"
+        )""")
         inserted[entry] = it.key
     }
 }
 
 println("""
+    }
+
+    private fun parseOffsets(str: String): List<OffsetZone> =
+        str.split(',').map { pattern ->
+            val equals = pattern.lastIndexOf('=')
+            val name = pattern.substring(0, equals)
+            val offset = pattern.substring(equals + 1).toIntCaseSensitive(62)
+            OffsetZone(name, offset)
+        }
+
+    private fun parseTzEntry(str: String): TzEntry =
+        str.split(',', limit = 2).let { initialSplit ->
+            val initial =
+                offsets.getOrElse(initialSplit[0].toIntCaseSensitive(62)) { unknownZone }
+            val sinces = if (initialSplit[1].isNotEmpty())
+                initialSplit[1].splitToSequence(',').map {
+                    val split = it.split('=', limit = 2)
+                    val since = split[0].toLongCaseSensitive(62)
+                    val offsetZone =
+                        offsets.getOrElse(split[1].toIntCaseSensitive(62)) { unknownZone }
+                    SinceData(since, offsetZone)
+                }.toList() else emptyList()
+            initial to sinces
+        }
+
+    private fun insert(
+        name: String,
+        str: String
+    ) = _tzdata.put(name, TimeZone(name, lazy { parseTzEntry(str) }))
+
+    private fun link(
+        name: String,
+        other: String
+    ) = _tzdata.put(name, _tzdata[other]!!)
 }""")

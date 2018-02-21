@@ -36,11 +36,11 @@ expect val timeZoneLocal: TimeZone
  * @param name Name of timezone, currently implementation dependant
  * @return Time zone handle
  */
-fun timeZoneOf(name: String): TimeZone = tzdata[name]
+fun timeZoneOf(name: String): TimeZone = TzData.tzdata[name]
         ?: throw IllegalArgumentException("Invalid zone: $name")
 
 val timeZones: Sequence<TimeZone>
-    get() = tzdata.asSequence().map { timeZoneOf(it.key) }
+    get() = TzData.tzdata.asSequence().map { timeZoneOf(it.key) }
 
 class TimeZone internal constructor(
     val id: String,
