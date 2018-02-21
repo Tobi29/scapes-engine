@@ -14,31 +14,29 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.logging.internal
 
 import org.tobi29.logging.KLoggable
 import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
 
-// Based on https://github.com/MicroUtils/kotlin-logging
-@Suppress("NOTHING_TO_INLINE")
-actual internal object KLoggerNameResolver {
-    inline actual fun name(loggable: KLoggable): String =
-            unwrapCompanionClass(
-                    loggable::class).java.simpleName ?: "???"
+internal actual inline val KLoggable.name: String
+    get() = unwrapCompanionClass(this::class).java.simpleName ?: "???"
 
-    inline private fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {
-        if (clazz.java.enclosingClass != null) {
-            try {
-                val field = clazz.java.enclosingClass.getField(
-                        clazz.java.simpleName)
-                if (Modifier.isStatic(field.modifiers)
-                        && field.type == clazz.java) {
-                    return clazz.java.enclosingClass.kotlin
-                }
-            } catch(e: Exception) {
+private inline fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {
+    if (clazz.java.enclosingClass != null) {
+        try {
+            val field = clazz.java.enclosingClass.getField(
+                clazz.java.simpleName
+            )
+            if (Modifier.isStatic(field.modifiers)
+                && field.type == clazz.java) {
+                return clazz.java.enclosingClass.kotlin
             }
+        } catch (e: Exception) {
         }
-        return clazz
     }
+    return clazz
 }

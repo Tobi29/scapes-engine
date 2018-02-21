@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.logging.internal
 
 import org.tobi29.logging.KLoggable
 import kotlin.reflect.KClass
 
-@Suppress("NOTHING_TO_INLINE")
-actual internal object KLoggerNameResolver {
-    actual inline fun name(loggable: KLoggable): String =
-            unwrapCompanionClass(
-                    loggable::class).simpleName ?: "???"
+internal actual inline val KLoggable.name: String
+    get() = unwrapCompanionClass(this::class).simpleName ?: "???"
 
-    inline private fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {
-        return clazz
-    }
-}
+private inline fun <T : Any> unwrapCompanionClass(
+    clazz: KClass<T>
+): KClass<*> = clazz

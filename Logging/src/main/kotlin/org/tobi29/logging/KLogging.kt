@@ -23,7 +23,7 @@ package org.tobi29.logging
  */
 open class KLogging(name: String? = null) : KLoggable {
     @Suppress("LeakingThis")
-    override val logger: KLogger = KLoggerFactory.logger(this, name)
+    override val logger: KLogger = KLogger(this, name)
 }
 
 /**

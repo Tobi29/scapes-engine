@@ -62,40 +62,40 @@ abstract class KLogger {
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    open fun trace(msg: String,
-                   t: Throwable) = trace { "$msg: ${t.message}" }
+    open fun trace(msg: String, t: Throwable) =
+        trace { "$msg: ${t.message}" }
 
     /**
      * Log a message at the DEBUG level.
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    open fun debug(msg: String,
-                   t: Throwable) = debug { "$msg: ${t.message}" }
+    open fun debug(msg: String, t: Throwable) =
+        debug { "$msg: ${t.message}" }
 
     /**
      * Log a message at the INFO level.
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    open fun info(msg: String,
-                  t: Throwable) = info { "$msg: ${t.message}" }
+    open fun info(msg: String, t: Throwable) =
+        info { "$msg: ${t.message}" }
 
     /**
      * Log a message at the WARN level.
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    open fun warn(msg: String,
-                  t: Throwable) = warn { "$msg: ${t.message}" }
+    open fun warn(msg: String, t: Throwable) =
+        warn { "$msg: ${t.message}" }
 
     /**
      * Log a message at the ERROR level.
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    open fun error(msg: String,
-                   t: Throwable) = error { "$msg: ${t.message}" }
+    open fun error(msg: String, t: Throwable) =
+        error { "$msg: ${t.message}" }
 
     /**
      * Log a message at the TRACE level.
@@ -154,8 +154,10 @@ abstract class KLogger {
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    inline fun trace(t: Throwable,
-                     msg: () -> String) {
+    inline fun trace(
+        t: Throwable,
+        msg: () -> String
+    ) {
         if (isTraceEnabled) trace(msg.invoke(), t)
     }
 
@@ -166,8 +168,10 @@ abstract class KLogger {
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    inline fun debug(t: Throwable,
-                     msg: () -> String) {
+    inline fun debug(
+        t: Throwable,
+        msg: () -> String
+    ) {
         if (isDebugEnabled) debug(msg.invoke(), t)
     }
 
@@ -178,8 +182,10 @@ abstract class KLogger {
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    inline fun info(t: Throwable,
-                    msg: () -> String) {
+    inline fun info(
+        t: Throwable,
+        msg: () -> String
+    ) {
         if (isInfoEnabled) info(msg.invoke(), t)
     }
 
@@ -190,8 +196,10 @@ abstract class KLogger {
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    inline fun warn(t: Throwable,
-                    msg: () -> String) {
+    inline fun warn(
+        t: Throwable,
+        msg: () -> String
+    ) {
         if (isWarnEnabled) warn(msg.invoke(), t)
     }
 
@@ -202,8 +210,10 @@ abstract class KLogger {
      * @param t the exception (throwable) to log
      * @param msg the message string to be logged
      */
-    inline fun error(t: Throwable,
-                     msg: () -> String) {
+    inline fun error(
+        t: Throwable,
+        msg: () -> String
+    ) {
         if (isErrorEnabled) error(msg.invoke(), t)
     }
 }

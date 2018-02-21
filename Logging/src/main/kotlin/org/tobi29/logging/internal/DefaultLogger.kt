@@ -16,8 +16,6 @@
 
 package org.tobi29.logging.internal
 
-import org.tobi29.logging.KLoggable
+import org.tobi29.logging.KLogger
 
-expect internal object KLoggerNameResolver {
-    fun name(loggable: KLoggable): String
-}
+internal expect fun createDefaultLogger(name: String): KLogger

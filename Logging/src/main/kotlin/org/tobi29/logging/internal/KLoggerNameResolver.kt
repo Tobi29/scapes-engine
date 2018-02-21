@@ -14,23 +14,8 @@
  * limitations under the License.
  */
 
-package org.tobi29.logging
+package org.tobi29.logging.internal
 
-import org.tobi29.logging.internal.createDefaultLogger
-import org.tobi29.logging.internal.name
+import org.tobi29.logging.KLoggable
 
-/**
- * Returns a logger named after the given [loggable] or [name]
- * @param loggable Class to fetch the name from
- * @param name Allows overriding the name
- */
-fun KLogger(
-    loggable: KLoggable,
-    name: String? = null
-): KLogger = KLogger(name ?: loggable.name)
-
-/**
- * Returns a logger named using [name]
- * @param name The name for the logger
- */
-fun KLogger(name: String): KLogger = createDefaultLogger(name)
+internal expect val KLoggable.name: String

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,20 @@
  * limitations under the License.
  */
 
-package org.tobi29.logging.internal
+package org.tobi29.logging
 
-import org.tobi29.logging.KLogger
+import org.tobi29.logging.internal.ConsoleKLogger
 
-expect internal fun createDefaultLogger(name: String): KLogger
+object KLoggerFactory {
+    private var used = false
+    var default: (String) -> KLogger = { ConsoleKLogger(it) }
+        set(value) {
+            if (used) throw IllegalStateException("Loggers have already been created")
+            field = value
+        }
+
+    operator fun invoke(name: String): KLogger {
+        used = true
+        return default(name)
+    }
+}

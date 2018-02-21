@@ -18,9 +18,10 @@ package org.tobi29.logging.internal
 
 import org.tobi29.logging.KLogLevel
 import org.tobi29.logging.KLogger
+import org.tobi29.logging.KLoggerFactory
 
-actual internal fun createDefaultLogger(name: String): KLogger =
-        ConsoleKLogger(name)
+internal actual fun createDefaultLogger(name: String): KLogger =
+    KLoggerFactory(name)
 
 internal class ConsoleKLogger(val name: String) : KLogger() {
     override val isTraceEnabled get() = logLevel <= KLogLevel.TRACE
