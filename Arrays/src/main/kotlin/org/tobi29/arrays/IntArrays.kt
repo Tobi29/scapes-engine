@@ -372,20 +372,6 @@ class IntArray2(
 }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x and y coords of the element
- */
-inline fun IntArray2.indices(block: (Int, Int) -> Unit) {
-    for (y in 0 until height) {
-        for (x in 0 until width) {
-            block(x, y)
-        }
-    }
-}
-
-/**
  * Creates a new array and makes it accessible using a wrapper
  * @param width Width of the wrapper
  * @param height Height of the wrapper
@@ -475,22 +461,6 @@ class IntArray3(
      * @return A new wrapper around a new array
      */
     fun copyOf() = IntArray3(width, height, depth, array.copyOf())
-}
-
-/**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x, y and z coords of the element
- */
-inline fun IntArray3.indices(block: (Int, Int, Int) -> Unit) {
-    for (z in 0 until depth) {
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                block(x, y, z)
-            }
-        }
-    }
 }
 
 /**

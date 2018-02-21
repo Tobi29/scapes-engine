@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,6 +140,48 @@ inline fun index(
     if (index < 0 || index + dataLength > size)
         throw IndexOutOfBoundsException("Invalid index")
     return index + offset
+}
+
+/**
+ * Calls the given [block] with all indices of the given wrapper ordered by
+ * their layout in the array.
+ * @receiver The wrapper to iterate through
+ * @param block Called with x index of the element
+ */
+inline fun Vars.indices(block: (Int) -> Unit) {
+    for (x in 0 until size) {
+        block(x)
+    }
+}
+
+/**
+ * Calls the given [block] with all indices of the given wrapper ordered by
+ * their layout in the array.
+ * @receiver The wrapper to iterate through
+ * @param block Called with x and y coords of the element
+ */
+inline fun Vars2.indices(block: (Int, Int) -> Unit) {
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            block(x, y)
+        }
+    }
+}
+
+/**
+ * Calls the given [block] with all indices of the given wrapper ordered by
+ * their layout in the array.
+ * @receiver The wrapper to iterate through
+ * @param block Called with x, y and z coords of the element
+ */
+inline fun Vars3.indices(block: (Int, Int, Int) -> Unit) {
+    for (z in 0 until depth) {
+        for (y in 0 until height) {
+            for (x in 0 until width) {
+                block(x, y, z)
+            }
+        }
+    }
 }
 
 internal abstract class SliceIterator<out T>(size: Int) : Iterator<T> {
