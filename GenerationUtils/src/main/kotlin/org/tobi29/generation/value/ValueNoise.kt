@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,60 +17,74 @@
 package org.tobi29.generation.value
 
 interface ValueNoise {
-    fun noiseOctave(x: Double,
-                    y: Double,
-                    octaves: Int,
-                    frequency: Double,
-                    amplitude: Double): Double {
-        var out = 0.0
-        var cFrequency = 1.0
-        var cAmplitude = 1.0
-        var normal = 0.0
-        var i = 0
-        while (i < octaves) {
-            out += noise(x * cFrequency, y * cFrequency) * cAmplitude
-            normal += cAmplitude
-            i++
-            cFrequency *= frequency
-            cAmplitude *= amplitude
-        }
-        return out / normal
-    }
+    fun noise(x: Double, y: Double): Double
 
-    fun noise(x: Double,
-              y: Double): Double
-
-    fun noiseOctave(x: Double,
-                    y: Double,
-                    z: Double,
-                    octaves: Int,
-                    frequency: Double,
-                    amplitude: Double): Double {
-        var out = 0.0
-        var cFrequency = 1.0
-        var cAmplitude = 1.0
-        var normal = 0.0
-        var i = 0
-        while (i < octaves) {
-            out += noise(x * cFrequency, y * cFrequency,
-                    z * cFrequency) * cAmplitude
-            normal += cAmplitude
-            i++
-            cFrequency *= frequency
-            cAmplitude *= amplitude
-        }
-        return out / normal
-    }
-
-    fun noise(x: Double,
-              y: Double,
-              z: Double): Double
+    fun noise(x: Double, y: Double, z: Double): Double
 }
 
-fun Array<out ValueNoise>.noiseOctave(x: Double,
-                                      y: Double,
-                                      frequency: Double,
-                                      amplitude: Double): Double {
+fun ValueNoise.noiseOctave(
+    x: Double,
+    y: Double,
+    octaves: Int,
+    frequency: Double,
+    amplitude: Double,
+    offsetX: Double = 1.0,
+    offsetY: Double = offsetX
+): Double {
+    var out = 0.0
+    var cFrequency = 1.0
+    var cAmplitude = 1.0
+    var normal = 0.0
+    var i = 0
+    while (i < octaves) {
+        out += noise(
+            x * cFrequency + offsetX * i,
+            y * cFrequency + offsetY * i
+        ) * cAmplitude
+        normal += cAmplitude
+        i++
+        cFrequency *= frequency
+        cAmplitude *= amplitude
+    }
+    return out / normal
+}
+
+fun ValueNoise.noiseOctave(
+    x: Double,
+    y: Double,
+    z: Double,
+    octaves: Int,
+    frequency: Double,
+    amplitude: Double,
+    offsetX: Double = 1.0,
+    offsetY: Double = offsetX,
+    offsetZ: Double = offsetY
+): Double {
+    var out = 0.0
+    var cFrequency = 1.0
+    var cAmplitude = 1.0
+    var normal = 0.0
+    var i = 0
+    while (i < octaves) {
+        out += noise(
+            x * cFrequency + offsetX * i,
+            y * cFrequency + offsetY * i,
+            z * cFrequency + offsetZ * i
+        ) * cAmplitude
+        normal += cAmplitude
+        i++
+        cFrequency *= frequency
+        cAmplitude *= amplitude
+    }
+    return out / normal
+}
+
+fun Array<out ValueNoise>.noiseOctave(
+    x: Double,
+    y: Double,
+    frequency: Double,
+    amplitude: Double
+): Double {
     var out = 0.0
     var cFrequency = 1.0
     var cAmplitude = 1.0
@@ -84,18 +98,23 @@ fun Array<out ValueNoise>.noiseOctave(x: Double,
     return out / normal
 }
 
-fun Array<out ValueNoise>.noiseOctave(x: Double,
-                                      y: Double,
-                                      z: Double,
-                                      frequency: Double,
-                                      amplitude: Double): Double {
+fun Array<out ValueNoise>.noiseOctave(
+    x: Double,
+    y: Double,
+    z: Double,
+    frequency: Double,
+    amplitude: Double
+): Double {
     var out = 0.0
     var cFrequency = 1.0
     var cAmplitude = 1.0
     var normal = 0.0
     for (noise in this) {
-        out += noise.noise(x * cFrequency, y * cFrequency,
-                z * cFrequency) * cAmplitude
+        out += noise.noise(
+            x * cFrequency,
+            y * cFrequency,
+            z * cFrequency
+        ) * cAmplitude
         normal += cAmplitude
         cFrequency *= frequency
         cAmplitude *= amplitude
