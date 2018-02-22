@@ -130,6 +130,7 @@ include "TileMaps"
 include "TileMapsJS"
 include "TileMapsJVM"
 include "TileMapsRenderer"
+include "TileMapsRendererJS"
 include "TileMapsRendererJVM"
 
 // Engine
