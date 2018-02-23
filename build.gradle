@@ -75,7 +75,7 @@ ext {
     pngjVersion = "2.1.0"
     tikaVersion = "1.16"
     jlayerVersion = "1.0.1"
-    concentusVersion = "1.0.0"
+    concentusVersion = "fdf276ed6b"
     jorbisVersion = "0.0.17"
     lwjglVersion = "3.1.6"
 
@@ -104,7 +104,7 @@ ext {
     antlrRuntime = "org.antlr:antlr4-runtime:$antlrVersion"
     pngj = "ar.com.hjg:pngj:$pngjVersion"
     jorbis = "org.jcraft:jorbis:$jorbisVersion"
-    concentus = "com.github.Tobi29:Concentus:$concentusVersion"
+    concentus = "com.github.lostromb.concentus:Concentus:$concentusVersion"
     jlayer = "javazoom:jlayer:$jlayerVersion"
     lwjgl = "org.lwjgl:lwjgl:$lwjglVersion"
     lwjglEGL = "org.lwjgl:lwjgl-egl:$lwjglVersion"
