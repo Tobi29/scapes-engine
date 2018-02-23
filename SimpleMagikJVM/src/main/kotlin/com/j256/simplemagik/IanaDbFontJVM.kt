@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+// GENERATED FILE, DO NOT EDIT DIRECTLY!!!
+// Generation script can be found in `resources/codegen/GenStringDataJVM.kts`.
+// Run `resources/codegen/codegen.sh` to update sources.
 
-dependencies {
-    expectedBy project(":ContentInfo")
-    sources project(path: ":ContentInfo", configuration: "sources")
-    compile project(":STDExJVM")
-    compile project(":IOUtilsJVM")
-    compile project(":LoggingJVM")
-    compile project(":SimpleMagikJVM")
-}
+package com.j256.simplemagik
+
+private val ianaFont0 get() = "collection,font/collection,[RFC8081]\notf,font/otf,[RFC8081]\nsfnt,font/sfnt,[RFC8081]\nttf,font/ttf,[RFC8081]\nwoff,font/woff,[RFC8081]\nwoff2,font/woff2,[RFC8081]"
+
+internal actual val ianaFont = sequenceOf(
+    ianaFont0
+).flatMap { it.splitToSequence('\n') }

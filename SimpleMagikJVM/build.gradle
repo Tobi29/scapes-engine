@@ -17,10 +17,11 @@
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
-    expectedBy project(":ContentInfo")
-    sources project(path: ":ContentInfo", configuration: "sources")
+    expectedBy project(":SimpleMagik")
+    sources project(path: ":SimpleMagik", configuration: "sources")
+    compile project(":ArraysJVM")
     compile project(":STDExJVM")
-    compile project(":IOUtilsJVM")
     compile project(":LoggingJVM")
-    compile project(":SimpleMagikJVM")
+    compile project(":ChronoUtilsJVM")
+    compile project(":UtilsJVM")
 }

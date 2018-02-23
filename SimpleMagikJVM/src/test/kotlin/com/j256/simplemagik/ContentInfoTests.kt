@@ -14,13 +14,5 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+package com.j256.simplemagik
 
-dependencies {
-    expectedBy project(":ContentInfo")
-    sources project(path: ":ContentInfo", configuration: "sources")
-    compile project(":STDExJVM")
-    compile project(":IOUtilsJVM")
-    compile project(":LoggingJVM")
-    compile project(":SimpleMagikJVM")
-}

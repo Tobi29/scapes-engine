@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,7 +103,6 @@ ext {
     antlr = "org.antlr:antlr4:$antlrVersion"
     antlrRuntime = "org.antlr:antlr4-runtime:$antlrVersion"
     pngj = "ar.com.hjg:pngj:$pngjVersion"
-    tika = "org.apache.tika:tika-core:$tikaVersion"
     jorbis = "org.jcraft:jorbis:$jorbisVersion"
     concentus = "com.github.Tobi29:Concentus:$concentusVersion"
     jlayer = "javazoom:jlayer:$jlayerVersion"

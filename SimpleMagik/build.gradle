@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    expectedBy project(":ContentInfo")
-    sources project(path: ":ContentInfo", configuration: "sources")
-    compile project(":STDExJVM")
-    compile project(":IOUtilsJVM")
-    compile project(":LoggingJVM")
-    compile project(":SimpleMagikJVM")
+    compile project(":STDEx")
+    compile project(":Arrays")
+    compile project(":Logging")
+    compile project(":ChronoUtils")
+    compile project(":Utils")
 }

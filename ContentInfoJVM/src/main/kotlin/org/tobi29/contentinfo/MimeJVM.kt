@@ -16,34 +16,27 @@
 
 package org.tobi29.contentinfo
 
-import org.apache.tika.Tika
-import org.apache.tika.metadata.Metadata
-import org.tobi29.io.ByteStreamInputStream
+import com.j256.simplemagik.ContentInfoUtil
+import com.j256.simplemagik.ContentType
 import org.tobi29.io.ReadableByteStream
-import org.tobi29.stdex.ThreadLocal
-import java.io.InputStream
-import java.security.AccessController
-import java.security.PrivilegedAction
+import org.tobi29.io.view
 
-actual internal fun detectMimeImpl(stream: ReadableByteStream?,
-                                   name: String?) =
-    detectMimeIO(stream?.let { ByteStreamInputStream(it) }, name)
-
-/**
- * Detect the mime type of the given resource
- *
- * **Note:** The exact result may vary from platform to platform
- * @param streamIn The input stream to read from or `null`
- * @param name The name of the resource or `null`
- * @return a mime-type string
- */
-fun detectMimeIO(streamIn: InputStream? = null,
-                 name: String? = null): String {
-    val metadata = Metadata()
-    name?.let { metadata.set(Metadata.RESOURCE_NAME_KEY, it) }
-    return tika.get().detect(streamIn, name)
+internal actual fun detectMimeImpl(
+    stream: ReadableByteStream?,
+    name: String?
+): String {
+    val array = if (stream != null) {
+        val array = ByteArray(ContentInfoUtil.DEFAULT_READ_SIZE)
+        val read = stream.getSome(array.view).coerceAtLeast(0)
+        array.sliceArray(0 until read)
+    } else ByteArray(0)
+    val contentInfoUtil = SimpleMagik.contentInfoUtil
+    val contentInfo = contentInfoUtil.findMatch(array)
+    return (contentInfo
+            ?: name?.let { ContentInfoUtil.findExtensionMatch(name) })?.mimeType
+            ?: ContentType.OTHER.mimeType
 }
 
-private val tika = ThreadLocal {
-    AccessController.doPrivileged(PrivilegedAction { Tika() })
+private object SimpleMagik {
+    val contentInfoUtil = ContentInfoUtil()
 }

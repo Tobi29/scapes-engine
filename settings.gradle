@@ -79,6 +79,10 @@ include "ContentInfo"
 include "ContentInfoJS"
 include "ContentInfoJVM"
 
+// SimpleMagik
+include "SimpleMagik"
+include "SimpleMagikJVM"
+
 // Math Utils
 include "MathUtils"
 include "MathUtilsJS"
