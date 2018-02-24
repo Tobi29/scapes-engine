@@ -22,8 +22,10 @@ package org.tobi29.io
 object CompressionUtil {
 
     // TODO: @Throws(IOException::class)
-    fun compress(input: ReadableByteStream,
-                 level: Int = -1): ByteView {
+    fun compress(
+        input: ReadableByteStream,
+        level: Int = -1
+    ): ByteView {
         val stream = MemoryViewStreamDefault()
         compress(input, stream, level)
         stream.flip()
@@ -31,10 +33,12 @@ object CompressionUtil {
     }
 
     // TODO: @Throws(IOException::class)
-    fun compress(input: ReadableByteStream,
-                 output: WritableByteStream,
-                 level: Int = 1) {
-        ZDeflater(level).use { filter -> filter(input, output, filter) }
+    fun compress(
+        input: ReadableByteStream,
+        output: WritableByteStream,
+        level: Int = 1
+    ) {
+        ZDeflater(level, 8192).use { filter -> filter(input, output, filter) }
     }
 
     // TODO: @Throws(IOException::class)
@@ -46,15 +50,19 @@ object CompressionUtil {
     }
 
     // TODO: @Throws(IOException::class)
-    fun decompress(input: ReadableByteStream,
-                   output: WritableByteStream) {
-        ZInflater().use { filter -> filter(input, output, filter) }
+    fun decompress(
+        input: ReadableByteStream,
+        output: WritableByteStream
+    ) {
+        ZInflater(8192).use { filter -> filter(input, output, filter) }
     }
 
     // TODO: @Throws(IOException::class)
-    fun filter(input: ReadableByteStream,
-               output: WritableByteStream,
-               filter: Filter) {
+    fun filter(
+        input: ReadableByteStream,
+        output: WritableByteStream,
+        filter: Filter
+    ) {
         while (filter.input(input)) {
             while (!filter.needsInput()) {
                 val len = filter.output(output)
@@ -92,8 +100,9 @@ object CompressionUtil {
     }
 }
 
-expect class ZDeflater(level: Int,
-                       buffer: Int = 8192) : CompressionUtil.Filter {
+expect class ZDeflater : CompressionUtil.Filter {
+    constructor(level: Int, buffer: Int)
+
     override fun input(buffer: ReadableByteStream): Boolean
     override fun output(buffer: WritableByteStream): Int
     override fun finish()
@@ -103,7 +112,9 @@ expect class ZDeflater(level: Int,
     override fun close()
 }
 
-expect class ZInflater(buffer: Int = 8192) : CompressionUtil.Filter {
+expect class ZInflater : CompressionUtil.Filter {
+    constructor(buffer: Int)
+
     override fun input(buffer: ReadableByteStream): Boolean
     override fun output(buffer: WritableByteStream): Int
     override fun finish()

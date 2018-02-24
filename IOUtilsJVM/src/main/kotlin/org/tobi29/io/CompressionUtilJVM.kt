@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,10 @@ package org.tobi29.io
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
-actual class ZDeflater actual constructor(level: Int,
-                                      private val buffer: Int = 8192) : CompressionUtil.Filter {
+actual class ZDeflater actual constructor(
+    level: Int,
+    private val buffer: Int
+) : CompressionUtil.Filter {
     private val deflater = Deflater(level)
     private val output = ByteArray(buffer)
     private var input = MemoryViewStreamDefault()
@@ -64,7 +66,9 @@ actual class ZDeflater actual constructor(level: Int,
     }
 }
 
-actual class ZInflater actual constructor(private val buffer: Int = 8192) : CompressionUtil.Filter {
+actual class ZInflater actual constructor(
+    private val buffer: Int
+) : CompressionUtil.Filter {
     private val inflater = Inflater()
     private val output = ByteArray(buffer)
     private var input = MemoryViewStreamDefault()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import org.khronos.webgl.Uint8Array
 import org.tobi29.stdex.ArrayDeque
 import org.tobi29.stdex.asArray
 
-actual class ZDeflater actual constructor(private val level: Int,
-                                          buffer: Int = 8192) : CompressionUtil.Filter {
+actual class ZDeflater actual constructor(
+    private val level: Int,
+    buffer: Int
+) : CompressionUtil.Filter {
     private var deflater = Pako.Deflate(DeflateOptions(level))
     private var input = ByteArray(buffer).view
     private val outputs = ArrayDeque<Uint8Array>()
@@ -40,8 +42,12 @@ actual class ZDeflater actual constructor(private val level: Int,
 
     actual override fun output(buffer: WritableByteStream): Int {
         val output = outputs.poll() ?: return -1
-        buffer.put(Int8Array(output.buffer, output.byteOffset,
-                output.byteLength).asArray().view)
+        buffer.put(
+            Int8Array(
+                output.buffer, output.byteOffset,
+                output.byteLength
+            ).asArray().view
+        )
         return output.length
     }
 
@@ -65,7 +71,9 @@ actual class ZDeflater actual constructor(private val level: Int,
     }
 }
 
-actual class ZInflater actual constructor(buffer: Int = 8192) : CompressionUtil.Filter {
+actual class ZInflater actual constructor(
+    buffer: Int
+) : CompressionUtil.Filter {
     private var inflater = Pako.Inflate()
     private var input = ByteArray(buffer).view
     private val outputs = ArrayDeque<Uint8Array>()
@@ -83,8 +91,12 @@ actual class ZInflater actual constructor(buffer: Int = 8192) : CompressionUtil.
 
     actual override fun output(buffer: WritableByteStream): Int {
         val output = outputs.poll() ?: return -1
-        buffer.put(Int8Array(output.buffer, output.byteOffset,
-                output.byteLength).asArray().view)
+        buffer.put(
+            Int8Array(
+                output.buffer, output.byteOffset,
+                output.byteLength
+            ).asArray().view
+        )
         return output.length
     }
 
@@ -118,8 +130,10 @@ private external object Pako {
         val result: Uint8Array
         var onData: (Uint8Array) -> Unit
         var onEnd: (Int) -> Unit
-        fun push(data: Uint8Array,
-                 mode: Int): Boolean
+        fun push(
+            data: Uint8Array,
+            mode: Int
+        ): Boolean
     }
 
     class Inflate {
@@ -129,8 +143,10 @@ private external object Pako {
         val result: Uint8Array
         var onData: (Uint8Array) -> Unit
         var onEnd: (Int) -> Unit
-        fun push(data: Uint8Array,
-                 mode: Int): Boolean
+        fun push(
+            data: Uint8Array,
+            mode: Int
+        ): Boolean
     }
 }
 
