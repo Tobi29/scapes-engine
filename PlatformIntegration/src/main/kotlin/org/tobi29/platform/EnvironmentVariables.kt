@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,10 @@ object EnvironmentVariable {
     /**
      * Integration for delegated properties
      */
-    operator fun getValue(thisRef: Any?,
-                          property: KProperty<*>): String? = get(property.name)
+    operator fun getValue(
+        thisRef: Any?,
+        property: KProperty<*>
+    ): String? = get(property.name)
 }
+
+internal expect fun environmentVariableImpl(key: String): String?

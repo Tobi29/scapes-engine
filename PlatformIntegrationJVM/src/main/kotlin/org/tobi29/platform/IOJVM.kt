@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,6 @@ actual val stdout: WritableByteStream = OutputStreamByteStream(System.out)
 actual val stderr: WritableByteStream = OutputStreamByteStream(System.err)
 
 actual val stdin: ReadableByteChannel? =
-        System.`in`?.let { Channels.newChannel(it).toChannel() }
+    System.`in`?.let { Channels.newChannel(it).toChannel() }
 
 actual inline val stdln: String get() = System.lineSeparator()

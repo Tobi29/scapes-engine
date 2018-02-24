@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,32 +30,35 @@ val XDG_RUNTIME_DIR by EnvironmentVariable
 
 class XDGBaseDirs private constructor() {
     val HOME_DIR: FilePath =
-            path(HOME ?: throw IllegalStateException(
-                    "Platform does not expose \$HOME environment variable"))
+        path(
+            HOME ?: throw IllegalStateException(
+                "Platform does not expose \$HOME environment variable"
+            )
+        )
 
     val CONFIG_HOME: FilePath =
-            XDG_CONFIG_HOME?.let(::path) ?: HOME_DIR.resolve(".config")
+        XDG_CONFIG_HOME?.let(::path) ?: HOME_DIR.resolve(".config")
 
     val CONFIG_DIRS: List<FilePath> =
-            (listOf(CONFIG_HOME) + (XDG_CONFIG_DIRS?.takeUnless { it.isEmpty() }
-                    ?.split(":")?.map { path(it) }
-                    ?: listOf(path("/etc/xdg")))
-                    ).readOnly()
+        (listOf(CONFIG_HOME) + (XDG_CONFIG_DIRS?.takeUnless { it.isEmpty() }
+            ?.split(":")?.map { path(it) }
+                ?: listOf(path("/etc/xdg")))
+                ).readOnly()
 
     val DATA_HOME: FilePath =
-            XDG_DATA_HOME?.let(::path) ?: HOME_DIR.resolve(".local/share")
+        XDG_DATA_HOME?.let(::path) ?: HOME_DIR.resolve(".local/share")
 
     val DATA_DIRS: List<FilePath> =
-            (listOf(DATA_HOME) + (XDG_DATA_DIRS?.takeUnless { it.isEmpty() }
-                    ?.split(":")?.map { path(it) }
-                    ?: listOf(path("/usr/local/share"), path("/usr/share")))
-                    ).readOnly()
+        (listOf(DATA_HOME) + (XDG_DATA_DIRS?.takeUnless { it.isEmpty() }
+            ?.split(":")?.map { path(it) }
+                ?: listOf(path("/usr/local/share"), path("/usr/share")))
+                ).readOnly()
 
     val CACHE_HOME: FilePath =
-            XDG_CACHE_HOME?.let(::path) ?: HOME_DIR.resolve(".cache")
+        XDG_CACHE_HOME?.let(::path) ?: HOME_DIR.resolve(".cache")
 
     val RUNTIME_DIR: FilePath? =
-            XDG_RUNTIME_DIR?.let(::path)
+        XDG_RUNTIME_DIR?.let(::path)
 
     companion object {
         private val instance by lazy { XDGBaseDirs() }

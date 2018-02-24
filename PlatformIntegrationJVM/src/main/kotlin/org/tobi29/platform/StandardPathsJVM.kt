@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,20 @@ actual val dataHome: FilePath get() = impl.dataHome
 actual val dataDirs: List<FilePath> get() = impl.dataDirs
 actual val cacheHome: FilePath get() = impl.cacheHome
 
-actual fun appIDForConfig(id: String,
-                        name: String): FilePath = impl.appIDForConfig(id, name)
+actual fun appIDForConfig(
+    id: String,
+    name: String
+): FilePath = impl.appIDForConfig(id, name)
 
-actual fun appIDForData(id: String,
-                      name: String): FilePath = impl.appIDForData(id, name)
+actual fun appIDForData(
+    id: String,
+    name: String
+): FilePath = impl.appIDForData(id, name)
 
-actual fun appIDForCache(id: String,
-                       name: String): FilePath = impl.appIDForCache(id, name)
+actual fun appIDForCache(
+    id: String,
+    name: String
+): FilePath = impl.appIDForCache(id, name)
 
 private interface StandardPathsImpl {
     val homeDir: FilePath
@@ -55,14 +61,20 @@ private interface StandardPathsImpl {
     val dataDirs: List<FilePath>
     val cacheHome: FilePath
 
-    fun appIDForConfig(id: String,
-                       name: String): FilePath
+    fun appIDForConfig(
+        id: String,
+        name: String
+    ): FilePath
 
-    fun appIDForData(id: String,
-                     name: String): FilePath
+    fun appIDForData(
+        id: String,
+        name: String
+    ): FilePath
 
-    fun appIDForCache(id: String,
-                      name: String): FilePath
+    fun appIDForCache(
+        id: String,
+        name: String
+    ): FilePath
 }
 
 private class XDGPathsImpl : StandardPathsImpl {
@@ -73,17 +85,20 @@ private class XDGPathsImpl : StandardPathsImpl {
     override val dataDirs = XDGBaseDirs().DATA_DIRS
     override val cacheHome = XDGBaseDirs().CACHE_HOME
 
-    override fun appIDForConfig(id: String,
-                                name: String) =
-            path(name.toLowerCase().replace(' ', '-'))
+    override fun appIDForConfig(
+        id: String,
+        name: String
+    ) = path(name.toLowerCase().replace(' ', '-'))
 
-    override fun appIDForData(id: String,
-                              name: String) =
-            path(name.toLowerCase().replace(' ', '-'))
+    override fun appIDForData(
+        id: String,
+        name: String
+    ) = path(name.toLowerCase().replace(' ', '-'))
 
-    override fun appIDForCache(id: String,
-                               name: String) =
-            path(name.toLowerCase().replace(' ', '-'))
+    override fun appIDForCache(
+        id: String,
+        name: String
+    ) = path(name.toLowerCase().replace(' ', '-'))
 }
 
 private class MacOSPathsImpl : StandardPathsImpl {
@@ -94,34 +109,49 @@ private class MacOSPathsImpl : StandardPathsImpl {
     override val dataDirs = listOf(dataHome)
     override val cacheHome = homeDir.resolve("Library/Caches")
 
-    override fun appIDForConfig(id: String,
-                                name: String) = path(id)
+    override fun appIDForConfig(
+        id: String,
+        name: String
+    ) = path(id)
 
-    override fun appIDForData(id: String,
-                              name: String) = path(name)
+    override fun appIDForData(
+        id: String,
+        name: String
+    ) = path(name)
 
-    override fun appIDForCache(id: String,
-                               name: String) = path(id)
+    override fun appIDForCache(
+        id: String,
+        name: String
+    ) = path(id)
 }
 
 private class WindowsPathsImpl : StandardPathsImpl {
     override val homeDir = path(System.getProperty("user.home"))
-    override val configHome = path(EnvironmentVariable["APPDATA"]
-            ?: throw IllegalStateException(
-            "Platform does not expose \$APPDATA environment variable"))
+    override val configHome = path(
+        EnvironmentVariable["APPDATA"]
+                ?: throw IllegalStateException(
+                    "Platform does not expose \$APPDATA environment variable"
+                )
+    )
     override val configDirs = listOf(configHome)
     override val dataHome = configHome
     override val dataDirs = configDirs
     override val cacheHome = configHome
 
-    override fun appIDForConfig(id: String,
-                                name: String) = path(name)
+    override fun appIDForConfig(
+        id: String,
+        name: String
+    ) = path(name)
 
-    override fun appIDForData(id: String,
-                              name: String) = path(name)
+    override fun appIDForData(
+        id: String,
+        name: String
+    ) = path(name)
 
-    override fun appIDForCache(id: String,
-                               name: String) = path(name).resolve("Cache")
+    override fun appIDForCache(
+        id: String,
+        name: String
+    ) = path(name).resolve("Cache")
 }
 
 private class AndroidPathsImpl : StandardPathsImpl {
@@ -134,14 +164,20 @@ private class AndroidPathsImpl : StandardPathsImpl {
     override val dataDirs = listOf(dataHome)
     override val cacheHome = path(context.getCacheDir())
 
-    override fun appIDForConfig(id: String,
-                                name: String) = path("")
+    override fun appIDForConfig(
+        id: String,
+        name: String
+    ) = path("")
 
-    override fun appIDForData(id: String,
-                              name: String) = path("")
+    override fun appIDForData(
+        id: String,
+        name: String
+    ) = path("")
 
-    override fun appIDForCache(id: String,
-                               name: String) = path("")
+    override fun appIDForCache(
+        id: String,
+        name: String
+    ) = path("")
 
     private class Context(private val handle: Any) {
         fun getFilesDir(): File = getFilesDir.invoke(handle) as File
@@ -150,12 +186,13 @@ private class AndroidPathsImpl : StandardPathsImpl {
         companion object {
             private val clazz = Class.forName("android.app.Context")
             private val getApplicationContext = clazz.getMethod(
-                    "getApplicationContext")
+                "getApplicationContext"
+            )
             private val getFilesDir = clazz.getMethod("getFilesDir")
             private val getCacheDir = clazz.getMethod("getCacheDir")
 
             fun getApplicationContext(): Context =
-                    Context(getApplicationContext.invoke(null))
+                Context(getApplicationContext.invoke(null))
         }
     }
 
@@ -163,10 +200,11 @@ private class AndroidPathsImpl : StandardPathsImpl {
         companion object {
             private val clazz = Class.forName("android.os.Environment")
             private val getExternalStorageDirectory = clazz.getMethod(
-                    "getExternalStorageDirectory")
+                "getExternalStorageDirectory"
+            )
 
             fun getExternalStorageDirectory(): File =
-                    getExternalStorageDirectory.invoke(null) as File
+                getExternalStorageDirectory.invoke(null) as File
         }
     }
 }

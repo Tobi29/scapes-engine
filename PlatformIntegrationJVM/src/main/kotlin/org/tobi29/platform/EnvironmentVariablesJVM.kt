@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,5 +16,5 @@
 
 package org.tobi29.platform
 
-actual internal fun environmentVariableImpl(key: String): String? =
-        System.getenv(key)
+internal actual fun environmentVariableImpl(key: String): String? =
+    System.getenv(key)

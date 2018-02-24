@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,8 @@ actual val PLATFORM: Platform = run {
     if (osName.contains("nux")) return@run Platform.LINUX
     if (osName.contains("mac")) return@run Platform.MACOS
     if (osName.contains("nix")
-            || osName.contains("aix")
-            || osName.contains("sun")) return@run Platform.UNIX
+        || osName.contains("aix")
+        || osName.contains("sun")) return@run Platform.UNIX
     if (osName.contains("win")) return@run Platform.WINDOWS
 
     Platform.UNKNOWN
