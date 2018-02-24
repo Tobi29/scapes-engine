@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.tobi29.stdex.readOnly
  */
 class TokenParser(command: CommandConfig) {
     private var optionsTerminated = false
+    private var aborted = false
     private var currentOption: CommandOption? = null
     private val currentArgs = ArrayList<String>()
     private val tokensMut = ArrayList<Token>()
@@ -55,6 +56,7 @@ class TokenParser(command: CommandConfig) {
     fun finish(): Pair<List<CommandConfig>, List<Token>> {
         currentOption?.let { option ->
             tokensMut.add(Token.Parameter(option, currentArgs.toList()))
+            if (option.abortParse) aborted = true
             currentArgs.clear()
             currentOption = null
         }
@@ -69,6 +71,11 @@ class TokenParser(command: CommandConfig) {
      */
     fun append(token: String) {
         val length = token.length
+
+        if (aborted) {
+            appendTrail(token)
+            return
+        }
 
         if (length == 0 || optionsTerminated || currentOption != null) {
             // Token: ".*"
@@ -111,6 +118,7 @@ class TokenParser(command: CommandConfig) {
                 tokensMut.add(Token.Parameter(option, currentArgs + token))
                 currentArgs.clear()
                 currentOption = null
+                if (option.abortParse) aborted = true
             } else {
                 currentArgs.add(token)
             }
@@ -123,15 +131,18 @@ class TokenParser(command: CommandConfig) {
         }
 
         if (argumentCount > 0) args@ {
-            tokensMut.add(Token.Argument(arguments[argumentsIndex], token))
-
-            argumentCount--
-            if (argumentCount <= 0) {
-                argumentsIndex++
-                if (argumentsIndex >= arguments.size) {
-                    return@args
+            val argument = arguments[argumentsIndex]
+            tokensMut.add(Token.Argument(argument, token))
+            if (argument.abortParse) aborted = true
+            else { // No need to maintain state when aborting
+                argumentCount--
+                if (argumentCount <= 0) {
+                    argumentsIndex++
+                    if (argumentsIndex >= arguments.size) {
+                        return@args
+                    }
+                    argumentCount = arguments[argumentsIndex].count.last
                 }
-                argumentCount = arguments[argumentsIndex].count.last
             }
             return
         }
@@ -152,7 +163,7 @@ class TokenParser(command: CommandConfig) {
                         currentOption = it
                     } else {
                         tokensMut.add(Token.Parameter(it, emptyList()))
-                        Unit
+                        if (it.abortParse) aborted = true
                     }
                 }
             }
@@ -163,6 +174,7 @@ class TokenParser(command: CommandConfig) {
             (shortOptions[name]
                     ?: throw UnknownOptionException(null, name)).let {
                 tokensMut.add(Token.Parameter(it, listOf(argument)))
+                if (it.abortParse) aborted = true
             }
             return
         }
@@ -175,6 +187,7 @@ class TokenParser(command: CommandConfig) {
                 tokensMut.add(
                     Token.Parameter(option, listOf(token.substring(1)))
                 )
+                if (option.abortParse) aborted = true
                 return
             }
         }
@@ -187,6 +200,7 @@ class TokenParser(command: CommandConfig) {
                     currentOption = flag
                 } else {
                     tokensMut.add(Token.Parameter(flag, emptyList()))
+                    if (flag.abortParse) aborted = true
                 }
             }
         }
@@ -203,6 +217,7 @@ class TokenParser(command: CommandConfig) {
             (longOptions[name]
                     ?: throw UnknownOptionException(null, name)).let {
                 tokensMut.add(Token.Parameter(it, listOf(argument)))
+                if (it.abortParse) aborted = true
             }
             return
         }
@@ -214,8 +229,14 @@ class TokenParser(command: CommandConfig) {
                 currentOption = flag
             } else {
                 tokensMut.add(Token.Parameter(flag, emptyList()))
+                if (flag.abortParse) aborted = true
             }
         }
+    }
+
+    // Handle trail tokens
+    private fun appendTrail(token: String) {
+        tokensMut.add(Token.Trail(token))
     }
 
     private fun appendTerminateOptions() {
@@ -258,7 +279,7 @@ class TokenParser(command: CommandConfig) {
              */
             val argument: CommandArgument,
             /**
-             * The argument strings
+             * The argument string
              */
             val value: String
         ) : Token()
@@ -275,6 +296,16 @@ class TokenParser(command: CommandConfig) {
              * The argument strings
              */
             val value: List<String>
+        ) : Token()
+
+        /**
+         * Left over tokens after parsing was aborted
+         */
+        data class Trail(
+            /**
+             * The token string
+             */
+            val value: String
         ) : Token()
     }
 }

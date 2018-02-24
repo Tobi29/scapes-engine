@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+@file:Suppress("NOTHING_TO_INLINE")
 
 package org.tobi29.args
 
@@ -30,7 +32,7 @@ data class CommandOption(
      */
     val shortNames: Set<Char>,
     /**
-     * The amount of arguments this option requires
+     * Set of strings used as long names
      */
     val longNames: Set<String>,
     /**
@@ -40,19 +42,26 @@ data class CommandOption(
     /**
      * Description used for printing usage
      */
-    val description: String
-) : CommandElement() {
+    val description: String,
     /**
-     * Creates a new option with the given names, no arguments and description
-     * @param shortNames Set of characters used as short names
-     * @param longNames Set of strings used as long names
-     * @param description Description used for printing usage
+     * Abort parsing of all further tokens when this matches
      */
+    val abortParse: Boolean = false
+) : CommandElement() {
+    // TODO: Remove after 0.0.11
+    @Deprecated(
+        "Use CommandFlag \"constructor\"",
+        ReplaceWith(
+            "CommandFlag(shortNames, longNames, description, abortParse)",
+            "org.tobi29.args.CommandFlag"
+        )
+    )
     constructor(
         shortNames: Set<Char>,
         longNames: Set<String>,
-        description: String
-    ) : this(shortNames, longNames, emptyList(), description)
+        description: String,
+        abortParse: Boolean = false
+    ) : this(shortNames, longNames, emptyList(), description, abortParse)
 
     /**
      * Name retrieved through first long name or if none found first short name
@@ -61,6 +70,22 @@ data class CommandOption(
     val simpleName = longNames.firstOrNull()
             ?: shortNames.firstOrNull()?.toString() ?: "???"
 }
+
+/**
+ * Creates a new flag
+ * @param shortNames Set of characters used as short names
+ * @param longNames Set of strings used as long names
+ * @param description Description used for printing usage
+ * @param abortParse Abort parsing of all further tokens when this matches
+ */
+inline fun CommandFlag(
+    shortNames: Set<Char>,
+    longNames: Set<String>,
+    description: String,
+    abortParse: Boolean = false
+): CommandOption = CommandOption(
+    shortNames, longNames, emptyList(), description, abortParse
+)
 
 /**
  * A subcommand for separating command line arguments
@@ -87,7 +112,11 @@ data class CommandArgument(
     /**
      * Range of valid number of arguments
      */
-    val count: IntRange = 0..1
+    val count: IntRange = 0..1,
+    /**
+     * Abort parsing of all further tokens when this matches
+     */
+    val abortParse: Boolean = false
 ) : CommandElement()
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,8 +33,18 @@ data class CommandLine(
     /**
      * The arguments in order they appeared in
      */
-    val arguments: Map<CommandArgument, List<String>>
+    val arguments: Map<CommandArgument, List<String>>,
+    /**
+     * Trail tokens after parsing aborted, `null` if no abort occurred
+     */
+    val trail: List<String>?
 )
+
+/**
+ * Returns `true` if the command line resulted from an aborted parse
+ * @return `true` or `false`
+ */
+inline val CommandLine.isAborted get() = trail != null
 
 /**
  * Assembles the given parsed tokens for easy access
@@ -48,7 +58,16 @@ fun Iterable<TokenParser.Token>.assemble(command: List<CommandConfig> = emptyLis
     val arguments = filterIsInstance<TokenParser.Token.Argument>()
         .groupBy { it.argument }.asSequence()
         .map { Pair(it.key, it.value.map { it.value }) }.toMap()
-    return CommandLine(command, parameters, arguments)
+    val trail = if (none {
+            when (it) {
+                is TokenParser.Token.Parameter -> it.option.abortParse
+                is TokenParser.Token.Argument -> it.argument.abortParse
+                else -> false
+            }
+        }) null
+    else filterIsInstance<TokenParser.Token.Trail>()
+        .map { it.value }.toList()
+    return CommandLine(command, parameters, arguments, trail)
 }
 
 /**
@@ -87,24 +106,27 @@ fun CommandLine.validate(tokens: Iterable<TokenParser.Token>) {
 
     arguments.forEach { (argument, values) ->
         if (argument.count.last < values.size)
-            throw ExtraArgumentException(null, this,
+            throw ExtraArgumentException(
+                null, this,
                 argumentTokens.filter {
                     it.argument == argument
                 }.drop(argument.count.last).first()
             )
     }
 
-    command.forEach { (_, elements) ->
-        elements.asSequence().mapNotNull { it as? CommandArgument }
-            .forEach { argument ->
-                val count = arguments[argument]?.size ?: 0
-                if (argument.count.start > count) {
-                    throw MissingArgumentException(
-                        null, this,
-                        argument, argument.count.start - count
-                    )
+    if (!isAborted) {
+        command.forEach { (_, elements) ->
+            elements.asSequence().mapNotNull { it as? CommandArgument }
+                .forEach { argument ->
+                    val count = arguments[argument]?.size ?: 0
+                    if (argument.count.start > count) {
+                        throw MissingArgumentException(
+                            null, this,
+                            argument, argument.count.start - count
+                        )
+                    }
                 }
-            }
+        }
     }
 }
 
