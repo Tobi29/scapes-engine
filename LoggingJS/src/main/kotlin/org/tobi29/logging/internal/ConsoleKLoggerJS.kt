@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.tobi29.logging.internal
 import org.tobi29.logging.KLogLevel
 import org.tobi29.logging.KLogger
 import org.tobi29.logging.KLoggerFactory
+import org.tobi29.logging.logLevel
 
 internal actual fun createDefaultLogger(name: String): KLogger =
     KLoggerFactory(name)
@@ -50,5 +51,3 @@ internal class ConsoleKLogger(val name: String) : KLogger() {
         if (isErrorEnabled) console.error("[ERROR] $name: $msg")
     }
 }
-
-internal var logLevel = KLogLevel.INFO

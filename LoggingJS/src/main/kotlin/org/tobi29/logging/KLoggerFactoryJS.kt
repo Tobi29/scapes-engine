@@ -31,3 +31,5 @@ object KLoggerFactory {
         return default(name)
     }
 }
+
+var logLevel: KLogLevel = KLogLevel.INFO
