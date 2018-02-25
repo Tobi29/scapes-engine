@@ -88,7 +88,7 @@ class ContentInfoUtil
         /**
          * Number of bytes that the utility class by default reads to determine the content type information.
          */
-        val DEFAULT_READ_SIZE = 10 * 1024
+        val DEFAULT_READ_SIZE = 1024 * 1024
 
         /**
          * Return the content type if the extension from the file-name matches our internal list. This can either be just
