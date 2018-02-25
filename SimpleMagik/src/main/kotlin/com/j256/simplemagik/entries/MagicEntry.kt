@@ -145,6 +145,8 @@ internal constructor(
             }
             matcher.renderValue(contentData.sb, `val`, formatter)
         }
+        if (indirect) contentData.indirect = true
+        if (children.isEmpty()) contentData.offset = offset
         logger.trace { "matched data: $this: $contentData" }
 
         if (children.isEmpty()) {
@@ -185,8 +187,6 @@ internal constructor(
             contentData.mimeType = mimeType
             contentData.mimeTypeLevel = level
         }
-        if (indirect) contentData.indirect = true
-        if (children.isEmpty()) contentData.offset = offset
         return contentData
     }
 
