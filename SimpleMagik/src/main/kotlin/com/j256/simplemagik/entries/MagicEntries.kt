@@ -143,7 +143,7 @@ class MagicEntries {
                 entry.matchBytes(bytes)?.takeIf { it.name != MagicEntry.UNKNOWN_NAME }
                         ?: continue
             if (info.indirect) {
-                logger.trace { "found indirect match, starting again at offset ${info.offset}" }
+                logger.trace { "found indirect match $entry" }
                 return findMatch(bytes.slice(info.offset), entryList)
             }
             val contentInfo = ContentInfo(
