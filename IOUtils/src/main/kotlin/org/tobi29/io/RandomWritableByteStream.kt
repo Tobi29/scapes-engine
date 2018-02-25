@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ interface RandomWritableByteStream : WritableByteStream {
      * Set current position of the stream
      * @param pos New position
      * @throws IllegalArgumentException When an invalid position was given
-     * @return The current stream
      */
-    fun position(pos: Int): WritableByteStream
+    fun position(pos: Int)
 }

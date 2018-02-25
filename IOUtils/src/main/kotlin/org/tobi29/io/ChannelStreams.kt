@@ -30,7 +30,7 @@ class BufferedReadChannelStream(
         return mbuffer.remaining()
     }
 
-    override fun skip(length: Int): ReadableByteStream = apply {
+    override fun skip(length: Int) {
         var skip = (length - mbuffer.remaining()).toLong()
         if (skip < 0) {
             mbuffer.position(mbuffer.position() + length)
@@ -42,7 +42,7 @@ class BufferedReadChannelStream(
         }
     }
 
-    override fun get(buffer: ByteView) = apply {
+    override fun get(buffer: ByteView) {
         if (ensure(buffer.size)) {
             mbuffer.get(buffer)
         } else {
@@ -123,7 +123,7 @@ class BufferedWriteChannelStream(
 ) : WritableByteStream {
     private val mbuffer = MemoryViewStreamDefault().apply { limit(8192) }
 
-    override fun put(buffer: ByteViewRO) = apply {
+    override fun put(buffer: ByteViewRO) {
         if (ensure(buffer.size)) {
             mbuffer.put(buffer)
         } else {
@@ -132,40 +132,34 @@ class BufferedWriteChannelStream(
         }
     }
 
-    override fun put(b: Byte): WritableByteStream {
+    override fun put(value: Byte) {
         ensure(1)
-        mbuffer.put(b)
-        return this
+        mbuffer.put(value)
     }
 
-    override fun putShort(value: Short): WritableByteStream {
+    override fun putShort(value: Short) {
         ensure(2)
         mbuffer.putShort(value)
-        return this
     }
 
-    override fun putInt(value: Int): WritableByteStream {
+    override fun putInt(value: Int) {
         ensure(4)
         mbuffer.putInt(value)
-        return this
     }
 
-    override fun putLong(value: Long): WritableByteStream {
+    override fun putLong(value: Long) {
         ensure(8)
         mbuffer.putLong(value)
-        return this
     }
 
-    override fun putFloat(value: Float): WritableByteStream {
+    override fun putFloat(value: Float) {
         ensure(4)
         mbuffer.putFloat(value)
-        return this
     }
 
-    override fun putDouble(value: Double): WritableByteStream {
+    override fun putDouble(value: Double) {
         ensure(8)
         mbuffer.putDouble(value)
-        return this
     }
 
     fun flush() {
@@ -199,12 +193,12 @@ class DirectWriteChannelStream(
 ) : WritableByteStream {
     private val single = ByteArray(1).view
 
-    override fun put(b: Byte) = apply {
-        single[0] = b
+    override fun put(value: Byte) {
+        single[0] = value
         write(single)
     }
 
-    override fun put(buffer: ByteArraySliceRO) = apply {
+    override fun put(buffer: ByteArraySliceRO) {
         write(buffer)
     }
 

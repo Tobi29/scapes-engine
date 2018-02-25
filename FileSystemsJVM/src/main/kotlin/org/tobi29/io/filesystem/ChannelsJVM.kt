@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,13 @@ interface JavaFileChannel : JavaByteChannel, FileChannel {
 
     override fun position() = java.position()
 
-    override fun position(newPosition: Long) = apply {
+    override fun position(newPosition: Long) {
         java.position(newPosition)
     }
 
     override fun size() = java.size()
 
-    override fun truncate(size: Long) = apply {
+    override fun truncate(size: Long) {
         java.truncate(size)
     }
 

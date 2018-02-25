@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,9 +34,8 @@ interface ReadableByteStream : Readable {
      * Skip the given amount of bytes in the stream
      * @param length The amount of bytes to skip
      * @throws IOException When an IO error occurs
-     * @return The current stream
      */
-    fun skip(length: Int): ReadableByteStream = apply {
+    fun skip(length: Int) {
         repeat(length) { get() }
     }
 
@@ -44,9 +43,8 @@ interface ReadableByteStream : Readable {
      * Skip the given amount of bytes in the stream
      * @param length The amount of bytes to skip
      * @throws IOException When an IO error occurs
-     * @return The current stream
      */
-    fun skip(length: Long): ReadableByteStream = apply {
+    fun skip(length: Long) {
         var l = length
         while (l > Int.MAX_VALUE) {
             skip(Int.MAX_VALUE)
@@ -59,9 +57,8 @@ interface ReadableByteStream : Readable {
      * Read by filling the given buffer completely
      * @param buffer Buffer to write to
      * @throws IOException When an IO error occurs
-     * @return The current stream
      */
-    fun get(buffer: ByteView): ReadableByteStream = apply {
+    fun get(buffer: ByteView) {
         var position = 0
         repeat(buffer.size) {
             buffer.setByte(position++, get())
@@ -152,8 +149,10 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The long in the stream
      */
-    fun getLong(): Long = combineToLong(get(), get(), get(), get(), get(),
-            get(), get(), get())
+    fun getLong(): Long = combineToLong(
+        get(), get(), get(), get(), get(),
+        get(), get(), get()
+    )
 
     /**
      * Reads a float
@@ -188,7 +187,8 @@ interface ReadableByteStream : Readable {
         }
         if (len < 0 || len > limit) {
             throw IOException(
-                    "Array length outside of 0 to $limit: $limit")
+                "Array length outside of 0 to $limit: $limit"
+            )
         }
         val array = ByteArray(len)
         get(array.view.slice(0, array.size))
@@ -214,7 +214,8 @@ interface ReadableByteStream : Readable {
         }
         if (len < 0 || len > limit) {
             throw IOException(
-                    "Array length outside of 0 to $limit: $limit")
+                "Array length outside of 0 to $limit: $limit"
+            )
         }
         val array = ByteArray(len)
         get(array.view.slice(0, array.size))
@@ -234,7 +235,7 @@ interface ReadableByteStream : Readable {
      * @return The string in the stream
      */
     fun getString(limit: Int = Int.MAX_VALUE): String =
-            getByteArray(limit).utf8ToString()
+        getByteArray(limit).utf8ToString()
 
     override fun read(): Char = readTry().let {
         if (it < 0) throw EndOfStreamException()

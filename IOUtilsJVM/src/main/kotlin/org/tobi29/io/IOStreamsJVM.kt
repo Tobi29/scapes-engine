@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,19 @@ import org.tobi29.arrays.readAsByteArray
 import java.io.InputStream
 import java.io.OutputStream
 
-class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStream() {
+class ByteStreamInputStream(private val stream: ReadableByteStream) :
+    InputStream() {
     // TODO: @Throws(IOException::class)
     override fun read(): Int {
         return stream.get().toInt() and 0xFF
     }
 
     // TODO: @Throws(IOException::class)
-    override fun read(b: ByteArray,
-                      off: Int,
-                      len: Int): Int {
+    override fun read(
+        b: ByteArray,
+        off: Int,
+        len: Int
+    ): Int {
         return stream.getSome(b.view.slice(off, len))
     }
 
@@ -47,7 +50,8 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) : InputStrea
     }
 }
 
-class ByteStreamOutputStream(private val stream: WritableByteStream) : OutputStream() {
+class ByteStreamOutputStream(private val stream: WritableByteStream) :
+    OutputStream() {
 
     // TODO: @Throws(IOException::class)
     override fun write(b: Int) {
@@ -55,17 +59,22 @@ class ByteStreamOutputStream(private val stream: WritableByteStream) : OutputStr
     }
 
     // TODO: @Throws(IOException::class)
-    override fun write(b: ByteArray,
-                       off: Int,
-                       len: Int) {
+    override fun write(
+        b: ByteArray,
+        off: Int,
+        len: Int
+    ) {
         stream.put(b.view.slice(off, len))
     }
 }
 
-class OutputStreamByteStream(private val stream: OutputStream) : WritableByteStream {
-    override fun put(b: Byte) = also { stream.write(b.toInt()) }
+class OutputStreamByteStream(private val stream: OutputStream) :
+    WritableByteStream {
+    override fun put(value: Byte) {
+        stream.write(value.toInt())
+    }
 
-    override fun put(buffer: ByteArraySliceRO) = also {
+    override fun put(buffer: ByteArraySliceRO) {
         buffer.readAsByteArray { array, offset, size ->
             stream.write(array, offset, size)
         }

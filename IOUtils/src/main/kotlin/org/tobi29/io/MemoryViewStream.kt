@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,29 +21,27 @@ import org.tobi29.stdex.assert
 typealias MemoryViewProvider<B> = (Int) -> B
 
 val DefaultMemoryViewProvider: MemoryViewProvider<HeapViewByteBE> =
-        { HeapViewByteBE(ByteArray(it), 0, it) }
+    { HeapViewByteBE(ByteArray(it), 0, it) }
 
 interface MemoryStream : RandomWritableByteStream, RandomReadableByteStream {
-    override fun position(pos: Int): MemoryStream
-
     fun flip()
     fun rewind()
     fun reset()
 }
 
 fun MemoryViewStreamDefault(
-        buffer: HeapViewByteBE
+    buffer: HeapViewByteBE
 ): MemoryViewStream<HeapViewByteBE> =
-        MemoryViewStreamDefault({ (it shl 1).coerceAtLeast(8192) }, buffer)
+    MemoryViewStreamDefault({ (it shl 1).coerceAtLeast(8192) }, buffer)
 
 fun MemoryViewStreamDefault(
-        growth: (Int) -> Int = { (it shl 1).coerceAtLeast(8192) },
-        buffer: HeapViewByteBE = DefaultMemoryViewProvider(growth(0))
+    growth: (Int) -> Int = { (it shl 1).coerceAtLeast(8192) },
+    buffer: HeapViewByteBE = DefaultMemoryViewProvider(growth(0))
 ): MemoryViewStream<HeapViewByteBE> =
-        MemoryViewStream(DefaultMemoryViewProvider, growth, buffer)
+    MemoryViewStream(DefaultMemoryViewProvider, growth, buffer)
 
 class MemoryViewReadableStream<out B : ByteViewERO>(
-        private val mbuffer: B
+    private val mbuffer: B
 ) : RandomReadableByteStream {
     private var position: Int = 0
     private var limit: Int = mbuffer.size
@@ -61,7 +59,7 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
         return position
     }
 
-    override fun position(pos: Int) = apply {
+    override fun position(pos: Int) {
         if (pos < 0 || pos > limit)
             throw IllegalArgumentException("Invalid position")
         ensure(pos - position)
@@ -83,7 +81,7 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
         return limit
     }
 
-    override fun limit(limit: Int) = apply {
+    override fun limit(limit: Int) {
         this.limit = if (limit < -1) mbuffer.size else limit
     }
 
@@ -126,7 +124,7 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
         return mbuffer.getDouble(position).also { position += 8 }
     }
 
-    override fun get(buffer: ByteView) = apply {
+    override fun get(buffer: ByteView) {
         ensure(buffer.size)
         mbuffer.getBytes(position, buffer)
         position += buffer.size
@@ -134,13 +132,13 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
 }
 
 class MemoryViewStream<out B : ByteViewE>(
-        private val bufferProvider: MemoryViewProvider<B>?,
-        private val growth: (Int) -> Int = { it + 8192 },
-        private var mbuffer: B
+    private val bufferProvider: MemoryViewProvider<B>?,
+    private val growth: (Int) -> Int = { it + 8192 },
+    private var mbuffer: B
 ) : MemoryStream {
     constructor(
-            bufferProvider: MemoryViewProvider<B>,
-            growth: (Int) -> Int = { (it shl 1).coerceAtLeast(8192) }
+        bufferProvider: MemoryViewProvider<B>,
+        growth: (Int) -> Int = { (it shl 1).coerceAtLeast(8192) }
     ) : this(bufferProvider, growth, bufferProvider(growth(0)))
 
     constructor(buffer: B) : this(null, mbuffer = buffer) {
@@ -157,8 +155,10 @@ class MemoryViewStream<out B : ByteViewE>(
     fun bufferSlice(): B {
         if (limit >= 0) ensure(limit - position)
         @Suppress("UNCHECKED_CAST")
-        return mbuffer.slice(position,
-                (if (limit < 0) mbuffer.size else limit) - position) as B
+        return mbuffer.slice(
+            position,
+            (if (limit < 0) mbuffer.size else limit) - position
+        ) as B
     }
 
     override fun flip() {
@@ -173,7 +173,8 @@ class MemoryViewStream<out B : ByteViewE>(
     fun compact() {
         val limit = limit
         if (limit < 0) throw IllegalStateException(
-                "Cannot compact without limit")
+            "Cannot compact without limit"
+        )
         val end = limit.coerceAtMost(mbuffer.size)
         val remaining = end - position
         mbuffer.setBytes(0, mbuffer.slice(position, remaining))
@@ -194,50 +195,50 @@ class MemoryViewStream<out B : ByteViewE>(
         return position
     }
 
-    override fun position(pos: Int) = apply {
+    override fun position(pos: Int) {
         if (pos < 0 || (pos > limit && limit >= 0))
             throw IllegalArgumentException("Invalid position")
         ensure(pos - position)
         position = pos
     }
 
-    override fun put(b: Byte) = apply {
+    override fun put(value: Byte) {
         ensure(1)
-        mbuffer.setByte(position, b)
+        mbuffer.setByte(position, value)
         position++
     }
 
-    override fun putShort(value: Short) = apply {
+    override fun putShort(value: Short) {
         ensure(2)
         mbuffer.setShort(position, value)
         position += 2
     }
 
-    override fun putInt(value: Int) = apply {
+    override fun putInt(value: Int) {
         ensure(4)
         mbuffer.setInt(position, value)
         position += 4
     }
 
-    override fun putLong(value: Long) = apply {
+    override fun putLong(value: Long) {
         ensure(8)
         mbuffer.setLong(position, value)
         position += 8
     }
 
-    override fun putFloat(value: Float) = apply {
+    override fun putFloat(value: Float) {
         ensure(4)
         mbuffer.setFloat(position, value)
         position += 4
     }
 
-    override fun putDouble(value: Double) = apply {
+    override fun putDouble(value: Double) {
         ensure(8)
         mbuffer.setDouble(position, value)
         position += 8
     }
 
-    override fun put(buffer: ByteViewRO) = apply {
+    override fun put(buffer: ByteViewRO) {
         ensure(buffer.size)
         mbuffer.setBytes(position, buffer)
         position += buffer.size
@@ -263,8 +264,9 @@ class MemoryViewStream<out B : ByteViewE>(
                 ?: throw BufferOverflowException()
         if (size < mbuffer.size) {
             throw IllegalArgumentException(
-                    "Tried to shrink buffer with " + mbuffer.size +
-                            " bytes to " + size)
+                "Tried to shrink buffer with " + mbuffer.size +
+                        " bytes to " + size
+            )
         }
         val newBuffer = bufferProvider(size)
         assert { newBuffer.size == size }
@@ -276,7 +278,7 @@ class MemoryViewStream<out B : ByteViewE>(
         return limit
     }
 
-    override fun limit(limit: Int) = apply {
+    override fun limit(limit: Int) {
         this.limit = if (limit < -1) -1 else limit
     }
 
@@ -319,7 +321,7 @@ class MemoryViewStream<out B : ByteViewE>(
         return mbuffer.getDouble(position).also { position += 8 }
     }
 
-    override fun get(buffer: ByteView) = apply {
+    override fun get(buffer: ByteView) {
         ensure(buffer.size)
         mbuffer.getBytes(position, buffer)
         position += buffer.size

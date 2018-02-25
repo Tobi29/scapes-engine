@@ -73,7 +73,7 @@ interface SeekableByteChannel : ByteChannel {
     /**
      * @throws IOException
      */
-    fun position(newPosition: Long): SeekableByteChannel
+    fun position(newPosition: Long)
 
     /**
      * @throws IOException
@@ -83,7 +83,7 @@ interface SeekableByteChannel : ByteChannel {
     /**
      * @throws IOException
      */
-    fun truncate(size: Long): SeekableByteChannel
+    fun truncate(size: Long)
 
     /**
      * @throws IOException

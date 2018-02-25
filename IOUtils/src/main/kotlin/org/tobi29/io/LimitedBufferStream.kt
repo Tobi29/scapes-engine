@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,19 +15,20 @@
  */
 package org.tobi29.io
 
-class LimitedBufferStream(private val stream: ReadableByteStream,
-                          private var remaining: Int) : SizedReadableByteStream {
-
+class LimitedBufferStream(
+    private val stream: ReadableByteStream,
+    private var remaining: Int
+) : SizedReadableByteStream {
     override fun available(): Int {
         return stream.available().coerceAtMost(remaining)
     }
 
-    override fun skip(length: Int) = apply {
+    override fun skip(length: Int) {
         check(length)
         stream.skip(length)
     }
 
-    override fun get(buffer: ByteView) = apply {
+    override fun get(buffer: ByteView) {
         check(buffer.size)
         stream.get(buffer)
     }
