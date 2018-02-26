@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.tobi29.io.filesystem
 
-import org.tobi29.logging.KLogging
-import org.tobi29.utils.InstantNanos
 import org.tobi29.io.filesystem.spi.FileSystemProvider
+import org.tobi29.logging.KLogging
+import org.tobi29.stdex.UnsupportedJVMException
+import org.tobi29.utils.InstantNanos
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
-import org.tobi29.stdex.UnsupportedJVMException
 import java.io.File
 
 private object FileUtil : KLogging() {
@@ -116,12 +116,12 @@ actual fun directoryStream(path: FilePath): DirectoryStream {
 }
 
 // TODO: @Throws(IOException::class)
-fun setLastModifiedTime(path: FilePath,
-                        value: InstantNanos) {
+actual fun setLastModifiedTime(path: FilePath,
+                               value: InstantNanos) {
     FileUtil.i.setLastModifiedTime(path, value)
 }
 
 // TODO: @Throws(IOException::class)
-fun getLastModifiedTime(path: FilePath): InstantNanos {
+actual fun getLastModifiedTime(path: FilePath): InstantNanos {
     return FileUtil.i.getLastModifiedTime(path)
 }

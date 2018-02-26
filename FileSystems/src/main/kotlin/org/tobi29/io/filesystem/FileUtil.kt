@@ -17,6 +17,7 @@
 package org.tobi29.io.filesystem
 
 import org.tobi29.io.*
+import org.tobi29.utils.InstantNanos
 import org.tobi29.utils.findMap
 
 expect fun path(path: String): FilePath
@@ -171,6 +172,13 @@ expect fun move(source: FilePath,
 
 // TODO: @Throws(IOException::class)
 expect fun directoryStream(path: FilePath): DirectoryStream
+
+// TODO: @Throws(IOException::class)
+expect fun setLastModifiedTime(path: FilePath,
+                               value: InstantNanos)
+
+// TODO: @Throws(IOException::class)
+expect fun getLastModifiedTime(path: FilePath): InstantNanos
 
 interface DirectoryStream : Iterator<FilePath>,
         AutoCloseable
