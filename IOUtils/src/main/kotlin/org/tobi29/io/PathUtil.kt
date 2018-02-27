@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,10 +101,10 @@ abstract class StandardPathEnvironment : PathEnvironment {
     override val String.parent
         get() = sanitize().let {
             val index = it.lastIndexOf(separator)
-            if (index < 0 && it.isNotEmpty()) {
-                ""
-            } else if (index < 0 || index == 0) {
+            if (index < 0 || it == separator) {
                 null
+            } else if (index == 0) {
+                separator
             } else {
                 it.substring(0, index)
             }
