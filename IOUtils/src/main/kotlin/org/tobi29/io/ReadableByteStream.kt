@@ -242,69 +242,71 @@ interface ReadableByteStream : Readable {
         it.toChar()
     }
 
-    override fun readTry(): Int {
-        val initial = getTry().let {
+    override fun readTry(): Int = decodeUtf8(this::getTry)
+}
+
+inline fun decodeUtf8(input: () -> Int): Int {
+    val initial = input().let {
+        if (it < 0) return -1
+        it.toByte()
+    }
+    if (initial and 0b10000000.toByte() == 0b00000000.toByte()) {
+        return initial.toInt()
+    } else if (initial and 0b11100000.toByte() == 0b11000000.toByte()) {
+        val extra1 = input().let {
             if (it < 0) return -1
             it.toByte()
         }
-        if (initial and 0b10000000.toByte() == 0b00000000.toByte()) {
-            return initial.toInt()
-        } else if (initial and 0b11100000.toByte() == 0b11000000.toByte()) {
-            val extra1 = getTry().let {
-                if (it < 0) return -1
-                it.toByte()
-            }
-            if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
-                throw IOException("Invalid UTF-8 byte: $extra1")
-            }
-            val c = ((initial.toInt() and 0b00011111) shl 6) or
-                    ((extra1.toInt() and 0b00111111) shl 0)
-            return c
-        } else if (initial and 0b11110000.toByte() == 0b11100000.toByte()) {
-            val extra1 = getTry().let {
-                if (it < 0) return -1
-                it.toByte()
-            }
-            val extra2 = getTry().let {
-                if (it < 0) return -1
-                it.toByte()
-            }
-            if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
-                throw IOException("Invalid UTF-8 byte: $extra1")
-            } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
-                throw IOException("Invalid UTF-8 byte: $extra2")
-            }
-            val c = ((initial.toInt() and 0b00011111) shl 12) or
-                    ((extra1.toInt() and 0b00111111) shl 6) or
-                    ((extra2.toInt() and 0b00111111) shl 0)
-            return c
-        } else if (initial and 0b11111000.toByte() == 0b11110000.toByte()) {
-            val extra1 = getTry().let {
-                if (it < 0) return -1
-                it.toByte()
-            }
-            val extra2 = getTry().let {
-                if (it < 0) return -1
-                it.toByte()
-            }
-            val extra3 = getTry().let {
-                if (it < 0) return -1
-                it.toByte()
-            }
-            if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
-                throw IOException("Invalid UTF-8 byte: $extra1")
-            } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
-                throw IOException("Invalid UTF-8 byte: $extra2")
-            } else if (extra3 and 0b11000000.toByte() != 0b10000000.toByte()) {
-                throw IOException("Invalid UTF-8 byte: $extra3")
-            }
-            val c = ((initial.toInt() and 0b00011111) shl 18) or
-                    ((extra1.toInt() and 0b00111111) shl 12) or
-                    ((extra2.toInt() and 0b00111111) shl 6) or
-                    ((extra2.toInt() and 0b00111111) shl 0)
-            return c
-        } else {
-            throw IOException("Invalid UTF-8 byte: $initial")
+        if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
+            throw IOException("Invalid UTF-8 byte: $extra1")
         }
+        val c = ((initial.toInt() and 0b00011111) shl 6) or
+                ((extra1.toInt() and 0b00111111) shl 0)
+        return c
+    } else if (initial and 0b11110000.toByte() == 0b11100000.toByte()) {
+        val extra1 = input().let {
+            if (it < 0) return -1
+            it.toByte()
+        }
+        val extra2 = input().let {
+            if (it < 0) return -1
+            it.toByte()
+        }
+        if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
+            throw IOException("Invalid UTF-8 byte: $extra1")
+        } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
+            throw IOException("Invalid UTF-8 byte: $extra2")
+        }
+        val c = ((initial.toInt() and 0b00011111) shl 12) or
+                ((extra1.toInt() and 0b00111111) shl 6) or
+                ((extra2.toInt() and 0b00111111) shl 0)
+        return c
+    } else if (initial and 0b11111000.toByte() == 0b11110000.toByte()) {
+        val extra1 = input().let {
+            if (it < 0) return -1
+            it.toByte()
+        }
+        val extra2 = input().let {
+            if (it < 0) return -1
+            it.toByte()
+        }
+        val extra3 = input().let {
+            if (it < 0) return -1
+            it.toByte()
+        }
+        if (extra1 and 0b11000000.toByte() != 0b10000000.toByte()) {
+            throw IOException("Invalid UTF-8 byte: $extra1")
+        } else if (extra2 and 0b11000000.toByte() != 0b10000000.toByte()) {
+            throw IOException("Invalid UTF-8 byte: $extra2")
+        } else if (extra3 and 0b11000000.toByte() != 0b10000000.toByte()) {
+            throw IOException("Invalid UTF-8 byte: $extra3")
+        }
+        val c = ((initial.toInt() and 0b00011111) shl 18) or
+                ((extra1.toInt() and 0b00111111) shl 12) or
+                ((extra2.toInt() and 0b00111111) shl 6) or
+                ((extra2.toInt() and 0b00111111) shl 0)
+        return c
+    } else {
+        throw IOException("Invalid UTF-8 byte: $initial")
     }
 }
