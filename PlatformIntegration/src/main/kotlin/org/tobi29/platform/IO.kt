@@ -18,6 +18,7 @@ package org.tobi29.platform
 
 import org.tobi29.io.ReadableByteChannel
 import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.Readable
 import org.tobi29.stdex.printerr
 
 /**
@@ -38,8 +39,17 @@ expect val stderr: WritableByteStream
 
 /**
  * Standard input stream
+ *
+ * **Note:** Consider using [stdinText] for reading characters
  */
-expect val stdin: ReadableByteChannel?
+expect val stdin: ReadableByteChannel
+
+/**
+ * Standard input stream
+ *
+ * **Note:** Consider using [stdin] for reading binary data
+ */
+expect val stdinText: Readable
 
 /**
  * System dependant newline string, usually will be `"\n"` or on some weird
