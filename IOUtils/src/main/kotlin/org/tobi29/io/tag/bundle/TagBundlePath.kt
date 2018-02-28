@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,26 +18,29 @@ package org.tobi29.io.tag.bundle
 
 import org.tobi29.io.*
 
-data class TagBundlePath(private val bundle: TagBundle,
-                         private val path: String) : PathLocal {
+data class TagBundlePath(
+    private val bundle: TagBundle,
+    private val path: String
+) : PathLocal {
     private val data by lazy { bundle.resolve(path) }
 
     override fun get(path: String): PathLocal {
         UnixPathEnvironment.run {
-            return TagBundlePath(bundle,
-                    this@TagBundlePath.path.resolve(path))
+            return TagBundlePath(
+                bundle,
+                this@TagBundlePath.path.resolve(path)
+            )
         }
     }
 
     override val parent
         get() = UnixPathEnvironment.run {
-            path.parent?.let {
-                TagBundlePath(bundle, it)
-            }
+            (path.parent ?: if (path.isNotEmpty()) "" else null)
+                ?.let { TagBundlePath(bundle, it) }
         }
 
     override fun channel() = dataNow().viewBE.let(::MemoryViewReadableStream)
-            .let(::ReadableByteStreamChannel)
+        .let(::ReadableByteStreamChannel)
 
     override fun <R> readNow(reader: (ReadableByteStream) -> R): R {
         val stream = dataNow().viewBE.let(::MemoryViewReadableStream)
