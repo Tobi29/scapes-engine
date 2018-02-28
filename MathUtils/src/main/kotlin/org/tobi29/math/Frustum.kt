@@ -78,7 +78,31 @@ class Frustum() {
         return range
     }
 
+    @Deprecated("Use AABB3")
     fun inView(aabb: AABB): Int {
+        if (init) {
+            var out = 2
+            for (i in 0..5) {
+                if (pl[i].distance(
+                        aabb.getVertexPX(pl[i].normalx),
+                        aabb.getVertexPY(pl[i].normaly),
+                        aabb.getVertexPZ(pl[i].normalz)
+                    ) < 0) {
+                    return 0
+                } else if (pl[i].distance(
+                        aabb.getVertexNX(pl[i].normalx),
+                        aabb.getVertexNY(pl[i].normaly),
+                        aabb.getVertexNZ(pl[i].normalz)
+                    ) < 0) {
+                    out = 1
+                }
+            }
+            return out
+        }
+        return 0
+    }
+
+    fun inView(aabb: AABB3): Int {
         if (init) {
             var out = 2
             for (i in 0..5) {

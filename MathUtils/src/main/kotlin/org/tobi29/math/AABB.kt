@@ -18,6 +18,7 @@ package org.tobi29.math
 
 import org.tobi29.math.vector.Vector3d
 
+@Deprecated("Use AABB3")
 class AABB(
     var minX: Double,
     var minY: Double,

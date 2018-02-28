@@ -17,46 +17,51 @@
 package org.tobi29.math
 
 class PointerPane(
-    val aabb: AABB = AABB(
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0
-    ),
+    val aabb: AABB3 = AABB3(),
     var face: Face = Face.NONE,
     var x: Int = 0,
     var y: Int = 0,
     var z: Int = 0
 ) {
-
+    @Deprecated("Use AABB3")
     fun set(
         aabb: AABB,
         face: Face,
-        x: Int,
-        y: Int,
-        z: Int
+        x: Int, y: Int, z: Int
     ) {
         set(
-            aabb.minX, aabb.minY, aabb.minZ, aabb.maxX, aabb.maxY, aabb.maxZ,
-            face, x, y, z
+            aabb.minX, aabb.minY, aabb.minZ,
+            aabb.maxX, aabb.maxY, aabb.maxZ,
+            face,
+            x, y, z
         )
     }
 
     fun set(
-        minX: Double,
-        minY: Double,
-        minZ: Double,
-        maxX: Double,
-        maxY: Double,
-        maxZ: Double,
+        aabb: AABB3,
         face: Face,
-        x: Int,
-        y: Int,
-        z: Int
+        x: Int, y: Int, z: Int
     ) {
-        aabb.minX = minX
-        aabb.minY = minY
-        aabb.minZ = minZ
-        aabb.maxX = maxX
-        aabb.maxY = maxY
-        aabb.maxZ = maxZ
+        set(
+            aabb.min.x, aabb.min.y, aabb.min.z,
+            aabb.max.x, aabb.max.y, aabb.max.z,
+            face,
+            x, y, z
+        )
+    }
+
+    fun set(
+        minX: Double, minY: Double, minZ: Double,
+        maxX: Double, maxY: Double, maxZ: Double,
+        face: Face,
+        x: Int, y: Int, z: Int
+    ) {
+        aabb.min.x = minX
+        aabb.min.y = minY
+        aabb.min.z = minZ
+        aabb.max.x = maxX
+        aabb.max.y = maxY
+        aabb.max.z = maxZ
         this.face = face
         this.x = x
         this.y = y

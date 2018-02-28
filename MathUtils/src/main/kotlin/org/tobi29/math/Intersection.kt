@@ -32,52 +32,52 @@ object Intersection {
         val maxZ: Double
         when (pane.face) {
             Face.UP -> {
-                minX = pane.x + pane.aabb.minX
-                minY = pane.y + pane.aabb.minY
-                minZ = pane.z + pane.aabb.maxZ
-                maxX = pane.x + pane.aabb.maxX
-                maxY = pane.y + pane.aabb.maxY
-                maxZ = pane.z + pane.aabb.maxZ
+                minX = pane.x + pane.aabb.min.x
+                minY = pane.y + pane.aabb.min.y
+                minZ = pane.z + pane.aabb.max.z
+                maxX = pane.x + pane.aabb.max.x
+                maxY = pane.y + pane.aabb.max.y
+                maxZ = pane.z + pane.aabb.max.z
             }
             Face.DOWN -> {
-                minX = pane.x + pane.aabb.minX
-                minY = pane.y + pane.aabb.minY
-                minZ = pane.z + pane.aabb.minZ
-                maxX = pane.x + pane.aabb.maxX
-                maxY = pane.y + pane.aabb.maxY
-                maxZ = pane.z + pane.aabb.minZ
+                minX = pane.x + pane.aabb.min.x
+                minY = pane.y + pane.aabb.min.y
+                minZ = pane.z + pane.aabb.min.z
+                maxX = pane.x + pane.aabb.max.x
+                maxY = pane.y + pane.aabb.max.y
+                maxZ = pane.z + pane.aabb.min.z
             }
             Face.NORTH -> {
-                minX = pane.x + pane.aabb.minX
-                minY = pane.y + pane.aabb.minY
-                minZ = pane.z + pane.aabb.minZ
-                maxX = pane.x + pane.aabb.maxX
-                maxY = pane.y + pane.aabb.minY
-                maxZ = pane.z + pane.aabb.maxZ
+                minX = pane.x + pane.aabb.min.x
+                minY = pane.y + pane.aabb.min.y
+                minZ = pane.z + pane.aabb.min.z
+                maxX = pane.x + pane.aabb.max.x
+                maxY = pane.y + pane.aabb.min.y
+                maxZ = pane.z + pane.aabb.max.z
             }
             Face.EAST -> {
-                minX = pane.x + pane.aabb.maxX
-                minY = pane.y + pane.aabb.minY
-                minZ = pane.z + pane.aabb.minZ
-                maxX = pane.x + pane.aabb.maxX
-                maxY = pane.y + pane.aabb.maxY
-                maxZ = pane.z + pane.aabb.maxZ
+                minX = pane.x + pane.aabb.max.x
+                minY = pane.y + pane.aabb.min.y
+                minZ = pane.z + pane.aabb.min.z
+                maxX = pane.x + pane.aabb.max.x
+                maxY = pane.y + pane.aabb.max.y
+                maxZ = pane.z + pane.aabb.max.z
             }
             Face.SOUTH -> {
-                minX = pane.x + pane.aabb.minX
-                minY = pane.y + pane.aabb.maxY
-                minZ = pane.z + pane.aabb.minZ
-                maxX = pane.x + pane.aabb.maxX
-                maxY = pane.y + pane.aabb.maxY
-                maxZ = pane.z + pane.aabb.maxZ
+                minX = pane.x + pane.aabb.min.x
+                minY = pane.y + pane.aabb.max.y
+                minZ = pane.z + pane.aabb.min.z
+                maxX = pane.x + pane.aabb.max.x
+                maxY = pane.y + pane.aabb.max.y
+                maxZ = pane.z + pane.aabb.max.z
             }
             Face.WEST -> {
-                minX = pane.x + pane.aabb.minX
-                minY = pane.y + pane.aabb.minY
-                minZ = pane.z + pane.aabb.minZ
-                maxX = pane.x + pane.aabb.minX
-                maxY = pane.y + pane.aabb.maxY
-                maxZ = pane.z + pane.aabb.maxZ
+                minX = pane.x + pane.aabb.min.x
+                minY = pane.y + pane.aabb.min.y
+                minZ = pane.z + pane.aabb.min.z
+                maxX = pane.x + pane.aabb.min.x
+                maxY = pane.y + pane.aabb.max.y
+                maxZ = pane.z + pane.aabb.max.z
             }
             else -> {
                 minX = 0.0
