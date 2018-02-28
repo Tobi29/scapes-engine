@@ -33,7 +33,8 @@ data class ClasspathPath(
 
     override val parent
         get() = UnixPathEnvironment.run {
-            path.parent?.let { ClasspathPath(classLoader, it) }
+            (path.parent ?: if (path.isNotEmpty()) "" else null)
+                ?.let { ClasspathPath(classLoader, it) }
         }
 
     override fun channel(): ReadableByteChannel {
