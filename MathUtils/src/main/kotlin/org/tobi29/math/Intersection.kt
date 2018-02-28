@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,11 @@ import org.tobi29.math.vector.*
 import kotlin.math.abs
 
 object Intersection {
-    fun intersectPointerPane(lp1: Vector3d,
-                             lp2: Vector3d,
-                             pane: PointerPane): Vector3d? {
+    fun intersectPointerPane(
+        lp1: Vector3d,
+        lp2: Vector3d,
+        pane: PointerPane
+    ): Vector3d? {
         val minX: Double
         val minY: Double
         val minZ: Double
@@ -87,9 +89,10 @@ object Intersection {
             }
         }
         val intersection = intersectPlane(
-                lp1, lp2, Vector3d(maxX, minY, minZ),
-                Vector3d(minX, maxY, minZ),
-                Vector3d(minX, minY, maxZ)) ?: return null
+            lp1, lp2, Vector3d(maxX, minY, minZ),
+            Vector3d(minX, maxY, minZ),
+            Vector3d(minX, minY, maxZ)
+        ) ?: return null
         if (maxX < intersection.x || minX > intersection.x) {
             return null
         }
@@ -102,22 +105,28 @@ object Intersection {
         return intersection
     }
 
-    fun intersectPlane(lp1: Vector3d,
-                       lp2: Vector3d,
-                       p1: Vector3d,
-                       p2: Vector3d,
-                       p3: Vector3d): Vector3d? {
+    fun intersectPlane(
+        lp1: Vector3d,
+        lp2: Vector3d,
+        p1: Vector3d,
+        p2: Vector3d,
+        p3: Vector3d
+    ): Vector3d? {
         val e1 = p2.minus(p1)
         val e2 = p3.minus(p1)
         val normal = e1.cross(e2)
-        return intersectPlane(lp1,
-                lp2, p1, normal)
+        return intersectPlane(
+            lp1,
+            lp2, p1, normal
+        )
     }
 
-    fun intersectPlane(lp1: Vector3d,
-                       lp2: Vector3d,
-                       p1: Vector3d,
-                       normal: Vector3d): Vector3d? {
+    fun intersectPlane(
+        lp1: Vector3d,
+        lp2: Vector3d,
+        p1: Vector3d,
+        normal: Vector3d
+    ): Vector3d? {
         val ldir = lp2.minus(lp1)
         val numerator = normal.dot(ldir)
         if (abs(numerator) > 0.0001) {

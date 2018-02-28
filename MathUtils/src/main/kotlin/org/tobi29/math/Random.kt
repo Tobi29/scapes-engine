@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,14 @@ interface Random {
      * Returns a value in range `[min]..[max]`
      * @return a value in range `[min]..[max]`
      */
-    fun nextInt(min: Int = Int.MIN_VALUE,
-                max: Int = Int.MAX_VALUE): Int {
+    fun nextInt(
+        min: Int = Int.MIN_VALUE,
+        max: Int = Int.MAX_VALUE
+    ): Int {
         if (max < min) {
             throw IllegalArgumentException(
-                    "Invalid random bounds: $min <= $max")
+                "Invalid random bounds: $min <= $max"
+            )
         }
         var r = nextInt()
         val m = max - min
@@ -82,11 +85,14 @@ interface Random {
      * Returns a value in range `[min]..[max]`
      * @return a value in range `[min]..[max]`
      */
-    fun nextLong(min: Long = Long.MIN_VALUE,
-                 max: Long = Long.MAX_VALUE): Long {
+    fun nextLong(
+        min: Long = Long.MIN_VALUE,
+        max: Long = Long.MAX_VALUE
+    ): Long {
         if (max < min) {
             throw IllegalArgumentException(
-                    "Invalid random bounds: $min <= $max")
+                "Invalid random bounds: $min <= $max"
+            )
         }
         var r = nextLong()
         val m = max - min
@@ -119,8 +125,10 @@ interface Random {
      * Returns a value between [min] (inclusive) and [max] (exclusive)
      * @return a value between [min] (inclusive) and [max] (exclusive)
      */
-    fun nextFloat(min: Float = 0.0f,
-                  max: Float = 1.0f) = nextFloat() * (max - min) + min
+    fun nextFloat(
+        min: Float = 0.0f,
+        max: Float = 1.0f
+    ) = nextFloat() * (max - min) + min
 
     /**
      * Returns a value between `0.0f` (inclusive) and `1.0f` (exclusive)
@@ -132,8 +140,10 @@ interface Random {
      * Returns a value between [min] (inclusive) and [max] (exclusive)
      * @return a value between [min] (inclusive) and [max] (exclusive)
      */
-    fun nextDouble(min: Double = 0.0,
-                   max: Double = 1.0) = nextFloat() * (max - min) + min
+    fun nextDouble(
+        min: Double = 0.0,
+        max: Double = 1.0
+    ) = nextFloat() * (max - min) + min
 
     /**
      * Returns a value between `0.0` (inclusive) and `1.0` (exclusive)
@@ -196,9 +206,11 @@ fun Random.nextShort() = nextInt(65536).toShort()
  * @param offset first index to fill
  * @param size how many values to insert
  */
-fun Random.nextBytes(array: ByteArray,
-                                                   offset: Int = 0,
-                                                   size: Int = array.size - offset): ByteArray {
+fun Random.nextBytes(
+    array: ByteArray,
+    offset: Int = 0,
+    size: Int = array.size - offset
+): ByteArray {
     var i = 0
     while (i < size) {
         var r = nextInt()

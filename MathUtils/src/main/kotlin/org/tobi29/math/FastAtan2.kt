@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,35 +49,37 @@ object FastAtan2 {
         }
     }
 
-    fun atan2(y: Double,
-              x: Double): Double =
-            if (x >= 0) {
-                if (y >= 0) {
-                    if (x >= y) {
-                        ATAN2_TABLE_PPY[(SIZE * y / x + 0.5).toInt()].toDouble()
-                    } else {
-                        ATAN2_TABLE_PPX[(SIZE * x / y + 0.5).toInt()].toDouble()
-                    }
+    fun atan2(
+        y: Double,
+        x: Double
+    ): Double =
+        if (x >= 0) {
+            if (y >= 0) {
+                if (x >= y) {
+                    ATAN2_TABLE_PPY[(SIZE * y / x + 0.5).toInt()].toDouble()
                 } else {
-                    if (x >= -y) {
-                        ATAN2_TABLE_PNY[(EZIS * y / x + 0.5).toInt()].toDouble()
-                    } else {
-                        ATAN2_TABLE_PNX[(EZIS * x / y + 0.5).toInt()].toDouble()
-                    }
+                    ATAN2_TABLE_PPX[(SIZE * x / y + 0.5).toInt()].toDouble()
                 }
             } else {
-                if (y >= 0) {
-                    if (-x >= y) {
-                        ATAN2_TABLE_NPY[(EZIS * y / x + 0.5).toInt()].toDouble()
-                    } else {
-                        ATAN2_TABLE_NPX[(EZIS * x / y + 0.5).toInt()].toDouble()
-                    }
+                if (x >= -y) {
+                    ATAN2_TABLE_PNY[(EZIS * y / x + 0.5).toInt()].toDouble()
                 } else {
-                    if (x <= y) {
-                        ATAN2_TABLE_NNY[(SIZE * y / x + 0.5).toInt()].toDouble()
-                    } else {
-                        ATAN2_TABLE_NNX[(SIZE * x / y + 0.5).toInt()].toDouble()
-                    }
+                    ATAN2_TABLE_PNX[(EZIS * x / y + 0.5).toInt()].toDouble()
                 }
             }
+        } else {
+            if (y >= 0) {
+                if (-x >= y) {
+                    ATAN2_TABLE_NPY[(EZIS * y / x + 0.5).toInt()].toDouble()
+                } else {
+                    ATAN2_TABLE_NPX[(EZIS * x / y + 0.5).toInt()].toDouble()
+                }
+            } else {
+                if (x <= y) {
+                    ATAN2_TABLE_NNY[(SIZE * y / x + 0.5).toInt()].toDouble()
+                } else {
+                    ATAN2_TABLE_NNX[(SIZE * x / y + 0.5).toInt()].toDouble()
+                }
+            }
+        }
 }

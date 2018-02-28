@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,16 @@ class Matrix3f {
     val values = FloatArray(9)
     private val values2 = FloatArray2(3, 3, values)
 
-    operator fun get(x: Int,
-                     y: Int) = values2[y, x]
+    operator fun get(
+        x: Int,
+        y: Int
+    ) = values2[y, x]
 
-    operator fun set(x: Int,
-                     y: Int,
-                     value: Float) {
+    operator fun set(
+        x: Int,
+        y: Int,
+        value: Float
+    ) {
         values2[y, x] = value
     }
 
@@ -44,15 +48,17 @@ class Matrix3f {
 
     fun identity() = set(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f)
 
-    fun set(xx: Float,
-            xy: Float,
-            xz: Float,
-            yx: Float,
-            yy: Float,
-            yz: Float,
-            zx: Float,
-            zy: Float,
-            zz: Float) {
+    fun set(
+        xx: Float,
+        xy: Float,
+        xz: Float,
+        yx: Float,
+        yy: Float,
+        yz: Float,
+        zx: Float,
+        zy: Float,
+        zz: Float
+    ) {
         values[0] = xx
         values[1] = yx
         values[2] = zx
@@ -64,9 +70,11 @@ class Matrix3f {
         values[8] = zz
     }
 
-    fun scale(x: Float,
-              y: Float,
-              z: Float) {
+    fun scale(
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         for (i in 0..2) {
             values[i] = values[i] * x
         }
@@ -78,43 +86,53 @@ class Matrix3f {
         }
     }
 
-    fun rotate(angle: Float,
-               x: Float,
-               y: Float,
-               z: Float) {
+    fun rotate(
+        angle: Float,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         rotateRad(angle.toRad(), x, y, z)
     }
 
-    fun rotateRad(angle: Float,
-                  x: Float,
-                  y: Float,
-                  z: Float) {
+    fun rotateRad(
+        angle: Float,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         val cos = cosTable(angle)
         val sin = sinTable(angle)
         rotate(cos, sin, x, y, z)
     }
 
-    fun rotateAccurate(angle: Double,
-                       x: Float,
-                       y: Float,
-                       z: Float) {
+    fun rotateAccurate(
+        angle: Double,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         rotateAccurateRad(angle.toRad(), x, y, z)
     }
 
-    fun rotateAccurateRad(angle: Double,
-                          x: Float,
-                          y: Float,
-                          z: Float) {
+    fun rotateAccurateRad(
+        angle: Double,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         val cos = cos(angle).toFloat()
         val sin = sin(angle).toFloat()
         rotate(cos, sin, x, y, z)
     }
 
-    private fun rotate(cos: Float,
-                       sin: Float,
-                       x: Float,
-                       y: Float,
-                       z: Float) {
+    private fun rotate(
+        cos: Float,
+        sin: Float,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         val oneMinusCos = 1.0f - cos
         val mxy = x * y
         val myz = y * z
@@ -157,8 +175,10 @@ class Matrix3f {
         yz = t12
     }
 
-    fun multiply(o: Matrix3d,
-                 d: Matrix3d) {
+    fun multiply(
+        o: Matrix3d,
+        d: Matrix3d
+    ) {
         val v00 = xx
         val v01 = xy
         val v02 = xz
@@ -189,27 +209,24 @@ class Matrix3f {
     }
 
     fun multiply(v: Vector3d): Vector3d =
-            matrix3dMultiply(xx.toDouble(), xy.toDouble(), xz.toDouble(),
-                    yx.toDouble(), yy.toDouble(), yz.toDouble(), zx.toDouble(),
-                    zy.toDouble(), zz.toDouble(), v.x, v.y, v.z, ::Vector3d)
+        matrix3dMultiply(
+            xx.toDouble(), xy.toDouble(), xz.toDouble(),
+            yx.toDouble(), yy.toDouble(), yz.toDouble(), zx.toDouble(),
+            zy.toDouble(), zz.toDouble(), v.x, v.y, v.z, ::Vector3d
+        )
 }
 
 inline fun <R> matrix3fMultiply(
-        xx: Float,
-        xy: Float,
-        xz: Float,
-        yx: Float,
-        yy: Float,
-        yz: Float,
-        zx: Float,
-        zy: Float,
-        zz: Float,
-        x: Float,
-        y: Float,
-        z: Float,
-        output: (Float, Float, Float) -> R): R =
-        output(dot(xx, yx, zx, x, y, z), dot(xy, yy, zy, x, y, z),
-                dot(xz, yz, zz, x, y, z))
+    xx: Float, xy: Float, xz: Float,
+    yx: Float, yy: Float, yz: Float,
+    zx: Float, zy: Float, zz: Float,
+    x: Float, y: Float, z: Float,
+    output: (Float, Float, Float) -> R
+): R = output(
+    dot(xx, yx, zx, x, y, z),
+    dot(xy, yy, zy, x, y, z),
+    dot(xz, yz, zz, x, y, z)
+)
 
 inline var Matrix3f.xx: Float
     get() = get(0, 0)

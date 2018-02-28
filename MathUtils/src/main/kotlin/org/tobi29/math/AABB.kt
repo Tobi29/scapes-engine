@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,30 +18,36 @@ package org.tobi29.math
 
 import org.tobi29.math.vector.Vector3d
 
-class AABB(var minX: Double,
-           var minY: Double,
-           var minZ: Double,
-           var maxX: Double,
-           var maxY: Double,
-           var maxZ: Double) {
+class AABB(
+    var minX: Double,
+    var minY: Double,
+    var minZ: Double,
+    var maxX: Double,
+    var maxY: Double,
+    var maxZ: Double
+) {
 
-    constructor(aabb: AABB) : this(aabb.minX, aabb.minY, aabb.minZ, aabb.maxX,
-            aabb.maxY, aabb.maxZ)
+    constructor(aabb: AABB) : this(
+        aabb.minX, aabb.minY, aabb.minZ, aabb.maxX,
+        aabb.maxY, aabb.maxZ
+    )
 
-    private fun offset(min1: Double,
-                       min2: Double,
-                       max1: Double,
-                       max2: Double,
-                       minH1: Double,
-                       minH2: Double,
-                       maxH1: Double,
-                       maxH2: Double,
-                       minV1: Double,
-                       minV2: Double,
-                       maxV1: Double,
-                       maxV2: Double,
-                       base: Double,
-                       error: Double): Double {
+    private fun offset(
+        min1: Double,
+        min2: Double,
+        max1: Double,
+        max2: Double,
+        minH1: Double,
+        minH2: Double,
+        maxH1: Double,
+        maxH2: Double,
+        minV1: Double,
+        minV2: Double,
+        maxV1: Double,
+        maxV2: Double,
+        base: Double,
+        error: Double
+    ): Double {
         var base = base
         if (maxH1 <= minH2 + error || minH1 >= maxH2 - error) {
             return base
@@ -64,22 +70,28 @@ class AABB(var minX: Double,
         return base
     }
 
-    fun moveOutX(aabbs: Sequence<AABB>,
-                 base: Double): Double {
+    fun moveOutX(
+        aabbs: Sequence<AABB>,
+        base: Double
+    ): Double {
         var output = base
         aabbs.forEach { output = moveOutX(it, output) }
         return output
     }
 
-    fun moveOutY(aabbs: Sequence<AABB>,
-                 base: Double): Double {
+    fun moveOutY(
+        aabbs: Sequence<AABB>,
+        base: Double
+    ): Double {
         var output = base
         aabbs.forEach { output = moveOutY(it, output) }
         return output
     }
 
-    fun moveOutZ(aabbs: Sequence<AABB>,
-                 base: Double): Double {
+    fun moveOutZ(
+        aabbs: Sequence<AABB>,
+        base: Double
+    ): Double {
         var output = base
         aabbs.forEach { output = moveOutZ(it, output) }
         return output
@@ -96,9 +108,11 @@ class AABB(var minX: Double,
         return this
     }
 
-    fun add(x: Double,
-            y: Double,
-            z: Double): AABB {
+    fun add(
+        x: Double,
+        y: Double,
+        z: Double
+    ): AABB {
         minX += x
         maxX += x
         minY += y
@@ -108,9 +122,11 @@ class AABB(var minX: Double,
         return this
     }
 
-    fun subtract(x: Double,
-                 y: Double,
-                 z: Double): AABB {
+    fun subtract(
+        x: Double,
+        y: Double,
+        z: Double
+    ): AABB {
         minX -= x
         maxX -= x
         minY -= y
@@ -168,9 +184,11 @@ class AABB(var minX: Double,
         return p
     }
 
-    fun grow(x: Double,
-             y: Double,
-             z: Double): AABB {
+    fun grow(
+        x: Double,
+        y: Double,
+        z: Double
+    ): AABB {
         minX -= x
         minY -= y
         minZ -= z
@@ -180,12 +198,14 @@ class AABB(var minX: Double,
         return this
     }
 
-    fun grow(x1: Double,
-             y1: Double,
-             z1: Double,
-             x2: Double,
-             y2: Double,
-             z2: Double): AABB {
+    fun grow(
+        x1: Double,
+        y1: Double,
+        z1: Double,
+        x2: Double,
+        y2: Double,
+        z2: Double
+    ): AABB {
         minX -= x1
         minY -= y1
         minZ -= z1
@@ -199,9 +219,11 @@ class AABB(var minX: Double,
         return scale(value, value, value)
     }
 
-    fun scale(x: Double,
-              y: Double,
-              z: Double): AABB {
+    fun scale(
+        x: Double,
+        y: Double,
+        z: Double
+    ): AABB {
         minX *= x
         minY *= y
         minZ *= z
@@ -215,35 +237,49 @@ class AABB(var minX: Double,
         return inside(check.x, check.y, check.z)
     }
 
-    fun inside(x: Double,
-               y: Double,
-               z: Double): Boolean {
+    fun inside(
+        x: Double,
+        y: Double,
+        z: Double
+    ): Boolean {
         return !(maxX < x || minX > x) && !(maxY < y || minY > y) &&
                 !(maxZ < z || minZ > z)
     }
 
-    fun moveOutX(check: AABB,
-                 base: Double,
-                 error: Double = 0.00001): Double {
-        return offset(minX, check.minX, maxX, check.maxX, minY, check.minY,
-                maxY, check.maxY, minZ, check.minZ, maxZ, check.maxZ, base,
-                error)
+    fun moveOutX(
+        check: AABB,
+        base: Double,
+        error: Double = 0.00001
+    ): Double {
+        return offset(
+            minX, check.minX, maxX, check.maxX, minY, check.minY,
+            maxY, check.maxY, minZ, check.minZ, maxZ, check.maxZ,
+            base, error
+        )
     }
 
-    fun moveOutY(check: AABB,
-                 base: Double,
-                 error: Double = 0.00001): Double {
-        return offset(minY, check.minY, maxY, check.maxY, minX, check.minX,
-                maxX, check.maxX, minZ, check.minZ, maxZ, check.maxZ, base,
-                error)
+    fun moveOutY(
+        check: AABB,
+        base: Double,
+        error: Double = 0.00001
+    ): Double {
+        return offset(
+            minY, check.minY, maxY, check.maxY, minX, check.minX,
+            maxX, check.maxX, minZ, check.minZ, maxZ, check.maxZ,
+            base, error
+        )
     }
 
-    fun moveOutZ(check: AABB,
-                 base: Double,
-                 error: Double = 0.00001): Double {
-        return offset(minZ, check.minZ, maxZ, check.maxZ, minX, check.minX,
-                maxX, check.maxX, minY, check.minY, maxY, check.maxY, base,
-                error)
+    fun moveOutZ(
+        check: AABB,
+        base: Double,
+        error: Double = 0.00001
+    ): Double {
+        return offset(
+            minZ, check.minZ, maxZ, check.maxZ, minX, check.minX,
+            maxX, check.maxX, minY, check.minY, maxY, check.maxY,
+            base, error
+        )
     }
 
     fun overlay(check: AABB): Boolean {

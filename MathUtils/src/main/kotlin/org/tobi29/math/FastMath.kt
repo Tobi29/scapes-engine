@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ object FastMath {
                     return (sign or 0x7c00).toShort()
                 }
                 return (sign or 0x7c00 or (bits and 0x007fffff).ushr(
-                        13)).toShort()
+                    13
+                )).toShort()
             }
             return (sign or 0x7bff).toShort()
         }
@@ -38,12 +39,15 @@ object FastMath {
         }
         value = (bits and 0x7fffffff).ushr(23)
         return (sign or ((bits and 0x7fffff or 0x800000) + 0x800000.ushr(
-                value - 102)).ushr(126 - value)).toShort()
+            value - 102
+        )).ushr(126 - value)).toShort()
     }
 
-    fun diff(value1: Double,
-             value2: Double,
-             modulus: Double): Double {
+    fun diff(
+        value1: Double,
+        value2: Double,
+        modulus: Double
+    ): Double {
         var diff = (value2 - value1) % modulus
         val h = modulus * 0.5
         while (diff > h) {

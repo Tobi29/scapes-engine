@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,10 +57,14 @@ inline fun min(value: ReadVector2d): Double {
  * @param value2 The second value
  * @return [Vector2d] with smaller values between [value1] and [value2]
  */
-inline fun min(value1: ReadVector2d,
-               value2: ReadVector2d): Vector2d {
-    return Vector2d(min(value1.x, value2.x),
-            min(value1.y, value2.y))
+inline fun min(
+    value1: ReadVector2d,
+    value2: ReadVector2d
+): Vector2d {
+    return Vector2d(
+        min(value1.x, value2.x),
+        min(value1.y, value2.y)
+    )
 }
 
 /**
@@ -69,11 +73,15 @@ inline fun min(value1: ReadVector2d,
  * @param value2 The second value
  * @return [Vector3d] with smaller values between [value1] and [value2]
  */
-inline fun min(value1: ReadVector3d,
-               value2: ReadVector3d): Vector3d {
-    return Vector3d(min(value1.x, value2.x),
-            min(value1.y, value2.y),
-            min(value1.z, value2.z))
+inline fun min(
+    value1: ReadVector3d,
+    value2: ReadVector3d
+): Vector3d {
+    return Vector3d(
+        min(value1.x, value2.x),
+        min(value1.y, value2.y),
+        min(value1.z, value2.z)
+    )
 }
 
 /**
@@ -100,10 +108,14 @@ inline fun max(value: ReadVector3d): Double {
  * @param value2 The second value
  * @return [Vector2d] with greater values between [value1] and [value2]
  */
-inline fun max(value1: ReadVector2d,
-               value2: ReadVector2d): Vector2d {
-    return Vector2d(max(value1.x, value2.x),
-            max(value1.y, value2.y))
+inline fun max(
+    value1: ReadVector2d,
+    value2: ReadVector2d
+): Vector2d {
+    return Vector2d(
+        max(value1.x, value2.x),
+        max(value1.y, value2.y)
+    )
 }
 
 /**
@@ -112,11 +124,15 @@ inline fun max(value1: ReadVector2d,
  * @param value2 The second value
  * @return [Vector3d] with greater values between [value1] and [value2]
  */
-inline fun max(value1: ReadVector3d,
-               value2: ReadVector3d): Vector3d {
-    return Vector3d(max(value1.x, value2.x),
-            max(value1.y, value2.y),
-            max(value1.z, value2.z))
+inline fun max(
+    value1: ReadVector3d,
+    value2: ReadVector3d
+): Vector3d {
+    return Vector3d(
+        max(value1.x, value2.x),
+        max(value1.y, value2.y),
+        max(value1.z, value2.z)
+    )
 }
 
 /**
@@ -125,10 +141,14 @@ inline fun max(value1: ReadVector3d,
  * @param value2 The second value
  * @return [Vector2i] with greater values between [value1] and [value2]
  */
-inline fun max(value1: ReadVector2i,
-               value2: ReadVector2i): Vector2i {
-    return Vector2i(max(value1.x, value2.x),
-            max(value1.y, value2.y))
+inline fun max(
+    value1: ReadVector2i,
+    value2: ReadVector2i
+): Vector2i {
+    return Vector2i(
+        max(value1.x, value2.x),
+        max(value1.y, value2.y)
+    )
 }
 
 /**
@@ -137,11 +157,15 @@ inline fun max(value1: ReadVector2i,
  * @param value2 The second value
  * @return [Vector3i] with greater values between [value1] and [value2]
  */
-inline fun max(value1: ReadVector3i,
-               value2: ReadVector3i): Vector3i {
-    return Vector3i(max(value1.x, value2.x),
-            max(value1.y, value2.y),
-            max(value1.z, value2.z))
+inline fun max(
+    value1: ReadVector3i,
+    value2: ReadVector3i
+): Vector3i {
+    return Vector3i(
+        max(value1.x, value2.x),
+        max(value1.y, value2.y),
+        max(value1.z, value2.z)
+    )
 }
 
 /**
@@ -162,11 +186,15 @@ inline fun clamp(value: ReadVector3d): Double {
  * @param value3 The maximum value
  * @return [Vector2d] with [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: ReadVector2d,
-                 value2: ReadVector2d,
-                 value3: ReadVector2d): Vector2d {
-    return Vector2d(clamp(value1.x, value2.x, value3.x),
-            clamp(value1.y, value2.y, value3.y))
+inline fun clamp(
+    value1: ReadVector2d,
+    value2: ReadVector2d,
+    value3: ReadVector2d
+): Vector2d {
+    return Vector2d(
+        clamp(value1.x, value2.x, value3.x),
+        clamp(value1.y, value2.y, value3.y)
+    )
 }
 
 /**
@@ -177,12 +205,16 @@ inline fun clamp(value1: ReadVector2d,
  * @param value3 The maximum value
  * @return [Vector3d] with [value1] forced into range between [value2] and [value3]
  */
-inline fun clamp(value1: ReadVector3d,
-                 value2: ReadVector3d,
-                 value3: ReadVector3d): Vector3d {
-    return Vector3d(clamp(value1.x, value2.x, value3.x),
-            clamp(value1.y, value2.y, value3.y),
-            clamp(value1.z, value2.z, value3.z))
+inline fun clamp(
+    value1: ReadVector3d,
+    value2: ReadVector3d,
+    value3: ReadVector3d
+): Vector3d {
+    return Vector3d(
+        clamp(value1.x, value2.x, value3.x),
+        clamp(value1.y, value2.y, value3.y),
+        clamp(value1.z, value2.z, value3.z)
+    )
 }
 
 /**
@@ -263,10 +295,14 @@ inline fun acosTable(value: Double): Double {
  * @param value2 The second value
  * @return The atan2 of [value1] and [value2]
  */
-inline fun atan2Fast(value1: Float,
-                     value2: Float): Float {
-    return atan2Fast(value1.toDouble(),
-            value2.toDouble()).toFloat()
+inline fun atan2Fast(
+    value1: Float,
+    value2: Float
+): Float {
+    return atan2Fast(
+        value1.toDouble(),
+        value2.toDouble()
+    ).toFloat()
 }
 
 /**
@@ -275,8 +311,10 @@ inline fun atan2Fast(value1: Float,
  * @param value2 The second value
  * @return The atan2 of [value1] and [value2]
  */
-inline fun atan2Fast(value1: Double,
-                     value2: Double): Double {
+inline fun atan2Fast(
+    value1: Double,
+    value2: Double
+): Double {
     return FastAtan2.atan2(value1, value2)
 }
 
@@ -286,10 +324,14 @@ inline fun atan2Fast(value1: Double,
  * @param value2 The second value in degrees
  * @return Returns the difference in range `-180.0` and `180.0`
  */
-inline fun angleDiff(value1: Float,
-                     value2: Float): Float {
-    return angleDiff(value1.toDouble(),
-            value2.toDouble()).toFloat()
+inline fun angleDiff(
+    value1: Float,
+    value2: Float
+): Float {
+    return angleDiff(
+        value1.toDouble(),
+        value2.toDouble()
+    ).toFloat()
 }
 
 /**
@@ -298,8 +340,10 @@ inline fun angleDiff(value1: Float,
  * @param value2 The second value in degrees
  * @return Returns the difference in range `-180.0` and `180.0`
  */
-inline fun angleDiff(value1: Double,
-                     value2: Double): Double {
+inline fun angleDiff(
+    value1: Double,
+    value2: Double
+): Double {
     return diff(value1, value2, 360.0)
 }
 
@@ -312,12 +356,16 @@ inline fun angleDiff(value1: Double,
  * @param modulus The modulus to use
  * @return Returns the difference in range `-[modulus] / 2` and `[modulus] / 2`
  */
-inline fun diff(value1: Float,
-                value2: Float,
-                modulus: Float): Float {
-    return diff(value1.toDouble(),
-            value2.toDouble(),
-            modulus.toDouble()).toFloat()
+inline fun diff(
+    value1: Float,
+    value2: Float,
+    modulus: Float
+): Float {
+    return diff(
+        value1.toDouble(),
+        value2.toDouble(),
+        modulus.toDouble()
+    ).toFloat()
 }
 
 /**
@@ -329,9 +377,11 @@ inline fun diff(value1: Float,
  * @param modulus The modulus to use
  * @return Returns the difference in range `-[modulus] / 2` and `[modulus] / 2`
  */
-inline fun diff(value1: Double,
-                value2: Double,
-                modulus: Double): Double {
+inline fun diff(
+    value1: Double,
+    value2: Double,
+    modulus: Double
+): Double {
     return FastMath.diff(value1, value2, modulus)
 }
 
@@ -342,8 +392,10 @@ inline fun diff(value1: Double,
  * @param margin The margin on the sides
  * @return Returns the value after the linear transformation
  */
-inline fun margin(value: Float,
-                  margin: Float): Float {
+inline fun margin(
+    value: Float,
+    margin: Float
+): Float {
     return margin + value * (1.0f - margin * 2.0f)
 }
 
@@ -354,8 +406,10 @@ inline fun margin(value: Float,
  * @param margin The margin on the sides
  * @return Returns the value after the linear transformation
  */
-inline fun margin(value: Double,
-                  margin: Double): Double {
+inline fun margin(
+    value: Double,
+    margin: Double
+): Double {
     return margin + value * (1.0 - margin * 2.0)
 }
 

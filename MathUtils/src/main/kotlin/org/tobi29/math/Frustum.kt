@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,17 +35,21 @@ class Frustum() {
     private var nw = 0.0
     private var range = 0.0
 
-    constructor(angle: Double,
-                ratio: Double,
-                nearD: Double,
-                farD: Double) : this() {
+    constructor(
+        angle: Double,
+        ratio: Double,
+        nearD: Double,
+        farD: Double
+    ) : this() {
         setPerspective(angle, ratio, nearD, farD)
     }
 
-    fun setPerspective(angle: Double,
-                       ratio: Double,
-                       nearD: Double,
-                       farD: Double) {
+    fun setPerspective(
+        angle: Double,
+        ratio: Double,
+        nearD: Double,
+        farD: Double
+    ) {
         this.nearD = nearD
         this.farD = farD
         val ang2grad = 0.0174532925199433
@@ -78,13 +82,17 @@ class Frustum() {
         if (init) {
             var out = 2
             for (i in 0..5) {
-                if (pl[i].distance(aabb.getVertexPX(pl[i].normalx),
+                if (pl[i].distance(
+                        aabb.getVertexPX(pl[i].normalx),
                         aabb.getVertexPY(pl[i].normaly),
-                        aabb.getVertexPZ(pl[i].normalz)) < 0) {
+                        aabb.getVertexPZ(pl[i].normalz)
+                    ) < 0) {
                     return 0
-                } else if (pl[i].distance(aabb.getVertexNX(pl[i].normalx),
+                } else if (pl[i].distance(
+                        aabb.getVertexNX(pl[i].normalx),
                         aabb.getVertexNY(pl[i].normaly),
-                        aabb.getVertexNZ(pl[i].normalz)) < 0) {
+                        aabb.getVertexNZ(pl[i].normalz)
+                    ) < 0) {
                     out = 1
                 }
             }
@@ -93,15 +101,17 @@ class Frustum() {
         return 0
     }
 
-    fun setView(posx: Double,
-                posy: Double,
-                posz: Double,
-                angx: Double,
-                angy: Double,
-                angz: Double,
-                upx: Double,
-                upy: Double,
-                upz: Double) {
+    fun setView(
+        posx: Double,
+        posy: Double,
+        posz: Double,
+        angx: Double,
+        angy: Double,
+        angz: Double,
+        upx: Double,
+        upy: Double,
+        upz: Double
+    ) {
         this.posx = posx
         this.posy = posy
         this.posz = posz

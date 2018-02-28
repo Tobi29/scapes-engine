@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,12 +32,16 @@ class Matrix4f {
     val values = FloatArray(16)
     private val values2 = FloatArray2(4, 4, values)
 
-    operator fun get(x: Int,
-                     y: Int) = values2[y, x]
+    operator fun get(
+        x: Int,
+        y: Int
+    ) = values2[y, x]
 
-    operator fun set(x: Int,
-                     y: Int,
-                     value: Float) {
+    operator fun set(
+        x: Int,
+        y: Int,
+        value: Float
+    ) {
         values2[y, x] = value
     }
 
@@ -45,25 +49,29 @@ class Matrix4f {
         copy(matrix.values, values)
     }
 
-    fun identity() = set(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f)
+    fun identity() = set(
+        1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+    )
 
-    fun set(xx: Float,
-            xy: Float,
-            xz: Float,
-            xw: Float,
-            yx: Float,
-            yy: Float,
-            yz: Float,
-            yw: Float,
-            zx: Float,
-            zy: Float,
-            zz: Float,
-            zw: Float,
-            wx: Float,
-            wy: Float,
-            wz: Float,
-            ww: Float) {
+    fun set(
+        xx: Float,
+        xy: Float,
+        xz: Float,
+        xw: Float,
+        yx: Float,
+        yy: Float,
+        yz: Float,
+        yw: Float,
+        zx: Float,
+        zy: Float,
+        zz: Float,
+        zw: Float,
+        wx: Float,
+        wy: Float,
+        wz: Float,
+        ww: Float
+    ) {
         values[0] = xx
         values[1] = yx
         values[2] = zx
@@ -82,9 +90,11 @@ class Matrix4f {
         values[15] = ww
     }
 
-    fun scale(x: Float,
-              y: Float,
-              z: Float) {
+    fun scale(
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         for (i in 0..3) {
             values[i] = values[i] * x
         }
@@ -96,52 +106,64 @@ class Matrix4f {
         }
     }
 
-    fun translate(x: Float,
-                  y: Float,
-                  z: Float) {
+    fun translate(
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         wx += xx * x + yx * y + zx * z
         wy += xy * x + yy * y + zy * z
         wz += xz * x + yz * y + zz * z
         ww += xw * x + yw * y + zw * z
     }
 
-    fun rotate(angle: Float,
-               x: Float,
-               y: Float,
-               z: Float) {
+    fun rotate(
+        angle: Float,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         rotateRad(angle.toRad(), x, y, z)
     }
 
-    fun rotateRad(angle: Float,
-                  x: Float,
-                  y: Float,
-                  z: Float) {
+    fun rotateRad(
+        angle: Float,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         val cos = cosTable(angle)
         val sin = sinTable(angle)
         rotate(cos, sin, x, y, z)
     }
 
-    fun rotateAccurate(angle: Double,
-                       x: Float,
-                       y: Float,
-                       z: Float) {
+    fun rotateAccurate(
+        angle: Double,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         rotateAccurateRad(angle.toRad(), x, y, z)
     }
 
-    fun rotateAccurateRad(angle: Double,
-                          x: Float,
-                          y: Float,
-                          z: Float) {
+    fun rotateAccurateRad(
+        angle: Double,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         val cos = cos(angle).toFloat()
         val sin = sin(angle).toFloat()
         rotate(cos, sin, x, y, z)
     }
 
-    private fun rotate(cos: Float,
-                       sin: Float,
-                       x: Float,
-                       y: Float,
-                       z: Float) {
+    private fun rotate(
+        cos: Float,
+        sin: Float,
+        x: Float,
+        y: Float,
+        z: Float
+    ) {
         val oneMinusCos = 1.0f - cos
         val mxy = x * y
         val myz = y * z
@@ -192,8 +214,10 @@ class Matrix4f {
         yw = t13
     }
 
-    fun multiply(o: Matrix4f,
-                 d: Matrix4f) {
+    fun multiply(
+        o: Matrix4f,
+        d: Matrix4f
+    ) {
         val v00 = xx
         val v01 = xy
         val v02 = xz
@@ -245,18 +269,22 @@ class Matrix4f {
     }
 
     fun multiply(v: Vector3d): Vector3d =
-            matrix4dMultiply(xx.toDouble(), xy.toDouble(), xz.toDouble(),
-                    xw.toDouble(), yx.toDouble(), yy.toDouble(), yz.toDouble(),
-                    yw.toDouble(), zx.toDouble(), zy.toDouble(), zz.toDouble(),
-                    zw.toDouble(), wx.toDouble(), wy.toDouble(), wz.toDouble(),
-                    ww.toDouble(), v.x, v.y, v.z, 1.0) { x, y, z, _ ->
-                Vector3d(x, y, z)
-            }
+        matrix4dMultiply(
+            xx.toDouble(), xy.toDouble(), xz.toDouble(),
+            xw.toDouble(), yx.toDouble(), yy.toDouble(), yz.toDouble(),
+            yw.toDouble(), zx.toDouble(), zy.toDouble(), zz.toDouble(),
+            zw.toDouble(), wx.toDouble(), wy.toDouble(), wz.toDouble(),
+            ww.toDouble(), v.x, v.y, v.z, 1.0
+        ) { x, y, z, _ ->
+            Vector3d(x, y, z)
+        }
 
-    fun perspective(fov: Float,
-                    aspectRatio: Float,
-                    near: Float,
-                    far: Float) {
+    fun perspective(
+        fov: Float,
+        aspectRatio: Float,
+        near: Float,
+        far: Float
+    ) {
         val delta = far - near
         val cotangent = 1.0f / tan((fov / 2.0f).toRad())
         xx = cotangent / aspectRatio
@@ -270,12 +298,14 @@ class Matrix4f {
         ww = 0.0f
     }
 
-    fun orthogonal(x: Float,
-                   y: Float,
-                   width: Float,
-                   height: Float,
-                   zNear: Float = -1024.0f,
-                   zFar: Float = 1024.0f) {
+    fun orthogonal(
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        zNear: Float = -1024.0f,
+        zFar: Float = 1024.0f
+    ) {
         val right = x + width
         val bottom = y + height
 
@@ -300,8 +330,10 @@ class Matrix4f {
         ww = 1.0f
     }
 
-    fun invert(temp: Matrix4f,
-               out: Matrix4f): Boolean {
+    fun invert(
+        temp: Matrix4f,
+        out: Matrix4f
+    ): Boolean {
         if (temp !== this) {
             temp.set(this)
         }
@@ -311,7 +343,8 @@ class Matrix4f {
             var swap = i
             for (j in i + 1..3) {
                 if (abs(temp.values[(j shl 2) + i]) > abs(
-                        temp.values[i4 + i])) {
+                        temp.values[i4 + i]
+                    )) {
                     swap = j
                 }
             }
@@ -339,8 +372,10 @@ class Matrix4f {
                     val j4 = j shl 2
                     t = temp.values[j4 + i]
                     for (k in 0..3) {
-                        temp.values[j4 + k] = temp.values[j4 + k] - temp.values[i4 + k] * t
-                        out.values[j4 + k] = out.values[j4 + k] - out.values[i4 + k] * t
+                        temp.values[j4 + k] = temp.values[j4 + k] - temp.values[i4 + k] *
+                                t
+                        out.values[j4 + k] = out.values[j4 + k] - out.values[i4 + k] *
+                                t
                     }
                 }
             }
@@ -350,30 +385,18 @@ class Matrix4f {
 }
 
 inline fun <R> matrix4fMultiply(
-        xx: Float,
-        xy: Float,
-        xz: Float,
-        xw: Float,
-        yx: Float,
-        yy: Float,
-        yz: Float,
-        yw: Float,
-        zx: Float,
-        zy: Float,
-        zz: Float,
-        zw: Float,
-        wx: Float,
-        wy: Float,
-        wz: Float,
-        ww: Float,
-        x: Float,
-        y: Float,
-        z: Float,
-        w: Float,
-        output: (Float, Float, Float, Float) -> R): R =
-        output(dot(xx, yx, zx, wx, x, y, z, w), dot(xy, yy, zy, wy, x, y, z, w),
-                dot(xz, yz, zz, wz, x, y, z, w),
-                dot(xw, yw, zw, ww, x, y, z, w))
+    xx: Float, xy: Float, xz: Float, xw: Float,
+    yx: Float, yy: Float, yz: Float, yw: Float,
+    zx: Float, zy: Float, zz: Float, zw: Float,
+    wx: Float, wy: Float, wz: Float, ww: Float,
+    x: Float, y: Float, z: Float, w: Float,
+    output: (Float, Float, Float, Float) -> R
+): R = output(
+    dot(xx, yx, zx, wx, x, y, z, w),
+    dot(xy, yy, zy, wy, x, y, z, w),
+    dot(xz, yz, zz, wz, x, y, z, w),
+    dot(xw, yw, zw, ww, x, y, z, w)
+)
 
 inline var Matrix4f.xx: Float
     get() = get(0, 0)

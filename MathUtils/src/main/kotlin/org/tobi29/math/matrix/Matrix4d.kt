@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,27 +19,15 @@ package org.tobi29.math.matrix
 import org.tobi29.math.vector.dot
 
 inline fun <R> matrix4dMultiply(
-        xx: Double,
-        xy: Double,
-        xz: Double,
-        xw: Double,
-        yx: Double,
-        yy: Double,
-        yz: Double,
-        yw: Double,
-        zx: Double,
-        zy: Double,
-        zz: Double,
-        zw: Double,
-        wx: Double,
-        wy: Double,
-        wz: Double,
-        ww: Double,
-        x: Double,
-        y: Double,
-        z: Double,
-        w: Double,
-        output: (Double, Double, Double, Double) -> R): R =
-        output(dot(xx, yx, zx, wx, x, y, z, w), dot(xy, yy, zy, wy, x, y, z, w),
-                dot(xz, yz, zz, wz, x, y, z, w),
-                dot(xw, yw, zw, ww, x, y, z, w))
+    xx: Double, xy: Double, xz: Double, xw: Double,
+    yx: Double, yy: Double, yz: Double, yw: Double,
+    zx: Double, zy: Double, zz: Double, zw: Double,
+    wx: Double, wy: Double, wz: Double, ww: Double,
+    x: Double, y: Double, z: Double, w: Double,
+    output: (Double, Double, Double, Double) -> R
+): R = output(
+    dot(xx, yx, zx, wx, x, y, z, w),
+    dot(xy, yy, zy, wy, x, y, z, w),
+    dot(xz, yz, zz, wz, x, y, z, w),
+    dot(xw, yw, zw, ww, x, y, z, w)
+)
