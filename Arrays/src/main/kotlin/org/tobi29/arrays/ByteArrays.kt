@@ -324,7 +324,7 @@ fun ByteArraySliceRO.toByteArray(): ByteArray = when (this) {
 class ByteArray2(
     override val width: Int,
     override val height: Int,
-    private val array: ByteArray
+    val array: ByteArray
 ) : Bytes2,
     Iterable<Byte> {
     init {
@@ -412,7 +412,7 @@ class ByteArray3(
     override val width: Int,
     override val height: Int,
     override val depth: Int,
-    private val array: ByteArray
+    val array: ByteArray
 ) : Bytes3,
     Iterable<Byte> {
     init {
@@ -526,6 +526,60 @@ inline fun ByteArray2.fill(block: (Int, Int) -> Byte) =
  */
 inline fun ByteArray3.fill(block: (Int, Int, Int) -> Byte) =
     indices { x, y, z -> this[x, y, z] = block(x, y, z) }
+
+inline fun ByteArray2.shift(
+    x: Int,
+    y: Int,
+    dispose: (Byte, Int, Int) -> Unit,
+    supplier: (Int, Int) -> Byte
+) {
+    if (x == 0 && y == 0) return
+    val dx = x.coerceIn(-width, width)
+    val dy = y.coerceIn(-height, height)
+    run {
+        val start = if (dx > 0) width - dx else 0
+        val end = if (dx > 0) width else -dx
+        for (yy in 0 until height) {
+            for (xx in start until end) {
+                dispose(this[xx, yy], xx, yy)
+            }
+        }
+    }
+    run {
+        val start = if (dy > 0) height - dy else 0
+        val end = if (dy > 0) height else -dy
+        for (yy in start until end) {
+            for (xx in 0 until width) {
+                dispose(this[xx, yy], xx, yy)
+            }
+        }
+    }
+    (dy * width + dx).let { d ->
+        if (d > 0) {
+            copy(array, array, array.size - d, 0, d)
+        } else {
+            copy(array, array, array.size + d, -d, 0)
+        }
+    }
+    run {
+        val start = if (dx > 0) 0 else width + dx
+        val end = if (dx > 0) dx else width
+        for (yy in 0 until height) {
+            for (xx in start until end) {
+                this[xx, yy] = supplier(xx, yy)
+            }
+        }
+    }
+    run {
+        val start = if (dy > 0) 0 else height + dy
+        val end = if (dy > 0) dy else height
+        for (yy in start until end) {
+            for (xx in 0 until width) {
+                this[xx, yy] = supplier(xx, yy)
+            }
+        }
+    }
+}
 
 /**
  * Creates a new array and makes it accessible using a wrapper
