@@ -93,12 +93,7 @@ internal actual inline fun copyArray(
     length: Int,
     offsetSrc: Int,
     offsetDest: Int
-) {
-    checkBounds(src.size, dest.size, length, offsetSrc, offsetDest)
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
-}
+) = copyElements(src, dest, length, offsetSrc, offsetDest)
 
 @PublishedApi
 internal actual inline fun copyArray(
@@ -152,12 +147,7 @@ internal actual inline fun copyArray(
     length: Int,
     offsetSrc: Int,
     offsetDest: Int
-) {
-    checkBounds(src.size, dest.size, length, offsetSrc, offsetDest)
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
-}
+) = copyElements(src, dest, length, offsetSrc, offsetDest)
 
 @PublishedApi
 internal actual inline fun copyArray(
@@ -211,12 +201,7 @@ internal actual inline fun <T> copyArray(
     length: Int,
     offsetSrc: Int,
     offsetDest: Int
-) {
-    checkBounds(src.size, dest.size, length, offsetSrc, offsetDest)
-    for (i in 0 until length) {
-        dest[i + offsetDest] = src[i + offsetSrc]
-    }
-}
+) = copyElements(src, dest, length, offsetSrc, offsetDest)
 
 @PublishedApi
 internal inline fun checkBounds(
@@ -230,4 +215,23 @@ internal inline fun checkBounds(
         || (offsetSrc + length > sizeSrc)
         || (offsetDest + length > sizeDest))
         throw IndexOutOfBoundsException("Invalid copy bounds")
+}
+
+@Suppress("UnsafeCastFromDynamic")
+@PublishedApi
+internal fun copyElements(
+    src: dynamic,
+    dest: dynamic,
+    length: Int,
+    offsetSrc: Int,
+    offsetDest: Int
+) {
+    checkBounds(src.length, dest.length, length, offsetSrc, offsetDest)
+    if (src === dest) { // Is it ever possible to share data of non-typed arrays?
+        src.copyWithin(offsetDest, offsetSrc, offsetSrc + length)
+    } else {
+        for (i in 0 until length) {
+            dest[i + offsetDest] = src[i + offsetSrc]
+        }
+    }
 }
