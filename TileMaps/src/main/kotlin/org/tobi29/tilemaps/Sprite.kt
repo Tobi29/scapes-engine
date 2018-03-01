@@ -18,17 +18,14 @@ package org.tobi29.tilemaps
 
 import org.tobi29.graphics.Image
 import org.tobi29.graphics.toImage
-import org.tobi29.stdex.readOnly
 import org.tobi29.io.tag.*
 
-class Sprite(frames: List<Frame>) : TagMapWrite {
-    val frames = frames.readOnly()
-
+data class Sprite(val frames: List<Frame>) : TagMapWrite {
     constructor(vararg frames: Frame) : this(frames.toList())
 
     override fun write(map: ReadWriteTagMap) {
         map["Frames"] = TagList(
-                frames.asSequence().map { it.toTag() })
+            frames.asSequence().map { it.toTag() })
     }
 }
 
@@ -38,8 +35,10 @@ fun MutableTag.toSprite(): Sprite? {
     return Sprite(frames.mapNotNull { it.toFrame() })
 }
 
-data class Frame(val duration: Double,
-                 val image: Image) : TagMapWrite {
+data class Frame(
+    val duration: Double,
+    val image: Image
+) : TagMapWrite {
     override fun write(map: ReadWriteTagMap) {
         map["Duration"] = duration.toTag()
         map["Image"] = image.toTag()

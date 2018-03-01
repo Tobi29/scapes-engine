@@ -16,18 +16,20 @@
 
 package org.tobi29.tilemaps
 
-import org.tobi29.utils.Iterator
 import org.tobi29.graphics.Image
 import org.tobi29.graphics.get
 import org.tobi29.math.vector.Vector2i
+import org.tobi29.utils.Iterator
 
-fun cut(image: Image,
-        tileWidth: Int,
-        tileHeight: Int,
-        tileSpacing: Int,
-        tileMargin: Int,
-        id: Int,
-        tileset: String) = run {
+fun cut(
+    image: Image,
+    tileWidth: Int,
+    tileHeight: Int,
+    tileSpacing: Int,
+    tileMargin: Int,
+    id: Int,
+    tileset: String
+) = run {
     val size = Vector2i(tileWidth, tileHeight)
     Sequence {
         var i = id

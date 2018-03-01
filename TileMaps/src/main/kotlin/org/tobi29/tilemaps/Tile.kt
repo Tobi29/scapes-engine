@@ -16,14 +16,16 @@
 
 package org.tobi29.tilemaps
 
+import org.tobi29.io.tag.*
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.math.vector.toVector2i
-import org.tobi29.io.tag.*
 
-open class Tile(val sprite: Sprite,
-                val size: Vector2i,
-                val id: Int,
-                val tileSet: String) : TagMapWrite {
+open class Tile(
+    val sprite: Sprite,
+    val size: Vector2i,
+    val id: Int,
+    val tileSet: String
+) : TagMapWrite {
     override fun write(map: ReadWriteTagMap) {
         map["Sprite"] = sprite.toTag()
         map["Size"] = size.toTag()
