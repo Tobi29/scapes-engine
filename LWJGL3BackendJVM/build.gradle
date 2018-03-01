@@ -20,8 +20,8 @@ dependencies {
     compile project(":GLLWJGL3BackendJVM")
     compile project(":GLESLWJGL3BackendJVM")
     compile project(":OpenALSoundsJVM")
-    compile rootProject.ext.lwjgl
-    compile rootProject.ext.lwjglEGL
-    compile rootProject.ext.lwjglOpenAL
-    compile rootProject.ext.lwjglSTB
+    compile rootProject.ext.lwjglJVM("lwjgl")
+    compile rootProject.ext.lwjglJVM("lwjgl-egl")
+    compile rootProject.ext.lwjglJVM("lwjgl-openal")
+    compile rootProject.ext.lwjglJVM("lwjgl-stb")
 }

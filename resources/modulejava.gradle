@@ -30,7 +30,7 @@ artifacts {
 }
 
 dependencies {
-    testCompile rootProject.ext.junitJupiterAPI
+    testCompile rootProject.ext.junitJupiterJVM("junit-jupiter-api")
 
-    testRuntime rootProject.ext.junitJupiterEngine
+    testRuntime rootProject.ext.junitJupiterJVM("junit-jupiter-engine")
 }

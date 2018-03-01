@@ -20,5 +20,5 @@ dependencies {
     expectedBy project(":Logging")
     sources project(path: ":Logging", configuration: "sources")
     compile project(":STDExJVM")
-    compile rootProject.ext.slf4jAPI
+    compile rootProject.ext.slf4jJVM("slf4j-api")
 }

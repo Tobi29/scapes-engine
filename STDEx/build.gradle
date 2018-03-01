@@ -17,5 +17,5 @@
 apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile rootProject.ext.kotlinSTD
+    compile rootProject.ext.kotlin("kotlin-stdlib")
 }

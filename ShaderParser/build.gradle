@@ -19,9 +19,9 @@ apply plugin: "antlr"
 apply plugin: "idea"
 
 dependencies {
-    compile rootProject.ext.antlrRuntime
+    compile rootProject.ext.antlrJVM("antlr4-runtime")
 
-    antlr rootProject.ext.antlr
+    antlr rootProject.ext.antlrJVM("antlr4")
 }
 
 configurations.compile.exclude group: "org.antlr", module: "antlr4"

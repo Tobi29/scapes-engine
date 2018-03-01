@@ -20,5 +20,5 @@ dependencies {
     expectedBy project(":Coroutines")
     sources project(path: ":Coroutines", configuration: "sources")
     compile project(":UtilsJS")
-    compile rootProject.ext.kotlinxCoroutinesCoreJS
+    compile rootProject.ext.kotlinxCoroutinesJS("kotlinx-coroutines-core")
 }

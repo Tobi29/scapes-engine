@@ -61,62 +61,69 @@ task wrapper(type: Wrapper) {
 
 ext {
     kotlinVersion = "1.2.21"
-    kotlinxCoroutinesVersion = "0.21"
-    webKTBindingsVersion = "0.0.2"
-    slf4jVersion = "1.7.25"
-    spekVersion = "1.1.5"
-    junitJupiterVersion = "5.0.2"
-    swtVersion = "4.6"
-    threetenbpVersion = "1.3.6"
-    antlrVersion = "4.7"
-    mariadbJavaClientVersion = "1.7.0"
-    sqliteJDBCVersion = "3.21.0"
-    sqljetVersion = "1.1.10"
-    pngjVersion = "2.1.0"
-    tikaVersion = "1.16"
-    jlayerVersion = "1.0.1"
-    concentusVersion = "fdf276ed6b"
-    jorbisVersion = "0.0.17"
-    lwjglVersion = "3.1.6"
+    kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
+    kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
+    kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
 
-    kotlinSTD = "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
-    kotlinSTDJVM = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    kotlinSTDJS = "org.jetbrains.kotlin:kotlin-stdlib-js:$kotlinVersion"
-    kotlinReflect = "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-    kotlinTest = "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
-    kotlinxCoroutinesCore =
-            "org.jetbrains.kotlinx:kotlinx-coroutines-core-common:$kotlinxCoroutinesVersion"
-    kotlinxCoroutinesCoreJS =
-            "org.jetbrains.kotlinx:kotlinx-coroutines-core-js:$kotlinxCoroutinesVersion"
-    kotlinxCoroutinesCoreJVM =
-            "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutinesVersion"
-    webKTAudio =
-            "com.github.Tobi29.WebKTBindings:WebAudio:$webKTBindingsVersion"
-    webKTGL2 = "com.github.Tobi29.WebKTBindings:WebGL2:$webKTBindingsVersion"
-    slf4jAPI = "org.slf4j:slf4j-api:$slf4jVersion"
+    kotlinxCoroutinesVersion = "0.21"
+    kotlinxCoroutines = { module ->
+        "org.jetbrains.kotlinx:$module-common:$kotlinxCoroutinesVersion"
+    }
+    kotlinxCoroutinesJVM = {
+        module -> "org.jetbrains.kotlinx:$module:$kotlinxCoroutinesVersion"
+    }
+    kotlinxCoroutinesJS = {
+        module -> "org.jetbrains.kotlinx:$module-js:$kotlinxCoroutinesVersion"
+    }
+
+    slf4jVersion = "1.7.25"
+    slf4jJVM = { module -> "org.slf4j:$module:$slf4jVersion" }
+
+    spekVersion = "1.1.5"
+    spekJVM = { module -> "org.jetbrains.spek:$module:$spekVersion" }
+
+    lwjglVersion = "3.1.6"
+    lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
+
+    webKTBindingsVersion = "0.0.2"
+    webKTBindingsJS = { module ->
+        "com.github.Tobi29.WebKTBindings:$module:$webKTBindingsVersion"
+    }
+
+    junitJupiterVersion = "5.0.2"
+    junitJupiterJVM =
+            { module -> "org.junit.jupiter:$module:$junitJupiterVersion" }
+
+    swtVersion = "4.6"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
-    threeten = "org.threeten:threetenbp:$threetenbpVersion"
-    mariaDBJavaClient =
-            "org.mariadb.jdbc:mariadb-java-client:$mariadbJavaClientVersion"
-    sqliteJDBC = "org.xerial:sqlite-jdbc:$sqliteJDBCVersion"
-    sqljet = "org.tmatesoft.sqljet:sqljet:$sqljetVersion"
-    antlr = "org.antlr:antlr4:$antlrVersion"
-    antlrRuntime = "org.antlr:antlr4-runtime:$antlrVersion"
-    pngj = "ar.com.hjg:pngj:$pngjVersion"
-    jorbis = "org.jcraft:jorbis:$jorbisVersion"
-    concentus = "com.github.lostromb.concentus:Concentus:$concentusVersion"
-    jlayer = "javazoom:jlayer:$jlayerVersion"
-    lwjgl = "org.lwjgl:lwjgl:$lwjglVersion"
-    lwjglEGL = "org.lwjgl:lwjgl-egl:$lwjglVersion"
-    lwjglGLFW = "org.lwjgl:lwjgl-glfw:$lwjglVersion"
-    lwjglOpenAL = "org.lwjgl:lwjgl-openal:$lwjglVersion"
-    lwjglOpenGL = "org.lwjgl:lwjgl-opengl:$lwjglVersion"
-    lwjglOpenGLES = "org.lwjgl:lwjgl-opengles:$lwjglVersion"
-    lwjglSTB = "org.lwjgl:lwjgl-stb:$lwjglVersion"
-    lwjglTinyFD = "org.lwjgl:lwjgl-tinyfd:$lwjglVersion"
-    junitJupiterAPI = "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-    junitJupiterEngine =
-            "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
-    spekAPI = "org.jetbrains.spek:spek-api:$spekVersion"
-    spekEngine = "org.jetbrains.spek:spek-junit-platform-engine:$spekVersion"
+
+    antlrVersion = "4.7"
+    antlrJVM = { module -> "org.antlr:$module:$antlrVersion" }
+
+    mariadbJavaClientVersion = "1.7.0"
+    mariaDBJavaClientJVM =
+            { module -> "org.mariadb.jdbc:$module:$mariadbJavaClientVersion" }
+
+    sqliteJDBCVersion = "3.21.0"
+    sqliteJDBCJVM = { module -> "org.xerial:$module:$sqliteJDBCVersion" }
+
+    sqljetVersion = "1.1.10"
+    sqljetJVM = { module -> "org.tmatesoft.sqljet:$module:$sqljetVersion" }
+
+    pngjVersion = "2.1.0"
+    pngjJVM = { module -> "ar.com.hjg:$module:$pngjVersion" }
+
+    jlayerVersion = "1.0.1"
+    jlayerJVM = { module -> "javazoom:$module:$jlayerVersion" }
+
+    concentusVersion = "fdf276ed6b"
+    concentusJVM = {
+        module -> "com.github.lostromb.concentus:$module:$concentusVersion"
+    }
+
+    jorbisVersion = "0.0.17"
+    jorbisJVM = { module -> "org.jcraft:$module:$jorbisVersion" }
+
+    lwjglVersion = "3.1.6"
+    lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 }

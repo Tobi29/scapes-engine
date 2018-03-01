@@ -18,5 +18,5 @@ apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
     compile project(":Utils")
-    compile rootProject.ext.kotlinxCoroutinesCore
+    compile rootProject.ext.kotlinxCoroutines("kotlinx-coroutines-core")
 }

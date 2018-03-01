@@ -27,5 +27,5 @@ dependencies {
     compile project(":ShaderCompilerJS")
     compile project(":CoroutinesJS")
     compile project(":UtilsJS")
-    compile rootProject.ext.webKTAudio
+    compile rootProject.ext.webKTBindingsJS("WebAudio")
 }

@@ -17,14 +17,14 @@
 apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
-    compile rootProject.ext.kotlinSTDJVM
-    compile rootProject.ext.kotlinReflect
-    compile rootProject.ext.kotlinTest
-    compile(rootProject.ext.spekAPI) {
+    compile rootProject.ext.kotlinJVM("kotlin-stdlib")
+    compile rootProject.ext.kotlinJVM("kotlin-reflect")
+    compile rootProject.ext.kotlinJVM("kotlin-test")
+    compile(rootProject.ext.spekJVM("spek-api")) {
         exclude group: "org.jetbrains.kotlin"
     }
 
-    runtime(rootProject.ext.spekEngine) {
+    runtime(rootProject.ext.spekJVM("spek-junit-platform-engine")) {
         exclude group: "org.jetbrains.kotlin"
     }
 }
