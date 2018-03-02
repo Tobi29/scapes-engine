@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -234,7 +234,7 @@ typealias ReadWriteTagMutableMap = MutableMap<String, MutableTag>
 // Need dummy parameter to allow having a function as a "constructor"
 // We assume TagMap instances are always immutable
 @Suppress("UNUSED_PARAMETER", "EqualsOrHashCode")
-class TagMap internal constructor(
+class TagMap @PublishedApi internal constructor(
     unit: Unit,
     override val value: Map<String, Tag>
 ) : Tag(), Map<String, Tag> by value {
@@ -250,7 +250,7 @@ class TagMap internal constructor(
     }
 }
 
-fun TagMap(block: MutableMap<String, Tag>.() -> Unit): TagMap =
+inline fun TagMap(block: MutableMap<String, Tag>.() -> Unit): TagMap =
     TagMap(Unit, ConcurrentHashMap<String, Tag>().apply(block).readOnly())
 
 fun TagMap(value: Map<String, Tag> = emptyMap()) = TagMap {
@@ -282,8 +282,10 @@ typealias ReadWriteTagMutableList = MutableList<MutableTag>
 // The hashCode() of the alternative checks should be identical
 // Need dummy parameter to allow having a function as a "constructor"
 @Suppress("EqualsOrHashCode", "UNUSED_PARAMETER")
-class TagList internal constructor(unit: Unit, override val value: List<Tag>) :
-    Tag(), List<Tag> by value {
+class TagList @PublishedApi internal constructor(
+    unit: Unit,
+    override val value: List<Tag>
+) : Tag(), List<Tag> by value {
     override fun equals(other: Any?): Boolean {
         if (other is TagList) {
             return value == other.value
@@ -300,7 +302,7 @@ class TagList internal constructor(unit: Unit, override val value: List<Tag>) :
     }
 }
 
-fun TagList(block: MutableList<Tag>.() -> Unit): TagList =
+inline fun TagList(block: MutableList<Tag>.() -> Unit): TagList =
     TagList(Unit, ArrayList<Tag>().apply(block).readOnly())
 
 fun TagList(value: List<Tag> = emptyList()) = TagList {
