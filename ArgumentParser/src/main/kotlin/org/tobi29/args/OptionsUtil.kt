@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ package org.tobi29.args
  * @return A list of strings or `null` if the option was not found
  */
 fun CommandLine.getList(option: CommandOption): List<String>? =
-    parameters[option]?.firstOrNull()
+    parameters[option]?.lastOrNull()
 
 /**
  * Fetches the first argument for the option from the given [CommandLine]
