@@ -546,8 +546,8 @@ class ContainerGLFW(
             // of non-fullscreen windows
             val monitors = GLFW.glfwGetMonitors() ?: return null
             return monitors.iterator().asSequence().mapNotNull {
-                GLFW.glfwGetVideoMode(monitors.get())
-            }.maxBy { it.refreshRate() }?.refreshRate()
+                GLFW.glfwGetVideoMode(it)?.refreshRate()
+            }.max()
         }
 
         private fun PointerBuffer.iterator() = object : Iterator<Long> {
