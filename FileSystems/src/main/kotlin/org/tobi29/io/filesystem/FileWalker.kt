@@ -24,18 +24,6 @@ import kotlin.coroutines.experimental.buildIterator
 
 fun walk(
         path: FilePath,
-        onEnter: suspend SequenceBuilder<FilePath>.(FilePath) -> Boolean =
-        { true },
-        onEntry: suspend SequenceBuilder<FilePath>.(FilePath) -> Unit =
-        { yield(it) },
-        onLeave: suspend SequenceBuilder<FilePath>.(FilePath) -> Unit =
-        {},
-        options: Array<out LinkOption> = emptyArray()
-): FileTreeIterator =
-        FileWalker(onEnter, onEntry, onLeave, options).iterator(path)
-
-fun walk(
-        path: FilePath,
         order: FileTreeOrder = FileTreeOrder.PRE_ORDER,
         options: Array<out LinkOption> = emptyArray()
 ): FileTreeIterator =
