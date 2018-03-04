@@ -15,9 +15,9 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.2.21"
-    def dokkaVersion = "0.9.15"
-    def junitPlatformVersion = "1.0.2"
+    def kotlinVersion = "1.2.30"
+    def dokkaVersion = "0.9.16"
+    def junitPlatformVersion = "1.1.0"
 
     repositories {
         jcenter()
@@ -54,18 +54,18 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "4.4.1"
+    gradleVersion = "4.6"
     distributionUrl =
             "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
 
 ext {
-    kotlinVersion = "1.2.21"
+    kotlinVersion = "1.2.30"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
 
-    kotlinxCoroutinesVersion = "0.21"
+    kotlinxCoroutinesVersion = "0.22.3"
     kotlinxCoroutines = { module ->
         "org.jetbrains.kotlinx:$module-common:$kotlinxCoroutinesVersion"
     }
@@ -90,21 +90,21 @@ ext {
         "com.github.Tobi29.WebKTBindings:$module:$webKTBindingsVersion"
     }
 
-    junitJupiterVersion = "5.0.2"
+    junitJupiterVersion = "5.1.0"
     junitJupiterJVM =
             { module -> "org.junit.jupiter:$module:$junitJupiterVersion" }
 
     swtVersion = "4.6"
     swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
 
-    antlrVersion = "4.7"
+    antlrVersion = "4.7.1"
     antlrJVM = { module -> "org.antlr:$module:$antlrVersion" }
 
-    mariadbJavaClientVersion = "1.7.0"
+    mariadbJavaClientVersion = "1.7.2"
     mariaDBJavaClientJVM =
             { module -> "org.mariadb.jdbc:$module:$mariadbJavaClientVersion" }
 
-    sqliteJDBCVersion = "3.21.0"
+    sqliteJDBCVersion = "3.21.0.1"
     sqliteJDBCJVM = { module -> "org.xerial:$module:$sqliteJDBCVersion" }
 
     sqljetVersion = "1.1.10"
