@@ -59,7 +59,7 @@ open class BigEndianString16Type : StringType() {
         // we do the match on the extracted chars
         val chars = extractedValue as CharArray
         return super.findOffsetMatch(
-            testValue as StringType.TestInfo,
+            testValue as TestInfo,
             mutableOffset.offset,
             mutableOffset,
             null,

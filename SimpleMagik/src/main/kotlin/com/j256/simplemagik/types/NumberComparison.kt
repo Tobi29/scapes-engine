@@ -24,7 +24,7 @@ class NumberComparison
  * Pre-process the test string into an operator and a value.
  */
     (private val numberType: NumberType, testStr: String) {
-    private val operator: TestOperator
+    val operator: TestOperator
     val value: Number
 
     init {

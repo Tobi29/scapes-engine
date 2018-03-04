@@ -21,7 +21,6 @@ import com.j256.simplemagik.entries.MagicMatcher.MutableOffset
 import com.j256.simplemagik.types.IndirectType
 import org.tobi29.arrays.ByteArraySliceRO
 import org.tobi29.logging.KLogging
-import org.tobi29.utils.MutableString
 
 /**
  * Representation of a line of information from the magic (5) format. A number of methods are package protected because
@@ -49,7 +48,7 @@ internal constructor(
     private val testValue: Any?,
     private val formatSpacePrefix: Boolean,
     private val clearFormat: Boolean,
-    private val formatter: MagicFormatter?
+    private val formatter: Lazy<MagicFormatter>?
 ) {
     init {
         if (!addOffset && offset < 0 && offsetInfo == null)
@@ -137,13 +136,15 @@ internal constructor(
         }
         if (formatter != null) {
             if (clearFormat) {
-                contentData.sb.clear()
+                contentData.messageBuilder.clear()
             }
-            // if we are appending and need a space then prepend one
-            if (formatSpacePrefix && contentData.sb.length > 0) {
-                contentData.sb.append(' ')
+            contentData.messageBuilder.add {
+                // if we are appending and need a space then prepend one
+                if (formatSpacePrefix && isNotEmpty()) {
+                    contentData.messageBuilder.add { append(' ') }
+                }
+                matcher.renderValue(this, `val`, formatter.value)
             }
-            matcher.renderValue(contentData.sb, `val`, formatter)
         }
         if (indirect) contentData.indirect = true
         if (children.isEmpty()) contentData.offset = offset
@@ -198,13 +199,14 @@ internal constructor(
         var mimeType: String?,
         var mimeTypeLevel: Int
     ) {
-        var partial: Boolean = false
-        var indirect: Boolean = false
-        var offset: Int = 0
-        val sb = MutableString()
+        var partial = false
+        var indirect = false
+        var offset = 0
+        val messageBuilder = ArrayList<StringBuilder.() -> Unit>()
+        val message get() = buildString { messageBuilder.forEach { it() } }
 
         override fun toString(): String =
-            "ContentData(name=$name, mimeType=$mimeType, mimeTypeLevel=$mimeTypeLevel, partial=$partial, indirect=$indirect, offset=$offset, sb=$sb)"
+            "ContentData(name=$name, mimeType=$mimeType, mimeTypeLevel=$mimeTypeLevel, partial=$partial, indirect=$indirect, offset=$offset, sb=$message"
     }
 
     /**

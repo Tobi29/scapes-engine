@@ -26,11 +26,11 @@ import org.tobi29.logging.KLogging
  *
  * @author graywatson
  */
-class MagicEntries {
+internal class MagicEntries {
 
     private val entryList = ArrayList<MagicEntry>()
     private val firstByteEntryLists =
-        arrayOfNulls<ArrayList<MagicEntry>>(FIRST_BYTE_LIST_SIZE)
+        Array(FIRST_BYTE_LIST_SIZE) { ArrayList<MagicEntry>() }
 
     /**
      * Read the entries so later we can find matches with them.
@@ -41,23 +41,20 @@ class MagicEntries {
     ) {
         val levelParents = arrayOfNulls<MagicEntry>(MAX_LEVELS)
         var previousEntry: MagicEntry? = null
+        var parsed = 0
+        val parts = Array(4) { "" }
         for (line in lineReader) {
+            parsed++
             // skip blanks and comments
-            if (line.length == 0 || line[0] == '#') {
-                continue
-            }
+            if (line.isBlank() || line[0] == '#') continue
 
             val entry: MagicEntry?
             try {
                 // we need the previous entry because of mime-type, etc. which augment the previous line
-                entry = MagicEntryParser.parseLine(
-                    previousEntry,
-                    line,
-                    errorCallBack
+                entry = parseMagicLine(
+                    previousEntry, line, errorCallBack, parts
                 )
-                if (entry == null) {
-                    continue
-                }
+                if (entry == null) continue
             } catch (e: IllegalArgumentException) {
                 errorCallBack?.invoke(line, e.message, e)
                 continue
@@ -97,70 +94,60 @@ class MagicEntries {
      */
     fun optimizeFirstBytes() {
         // now we post process the entries and remove the first byte ones we can optimize
-        for (entry in entryList) {
+        val iterator = entryList.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
             val startingBytes = entry.startsWithByte
-            if (startingBytes == null || startingBytes.size == 0) {
-                continue
-            }
-            val index = 0xFF and startingBytes[0].toInt()
-            if (firstByteEntryLists[index] == null) {
-                firstByteEntryLists[index] = ArrayList<MagicEntry>()
-            }
-            firstByteEntryLists[index]!!.add(entry)
-            /*
-			 * We put an entry in the first-byte list but need to leave it in the main list because there may be
-			 * optional characters or != or > comparisons in the match
-			 */
+            if (startingBytes == null || startingBytes.isEmpty()) continue
+            val index = startingBytes[0].toInt() and 0xFF
+            firstByteEntryLists[index].add(entry)
+            iterator.remove()
         }
     }
 
     /**
      * Find and return a match for the associated bytes.
      */
-    fun findMatch(bytes: ByteArraySliceRO): ContentInfo? {
-        if (bytes.size == 0) {
-            return ContentInfo.EMPTY_INFO
-        }
-        // first do the start byte ones
-        val index = 0xFF and bytes[0].toInt()
-        if (index < firstByteEntryLists.size && firstByteEntryLists[index] != null) {
-            val info = findMatch(bytes, firstByteEntryLists[index]!!)
-            if (info != null) {
-                // this seems to be right to return even if only a partial match here
-                return info
-            }
-        }
-        return findMatch(bytes, entryList)
+    tailrec fun findMatch(
+        bytes: ByteArraySliceRO
+    ): ContentInfo? {
+        if (bytes.size == 0) return ContentInfo.EMPTY_INFO
+
+        val index = bytes[0].toInt() and 0xFF
+        val dataFast = findMatch(bytes, firstByteEntryLists[index])
+        if (dataFast != null)
+            return if (dataFast.indirect) findMatch(bytes.slice(dataFast.offset))
+            else ContentInfo(dataFast)
+
+        val data = findMatch(bytes, entryList)
+        if (data != null)
+            return if (data.indirect) findMatch(bytes.slice(data.offset))
+            else ContentInfo(data)
+
+        return null
     }
 
-    private tailrec fun findMatch(
+    private fun findMatch(
         bytes: ByteArraySliceRO,
         entryList: List<MagicEntry>
-    ): ContentInfo? {
-        var partialMatchInfo: ContentInfo? = null
+    ): MagicEntry.ContentData? {
+        var partialMatchInfo: MagicEntry.ContentData? = null
         for (entry in entryList) {
             val info =
                 entry.matchBytes(bytes)?.takeIf { it.name != MagicEntry.UNKNOWN_NAME }
                         ?: continue
             if (info.indirect) {
                 logger.trace { "found indirect match $entry" }
-                return findMatch(bytes.slice(info.offset), entryList)
+                return info
             }
-            val contentInfo = ContentInfo(
-                info.name,
-                info.mimeType,
-                info.sb.toString(),
-                info.partial
-            )
-            if (!contentInfo.isPartial) {
+            if (!info.partial) {
                 // first non-partial wins
                 logger.trace { "found full match $entry" }
-                logger.trace { "returning full match $contentInfo" }
-                return contentInfo
+                return info
             } else if (partialMatchInfo == null) {
                 // first partial match may win
                 logger.trace { "found partial match $entry" }
-                partialMatchInfo = contentInfo
+                partialMatchInfo = info
                 // continue to look for non-partial
             } else {
                 // already have a partial match

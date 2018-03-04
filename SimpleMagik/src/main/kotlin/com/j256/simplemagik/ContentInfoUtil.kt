@@ -65,7 +65,10 @@ class ContentInfoUtil
     }
 ) {
     private val magicEntries: MagicEntries =
-        MagicEntries().apply { readEntries(lines, errorCallBack) }
+        MagicEntries().apply {
+            readEntries(lines, errorCallBack)
+            optimizeFirstBytes()
+        }
 
     /**
      * Return the content type from the associated bytes or null if none of the magic entries matched.

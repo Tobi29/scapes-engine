@@ -76,7 +76,7 @@ interface MagicMatcher {
     /**
      * Return the starting bytes of the pattern or null if none.
      */
-    fun getStartingBytes(testValue: Any?): ByteArray?
+    fun getStartingBytes(testValue: Any?): ByteArray? = null
 
     /**
      * Offset which we can update.

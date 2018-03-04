@@ -30,9 +30,10 @@ abstract class BaseLongType(endianType: EndianType) : NumberType(endianType) {
         decodeLong(valueStr)
 
     override fun getStartingBytes(testValue: Any?): ByteArray? {
+        testValue as NumberComparison
+        if (testValue.operator != TestOperator.EQUALS) return null
         return endianConverter.convertToByteArray(
-            (testValue as NumberComparison).value.toLong(),
-            bytesPerType
+            testValue.value.toLong(), bytesPerType
         )
     }
 }

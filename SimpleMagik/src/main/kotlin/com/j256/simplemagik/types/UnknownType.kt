@@ -50,8 +50,4 @@ object UnknownType : MagicMatcher {
     ) {
         formatter.format(sb, extractedValue)
     }
-
-    override fun getStartingBytes(testValue: Any?): ByteArray? {
-        return null
-    }
 }

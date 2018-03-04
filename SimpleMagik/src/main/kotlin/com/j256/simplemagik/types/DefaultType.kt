@@ -65,10 +65,6 @@ class DefaultType : MagicMatcher {
     ) {
         formatter.format(sb, extractedValue)
     }
-
-    override fun getStartingBytes(testValue: Any?): ByteArray? {
-        return null
-    }
 }
 
 private const val EMPTY = ""

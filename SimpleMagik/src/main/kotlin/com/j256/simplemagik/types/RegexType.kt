@@ -119,10 +119,6 @@ class RegexType : MagicMatcher {
         formatter.format(sb, extractedValue)
     }
 
-    override fun getStartingBytes(testValue: Any?): ByteArray? {
-        return null
-    }
-
     private class PatternInfo {
         internal var updateOffsetStart: Boolean = false
         internal var pattern: Regex? = null

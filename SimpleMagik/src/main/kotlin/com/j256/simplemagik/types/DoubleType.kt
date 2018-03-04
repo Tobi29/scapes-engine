@@ -65,10 +65,6 @@ open class DoubleType(endianType: EndianType) : NumberType(endianType) {
         }
     }
 
-    override fun getStartingBytes(testValue: Any?): ByteArray? {
-        return null
-    }
-
     /**
      * Convert a long to the type.
      */

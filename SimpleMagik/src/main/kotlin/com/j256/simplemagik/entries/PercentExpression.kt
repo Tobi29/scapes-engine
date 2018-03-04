@@ -25,121 +25,52 @@ import org.tobi29.utils.toStringExponential
  *
  * @author graywatson
  */
-class PercentExpression internal constructor(private val expression: String) {
-    private val justValue: Boolean
+internal class PercentExpression(expression: String) {
     private val alternativeForm: Boolean
     private val zeroPrefix: Boolean
     private val plusPrefix: Boolean
     private val spacePrefix: Boolean
     private val leftAdjust: Boolean
     private val totalWidth: Int
-    private val truncateWidth: Int
     private val patternChar: Char
-    private val decimalPrecision: Int
-    private val exponentialPrecision: Int
-    /*private val decimalFormat: DecimalFormat?
-    /** if we need to choose the shorter of two formats  */
-    private val altDecimalFormat: DecimalFormat?*/
+    private val dotPrecision: Int
+
+    override fun toString(): String = buildString {
+        append('%')
+        if (alternativeForm) append('#')
+        if (zeroPrefix) append('0')
+        if (plusPrefix) append('+')
+        if (spacePrefix) append(' ')
+        if (leftAdjust) append('-')
+        if (totalWidth != -1) append(totalWidth)
+        if (dotPrecision != -1) append(dotPrecision)
+        append(patternChar)
+    }
 
     init {
         val matcher = FORMAT_PATTERN.matchEntire(expression)
         if (matcher == null || matcher.groups[6] == null
             || matcher.groupValues[6].length != 1) {
-            // may never get here but let's be careful
-            this.justValue = true
-            this.alternativeForm = false
-            this.patternChar = 0.toChar()
-            this.zeroPrefix = false
-            this.plusPrefix = false
-            this.spacePrefix = false
-            this.leftAdjust = false
-            this.totalWidth = -1
-            this.truncateWidth = -1
-            this.decimalPrecision = -2
-            this.exponentialPrecision = -2
+            throw IllegalArgumentException("Invalid format expression: $expression")
         } else {
-            this.justValue = false
-
             val flags = matcher.groupValues[1]
-            this.alternativeForm =
-                    readFlag(
-                        flags,
-                        '#'
-                    )
-            this.zeroPrefix =
-                    readFlag(
-                        flags,
-                        '0'
-                    )
-            this.plusPrefix =
-                    readFlag(
-                        flags,
-                        '+'
-                    )
-            if (this.plusPrefix) {
-                // + overrides space
-                this.spacePrefix = false
-            } else {
-                this.spacePrefix =
-                        readFlag(
-                            flags,
-                            ' '
-                        )
-            }
-            this.leftAdjust =
-                    readFlag(
-                        flags,
-                        '-'
-                    )
-            this.totalWidth =
-                    readPrecision(
-                        matcher.groupValues[2],
-                        -1
-                    )
-            val dotPrecision =
-                readPrecision(
-                    matcher.groupValues[4],
-                    -1
-                )
+            alternativeForm = flags.contains('#')
+            zeroPrefix = flags.contains('0')
+            plusPrefix = flags.contains('+')
+            spacePrefix = !plusPrefix && flags.contains(' ')
+            leftAdjust = flags.contains('-')
+            totalWidth = matcher.groupValues[2].toIntOrNull() ?: -1
+            dotPrecision = matcher.groupValues[4].toIntOrNull() ?: -1
             // 5 is ignored
-            this.patternChar = matcher.groupValues[6][0]
-            when (this.patternChar) {
-                'e', 'E' -> {
-                    this.decimalPrecision = -2
-                    this.exponentialPrecision = dotPrecision
-                }
-                'f', 'F' -> {
-                    this.decimalPrecision = dotPrecision
-                    this.exponentialPrecision = -2
-                }
-                'g', 'G' -> {
-                    // will take the shorter of the two
-                    this.decimalPrecision = dotPrecision
-                    this.exponentialPrecision = dotPrecision
-                }
-                else -> {
-                    this.decimalPrecision = -2
-                    this.exponentialPrecision = -2
-                }
-            }
-            if (patternChar == 's' || patternChar == 'b') {
-                this.truncateWidth = dotPrecision
-            } else {
-                this.truncateWidth = -1
-            }
+            patternChar = matcher.groupValues[6][0]
         }
     }
 
     fun append(extractedValue: Any, sb: Appendable) {
-        if (justValue) {
-            // may never get here
-            sb.append(extractedValue.toString())
-            return
-        }
-
         // %bcdeEfFgGiosuxX
         when (patternChar) {
             'b', 's' -> {
+                val truncateWidth = dotPrecision
                 // same as s but interpret character escapes in backslash notation
                 var strValue = extractedValue.toString()
                 if (truncateWidth >= 0 && strValue.length > truncateWidth) {
@@ -185,6 +116,24 @@ class PercentExpression internal constructor(private val expression: String) {
                 return
             }
             'e', 'E', 'f', 'F', 'g', 'G' -> if (extractedValue is Number) {
+                val decimalPrecision: Int
+                val exponentialPrecision: Int
+                when (patternChar) {
+                    'e', 'E' -> {
+                        decimalPrecision = -2
+                        exponentialPrecision = dotPrecision
+                    }
+                    'f', 'F' -> {
+                        decimalPrecision = dotPrecision
+                        exponentialPrecision = -2
+                    }
+                    'g', 'G' -> {
+                        // will take the shorter of the two
+                        decimalPrecision = dotPrecision
+                        exponentialPrecision = dotPrecision
+                    }
+                    else -> error("Impossible")
+                }
                 var value = extractedValue.toDouble()
                 if (value.isFinite()) {
                     sb.append("inf")
@@ -257,10 +206,6 @@ class PercentExpression internal constructor(private val expression: String) {
         sb.append(extractedValue.toString())
     }
 
-    override fun toString(): String {
-        return expression
-    }
-
     private fun appendHex(
         sb: Appendable,
         upper: Boolean,
@@ -294,8 +239,6 @@ class PercentExpression internal constructor(private val expression: String) {
         value: String,
         isNumber: Boolean
     ) {
-        var sign = sign
-        var prefix = prefix
         var len = 0
         if (sign != null) {
             len += sign.length
@@ -308,6 +251,8 @@ class PercentExpression internal constructor(private val expression: String) {
         if (diff < 0) {
             diff = 0
         }
+        var sign = sign
+        var prefix = prefix
         if (!leftAdjust) {
             if (isNumber && zeroPrefix) {
                 if (sign != null) {
@@ -319,103 +264,20 @@ class PercentExpression internal constructor(private val expression: String) {
                     sb.append(prefix)
                     prefix = null
                 }
-                appendChars(
-                    sb,
-                    ZERO_CHARS, diff
-                )
+                repeat(diff) { sb.append('0') }
             } else {
-                appendChars(
-                    sb,
-                    SPACE_CHARS, diff
-                )
+                repeat(diff) { sb.append(' ') }
             }
         }
-        if (sign != null) {
-            sb.append(sign)
-        }
-        if (prefix != null) {
-            sb.append(prefix)
-        }
+        if (sign != null) sb.append(sign)
+        if (prefix != null) sb.append(prefix)
         sb.append(value)
         if (leftAdjust) {
             // always space if left-adjust
-            appendChars(
-                sb,
-                SPACE_CHARS, diff
-            )
-        }
-    }
-
-    private fun appendChars(sb: Appendable, indentChars: String, diff: Int) {
-        var diff = diff
-        while (true) {
-            if (diff > indentChars.length) {
-                sb.append(indentChars)
-                diff -= indentChars.length
-            } else {
-                sb.append(indentChars, 0, diff)
-                break
-            }
-        }
-    }
-
-    /*/**
-     * -d.ddd+-dd style, if no precision then 6 digits, 'inf', nan', if 0 precision then ""
-     */
-    private fun decimalFormat(fractionPrecision: Int): DecimalFormat {
-        val format: DecimalFormat
-        if (fractionPrecision == 0) {
-            format = DecimalFormat("###0")
-        } else if (fractionPrecision > 0) {
-            val formatSb = MutableString()
-            formatSb.append("###0.")
-            appendChars(formatSb, ZERO_CHARS, fractionPrecision)
-            format = DecimalFormat(formatSb.toString())
-        } else {
-            format = DecimalFormat("###0.###")
-        }
-        return format
-    }
-
-    private fun scientificFormat(fractionPrecision: Int): DecimalFormat {
-        val format: DecimalFormat
-        if (fractionPrecision == 0) {
-            format = DecimalFormat("0E0")
-        } else if (fractionPrecision > 0) {
-            val formatSb = MutableString()
-            formatSb.append("0.")
-            appendChars(formatSb, ZERO_CHARS, fractionPrecision)
-            formatSb.append("E0")
-            format = DecimalFormat(formatSb.toString())
-        } else {
-            format = DecimalFormat("0.###E0")
-        }
-        return format
-    }*/
-
-    companion object {
-
-        private val ZERO_CHARS =
-            "00000000000000000000000000000000000000000000000000000000000000000000000"
-        private val SPACE_CHARS =
-            "                                                                      "
-
-        private val FORMAT_PATTERN =
-            "%([0#+ -]*)([0-9]*)(\\.([0-9]+))?([${MagicFormatter.PATTERN_MODIFIERS}]*)([${MagicFormatter.FINAL_PATTERN_CHARS}])".toRegex()
-
-        private fun readPrecision(string: String?, defaultVal: Int): Int {
-            if (string == null || string.length == 0) {
-                return defaultVal
-            }
-            return string.toIntOrNull() ?: defaultVal
-        }
-
-        private fun readFlag(flags: String?, flagChar: Char): Boolean {
-            return if (flags != null && flags.indexOf(flagChar) >= 0) {
-                true
-            } else {
-                false
-            }
+            repeat(diff) { sb.append(' ') }
         }
     }
 }
+
+private val FORMAT_PATTERN =
+    "%([0#+ -]*)([0-9]*)(\\.([0-9]+))?([$PATTERN_MODIFIERS]*)([$FINAL_PATTERN_CHARS])".toRegex()

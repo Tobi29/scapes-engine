@@ -61,12 +61,12 @@ class MagicFormatter
                 suffix = formatter.suffix
             } else {
 
-                if (prefixMatch == null || prefixMatch.value.length == 0) {
+                if (prefixMatch == null || prefixMatch.value.isEmpty()) {
                     prefix = null
                 } else {
                     prefix = prefixMatch.value
                 }
-                if (percentMatch == null || percentMatch.value.length == 0) {
+                if (percentMatch == null || percentMatch.value.isEmpty()) {
                     percentExpression = null
                 } else {
                     percentExpression =
@@ -99,13 +99,11 @@ class MagicFormatter
         suffix?.let { sb.append(it) }
         return sb.toString()
     }
-
-    companion object {
-
-        val FINAL_PATTERN_CHARS = "%bcdeEfFgGiosuxX"
-        val PATTERN_MODIFIERS = "lqh"
-        // NOTE: the backspace is taken care of by checking the format string prefix above
-        private val FORMAT_PATTERN =
-            "([^%]*)(%[-+0-9# .${PATTERN_MODIFIERS}]*[${FINAL_PATTERN_CHARS}])?(.*)".toRegex()
-    }
 }
+
+internal const val FINAL_PATTERN_CHARS = "%bcdeEfFgGiosuxX"
+internal const val PATTERN_MODIFIERS = "lqh"
+
+// NOTE: the backspace is taken care of by checking the format string prefix above
+private val FORMAT_PATTERN =
+    "([^%]*)(%[-+0-9# .$PATTERN_MODIFIERS]*[$FINAL_PATTERN_CHARS])?(.*)".toRegex()

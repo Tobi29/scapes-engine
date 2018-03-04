@@ -64,16 +64,9 @@ internal fun unescapeString(pattern: String): String {
             }
             'x' -> {
                 // \xD9
-                val len = 2
-                if (pos + len < pattern.length) {
-                    val hex =
-                        pattern.substring(pos + 1, pos + 1 + len).toShort(16)
-                    if (hex >= 0) {
-                        sb.append(hex.toChar())
-                        pos += len
-                    }
-                } else {
-                    sb.append(ch)
+                pattern.decodeHexChar(pos) { char, len ->
+                    sb.append(char)
+                    pos += len
                 }
             }
             else -> sb.append(ch)
@@ -81,6 +74,23 @@ internal fun unescapeString(pattern: String): String {
         pos++
     }
     return sb.toString()
+}
+
+private inline fun <R> String.decodeHexChar(
+    pos: Int,
+    output: (Char, Int) -> R
+): R {
+    if (pos + 2 < length) {
+        substring(pos + 1, pos + 3).toShortOrNull(16)?.let { hex ->
+            if (hex >= 0) return output(hex.toChar(), 2)
+        }
+    }
+    if (pos + 1 < length) {
+        substring(pos + 1, pos + 1).toShortOrNull(16)?.let { hex ->
+            if (hex >= 0) return output(hex.toChar(), 1)
+        }
+    }
+    return output(this[pos], 0)
 }
 
 internal fun decodeInt(str: String): Int {
