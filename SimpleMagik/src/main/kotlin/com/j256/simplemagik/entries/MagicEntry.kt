@@ -68,12 +68,6 @@ internal constructor(
             matcher.getStartingBytes(testValue)
         }
 
-    /**
-     * Returns the content type associated with the bytes or null if it does not match.
-     */
-    internal fun matchBytes(bytes: ByteArraySliceRO) =
-        matchBytes(bytes, 0, 0, null)
-
     internal fun addChild(child: MagicEntry) {
         children.add(child)
     }
@@ -103,12 +97,13 @@ internal constructor(
     /**
      * Main processing method which can go recursive.
      */
-    private fun matchBytes(
+    internal fun matchBytes(
         bytes: ByteArraySliceRO,
-        prevOffset: Int,
-        level: Int,
-        contentData: ContentData?
+        contentData: ContentData? = null,
+        prevOffset: Int = 0,
+        level: Int = 0
     ): ContentData? {
+        contentData?.indirect = false
         var contentData = contentData
         var offset = (offsetInfo?.getOffset(bytes, prevOffset) ?: this.offset)
             .let { if (addOffset) it + prevOffset else it }
@@ -140,9 +135,7 @@ internal constructor(
             }
             contentData.messageBuilder.add {
                 // if we are appending and need a space then prepend one
-                if (formatSpacePrefix && isNotEmpty()) {
-                    contentData.messageBuilder.add { append(' ') }
-                }
+                if (formatSpacePrefix && isNotEmpty()) append(' ')
                 matcher.renderValue(this, `val`, formatter.value)
             }
         }
@@ -161,7 +154,7 @@ internal constructor(
                     allOptional = false
                 }
                 // goes recursive here
-                entry.matchBytes(bytes, offset, level + 1, contentData)
+                entry.matchBytes(bytes, contentData, offset, level + 1)
                 // we continue to match to see if we can add additional children info to the name
             }
             if (allOptional) {

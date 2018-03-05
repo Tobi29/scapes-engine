@@ -108,20 +108,27 @@ internal class MagicEntries {
     /**
      * Find and return a match for the associated bytes.
      */
-    tailrec fun findMatch(
+    fun findMatch(
         bytes: ByteArraySliceRO
+    ): ContentInfo? = findMatch(bytes, null)
+
+    private tailrec fun findMatch(
+        bytes: ByteArraySliceRO,
+        indirect: MagicEntry.ContentData?
     ): ContentInfo? {
         if (bytes.size == 0) return ContentInfo.EMPTY_INFO
 
         val index = bytes[0].toInt() and 0xFF
-        val dataFast = findMatch(bytes, firstByteEntryLists[index])
+        val dataFast = findMatch(bytes, indirect, firstByteEntryLists[index])
         if (dataFast != null)
-            return if (dataFast.indirect) findMatch(bytes.slice(dataFast.offset))
+            return if (dataFast.indirect)
+                findMatch(bytes.slice(dataFast.offset), dataFast)
             else ContentInfo(dataFast)
 
-        val data = findMatch(bytes, entryList)
+        val data = findMatch(bytes, indirect, entryList)
         if (data != null)
-            return if (data.indirect) findMatch(bytes.slice(data.offset))
+            return if (data.indirect)
+                findMatch(bytes.slice(data.offset), data)
             else ContentInfo(data)
 
         return null
@@ -129,13 +136,14 @@ internal class MagicEntries {
 
     private fun findMatch(
         bytes: ByteArraySliceRO,
+        indirect: MagicEntry.ContentData?,
         entryList: List<MagicEntry>
     ): MagicEntry.ContentData? {
         var partialMatchInfo: MagicEntry.ContentData? = null
         for (entry in entryList) {
-            val info =
-                entry.matchBytes(bytes)?.takeIf { it.name != MagicEntry.UNKNOWN_NAME }
-                        ?: continue
+            val info = entry.matchBytes(
+                bytes, indirect
+            )?.takeIf { it.name != MagicEntry.UNKNOWN_NAME } ?: continue
             if (info.indirect) {
                 logger.trace { "found indirect match $entry" }
                 return info
