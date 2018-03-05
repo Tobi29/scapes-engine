@@ -54,43 +54,6 @@ abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
     protected open fun handleEarly(commandLine: CommandLine): StatusCode? {
         return null
     }
-
-    @Deprecated(
-        "Use cli property",
-        ReplaceWith(
-            "cli.commandElement(option)",
-            "org.tobi29.args.commandElement"
-        )
-    )
-    protected fun <E : CommandElement> commandElement(
-        option: E
-    ) = cli.commandElement(option)
-
-    @Deprecated(
-        "Use cli property",
-        ReplaceWith(
-            "cli.commandOption(shortNames, longNames, args, description)",
-            "org.tobi29.args.commandOption"
-        )
-    )
-    protected fun commandOption(
-        shortNames: Set<Char> = emptySet(),
-        longNames: Set<String> = emptySet(),
-        args: List<String> = emptyList(),
-        description: String
-    ) = cli.commandOption(shortNames, longNames, args, description)
-
-    @Deprecated(
-        "Use cli property",
-        ReplaceWith(
-            "cli.commandArgument(name, count)",
-            "org.tobi29.args.commandArgument"
-        )
-    )
-    protected fun commandArgument(
-        name: String,
-        count: IntRange = 0..1
-    ) = cli.commandArgument(name, count)
 }
 
 abstract class Application : BareApplication() {

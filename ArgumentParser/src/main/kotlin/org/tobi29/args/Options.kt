@@ -48,21 +48,6 @@ data class CommandOption(
      */
     val abortParse: Boolean = false
 ) : CommandElement() {
-    // TODO: Remove after 0.0.11
-    @Deprecated(
-        "Use CommandFlag \"constructor\"",
-        ReplaceWith(
-            "CommandFlag(shortNames, longNames, description, abortParse)",
-            "org.tobi29.args.CommandFlag"
-        )
-    )
-    constructor(
-        shortNames: Set<Char>,
-        longNames: Set<String>,
-        description: String,
-        abortParse: Boolean = false
-    ) : this(shortNames, longNames, emptyList(), description, abortParse)
-
     /**
      * Name retrieved through first long name or if none found first short name
      * useful for displaying the option to the user

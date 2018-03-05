@@ -23,20 +23,6 @@ class PointerPane(
     var y: Int = 0,
     var z: Int = 0
 ) {
-    @Deprecated("Use AABB3")
-    fun set(
-        aabb: AABB,
-        face: Face,
-        x: Int, y: Int, z: Int
-    ) {
-        set(
-            aabb.minX, aabb.minY, aabb.minZ,
-            aabb.maxX, aabb.maxY, aabb.maxZ,
-            face,
-            x, y, z
-        )
-    }
-
     fun set(
         aabb: AABB3,
         face: Face,
