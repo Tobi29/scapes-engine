@@ -1227,7 +1227,7 @@ enum class ContentType(
      * @return the references
      */
     val references: List<String>
-        get() = this.mimeType?.let { ianaDB.getIanaMetadata(it) }?.reference
+        get() = this.mimeType.let { IanaEntries.getIanaMetadata(it) }?.reference
                 ?: emptyList()
 
     /**
@@ -1235,7 +1235,7 @@ enum class ContentType(
      * @return the URL of the references.
      */
     val referenceUrls: List<String>
-        get() = this.mimeType?.let { ianaDB.getIanaMetadata(it) }?.referenceURL
+        get() = this.mimeType.let { IanaEntries.getIanaMetadata(it) }?.referenceURL
                 ?: emptyList()
 
     init {
@@ -1243,20 +1243,15 @@ enum class ContentType(
     }
 
     companion object {
-
         private val mimeTypeMap = HashMap<String, ContentType>()
         private val fileExtensionMap = HashMap<String, ContentType>()
-        private val ianaDB = IanaEntries()
 
         init {
             for (type in values()) {
-                if (type.mimeType != null) {
-                    if (mimeTypeMap.put(
-                            type.mimeType.toLowerCase(),
-                            type
-                        ) != null) {
-                        // System.err.println("overriding mime-type " + type.mimeType.toLowerCase());
-                    }
+                if (mimeTypeMap.put(
+                        type.mimeType.toLowerCase(), type
+                    ) != null) {
+                    // System.err.println("overriding mime-type " + type.mimeType.toLowerCase());
                 }
                 if (type.fileExtensions != null) {
                     for (fileExtension in type.fileExtensions) {

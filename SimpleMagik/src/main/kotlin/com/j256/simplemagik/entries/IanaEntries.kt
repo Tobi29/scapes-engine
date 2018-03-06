@@ -31,7 +31,7 @@ import org.tobi29.stdex.readOnly
  * description of the mime type and the URL of the articles.
  * @author Jean-Christophe Malapert (jcmalapert@gmail.com)
  */
-class IanaEntries {
+object IanaEntries {
     private val _ianaDB = HashMap<String, IanaEntry>()
 
     /**
@@ -43,6 +43,7 @@ class IanaEntries {
      * Constructor.
      */
     init {
+        // TODO: Multi-thread this on JVM? Might help with Android.
         loadDb(ianaApplication.iterator())
         loadDb(ianaAudio.iterator())
         loadDb(ianaFont.iterator())
@@ -72,32 +73,16 @@ class IanaEntries {
             val line = db.next()
             // parse the CSV file. The CSV file contains
             // three elements per row
-            val ianaEntryParsed =
-                line.split(',').dropLastWhile { it.isEmpty() }
-                    .toTypedArray()
-            // fix problem in the CSV file provided by IANA
-            // such as G719,audio/G719,"[RFC5404][RFC Errata
-            //                                         3245]"
-            if (ianaEntryParsed[2].startsWith("\"")) {
-                if (!db.hasNext())
-                    throw IllegalArgumentException("Unexpected end of file")
-                ianaEntryParsed[2] += db.next().replace("\\s+".toRegex(), "")
-            }
+            val split1 = line.indexOf(',')
+            if (split1 == -1) throw IllegalArgumentException("Invalid line: $line")
+            val split2 = line.indexOf(',', split1 + 1)
+            if (split2 == -1) throw IllegalArgumentException("Invalid line: $line")
             val ianaEntry = IanaEntry(
-                ianaEntryParsed[0],
-                ianaEntryParsed[1],
-                ianaEntryParsed[2]
+                line.substring(0, split1),
+                line.substring(split1 + 1, split2),
+                line.substring(split2 + 1)
             )
-            addMimeType(ianaEntry.mimeType, ianaEntry)
-        }
-    }
-
-    /**
-     * Add an entry in the IANA database.
-     */
-    private fun addMimeType(mimeType: String, ianaEntry: IanaEntry) {
-        if (!mimeType.isEmpty()) {
-            this._ianaDB[mimeType] = ianaEntry
+            _ianaDB[ianaEntry.mimeType] = ianaEntry
         }
     }
 }
