@@ -21,7 +21,6 @@ val name = args[1]
 val batches = ArrayList<String>()
 
 val currentBatch = StringBuilder()
-readLine() // Skip first line
 while (true) {
     val line = readLine() ?: break
     if (currentBatch.isNotEmpty()) currentBatch.append('\n')

@@ -41,12 +41,11 @@ internal class MagicEntries {
     ) {
         val levelParents = arrayOfNulls<MagicEntry>(MAX_LEVELS)
         var previousEntry: MagicEntry? = null
-        var parsed = 0
         val parts = Array(4) { "" }
         for (line in lineReader) {
-            parsed++
+            // We already strip those out ahead
             // skip blanks and comments
-            if (line.isBlank() || line[0] == '#') continue
+            // if (line.isBlank() || line[0] == '#') continue
 
             val entry: MagicEntry?
             try {

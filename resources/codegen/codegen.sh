@@ -30,6 +30,7 @@ zcat "$CODEGEN_HOME/tzdump.gz" \
 echo "-- Generating embedded iana database"
 function ianaDbGen {
     curl "https://www.iana.org/assignments/media-types/$1.csv" \
+        | "$CODEGEN_HOME/StripIana.kts" \
         | "$CODEGEN_HOME/GenStringDataJVM.kts" "com.j256.simplemagik" "iana$2" > "$ENGINE_HOME/SimpleMagikJVM/src/main/kotlin/com/j256/simplemagik/IanaDb$2JVM.kt"
 }
 
@@ -45,4 +46,5 @@ ianaDbGen "video" "Video"
 
 echo "-- Generating embedded magic database"
 zcat "$CODEGEN_HOME/magic.gz" \
+    | "$CODEGEN_HOME/StripMagic.kts" \
     | "$CODEGEN_HOME/GenStringDataJVM.kts" "com.j256.simplemagik" "magic" > "$ENGINE_HOME/SimpleMagikJVM/src/main/kotlin/com/j256/simplemagik/MagicDbJVM.kt"
