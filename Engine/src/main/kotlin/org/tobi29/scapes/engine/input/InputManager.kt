@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,27 @@
 
 package org.tobi29.scapes.engine.input
 
+import org.tobi29.io.tag.MutableTagMap
+import org.tobi29.io.tag.mapMut
 import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.ComponentStep
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
-import org.tobi29.utils.ComponentRegistered
-import org.tobi29.utils.EventDispatcher
-import org.tobi29.io.tag.MutableTagMap
-import org.tobi29.io.tag.mapMut
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
-import kotlin.collections.asSequence
-import kotlin.collections.emptyList
-import kotlin.collections.firstOrNull
-import kotlin.collections.map
+import org.tobi29.utils.ComponentRegistered
+import org.tobi29.utils.EventDispatcher
 import kotlin.collections.set
-import kotlin.collections.sortedByDescending
 
 abstract class InputManager<M : InputMode>(
-        val engine: ScapesEngine,
-        private val configMap: MutableTagMap,
-        private val inputModeDummy: M
-) : ComponentRegistered,
-        ComponentStep {
+    val engine: ScapesEngine,
+    private val configMap: MutableTagMap,
+    private val inputModeDummy: M
+) : ComponentRegistered, ComponentStep {
     private val inputModesMut =
-            ConcurrentHashMap<Controller, (MutableTagMap) -> M>()
+        ConcurrentHashMap<Controller, (MutableTagMap) -> M>()
     var inputModes = emptyList<M>()
         private set
     private var inputModeMut = AtomicReference(inputModeDummy)
@@ -76,11 +70,9 @@ abstract class InputManager<M : InputMode>(
     }
 
     override fun step(delta: Double) {
-        val newInputMode: M? = inputModes.map {
-            it to it.poll(delta)
-        }.sortedByDescending { (_, lastActive) -> lastActive }.firstOrNull()?.first
-        if (newInputMode != null && inputMode !== newInputMode
-                && !freezeInputMode) {
+        val newInputMode: M? = inputModes.maxBy { it.poll(delta) }
+        if (newInputMode !== null && inputMode !== newInputMode
+            && !freezeInputMode) {
             changeInput(newInputMode)
         }
     }
@@ -93,9 +85,9 @@ abstract class InputManager<M : InputMode>(
         changeInput(inputModes.firstOrNull())
     }
 
-    abstract protected fun inputMode(controller: Controller): ((MutableTagMap) -> M)?
+    protected abstract fun inputMode(controller: Controller): ((MutableTagMap) -> M)?
 
-    abstract protected fun inputModeChanged(inputMode: M)
+    protected abstract fun inputModeChanged(inputMode: M)
 
     private fun changeInput(inputMode: M?) {
         logger.info {

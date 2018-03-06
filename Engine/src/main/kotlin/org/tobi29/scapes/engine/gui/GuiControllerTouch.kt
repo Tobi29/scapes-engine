@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,23 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.math.vector.MutableVector2d
+import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.ControllerTouch
 import org.tobi29.scapes.engine.input.ControllerTracker
 import org.tobi29.scapes.engine.input.ScrollDelta
-import org.tobi29.math.vector.MutableVector2d
-import org.tobi29.math.vector.Vector2d
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.utils.steadyClock
 
 class GuiControllerTouch(
-        engine: ScapesEngine,
-        private val controller: ControllerTouch
+    engine: ScapesEngine,
+    private val controller: ControllerTouch
 ) : GuiController(engine) {
     private val fingers = ConcurrentHashMap<ControllerTracker.Tracker, Finger>()
 
     override fun update(delta: Double) {
-        val newFingers = ConcurrentHashMap<ControllerTracker.Tracker, Finger>()
+        fingers.values.forEach { it.alive = false }
         controller.fingers().forEach { tracker ->
             var fetch: Finger? = fingers[tracker]
             if (fetch == null) {
@@ -43,42 +43,49 @@ class GuiControllerTouch(
                 finger.dragX = guiPos.x
                 finger.dragY = guiPos.y
                 engine.guiStack.fireEvent(GuiComponentEvent(guiPos.x, guiPos.y),
-                        { _, _ -> true })?.let { component ->
+                    { _, _ -> true })?.let { component ->
                     if (!fingers.values.any { it.dragging == component }) {
                         finger.dragging = component
-                        component.gui.sendNewEvent(GuiEvent.PRESS_LEFT,
-                                GuiComponentEvent(guiPos.x, guiPos.y),
-                                component)
+                        component.gui.sendNewEvent(
+                            GuiEvent.PRESS_LEFT,
+                            GuiComponentEvent(guiPos.x, guiPos.y),
+                            component
+                        )
                     }
                 }
                 fingers.put(tracker, finger)
             } else {
                 handleFinger(fetch)
             }
-            newFingers.put(tracker, fetch)
         }
-        fingers.keys.asSequence().filter {
-            !newFingers.containsKey(it)
-        }.forEach { tracker ->
-            fingers.remove(tracker)?.let { finger ->
-                finger.dragging?.let { component ->
-                    val guiPos = finger.cursor.currentPos()
-                    if (!finger.clicked) {
-                        finger.clicked = true
-                        component.gui.sendNewEvent(GuiEvent.CLICK_LEFT,
+        fingers.asSequence()
+            .filter { !it.value.alive }
+            .forEach { (tracker, _) ->
+                fingers.remove(tracker)?.let { finger ->
+                    finger.dragging?.let { component ->
+                        val guiPos = finger.cursor.currentPos()
+                        if (!finger.clicked) {
+                            finger.clicked = true
+                            component.gui.sendNewEvent(
+                                GuiEvent.CLICK_LEFT,
                                 GuiComponentEvent(guiPos.x, guiPos.y),
-                                component)
+                                component
+                            )
+                        }
+                        component.gui.sendNewEvent(
+                            GuiEvent.DROP_LEFT,
+                            GuiComponentEvent(guiPos.x, guiPos.y), component
+                        )
                     }
-                    component.gui.sendNewEvent(GuiEvent.DROP_LEFT,
-                            GuiComponentEvent(guiPos.x, guiPos.y), component)
                 }
             }
-        }
     }
 
-    override fun focusTextField(valid: () -> Boolean,
-                                data: TextFieldData,
-                                multiline: Boolean) {
+    override fun focusTextField(
+        valid: () -> Boolean,
+        data: TextFieldData,
+        multiline: Boolean
+    ) {
         engine.container.dialog("Input", data, multiline)
     }
 
@@ -89,6 +96,7 @@ class GuiControllerTouch(
     override fun activeCursor() = false
 
     private fun handleFinger(finger: Finger) {
+        finger.alive = true
         finger.cursor.set(finger.tracker.now())
         finger.dragging?.let { component ->
             val guiPos = finger.cursor.currentPos()
@@ -96,20 +104,31 @@ class GuiControllerTouch(
             val relativeY = guiPos.y - finger.dragY
             finger.dragX = guiPos.x
             finger.dragY = guiPos.y
-            component.gui.sendNewEvent(GuiEvent.DRAG_LEFT,
-                    GuiComponentEventDrag(guiPos.x, guiPos.y,
-                            relativeX = relativeX, relativeY = relativeY),
-                    component)
+            component.gui.sendNewEvent(
+                GuiEvent.DRAG_LEFT,
+                GuiComponentEventDrag(
+                    guiPos.x, guiPos.y,
+                    relativeX = relativeX, relativeY = relativeY
+                ),
+                component
+            )
             val source = finger.source
-            engine.guiStack.fireRecursiveEvent(GuiEvent.SCROLL,
-                    GuiComponentEventScroll(source.x, source.y,
-                            delta = ScrollDelta.Pixel(
-                                    Vector2d(relativeX, relativeY))))
+            engine.guiStack.fireRecursiveEvent(
+                GuiEvent.SCROLL,
+                GuiComponentEventScroll(
+                    source.x, source.y,
+                    delta = ScrollDelta.Pixel(
+                        Vector2d(relativeX, relativeY)
+                    )
+                )
+            )
             if (steadyClock.timeSteadyNanos() - finger.start >= 250000000L && !finger.clicked) {
                 finger.clicked = true
                 finger.dragging?.let {
-                    it.gui.sendNewEvent(GuiEvent.CLICK_RIGHT,
-                            GuiComponentEvent(guiPos.x, guiPos.y), it)
+                    it.gui.sendNewEvent(
+                        GuiEvent.CLICK_RIGHT,
+                        GuiComponentEvent(guiPos.x, guiPos.y), it
+                    )
                 }
             }
         }
@@ -120,8 +139,9 @@ class GuiControllerTouch(
         var start = steadyClock.timeSteadyNanos()
         var cursor = GuiCursor()
         var dragging: GuiComponent? = null
-        var dragX: Double = 0.0
-        var dragY: Double = 0.0
+        var dragX = 0.0
+        var dragY = 0.0
         var clicked = false
+        var alive = false
     }
 }
