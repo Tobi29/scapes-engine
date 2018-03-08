@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.sound
 
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.math.vector.Vector3d
 import org.tobi29.io.ReadSource
+import org.tobi29.math.vector.Vector3d
+import org.tobi29.scapes.engine.ScapesEngine
 
 interface SoundSystem {
     val engine: ScapesEngine
@@ -122,6 +122,10 @@ interface SoundSystem {
                         rolloffFactor: Double = 1.0): StaticAudio
 
     fun stop(channel: VolumeChannel)
+
+    fun enable()
+
+    fun disable()
 
     fun clearCache()
 

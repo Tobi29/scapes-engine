@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,8 @@ class LWJGL3OpenAL : OpenAL {
         val error = AL10.alGetError()
         if (error != AL10.AL_NO_ERROR) {
             throw SoundException(
-                    AL10.alGetString(error) + " in " + message)
+                AL10.alGetString(error) + " in " + message
+            )
         }
     }
 
@@ -48,21 +49,26 @@ class LWJGL3OpenAL : OpenAL {
         device = ALC10.alcOpenDevice(null as ByteBuffer?)
         if (device == 0L) {
             throw IllegalStateException(
-                    "Failed to open the default device.")
+                "Failed to open the default device."
+            )
         }
         val deviceCaps = ALC.createCapabilities(device)
         context = ALC10.alcCreateContext(device, null as IntBuffer?)
         if (context == 0L) {
             throw IllegalStateException(
-                    "Failed to create an OpenAL context.")
+                "Failed to create an OpenAL context."
+            )
         }
         ALC10.alcMakeContextCurrent(context)
         AL.createCapabilities(deviceCaps)
         logger.info {
             "OpenAL: ${AL10.alGetString(
-                    AL10.AL_VERSION)} (Vendor: ${AL10.alGetString(
-                    AL10.AL_VENDOR)}, Renderer: ${AL10.alGetString(
-                    AL10.AL_RENDERER)})"
+                AL10.AL_VERSION
+            )} (Vendor: ${AL10.alGetString(
+                AL10.AL_VENDOR
+            )}, Renderer: ${AL10.alGetString(
+                AL10.AL_RENDERER
+            )})"
         }
         AL11.alSpeedOfSound(speedOfSound.toFloat())
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED)
@@ -70,12 +76,21 @@ class LWJGL3OpenAL : OpenAL {
             val listenerOrientation = stack.mallocFloat(6)
             listenerOrientation._clear()
             listenerOrientation.put(
-                    floatArrayOf(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f))
+                floatArrayOf(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f)
+            )
             listenerOrientation._rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
             AL10.alListener3f(AL10.AL_POSITION, 0.0f, 0.0f, 0.0f)
             AL10.alListener3f(AL10.AL_VELOCITY, 0.0f, 0.0f, 0.0f)
         }
+    }
+
+    override fun resume() {
+        if (device != 0L) SOFTPauseDevice.alcDeviceResumeSOFT(device)
+    }
+
+    override fun pause() {
+        if (device != 0L) SOFTPauseDevice.alcDevicePauseSOFT(device)
     }
 
     override fun destroy() {
@@ -89,9 +104,11 @@ class LWJGL3OpenAL : OpenAL {
         }
     }
 
-    override fun setListener(position: Vector3d,
-                             orientation: Vector3d,
-                             velocity: Vector3d) {
+    override fun setListener(
+        position: Vector3d,
+        orientation: Vector3d,
+        velocity: Vector3d
+    ) {
         val cos = cos(orientation.x.toFloat().toRad())
         val lookX = cos(orientation.z.toFloat().toRad()) * cos
         val lookY = sin(orientation.z.toFloat().toRad()) * cos
@@ -107,10 +124,14 @@ class LWJGL3OpenAL : OpenAL {
             listenerOrientation._rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
         }
-        AL10.alListener3f(AL10.AL_POSITION, position.x.toFloat(),
-                position.y.toFloat(), position.z.toFloat())
-        AL10.alListener3f(AL10.AL_VELOCITY, velocity.x.toFloat(),
-                velocity.y.toFloat(), velocity.z.toFloat())
+        AL10.alListener3f(
+            AL10.AL_POSITION, position.x.toFloat(),
+            position.y.toFloat(), position.z.toFloat()
+        )
+        AL10.alListener3f(
+            AL10.AL_VELOCITY, velocity.x.toFloat(),
+            velocity.y.toFloat(), velocity.z.toFloat()
+        )
     }
 
     override fun createSource(): Int {
@@ -121,57 +142,85 @@ class LWJGL3OpenAL : OpenAL {
         AL10.alDeleteSources(id)
     }
 
-    override fun setBuffer(id: Int,
-                           value: Int) {
+    override fun setBuffer(
+        id: Int,
+        value: Int
+    ) {
         AL10.alSourcei(id, AL10.AL_BUFFER, value)
     }
 
-    override fun setPitch(id: Int,
-                          value: Double) {
+    override fun setPitch(
+        id: Int,
+        value: Double
+    ) {
         AL10.alSourcef(id, AL10.AL_PITCH, value.toFloat())
     }
 
-    override fun setGain(id: Int,
-                         value: Double) {
+    override fun setGain(
+        id: Int,
+        value: Double
+    ) {
         AL10.alSourcef(id, AL10.AL_GAIN, value.toFloat())
     }
 
-    override fun setLooping(id: Int,
-                            value: Boolean) {
-        AL10.alSourcei(id, AL10.AL_LOOPING,
-                if (value) AL10.AL_TRUE else AL10.AL_FALSE)
+    override fun setLooping(
+        id: Int,
+        value: Boolean
+    ) {
+        AL10.alSourcei(
+            id, AL10.AL_LOOPING,
+            if (value) AL10.AL_TRUE else AL10.AL_FALSE
+        )
     }
 
-    override fun setRelative(id: Int,
-                             value: Boolean) {
-        AL10.alSourcei(id, AL10.AL_SOURCE_RELATIVE,
-                if (value) AL10.AL_TRUE else AL10.AL_FALSE)
+    override fun setRelative(
+        id: Int,
+        value: Boolean
+    ) {
+        AL10.alSourcei(
+            id, AL10.AL_SOURCE_RELATIVE,
+            if (value) AL10.AL_TRUE else AL10.AL_FALSE
+        )
     }
 
-    override fun setPosition(id: Int,
-                             pos: Vector3d) {
-        AL10.alSource3f(id, AL10.AL_POSITION, pos.x.toFloat(), pos.y.toFloat(),
-                pos.z.toFloat())
+    override fun setPosition(
+        id: Int,
+        pos: Vector3d
+    ) {
+        AL10.alSource3f(
+            id, AL10.AL_POSITION, pos.x.toFloat(), pos.y.toFloat(),
+            pos.z.toFloat()
+        )
     }
 
-    override fun setVelocity(id: Int,
-                             vel: Vector3d) {
-        AL10.alSource3f(id, AL10.AL_VELOCITY, vel.x.toFloat(), vel.y.toFloat(),
-                vel.z.toFloat())
+    override fun setVelocity(
+        id: Int,
+        vel: Vector3d
+    ) {
+        AL10.alSource3f(
+            id, AL10.AL_VELOCITY, vel.x.toFloat(), vel.y.toFloat(),
+            vel.z.toFloat()
+        )
     }
 
-    override fun setReferenceDistance(id: Int,
-                                      value: Double) {
+    override fun setReferenceDistance(
+        id: Int,
+        value: Double
+    ) {
         AL10.alSourcef(id, AL10.AL_REFERENCE_DISTANCE, value.toFloat())
     }
 
-    override fun setRolloffFactor(id: Int,
-                                  value: Double) {
+    override fun setRolloffFactor(
+        id: Int,
+        value: Double
+    ) {
         AL10.alSourcef(id, AL10.AL_ROLLOFF_FACTOR, value.toFloat())
     }
 
-    override fun setMaxDistance(id: Int,
-                                value: Double) {
+    override fun setMaxDistance(
+        id: Int,
+        value: Double
+    ) {
         AL10.alSourcef(id, AL10.AL_MAX_DISTANCE, value.toFloat())
     }
 
@@ -191,15 +240,21 @@ class LWJGL3OpenAL : OpenAL {
         AL10.alDeleteBuffers(id)
     }
 
-    override fun storeBuffer(id: Int,
-                             format: AudioFormat,
-                             buffer: ByteViewRO,
-                             rate: Int) {
+    override fun storeBuffer(
+        id: Int,
+        format: AudioFormat,
+        buffer: ByteViewRO,
+        rate: Int
+    ) {
         when (format) {
-            AudioFormat.MONO -> AL10.alBufferData(id, AL10.AL_FORMAT_MONO16,
-                    buffer.readAsNativeByteBuffer(), rate)
-            AudioFormat.STEREO -> AL10.alBufferData(id, AL10.AL_FORMAT_STEREO16,
-                    buffer.readAsNativeByteBuffer(), rate)
+            AudioFormat.MONO -> AL10.alBufferData(
+                id, AL10.AL_FORMAT_MONO16,
+                buffer.readAsNativeByteBuffer(), rate
+            )
+            AudioFormat.STEREO -> AL10.alBufferData(
+                id, AL10.AL_FORMAT_STEREO16,
+                buffer.readAsNativeByteBuffer(), rate
+            )
         }
     }
 
@@ -220,8 +275,10 @@ class LWJGL3OpenAL : OpenAL {
         return AL10.alGetSourcei(id, AL10.AL_BUFFERS_PROCESSED)
     }
 
-    override fun queue(id: Int,
-                       buffer: Int) {
+    override fun queue(
+        id: Int,
+        buffer: Int
+    ) {
         AL10.alSourceQueueBuffers(id, buffer)
     }
 

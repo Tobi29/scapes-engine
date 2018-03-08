@@ -65,12 +65,8 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
 
     init {
         updateJob = launchThread("Engine-Sounds") {
-            openAL.create(speedOfSound)
             try {
-                for (i in sources.indices) {
-                    sources[i] = openAL.createSource()
-                }
-                openAL.checkError("Initializing")
+                start(openAL)
                 try {
                     val timer = Timer()
                     val maxDiff = (latency * 1000000.0).roundToLong()
@@ -113,6 +109,15 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
                 openAL.destroy()
             }
         }
+    }
+
+    private fun start(openAL: OpenAL) {
+        openAL.create(speedOfSound)
+        for (i in sources.indices) {
+            sources[i] = openAL.createSource()
+        }
+        openAL.pause()
+        openAL.checkError("Initializing")
     }
 
     private fun tick(openAL: OpenAL,
@@ -241,6 +246,18 @@ class OpenALSoundSystem(override val engine: ScapesEngine,
             val stopped = audios.filter { it.isPlaying(channel) }
             stopped.forEach { it.stop(this, openAL) }
             audios.removeAll(stopped)
+        }
+    }
+
+    override fun enable() {
+        queue { openAL ->
+            openAL.resume()
+        }
+    }
+
+    override fun disable() {
+        queue { openAL ->
+            openAL.pause()
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,10 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
                 channels.values.forEach { it.poll(delta) }
             }
         }
+    }
+
+    init {
+        context.suspend()
     }
 
     override fun setListener(
@@ -187,6 +191,14 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
         channels.asSequence()
             .filter { (key, _) -> key in channel }
             .forEach { (_, node) -> node.elements.forEach { it.stop() } }
+    }
+
+    override fun enable() {
+        context.resume()
+    }
+
+    override fun disable() {
+        context.suspend()
     }
 
     override fun clearCache() {}
