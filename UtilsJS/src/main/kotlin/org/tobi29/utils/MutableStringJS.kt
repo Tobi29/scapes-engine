@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ actual class MutableString actual constructor(
         append(array.copyToString(offset, length))
 
     actual fun insert(position: Int, csq: CharSequence?, start: Int, end: Int) =
-        insert(position, (str ?: "null").subSequence(start, end))
+        insert(position, (csq ?: "null").subSequence(start, end))
 
     actual fun insert(position: Int, array: CharArray): MutableString =
         insert(position, array, 0)
