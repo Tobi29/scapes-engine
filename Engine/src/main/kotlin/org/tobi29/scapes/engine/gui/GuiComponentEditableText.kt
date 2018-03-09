@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,20 @@ package org.tobi29.scapes.engine.gui
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.stdex.math.clamp
 import kotlin.math.min
 
 class GuiComponentEditableText(
-        parent: GuiLayoutData,
-        text: String,
-        private val maxLength: Int,
-        private val active: () -> Boolean,
-        private val r: Double = 1.0,
-        private val g: Double = 1.0,
-        private val b: Double = 1.0,
-        private val a: Double = 1.0
+    parent: GuiLayoutData,
+    text: String,
+    private val maxLength: Int,
+    private val active: () -> Boolean,
+    private val r: Double = 1.0,
+    private val g: Double = 1.0,
+    private val b: Double = 1.0,
+    private val a: Double = 1.0
 ) : GuiComponentHeavy(parent) {
     private val data = GuiController.TextFieldData()
     private var vaoCursor: List<Pair<Model, Texture>>? = null
@@ -44,13 +44,14 @@ class GuiComponentEditableText(
             dirty()
         }
 
-    constructor(parent: GuiLayoutData,
-                text: String,
-                active: () -> Boolean,
-                r: Double = 1.0,
-                g: Double = 1.0,
-                b: Double = 1.0,
-                a: Double = 1.0
+    constructor(
+        parent: GuiLayoutData,
+        text: String,
+        active: () -> Boolean,
+        r: Double = 1.0,
+        g: Double = 1.0,
+        b: Double = 1.0,
+        a: Double = 1.0
     ) : this(parent, text, Int.MAX_VALUE, active, r, g, b, a)
 
     init {
@@ -71,8 +72,10 @@ class GuiComponentEditableText(
             }
         }
 
-    override fun updateMesh(renderer: GuiRenderer,
-                            size: Vector2d) {
+    override fun updateMesh(
+        renderer: GuiRenderer,
+        size: Vector2d
+    ) {
         var text = ""
         var selectionStart = 0
         var selectionEnd = 0
@@ -82,20 +85,24 @@ class GuiComponentEditableText(
             selectionEnd = clamp(data.selectionEnd, 0, text.length)
         }
         val font = gui.style.font
-        font.render(FontRenderer.to(renderer, r, g, b, a), textFilter(text),
-                size.y, size.x)
+        font.render(
+            FontRenderer.to(renderer, r, g, b, a), textFilter(text),
+            size.y, size.x
+        )
         val batch = GuiRenderBatch(renderer.pixelSize)
         val cursor = clamp(data.cursor, 0, text.length)
         font.render(
-                FontRenderer.to(batch, -size.y * 0.1f, -size.y * 0.2, 1.0, 1.0,
-                        1.0, 1.0), text.substring(0, cursor) + '|', size.y,
-                size.y * 1.2, size.y, Double.MAX_VALUE, cursor, cursor + 1)
+            FontRenderer.to(
+                batch, 1.0, 1.0, 1.0, 1.0
+            ), text.substring(0, cursor) + '|',
+            size.y, size.x, cursor, cursor + 1
+        )
         vaoCursor = batch.finish()
         vaoSelection = if (selectionStart >= 0) {
             font.render(
-                    FontRenderer.to(batch, 0.0, 0.0, true, 1.0, 1.0, 1.0, 1.0),
-                    text, size.y, size.y, size.y, size.x, selectionStart,
-                    selectionEnd)
+                FontRenderer.to(batch, 0.0, 0.0, true, 1.0, 1.0, 1.0, 1.0),
+                text, size.y, size.x, selectionStart, selectionEnd
+            )
             batch.finish()
         } else {
             null
@@ -142,9 +149,11 @@ class GuiComponentEditableText(
                         data.cursor = min(data.cursor, maxLength)
                     }
                     val font = gui.style.font
-                    val textInfo = font.render(FontRenderer.to(),
-                            textFilter(data.text.toString()),
-                            size.y, size.x)
+                    val textInfo = font.render(
+                        FontRenderer.to(),
+                        textFilter(data.text.toString()),
+                        size.y, size.x
+                    )
                     val maxLengthFont = textInfo.length
                     if (data.text.length > maxLengthFont) {
                         data.text.delete(maxLengthFont, data.text.length)
@@ -156,11 +165,13 @@ class GuiComponentEditableText(
         }
     }
 
-    public override fun renderComponent(gl: GL,
-                                        shader: Shader,
-                                        size: Vector2d,
-                                        pixelSize: Vector2d,
-                                        delta: Double) {
+    public override fun renderComponent(
+        gl: GL,
+        shader: Shader,
+        size: Vector2d,
+        pixelSize: Vector2d,
+        delta: Double
+    ) {
         super.renderComponent(gl, shader, size, pixelSize, delta)
         if (isActive) {
             if (gl.timestamp / 600000000L % 2L == 0L) {
