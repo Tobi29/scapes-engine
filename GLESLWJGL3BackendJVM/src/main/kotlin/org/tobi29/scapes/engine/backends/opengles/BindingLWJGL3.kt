@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -408,11 +408,11 @@ actual inline fun GLESHandle.glDrawBuffers(
 
 actual inline fun GLESHandle.glGetShaderInfoLog(
     shader: Int
-) = GLES20.glGetShaderInfoLog(shader)
+): String? = GLES20.glGetShaderInfoLog(shader)
 
 actual inline fun GLESHandle.glGetProgramInfoLog(
     program: Int
-) = GLES20.glGetProgramInfoLog(program)
+): String? = GLES20.glGetProgramInfoLog(program)
 
 actual inline fun GLESHandle.glGetProgramb(
     program: GLProgram,

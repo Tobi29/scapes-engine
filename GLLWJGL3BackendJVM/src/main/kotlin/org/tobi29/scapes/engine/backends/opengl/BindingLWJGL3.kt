@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package org.tobi29.scapes.engine.backends.opengl
 
 import org.lwjgl.opengl.*
 import org.tobi29.io.*
-import org.tobi29.scapes.engine.Container
 
 actual inline fun GLHandle.byteView(capacity: Int): ByteViewE =
     ByteBufferNative(capacity).viewE
@@ -423,11 +422,11 @@ actual inline fun GLHandle.glDrawBuffers(
 
 actual inline fun GLHandle.glGetShaderInfoLog(
     shader: GLShader
-) = GL20.glGetShaderInfoLog(shader)
+): String? = GL20.glGetShaderInfoLog(shader)
 
 actual inline fun GLHandle.glGetProgramInfoLog(
     program: GLProgram
-) = GL20.glGetProgramInfoLog(program)
+): String? = GL20.glGetProgramInfoLog(program)
 
 actual inline fun GLHandle.glGetProgramb(
     program: GLProgram,
