@@ -136,6 +136,7 @@ include "TileMapsJVM"
 include "TileMapsRenderer"
 include "TileMapsRendererJS"
 include "TileMapsRendererJVM"
+include "LibTiledJVM"
 
 // Engine
 include "Engine"

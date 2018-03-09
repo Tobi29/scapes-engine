@@ -305,12 +305,16 @@ Allows abstracting over different backends more reliably.
   * [MariaDB](https://mariadb.org) (MariaDB, JVM only)
 
 ## Tile Maps
-Basic classes for storing tile maps
+Basic classes for storing tile maps.
+
+A JVM-only parser for [Tiled](https://mapeditor.org) maps can be found in
+the LibTiled artifact, which in turn is loosely based on their old Java library.
 
 ### Artifacts
   * TileMaps
   * TileMapsJS
   * TileMapsJVM
+  * LibTiledJVM
 
 ## Engine
 General purpose engine foundation
