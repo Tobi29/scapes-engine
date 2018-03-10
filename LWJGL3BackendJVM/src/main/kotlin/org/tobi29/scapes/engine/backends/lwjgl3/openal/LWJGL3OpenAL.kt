@@ -246,16 +246,15 @@ class LWJGL3OpenAL : OpenAL {
         buffer: ByteViewRO,
         rate: Int
     ) {
-        when (format) {
-            AudioFormat.MONO -> AL10.alBufferData(
-                id, AL10.AL_FORMAT_MONO16,
-                buffer.readAsNativeByteBuffer(), rate
-            )
-            AudioFormat.STEREO -> AL10.alBufferData(
-                id, AL10.AL_FORMAT_STEREO16,
-                buffer.readAsNativeByteBuffer(), rate
-            )
-        }
+        AL10.alBufferData(
+            id,
+            when (format) {
+                AudioFormat.MONO -> AL10.AL_FORMAT_MONO16
+                AudioFormat.STEREO -> AL10.AL_FORMAT_STEREO16
+            },
+            buffer.readAsNativeByteBuffer(),
+            rate
+        )
     }
 
     override fun isPlaying(id: Int): Boolean {
