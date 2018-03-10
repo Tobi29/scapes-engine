@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.backends.lwjgl3.openal
 
 import org.lwjgl.openal.*
 import org.tobi29.io.ByteViewRO
-import org.tobi29.io._clear
 import org.tobi29.io._rewind
 import org.tobi29.io.readAsNativeByteBuffer
 import org.tobi29.logging.KLogging
@@ -74,10 +73,12 @@ class LWJGL3OpenAL : OpenAL {
         AL10.alDistanceModel(AL10.AL_INVERSE_DISTANCE_CLAMPED)
         stackFrame { stack ->
             val listenerOrientation = stack.mallocFloat(6)
-            listenerOrientation._clear()
-            listenerOrientation.put(
-                floatArrayOf(0.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f)
-            )
+            listenerOrientation.put(0.0f)
+            listenerOrientation.put(-1.0f)
+            listenerOrientation.put(0.0f)
+            listenerOrientation.put(0.0f)
+            listenerOrientation.put(0.0f)
+            listenerOrientation.put(1.0f)
             listenerOrientation._rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
             AL10.alListener3f(AL10.AL_POSITION, 0.0f, 0.0f, 0.0f)
@@ -118,9 +119,9 @@ class LWJGL3OpenAL : OpenAL {
             listenerOrientation.put(lookX)
             listenerOrientation.put(lookY)
             listenerOrientation.put(lookZ)
-            listenerOrientation.put(0f)
-            listenerOrientation.put(0f)
-            listenerOrientation.put(1f)
+            listenerOrientation.put(0.0f)
+            listenerOrientation.put(0.0f)
+            listenerOrientation.put(1.0f)
             listenerOrientation._rewind()
             AL10.alListenerfv(AL10.AL_ORIENTATION, listenerOrientation)
         }
