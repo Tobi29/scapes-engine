@@ -16,7 +16,6 @@
 
 package org.tobi29.io.filesystem.nio.internal
 
-import org.tobi29.utils.*
 import org.tobi29.io.*
 import org.tobi29.io.filesystem.*
 import org.tobi29.io.filesystem.DirectoryStream
@@ -25,6 +24,7 @@ import org.tobi29.io.filesystem.LinkOption
 import org.tobi29.io.filesystem.OpenOption
 import org.tobi29.stdex.readOnly
 import org.tobi29.stdex.setAt
+import org.tobi29.utils.*
 import java.io.File
 import java.nio.file.*
 import java.nio.file.Path
@@ -318,9 +318,9 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     private fun Set<java.nio.file.attribute.PosixFilePermission>.toUnixPermissionMode(): UnixPermissionMode {
-        var owner: Int = 0
-        var group: Int = 0
-        var others: Int = 0
+        var owner = 0
+        var group = 0
+        var others = 0
         for (element in this) {
             when (element) {
                 PosixFilePermission.OWNER_EXECUTE -> owner = owner.setAt(0)

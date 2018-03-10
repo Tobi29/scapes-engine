@@ -38,10 +38,7 @@ class ByteType : BaseLongType(EndianType.NATIVE) {
         testValue: Number
     ): Int {
         if (unsignedType) {
-            return LongType.staticCompare(
-                extractedValue,
-                testValue
-            )
+            return staticCompare(extractedValue, testValue)
         }
         val extractedByte = extractedValue.toByte()
         val testByte = testValue.toByte()

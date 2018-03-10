@@ -123,10 +123,7 @@ class RegexType : MagicMatcher {
         internal var updateOffsetStart: Boolean = false
         internal var pattern: Regex? = null
     }
-
-    companion object {
-
-        private val TYPE_PATTERN = "[^/]+(/[cs]*)?".toRegex()
-        private val EMPTY = ""
-    }
 }
+
+private val TYPE_PATTERN = "[^/]+(/[cs]*)?".toRegex()
+private const val EMPTY = ""

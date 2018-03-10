@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ internal class VAOStatic(
         shader(gl, shader)
         glh.glBindVertexArray(arrayID)
         glh.glDrawElements(
-            glh.renderType(renderType), length,
+            renderType.enum, length,
             GL_UNSIGNED_SHORT, 0
         )
         return true

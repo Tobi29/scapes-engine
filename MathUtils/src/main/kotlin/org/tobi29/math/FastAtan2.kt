@@ -23,9 +23,9 @@ import kotlin.math.PI
 import kotlin.math.atan
 
 object FastAtan2 {
-    private val SIZE = 1024
-    private val STRETCH = PI.toFloat()
-    private val EZIS = -SIZE
+    private const val SIZE = 1024
+    private const val STRETCH = PI.toFloat()
+    private const val EZIS = -SIZE
     private val ATAN2_TABLE_PPY = FloatArray(SIZE + 1)
     private val ATAN2_TABLE_PPX = FloatArray(SIZE + 1)
     private val ATAN2_TABLE_PNY = FloatArray(SIZE + 1)

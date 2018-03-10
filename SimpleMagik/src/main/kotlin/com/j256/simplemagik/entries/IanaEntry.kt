@@ -107,6 +107,6 @@ class IanaEntry(
         private val RFC_REFERENCE_BASE_URL = "https://tools.ietf.org/html/"
         private val MIME_TYPE_REFERENCE_BASE_URL =
             "https://www.iana.org/assignments/media-types/media-types.xhtm"
-        private val PATTERN_REGEX = "\\[(.+?)\\]".toRegex()
+        private val PATTERN_REGEX = """\[(.+?)]""".toRegex()
     }
 }

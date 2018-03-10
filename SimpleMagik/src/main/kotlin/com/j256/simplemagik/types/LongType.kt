@@ -39,30 +39,19 @@ class LongType(endianType: EndianType) : BaseLongType(endianType) {
         unsignedType: Boolean,
         extractedValue: Number,
         testValue: Number
-    ): Int {
-        return staticCompare(
-            extractedValue,
-            testValue
-        )
-    }
+    ): Int = staticCompare(extractedValue, testValue)
+}
 
-    companion object {
+private const val BYTES_PER_LONG = 8
 
-        internal val BYTES_PER_LONG = 8
-
-        /**
-         * Static compare of longs which are unsigned or signed.
-         */
-        fun staticCompare(extractedValue: Number, testValue: Number): Int {
-            val extractedLong = extractedValue.toLong()
-            val testLong = testValue.toLong()
-            return if (extractedLong > testLong) {
-                1
-            } else if (extractedLong < testLong) {
-                -1
-            } else {
-                0
-            }
-        }
+internal fun staticCompare(extractedValue: Number, testValue: Number): Int {
+    val extractedLong = extractedValue.toLong()
+    val testLong = testValue.toLong()
+    return if (extractedLong > testLong) {
+        1
+    } else if (extractedLong < testLong) {
+        -1
+    } else {
+        0
     }
 }

@@ -38,10 +38,7 @@ open class IntegerType(endianType: EndianType) : BaseLongType(endianType) {
         testValue: Number
     ): Int {
         if (unsignedType) {
-            return LongType.staticCompare(
-                extractedValue,
-                testValue
-            )
+            return staticCompare(extractedValue, testValue)
         }
         val extractedInt = extractedValue.toInt()
         val testInt = testValue.toInt()
@@ -53,9 +50,6 @@ open class IntegerType(endianType: EndianType) : BaseLongType(endianType) {
             0
         }
     }
-
-    companion object {
-
-        private val BYTES_PER_INTEGER = 4
-    }
 }
+
+private const val BYTES_PER_INTEGER = 4

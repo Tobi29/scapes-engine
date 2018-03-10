@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ internal class VAOHybrid(
         gl.check()
         shader(gl, shader)
         glh.glBindVertexArray(arrayID)
-        glh.glDrawArrays(glh.renderType(renderType), 0, length)
+        glh.glDrawArrays(renderType.enum, 0, length)
         return true
     }
 
@@ -79,7 +79,7 @@ internal class VAOHybrid(
         shader(gl, shader)
         glh.glBindVertexArray(arrayID)
         glh.glDrawArraysInstanced(
-            glh.renderType(renderType),
+            renderType.enum,
             0,
             length,
             count

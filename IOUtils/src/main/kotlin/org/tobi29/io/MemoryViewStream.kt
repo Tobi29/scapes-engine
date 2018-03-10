@@ -196,6 +196,7 @@ class MemoryViewStream<out B : ByteViewE>(
     }
 
     override fun position(pos: Int) {
+        @Suppress("ConvertTwoComparisonsToRangeCheck") // Very readable
         if (pos < 0 || (pos > limit && limit >= 0))
             throw IllegalArgumentException("Invalid position")
         ensure(pos - position)

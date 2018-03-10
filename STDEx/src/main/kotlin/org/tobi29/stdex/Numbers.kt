@@ -236,7 +236,7 @@ inline fun combineToInt(b3: Byte, b2: Byte, b1: Byte, b0: Byte): Int =
 /**
  * Combines the given shorts into a number, going from high bytes to low
  * @param s1 1st short (if big-endian)
- * @param s9 2nd short (if big-endian)
+ * @param s0 2nd short (if big-endian)
  * @return Combined number
  */
 inline fun combineToInt(s1: Short, s0: Short): Int =

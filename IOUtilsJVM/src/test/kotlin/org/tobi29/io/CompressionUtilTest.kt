@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.shouldEqual
-import org.tobi29.io.CompressionUtil
-import org.tobi29.io.MemoryViewStream
-import org.tobi29.io.MemoryViewStreamDefault
-import org.tobi29.io.viewBE
-import org.tobi29.io.view
 
 object CompressionUtilTests : Spek({
     given("any byte array") {
@@ -35,7 +30,8 @@ object CompressionUtilTests : Spek({
             for (array in arrays) {
                 val compressed = MemoryViewStreamDefault()
                 CompressionUtil.compress(
-                        MemoryViewStream(array.viewBE), compressed)
+                    MemoryViewStream(array.viewBE), compressed
+                )
                 compressed.flip()
                 val decompressed = MemoryViewStreamDefault()
                 CompressionUtil.decompress(compressed, decompressed)

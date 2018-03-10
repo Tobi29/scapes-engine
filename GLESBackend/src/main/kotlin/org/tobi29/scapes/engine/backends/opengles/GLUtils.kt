@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,12 @@ import org.tobi29.scapes.engine.shader.ShaderException
 import org.tobi29.scapes.engine.shader.Uniform
 import org.tobi29.scapes.engine.shader.backend.glsl.GLSLGenerator
 
-fun GLESHandle.renderType(renderType: RenderType): Int {
-    return when (renderType) {
+val RenderType.enum: Int
+    get() = when (this) {
         RenderType.TRIANGLES -> GL_TRIANGLES
         RenderType.LINES -> GL_LINES
-        else -> throw IllegalArgumentException(
-            "Unknown render type: " + renderType
-        )
+        else -> throw IllegalArgumentException("Unknown render type: $this")
     }
-}
 
 fun GLESHandle.status(): FramebufferStatus {
     val status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
@@ -45,11 +42,10 @@ fun GLESHandle.status(): FramebufferStatus {
     }
 }
 
-
 fun GLESHandle.drawbuffers(attachments: Int) {
     if (attachments < 0 || attachments > 15) {
         throw IllegalArgumentException(
-            "Attachments must be 0-15, was " + attachments
+            "Attachments must be 0-15, was $attachments"
         )
     }
     glDrawBuffers(IntArray(attachments) { GL_COLOR_ATTACHMENT(it) })

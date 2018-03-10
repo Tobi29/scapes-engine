@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,8 +89,7 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
 
     actual override fun isEmpty() = map.isEmpty()
 
-    private val map: java.util.concurrent.ConcurrentMap<E, Unit> =
-        ConcurrentHashMap<E, Unit>()
+    private val map = java.util.concurrent.ConcurrentHashMap<E, Unit>()
 
     actual override val size get() = map.size
 

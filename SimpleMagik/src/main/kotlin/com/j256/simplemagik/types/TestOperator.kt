@@ -19,7 +19,7 @@ package com.j256.simplemagik.types
 /**
  * Operators for tests. If no operator character then equals is assumed.
  */
-enum class TestOperator private constructor(private val prefixChar: Char) {
+enum class TestOperator(private val prefixChar: Char) {
 
     EQUALS('=') {
         override fun doTest(
@@ -123,30 +123,15 @@ enum class TestOperator private constructor(private val prefixChar: Char) {
     ): Boolean
 
     companion object {
+        inline val DEFAULT_OPERATOR get() = EQUALS
 
-        /**
-         * Default operator which should be used if [.fromTest] returns null;
-         */
-        val DEFAULT_OPERATOR = EQUALS
+        internal fun fromTest(testStr: String): TestOperator? {
+            if (testStr.isEmpty()) return null
 
-        /**
-         * Returns the operator if the first character is an operator. Otherwise this returns null and you should use the
-         * [.DEFAULT_OPERATOR].
-         *
-         *
-         *
-         * **NOTE:** We _don't_ return the default operator here because the caller needs to know if the prefix was
-         * supplied or not.
-         *
-         */
-        fun fromTest(testStr: String): TestOperator? {
-            if (testStr.length == 0) {
-                return null
-            }
             return of(testStr[0])
         }
 
-        fun of(char: Char): TestOperator? {
+        internal fun of(char: Char): TestOperator? {
             for (operator in values()) {
                 if (operator.prefixChar == char) {
                     return operator
@@ -155,4 +140,4 @@ enum class TestOperator private constructor(private val prefixChar: Char) {
             return null
         }
     }
-} // end
+}

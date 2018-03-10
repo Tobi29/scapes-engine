@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,15 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.*
-import org.tobi29.math.vector.Vector2d
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.atomic.AtomicBoolean
 
 abstract class GuiComponentHeavy : GuiComponent {
     private val dirty = AtomicBoolean(true)
-    protected var meshes: List<Pair<Model, Texture>>? = null
+    private var meshes: List<Pair<Model, Texture>>? = null
     private var lastSize = Vector2d.ZERO
     private var lastPixelSize = Vector2d.ZERO
     private var hasHeavyChild = false

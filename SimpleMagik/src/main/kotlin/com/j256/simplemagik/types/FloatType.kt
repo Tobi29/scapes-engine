@@ -51,9 +51,6 @@ class FloatType(endianType: EndianType) : DoubleType(endianType) {
     override fun longToObject(value: Long?): Any {
         return Float.fromBits(value!!.toInt())
     }
-
-    companion object {
-
-        private val BYTES_PER_FLOAT = 4
-    }
 }
+
+private const val BYTES_PER_FLOAT = 4

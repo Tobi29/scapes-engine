@@ -38,10 +38,7 @@ class ShortType(endianType: EndianType) : BaseLongType(endianType) {
         testValue: Number
     ): Int {
         if (unsignedType) {
-            return LongType.staticCompare(
-                extractedValue,
-                testValue
-            )
+            return staticCompare(extractedValue, testValue)
         }
         val extractedShort = extractedValue.toShort()
         val testShort = testValue.toShort()

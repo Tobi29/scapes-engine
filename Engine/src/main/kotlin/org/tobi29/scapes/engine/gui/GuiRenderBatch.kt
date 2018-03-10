@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.graphics.Mesh
 import org.tobi29.scapes.engine.graphics.Model
 import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.stdex.computeAbsent
-import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.Vector3d
 
 open class GuiRenderBatch(var pixelSize: Vector2d) {
-    protected val meshes = HashMap<Int, MutableMap<Texture, Mesh>>()
-    protected var currentMesh: Mesh? = null
+    private val meshes = HashMap<Int, MutableMap<Texture, Mesh>>()
+    private var currentMesh: Mesh? = null
     protected var offset = 0
     protected var count = 0
 

@@ -75,9 +75,6 @@ open class DoubleType(endianType: EndianType) : NumberType(endianType) {
     override fun maskValue(value: Long): Long {
         return value
     }
-
-    companion object {
-
-        private val BYTES_PER_DOUBLE = 8
-    }
 }
+
+private const val BYTES_PER_DOUBLE = 8

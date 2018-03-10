@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ fun Appendable.writeCrashReport(e: Throwable,
 fun Appendable.writeCrashReport(e: Throwable,
                                 name: String,
                                 sections: Sequence<Pair<String, Appendable.() -> Unit>>) {
-    println(name + " has crashed: " + e)
+    println("$name has crashed: $e")
     println()
     println("Please give this file to someone who has an idea of what to do with it (developer!)")
     println()

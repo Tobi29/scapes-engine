@@ -34,9 +34,6 @@ class UtcLongDateType(endianType: EndianType) : UtcDateType(endianType) {
         // TODO: is this in millis or seconds?
         return `val`.toInt128() * 1000000L.toInt128()
     }
-
-    companion object {
-
-        private val BYTES_PER_UTC_LONG_DATE = 8
-    }
 }
+
+private const val BYTES_PER_UTC_LONG_DATE = 8

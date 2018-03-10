@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
 package org.tobi29.codec
 
 import org.tobi29.codec.spi.ReadableAudioStreamProvider
-import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteChannel
 import org.tobi29.logging.KLogging
+import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
 
@@ -32,7 +32,7 @@ object AudioStream : KLogging() {
                mime: String): ReadableAudioStream {
         val codec = AudioStream[mime]
         if (codec != null) return codec[channel]
-        throw IOException("No compatible decoder found for type: " + mime)
+        throw IOException("No compatible decoder found for type: $mime")
     }
 
     fun playable(mime: String): Boolean {

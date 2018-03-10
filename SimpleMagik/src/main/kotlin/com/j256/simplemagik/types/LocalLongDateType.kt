@@ -34,9 +34,6 @@ class LocalLongDateType(endianType: EndianType) : LocalDateType(endianType) {
         // TODO: is this in millis or seconds?
         return `val`.toInt128() * 1000000L.toInt128()
     }
-
-    companion object {
-
-        private val BYTES_PER_LOCAL_LONG_DATE = 8
-    }
 }
+
+private const val BYTES_PER_LOCAL_LONG_DATE = 8

@@ -23,13 +23,13 @@ import com.j256.simplemagik.entries.MagicEntry.OffsetInfo
 import com.j256.simplemagik.types.TestOperator
 import com.j256.simplemagik.types.UnknownType
 
-private val UNKNOWN_NAME = "unknown"
+private const val UNKNOWN_NAME = "unknown"
 // special lines, others are put into the extensionMap
-private val MIME_TYPE_LINE = "!:mime"
-private val OPTIONAL_LINE = "!:optional"
+private const val MIME_TYPE_LINE = "!:mime"
+private const val OPTIONAL_LINE = "!:optional"
 
 private val OFFSET_PATTERN =
-    "\\((&)?([0-9a-fA-Fx]+)\\.?([bsilBSILm]?)([\\*\\+\\-]?)([0-9a-fA-Fx]*)\\)".toRegex()
+    """\((&)?([0-9a-fA-Fx]+)\.?([bsilBSILm]?)([*+\-]?)([0-9a-fA-Fx]*)\)""".toRegex()
 
 /**
  * Parse a line from the magic configuration file into an entry.
@@ -119,7 +119,7 @@ internal fun parseMagicLine(
 
         typeStr = typeStr.substring(0, sindex)
     }
-    if (typeStr.length == 0) {
+    if (typeStr.isEmpty()) {
         errorCallBack?.invoke(line, "blank type string", null)
         return null
     }
@@ -194,7 +194,7 @@ internal fun parseMagicLine(
         }
         if (spaceIndex > 0) {
             name = trimmedFormat.substring(0, spaceIndex)
-        } else if (trimmedFormat.length == 0) {
+        } else if (trimmedFormat.isEmpty()) {
             name = UNKNOWN_NAME
         } else {
             name = trimmedFormat

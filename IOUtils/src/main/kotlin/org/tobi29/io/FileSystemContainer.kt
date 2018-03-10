@@ -47,14 +47,15 @@ class FileSystemContainer : Path {
 
     private fun fileSystem(id: String): Path {
         val fileSystem = fileSystems[id] ?: throw IllegalArgumentException(
-                "Unknown file system: " + id)
+            "Unknown file system: $id"
+        )
         return fileSystem
     }
 
     private fun splitPath(path: String): Pair<String, String> {
         val split = path.split(':', limit = 2)
         if (split.size != 2) {
-            throw IllegalArgumentException("Invalid path: " + path)
+            throw IllegalArgumentException("Invalid path: $path")
         }
         return Pair(split[0], split[1])
     }
