@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -242,6 +242,8 @@ class ControllerKey private constructor(val name: String,
         val BUTTON_SHARE = of("BUTTON_SHARE", "Share")
         val BUTTON_THUMB_LEFT = of("BUTTON_THUMB_LEFT", "Left Thumb")
         val BUTTON_THUMB_RIGHT = of("BUTTON_THUMB_RIGHT", "Right Thumb")
+        val BUTTON_STICK_LEFT = of("BUTTON_STICK_LEFT", "Left Stick Press")
+        val BUTTON_STICK_RIGHT = of("BUTTON_STICK_RIGHT", "Right Stick Press")
         /**
          * That button to access the OS menu on consoles
          */
