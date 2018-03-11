@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,14 @@
 
 package org.tobi29.scapes.engine.backends.js
 
+import org.tobi29.scapes.engine.input.ControllerAxis
 import org.tobi29.scapes.engine.input.ControllerKey
 
 object DOMKeyMap {
     private val KEYS = HashMap<String, ControllerKey>()
+    private val STANDARD_GAMEPAD_BUTTONS: Array<ControllerKey?>
+    private val STANDARD_GAMEPAD_ANALOG_BUTTONS: Array<Int?>
+    private val STANDARD_GAMEPAD_AXES: Array<Int?>
 
     init {
         KEYS.put("AltLeft", ControllerKey.KEY_ALT_LEFT)
@@ -28,18 +32,9 @@ object DOMKeyMap {
         KEYS.put("CapsLock", ControllerKey.KEY_CAPS_LOCK)
         KEYS.put("ControlLeft", ControllerKey.KEY_CONTROL_LEFT)
         KEYS.put("ControlRight", ControllerKey.KEY_CONTROL_RIGHT)
-        KEYS.put("Fn",
-            c("FN", "Fn")
-        )
-        KEYS.put("FnLock",
-            c(
-                "FN_LOCK",
-                "Fn Lock"
-            )
-        )
-        KEYS.put("Hyper",
-            c("HYPER", "Hyper")
-        )
+        KEYS.put("Fn", c("FN", "Fn"))
+        KEYS.put("FnLock", c("FN_LOCK", "Fn Lock"))
+        KEYS.put("Hyper", c("HYPER", "Hyper"))
         KEYS.put("MetaLeft", ControllerKey.KEY_SUPER_LEFT)
         KEYS.put("MetaRight", ControllerKey.KEY_SUPER_RIGHT)
         KEYS.put("NumLock", ControllerKey.KEY_NUM_LOCK)
@@ -48,15 +43,8 @@ object DOMKeyMap {
         KEYS.put("ShiftRight", ControllerKey.KEY_SHIFT_RIGHT)
         KEYS.put("SuperLeft", ControllerKey.KEY_SUPER_LEFT)
         KEYS.put("SuperRight", ControllerKey.KEY_SUPER_RIGHT)
-        KEYS.put("Symbol",
-            c("SUPER", "Super")
-        )
-        KEYS.put("SymbolLock",
-            c(
-                "SYMBOL_LOCK",
-                "Symbol Lock"
-            )
-        )
+        KEYS.put("Symbol", c("SUPER", "Super"))
+        KEYS.put("SymbolLock", c("SYMBOL_LOCK", "Symbol Lock"))
         KEYS.put("Enter", ControllerKey.KEY_ENTER)
         KEYS.put("Tab", ControllerKey.KEY_TAB)
         KEYS.put("Space", ControllerKey.KEY_SPACE)
@@ -69,44 +57,17 @@ object DOMKeyMap {
         KEYS.put("PageDown", ControllerKey.KEY_PAGE_DOWN)
         KEYS.put("PageUp", ControllerKey.KEY_PAGE_UP)
         KEYS.put("Backspace", ControllerKey.KEY_BACKSPACE)
-        KEYS.put("Clear",
-            c("CLEAR", "Clear")
-        )
-        KEYS.put("Copy",
-            c("COPY", "Copy")
-        )
-        KEYS.put("CrSel",
-            c(
-                "CR_SEL",
-                "Cursor Select"
-            )
-        )
-        KEYS.put("Cut",
-            c("CUT", "Cut")
-        )
+        KEYS.put("Clear", c("CLEAR", "Clear"))
+        KEYS.put("Copy", c("COPY", "Copy"))
+        KEYS.put("CrSel", c("CR_SEL", "Cursor Select"))
+        KEYS.put("Cut", c("CUT", "Cut"))
         KEYS.put("Delete", ControllerKey.KEY_DELETE)
-        KEYS.put("EraseEof",
-            c(
-                "ERASE_EOF",
-                "Erase to End of Field"
-            )
-        )
-        KEYS.put("ExSel",
-            c(
-                "EX_SEL",
-                "Extend Selection"
-            )
-        )
+        KEYS.put("EraseEof", c("ERASE_EOF", "Erase to End of Field"))
+        KEYS.put("ExSel", c("EX_SEL", "Extend Selection"))
         KEYS.put("Insert", ControllerKey.KEY_INSERT)
-        KEYS.put("Paste",
-            c("PASTE", "Paste")
-        )
-        KEYS.put("Redo",
-            c("REDO", "Redo")
-        )
-        KEYS.put("Undo",
-            c("UNDO", "Undo")
-        )
+        KEYS.put("Paste", c("PASTE", "Paste"))
+        KEYS.put("Redo", c("REDO", "Redo"))
+        KEYS.put("Undo", c("UNDO", "Undo"))
 
         KEYS.put("F1", ControllerKey.KEY_F1)
         KEYS.put("F2", ControllerKey.KEY_F2)
@@ -180,6 +141,53 @@ object DOMKeyMap {
         KEYS.put("KeyX", ControllerKey.KEY_X)
         KEYS.put("KeyY", ControllerKey.KEY_Y)
         KEYS.put("KeyZ", ControllerKey.KEY_Z)
+
+        STANDARD_GAMEPAD_BUTTONS = arrayOf(
+            /* A  */ ControllerKey.BUTTON_A,
+            /* B  */ ControllerKey.BUTTON_B,
+            /* X  */ ControllerKey.BUTTON_X,
+            /* Y  */ ControllerKey.BUTTON_Y,
+            /* L1 */ ControllerKey.BUTTON_BUMPER_LEFT,
+            /* R1 */ ControllerKey.BUTTON_BUMPER_RIGHT,
+            /* L2 */ null,
+            /* R2 */ null,
+            /* SE */ ControllerKey.BUTTON_SELECT,
+            /* ST */ ControllerKey.BUTTON_START,
+            /* LS */ ControllerKey.BUTTON_STICK_LEFT,
+            /* LR */ ControllerKey.BUTTON_STICK_RIGHT,
+            /* UP */ ControllerKey.BUTTON_DPAD_UP,
+            /* DO */ ControllerKey.BUTTON_DPAD_DOWN,
+            /* LE */ ControllerKey.BUTTON_DPAD_LEFT,
+            /* RI */ ControllerKey.BUTTON_DPAD_RIGHT,
+            /* WA */ ControllerKey.BUTTON_WHATEVER
+        )
+
+        STANDARD_GAMEPAD_ANALOG_BUTTONS = arrayOf(
+            /* A  */ null,
+            /* B  */ null,
+            /* X  */ null,
+            /* Y  */ null,
+            /* L1 */ null,
+            /* R1 */ null,
+            /* L2 */ ControllerAxis.TRIGGER_LEFT,
+            /* R2 */ ControllerAxis.TRIGGER_RIGHT,
+            /* SE */ null,
+            /* ST */ null,
+            /* LS */ null,
+            /* LR */ null,
+            /* UP */ null,
+            /* DO */ null,
+            /* LE */ null,
+            /* RI */ null,
+            /* WA */ null
+        )
+
+        STANDARD_GAMEPAD_AXES = arrayOf(
+            /* LX */ ControllerAxis.X_LEFT,
+            /* LY */ ControllerAxis.Y_LEFT,
+            /* RX */ ControllerAxis.X_RIGHT,
+            /* RY */ ControllerAxis.Y_RIGHT
+        )
     }
 
     private fun c(
@@ -191,6 +199,15 @@ object DOMKeyMap {
     fun key(id: String) = KEYS[id]
 
     fun button(id: Short) = ControllerKey.button(id.toInt())
+
+    fun standardGamepad(id: Int) =
+        STANDARD_GAMEPAD_BUTTONS.getOrNull(id)
+
+    fun standardGamepadAnalog(id: Int) =
+        STANDARD_GAMEPAD_ANALOG_BUTTONS.getOrNull(id)
+
+    fun standardGamepadAxis(id: Int) =
+        STANDARD_GAMEPAD_AXES.getOrNull(id)
 
     fun touch() {}
 }
