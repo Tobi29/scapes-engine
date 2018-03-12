@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,14 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.math.Face
-import org.tobi29.math.vector.MutableVector2d
-import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.minus
+import org.tobi29.math.vector.*
 import org.tobi29.utils.forAllObjects
 
-class GuiLayoutManagerVertical(start: Vector2d,
-                               maxSize: Vector2d,
-                               components: Collection<GuiComponent>) : GuiLayoutManager(
-        start, maxSize, components) {
-
+class GuiLayoutManagerVertical(
+    start: Vector2d,
+    maxSize: Vector2d,
+    components: Collection<GuiComponent>
+) : GuiLayoutManager(start, maxSize, components) {
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
         var unsized = 0.0
         var usedHeight = 0.0
@@ -64,8 +62,10 @@ class GuiLayoutManagerVertical(start: Vector2d,
         val posSize = MutableVector2d()
         val offset = MutableVector2d(start)
         val outSize = MutableVector2d()
-        val preferredSize = Vector2d(maxSize.x,
-                (maxSize.y - usedHeight) / unsized)
+        val preferredSize = Vector2d(
+            maxSize.x,
+            (maxSize.y - usedHeight) / unsized
+        )
         val mSize = MutableVector2d()
         val mPreferredSize = MutableVector2d()
         for ((component, size) in sizes) {
@@ -85,12 +85,15 @@ class GuiLayoutManagerVertical(start: Vector2d,
                                 marginStart.x - marginEnd.x) * 0.5
                     )
                 }
-                mPreferredSize.set(preferredSize).subtract(margin)
+                mPreferredSize.set(preferredSize)
+                mPreferredSize.subtract(margin)
                 mSize.subtract(margin)
                 val asize = size(size, mPreferredSize, mSize)
                 pos.add(marginStart)
                 offset.addY(asize.y + margin.y)
-                posSize.setXY(pos.x, pos.y).add(asize).add(marginEnd)
+                posSize.setXY(pos.x, pos.y)
+                posSize.add(asize)
+                posSize.add(marginEnd)
                 setSize(posSize, outSize)
                 asize
             } else if (data is GuiLayoutDataAbsolute) {
@@ -110,8 +113,10 @@ class GuiLayoutManagerVertical(start: Vector2d,
         sizeCache.give(sizes)
     }
 
-    override fun navigate(face: Face,
-                          component: GuiComponent): GuiComponent? {
+    override fun navigate(
+        face: Face,
+        component: GuiComponent
+    ): GuiComponent? {
         if (face != Face.NORTH && face != Face.SOUTH) return null
         var i = components.indexOf(component)
         if (i < 0) return null
@@ -125,10 +130,10 @@ class GuiLayoutManagerVertical(start: Vector2d,
     }
 
     override fun enter(face: Face): GuiComponent? =
-            when (face) {
-                Face.NORTH -> components.lastOrNull()
-                Face.SOUTH -> components.firstOrNull()
-            // TODO: Select based on previous location
-                else -> components.firstOrNull()
-            }
+        when (face) {
+            Face.NORTH -> components.lastOrNull()
+            Face.SOUTH -> components.firstOrNull()
+        // TODO: Select based on previous location
+            else -> components.firstOrNull()
+        }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.add
 
-class GuiLayoutManagerAbsolute(start: Vector2d,
-                               maxSize: Vector2d,
-                               components: Collection<GuiComponent>) : GuiLayoutManager(
-        start, maxSize, components) {
+class GuiLayoutManagerAbsolute(
+    start: Vector2d,
+    maxSize: Vector2d,
+    components: Collection<GuiComponent>
+) : GuiLayoutManager(start, maxSize, components) {
 
     override fun layout(output: MutableList<Triple<GuiComponent, Vector2d, Vector2d>>) {
         val pos = MutableVector2d()
@@ -34,7 +36,8 @@ class GuiLayoutManagerAbsolute(start: Vector2d,
             val asize = if (data is GuiLayoutDataAbsolute) {
                 pos.set(data.pos())
                 val asize = size(size, maxSize, maxSize)
-                posSize.setXY(pos.x, pos.y).add(asize)
+                posSize.setXY(pos.x, pos.y)
+                posSize.add(asize)
                 setSize(posSize, outSize)
                 asize
             } else {

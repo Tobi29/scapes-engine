@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
     private val scrollPane: GuiComponentScrollPaneViewport
     private val profilerNotEnabled: GuiComponentText
     private var elements: List<Element> = emptyList()
-    private var node: Node? = PROFILER?.root
+    private var node: Node? = profiler?.root
     private var updateJob: Job? = null
 
     init {
@@ -49,23 +49,23 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
 
         toggle.on(GuiEvent.CLICK_LEFT) {
-            if (PROFILER_ENABLED) {
+            if (profilerEnabled) {
                 toggle.setText("Enable")
                 profilerDisable()
             } else {
                 toggle.setText("Disable")
                 profilerEnable()
             }
-            node = PROFILER?.root
+            node = profiler?.root
             nodes()
         }
         refresh.on(GuiEvent.CLICK_LEFT) {
-            node = PROFILER?.root
+            node = profiler?.root
             nodes()
         }
         reset.on(GuiEvent.CLICK_LEFT) {
             profilerReset()
-            node = PROFILER?.root
+            node = profiler?.root
             nodes()
         }
         nodes()
@@ -130,7 +130,7 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
                                 go: Node?) : GuiComponentGroupSlab(parent) {
         private val key: GuiComponentTextButton = addHori(2.0, 2.0, -1.0,
                 -1.0) {
-            GuiComponentTextButton(it, 12, node.name.invoke())
+            GuiComponentTextButton(it, 12, node.name)
         }
         private val value: GuiComponentText = addHori(4.0, 4.0, -1.0, -1.0) {
             GuiComponentText(it, "")

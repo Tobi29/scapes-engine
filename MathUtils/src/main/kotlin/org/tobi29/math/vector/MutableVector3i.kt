@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,9 +25,7 @@ data class MutableVector3i(
     override var y: Int = 0,
     override var z: Int = 0
 ) : ReadVector3i, Ints {
-    constructor(vector: Vector3i) : this(vector.x, vector.y, vector.z)
-
-    constructor(vector: MutableVector3i) : this(vector.x, vector.y, vector.z)
+    constructor(vector: ReadVector3i) : this(vector.x, vector.y, vector.z)
 
     fun now(): Vector3i = Vector3i(x, y, z)
 
@@ -63,100 +61,10 @@ data class MutableVector3i(
         this.z = z
     }
 
-    fun set(a: Vector3i) = apply {
+    fun set(a: ReadVector3i) = apply {
         x = a.x
         y = a.y
         z = a.z
-    }
-
-    fun negate() = apply {
-        x = -x
-        y = -y
-        z = -z
-    }
-
-    fun add(a: Int) = apply {
-        x += a
-        y += a
-        z += a
-    }
-
-    fun addX(x: Int) = apply {
-        this.x += x
-    }
-
-    fun addY(y: Int) = apply {
-        this.y += y
-    }
-
-    fun addZ(z: Int) = apply {
-        this.z += z
-    }
-
-    fun add(vector: Vector3i) = apply {
-        x += vector.x
-        y += vector.y
-        z += vector.z
-    }
-
-    fun add(vector: MutableVector3i) = apply {
-        x += vector.x
-        y += vector.y
-        z += vector.z
-    }
-
-    fun subtract(a: Int) = apply {
-        x -= a
-        y -= a
-        z -= a
-    }
-
-    fun subtract(vector: Vector3i) = apply {
-        x -= vector.x
-        y -= vector.y
-        z -= vector.z
-    }
-
-    fun subtract(vector: MutableVector3i) = apply {
-        x -= vector.x
-        y -= vector.y
-        z -= vector.z
-    }
-
-    fun multiply(a: Int) = apply {
-        x *= a
-        y *= a
-        z *= a
-    }
-
-    fun multiply(vector: Vector3i) = apply {
-        x *= vector.x
-        y *= vector.y
-        z *= vector.z
-    }
-
-    fun multiply(vector: MutableVector3i) = apply {
-        x *= vector.x
-        y *= vector.y
-        z *= vector.z
-    }
-
-    fun divide(a: Int) = apply {
-        x /= a
-        y /= a
-        z /= a
-    }
-
-    fun divide(vector: Vector3i) = apply {
-        x /= vector.x
-        y /= vector.y
-        z /= vector.z
-    }
-
-    fun divide(vector: MutableVector3i) = apply {
-        x /= vector.x
-        y /= vector.y
-        z /= vector.z
     }
 
     fun set(map: ReadTagMutableMap) {

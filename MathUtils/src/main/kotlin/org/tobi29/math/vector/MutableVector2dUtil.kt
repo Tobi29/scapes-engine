@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,27 +18,78 @@
 
 package org.tobi29.math.vector
 
-/**
- * Normalizes the given vector so that its length is `1.0`,
- * or fill with `NaN` if the given vector is `(0, 0)`
- * @receiver The vector
- * @return The vector
- */
-// TODO: Kotlin/JS Bug
-/*inline*/ fun MutableVector2d.normalize(): MutableVector2d {
-    val length = length()
-    return this.divide(length)
+inline fun MutableVector2d.negate() {
+    x = -x
+    y = -y
+}
+
+inline fun MutableVector2d.add(a: Double) {
+    x += a
+    y += a
+}
+
+inline fun MutableVector2d.addX(x: Double) {
+    this.x += x
+}
+
+inline fun MutableVector2d.addY(y: Double) {
+    this.y += y
+}
+
+inline fun MutableVector2d.add(vector: ReadVector2d) {
+    x += vector.x
+    y += vector.y
+}
+
+inline fun MutableVector2d.subtract(a: Double) {
+    x -= a
+    y -= a
+}
+
+inline fun MutableVector2d.subtract(vector: ReadVector2d) {
+    x -= vector.x
+    y -= vector.y
+}
+
+inline fun MutableVector2d.multiply(a: Double) {
+    x *= a
+    y *= a
+}
+
+inline fun MutableVector2d.multiply(vector: ReadVector2d) {
+    x *= vector.x
+    y *= vector.y
+}
+
+inline fun MutableVector2d.divide(a: Double) {
+    x /= a
+    y /= a
+}
+
+inline fun MutableVector2d.divide(vector: ReadVector2d) {
+    x /= vector.x
+    y /= vector.y
 }
 
 /**
  * Normalizes the given vector so that its length is `1.0`,
  * or fill with `NaN` if the given vector is `(0, 0)`
  * @receiver The vector
- * @return The vector
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun MutableVector2d.normalizeSafe(): MutableVector2d {
+/*inline*/ fun MutableVector2d.normalize() {
     val length = length()
-    return if (length == 0.0) setXY(0.0, 0.0)
-    else this.divide(length)
+    this.divide(length)
+}
+
+/**
+ * Normalizes the given vector so that its length is `1.0`,
+ * or fill with `NaN` if the given vector is `(0, 0)`
+ * @receiver The vector
+ */
+// TODO: Kotlin/JS Bug
+/*inline*/ fun MutableVector2d.normalizeSafe() {
+    val length = length()
+    if (length == 0.0) setXY(0.0, 0.0)
+    this.divide(length)
 }

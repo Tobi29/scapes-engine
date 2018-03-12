@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 package org.tobi29.scapes.engine.gui
 
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.addX
+import org.tobi29.math.vector.addY
 
-open class GuiComponentWidget(parent: GuiLayoutData,
-                              name: String) : GuiComponentPaneHeavy(
-        parent) {
+open class GuiComponentWidget(
+    parent: GuiLayoutData,
+    name: String
+) : GuiComponentPaneHeavy(parent) {
     init {
         val titleBar = addVert(0.0, 0.0, -1.0, 16.0) {
             GuiComponentWidgetTitle(it, 12, name)
@@ -29,13 +32,12 @@ open class GuiComponentWidget(parent: GuiLayoutData,
             val pos = parent.posMutable()
             titleBar.on(GuiEvent.DRAG_LEFT) {
                 pos.addX(it.relativeX * it.scaleX)
-                    .addY(it.relativeY * it.scaleY)
+                pos.addY(it.relativeY * it.scaleY)
             }
         }
     }
 
-    public override fun updateMesh(renderer: GuiRenderer,
-                                   size: Vector2d) {
+    public override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         gui.style.widget(renderer, size)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,44 +18,106 @@
 
 package org.tobi29.math.vector
 
+inline fun MutableVector3d.negate() {
+    x = -x
+    y = -y
+    z = -z
+}
+
+inline fun MutableVector3d.add(a: Double) {
+    x += a
+    y += a
+    z += a
+}
+
+inline fun MutableVector3d.addX(x: Double) {
+    this.x += x
+}
+
+inline fun MutableVector3d.addY(y: Double) {
+    this.y += y
+}
+
+inline fun MutableVector3d.addZ(z: Double) {
+    this.z += z
+}
+
+inline fun MutableVector3d.add(vector: ReadVector3d) {
+    x += vector.x
+    y += vector.y
+    z += vector.z
+}
+
+inline fun MutableVector3d.subtract(a: Double) {
+    x -= a
+    y -= a
+    z -= a
+}
+
+inline fun MutableVector3d.subtract(vector: ReadVector3d) {
+    x -= vector.x
+    y -= vector.y
+    z -= vector.z
+}
+
+inline fun MutableVector3d.multiply(a: Double) {
+    x *= a
+    y *= a
+    z *= a
+}
+
+inline fun MutableVector3d.multiply(vector: ReadVector3d) {
+    x *= vector.x
+    y *= vector.y
+    z *= vector.z
+}
+
+inline fun MutableVector3d.divide(a: Double) {
+    x /= a
+    y /= a
+    z /= a
+}
+
+inline fun MutableVector3d.divide(vector: ReadVector3d) {
+    x /= vector.x
+    y /= vector.y
+    z /= vector.z
+}
+
 /**
  * Computes the cross product of the given vectors
  * @receiver The first vector
  * @param other The second vector
  * @param output The vector to store the output in
- * @return The output vector
  */
 inline fun MutableVector3d.cross(
     other: MutableVector3d,
     output: MutableVector3d
-): MutableVector3d {
+) {
     cross(x, y, z, other.x, other.y, other.z) { x, y, z ->
         output.setXYZ(x, y, z)
     }
-    return output
 }
 
 /**
  * Normalizes the given vector so that its length is `1.0`,
  * or fill with `NaN` if the given vector is `(0, 0, 0)`
  * @receiver The vector
- * @return The vector
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun MutableVector3d.normalize(): MutableVector3d {
+/*inline*/ fun MutableVector3d.normalize() {
     val length = length()
-    return this.divide(length)
+    this.divide(length)
 }
 
 /**
  * Normalizes the given vector so that its length is `1.0`,
  * or fill with `NaN` if the given vector is `(0, 0, 0)`
  * @receiver The vector
- * @return The vector
  */
 // TODO: Kotlin/JS Bug
-/*inline*/ fun MutableVector3d.normalizeSafe(): MutableVector3d {
+/*inline*/ fun MutableVector3d.normalizeSafe() {
     val length = length()
-    return if (length == 0.0) setXYZ(0.0, 0.0, 0.0)
-    else this.divide(length)
+    if (length == 0.0) setXYZ(0.0, 0.0, 0.0)
+    this.divide(length)
 }
