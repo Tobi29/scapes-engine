@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,13 @@ package org.tobi29.profiler
 
 actual class Profiler {
     actual val root = Node("JS Runtime")
+    actual val roots = mapOf(root.name to root)
+    actual val threadRoot get() = root
 
     private val handle = ProfilerHandle(root)
 
-    actual fun current() = handle
+    @PublishedApi
+    internal actual fun current() = handle
 }
 
 internal actual val dispatchers: List<ProfilerDispatcher> = emptyList()

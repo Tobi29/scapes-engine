@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,67 +20,79 @@ import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.computeAbsent
+import org.tobi29.stdex.readOnly
 import org.tobi29.utils.steadyClock
 
 expect class Profiler() {
     val root: Node
+    val roots: Map<String, Node>
+    val threadRoot: Node
 
-    fun current(): ProfilerHandle
+    @PublishedApi
+    internal fun current(): ProfilerHandle
 }
 
-class ProfilerHandle internal constructor(private var node: Node) {
+@PublishedApi
+internal class ProfilerHandle internal constructor(private var node: Node) {
     fun enterNode(name: String) {
-        node = node.children.computeAbsent(name) { Node(it, node) }
+        node = node._children.computeAbsent(name) { Node(it, node) }
         node.lastEnter = steadyClock.timeSteadyNanos()
-        dispatchers.forEach { it.enterNode(name) }
+        for (dispatcher in dispatchers) {
+            dispatcher.enterNode(name)
+        }
     }
 
     fun exitNode(name: String) {
         val parentNode = node.parent
                 ?: throw IllegalStateException("Profiler stack popped on root node")
-        assert { name == node.name() }
-        node.timeNanos += steadyClock.timeSteadyNanos() - node.lastEnter
-        dispatchers.forEach { it.exitNode(name) }
+        assert { name == node.name }
+        node.time += steadyClock.timeSteadyNanos() - node.lastEnter
+        for (dispatcher in dispatchers) {
+            dispatcher.exitNode(name)
+        }
         node = parentNode
     }
 }
 
 internal expect val dispatchers: List<ProfilerDispatcher>
 
-private val profiler: AtomicReference<Profiler?> = AtomicReference(null)
+private val _profiler: AtomicReference<Profiler?> = AtomicReference(null)
 
-val PROFILER: Profiler? get() = profiler.get()
-val PROFILER_CURRENT: ProfilerHandle? get() = PROFILER?.current()
-
-inline val PROFILER_ENABLED: Boolean get() = PROFILER != null
+val profiler: Profiler? get() = _profiler.get()
+inline val profilerEnabled: Boolean get() = profiler != null
 
 fun profilerEnable() {
-    profiler.compareAndSet(null, Profiler())
+    _profiler.compareAndSet(null, Profiler())
 }
 
 fun profilerDisable() {
-    profiler.set(null)
+    _profiler.set(null)
 }
 
 fun profilerReset() {
-    profiler.getAndSet(null)?.let { profilerEnable() }
+    _profiler.getAndSet(null)?.let { profilerEnable() }
 }
 
-class Node(val name: () -> String, val parent: Node? = null) {
+class Node(name: Lazy<String>, val parent: Node? = null) {
     constructor(
         name: String,
         parent: Node? = null
-    ) : this({ name }, parent)
+    ) : this(lazy { name }, parent)
 
-    val children = ConcurrentHashMap<String, Node>()
-    var lastEnter = 0L
-    var timeNanos = 0L
-
-    val time get() = timeNanos
+    val name by name
+    internal val _children = ConcurrentHashMap<String, Node>()
+    val children = _children.readOnly()
+    internal var lastEnter = 0L
+    var time = 0L
+        internal set
 }
 
+@PublishedApi
+internal val profilerHandle: ProfilerHandle?
+    get() = profiler?.current()
+
 inline fun <R> profilerSection(name: String, receiver: () -> R): R =
-    PROFILER_CURRENT.let { handle ->
+    profilerHandle.let { handle ->
         handle?.enterNode(name)
         try {
             receiver()
@@ -94,3 +106,19 @@ interface ProfilerDispatcher {
 
     fun exitNode(name: String)
 }
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use profiler",
+    ReplaceWith("profiler", "org.tobi29.profiler.profiler")
+)
+inline val PROFILER: Profiler?
+    get() = profiler
+
+@Deprecated(
+    "Use profilerEnabled",
+    ReplaceWith("profilerEnabled", "org.tobi29.profiler.profilerEnabled")
+)
+inline val PROFILER_ENABLED: Boolean
+    get() = profilerEnabled

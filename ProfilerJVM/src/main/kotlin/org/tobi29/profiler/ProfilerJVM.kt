@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,18 @@ import kotlin.collections.set
 actual class Profiler {
     private val instance by ThreadLocal {
         val thread = Thread.currentThread()
-        val node = Node({ "${thread.id}-${thread.name}" }, root)
-        ProfilerHandle(node).also {
-            root.children[node.name()] = node
+        val node = Node(lazy { "${thread.id}-${thread.name}" }, root)
+        node to ProfilerHandle(node).also {
+            root._children[node.name] = node
         }
     }
 
     actual val root = Node("Threads")
+    actual val roots get() = root.children
+    actual val threadRoot get() = instance.first
 
-    actual fun current() = instance
+    @PublishedApi
+    internal actual fun current() = instance.second
 }
 
 internal actual val dispatchers get() = Dispatchers.i
