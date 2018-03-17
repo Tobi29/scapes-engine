@@ -18,29 +18,40 @@ package org.tobi29.io.tag.binary
 import org.tobi29.io.*
 import org.tobi29.io.tag.TagList
 import org.tobi29.io.tag.TagMap
+import org.tobi29.io.tag.TagString
 import org.tobi29.io.tag.write
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ThreadLocal
 
-fun readBinary(stream: ReadableByteStream) = readBinary(stream, Int.MAX_VALUE,
-        COMPRESSION_STREAM.get())
+fun readBinary(stream: ReadableByteStream) = readBinary(
+    stream, Int.MAX_VALUE,
+    COMPRESSION_STREAM.get()
+)
 
-fun readBinary(stream: ReadableByteStream,
-               allocationLimit: Int = Int.MAX_VALUE,
-               compressionStream: MemoryStream = COMPRESSION_STREAM.get()): TagMap {
-    TagStructureReaderBinary(stream,
-            allocationLimit, compressionStream).let { reader ->
+fun readBinary(
+    stream: ReadableByteStream,
+    allocationLimit: Int = Int.MAX_VALUE,
+    compressionStream: MemoryStream = COMPRESSION_STREAM.get()
+): TagMap {
+    TagStructureReaderBinary(
+        stream,
+        allocationLimit, compressionStream
+    ).let { reader ->
         return TagMap { reader.readMap(this) }
     }
 }
 
-fun TagMap.writeBinary(stream: WritableByteStream,
-                                                compression: Byte = -1,
-                                                useDictionary: Boolean = true,
-                                                byteStream: MemoryStream = DATA_STREAM.get(),
-                                                compressionStream: MemoryStream = COMPRESSION_STREAM.get()) {
-    TagStructureWriterBinary(stream, compression, useDictionary, byteStream,
-            compressionStream).let { writer ->
+fun TagMap.writeBinary(
+    stream: WritableByteStream,
+    compression: Byte = -1,
+    useDictionary: Boolean = true,
+    byteStream: MemoryStream = DATA_STREAM.get(),
+    compressionStream: MemoryStream = COMPRESSION_STREAM.get()
+) {
+    TagStructureWriterBinary(
+        stream, compression, useDictionary, byteStream,
+        compressionStream
+    ).let { writer ->
         writer.begin(this)
         write(writer)
         writer.end()
@@ -48,8 +59,10 @@ fun TagMap.writeBinary(stream: WritableByteStream,
 }
 
 // Header
-internal val HEADER_MAGIC = byteArrayOf('S'.toByte(), 'T'.toByte(),
-        'A'.toByte(), 'G'.toByte())
+internal val HEADER_MAGIC = byteArrayOf(
+    'S'.toByte(), 'T'.toByte(),
+    'A'.toByte(), 'G'.toByte()
+)
 internal val HEADER_VERSION: Byte = 0x1
 // Components
 //  Structure
@@ -77,10 +90,13 @@ internal val ID_TAG_FLOAT_64: Byte = 0x51
 internal val ID_TAG_BYTE_ARRAY: Byte = 0x60
 //   String
 internal val ID_TAG_STRING: Byte = 0x70
+internal val ID_TAG_STRING_REF: Byte = 0x71
 
-internal fun readKey(stream: ReadableByteStream,
-                     dictionary: KeyDictionary?,
-                     allocationLimit: Int): String {
+internal fun readKey(
+    stream: ReadableByteStream,
+    dictionary: KeyDictionary?,
+    allocationLimit: Int
+): String {
     val alias = stream.get()
     return if (alias.toInt() == -1) {
         stream.getString(allocationLimit)
@@ -88,8 +104,9 @@ internal fun readKey(stream: ReadableByteStream,
         if (dictionary == null) {
             throw IOException("Dictionary key without dictionary")
         }
-        val key = dictionary.getKey(alias) ?: throw IOException(
-                "Invalid key id: $alias")
+        val key = dictionary.getString(alias) ?: throw IOException(
+            "Invalid key id: $alias"
+        )
         if (key.length > allocationLimit) {
             throw IOException("No more allocations allowed for key")
         }
@@ -97,13 +114,15 @@ internal fun readKey(stream: ReadableByteStream,
     }
 }
 
-internal fun writeKey(key: String,
-                      stream: WritableByteStream,
-                      dictionary: KeyDictionary) {
-    val alias = dictionary.getAlias(key)
+internal fun writeKey(
+    value: String,
+    stream: WritableByteStream,
+    dictionary: KeyDictionary
+) {
+    val alias = dictionary.getId(value)
     if (alias == null) {
         stream.put(0xFF.toByte())
-        stream.putString(key)
+        stream.putString(value)
     } else {
         stream.put(alias)
     }
@@ -123,55 +142,67 @@ internal class KeyDictionary {
             length += 256
         }
         while (length-- > 0) {
-            addKeyAlias(stream.getString())
+            addString(stream.getString())
         }
     }
 
     constructor(tagStructure: TagMap) {
-        val keys = ConcurrentHashMap<String, KeyOccurrence>()
+        val keys = ConcurrentHashMap<String, StringOccurrence>()
         analyze(tagStructure, keys)
         if (keys.size > 255) {
             keys.entries.asSequence().sortedBy { it.value.count }.take(
-                    255).map { it.key }.forEach { addKeyAlias(it) }
+                255
+            ).map { it.key }.forEach { addString(it) }
         } else {
             keys.entries.asSequence().map { it.key }.forEach {
-                addKeyAlias(it)
+                addString(it)
             }
         }
     }
 
-    private fun analyze(tagStructure: TagMap,
-                        keys: MutableMap<String, KeyOccurrence>) {
+    private fun analyze(
+        tagStructure: TagMap,
+        strings: MutableMap<String, StringOccurrence>
+    ) {
         for ((key, value) in tagStructure.value.entries) {
-            val occurrence = keys[key]
-            if (occurrence == null) {
-                keys.put(key, KeyOccurrence(key))
-            } else {
-                occurrence.count += occurrence.length
-            }
+            stringOccurence(key, strings)
             if (value is TagMap) {
-                analyze(value, keys)
+                analyze(value, strings)
             } else if (value is TagList) {
                 value.value.forEach {
                     if (it is TagMap) {
-                        analyze(it, keys)
+                        analyze(it, strings)
                     }
                 }
+            } else if (value is TagString) {
+                stringOccurence(value.value, strings)
             }
         }
     }
 
-    fun getKey(alias: Byte): String? {
+    private fun stringOccurence(
+        string: String,
+        strings: MutableMap<String, StringOccurrence>
+    ) {
+        val occurrence = strings[string]
+        if (occurrence == null) {
+            strings[string] = StringOccurrence(string)
+        } else {
+            occurrence.count += occurrence.length
+        }
+    }
+
+    fun getString(alias: Byte): String? {
         return aliasKeyMap[alias]
     }
 
-    private fun addKeyAlias(key: String) {
+    private fun addString(key: String) {
         keyAliases.add(key)
-        keyAliasMap.put(key, currentId)
-        aliasKeyMap.put(currentId++, key)
+        keyAliasMap[key] = currentId
+        aliasKeyMap[currentId++] = key
     }
 
-    fun getAlias(key: String): Byte? {
+    fun getId(key: String): Byte? {
         return keyAliasMap[key]
     }
 
@@ -182,7 +213,7 @@ internal class KeyDictionary {
         }
     }
 
-    private class KeyOccurrence(key: String) {
+    private class StringOccurrence(key: String) {
         val length: Int = key.length
         var count = 0
 

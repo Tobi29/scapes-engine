@@ -21,11 +21,12 @@ import org.tobi29.io.tag.Tag
 import org.tobi29.io.tag.TagList
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.toTag
-import org.tobi29.stdex.assert
 
-class TagStructureReaderBinary(stream: ReadableByteStream,
-                               private var allocationLimit: Int,
-                               compressionStream: MemoryStream) {
+class TagStructureReaderBinary(
+    stream: ReadableByteStream,
+    private var allocationLimit: Int,
+    compressionStream: MemoryStream
+) {
     private var dictionary: KeyDictionary? = null
     private val structureBuffer: ReadableByteStream
 
@@ -34,19 +35,23 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
         stream.get(magic.view)
         if (!(magic contentEquals HEADER_MAGIC)) {
             throw IOException(
-                    "Not in tag format! (Magic-Header: ${magic.joinToString()})")
+                "Not in tag format! (Magic-Header: ${magic.joinToString()})"
+            )
         }
         val version = stream.get()
         if (version > HEADER_VERSION) {
             throw IOException(
-                    "Unsupported version or not in tag format! (Version: $version)")
+                "Unsupported version or not in tag format! (Version: $version)"
+            )
         }
         val compression = stream.get()
         structureBuffer = if (compression >= 0) {
             val len = stream.getInt()
             compressionStream.reset()
-            CompressionUtil.decompress(LimitedBufferStream(stream, len),
-                    compressionStream)
+            CompressionUtil.decompress(
+                LimitedBufferStream(stream, len),
+                compressionStream
+            )
             compressionStream.flip()
             compressionStream
         } else {
@@ -64,8 +69,11 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
                 return true
             }
             val key = allocate(
-                    readKey(structureBuffer, dictionary,
-                            allocationLimit))
+                readKey(
+                    structureBuffer, dictionary,
+                    allocationLimit
+                )
+            )
             when (componentID) {
                 ID_STRUCTURE_BEGIN -> {
                     allocate(16) // Those are heavy, do not want too many
@@ -119,15 +127,28 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
                     map[key] = structureBuffer.getDouble().toTag()
                 }
                 ID_TAG_BYTE_ARRAY -> {
-                    map[key] = allocate(structureBuffer.getByteArrayLong(
-                            allocationLimit)).toTag()
+                    map[key] = allocate(
+                        structureBuffer.getByteArrayLong(
+                            allocationLimit
+                        )
+                    ).toTag()
                 }
                 ID_TAG_STRING -> {
                     map[key] = allocate(
-                            structureBuffer.getString(allocationLimit)).toTag()
+                        structureBuffer.getString(allocationLimit)
+                    ).toTag()
+                }
+                ID_TAG_STRING_REF -> {
+                    map[key] = allocate(
+                        structureBuffer.get().let { id ->
+                            dictionary?.getString(id)
+                                    ?: throw IOException("Invalid reference id: $id")
+                        }
+                    ).toTag()
                 }
                 else -> throw IOException(
-                        "Not in tag format! (Invalid component-id: $componentID)")
+                    "Not in tag format! (Invalid component-id: $componentID)"
+                )
             }
         }
     }
@@ -193,18 +214,34 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
                 list.add(structureBuffer.getDouble().toTag())
             }
             ID_TAG_BYTE_ARRAY -> {
-                list.add(allocate(
-                        structureBuffer.getByteArrayLong(
-                                allocationLimit)).toTag())
+                list.add(
+                    allocate(
+                        structureBuffer.getByteArrayLong(allocationLimit)
+                    ).toTag()
+                )
             }
             ID_TAG_STRING -> {
-                list.add(allocate(
-                        structureBuffer.getString(allocationLimit)).toTag())
+                list.add(
+                    allocate(
+                        structureBuffer.getString(allocationLimit)
+                    ).toTag()
+                )
+            }
+            ID_TAG_STRING_REF -> {
+                list.add(
+                    allocate(
+                        structureBuffer.get().let { id ->
+                            dictionary?.getString(id)
+                                    ?: throw IOException("Invalid reference id: $id")
+                        }
+                    ).toTag()
+                )
             }
             ID_LIST_TERMINATE -> return true
             else -> {
                 throw IOException(
-                        "Not in tag format! (Invalid component-id: $componentID)")
+                    "Not in tag format! (Invalid component-id: $componentID)"
+                )
             }
         }
         return false
@@ -225,8 +262,10 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
         if (allocationLimit == Int.MAX_VALUE) {
             return array
         }
+        if (array.size > allocationLimit) {
+            throw IOException("No more allocations allowed for reference")
+        }
         allocationLimit -= array.size
-        assert { allocationLimit >= 0 }
         return array
     }
 
@@ -234,8 +273,10 @@ class TagStructureReaderBinary(stream: ReadableByteStream,
         if (allocationLimit == Int.MAX_VALUE) {
             return str
         }
+        if (str.length > allocationLimit) {
+            throw IOException("No more allocations allowed for reference")
+        }
         allocationLimit -= str.length
-        assert { allocationLimit >= 0 }
         return str
     }
 }

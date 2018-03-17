@@ -19,15 +19,16 @@ package org.tobi29.io.tag.binary
 import org.tobi29.io.*
 import org.tobi29.io.tag.*
 
-class TagStructureWriterBinary(private val stream: WritableByteStream,
-                               private val compression: Byte,
-                               private val useDictionary: Boolean,
-                               private val byteStream: MemoryStream,
-                               private val compressionStream: MemoryStream) : TagStructureWriter {
+class TagStructureWriterBinary(
+    private val stream: WritableByteStream,
+    private val compression: Byte,
+    private val useDictionary: Boolean,
+    private val byteStream: MemoryStream,
+    private val compressionStream: MemoryStream
+) : TagStructureWriter {
     private lateinit var dictionary: KeyDictionary
     private lateinit var structureStream: WritableByteStream
 
-    // TODO: @Throws(IOException::class)
     override fun begin(root: TagMap) {
         structureStream = if (compression >= 0) {
             byteStream.reset()
@@ -46,7 +47,6 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
         dictionary.write(structureStream)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun end() {
         structureStream.put(ID_STRUCTURE_TERMINATE)
         if (compression >= 0) {
@@ -64,39 +64,32 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
         }
     }
 
-    // TODO: @Throws(IOException::class)
     override fun beginStructure() {
     }
 
-    // TODO: @Throws(IOException::class)
     override fun beginStructure(key: String) {
         structureStream.put(ID_STRUCTURE_BEGIN)
         writeKey(key, structureStream, dictionary)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun endStructure() {
         structureStream.put(ID_STRUCTURE_TERMINATE)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun structureEmpty() {
         structureStream.put(ID_STRUCTURE_EMPTY)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun structureEmpty(key: String) {
         structureStream.put(ID_STRUCTURE_EMPTY)
         writeKey(key, structureStream, dictionary)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun beginList(key: String) {
         structureStream.put(ID_LIST_BEGIN)
         writeKey(key, structureStream, dictionary)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun beginList() {
         structureStream.put(ID_LIST_BEGIN)
     }
@@ -105,36 +98,32 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
         structureStream.put(ID_STRUCTURE_BEGIN)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun endListWithTerminate() {
         structureStream.put(ID_LIST_TERMINATE)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun endListWithEmpty() {
         structureStream.put(ID_STRUCTURE_EMPTY)
         structureStream.put(ID_LIST_TERMINATE)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun endList() {
         structureStream.put(ID_LIST_TERMINATE)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun listEmpty(key: String) {
         structureStream.put(ID_LIST_EMPTY)
         writeKey(key, structureStream, dictionary)
     }
 
-    // TODO: @Throws(IOException::class)
     override fun listEmpty() {
         structureStream.put(ID_LIST_EMPTY)
     }
 
-    // TODO: @Throws(IOException::class)
-    override fun writePrimitiveTag(key: String,
-                                   tag: TagPrimitive) {
+    override fun writePrimitiveTag(
+        key: String,
+        tag: TagPrimitive
+    ) {
         when (tag) {
             is TagUnit -> {
                 structureStream.put(ID_TAG_UNIT)
@@ -182,9 +171,16 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
                 structureStream.putDouble(tag.value.toDouble())
             }
             is TagString -> {
-                structureStream.put(ID_TAG_STRING)
-                writeKey(key, structureStream, dictionary)
-                structureStream.putString(tag.value)
+                val id = dictionary.getId(tag.value)
+                if (id == null) {
+                    structureStream.put(ID_TAG_STRING)
+                    writeKey(key, structureStream, dictionary)
+                    structureStream.putString(tag.value)
+                } else {
+                    structureStream.put(ID_TAG_STRING_REF)
+                    writeKey(key, structureStream, dictionary)
+                    structureStream.put(id)
+                }
             }
             is TagByteArray -> {
                 structureStream.put(ID_TAG_BYTE_ARRAY)
@@ -234,8 +230,14 @@ class TagStructureWriterBinary(private val stream: WritableByteStream,
                 structureStream.putDouble(tag.value.toDouble())
             }
             is TagString -> {
-                structureStream.put(ID_TAG_STRING)
-                structureStream.putString(tag.value)
+                val id = dictionary.getId(tag.value)
+                if (id == null) {
+                    structureStream.put(ID_TAG_STRING)
+                    structureStream.putString(tag.value)
+                } else {
+                    structureStream.put(ID_TAG_STRING_REF)
+                    structureStream.put(id)
+                }
             }
             is TagByteArray -> {
                 structureStream.put(ID_TAG_BYTE_ARRAY)
