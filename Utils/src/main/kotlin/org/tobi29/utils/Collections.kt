@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,29 +37,30 @@ inline fun <reified T : Any> Iterable<*>.findMap(): T? {
  */
 operator fun <T, U> Iterable<T>.times(
     other: Iterator<U>
-): Iterator<Pair<T, U>> = object : Iterator<Pair<T, U>> {
-    private var left: Iterator<T>? = null
-    private var right: U? = null
+): Iterator<Pair<T, U>> =
+    object : Iterator<Pair<T, U>> {
+        private var left: Iterator<T>? = null
+        private var right: U? = null
 
-    private fun ensureIterator(): Iterator<T>? {
-        var iterator = left
-        while (iterator == null || !iterator.hasNext()) {
-            if (!other.hasNext()) return null
-            iterator = this@times.iterator()
-            left = iterator
-            right = other.next()
+        private fun ensureIterator(): Iterator<T>? {
+            var iterator = left
+            while (iterator == null || !iterator.hasNext()) {
+                if (!other.hasNext()) return null
+                iterator = this@times.iterator()
+                left = iterator
+                right = other.next()
+            }
+            return iterator
         }
-        return iterator
-    }
 
-    override fun hasNext() = ensureIterator()?.hasNext() == true
+        override fun hasNext() = ensureIterator()?.hasNext() == true
 
-    override fun next(): Pair<T, U> {
-        val iterator = ensureIterator()
-                ?: throw NoSuchElementException("Iterator has no more elements")
-        return iterator.next() to right!!
+        override fun next(): Pair<T, U> {
+            val iterator = ensureIterator()
+                    ?: throw NoSuchElementException("Iterator has no more elements")
+            return iterator.next() to right!!
+        }
     }
-}
 
 /**
  * Construct an iterator returning all combinations of the elements from

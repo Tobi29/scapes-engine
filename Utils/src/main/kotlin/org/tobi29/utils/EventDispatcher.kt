@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,3 +54,39 @@ inline fun <reified E : EventMuteable> ListenerRegistrar.listenAlive(
     noinline accepts: (E) -> Boolean,
     noinline listener: (E) -> Unit
 ) = listen(priority, { !it.muted && accepts(it) }, listener)
+
+expect class EventDispatcher internal constructor(
+    parent: EventDispatcher?
+) {
+    constructor()
+
+    fun enable()
+
+    fun disable()
+
+    fun <E : Any> fire(event: E)
+}
+
+expect class ListenerRegistrar internal constructor(events: EventDispatcher) {
+    val events: EventDispatcher
+
+    inline fun <reified E : Any> listen(
+        noinline listener: (E) -> Unit
+    )
+
+    inline fun <reified E : Any> listen(
+        priority: Int,
+        noinline listener: (E) -> Unit
+    )
+
+    inline fun <reified E : Any> listen(
+        noinline accepts: (E) -> Boolean,
+        noinline listener: (E) -> Unit
+    )
+
+    inline fun <reified E : Any> listen(
+        priority: Int,
+        noinline accepts: (E) -> Boolean,
+        noinline listener: (E) -> Unit
+    )
+}

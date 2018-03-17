@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,50 +22,53 @@ package org.tobi29.utils
  */
 inline fun <T, R> Iterator<T>.map(
     crossinline transform: (T) -> R
-): Iterator<R> = object : Iterator<R> {
-    override fun hasNext() = this@map.hasNext()
+): Iterator<R> =
+    object : Iterator<R> {
+        override fun hasNext() = this@map.hasNext()
 
-    override fun next() = transform(this@map.next())
-}
+        override fun next() = transform(this@map.next())
+    }
 
 /**
  * Constructs an infinite iterator starting with all the elements in the given
  * one and filling the rest with `null`.
  */
-fun <T> Iterator<T>.andNull() = object : Iterator<T?> {
-    private var finishedFirst = false
+fun <T> Iterator<T>.andNull(): Iterator<T?> =
+    object : Iterator<T?> {
+        private var finishedFirst = false
 
-    override fun hasNext() = true
+        override fun hasNext() = true
 
-    override fun next(): T? {
-        if (finishedFirst) return null
-        if (!this@andNull.hasNext()) {
-            finishedFirst = true
-            return null
+        override fun next(): T? {
+            if (finishedFirst) return null
+            if (!this@andNull.hasNext()) {
+                finishedFirst = true
+                return null
+            }
+            return this@andNull.next()
         }
-        return this@andNull.next()
     }
-}
 
 /**
  * Constructs an iterator starting with all the elements in the given
  * one and then the next iterator.
  */
-operator fun <T> Iterator<T>.plus(other: Iterator<T>) = object : Iterator<T> {
-    private var finishedFirst = false
+operator fun <T> Iterator<T>.plus(other: Iterator<T>): Iterator<T> =
+    object : Iterator<T> {
+        private var finishedFirst = false
 
-    override fun hasNext() =
-        (!finishedFirst && this@plus.hasNext()) || other.hasNext()
+        override fun hasNext() =
+            (!finishedFirst && this@plus.hasNext()) || other.hasNext()
 
-    override fun next(): T {
-        if (finishedFirst) return other.next()
-        if (!this@plus.hasNext()) {
-            finishedFirst = true
-            return other.next()
+        override fun next(): T {
+            if (finishedFirst) return other.next()
+            if (!this@plus.hasNext()) {
+                finishedFirst = true
+                return other.next()
+            }
+            return this@plus.next()
         }
-        return this@plus.next()
     }
-}
 
 /**
  * Returns a normal iterator that goes backwards through the list iterator
@@ -104,8 +107,8 @@ fun <E> MutableListIterator<E>.descendingMutableIterator(): MutableIterator<E> =
  * @param supplier Supplier of values for the iterator
  * @return An iterator returning the values from [supplier]
  */
-inline fun <T> Iterator(crossinline supplier: () -> T?): Iterator<T> {
-    return object : Iterator<T> {
+inline fun <T> Iterator(crossinline supplier: () -> T?): Iterator<T> =
+    object : Iterator<T> {
         private var next: T? = null
         private var init = false
 
@@ -138,4 +141,3 @@ inline fun <T> Iterator(crossinline supplier: () -> T?): Iterator<T> {
             return element
         }
     }
-}

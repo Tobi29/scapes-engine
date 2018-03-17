@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -327,3 +327,15 @@ interface SteadyClock {
      */
     fun timeSteadyNanos(): InstantSteadyNanos
 }
+
+/**
+ * System clock for retrieving time as used by the system
+ *
+ * Origin shall be same as usual on unix systems and timezone must be UT or UTC
+ */
+expect val systemClock: Clock
+
+/**
+ * Monotonically increasing clock with best effort precision
+ */
+expect val steadyClock: SteadyClock
