@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,8 +110,11 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             }
             sql.append(column)
         }
-        sql.append(" FROM ").append(table).append(" WHERE ")
-        sqlWhere(matches, sql)
+        sql.append(" FROM ").append(table)
+        if (matches.isNotEmpty()) {
+            sql.append(" WHERE ")
+            sqlWhere(matches, sql)
+        }
         sql.append(';')
         val compiled = sql.toString()
         return { values ->
@@ -208,8 +211,10 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
             }
             sql.append(column).append("=?")
         }
-        sql.append(" WHERE ")
-        sqlWhere(matches, sql)
+        if (matches.isNotEmpty()) {
+            sql.append(" WHERE ")
+            sqlWhere(matches, sql)
+        }
         sql.append(';')
         val compiled = sql.toString()
         return { values, updates ->
@@ -300,8 +305,11 @@ class MySQLDatabase(private val connection: Connection) : SQLDatabase {
     override fun compileDelete(table: String,
                                matches: Array<out SQLMatch>): SQLDelete {
         val sql = StringBuilder(64)
-        sql.append("DELETE FROM ").append(table).append(" WHERE ")
-        sqlWhere(matches, sql)
+        sql.append("DELETE FROM ").append(table)
+        if (matches.isNotEmpty()) {
+            sql.append(" WHERE ")
+            sqlWhere(matches, sql)
+        }
         sql.append(';')
         val compiled = sql.toString()
         return { values ->
