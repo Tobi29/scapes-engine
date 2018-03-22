@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,17 @@ data class Version(
      * Revision version component
      */
     val revision: Int = 0
-) {
+) : Comparable<Version> {
+    override fun compareTo(other: Version): Int = when {
+        major > other.major -> 1
+        major < other.major -> -1
+        minor > other.minor -> 1
+        minor < other.minor -> -1
+        revision > other.revision -> 1
+        revision < other.revision -> -1
+        else -> 0
+    }
+
     override fun toString(): String = "$major.$minor.$revision"
 
     /**
