@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.tobi29.io.*
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.createTempFile
 import org.tobi29.io.filesystem.write
-import org.tobi29.logging.KLogging
 import org.tobi29.utils.sleepAtLeast
 import org.tobi29.application.swt.platform.*
 import kotlin.coroutines.experimental.CoroutineContext
@@ -105,7 +104,6 @@ abstract class GuiApplication(
     }
 
     fun crash(e: Throwable): Nothing {
-        logger.error(e) { "Application crashed:" }
         val path = writeCrash(e) ?: exitProcess(1)
         if (!Program.launch(path.toString())) {
             display.asyncExec {
@@ -136,17 +134,13 @@ abstract class GuiApplication(
 
     protected abstract fun dispose()
 
-    companion object : KLogging() {
+    companion object {
         val platform: Platform = when (SWT.getPlatform()) {
             "gtk" -> PlatformLinux()
             "cocoa" -> PlatformMacOSX()
             "win32" -> PlatformWindows()
-            else -> {
-                logger.warn { "Unknown SWT platform: ${SWT.getPlatform()}" }
-                PlatformUnknown()
-            }
+            else -> PlatformUnknown()
         }
-
     }
 }
 

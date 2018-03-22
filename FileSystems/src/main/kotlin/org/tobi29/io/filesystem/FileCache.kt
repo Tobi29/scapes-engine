@@ -19,12 +19,11 @@ package org.tobi29.io.filesystem
 import org.tobi29.arrays.toHexadecimal
 import org.tobi29.checksums.ChecksumAlgorithm
 import org.tobi29.io.*
-import org.tobi29.logging.KLogging
 import org.tobi29.utils.DurationNanos
 import org.tobi29.utils.systemClock
 import org.tobi29.utils.toInt128
 
-object FileCache : KLogging() {
+object FileCache {
     fun store(root: FilePath,
               stream: ReadableByteStream): Location {
         val write = createTempFile("CacheWrite", ".tmp")
@@ -89,7 +88,6 @@ object FileCache : KLogging() {
                 }
             }.forEach { file ->
                 deleteIfExists(file)
-                logger.debug { "Deleted old cache entry: $file" }
             }
         }
     }

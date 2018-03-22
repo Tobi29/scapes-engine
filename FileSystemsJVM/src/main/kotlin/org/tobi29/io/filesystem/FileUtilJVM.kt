@@ -17,18 +17,17 @@
 package org.tobi29.io.filesystem
 
 import org.tobi29.io.filesystem.spi.FileSystemProvider
-import org.tobi29.logging.KLogging
 import org.tobi29.stdex.UnsupportedJVMException
 import org.tobi29.utils.InstantNanos
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
 import java.io.File
 
-private object FileUtil : KLogging() {
+private object FileUtil {
     val i = spiLoadFirst(
             spiLoad<FileSystemProvider>(
                     FileUtil::class.java.classLoader), { e ->
-        logger.warn(e) { "Service configuration error" }
+            // TODO: How handle logging?
     }, { it.available() })?.implementation()
             ?: throw UnsupportedJVMException(
             "No filesystem implementation available")

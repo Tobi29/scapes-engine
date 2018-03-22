@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ package org.tobi29.application.swt
 import org.eclipse.swt.SWT
 import org.eclipse.swt.graphics.FontData
 import org.tobi29.stdex.assert
-import org.tobi29.logging.KLogging
 import org.tobi29.utils.toArray
 
-object Fonts : KLogging() {
-    private val MONOSPACED = fontDatas(
-            monospaceFonts)
+object Fonts {
+    private val MONOSPACED = fontDatas(monospaceFonts)
 
     val monospace: Array<FontData>
         get() = MONOSPACED.copyOf()
@@ -37,7 +35,6 @@ object Fonts : KLogging() {
             fonts = map[os]
         }
         if (fonts == null) {
-            logger.warn { "Unable to identify OS, using fallback." }
             fonts = map["unknown"].orEmpty()
         }
         return parseFontString(fonts)

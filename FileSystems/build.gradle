@@ -19,5 +19,4 @@ apply from: "$rootDir/resources/modulekotlin.gradle"
 dependencies {
     compile project(":STDEx")
     compile project(":IOUtils")
-    compile project(":Logging")
 }
