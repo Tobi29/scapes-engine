@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,145 +18,143 @@ package org.tobi29.utils
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.jetbrains.spek.data_driven.data
+import org.tobi29.assertions.on
 import org.tobi29.assertions.shouldEqual
 import java.math.BigInteger
 import java.util.*
 
 object Int128Tests : Spek({
-    describe("converting a number to string and back") {
-        given("a number") {
-            on("converting it to a string and back") {
-                val random = Random(123456L)
-                repeat(10000) {
-                    val number = Int128(random.nextLong(), random.nextLong())
-                    val str = number.toString()
-                    val result = str.toInt128()
-                    it("should return the same number") {
-                        result shouldEqual number
-                    }
-                }
+    describe("128-bit signed integers") {
+        val random = Random(1234567L)
+        on(
+            { a -> "converting $a to a string and back" },
+            *(0 until 100).map { random.randomInt128() }.map { a ->
+                data(a, a)
+            }.toTypedArray()
+        ) { a, expect ->
+            val actual = a.toString().toInt128()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
-    }
-    describe("adding 128-bit signed integers") {
-        given("two numbers") {
-            val random = Random(1234567L)
-            repeat(10000) {
-                val a = Int128(random.nextLong(), random.nextLong())
-                val b = Int128(random.nextLong(), random.nextLong())
-                val result = (a + b).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a.toString()) + BigInteger(
-                                b.toString())).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
+        on(
+            { a, b -> "adding $a to $b" },
+            *(0 until 100).map { random.randomInt128Pair() }.map { (a, b) ->
+                data(
+                    a, b,
+                    simulateOverflow(
+                        BigInteger(a.toString()) + BigInteger(b.toString())
+                    ).toString()
+                )
+            }.toTypedArray()
+        ) { a, b, expect ->
+            val actual = (a + b).toString()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
-    }
-    describe("subtracting 128-bit signed integers") {
-        given("two numbers") {
-            val random = Random(1234567L)
-            repeat(10000) {
-                val a = Int128(random.nextLong(), random.nextLong())
-                val b = Int128(random.nextLong(), random.nextLong())
-                val result = (a - b).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a.toString()) - BigInteger(
-                                b.toString())).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
+        on(
+            { a, b -> "subtracting $a from $b" },
+            *(0 until 100).map { random.randomInt128Pair() }.map { (a, b) ->
+                data(
+                    a, b,
+                    simulateOverflow(
+                        BigInteger(a.toString()) - BigInteger(b.toString())
+                    ).toString()
+                )
+            }.toTypedArray()
+        ) { a, b, expect ->
+            val actual = (a - b).toString()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
-    }
-    describe("multiplying 128-bit signed integers") {
-        given("two numbers") {
-            val random = Random(1234567L)
-            repeat(10000) {
-                val a = Int128(random.nextLong(), random.nextLong())
-                val b = Int128(random.nextLong(), random.nextLong())
-                val result = (a * b).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a.toString()) * BigInteger(
-                                b.toString())).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
+        on(
+            { a, b -> "multiplying $a by $b" },
+            *(0 until 100).map { random.randomInt128Pair() }.map { (a, b) ->
+                data(
+                    a, b,
+                    simulateOverflow(
+                        BigInteger(a.toString()) * BigInteger(b.toString())
+                    ).toString()
+                )
+            }.toTypedArray()
+        ) { a, b, expect ->
+            val actual = (a * b).toString()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
-    }
-    describe("dividing 128-bit signed integers") {
-        given("two numbers") {
-            val random = Random(1234567L)
-            repeat(10000) {
-                val a = Int128(random.nextLong(), random.nextLong())
-                val b = Int128(random.nextLong(), random.nextLong())
-                val result = (a / b).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a.toString()) / BigInteger(
-                                b.toString())).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
+        on(
+            { a, b -> "dividing $a by $b" },
+            *((0 until 100).map { random.randomInt128Pair() } +
+                    listOf(
+                        "-170141183460469231731687303715884105728" to "1",
+                        "-170141183460469231731687303715884105728" to "2",
+                        "-170141183460469231731687303715884105728" to "3",
+                        "-170141183460469231731687303715884105728" to "-1",
+                        "-170141183460469231731687303715884105728" to "-2",
+                        "-170141183460469231731687303715884105728" to "-3",
+                        "170141183460469231731687303715884105727" to "1",
+                        "170141183460469231731687303715884105727" to "2",
+                        "170141183460469231731687303715884105727" to "3",
+                        "170141183460469231731687303715884105727" to "-2",
+                        "170141183460469231731687303715884105727" to "-3"
+                    ).map { (a, b) -> a.toInt128() to b.toInt128() }
+                    ).map { (a, b) ->
+                data(
+                    a, b,
+                    simulateOverflow(
+                        BigInteger(a.toString()) / BigInteger(b.toString())
+                    ).toString()
+                )
+            }.toTypedArray()
+        ) { a, b, expect ->
+            val actual = (a / b).toString()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
-        given("two numbers near limits") {
-            for ((a, b) in listOf(
-                    "-170141183460469231731687303715884105728" to "1",
-                    "-170141183460469231731687303715884105728" to "2",
-                    "-170141183460469231731687303715884105728" to "3",
-                    "-170141183460469231731687303715884105728" to "-1",
-                    "-170141183460469231731687303715884105728" to "-2",
-                    "-170141183460469231731687303715884105728" to "-3",
-                    "170141183460469231731687303715884105727" to "1",
-                    "170141183460469231731687303715884105727" to "2",
-                    "170141183460469231731687303715884105727" to "3",
-                    "170141183460469231731687303715884105727" to "-2",
-                    "170141183460469231731687303715884105727" to "-3")) {
-                val result = (a.toInt128() / b.toInt128()).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a) / BigInteger(b)).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
+        on(
+            { a, b -> "shifting $a $b to the left" },
+            *(0 until 100).map { random.randomInt128() to random.nextInt(64) }.map { (a, b) ->
+                data(
+                    a, b,
+                    simulateOverflow(
+                        BigInteger(a.toString()).shiftLeft(b)
+                    ).toString()
+                )
+            }.toTypedArray()
+        ) { a, b, expect ->
+            val actual = (a shl b).toString()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
-    }
-    describe("left shifting 128-bit signed integers") {
-        given("two numbers") {
-            val random = Random(1234567L)
-            repeat(10000) {
-                val a = Int128(random.nextLong(), random.nextLong())
-                val b = random.nextInt(64)
-                val result = (a shl b).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a.toString()).shiftLeft(b)).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
-            }
-        }
-    }
-    describe("right shifting 128-bit signed integers") {
-        given("two numbers") {
-            val random = Random(1234567L)
-            repeat(10000) {
-                val a = Int128(random.nextLong(), random.nextLong())
-                val b = random.nextInt(64)
-                val result = (a shr b).toString()
-                val expected = simulateOverflow(
-                        BigInteger(a.toString()).shiftRight(b)).toString()
-                it("should return the correct result") {
-                    result shouldEqual expected
-                }
+        on(
+            { a, b -> "shifting $a $b to the right" },
+            *(0 until 100).map { random.randomInt128() to random.nextInt(64) }.map { (a, b) ->
+                data(
+                    a, b,
+                    simulateOverflow(
+                        BigInteger(a.toString()).shiftRight(b)
+                    ).toString()
+                )
+            }.toTypedArray()
+        ) { a, b, expect ->
+            val actual = (a shr b).toString()
+            it("should return $expect") {
+                actual shouldEqual expect
             }
         }
     }
 })
+
+private fun Random.randomInt128Pair() = randomInt128() to randomInt128()
+
+private fun Random.randomInt128() = Int128(nextLong(), nextLong())
 
 private fun simulateOverflow(value: BigInteger): BigInteger {
     var rem = value.rem(BigInteger("340282366920938463463374607431768211456"))

@@ -20,13 +20,13 @@ import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.data_driven.data
-import org.jetbrains.spek.data_driven.on
+import org.tobi29.assertions.on
 import org.tobi29.assertions.shouldEqual
 
 object VersionTests : Spek({
     describe("versions") {
         on(
-            "comparing %1s with %2s",
+            { a, b -> "comparing $a with $b" },
             data(Version(1, 1, 1), Version(1, 1, 1), 0),
             data(Version(2, 1, 1), Version(1, 2, 2), 1),
             data(Version(1, 2, 2), Version(2, 1, 1), -1),
@@ -41,7 +41,7 @@ object VersionTests : Spek({
             }
         }
         on(
-            "checking if %1s is greater than %2s",
+            { a, b -> "checking if $a is greater than $b" },
             data(Version(1, 1, 1), Version(1, 1, 1), false),
             data(Version(2, 1, 1), Version(1, 1, 1), true),
             data(Version(1, 1, 1), Version(2, 1, 1), false)
