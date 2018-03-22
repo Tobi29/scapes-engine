@@ -23,6 +23,9 @@ dependencies {
     compile(rootProject.ext.spekJVM("spek-api")) {
         exclude group: "org.jetbrains.kotlin"
     }
+    compile(rootProject.ext.spekJVM("spek-data-driven-extension")) {
+        exclude group: "org.jetbrains.kotlin"
+    }
 
     runtime(rootProject.ext.spekJVM("spek-junit-platform-engine")) {
         exclude group: "org.jetbrains.kotlin"
