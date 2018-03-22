@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,4 +16,21 @@
 
 package org.tobi29.chrono
 
-actual val timeZoneLocal: TimeZone get() = timeZoneOf(java.util.TimeZone.getDefault().id)
+import org.tobi29.utils.*
+
+actual val timeZoneLocal: TimeZone
+    get() = java.util.TimeZone.getDefault().let { defaultTimeZone ->
+        try {
+            timeZoneOf(defaultTimeZone.id)
+        } catch (e: IllegalArgumentException) {
+            val time = systemClock.timeNanos()
+            timeZoneForOffset(
+                time,
+                Duration.fromMillis(
+                    defaultTimeZone.getOffset(
+                        time.millis.toLongClamped()
+                    ).toInt128()
+                )
+            ) ?: timeZoneOf("UTC")
+        }
+    }
