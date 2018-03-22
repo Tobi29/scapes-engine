@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ inline fun tagBoolean(
     key: String,
     default: Boolean,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toBoolean() ?: default }, Boolean::toTag, access)
+) = tag(key, { it?.toBoolean() ?: default }, { it.toTag() }, access)
 
 // Byte
 /**
@@ -62,7 +62,7 @@ inline fun tagByte(
     key: String,
     default: Byte,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toByte() ?: default }, Byte::toTag, access)
+) = tag(key, { it?.toByte() ?: default }, { it.toTag() }, access)
 
 // Short
 /**
@@ -86,7 +86,7 @@ inline fun tagShort(
     key: String,
     default: Short,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toShort() ?: default }, Short::toTag, access)
+) = tag(key, { it?.toShort() ?: default }, { it.toTag() }, access)
 
 // Int
 /**
@@ -110,7 +110,7 @@ inline fun tagInt(
     key: String,
     default: Int,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toInt() ?: default }, Int::toTag, access)
+) = tag(key, { it?.toInt() ?: default }, { it.toTag() }, access)
 
 // Long
 /**
@@ -134,7 +134,7 @@ inline fun tagLong(
     key: String,
     default: Long,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toLong() ?: default }, Long::toTag, access)
+) = tag(key, { it?.toLong() ?: default }, { it.toTag() }, access)
 
 // Float
 /**
@@ -158,7 +158,7 @@ inline fun tagFloat(
     key: String,
     default: Float,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toFloat() ?: default }, Float::toTag, access)
+) = tag(key, { it?.toFloat() ?: default }, { it.toTag() }, access)
 
 // Double
 /**
@@ -182,7 +182,7 @@ inline fun tagDouble(
     key: String,
     default: Double,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toDouble() ?: default }, Double::toTag, access)
+) = tag(key, { it?.toDouble() ?: default }, { it.toTag() }, access)
 
 // ByteArray
 /**
@@ -206,7 +206,7 @@ inline fun tagByteArray(
     key: String,
     default: ByteArray,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toByteArray() ?: default }, ByteArray::toTag, access)
+) = tag(key, { it?.toByteArray() ?: default }, { it.toTag() }, access)
 
 // String
 /**
@@ -230,4 +230,4 @@ inline fun tagString(
     key: String,
     default: String,
     crossinline access: () -> MutableTagMap
-) = tag(key, { it?.toString() ?: default }, String::toTag, access)
+) = tag(key, { it?.toString() ?: default }, { it.toTag() }, access)
