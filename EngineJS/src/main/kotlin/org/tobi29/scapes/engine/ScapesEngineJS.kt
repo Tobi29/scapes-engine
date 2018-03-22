@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,7 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.*
-import org.tobi29.coroutines.TaskChannel
-import org.tobi29.coroutines.Timer
-import org.tobi29.coroutines.offer
-import org.tobi29.coroutines.processCurrent
+import org.tobi29.coroutines.*
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
 import org.tobi29.logging.KLogging
@@ -35,7 +32,6 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
-import org.tobi29.stdex.toIntClamped
 import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentStorage
 import org.tobi29.utils.ComponentTypeRegistered
@@ -145,8 +141,7 @@ actual class ScapesEngine actual constructor(
             val timer = Timer()
             timer.init()
             while (!stop.get()) {
-                val tickDiff = timer.cap(Timer.toDiff(tps),
-                    { delay((it / 1000000L).toIntClamped()) })
+                val tickDiff = timer.cap(Timer.toDiff(tps), { delayNanos(it) })
                 tpsDebug.setValue(Timer.toTps(tickDiff))
                 val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
                 tps = step(delta)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,7 +144,7 @@ suspend fun Timer.loopUntilCancel(
     step: suspend (Double) -> Unit
 ) = loopUntilCancel(maxDiff, minSkipDelay, {}, step)
 
-inline suspend fun Timer.loopUntilCancel(
+suspend inline fun Timer.loopUntilCancel(
     maxDiff: Long,
     minSkipDelay: Long = 0L,
     logSkip: (Long) -> Unit,
@@ -154,7 +154,7 @@ inline suspend fun Timer.loopUntilCancel(
     minSkipDelay, logSkip, step
 )
 
-inline suspend fun Timer.loopUntilCancel(
+suspend inline fun Timer.loopUntilCancel(
     maxDiff: Long,
     park: (Long) -> Unit,
     minSkipDelay: Long = 0L,
@@ -166,3 +166,5 @@ inline suspend fun Timer.loopUntilCancel(
         true
     }
 }
+
+expect suspend fun delayNanos(time: Long)
