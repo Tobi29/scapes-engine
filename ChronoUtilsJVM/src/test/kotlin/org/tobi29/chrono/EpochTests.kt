@@ -69,6 +69,15 @@ object EpochTests : Spek({
         ) + DateTime(
             Date(Int.MIN_VALUE, Month.JANUARY, 1),
             Time(0, 0, 0, 0)
+        ) + DateTime(
+            Date(-1, Month.JANUARY, 1),
+            Time(0, 0, 0, 0)
+        ) + DateTime(
+            Date(0, Month.JANUARY, 1),
+            Time(0, 0, 0, 0)
+        ) + DateTime(
+            Date(1, Month.JANUARY, 1),
+            Time(0, 0, 0, 0)
         )
         cases.forEach { dateTime ->
             given("the date and time $dateTime") {

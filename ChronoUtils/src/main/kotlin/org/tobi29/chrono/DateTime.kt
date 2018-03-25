@@ -72,11 +72,11 @@ data class Date(
     val day: Day
 )
 
-        /**
-         * Year value
-         *
-         * Any value is valid
-         */
+/**
+ * Year value
+ *
+ * Any value is valid
+ */
 typealias Year = Int
 
 /**
@@ -175,11 +175,11 @@ enum class Month(val value: Int) {
     }
 }
 
-        /**
-         * Day value
-         *
-         * Valid range is `1` to `31`
-         */
+/**
+ * Day value
+ *
+ * Valid range is `1` to `31`
+ */
 typealias Day = Int
 
 /**
@@ -206,54 +206,51 @@ data class Time(
     val nanosecond: Nanosecond
 )
 
-        /**
-         * Hour value
-         *
-         * Valid range is `0` to `24`
-         *
-         * A value of `24` is only valid for formatting and may never appear when doing
-         * calculations
-         */
+/**
+ * Hour value
+ *
+ * Valid range is `0` to `24`
+ *
+ * A value of `24` is only valid for formatting and may never appear when doing
+ * calculations
+ */
 typealias Hour = Int
 
-        /**
-         * Minute value
-         *
-         * Valid range is `0` to `59`
-         */
+/**
+ * Minute value
+ *
+ * Valid range is `0` to `59`
+ */
 typealias Minute = Int
 
-        /**
-         * Second value
-         *
-         * Valid range is `0` to `60`
-         *
-         * A value of `60` is used for leap seconds and normally will rarely occur, but
-         * must be handled correctly whenever is appears
-         */
+/**
+ * Second value
+ *
+ * Valid range is `0` to `60`
+ *
+ * A value of `60` is used for leap seconds and normally will rarely occur, but
+ * must be handled correctly whenever is appears
+ */
 typealias Second = Int
 
-        /**
-         * Nanosecond value
-         *
-         * Valid range is `0` to `999999999`
-         */
+/**
+ * Nanosecond value
+ *
+ * Valid range is `0` to `999999999`
+ */
 typealias Nanosecond = Int
 
-fun DateTime.toEpochNanos(): EpochNanos {
-    var days = date.day - 1L + date.month.firstDayInYear(date.year.isLeap)
+// Algorithms taken from: https://howardhinnant.github.io/date_algorithms.html
 
-    var year = date.year
-    if (year >= 400) {
-        days += (year / 400) * 146097L
-    } else if (year <= -400) {
-        days += ((year + 399) / 400 - 1) * 146097L
-    }
-    year %= 400
-    days += (epochYear until year)
-        .sumBy { if (it.isLeap) 366 else 365 }
-    days -= (year until epochYear)
-        .sumBy { if (it.isLeap) 366 else 365 }
+fun DateTime.toEpochNanos(): EpochNanos {
+    val month = date.month.value
+    val year = date.year.toLong().let { if (month <= 2) it - 1 else it }
+    val era = (if (year >= 0) year else year - 399) / 400
+    val yearEra = (year - era * 400).toInt()
+    val monthMarch = month + (if (month > 2) -3 else 9)
+    val dayOfYear = (153 * monthMarch + 2) / 5 + date.day - 1
+    val dayEra = yearEra * 365 + yearEra / 4 - yearEra / 100 + dayOfYear
+    val days = era * 146097L + dayEra - 719468L
 
     return (((days * 24L + time.hour) * 60L + time.minute) * 60L +
             time.second).toInt128() * 1000000000L.toInt128() +
@@ -288,34 +285,19 @@ fun EpochNanos.toDateTime(): DateTime {
     remaining -= hour
     remaining /= 24L
 
-    var year = epochYear
-    if (remaining >= 146097L) {
-        year += (remaining / 146097L).toInt() * 400
-    } else if (remaining <= -146097L) {
-        year += ((remaining + 146096L) / 146097L - 1L).toInt() * 400
-    }
-    remaining %= 146097L
-    if (remaining > 0) {
-        while (true) {
-            val length = if (year.isLeap) 366 else 365
-            if (remaining < length) break
-            remaining -= length
-            year++
-        }
-    } else {
-        while (remaining < 0) {
-            year--
-            remaining += if (year.isLeap) 366 else 365
-        }
-    }
+    remaining += 719468L
+    val era = (if (remaining >= 0) remaining else remaining - 146096) / 146097
+    val dayEra = (remaining - era * 146097).toInt()
+    val yearEra =
+        (dayEra - dayEra / 1460 + dayEra / 36524 - dayEra / 146096) / 365
+    val dayOfYear = dayEra - (365 * yearEra + yearEra / 4 - yearEra / 100)
+    val monthMarch = (5 * dayOfYear + 2) / 153
+    val day = dayOfYear - (153 * monthMarch + 2) / 5 + 1
+    val month = monthMarch + (if (monthMarch < 10) 3 else -9)
+    val year = (yearEra + era * 400)
+        .let { if (month <= 2) it + 1 else it }.toInt()
 
-    val month = Month.values()
-        .last { it.firstDayInYear(year.isLeap) <= remaining }
-    remaining -= month.firstDayInYear(year.isLeap)
-    val day = remaining.toInt() + 1
-    val date = Date(year, month, day)
+    val date = Date(year, Month.ofValue(month), day)
     val time = Time(hour, minute, second, nanosecond)
     return DateTime(date, time)
 }
-
-private const val epochYear = 1970
