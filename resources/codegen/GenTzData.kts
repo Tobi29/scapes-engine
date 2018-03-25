@@ -220,7 +220,7 @@ fun assembleSinces(transitions: List<Pair<ZDumpLine, ZDumpLine>>): Pair<OffsetZo
 fun compactSinces(
     sinces: List<SinceState>,
     compactOffset: (OffsetZone) -> String
-): String = (listOf(SinceState(SinceDateTime("Jan", 0, Time(0, 0, 0), 1970), OffsetZone(0, "UT"))) + sinces).zipWithNext()
+): String = (listOf(SinceState(SinceDateTime("Jan", 1, Time(0, 0, 0), 1970), OffsetZone(0, "UT"))) + sinces).zipWithNext()
     .joinToString(",") { (a, b) -> "${(b.since.toPosixOffset() - a.since.toPosixOffset()).toStringCaseSensitive(offsetBase)}=${compactOffset(b.offset)}" }
 
 val transitions = readTransitions()
