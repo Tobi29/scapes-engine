@@ -99,18 +99,23 @@ class TimeZone internal constructor(
     }
 }
 
+fun TimeZone.encodeEpoch(instant: InstantNanos): EpochNanos =
+    instant + offsetAt(instant)
+
+fun TimeZone.encodeEpochWithOffset(instant: InstantNanos): OffsetEpochNanos =
+    offsetAt(instant).let { instant + it to it }
+
+fun TimeZone.decodeEpoch(epoch: EpochNanos): Set<InstantNanos> =
+    offsetsInto(epoch).mapTo(HashSet()) { epoch - it }
+
 fun TimeZone.encode(instant: InstantNanos): DateTime =
-    offsetAt(instant).let { (instant + it).toDateTime() }
+    encodeEpoch(instant).toDateTime()
 
 fun TimeZone.encodeWithOffset(instant: InstantNanos): OffsetDateTime =
-    offsetAt(instant).let { OffsetDateTime((instant + it).toDateTime(), it) }
+    offsetAt(instant).let { (instant + it).toDateTime() to it }
 
-fun TimeZone.decode(dateTime: DateTime): Set<InstantNanos> {
-    val epoch = dateTime.toEpochNanos()
-    return offsetsInto(epoch).mapTo(HashSet()) {
-        epoch - it
-    }
-}
+fun TimeZone.decode(dateTime: DateTime): Set<InstantNanos> =
+    decodeEpoch(dateTime.toEpochNanos())
 
 val TimeZone.isEtc: Boolean
     get() = id.startsWith("Etc/") || id.startsWith("GMT")

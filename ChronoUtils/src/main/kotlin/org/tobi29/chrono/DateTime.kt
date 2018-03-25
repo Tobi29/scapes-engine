@@ -25,32 +25,49 @@ import org.tobi29.utils.toLongClamped
 typealias EpochNanos = Int128
 
 /**
+ * Some unit combined with time zone offset
+ */
+typealias OffsetUnit<T> = Pair<T, DurationNanos>
+
+/**
+ * Time zone offset
+ */
+inline val OffsetUnit<*>.offset: DurationNanos get() = second
+
+/**
+ * Epoch offset combined with time zone offset
+ */
+typealias OffsetEpochNanos = OffsetUnit<EpochNanos>
+
+/**
+ * Epoch offset
+ */
+inline val OffsetEpochNanos.epoch: EpochNanos get() = first
+
+/**
  * Date and time combined with time zone offset
  */
-data class OffsetDateTime(
-    /**
-     * Data and time
-     */
-    val dateTime: DateTime,
-    /**
-     * Time zone offset
-     */
-    val offset: DurationNanos
-)
+typealias OffsetDateTime = OffsetUnit<DateTime>
+
+/**
+ * Data and time
+ */
+inline val OffsetDateTime.dateTime: DateTime get() = first
 
 /**
  * Date and time combined
  */
-data class DateTime(
-    /**
-     * Date
-     */
-    val date: Date,
-    /**
-     * Time
-     */
-    val time: Time
-)
+typealias DateTime = Pair<Date, Time>
+
+/**
+ * Date
+ */
+inline val DateTime.date: Date get() = first
+
+/**
+ * Time
+ */
+inline val DateTime.time: Time get() = second
 
 /**
  * Date made up from year, month and day
@@ -155,7 +172,7 @@ enum class Month(val value: Int) {
          * @param value Numeric month in range `1` to `12`
          * @return Month representing the given value
          */
-        fun ofValue(value: Int): Month = when (value) {
+        fun of(value: Int): Month = when (value) {
             1 -> JANUARY
             2 -> FEBRUARY
             3 -> MARCH
@@ -168,10 +185,16 @@ enum class Month(val value: Int) {
             10 -> OCTOBER
             11 -> NOVEMBER
             12 -> DECEMBER
-            else -> throw IllegalArgumentException(
-                "Invalid month value: $value"
-            )
+            else ->
+                throw IllegalArgumentException("Invalid month value: $value")
         }
+
+        // TODO: Drop after 0.0.13
+        @Deprecated(
+            "Use of",
+            ReplaceWith("Month.of(value)", "org.tobi29.chrono.Month")
+        )
+        fun ofValue(value: Int): Month = of(value)
     }
 }
 
@@ -261,15 +284,11 @@ fun EpochNanos.toDateTime(): DateTime {
     // We return the maximum/minimum values possible in a DateTime
     // to avoid surprising overflows or expections
     if (this >= "67767976233532799999999999".toInt128())
-        return DateTime(
-            Date(Int.MAX_VALUE, Month.DECEMBER, 31),
-            Time(23, 59, 59, 999999999)
-        )
+        return Date(Int.MAX_VALUE, Month.DECEMBER, 31) to
+                Time(23, 59, 59, 999999999)
     else if (this <= "-67768100567971200000000000".toInt128())
-        return DateTime(
-            Date(Int.MIN_VALUE, Month.JANUARY, 1),
-            Time(0, 0, 0, 0)
-        )
+        return Date(Int.MIN_VALUE, Month.JANUARY, 1) to
+                Time(0, 0, 0, 0)
 
     val nanosecond128 = this remP 1000000000L.toInt128()
     val nanosecond = nanosecond128.toInt()
@@ -297,7 +316,6 @@ fun EpochNanos.toDateTime(): DateTime {
     val year = (yearEra + era * 400)
         .let { if (month <= 2) it + 1 else it }.toInt()
 
-    val date = Date(year, Month.ofValue(month), day)
-    val time = Time(hour, minute, second, nanosecond)
-    return DateTime(date, time)
+    return Date(year, Month.of(month), day) to
+            Time(hour, minute, second, nanosecond)
 }
