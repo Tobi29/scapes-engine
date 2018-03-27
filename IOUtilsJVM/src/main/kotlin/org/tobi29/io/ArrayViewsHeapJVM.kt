@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.arrays.HeapBytes
 
 actual sealed class HeapViewByte actual constructor(
         array: ByteArray,
         offset: Int,
         size: Int
-) : HeapByteArraySlice(array, offset, size),
+) : HeapBytes(array, offset, size),
         HeapView {
     init {
         if (offset < 0 || size < 0 || offset + size > array.size shl 0)

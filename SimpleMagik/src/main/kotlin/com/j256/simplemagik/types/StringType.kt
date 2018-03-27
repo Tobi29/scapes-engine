@@ -19,7 +19,7 @@ package com.j256.simplemagik.types
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import com.j256.simplemagik.entries.unescapeString
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.copyToString
 
 /**
@@ -93,7 +93,7 @@ open class StringType : BaseStringType() {
 abstract class BaseStringType : MagicMatcher {
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any? {
         return ""
@@ -105,7 +105,7 @@ abstract class BaseStringType : MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         return findOffsetMatch(
             testValue,
@@ -129,7 +129,7 @@ abstract class BaseStringType : MagicMatcher {
         info: Any?,
         startOffset: Int,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO?,
+        bytes: BytesRO?,
         chars: CharArray?,
         maxPos: Int
     ): String? {
@@ -221,7 +221,7 @@ abstract class BaseStringType : MagicMatcher {
         return chars.copyToString()
     }
 
-    private fun charFromByte(bytes: ByteArraySliceRO, index: Int): Char {
+    private fun charFromByte(bytes: BytesRO, index: Int): Char {
         return (bytes[index].toInt() and 0xFF).toChar()
     }
 

@@ -18,7 +18,7 @@ package com.j256.simplemagik.entries
 
 import com.j256.simplemagik.ContentInfo
 import com.j256.simplemagik.ErrorCallBack
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.logging.KLogging
 
 /**
@@ -108,11 +108,11 @@ internal class MagicEntries {
      * Find and return a match for the associated bytes.
      */
     fun findMatch(
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): ContentInfo? = findMatch(bytes, null)
 
     private tailrec fun findMatch(
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         indirect: MagicEntry.ContentData?
     ): ContentInfo? {
         if (bytes.size == 0) return ContentInfo.EMPTY_INFO
@@ -134,7 +134,7 @@ internal class MagicEntries {
     }
 
     private fun findMatch(
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         indirect: MagicEntry.ContentData?,
         entryList: List<MagicEntry>
     ): MagicEntry.ContentData? {

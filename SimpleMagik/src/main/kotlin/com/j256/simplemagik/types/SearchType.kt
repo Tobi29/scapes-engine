@@ -19,7 +19,7 @@ package com.j256.simplemagik.types
 import com.j256.simplemagik.entries.MagicMatcher
 import com.j256.simplemagik.entries.decodeInt
 import com.j256.simplemagik.entries.unescapeString
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * From the magic(5) man page: A literal string search starting at the given line offset. The same modifier flags can be
@@ -101,7 +101,7 @@ class SearchType : BaseStringType() {
         unsignedType: Boolean,
         extractedValue: Any?,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         val info = testValue as TestInfo
         val end =

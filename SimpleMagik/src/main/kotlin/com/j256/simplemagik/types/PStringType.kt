@@ -18,7 +18,7 @@ package com.j256.simplemagik.types
 
 import com.j256.simplemagik.entries.MagicMatcher
 import com.j256.simplemagik.entries.unescapeString
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.combineToShort
 import org.tobi29.stdex.copyToString
@@ -94,7 +94,7 @@ class PStringType : BaseStringType() {
      */
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any? {
         // we don't need to extract the value if all we are doing is matching
@@ -126,7 +126,7 @@ class PStringType : BaseStringType() {
         unsignedType: Boolean,
         extractedValue: Any?,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         testValue as TestInfo
 

@@ -19,7 +19,7 @@ package com.j256.simplemagik.types
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import com.j256.simplemagik.entries.unescapeString
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
 import org.tobi29.stdex.copyToArray
 import org.tobi29.stdex.utf8ToArray
@@ -61,7 +61,7 @@ class RegexType : MagicMatcher {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any {
         return EMPTY
@@ -73,7 +73,7 @@ class RegexType : MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         // TODO: This seems wrong
         var i = 0

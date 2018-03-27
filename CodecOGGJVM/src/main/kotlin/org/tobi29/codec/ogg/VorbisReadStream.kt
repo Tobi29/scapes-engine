@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,12 +22,11 @@ import com.jcraft.jorbis.Block
 import com.jcraft.jorbis.Comment
 import com.jcraft.jorbis.DspState
 import com.jcraft.jorbis.Info
-import org.tobi29.arrays.HeapFloatArraySlice
-import org.tobi29.logging.KLogging
+import org.tobi29.arrays.HeapFloats
 import org.tobi29.codec.AudioMetaData
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.toTag
-import kotlin.collections.asSequence
+import org.tobi29.logging.KLogging
 import kotlin.collections.set
 
 class VorbisInitializer(private val info: Info,
@@ -72,7 +71,7 @@ class VorbisReadStream(info: Info,
     private val index = IntArray(info.channels)
     private val pcm = arrayOfNulls<Array<FloatArray>>(1)
 
-    override fun get(buffer: HeapFloatArraySlice): Int {
+    override fun get(buffer: HeapFloats): Int {
         val samples = dspState.synthesis_pcmout(pcm, index)
         if (samples == 0) {
             return 0

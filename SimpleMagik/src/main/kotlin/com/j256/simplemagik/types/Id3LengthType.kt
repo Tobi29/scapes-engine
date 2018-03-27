@@ -17,7 +17,7 @@
 package com.j256.simplemagik.types
 
 import com.j256.simplemagik.endian.EndianType
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.sliceOver
 import kotlin.experimental.and
 
@@ -30,7 +30,7 @@ class Id3LengthType(endianType: EndianType) : IntegerType(endianType) {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any? {
         // because we only use the lower 7-bits of each byte, we need to copy into a local byte array

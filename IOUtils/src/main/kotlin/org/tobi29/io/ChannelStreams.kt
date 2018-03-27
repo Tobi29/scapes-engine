@@ -16,7 +16,7 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 class BufferedReadChannelStream(
     private val channel: ReadableByteChannel,
@@ -198,7 +198,7 @@ class DirectWriteChannelStream(
         write(single)
     }
 
-    override fun put(buffer: ByteArraySliceRO) {
+    override fun put(buffer: BytesRO) {
         write(buffer)
     }
 

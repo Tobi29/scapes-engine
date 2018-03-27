@@ -16,7 +16,7 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
 import java.io.InputStream
 import java.io.OutputStream
@@ -74,7 +74,7 @@ class OutputStreamByteStream(private val stream: OutputStream) :
         stream.write(value.toInt())
     }
 
-    override fun put(buffer: ByteArraySliceRO) {
+    override fun put(buffer: BytesRO) {
         buffer.readAsByteArray { array, offset, size ->
             stream.write(array, offset, size)
         }

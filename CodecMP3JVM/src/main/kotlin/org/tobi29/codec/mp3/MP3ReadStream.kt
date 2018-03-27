@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.tobi29.codec.mp3
 
 import javazoom.jl.decoder.*
-import org.tobi29.arrays.HeapFloatArraySlice
+import org.tobi29.arrays.HeapFloats
 import org.tobi29.arrays.sliceOver
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.AudioMetaData
@@ -100,7 +100,7 @@ class MP3ReadStream(private val channel: ReadableByteChannel) : ReadableAudioStr
             ReadableAudioStream.Result.BUFFER
     }
 
-    private fun decodeFrame(buffer: HeapFloatArraySlice): Int {
+    private fun decodeFrame(buffer: HeapFloats): Int {
         // TODO: Need to git an mp3 file that actually does this to test
         if (outputRate != rate || !checkFrame()) return 0
         val len = buffer.size.coerceAtMost(output.size - outputPosition)

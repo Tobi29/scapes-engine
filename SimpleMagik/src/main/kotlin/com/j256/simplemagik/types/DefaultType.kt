@@ -18,7 +18,7 @@ package com.j256.simplemagik.types
 
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * This is intended to be used with the test @code{x} (which is always true) and a message that is to be used if there
@@ -40,7 +40,7 @@ class DefaultType : MagicMatcher {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any {
         return EMPTY
@@ -52,7 +52,7 @@ class DefaultType : MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         offset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any {
         // always matches
         return EMPTY

@@ -17,7 +17,7 @@
 package com.j256.simplemagik.types
 
 import com.j256.simplemagik.endian.EndianType
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * A 64-bit double precision IEEE floating point number in this machine's native byte order.
@@ -38,7 +38,7 @@ open class DoubleType(endianType: EndianType) : NumberType(endianType) {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any? {
         val `val` = endianConverter.convertNumber(offset, bytes, bytesPerType)

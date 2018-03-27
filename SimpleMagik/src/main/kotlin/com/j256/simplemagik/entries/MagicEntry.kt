@@ -19,7 +19,7 @@ package com.j256.simplemagik.entries
 import com.j256.simplemagik.endian.EndianConverter
 import com.j256.simplemagik.entries.MagicMatcher.MutableOffset
 import com.j256.simplemagik.types.IndirectType
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.logging.KLogging
 
 /**
@@ -98,7 +98,7 @@ internal constructor(
      * Main processing method which can go recursive.
      */
     internal fun matchBytes(
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         contentData: ContentData? = null,
         prevOffset: Int = 0,
         level: Int = 0
@@ -215,7 +215,7 @@ internal constructor(
     ) {
 
         fun getOffset(
-            bytes: ByteArraySliceRO,
+            bytes: BytesRO,
             prevOffset: Int
         ): Int {
             val off = if (isId3) {

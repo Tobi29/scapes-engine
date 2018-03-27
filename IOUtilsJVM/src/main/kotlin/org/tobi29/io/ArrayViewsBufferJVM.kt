@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.ByteArraySliceRO
-import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.HeapBytes
 import org.tobi29.stdex.BIG_ENDIAN
 import org.tobi29.stdex.LITTLE_ENDIAN
 import org.tobi29.stdex.primitiveHashCode
@@ -58,7 +58,7 @@ sealed class ByteBufferView(protected val buffer: ByteBuffer) : ByteViewE {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ByteArraySliceRO) return false
+        if (other !is BytesRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -140,7 +140,7 @@ class ByteBufferViewBE(
     override fun setBytes(index: Int,
                           slice: ByteViewRO) {
         when (slice) {
-            is HeapByteArraySlice -> {
+            is HeapBytes -> {
                 val position = buffer.position()
                 buffer._position(index)
                 buffer.put(slice.array, slice.offset, slice.size)
@@ -223,7 +223,7 @@ class ByteBufferViewLE(
     override fun setBytes(index: Int,
                           slice: ByteViewRO) {
         when (slice) {
-            is HeapByteArraySlice -> {
+            is HeapBytes -> {
                 val position = buffer.position()
                 buffer._position(index)
                 buffer.put(slice.array, slice.offset, slice.size)

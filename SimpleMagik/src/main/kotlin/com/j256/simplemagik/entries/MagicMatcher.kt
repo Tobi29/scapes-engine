@@ -16,7 +16,7 @@
 
 package com.j256.simplemagik.entries
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * Classes which are able to match content according to operations and output description.
@@ -46,7 +46,7 @@ interface MagicMatcher {
      */
     fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any?
 
@@ -61,7 +61,7 @@ interface MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         offset: MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any?
 
     /**

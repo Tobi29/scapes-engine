@@ -16,7 +16,7 @@
 
 package com.j256.simplemagik.endian
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * Class which converts from a particular machine byte representation into values appropriate for Java.
@@ -30,14 +30,14 @@ interface EndianConverter {
      *
      * @return The long or null if not enough bytes.
      */
-    fun convertNumber(offset: Int, bytes: ByteArraySliceRO, size: Int): Long?
+    fun convertNumber(offset: Int, bytes: BytesRO, size: Int): Long?
 
     /**
      * Convert a number of bytes starting at an offset into a long integer where the high-bit in each byte is always 0.
      *
      * @return The long or null if not enough bytes.
      */
-    fun convertId3(offset: Int, bytes: ByteArraySliceRO, size: Int): Long?
+    fun convertId3(offset: Int, bytes: BytesRO, size: Int): Long?
 
     /**
      * Translate a number into an array of bytes.

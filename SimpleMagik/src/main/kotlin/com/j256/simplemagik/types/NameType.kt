@@ -17,7 +17,7 @@ package com.j256.simplemagik.types
 
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 // TODO: Implement
 
@@ -28,7 +28,7 @@ class NameType : MagicMatcher {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any? {
         return null
@@ -40,7 +40,7 @@ class NameType : MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         offset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         return null
     }

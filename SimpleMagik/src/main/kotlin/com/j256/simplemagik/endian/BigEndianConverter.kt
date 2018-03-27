@@ -16,7 +16,7 @@
 
 package com.j256.simplemagik.endian
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * Converts values in "big" endian-ness where the high-order bytes come before the low-order (ABCD). Also called network
@@ -27,7 +27,7 @@ import org.tobi29.arrays.ByteArraySliceRO
 class BigEndianConverter internal constructor() : EndianConverter {
     override fun convertNumber(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int
     ): Long? {
         return convertNumber(offset, bytes, size, 8, 0xFF)
@@ -35,7 +35,7 @@ class BigEndianConverter internal constructor() : EndianConverter {
 
     override fun convertId3(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int
     ): Long? {
         return convertNumber(offset, bytes, size, 7, 0x7F)
@@ -53,7 +53,7 @@ class BigEndianConverter internal constructor() : EndianConverter {
 
     private fun convertNumber(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int,
         shift: Int,
         mask: Long

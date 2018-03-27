@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.arrays.HeapBytes
 import org.tobi29.stdex.BIG_ENDIAN
 import org.tobi29.stdex.LITTLE_ENDIAN
 import org.tobi29.stdex.NATIVE_ENDIAN
@@ -86,7 +86,7 @@ fun ByteViewRO.readAsByteBuffer(): ByteBuffer =
 
 fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
     is ByteBufferView -> byteBuffer.slice().order(byteBuffer.order())
-    is HeapByteArraySlice -> array.asByteBuffer(offset, size).slice().also {
+    is HeapBytes -> array.asByteBuffer(offset, size).slice().also {
         if (this is MemorySegmentE) {
             it.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
         }

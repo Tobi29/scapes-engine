@@ -20,7 +20,7 @@ import com.j256.simplemagik.endian.EndianConverter
 import com.j256.simplemagik.endian.EndianType
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * Base class for our numbers so we can do generic operations on them.
@@ -65,7 +65,7 @@ abstract class NumberType(endianType: EndianType) : MagicMatcher {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any? {
         return endianConverter.convertNumber(offset, bytes, bytesPerType)
@@ -77,7 +77,7 @@ abstract class NumberType(endianType: EndianType) : MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         if ((testValue as NumberComparison).isMatch(
                 andValue,

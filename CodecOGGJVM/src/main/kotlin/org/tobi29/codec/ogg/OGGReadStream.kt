@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.jcraft.jogg.StreamState
 import com.jcraft.jogg.SyncState
 import com.jcraft.jorbis.Comment
 import com.jcraft.jorbis.Info
-import org.tobi29.arrays.HeapFloatArraySlice
+import org.tobi29.arrays.HeapFloats
 import org.tobi29.arrays.sliceOver
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.AudioMetaData
@@ -165,7 +165,7 @@ interface CodecInitializer {
 }
 
 interface CodecDecoder {
-    fun get(buffer: HeapFloatArraySlice): Int
+    fun get(buffer: HeapFloats): Int
 
     fun packet(page: Page,
                packet: Packet)

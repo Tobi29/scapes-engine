@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 
 package org.tobi29.checksums
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 inline fun initChainCRC32(crc: Int = 0): Int = crc xor -1
 
@@ -64,18 +64,18 @@ inline fun computeCRC32(
 
 inline fun chainCRC32(
     crc: Int,
-    data: ByteArraySliceRO,
+    data: BytesRO,
     table: IntArray
 ): Int = data.fold(crc) { c, d -> chainCRC32(c, d, table) }
 
 inline fun computeCRC32(
-    data: ByteArraySliceRO,
+    data: BytesRO,
     table: IntArray
 ): Int = computeCRC32(0, data, table)
 
 inline fun computeCRC32(
     crc: Int,
-    data: ByteArraySliceRO,
+    data: BytesRO,
     table: IntArray
 ): Int = initChainCRC32(crc).let {
     chainCRC32(it, data, table)

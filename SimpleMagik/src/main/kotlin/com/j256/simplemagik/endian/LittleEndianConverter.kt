@@ -16,7 +16,7 @@
 
 package com.j256.simplemagik.endian
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * Converts values in "little" endian-ness where the high-order bytes come _after_ the low-order (DCBA). x86 processors.
@@ -26,7 +26,7 @@ import org.tobi29.arrays.ByteArraySliceRO
 class LittleEndianConverter internal constructor() : EndianConverter {
     override fun convertNumber(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int
     ): Long? {
         return convertNumber(offset, bytes, size, 8, 0xFF)
@@ -34,7 +34,7 @@ class LittleEndianConverter internal constructor() : EndianConverter {
 
     override fun convertId3(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int
     ): Long? {
         return convertNumber(offset, bytes, size, 7, 0x7F)
@@ -52,7 +52,7 @@ class LittleEndianConverter internal constructor() : EndianConverter {
 
     private fun convertNumber(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int,
         shift: Int,
         mask: Long

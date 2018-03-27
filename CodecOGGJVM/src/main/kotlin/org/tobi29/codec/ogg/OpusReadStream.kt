@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ package org.tobi29.codec.ogg
 
 import com.jcraft.jogg.Packet
 import com.jcraft.jogg.Page
-import org.tobi29.arrays.HeapFloatArraySlice
+import org.tobi29.arrays.HeapFloats
 import org.tobi29.codec.AudioMetaData
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.toTag
-import kotlin.collections.forEach
 import kotlin.collections.set
 
 class OpusInitializer(private val info: OpusInfo) : CodecInitializer {
@@ -54,7 +53,7 @@ class OpusReadStream(info: OpusInfo) : CodecDecoder {
     private var pcmLength = 0
     private var granulePos = 0L
 
-    override fun get(buffer: HeapFloatArraySlice): Int {
+    override fun get(buffer: HeapFloats): Int {
         while (true) {
             if (pcmOffset >= pcmLength) {
                 return 0

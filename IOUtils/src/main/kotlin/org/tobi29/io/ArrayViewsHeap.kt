@@ -16,11 +16,11 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.arrays.HeapBytes
 import org.tobi29.arrays.index
 import org.tobi29.arrays.prepareSlice
 
-expect sealed class HeapViewByte : HeapByteArraySlice, HeapView {
+expect sealed class HeapViewByte : HeapBytes, HeapView {
     // FIXME: Kotlin/Native bug
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(array: ByteArray, offset: Int, size: Int)
@@ -53,7 +53,7 @@ expect class HeapViewByteLE : HeapViewByte, ByteViewLE {
 val ByteViewRO.viewBE: ByteViewBERO
     get() = when (this) {
         is ByteViewBERO -> this
-        is HeapByteArraySlice -> HeapViewByteBE(array, offset, size)
+        is HeapBytes -> HeapViewByteBE(array, offset, size)
         else -> object : ByteViewBERO,
                 ByteViewRO by this {
             override fun slice(index: Int) = slice(index, size - index)
@@ -70,7 +70,7 @@ val ByteViewRO.viewBE: ByteViewBERO
 val ByteView.viewBE: ByteViewBE
     get() = when (this) {
         is ByteViewBE -> this
-        is HeapByteArraySlice -> HeapViewByteBE(array, offset, size)
+        is HeapBytes -> HeapViewByteBE(array, offset, size)
         else -> object : ByteViewBE,
                 ByteView by this {
             override fun slice(index: Int) = slice(index, size - index)
@@ -87,7 +87,7 @@ val ByteView.viewBE: ByteViewBE
 val ByteViewRO.viewLE: ByteViewLERO
     get() = when (this) {
         is ByteViewLERO -> this
-        is HeapByteArraySlice -> HeapViewByteLE(array, offset, size)
+        is HeapBytes -> HeapViewByteLE(array, offset, size)
         else -> object : ByteViewLERO,
                 ByteViewRO by this {
             override fun slice(index: Int) = slice(index, size - index)
@@ -104,7 +104,7 @@ val ByteViewRO.viewLE: ByteViewLERO
 val ByteView.viewLE: ByteViewLE
     get() = when (this) {
         is ByteViewLE -> this
-        is HeapByteArraySlice -> HeapViewByteLE(array, offset, size)
+        is HeapBytes -> HeapViewByteLE(array, offset, size)
         else -> object : ByteViewLE,
                 ByteView by this {
             override fun slice(index: Int) = slice(index, size - index)

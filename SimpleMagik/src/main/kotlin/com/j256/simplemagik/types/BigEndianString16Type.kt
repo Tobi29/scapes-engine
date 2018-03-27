@@ -17,7 +17,7 @@
 package com.j256.simplemagik.types
 
 import com.j256.simplemagik.entries.MagicMatcher
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * A two-byte unicode (UCS16) string in big-endian byte order.
@@ -28,7 +28,7 @@ open class BigEndianString16Type : StringType() {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any {
         var len: Int
@@ -54,7 +54,7 @@ open class BigEndianString16Type : StringType() {
         unsignedType: Boolean,
         extractedValue: Any?,
         mutableOffset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any? {
         // we do the match on the extracted chars
         val chars = extractedValue as CharArray

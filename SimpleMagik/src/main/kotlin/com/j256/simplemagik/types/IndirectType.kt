@@ -17,7 +17,7 @@ package com.j256.simplemagik.types
 
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 class IndirectType : MagicMatcher {
 
@@ -28,7 +28,7 @@ class IndirectType : MagicMatcher {
 
     override fun extractValueFromBytes(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         required: Boolean
     ): Any {
         return EMPTY
@@ -40,7 +40,7 @@ class IndirectType : MagicMatcher {
         unsignedType: Boolean,
         extractedValue: Any?,
         offset: MagicMatcher.MutableOffset,
-        bytes: ByteArraySliceRO
+        bytes: BytesRO
     ): Any {
         // always matches
         return EMPTY

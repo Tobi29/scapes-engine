@@ -16,7 +16,7 @@
 
 package com.j256.simplemagik.endian
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 
 /**
  * A four-byte value in middle-endian (god help us) PDP-11 byte order.
@@ -28,13 +28,13 @@ class MiddleEndianConverter internal constructor() // only EndiaType should cons
 
     override fun convertNumber(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int
     ): Long? {
         return convertNumber(offset, bytes, size, 8, 0xFF)
     }
 
-    override fun convertId3(offset: Int, bytes: ByteArraySliceRO, size: Int): Long? {
+    override fun convertId3(offset: Int, bytes: BytesRO, size: Int): Long? {
         return convertNumber(offset, bytes, size, 7, 0x7F)
     }
 
@@ -54,7 +54,7 @@ class MiddleEndianConverter internal constructor() // only EndiaType should cons
 
     private fun convertNumber(
         offset: Int,
-        bytes: ByteArraySliceRO,
+        bytes: BytesRO,
         size: Int,
         shift: Int,
         mask: Int

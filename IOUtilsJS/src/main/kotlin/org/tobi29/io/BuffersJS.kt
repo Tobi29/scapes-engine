@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.DataView
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
-import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.arrays.HeapBytes
 import org.tobi29.stdex.BIG_ENDIAN
 import org.tobi29.stdex.NATIVE_ENDIAN
 import org.tobi29.stdex.asTypedArray
@@ -30,7 +30,7 @@ fun ByteViewRO.asDataView(): DataView? = asInt8Array()?.let {
 }
 
 fun ByteViewRO.asInt8Array(): Int8Array? = when (this) {
-    is HeapByteArraySlice -> array.asTypedArray().subarray(offset,
+    is HeapBytes -> array.asTypedArray().subarray(offset,
             offset + size)
     else -> null
 }

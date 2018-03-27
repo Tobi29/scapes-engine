@@ -16,7 +16,7 @@
 
 package org.tobi29.io
 
-import org.tobi29.arrays.ByteArraySliceRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.splitToBytes
 import org.tobi29.stdex.utf8ToArray
 
@@ -30,7 +30,7 @@ interface WritableByteStream : Appendable {
      * @param buffer Buffer to read from
      * @throws IOException When an IO error occurs
      */
-    fun put(buffer: ByteArraySliceRO) {
+    fun put(buffer: BytesRO) {
         for (i in 0 until buffer.size) {
             put(buffer[i])
         }

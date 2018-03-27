@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package org.tobi29.checksums
 
 import org.tobi29.arrays.BytesRO
-import org.tobi29.arrays.HeapByteArraySlice
+import org.tobi29.arrays.HeapBytes
 import org.tobi29.stdex.UnsupportedJVMException
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
@@ -71,7 +71,7 @@ private class MessageDigestChecksumContext(
     }
 
     override fun update(data: BytesRO) {
-        if (data is HeapByteArraySlice) {
+        if (data is HeapBytes) {
             digest.update(data.array, data.offset, data.size)
         } else {
             // TODO: Can we optimize this?
