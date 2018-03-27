@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface ShortsRO : Vars {
+interface ShortsRO : VarsIterable<Short> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Short
+
+    override fun slice(index: Int): ShortsRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): ShortsRO =
+        prepareSlice(index, size, this, ::ShortsROSlice)
+
+    fun getShort(index: Int): Short = get(index)
+
+    fun getShorts(index: Int, slice: Shorts) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Short> =
+        object : SliceIterator<Short>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Shorts : ShortsRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Short)
+
+    override fun slice(index: Int): Shorts =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Shorts =
+        prepareSlice(index, size, this, ::ShortsSlice)
+
+    fun setShort(index: Int, value: Short) = set(index, value)
+
+    fun setShorts(index: Int, slice: ShortsRO) =
+        slice.getShorts(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Shorts3 : ShortsRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Short)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface ShortArraySliceRO : ShortsRO,
-    ArrayVarSlice<Short> {
-    override fun slice(index: Int): ShortArraySliceRO
+internal open class ShortsROSlice(
+    open val array: ShortsRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Short>, ShortsRO {
+    final override fun get(index: Int): Short =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): ShortArraySliceRO
-    fun getShort(index: Int): Short = get(index)
-
-    fun getShorts(index: Int, slice: ShortArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ShortsRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Short> =
-        object : SliceIterator<Short>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface ShortArraySlice : Shorts,
-    ShortArraySliceRO {
-    override fun slice(index: Int): ShortArraySlice
-
-    override fun slice(index: Int, size: Int): ShortArraySlice
-    fun setShort(index: Int, value: Short) = set(index, value)
-
-    fun setShorts(index: Int, slice: ShortArraySliceRO) =
-        slice.getShorts(0, slice(index, slice.size))
+internal class ShortsSlice(
+    override val array: Shorts,
+    offset: Int,
+    size: Int
+) : ShortsROSlice(array, offset, size), Shorts {
+    override fun set(index: Int, value: Short) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapShortArraySlice(
+open class HeapShorts(
     val array: ShortArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Short>, ShortArraySlice {
-    override fun slice(index: Int): HeapShortArraySlice =
+) : HeapArrayVarSlice<Short>, Shorts {
+    override fun slice(index: Int): HeapShorts =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapShortArraySlice =
-        prepareSlice(index, size, array, ::HeapShortArraySlice)
+    override fun slice(index: Int, size: Int): HeapShorts =
+        prepareSlice(index, size, array, ::HeapShorts)
 
     final override fun get(index: Int): Short =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapShortArraySlice(
 
     final override fun getShorts(
         index: Int,
-        slice: ShortArraySlice
+        slice: Shorts
     ) {
-        if (slice !is HeapShortArraySlice) return super.getShorts(index, slice)
+        if (slice !is HeapShorts) return super.getShorts(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapShortArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setShorts(index: Int, slice: ShortArraySliceRO) {
-        if (slice !is HeapShortArraySlice) return super.setShorts(index, slice)
+    final override fun setShorts(index: Int, slice: ShortsRO) {
+        if (slice !is HeapShorts) return super.setShorts(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapShortArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ShortArraySliceRO) return false
+        if (other !is ShortsRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapShortArraySlice(
 inline fun ShortArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapShortArraySlice = HeapShortArraySlice(this, index, size)
+): HeapShorts = HeapShorts(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun ShortArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> ShortArraySliceRO.readAsShortArray(block: (ShortArray, Int, Int) -> R): R {
+inline fun <R> ShortsRO.readAsShortArray(block: (ShortArray, Int, Int) -> R): R {
     val array: ShortArray
     val offset: Int
     when (this) {
-        is HeapShortArraySlice -> {
+        is HeapShorts -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> ShortArraySliceRO.readAsShortArray(block: (ShortArray, Int, Int) 
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> ShortArraySlice.mutateAsShortArray(block: (ShortArray, Int, Int) -> R): R {
+inline fun <R> Shorts.mutateAsShortArray(block: (ShortArray, Int, Int) -> R): R {
     val array: ShortArray
     val offset: Int
     val mapped = when (this) {
-        is HeapShortArraySlice -> {
+        is HeapShorts -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> ShortArraySlice.mutateAsShortArray(block: (ShortArray, Int, Int) 
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun ShortArraySliceRO.readAsShortArray(): ShortArray = when (this) {
-    is HeapShortArraySlice ->
+fun ShortsRO.readAsShortArray(): ShortArray = when (this) {
+    is HeapShorts ->
         if (size == array.size && offset == 0) array else {
             ShortArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun ShortArraySliceRO.readAsShortArray(): ShortArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun ShortArraySliceRO.toShortArray(): ShortArray = when (this) {
-    is HeapShortArraySlice -> ShortArray(size)
+fun ShortsRO.toShortArray(): ShortArray = when (this) {
+    is HeapShorts -> ShortArray(size)
         .also { copy(array, it, size, offset) }
     else -> ShortArray(size) { getShort(it) }
 }
@@ -599,3 +628,23 @@ inline fun ShortArray2(width: Int, height: Int) =
  */
 inline fun ShortArray3(width: Int, height: Int, depth: Int) =
     ShortArray3(width, height, depth, ShortArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use ShortsRO",
+    ReplaceWith("ShortsRO", "org.tobi29.array.ShortsRO")
+)
+typealias ShortArraySliceRO = ShortsRO
+
+@Deprecated(
+    "Use Shorts",
+    ReplaceWith("Shorts", "org.tobi29.array.Shorts")
+)
+typealias ShortArraySlice = Shorts
+
+@Deprecated(
+    "Use HeapShorts",
+    ReplaceWith("HeapShorts", "org.tobi29.array.HeapShorts")
+)
+typealias HeapShortArraySlice = HeapShorts

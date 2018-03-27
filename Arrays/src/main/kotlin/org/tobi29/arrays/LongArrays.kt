@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface LongsRO : Vars {
+interface LongsRO : VarsIterable<Long> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Long
+
+    override fun slice(index: Int): LongsRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): LongsRO =
+        prepareSlice(index, size, this, ::LongsROSlice)
+
+    fun getLong(index: Int): Long = get(index)
+
+    fun getLongs(index: Int, slice: Longs) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Long> =
+        object : SliceIterator<Long>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Longs : LongsRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Long)
+
+    override fun slice(index: Int): Longs =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Longs =
+        prepareSlice(index, size, this, ::LongsSlice)
+
+    fun setLong(index: Int, value: Long) = set(index, value)
+
+    fun setLongs(index: Int, slice: LongsRO) =
+        slice.getLongs(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Longs3 : LongsRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Long)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface LongArraySliceRO : LongsRO,
-    ArrayVarSlice<Long> {
-    override fun slice(index: Int): LongArraySliceRO
+internal open class LongsROSlice(
+    open val array: LongsRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Long>, LongsRO {
+    final override fun get(index: Int): Long =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): LongArraySliceRO
-    fun getLong(index: Int): Long = get(index)
-
-    fun getLongs(index: Int, slice: LongArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is LongsRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Long> =
-        object : SliceIterator<Long>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface LongArraySlice : Longs,
-    LongArraySliceRO {
-    override fun slice(index: Int): LongArraySlice
-
-    override fun slice(index: Int, size: Int): LongArraySlice
-    fun setLong(index: Int, value: Long) = set(index, value)
-
-    fun setLongs(index: Int, slice: LongArraySliceRO) =
-        slice.getLongs(0, slice(index, slice.size))
+internal class LongsSlice(
+    override val array: Longs,
+    offset: Int,
+    size: Int
+) : LongsROSlice(array, offset, size), Longs {
+    override fun set(index: Int, value: Long) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapLongArraySlice(
+open class HeapLongs(
     val array: LongArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Long>, LongArraySlice {
-    override fun slice(index: Int): HeapLongArraySlice =
+) : HeapArrayVarSlice<Long>, Longs {
+    override fun slice(index: Int): HeapLongs =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapLongArraySlice =
-        prepareSlice(index, size, array, ::HeapLongArraySlice)
+    override fun slice(index: Int, size: Int): HeapLongs =
+        prepareSlice(index, size, array, ::HeapLongs)
 
     final override fun get(index: Int): Long =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapLongArraySlice(
 
     final override fun getLongs(
         index: Int,
-        slice: LongArraySlice
+        slice: Longs
     ) {
-        if (slice !is HeapLongArraySlice) return super.getLongs(index, slice)
+        if (slice !is HeapLongs) return super.getLongs(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapLongArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setLongs(index: Int, slice: LongArraySliceRO) {
-        if (slice !is HeapLongArraySlice) return super.setLongs(index, slice)
+    final override fun setLongs(index: Int, slice: LongsRO) {
+        if (slice !is HeapLongs) return super.setLongs(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapLongArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is LongArraySliceRO) return false
+        if (other !is LongsRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapLongArraySlice(
 inline fun LongArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapLongArraySlice = HeapLongArraySlice(this, index, size)
+): HeapLongs = HeapLongs(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun LongArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> LongArraySliceRO.readAsLongArray(block: (LongArray, Int, Int) -> R): R {
+inline fun <R> LongsRO.readAsLongArray(block: (LongArray, Int, Int) -> R): R {
     val array: LongArray
     val offset: Int
     when (this) {
-        is HeapLongArraySlice -> {
+        is HeapLongs -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> LongArraySliceRO.readAsLongArray(block: (LongArray, Int, Int) -> 
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> LongArraySlice.mutateAsLongArray(block: (LongArray, Int, Int) -> R): R {
+inline fun <R> Longs.mutateAsLongArray(block: (LongArray, Int, Int) -> R): R {
     val array: LongArray
     val offset: Int
     val mapped = when (this) {
-        is HeapLongArraySlice -> {
+        is HeapLongs -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> LongArraySlice.mutateAsLongArray(block: (LongArray, Int, Int) -> 
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun LongArraySliceRO.readAsLongArray(): LongArray = when (this) {
-    is HeapLongArraySlice ->
+fun LongsRO.readAsLongArray(): LongArray = when (this) {
+    is HeapLongs ->
         if (size == array.size && offset == 0) array else {
             LongArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun LongArraySliceRO.readAsLongArray(): LongArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun LongArraySliceRO.toLongArray(): LongArray = when (this) {
-    is HeapLongArraySlice -> LongArray(size)
+fun LongsRO.toLongArray(): LongArray = when (this) {
+    is HeapLongs -> LongArray(size)
         .also { copy(array, it, size, offset) }
     else -> LongArray(size) { getLong(it) }
 }
@@ -599,3 +628,23 @@ inline fun LongArray2(width: Int, height: Int) =
  */
 inline fun LongArray3(width: Int, height: Int, depth: Int) =
     LongArray3(width, height, depth, LongArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use LongsRO",
+    ReplaceWith("LongsRO", "org.tobi29.array.LongsRO")
+)
+typealias LongArraySliceRO = LongsRO
+
+@Deprecated(
+    "Use Longs",
+    ReplaceWith("Longs", "org.tobi29.array.Longs")
+)
+typealias LongArraySlice = Longs
+
+@Deprecated(
+    "Use HeapLongs",
+    ReplaceWith("HeapLongs", "org.tobi29.array.HeapLongs")
+)
+typealias HeapLongArraySlice = HeapLongs

@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface BytesRO : Vars {
+interface BytesRO : VarsIterable<Byte> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Byte
+
+    override fun slice(index: Int): BytesRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): BytesRO =
+        prepareSlice(index, size, this, ::BytesROSlice)
+
+    fun getByte(index: Int): Byte = get(index)
+
+    fun getBytes(index: Int, slice: Bytes) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Byte> =
+        object : SliceIterator<Byte>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Bytes : BytesRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Byte)
+
+    override fun slice(index: Int): Bytes =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Bytes =
+        prepareSlice(index, size, this, ::BytesSlice)
+
+    fun setByte(index: Int, value: Byte) = set(index, value)
+
+    fun setBytes(index: Int, slice: BytesRO) =
+        slice.getBytes(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Bytes3 : BytesRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Byte)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface ByteArraySliceRO : BytesRO,
-    ArrayVarSlice<Byte> {
-    override fun slice(index: Int): ByteArraySliceRO
+internal open class BytesROSlice(
+    open val array: BytesRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Byte>, BytesRO {
+    final override fun get(index: Int): Byte =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): ByteArraySliceRO
-    fun getByte(index: Int): Byte = get(index)
-
-    fun getBytes(index: Int, slice: ByteArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BytesRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Byte> =
-        object : SliceIterator<Byte>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface ByteArraySlice : Bytes,
-    ByteArraySliceRO {
-    override fun slice(index: Int): ByteArraySlice
-
-    override fun slice(index: Int, size: Int): ByteArraySlice
-    fun setByte(index: Int, value: Byte) = set(index, value)
-
-    fun setBytes(index: Int, slice: ByteArraySliceRO) =
-        slice.getBytes(0, slice(index, slice.size))
+internal class BytesSlice(
+    override val array: Bytes,
+    offset: Int,
+    size: Int
+) : BytesROSlice(array, offset, size), Bytes {
+    override fun set(index: Int, value: Byte) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapByteArraySlice(
+open class HeapBytes(
     val array: ByteArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Byte>, ByteArraySlice {
-    override fun slice(index: Int): HeapByteArraySlice =
+) : HeapArrayVarSlice<Byte>, Bytes {
+    override fun slice(index: Int): HeapBytes =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapByteArraySlice =
-        prepareSlice(index, size, array, ::HeapByteArraySlice)
+    override fun slice(index: Int, size: Int): HeapBytes =
+        prepareSlice(index, size, array, ::HeapBytes)
 
     final override fun get(index: Int): Byte =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapByteArraySlice(
 
     final override fun getBytes(
         index: Int,
-        slice: ByteArraySlice
+        slice: Bytes
     ) {
-        if (slice !is HeapByteArraySlice) return super.getBytes(index, slice)
+        if (slice !is HeapBytes) return super.getBytes(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapByteArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setBytes(index: Int, slice: ByteArraySliceRO) {
-        if (slice !is HeapByteArraySlice) return super.setBytes(index, slice)
+    final override fun setBytes(index: Int, slice: BytesRO) {
+        if (slice !is HeapBytes) return super.setBytes(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapByteArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ByteArraySliceRO) return false
+        if (other !is BytesRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapByteArraySlice(
 inline fun ByteArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapByteArraySlice = HeapByteArraySlice(this, index, size)
+): HeapBytes = HeapBytes(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun ByteArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> ByteArraySliceRO.readAsByteArray(block: (ByteArray, Int, Int) -> R): R {
+inline fun <R> BytesRO.readAsByteArray(block: (ByteArray, Int, Int) -> R): R {
     val array: ByteArray
     val offset: Int
     when (this) {
-        is HeapByteArraySlice -> {
+        is HeapBytes -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> ByteArraySliceRO.readAsByteArray(block: (ByteArray, Int, Int) -> 
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> ByteArraySlice.mutateAsByteArray(block: (ByteArray, Int, Int) -> R): R {
+inline fun <R> Bytes.mutateAsByteArray(block: (ByteArray, Int, Int) -> R): R {
     val array: ByteArray
     val offset: Int
     val mapped = when (this) {
-        is HeapByteArraySlice -> {
+        is HeapBytes -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> ByteArraySlice.mutateAsByteArray(block: (ByteArray, Int, Int) -> 
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun ByteArraySliceRO.readAsByteArray(): ByteArray = when (this) {
-    is HeapByteArraySlice ->
+fun BytesRO.readAsByteArray(): ByteArray = when (this) {
+    is HeapBytes ->
         if (size == array.size && offset == 0) array else {
             ByteArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun ByteArraySliceRO.readAsByteArray(): ByteArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun ByteArraySliceRO.toByteArray(): ByteArray = when (this) {
-    is HeapByteArraySlice -> ByteArray(size)
+fun BytesRO.toByteArray(): ByteArray = when (this) {
+    is HeapBytes -> ByteArray(size)
         .also { copy(array, it, size, offset) }
     else -> ByteArray(size) { getByte(it) }
 }
@@ -599,3 +628,23 @@ inline fun ByteArray2(width: Int, height: Int) =
  */
 inline fun ByteArray3(width: Int, height: Int, depth: Int) =
     ByteArray3(width, height, depth, ByteArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use BytesRO",
+    ReplaceWith("BytesRO", "org.tobi29.array.BytesRO")
+)
+typealias ByteArraySliceRO = BytesRO
+
+@Deprecated(
+    "Use Bytes",
+    ReplaceWith("Bytes", "org.tobi29.array.Bytes")
+)
+typealias ByteArraySlice = Bytes
+
+@Deprecated(
+    "Use HeapBytes",
+    ReplaceWith("HeapBytes", "org.tobi29.array.HeapBytes")
+)
+typealias HeapByteArraySlice = HeapBytes

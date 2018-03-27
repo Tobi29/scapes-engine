@@ -26,12 +26,21 @@ interface Vars {
      * Amount of elements in the array
      */
     val size: Int
+
+    fun slice(index: Int): Vars
+
+    fun slice(index: Int, size: Int): Vars
 }
+
+/**
+ * Arbitrary 1-dimensional array
+ */
+interface VarsIterable<out T> : Vars, Iterable<T>
 
 /**
  * Arbitrary 2-dimensional array
  */
-interface Vars2 : Vars {
+interface Vars2 {
     /**
      * Amount of indices on the first axis
      */
@@ -42,13 +51,13 @@ interface Vars2 : Vars {
      */
     val height: Int
 
-    override val size: Int get() = width * height
+    val size: Int get() = width * height
 }
 
 /**
  * Arbitrary 3-dimensional array
  */
-interface Vars3 : Vars {
+interface Vars3 {
     /**
      * Amount of indices on the first axis
      */
@@ -64,34 +73,13 @@ interface Vars3 : Vars {
      */
     val depth: Int
 
-    override val size: Int get() = width * height * depth
+    val size: Int get() = width * height * depth
 }
-
-/**
- * Arbitrary 1-dimensional array segment
- */
-interface ArraySegment : Vars {
-    fun slice(index: Int): ArraySegment
-
-    fun slice(index: Int, size: Int): ArraySegment
-}
-
-/**
- * Arbitrary 1-dimensional iterable array
- */
-interface VarsIterable<out T> : Vars,
-    Iterable<T>
-
-/**
- * Arbitrary 1-dimensional array slice
- */
-interface ArrayVarSlice<out T> : VarsIterable<T>,
-    ArraySegment
 
 /**
  * Arbitrary array slice based on some heap array with offset support
  */
-interface HeapArrayVarSlice<out T> : ArrayVarSlice<T> {
+interface HeapArrayVarSlice<out T> : VarsIterable<T> {
     /**
      * First element in backing array used by the slice
      */
@@ -104,6 +92,15 @@ internal inline fun <T, R : HeapArrayVarSlice<*>> R.prepareSlice(
     array: T,
     supplier: (T, Int, Int) -> R
 ): R = prepareSlice(this.offset, this.size, index, size) { offset, size ->
+    supplier(array, offset, size)
+}
+
+internal inline fun <T, R : Vars> R.prepareSlice(
+    index: Int,
+    size: Int,
+    array: T,
+    supplier: (T, Int, Int) -> R
+): R = prepareSlice(0, this.size, index, size) { offset, size ->
     supplier(array, offset, size)
 }
 
@@ -197,3 +194,17 @@ internal abstract class SliceIterator<out T>(size: Int) : Iterator<T> {
 
     protected abstract fun access(index: Int): T
 }
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use Vars",
+    ReplaceWith("Vars", "org.tobi29.arrays.Vars")
+)
+typealias ArraySegment = Vars
+
+@Deprecated(
+    "Use VarsIterable<T>",
+    ReplaceWith("VarsIterable<T>", "org.tobi29.arrays.VarsIterable")
+)
+typealias ArrayVarSlice<T> = VarsIterable<T>

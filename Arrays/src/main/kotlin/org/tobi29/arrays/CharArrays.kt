@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface CharsRO : Vars {
+interface CharsRO : VarsIterable<Char> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Char
+
+    override fun slice(index: Int): CharsRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): CharsRO =
+        prepareSlice(index, size, this, ::CharsROSlice)
+
+    fun getChar(index: Int): Char = get(index)
+
+    fun getChars(index: Int, slice: Chars) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Char> =
+        object : SliceIterator<Char>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Chars : CharsRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Char)
+
+    override fun slice(index: Int): Chars =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Chars =
+        prepareSlice(index, size, this, ::CharsSlice)
+
+    fun setChar(index: Int, value: Char) = set(index, value)
+
+    fun setChars(index: Int, slice: CharsRO) =
+        slice.getChars(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Chars3 : CharsRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Char)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface CharArraySliceRO : CharsRO,
-    ArrayVarSlice<Char> {
-    override fun slice(index: Int): CharArraySliceRO
+internal open class CharsROSlice(
+    open val array: CharsRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Char>, CharsRO {
+    final override fun get(index: Int): Char =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): CharArraySliceRO
-    fun getChar(index: Int): Char = get(index)
-
-    fun getChars(index: Int, slice: CharArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CharsRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Char> =
-        object : SliceIterator<Char>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface CharArraySlice : Chars,
-    CharArraySliceRO {
-    override fun slice(index: Int): CharArraySlice
-
-    override fun slice(index: Int, size: Int): CharArraySlice
-    fun setChar(index: Int, value: Char) = set(index, value)
-
-    fun setChars(index: Int, slice: CharArraySliceRO) =
-        slice.getChars(0, slice(index, slice.size))
+internal class CharsSlice(
+    override val array: Chars,
+    offset: Int,
+    size: Int
+) : CharsROSlice(array, offset, size), Chars {
+    override fun set(index: Int, value: Char) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapCharArraySlice(
+open class HeapChars(
     val array: CharArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Char>, CharArraySlice {
-    override fun slice(index: Int): HeapCharArraySlice =
+) : HeapArrayVarSlice<Char>, Chars {
+    override fun slice(index: Int): HeapChars =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapCharArraySlice =
-        prepareSlice(index, size, array, ::HeapCharArraySlice)
+    override fun slice(index: Int, size: Int): HeapChars =
+        prepareSlice(index, size, array, ::HeapChars)
 
     final override fun get(index: Int): Char =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapCharArraySlice(
 
     final override fun getChars(
         index: Int,
-        slice: CharArraySlice
+        slice: Chars
     ) {
-        if (slice !is HeapCharArraySlice) return super.getChars(index, slice)
+        if (slice !is HeapChars) return super.getChars(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapCharArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setChars(index: Int, slice: CharArraySliceRO) {
-        if (slice !is HeapCharArraySlice) return super.setChars(index, slice)
+    final override fun setChars(index: Int, slice: CharsRO) {
+        if (slice !is HeapChars) return super.setChars(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapCharArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is CharArraySliceRO) return false
+        if (other !is CharsRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapCharArraySlice(
 inline fun CharArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapCharArraySlice = HeapCharArraySlice(this, index, size)
+): HeapChars = HeapChars(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun CharArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> CharArraySliceRO.readAsCharArray(block: (CharArray, Int, Int) -> R): R {
+inline fun <R> CharsRO.readAsCharArray(block: (CharArray, Int, Int) -> R): R {
     val array: CharArray
     val offset: Int
     when (this) {
-        is HeapCharArraySlice -> {
+        is HeapChars -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> CharArraySliceRO.readAsCharArray(block: (CharArray, Int, Int) -> 
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> CharArraySlice.mutateAsCharArray(block: (CharArray, Int, Int) -> R): R {
+inline fun <R> Chars.mutateAsCharArray(block: (CharArray, Int, Int) -> R): R {
     val array: CharArray
     val offset: Int
     val mapped = when (this) {
-        is HeapCharArraySlice -> {
+        is HeapChars -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> CharArraySlice.mutateAsCharArray(block: (CharArray, Int, Int) -> 
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun CharArraySliceRO.readAsCharArray(): CharArray = when (this) {
-    is HeapCharArraySlice ->
+fun CharsRO.readAsCharArray(): CharArray = when (this) {
+    is HeapChars ->
         if (size == array.size && offset == 0) array else {
             CharArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun CharArraySliceRO.readAsCharArray(): CharArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun CharArraySliceRO.toCharArray(): CharArray = when (this) {
-    is HeapCharArraySlice -> CharArray(size)
+fun CharsRO.toCharArray(): CharArray = when (this) {
+    is HeapChars -> CharArray(size)
         .also { copy(array, it, size, offset) }
     else -> CharArray(size) { getChar(it) }
 }
@@ -599,3 +628,23 @@ inline fun CharArray2(width: Int, height: Int) =
  */
 inline fun CharArray3(width: Int, height: Int, depth: Int) =
     CharArray3(width, height, depth, CharArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use CharsRO",
+    ReplaceWith("CharsRO", "org.tobi29.array.CharsRO")
+)
+typealias CharArraySliceRO = CharsRO
+
+@Deprecated(
+    "Use Chars",
+    ReplaceWith("Chars", "org.tobi29.array.Chars")
+)
+typealias CharArraySlice = Chars
+
+@Deprecated(
+    "Use HeapChars",
+    ReplaceWith("HeapChars", "org.tobi29.array.HeapChars")
+)
+typealias HeapCharArraySlice = HeapChars

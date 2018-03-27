@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface BooleansRO : Vars {
+interface BooleansRO : VarsIterable<Boolean> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Boolean
+
+    override fun slice(index: Int): BooleansRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): BooleansRO =
+        prepareSlice(index, size, this, ::BooleansROSlice)
+
+    fun getBoolean(index: Int): Boolean = get(index)
+
+    fun getBooleans(index: Int, slice: Booleans) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Boolean> =
+        object : SliceIterator<Boolean>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Booleans : BooleansRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Boolean)
+
+    override fun slice(index: Int): Booleans =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Booleans =
+        prepareSlice(index, size, this, ::BooleansSlice)
+
+    fun setBoolean(index: Int, value: Boolean) = set(index, value)
+
+    fun setBooleans(index: Int, slice: BooleansRO) =
+        slice.getBooleans(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Booleans3 : BooleansRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Boolean)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface BooleanArraySliceRO : BooleansRO,
-    ArrayVarSlice<Boolean> {
-    override fun slice(index: Int): BooleanArraySliceRO
+internal open class BooleansROSlice(
+    open val array: BooleansRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Boolean>, BooleansRO {
+    final override fun get(index: Int): Boolean =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): BooleanArraySliceRO
-    fun getBoolean(index: Int): Boolean = get(index)
-
-    fun getBooleans(index: Int, slice: BooleanArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BooleansRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Boolean> =
-        object : SliceIterator<Boolean>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface BooleanArraySlice : Booleans,
-    BooleanArraySliceRO {
-    override fun slice(index: Int): BooleanArraySlice
-
-    override fun slice(index: Int, size: Int): BooleanArraySlice
-    fun setBoolean(index: Int, value: Boolean) = set(index, value)
-
-    fun setBooleans(index: Int, slice: BooleanArraySliceRO) =
-        slice.getBooleans(0, slice(index, slice.size))
+internal class BooleansSlice(
+    override val array: Booleans,
+    offset: Int,
+    size: Int
+) : BooleansROSlice(array, offset, size), Booleans {
+    override fun set(index: Int, value: Boolean) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapBooleanArraySlice(
+open class HeapBooleans(
     val array: BooleanArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Boolean>, BooleanArraySlice {
-    override fun slice(index: Int): HeapBooleanArraySlice =
+) : HeapArrayVarSlice<Boolean>, Booleans {
+    override fun slice(index: Int): HeapBooleans =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapBooleanArraySlice =
-        prepareSlice(index, size, array, ::HeapBooleanArraySlice)
+    override fun slice(index: Int, size: Int): HeapBooleans =
+        prepareSlice(index, size, array, ::HeapBooleans)
 
     final override fun get(index: Int): Boolean =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapBooleanArraySlice(
 
     final override fun getBooleans(
         index: Int,
-        slice: BooleanArraySlice
+        slice: Booleans
     ) {
-        if (slice !is HeapBooleanArraySlice) return super.getBooleans(index, slice)
+        if (slice !is HeapBooleans) return super.getBooleans(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapBooleanArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setBooleans(index: Int, slice: BooleanArraySliceRO) {
-        if (slice !is HeapBooleanArraySlice) return super.setBooleans(index, slice)
+    final override fun setBooleans(index: Int, slice: BooleansRO) {
+        if (slice !is HeapBooleans) return super.setBooleans(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapBooleanArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is BooleanArraySliceRO) return false
+        if (other !is BooleansRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapBooleanArraySlice(
 inline fun BooleanArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapBooleanArraySlice = HeapBooleanArraySlice(this, index, size)
+): HeapBooleans = HeapBooleans(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun BooleanArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> BooleanArraySliceRO.readAsBooleanArray(block: (BooleanArray, Int, Int) -> R): R {
+inline fun <R> BooleansRO.readAsBooleanArray(block: (BooleanArray, Int, Int) -> R): R {
     val array: BooleanArray
     val offset: Int
     when (this) {
-        is HeapBooleanArraySlice -> {
+        is HeapBooleans -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> BooleanArraySliceRO.readAsBooleanArray(block: (BooleanArray, Int,
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> BooleanArraySlice.mutateAsBooleanArray(block: (BooleanArray, Int, Int) -> R): R {
+inline fun <R> Booleans.mutateAsBooleanArray(block: (BooleanArray, Int, Int) -> R): R {
     val array: BooleanArray
     val offset: Int
     val mapped = when (this) {
-        is HeapBooleanArraySlice -> {
+        is HeapBooleans -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> BooleanArraySlice.mutateAsBooleanArray(block: (BooleanArray, Int,
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun BooleanArraySliceRO.readAsBooleanArray(): BooleanArray = when (this) {
-    is HeapBooleanArraySlice ->
+fun BooleansRO.readAsBooleanArray(): BooleanArray = when (this) {
+    is HeapBooleans ->
         if (size == array.size && offset == 0) array else {
             BooleanArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun BooleanArraySliceRO.readAsBooleanArray(): BooleanArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun BooleanArraySliceRO.toBooleanArray(): BooleanArray = when (this) {
-    is HeapBooleanArraySlice -> BooleanArray(size)
+fun BooleansRO.toBooleanArray(): BooleanArray = when (this) {
+    is HeapBooleans -> BooleanArray(size)
         .also { copy(array, it, size, offset) }
     else -> BooleanArray(size) { getBoolean(it) }
 }
@@ -599,3 +628,23 @@ inline fun BooleanArray2(width: Int, height: Int) =
  */
 inline fun BooleanArray3(width: Int, height: Int, depth: Int) =
     BooleanArray3(width, height, depth, BooleanArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use BooleansRO",
+    ReplaceWith("BooleansRO", "org.tobi29.array.BooleansRO")
+)
+typealias BooleanArraySliceRO = BooleansRO
+
+@Deprecated(
+    "Use Booleans",
+    ReplaceWith("Booleans", "org.tobi29.array.Booleans")
+)
+typealias BooleanArraySlice = Booleans
+
+@Deprecated(
+    "Use HeapBooleans",
+    ReplaceWith("HeapBooleans", "org.tobi29.array.HeapBooleans")
+)
+typealias HeapBooleanArraySlice = HeapBooleans

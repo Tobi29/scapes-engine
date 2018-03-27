@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface FloatsRO : Vars {
+interface FloatsRO : VarsIterable<Float> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Float
+
+    override fun slice(index: Int): FloatsRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): FloatsRO =
+        prepareSlice(index, size, this, ::FloatsROSlice)
+
+    fun getFloat(index: Int): Float = get(index)
+
+    fun getFloats(index: Int, slice: Floats) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Float> =
+        object : SliceIterator<Float>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Floats : FloatsRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Float)
+
+    override fun slice(index: Int): Floats =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Floats =
+        prepareSlice(index, size, this, ::FloatsSlice)
+
+    fun setFloat(index: Int, value: Float) = set(index, value)
+
+    fun setFloats(index: Int, slice: FloatsRO) =
+        slice.getFloats(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Floats3 : FloatsRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Float)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface FloatArraySliceRO : FloatsRO,
-    ArrayVarSlice<Float> {
-    override fun slice(index: Int): FloatArraySliceRO
+internal open class FloatsROSlice(
+    open val array: FloatsRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Float>, FloatsRO {
+    final override fun get(index: Int): Float =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): FloatArraySliceRO
-    fun getFloat(index: Int): Float = get(index)
-
-    fun getFloats(index: Int, slice: FloatArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FloatsRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Float> =
-        object : SliceIterator<Float>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface FloatArraySlice : Floats,
-    FloatArraySliceRO {
-    override fun slice(index: Int): FloatArraySlice
-
-    override fun slice(index: Int, size: Int): FloatArraySlice
-    fun setFloat(index: Int, value: Float) = set(index, value)
-
-    fun setFloats(index: Int, slice: FloatArraySliceRO) =
-        slice.getFloats(0, slice(index, slice.size))
+internal class FloatsSlice(
+    override val array: Floats,
+    offset: Int,
+    size: Int
+) : FloatsROSlice(array, offset, size), Floats {
+    override fun set(index: Int, value: Float) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapFloatArraySlice(
+open class HeapFloats(
     val array: FloatArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Float>, FloatArraySlice {
-    override fun slice(index: Int): HeapFloatArraySlice =
+) : HeapArrayVarSlice<Float>, Floats {
+    override fun slice(index: Int): HeapFloats =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapFloatArraySlice =
-        prepareSlice(index, size, array, ::HeapFloatArraySlice)
+    override fun slice(index: Int, size: Int): HeapFloats =
+        prepareSlice(index, size, array, ::HeapFloats)
 
     final override fun get(index: Int): Float =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapFloatArraySlice(
 
     final override fun getFloats(
         index: Int,
-        slice: FloatArraySlice
+        slice: Floats
     ) {
-        if (slice !is HeapFloatArraySlice) return super.getFloats(index, slice)
+        if (slice !is HeapFloats) return super.getFloats(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapFloatArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setFloats(index: Int, slice: FloatArraySliceRO) {
-        if (slice !is HeapFloatArraySlice) return super.setFloats(index, slice)
+    final override fun setFloats(index: Int, slice: FloatsRO) {
+        if (slice !is HeapFloats) return super.setFloats(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapFloatArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is FloatArraySliceRO) return false
+        if (other !is FloatsRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapFloatArraySlice(
 inline fun FloatArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapFloatArraySlice = HeapFloatArraySlice(this, index, size)
+): HeapFloats = HeapFloats(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun FloatArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> FloatArraySliceRO.readAsFloatArray(block: (FloatArray, Int, Int) -> R): R {
+inline fun <R> FloatsRO.readAsFloatArray(block: (FloatArray, Int, Int) -> R): R {
     val array: FloatArray
     val offset: Int
     when (this) {
-        is HeapFloatArraySlice -> {
+        is HeapFloats -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> FloatArraySliceRO.readAsFloatArray(block: (FloatArray, Int, Int) 
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> FloatArraySlice.mutateAsFloatArray(block: (FloatArray, Int, Int) -> R): R {
+inline fun <R> Floats.mutateAsFloatArray(block: (FloatArray, Int, Int) -> R): R {
     val array: FloatArray
     val offset: Int
     val mapped = when (this) {
-        is HeapFloatArraySlice -> {
+        is HeapFloats -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> FloatArraySlice.mutateAsFloatArray(block: (FloatArray, Int, Int) 
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun FloatArraySliceRO.readAsFloatArray(): FloatArray = when (this) {
-    is HeapFloatArraySlice ->
+fun FloatsRO.readAsFloatArray(): FloatArray = when (this) {
+    is HeapFloats ->
         if (size == array.size && offset == 0) array else {
             FloatArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun FloatArraySliceRO.readAsFloatArray(): FloatArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun FloatArraySliceRO.toFloatArray(): FloatArray = when (this) {
-    is HeapFloatArraySlice -> FloatArray(size)
+fun FloatsRO.toFloatArray(): FloatArray = when (this) {
+    is HeapFloats -> FloatArray(size)
         .also { copy(array, it, size, offset) }
     else -> FloatArray(size) { getFloat(it) }
 }
@@ -599,3 +628,23 @@ inline fun FloatArray2(width: Int, height: Int) =
  */
 inline fun FloatArray3(width: Int, height: Int, depth: Int) =
     FloatArray3(width, height, depth, FloatArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use FloatsRO",
+    ReplaceWith("FloatsRO", "org.tobi29.array.FloatsRO")
+)
+typealias FloatArraySliceRO = FloatsRO
+
+@Deprecated(
+    "Use Floats",
+    ReplaceWith("Floats", "org.tobi29.array.Floats")
+)
+typealias FloatArraySlice = Floats
+
+@Deprecated(
+    "Use HeapFloats",
+    ReplaceWith("HeapFloats", "org.tobi29.array.HeapFloats")
+)
+typealias HeapFloatArraySlice = HeapFloats

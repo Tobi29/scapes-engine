@@ -27,13 +27,32 @@ import org.tobi29.stdex.copy
 /**
  * 1-dimensional read-only array
  */
-interface ElementsRO<out T> : Vars {
+interface ElementsRO<out T> : VarsIterable<T> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): T
+
+    override fun slice(index: Int): ElementsRO<T> =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): ElementsRO<T> =
+        prepareSlice(index, size, this, ::ElementsROSlice)
+
+
+    fun getElements(index: Int, slice: Elements<in T>) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<T> =
+        object : SliceIterator<T>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -46,6 +65,16 @@ interface Elements<T> : ElementsRO<T> {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: T)
+
+    override fun slice(index: Int): Elements<T> =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Elements<T> =
+        prepareSlice(index, size, this, ::ElementsSlice)
+
+
+    fun setElements(index: Int, slice: ElementsRO<out T>) =
+        slice.getElements(0, slice(index, slice.size))
 }
 
 /**
@@ -102,54 +131,54 @@ interface Elements3<T> : ElementsRO3<T> {
     operator fun set(index1: Int, index2: Int, index3: Int, value: T)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface ArraySliceRO<T> : ElementsRO<T>,
-    ArrayVarSlice<T> {
-    override fun slice(index: Int): ArraySliceRO<T>
+internal open class ElementsROSlice<T>(
+    open val array: ElementsRO<T>,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<T>, ElementsRO<T> {
+    final override fun get(index: Int): T =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): ArraySliceRO<T>
-
-    fun getElements(index: Int, slice: ArraySlice<in T>) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ElementsRO<*>) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<T> =
-        object : SliceIterator<T>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + (this[i]?.hashCode() ?: 0)
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface ArraySlice<T> : Elements<T>,
-    ArraySliceRO<T> {
-    override fun slice(index: Int): ArraySlice<T>
-
-    override fun slice(index: Int, size: Int): ArraySlice<T>
-
-    fun setElements(index: Int, slice: ArraySliceRO<out T>) =
-        slice.getElements(0, slice(index, slice.size))
+internal class ElementsSlice<T>(
+    override val array: Elements<T>,
+    offset: Int,
+    size: Int
+) : ElementsROSlice<T>(array, offset, size), Elements<T> {
+    override fun set(index: Int, value: T) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapArraySlice<T>(
+open class HeapElements<T>(
     val array: Array<T>,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<T>, ArraySlice<T> {
-    override fun slice(index: Int): HeapArraySlice<T> =
+) : HeapArrayVarSlice<T>, Elements<T> {
+    override fun slice(index: Int): HeapElements<T> =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapArraySlice<T> =
-        prepareSlice(index, size, array, ::HeapArraySlice)
+    override fun slice(index: Int, size: Int): HeapElements<T> =
+        prepareSlice(index, size, array, ::HeapElements)
 
     final override fun get(index: Int): T =
         array[index(offset, size, index)]
@@ -159,9 +188,9 @@ open class HeapArraySlice<T>(
 
     final override fun getElements(
         index: Int,
-        slice: ArraySlice<in T>
+        slice: Elements<in T>
     ) {
-        if (slice !is HeapArraySlice) return super.getElements(index, slice)
+        if (slice !is HeapElements) return super.getElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -169,8 +198,8 @@ open class HeapArraySlice<T>(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setElements(index: Int, slice: ArraySliceRO<out T>) {
-        if (slice !is HeapArraySlice) return super.setElements(index, slice)
+    final override fun setElements(index: Int, slice: ElementsRO<out T>) {
+        if (slice !is HeapElements) return super.setElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -180,7 +209,7 @@ open class HeapArraySlice<T>(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ArraySliceRO<*>) return false
+        if (other !is ElementsRO<*>) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -207,7 +236,7 @@ open class HeapArraySlice<T>(
 inline fun <T> Array<T>.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapArraySlice<T> = HeapArraySlice(this, index, size)
+): HeapElements<T> = HeapElements(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -227,11 +256,11 @@ inline fun <T> Array<T>.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <reified T, R> ArraySliceRO<T>.readAsArray(block: (Array<T>, Int, Int) -> R): R {
+inline fun <reified T, R> ElementsRO<T>.readAsArray(block: (Array<T>, Int, Int) -> R): R {
     val array: Array<T>
     val offset: Int
     when (this) {
-        is HeapArraySlice<T> -> {
+        is HeapElements<T> -> {
             array = this.array
             offset = this.offset
         }
@@ -262,11 +291,11 @@ inline fun <reified T, R> ArraySliceRO<T>.readAsArray(block: (Array<T>, Int, Int
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <reified T, R> ArraySlice<T>.mutateAsArray(block: (Array<T>, Int, Int) -> R): R {
+inline fun <reified T, R> Elements<T>.mutateAsArray(block: (Array<T>, Int, Int) -> R): R {
     val array: Array<T>
     val offset: Int
     val mapped = when (this) {
-        is HeapArraySlice<T> -> {
+        is HeapElements<T> -> {
             array = this.array
             offset = this.offset
             true
@@ -292,8 +321,8 @@ inline fun <reified T, R> ArraySlice<T>.mutateAsArray(block: (Array<T>, Int, Int
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-inline fun <reified T> ArraySliceRO<T>.readAsArray(): Array<T> =
-    if (this is HeapArraySlice<T> && size == array.size && offset == 0) array
+inline fun <reified T> ElementsRO<T>.readAsArray(): Array<T> =
+    if (this is HeapElements<T> && size == array.size && offset == 0) array
     else Array(size) { get(it) }
 
 /**
@@ -301,7 +330,7 @@ inline fun <reified T> ArraySliceRO<T>.readAsArray(): Array<T> =
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-inline fun <reified T> ArraySliceRO<T>.toArray(): Array<T> =
+inline fun <reified T> ElementsRO<T>.toArray(): Array<T> =
     Array(size) { get(it) }
 
 /**
@@ -598,3 +627,23 @@ inline fun <reified T> array3OfNulls(
     width, height, depth,
     arrayOfNulls<T>(width * height)
 )
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use ElementsRO<T>",
+    ReplaceWith("ElementsRO<T>", "org.tobi29.array.ElementsRO<*>")
+)
+typealias ArraySliceRO<T> = ElementsRO<T>
+
+@Deprecated(
+    "Use Elements<T>",
+    ReplaceWith("Elements<T>", "org.tobi29.array.Elements<*>")
+)
+typealias ArraySlice<T> = Elements<T>
+
+@Deprecated(
+    "Use HeapElements<T>",
+    ReplaceWith("HeapElements<T>", "org.tobi29.array.HeapElements<*>")
+)
+typealias HeapArraySlice<T> = HeapElements<T>

@@ -130,6 +130,12 @@ val specializeName: (String) -> String =
     if (args.isEmpty()) {
         { it }
     } else specialize
+val elements = if (isReference) "Elements" else "s"
+val elementsRO = if (isReference) "ElementsRO" else "sRO"
+val elements2 = if (isReference) "Elements2" else "s2"
+val elementsRO2 = if (isReference) "ElementsRO2" else "sRO2"
+val elements3 = if (isReference) "Elements3" else "s3"
+val elementsRO3 = if (isReference) "ElementsRO3" else "sRO3"
 
 print(
     """/*
@@ -162,31 +168,66 @@ ${if (!isReference) "import org.tobi29.stdex.primitiveHashCode\n"
 /**
  * 1-dimensional read-only array
  */
-interface ${specializeOut(if (isReference) "ElementsRO" else "sRO")} : Vars {
+interface ${specializeOut(elementsRO)} : VarsIterable<$type> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): $type
+
+    override fun slice(index: Int): ${specialize(elementsRO)} =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): ${specialize(elementsRO)} =
+        prepareSlice(index, size, this, ::${specializeName("${elementsRO}Slice")})
+
+${if (!isReference) """    fun get$type(index: Int): $type = get(index)
+""" else ""}
+    fun get${if (isReference) "Element" else type}s(index: Int, slice: ${specializeIn(
+        elements
+    )}) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<$type> =
+        object : SliceIterator<$type>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
  * 1-dimensional read-write array
  */
-interface ${specialize(if (isReference) "Elements" else "s")} : ${specialize(if (isReference) "ElementsRO" else "sRO")} {
+interface ${specialize(elements)} : ${specialize(elementsRO)} {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
      * @param value The value to set to
      */
     operator fun set(index: Int, value: $type)
+
+    override fun slice(index: Int): ${specialize(elements)} =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): ${specialize(elements)} =
+        prepareSlice(index, size, this, ::${specializeName("${elements}Slice")})
+
+${if (!isReference) """    fun set$type(index: Int, value: $type) = set(index, value)
+""" else ""}
+    fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specializeOut(
+        elementsRO
+    )}) =
+        slice.get${if (isReference) "Element" else type}s(0, slice(index, slice.size))
 }
 
 /**
  * 2-dimensional read-only array
  */
-interface ${specializeOut(if (isReference) "ElementsRO2" else "sRO2")} : Vars2 {
+interface ${specializeOut(elementsRO2)} : Vars2 {
     /**
      * Returns the element at the given index in the array
      * @param index1 Index on the first axis of the element
@@ -199,8 +240,8 @@ interface ${specializeOut(if (isReference) "ElementsRO2" else "sRO2")} : Vars2 {
 /**
  * 2-dimensional read-write array
  */
-interface ${specialize(if (isReference) "Elements2" else "s2")} : ${specialize(
-        if (isReference) "ElementsRO2" else "sRO2"
+interface ${specialize(elements2)} : ${specialize(
+        elementsRO2
     )} {
     /**
      * Sets the element at the given index in the array
@@ -214,7 +255,7 @@ interface ${specialize(if (isReference) "Elements2" else "s2")} : ${specialize(
 /**
  * 3-dimensional read-only array
  */
-interface ${specializeOut(if (isReference) "ElementsRO3" else "sRO3")} : Vars3 {
+interface ${specializeOut(elementsRO3)} : Vars3 {
     /**
      * Returns the element at the given index in the array
      * @param index1 Index on the first axis of the element
@@ -228,8 +269,8 @@ interface ${specializeOut(if (isReference) "ElementsRO3" else "sRO3")} : Vars3 {
 /**
  * 3-dimensional read-write array
  */
-interface ${specialize(if (isReference) "Elements3" else "s3")} : ${specialize(
-        if (isReference) "ElementsRO3" else "sRO3"
+interface ${specialize(elements3)} : ${specialize(
+        elementsRO3
     )} {
     /**
      * Sets the element at the given index in the array
@@ -241,60 +282,54 @@ interface ${specialize(if (isReference) "Elements3" else "s3")} : ${specialize(
     operator fun set(index1: Int, index2: Int, index3: Int, value: $type)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface ${specialize("ArraySliceRO")} : ${specialize(if (isReference) "ElementsRO" else "sRO")},
-    ArrayVarSlice<$type> {
-    override fun slice(index: Int): ${specialize("ArraySliceRO")}
+internal open class ${specialize("${elementsRO}Slice")}(
+    open val array: ${specialize(elementsRO)},
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<$type>, ${specialize(elementsRO)} {
+    final override fun get(index: Int): $type =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): ${specialize("ArraySliceRO")}
-${if (!isReference) """    fun get$type(index: Int): $type = get(index)
-""" else ""}
-    fun get${if (isReference) "Element" else type}s(index: Int, slice: ${specializeIn(
-        "ArraySlice"
-    )}) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ${specializeAny(elementsRO)}) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<$type> =
-        object : SliceIterator<$type>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + ${if (isReference) "(this[i]?.hashCode() ?: 0)" else "this[i].primitiveHashCode()"}
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface ${specialize("ArraySlice")} : ${specialize(if (isReference) "Elements" else "s")},
-    ${specialize("ArraySliceRO")} {
-    override fun slice(index: Int): ${specialize("ArraySlice")}
-
-    override fun slice(index: Int, size: Int): ${specialize("ArraySlice")}
-${if (!isReference) """    fun set$type(index: Int, value: $type) = set(index, value)
-""" else ""}
-    fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specializeOut(
-        "ArraySliceRO"
-    )}) =
-        slice.get${if (isReference) "Element" else type}s(0, slice(index, slice.size))
+internal class ${specialize("${elements}Slice")}(
+    override val array: ${specialize(elements)},
+    offset: Int,
+    size: Int
+) : ${specialize("${elementsRO}Slice")}(array, offset, size), ${specialize(elements)} {
+    override fun set(index: Int, value: $type) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class Heap${specialize("ArraySlice")}(
+open class Heap${specialize(elements)}(
     val array: ${specialize("Array")},
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<$type>, ${specialize("ArraySlice")} {
-    override fun slice(index: Int): Heap${specialize("ArraySlice")} =
+) : HeapArrayVarSlice<$type>, ${specialize(elements)} {
+    override fun slice(index: Int): Heap${specialize(elements)} =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): Heap${specialize("ArraySlice")} =
-        prepareSlice(index, size, array, ::Heap${specializeName("ArraySlice")})
+    override fun slice(index: Int, size: Int): Heap${specialize(elements)} =
+        prepareSlice(index, size, array, ::Heap${specializeName(elements)})
 
     final override fun get(index: Int): $type =
         array[index(offset, size, index)]
@@ -304,10 +339,10 @@ open class Heap${specialize("ArraySlice")}(
 
     final override fun get${if (isReference) "Element" else type}s(
         index: Int,
-        slice: ${specializeIn("ArraySlice")}
+        slice: ${specializeIn(elements)}
     ) {
         if (slice !is Heap${specializeName(
-        "ArraySlice"
+        elements
     )}) return super.get${if (isReference) "Element" else type}s(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -317,10 +352,10 @@ open class Heap${specialize("ArraySlice")}(
     }
 
     final override fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specializeOut(
-        "ArraySliceRO"
+        elementsRO
     )}) {
         if (slice !is Heap${specializeName(
-        "ArraySlice"
+        elements
     )}) return super.set${if (isReference) "Element" else type}s(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -331,7 +366,7 @@ open class Heap${specialize("ArraySlice")}(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is ${specializeAny("ArraySliceRO")}) return false
+        if (other !is ${specializeAny(elementsRO)}) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -358,7 +393,7 @@ open class Heap${specialize("ArraySlice")}(
 inline $genericFun ${specialize("Array")}.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): Heap${specialize("ArraySlice")} = Heap${specializeName("ArraySlice")}(this, index, size)
+): Heap${specialize(elements)} = Heap${specializeName(elements)}(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -378,7 +413,7 @@ inline $genericFun ${specialize("Array")}.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun${appendedGenericReified("R")} ${specialize("ArraySliceRO")}.readAs${specializeName(
+inline fun${appendedGenericReified("R")} ${specialize(elementsRO)}.readAs${specializeName(
         "Array"
     )}(block: (${specialize(
         "Array"
@@ -386,7 +421,7 @@ inline fun${appendedGenericReified("R")} ${specialize("ArraySliceRO")}.readAs${s
     val array: ${specialize("Array")}
     val offset: Int
     when (this) {
-        is Heap${specialize("ArraySlice")} -> {
+        is Heap${specialize(elements)} -> {
             array = this.array
             offset = this.offset
         }
@@ -417,7 +452,7 @@ inline fun${appendedGenericReified("R")} ${specialize("ArraySliceRO")}.readAs${s
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun${appendedGenericReified("R")} ${specialize("ArraySlice")}.mutateAs${specializeName(
+inline fun${appendedGenericReified("R")} ${specialize(elements)}.mutateAs${specializeName(
         "Array"
     )}(block: (${specialize(
         "Array"
@@ -425,7 +460,7 @@ inline fun${appendedGenericReified("R")} ${specialize("ArraySlice")}.mutateAs${s
     val array: ${specialize("Array")}
     val offset: Int
     val mapped = when (this) {
-        is Heap${specialize("ArraySlice")} -> {
+        is Heap${specialize(elements)} -> {
             array = this.array
             offset = this.offset
             true
@@ -439,7 +474,7 @@ inline fun${appendedGenericReified("R")} ${specialize("ArraySlice")}.mutateAs${s
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) get${specializeName(if (isReference) "Elements" else "s")}(0, array.sliceOver())
+        if (!mapped) get${specializeName(elements)}(0, array.sliceOver())
     }
 }
 
@@ -451,13 +486,13 @@ inline fun${appendedGenericReified("R")} ${specialize("ArraySlice")}.mutateAs${s
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-${if (isReference) "inline " else ""}$genericFunReified ${specialize("ArraySliceRO")
+${if (isReference) "inline " else ""}$genericFunReified ${specialize(elementsRO)
     }.readAs${specializeName("Array")}(): ${specialize("Array")} =${
     if (args.isEmpty()) """
-    if (this is Heap${specialize("ArraySlice")} && size == array.size && offset == 0) array
+    if (this is Heap${specialize(elements)} && size == array.size && offset == 0) array
     else ${specializeName("Array")}(size) { get${specializeName("")}(it) }"""
     else """ when (this) {
-    is Heap${specialize("ArraySlice")} ->
+    is Heap${specialize(elements)} ->
         if (size == array.size && offset == 0) array else {
             ${specializeName("Array")}(size)
                 .also { copy(array, it, size, offset) }
@@ -470,12 +505,12 @@ ${if (isReference) "inline " else ""}$genericFunReified ${specialize("ArraySlice
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-${if (isReference) "inline " else ""}$genericFunReified ${specialize("ArraySliceRO")
+${if (isReference) "inline " else ""}$genericFunReified ${specialize(elementsRO)
     }.to${specializeName("Array")}(): ${specialize("Array")} =${
     if (args.isEmpty()) """
     ${specializeName("Array")}(size) { get${specializeName("")}(it) }"""
     else """ when (this) {
-    is Heap${specialize("ArraySlice")} -> ${specializeName("Array")}(size)
+    is Heap${specialize(elements)} -> ${specializeName("Array")}(size)
         .also { copy(array, it, size, offset) }
     else -> ${specializeName("Array")}(size) { get${specializeName("")}(it) }
 }"""}
@@ -490,7 +525,7 @@ class ${specialize("Array2")}(
     override val width: Int,
     override val height: Int,
     val array: ${specialize("Array")}
-) : ${specialize(if (isReference) "Elements2" else "s2")},
+) : ${specialize(elements2)},
     Iterable<$type> {
     init {
         if (size != array.size) {
@@ -578,7 +613,7 @@ class ${specialize("Array3")}(
     override val height: Int,
     override val depth: Int,
     val array: ${specialize("Array")}
-) : ${specialize(if (isReference) "Elements3" else "s3")},
+) : ${specialize(elements3)},
     Iterable<$type> {
     init {
         if (size != array.size) {
@@ -807,3 +842,28 @@ inline $genericFunReified ${specializeName("Array3")}(width: Int, height: Int, d
 """
     )
 }
+
+// TODO: Remove after 0.0.13
+print(
+    """
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use ${specialize(elementsRO)}",
+    ReplaceWith("${specialize(elementsRO)}", "org.tobi29.array.${specializeAny(elementsRO)}")
+)
+typealias ${specialize("ArraySliceRO")} = ${specialize(elementsRO)}
+
+@Deprecated(
+    "Use ${specialize(elements)}",
+    ReplaceWith("${specialize(elements)}", "org.tobi29.array.${specializeAny(elements)}")
+)
+typealias ${specialize("ArraySlice")} = ${specialize(elements)}
+
+@Deprecated(
+    "Use Heap${specialize(elements)}",
+    ReplaceWith("Heap${specialize(elements)}", "org.tobi29.array.Heap${specializeAny(elements)}")
+)
+typealias Heap${specialize("ArraySlice")} = Heap${specialize(elements)}
+"""
+)

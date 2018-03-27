@@ -28,13 +28,33 @@ import org.tobi29.stdex.primitiveHashCode
 /**
  * 1-dimensional read-only array
  */
-interface DoublesRO : Vars {
+interface DoublesRO : VarsIterable<Double> {
     /**
      * Returns the element at the given index in the array
      * @param index Index of the element
      * @return The value at the given index
      */
     operator fun get(index: Int): Double
+
+    override fun slice(index: Int): DoublesRO =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): DoublesRO =
+        prepareSlice(index, size, this, ::DoublesROSlice)
+
+    fun getDouble(index: Int): Double = get(index)
+
+    fun getDoubles(index: Int, slice: Doubles) {
+        var j = index
+        for (i in 0 until slice.size) {
+            slice[i] = this[j++]
+        }
+    }
+
+    override fun iterator(): Iterator<Double> =
+        object : SliceIterator<Double>(size) {
+            override fun access(index: Int) = get(index)
+        }
 }
 
 /**
@@ -47,6 +67,17 @@ interface Doubles : DoublesRO {
      * @param value The value to set to
      */
     operator fun set(index: Int, value: Double)
+
+    override fun slice(index: Int): Doubles =
+        slice(index, size - index)
+
+    override fun slice(index: Int, size: Int): Doubles =
+        prepareSlice(index, size, this, ::DoublesSlice)
+
+    fun setDouble(index: Int, value: Double) = set(index, value)
+
+    fun setDoubles(index: Int, slice: DoublesRO) =
+        slice.getDoubles(0, slice(index, slice.size))
 }
 
 /**
@@ -103,56 +134,54 @@ interface Doubles3 : DoublesRO3 {
     operator fun set(index1: Int, index2: Int, index3: Int, value: Double)
 }
 
-/**
- * Read-only slice of an array, indexed in elements
- */
-interface DoubleArraySliceRO : DoublesRO,
-    ArrayVarSlice<Double> {
-    override fun slice(index: Int): DoubleArraySliceRO
+internal open class DoublesROSlice(
+    open val array: DoublesRO,
+    final override val offset: Int,
+    final override val size: Int
+) : HeapArrayVarSlice<Double>, DoublesRO {
+    final override fun get(index: Int): Double =
+        array[index(offset, size, index)]
 
-    override fun slice(index: Int, size: Int): DoubleArraySliceRO
-    fun getDouble(index: Int): Double = get(index)
-
-    fun getDoubles(index: Int, slice: DoubleArraySlice) {
-        var j = index
-        for (i in 0 until slice.size) {
-            slice.set(i, get(j++))
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is DoublesRO) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
         }
+        return true
     }
 
-    override fun iterator(): Iterator<Double> =
-        object : SliceIterator<Double>(size) {
-            override fun access(index: Int) = get(index)
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
         }
+        return h
+    }
 }
 
-/**
- * Slice of an array, indexed in elements
- */
-interface DoubleArraySlice : Doubles,
-    DoubleArraySliceRO {
-    override fun slice(index: Int): DoubleArraySlice
-
-    override fun slice(index: Int, size: Int): DoubleArraySlice
-    fun setDouble(index: Int, value: Double) = set(index, value)
-
-    fun setDoubles(index: Int, slice: DoubleArraySliceRO) =
-        slice.getDoubles(0, slice(index, slice.size))
+internal class DoublesSlice(
+    override val array: Doubles,
+    offset: Int,
+    size: Int
+) : DoublesROSlice(array, offset, size), Doubles {
+    override fun set(index: Int, value: Double) =
+        array.set(index(offset, size, index), value)
 }
 
 /**
  * Slice of a normal heap array
  */
-open class HeapDoubleArraySlice(
+open class HeapDoubles(
     val array: DoubleArray,
     final override val offset: Int,
     final override val size: Int
-) : HeapArrayVarSlice<Double>, DoubleArraySlice {
-    override fun slice(index: Int): HeapDoubleArraySlice =
+) : HeapArrayVarSlice<Double>, Doubles {
+    override fun slice(index: Int): HeapDoubles =
         slice(index, size - index)
 
-    override fun slice(index: Int, size: Int): HeapDoubleArraySlice =
-        prepareSlice(index, size, array, ::HeapDoubleArraySlice)
+    override fun slice(index: Int, size: Int): HeapDoubles =
+        prepareSlice(index, size, array, ::HeapDoubles)
 
     final override fun get(index: Int): Double =
         array[index(offset, size, index)]
@@ -162,9 +191,9 @@ open class HeapDoubleArraySlice(
 
     final override fun getDoubles(
         index: Int,
-        slice: DoubleArraySlice
+        slice: Doubles
     ) {
-        if (slice !is HeapDoubleArraySlice) return super.getDoubles(index, slice)
+        if (slice !is HeapDoubles) return super.getDoubles(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -172,8 +201,8 @@ open class HeapDoubleArraySlice(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setDoubles(index: Int, slice: DoubleArraySliceRO) {
-        if (slice !is HeapDoubleArraySlice) return super.setDoubles(index, slice)
+    final override fun setDoubles(index: Int, slice: DoublesRO) {
+        if (slice !is HeapDoubles) return super.setDoubles(index, slice)
 
         if (index < 0 || index + slice.size > size)
             throw IndexOutOfBoundsException("Invalid index or view too long")
@@ -183,7 +212,7 @@ open class HeapDoubleArraySlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is DoubleArraySliceRO) return false
+        if (other !is DoublesRO) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -210,7 +239,7 @@ open class HeapDoubleArraySlice(
 inline fun DoubleArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
-): HeapDoubleArraySlice = HeapDoubleArraySlice(this, index, size)
+): HeapDoubles = HeapDoubles(this, index, size)
 
 /**
  * Exposes the contents of the slice in an array and calls [block] with
@@ -230,11 +259,11 @@ inline fun DoubleArray.sliceOver(
  * @receiver The slice to read
  * @return Return value of [block]
  */
-inline fun <R> DoubleArraySliceRO.readAsDoubleArray(block: (DoubleArray, Int, Int) -> R): R {
+inline fun <R> DoublesRO.readAsDoubleArray(block: (DoubleArray, Int, Int) -> R): R {
     val array: DoubleArray
     val offset: Int
     when (this) {
-        is HeapDoubleArraySlice -> {
+        is HeapDoubles -> {
             array = this.array
             offset = this.offset
         }
@@ -265,11 +294,11 @@ inline fun <R> DoubleArraySliceRO.readAsDoubleArray(block: (DoubleArray, Int, In
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> DoubleArraySlice.mutateAsDoubleArray(block: (DoubleArray, Int, Int) -> R): R {
+inline fun <R> Doubles.mutateAsDoubleArray(block: (DoubleArray, Int, Int) -> R): R {
     val array: DoubleArray
     val offset: Int
     val mapped = when (this) {
-        is HeapDoubleArraySlice -> {
+        is HeapDoubles -> {
             array = this.array
             offset = this.offset
             true
@@ -295,8 +324,8 @@ inline fun <R> DoubleArraySlice.mutateAsDoubleArray(block: (DoubleArray, Int, In
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
-fun DoubleArraySliceRO.readAsDoubleArray(): DoubleArray = when (this) {
-    is HeapDoubleArraySlice ->
+fun DoublesRO.readAsDoubleArray(): DoubleArray = when (this) {
+    is HeapDoubles ->
         if (size == array.size && offset == 0) array else {
             DoubleArray(size)
                 .also { copy(array, it, size, offset) }
@@ -309,8 +338,8 @@ fun DoubleArraySliceRO.readAsDoubleArray(): DoubleArray = when (this) {
  * @receiver The slice to copy
  * @return Array containing the data of the slice
  */
-fun DoubleArraySliceRO.toDoubleArray(): DoubleArray = when (this) {
-    is HeapDoubleArraySlice -> DoubleArray(size)
+fun DoublesRO.toDoubleArray(): DoubleArray = when (this) {
+    is HeapDoubles -> DoubleArray(size)
         .also { copy(array, it, size, offset) }
     else -> DoubleArray(size) { getDouble(it) }
 }
@@ -599,3 +628,23 @@ inline fun DoubleArray2(width: Int, height: Int) =
  */
 inline fun DoubleArray3(width: Int, height: Int, depth: Int) =
     DoubleArray3(width, height, depth, DoubleArray(width * height * depth))
+
+// TODO: Remove after 0.0.13
+
+@Deprecated(
+    "Use DoublesRO",
+    ReplaceWith("DoublesRO", "org.tobi29.array.DoublesRO")
+)
+typealias DoubleArraySliceRO = DoublesRO
+
+@Deprecated(
+    "Use Doubles",
+    ReplaceWith("Doubles", "org.tobi29.array.Doubles")
+)
+typealias DoubleArraySlice = Doubles
+
+@Deprecated(
+    "Use HeapDoubles",
+    ReplaceWith("HeapDoubles", "org.tobi29.array.HeapDoubles")
+)
+typealias HeapDoubleArraySlice = HeapDoubles
