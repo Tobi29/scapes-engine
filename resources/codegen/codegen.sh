@@ -24,8 +24,18 @@ echo "-- Generating number conversions"
 "$CODEGEN_HOME/GenNumberConversions128.kts" > "$ENGINE_HOME/Utils/src/main/kotlin/org/tobi29/utils/NumberConversions128.kt"
 
 echo "-- Generating timezone data"
-zcat "$CODEGEN_HOME/tzdump.gz" \
-    | "$CODEGEN_HOME/GenTzData.kts" > "$ENGINE_HOME/ChronoUtils/src/main/kotlin/org/tobi29/chrono/TzData.kt"
+zoneinfo="/usr/share/zoneinfo"
+regions=(
+    Africa/ America/ Antarctica/ Arctic/ Asia/ Atlantic/ Australia/ Brazil/
+    Canada/ CET Chile/ CST6CDT Cuba EET Egypt Eire EST EST5EDT Etc/ Europe/ GB
+    GB-Eire GMT GMT0 GMT-0 GMT+0 Greenwich Hongkong HST Iceland Indian/ Iran
+    Israel Jamaica Japan Kwajalein Libya MET Mexico/ MST MST7MDT Navajo NZ
+    NZ-CHAT Pacific/ Poland Portugal PRC PST8PDT ROC ROK Singapore Turkey UCT
+    Universal US/ UTC WET W-SU Zulu
+)
+
+"$CODEGEN_HOME/GenTzData.kts" $(for zone in "${regions[@]}"; do find "$zoneinfo/$zone" -type f -printf "$zone%P "; done) \
+    > "$ENGINE_HOME/ChronoUtils/src/main/kotlin/org/tobi29/chrono/TzData.kt"
 
 echo "-- Generating embedded iana database"
 function ianaDbGen {

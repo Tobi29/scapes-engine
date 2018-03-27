@@ -15,6 +15,211 @@
  * limitations under the License.
  */
 
+import java.io.File
+import java.io.IOException
+
+fun combineToInt(b3: Byte, b2: Byte, b1: Byte, b0: Byte): Int =
+    (b3.toInt() and 0xFF shl 24) or
+            (b2.toInt() and 0xFF shl 16) or
+            (b1.toInt() and 0xFF shl 8) or
+            (b0.toInt() and 0xFF shl 0)
+
+fun combineToLong(
+    b7: Byte,
+    b6: Byte,
+    b5: Byte,
+    b4: Byte,
+    b3: Byte,
+    b2: Byte,
+    b1: Byte,
+    b0: Byte
+): Long =
+    (b7.toLong() and 0xFF shl 56) or
+            (b6.toLong() and 0xFF shl 48) or
+            (b5.toLong() and 0xFF shl 40) or
+            (b4.toLong() and 0xFF shl 32) or
+            (b3.toLong() and 0xFF shl 24) or
+            (b2.toLong() and 0xFF shl 16) or
+            (b1.toLong() and 0xFF shl 8) or
+            (b0.toLong() and 0xFF shl 0)
+
+data class ttinfo(
+    val tt_gmtoff: Int,
+    val tt_isdst: Boolean,
+    val tt_abbrind: Int
+)
+
+fun ByteArray.cstring(index: Int): String =
+    String(this, index, run {
+        var i = index
+        while (this[i] != 0.toByte() && i < size) i++
+        i
+    } - index)
+
+data class OffsetZone(
+    val offset: Int,
+    val isDst: Boolean,
+    val timezoneAbbr: String
+)
+
+data class TzFile(
+    val start: OffsetZone,
+    val transitions: List<Pair<Long, OffsetZone>>
+)
+
+fun TzFile(
+    transitionTimes: LongArray,
+    transitions: IntArray,
+    types: Array<ttinfo>,
+    chars: ByteArray,
+    leaps: Array<Pair<Long, Int>>,
+    standardIndicators: BooleanArray,
+    gmtIndicators: BooleanArray
+): TzFile {
+    val ti = types.map { (tt_gmtoff, tt_isdst, tt_abbrind) ->
+        val abbr = chars.cstring(tt_abbrind)
+        OffsetZone(tt_gmtoff, tt_isdst, abbr)
+    }
+    var t = (0 until transitionTimes.size)
+        .map { transitionTimes[it] to ti[transitions[it]] }
+    val tf = t.first()
+    val s = tf.second
+    t = t.drop(1)
+    return TzFile(s, t)
+}
+
+fun ByteArray.readTzFile(): TzFile {
+    val long = false
+
+    var i = 0
+
+    if (this[i++] != 'T'.toByte()
+        || this[i++] != 'Z'.toByte()
+        || this[i++] != 'i'.toByte()
+        || this[i++] != 'f'.toByte())
+        throw IOException("Invalid magic string")
+
+    val version = this[i++]
+
+    i += 15
+
+    val tzh_ttisgmtcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_ttisstdcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_leapcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_timecnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_typecnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_charcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val length = 5 * 4 +
+            6 * 4 +
+            tzh_ttisgmtcnt * 1 +
+            tzh_ttisstdcnt * 1 +
+            (tzh_leapcnt * if (long) 12 else 8) +
+            (tzh_timecnt * if (long) 9 else 5) +
+            tzh_typecnt * 6 +
+            tzh_charcnt * 1
+
+    return when (version) {
+        0.toByte() -> readTzFile(0, false)
+        else -> readTzFile(length, true)
+    }
+}
+
+fun ByteArray.readTzFile(start: Int, long: Boolean): TzFile {
+    var i = start
+
+    if (this[i++] != 'T'.toByte()
+        || this[i++] != 'Z'.toByte()
+        || this[i++] != 'i'.toByte()
+        || this[i++] != 'f'.toByte())
+        throw IOException("Invalid magic string")
+
+    val version = this[i++]
+
+    i += 15
+
+    val tzh_ttisgmtcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_ttisstdcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_leapcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_timecnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_typecnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val tzh_charcnt =
+        combineToInt(this[i++], this[i++], this[i++], this[i++])
+    val length = 5 * 4 +
+            6 * 4 +
+            tzh_ttisgmtcnt * 1 +
+            tzh_ttisstdcnt * 1 +
+            (tzh_leapcnt * if (long) 12 else 8) +
+            (tzh_timecnt * if (long) 9 else 5) +
+            tzh_typecnt * 6 +
+            tzh_charcnt * 1
+
+    val transitionTimes = LongArray(tzh_timecnt) {
+        if (long) combineToLong(
+            this[i++], this[i++], this[i++], this[i++],
+            this[i++], this[i++], this[i++], this[i++]
+        )
+        else combineToInt(
+            this[i++], this[i++], this[i++], this[i++]
+        ).toLong()
+    }
+
+    val transitions = IntArray(tzh_timecnt) { this[i++].toInt() and 0xFF }
+
+    val types = Array(tzh_typecnt) {
+        ttinfo(
+            combineToInt(this[i++], this[i++], this[i++], this[i++]),
+            this[i++] != 0.toByte(),
+            this[i++].toInt() and 0xFF
+        )
+    }
+
+    val chars = ByteArray(tzh_charcnt) { this[i++] }
+
+    val leaps = Array(tzh_leapcnt) {
+        (if (long) combineToLong(
+            this[i++], this[i++], this[i++], this[i++],
+            this[i++], this[i++], this[i++], this[i++]
+        )
+        else combineToInt(
+            this[i++], this[i++], this[i++], this[i++]
+        ).toLong()) to
+                combineToInt(this[i++], this[i++], this[i++], this[i++])
+    }
+
+    val standardIndicators = BooleanArray(tzh_ttisstdcnt) {
+        this[i++] != 0.toByte()
+    }
+
+    val gmtIndicators = BooleanArray(tzh_ttisstdcnt) {
+        this[i++] != 0.toByte()
+    }
+
+    assert(i - start == length)
+
+    return TzFile(
+        transitionTimes,
+        transitions,
+        types,
+        chars,
+        leaps,
+        standardIndicators,
+        gmtIndicators
+    )
+}
+
+fun File.readTzFile() = readBytes().readTzFile()
+
 val digits = "0123456789abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 fun checkRadix(radix: Int) {
@@ -61,178 +266,41 @@ fun Long.toStringCaseSensitive(radix: Int): String {
     return String(str, i, str.size - i)
 }
 
-val timezonePattern = """[A-Za-z0-9/_+-]*"""
-val weekdays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
-val weekdaysPattern = weekdays.joinToString("|")
-val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-val monthsPattern = months.joinToString("|")
-val dayPattern = """[0-3]?[0-9]"""
-val timePattern = """([0-2][0-9]):([0-5][0-9]):([0-5][0-9])"""
-val yearPattern = """-?[0-9]+"""
-val timezoneAbbrPattern = """\+?-?[A-Za-z0-9]+"""
-val offsetPattern = """-?[0-9]+"""
-val dateTimePattern = listOf(weekdaysPattern, monthsPattern, dayPattern, timePattern, yearPattern, timezoneAbbrPattern)
-    .joinToString(""")\s+(""", """(""", """)""")
+fun collectOffsets(transitions: Map<String, TzFile>): Set<OffsetZone> =
+    transitions.flatMap {
+        it.value.transitions.map { it.second } + it.value.start
+    }.toSet()
 
-val normalPattern = """($timezonePattern)\s+$dateTimePattern\s+=\s+$dateTimePattern\s+isdst=(0|1)\s+gmtoff=($offsetPattern)"""
-// TODO: Get non-bugged data for this
-val nullPattern = """($timezonePattern)\s+(-?[0-9]+)\s+=\s+NULL"""
-
-val normalRegex = normalPattern.toRegex()
-val nullRegex = nullPattern.toRegex()
-
-data class Time(
-    val hour: Int,
-    val minute: Int,
-    val second: Int
-)
-
-data class DateTime(
-    val weekday: String,
-    val month: String,
-    val day: Int,
-    val time: Time,
-    val year: Int,
-    val timezoneAbbr: String
-)
-
-data class ZDumpLine(
-    val timezone: String,
-    val utTime: DateTime,
-    val localTime: DateTime,
-    val isDst: Boolean,
-    val gmtOffset: Int
-)
-
-data class OffsetZone(
-    val offset: Int,
-    val timezoneAbbr: String
-)
-
-data class SinceDateTime(
-    val month: String,
-    val day: Int,
-    val time: Time,
-    val year: Int
-)
-
-fun Time.toSeconds(): Int =
-    (hour * 60 + minute) * 60 + second
-
-val Int.isLeap: Boolean
-    get() = this % 4 == 0 && (this % 100 != 0 || this % 400 == 0)
-
-val epochYear = 1970
-
-fun SinceDateTime.toPosixOffset(): Long {
-    var days = day - 1
-
-    days += (epochYear until year)
-        .sumBy { if (it.isLeap) 366 else 365 }
-    days -= (year until epochYear)
-        .sumBy { if (it.isLeap) 366 else 365 }
-
-    val feb = if (year.isLeap) 29 else 28
-    days += when(month) {
-        "Jan" -> 0
-        "Feb" -> 31
-        "Mar" -> 31 + feb
-        "Apr" -> 31 + feb + 31
-        "May" -> 31 + feb + 31 + 30
-        "Jun" -> 31 + feb + 31 + 30 + 31
-        "Jul" -> 31 + feb + 31 + 30 + 31 + 30
-        "Aug" -> 31 + feb + 31 + 30 + 31 + 30 + 31
-        "Sep" -> 31 + feb + 31 + 30 + 31 + 30 + 31 + 31
-        "Oct" -> 31 + feb + 31 + 30 + 31 + 30 + 31 + 31 + 30
-        "Nov" -> 31 + feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31
-        "Dec" -> 31 + feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30
-        else -> throw IllegalArgumentException("Invalid month: $month")
-    }
-    return ((days * 24L + time.hour) * 60L + time.minute) * 60L + time.second
-}
-
-data class SinceState(
-    val since: SinceDateTime,
-    val offset: OffsetZone
-)
-
-fun readTransitions(): Map<String, List<Pair<ZDumpLine, ZDumpLine>>> {
-    val lines = ArrayList<ZDumpLine>()
-    val zones = HashSet<String>()
-
-    while (true) {
-        val line = readLine() ?: break
-        val match = normalRegex.matchEntire(line)
-        if (match != null) {
-            val g = match.groupValues
-            zones.add(g[1])
-            try {
-                lines.add(ZDumpLine(
-                    g[1],
-                    DateTime(
-                        g[2], g[3], g[4].toInt(),
-                        Time(g[6].toInt(), g[7].toInt(), g[8].toInt()),
-                        g[9].toInt(),
-                        g[10]
-                    ),
-                    DateTime(
-                        g[11], g[12], g[13].toInt(),
-                        Time(g[15].toInt(), g[16].toInt(), g[17].toInt()),
-                        g[18].toInt(),
-                        g[19]
-                    ),
-                    g[20] == "1",
-                    g[21].toInt()
-                ))
-                continue
-            } catch (e: NumberFormatException) {
-            }
-        }
-        val nullMatch = nullRegex.matchEntire(line)
-        if (nullMatch != null) {
-            val g = nullMatch.groupValues
-            zones.add(g[1])
-            continue
-        }
-        System.err.println("Invalid line: $line")
-    }
-
-    val transitions = lines.asSequence().windowed(2, 2).map { it[0] to it[1] }.toList()
-
-    return zones.map { zone ->
-        zone to transitions.filter { it.first.timezone == zone && it.second.timezone == zone }
-    }.toMap()
-}
-
-fun collectOffsets(transitions: Map<String, List<Pair<ZDumpLine, ZDumpLine>>>): Set<OffsetZone> =
-    transitions
-        .flatMap { it.value.flatMap { listOf(it.first, it.second) } }
-        .map { OffsetZone(it.gmtOffset, it.localTime.timezoneAbbr) }
-        .toSet()
-
-fun assembleSinces(transitions: List<Pair<ZDumpLine, ZDumpLine>>): Pair<OffsetZone, List<SinceState>> =
-    (transitions.firstOrNull()?.first?.let { OffsetZone(it.gmtOffset, it.localTime.timezoneAbbr) } ?: OffsetZone(0, "UT")) to
-        transitions.asSequence()
-            .map { it.second }
-            .map { SinceState(SinceDateTime(it.utTime.month, it.utTime.day, it.utTime.time, it.utTime.year), OffsetZone(it.gmtOffset, it.localTime.timezoneAbbr)) }
-            .toList()
-
-fun compactSinces(
-    sinces: List<SinceState>,
+fun TzFile.compactTransitions(
     compactOffset: (OffsetZone) -> String
-): String = (listOf(SinceState(SinceDateTime("Jan", 1, Time(0, 0, 0), 1970), OffsetZone(0, "UT"))) + sinces).zipWithNext()
-    .joinToString(",") { (a, b) -> "${(b.since.toPosixOffset() - a.since.toPosixOffset()).toStringCaseSensitive(offsetBase)}=${compactOffset(b.offset)}" }
+): String = (listOf(
+    0L to OffsetZone(0, false, "UT")
+) + transitions).zipWithNext()
+    .joinToString(",") { (a, b) ->
+        "${(b.first - a.first).toStringCaseSensitive(
+            offsetBase
+        )}=${compactOffset(b.second)}"
+    }
 
-val transitions = readTransitions()
+val zoneinfo = File("/usr/share/zoneinfo")
+val data = args.map { zone ->
+    val tzFile: TzFile = File(zoneinfo, zone).readTzFile()
+    zone to tzFile
+}.toMap()
 
-val data = transitions.mapValues { assembleSinces(it.value) }
-
-val offsetZones = collectOffsets(transitions).sortedByDescending { offset -> data.values.sumBy { (if (it.first == offset) 1 else 0) + it.second.count { it.offset == offset } } }
+val offsetZones = collectOffsets(data)
+    .sortedByDescending { offset ->
+        data.values.sumBy {
+            (if (it.start == offset) 1 else 0) +
+                    it.transitions.count { it.second == offset }
+        }
+    }
 
 val offsetBase = 62
 val idBase = 62
 
-print("""/*
+print(
+    """/*
  * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -265,33 +333,48 @@ object TzData {
     private val unknownZone = OffsetZone("?", 0)
 
     private val offsets: List<OffsetZone> = parseOffsets(
-        "${offsetZones.joinToString(",") { "${it.timezoneAbbr}=${it.offset.toStringCaseSensitive(idBase)}" }}"
+        "${offsetZones.joinToString(",") {
+        "${it.timezoneAbbr}=${it.offset.toStringCaseSensitive(
+            idBase
+        )}"
+    }}"
     )
 
     private val _tzdata = ConcurrentHashMap<String, TimeZone>()
     internal val tzdata = _tzdata.readOnly()
 
-    init {""")
+    init {"""
+)
 
 val inserted = HashMap<String, String>()
 
-data.forEach {
-    val entry = "${offsetZones.indexOf(it.value.first).toStringCaseSensitive(idBase)},${compactSinces(it.value.second) { "${offsetZones.indexOf(it).toStringCaseSensitive(idBase)}" }}"
+data.forEach { (zone, tzFile) ->
+    val entry =
+        "${offsetZones.indexOf(tzFile.start).toStringCaseSensitive(
+            idBase
+        )},${tzFile.compactTransitions {
+            offsetZones.indexOf(it).toStringCaseSensitive(idBase)
+        }}"
     val share = inserted[entry]
     if (share != null) {
-        println("""
-        link("${it.key}", "$share")""")
+        println(
+            """
+        link("$zone", "$share")"""
+        )
     } else {
-        println("""
+        println(
+            """
         insert(
-            "${it.key}",
+            "$zone",
             "$entry"
-        )""")
-        inserted[entry] = it.key
+        )"""
+        )
+        inserted[entry] = zone
     }
 }
 
-println("""
+println(
+    """
     }
 
     private fun parseOffsets(str: String): List<OffsetZone> =
@@ -326,4 +409,5 @@ println("""
         name: String,
         other: String
     ) = _tzdata.put(name, _tzdata[other]!!)
-}""")
+}"""
+)
