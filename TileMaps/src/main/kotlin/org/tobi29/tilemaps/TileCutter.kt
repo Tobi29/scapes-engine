@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@
 
 package org.tobi29.tilemaps
 
-import org.tobi29.graphics.Image
+import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.get
+import org.tobi29.graphics.height
+import org.tobi29.graphics.width
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.utils.Iterator
 
 fun cut(
-    image: Image,
+    image: Bitmap<*, *>,
     tileWidth: Int,
     tileHeight: Int,
     tileSpacing: Int,

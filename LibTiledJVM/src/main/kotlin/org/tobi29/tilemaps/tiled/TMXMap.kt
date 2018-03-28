@@ -17,7 +17,7 @@
 package org.tobi29.tilemaps.tiled
 
 import org.tobi29.arrays.Array2
-import org.tobi29.graphics.Image
+import org.tobi29.graphics.Bitmap
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.tilemaps.Tile
 import org.tobi29.tilemaps.TileSets
@@ -68,7 +68,7 @@ data class TMXMapObject(
     val properties: Map<String, String>,
     val name: String,
     val type: String,
-    val image: Image?,
+    val image: Bitmap<*, *>?,
     val tile: Tile?
 )
 

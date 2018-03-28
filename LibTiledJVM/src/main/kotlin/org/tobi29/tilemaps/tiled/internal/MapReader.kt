@@ -19,7 +19,7 @@ package org.tobi29.tilemaps.tiled.internal
 import org.tobi29.arrays.Array2
 import org.tobi29.arrays.array2OfNulls
 import org.tobi29.base64.fromBase64
-import org.tobi29.graphics.Image
+import org.tobi29.graphics.Bitmap
 import org.tobi29.io.IOException
 import org.tobi29.io.Path
 import org.tobi29.math.vector.Vector2i
@@ -295,7 +295,7 @@ private suspend fun Node.readMapObject(
 
     var shape: TMXShape = TMXShape.Rectangle(Vector2i(width, height))
     val tile = getTileForTileGID(gid, tiles, warn)
-    var image: Pair<Image, Vector2i>? = null
+    var image: Pair<Bitmap<*, *>, Vector2i>? = null
 
     val properties = readProperties()
 

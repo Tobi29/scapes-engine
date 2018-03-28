@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,31 +18,30 @@
 
 package org.tobi29.scapes.engine.tilemaps
 
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.graphics.GL
-import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.arrays.asBytesRO
+import org.tobi29.graphics.*
+import org.tobi29.io.ByteViewRO
 import org.tobi29.math.margin
 import org.tobi29.math.vector.MutableVector2i
 import org.tobi29.math.vector.Vector2i
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.Texture
+import org.tobi29.stdex.atomic.AtomicInt
+import org.tobi29.stdex.math.floorToInt
 import org.tobi29.tilemaps.Frame
 import org.tobi29.tilemaps.Sprite
 import org.tobi29.tilemaps.Tile
 import org.tobi29.tilemaps.TileSets
-import org.tobi29.graphics.MutableImage
-import org.tobi29.graphics.assembleAtlas
-import org.tobi29.graphics.set
-import org.tobi29.graphics.toImage
-import org.tobi29.io.ByteViewRO
 import org.tobi29.utils.toArray
-import org.tobi29.stdex.atomic.AtomicInt
-import org.tobi29.stdex.math.floorToInt
 import kotlin.math.max
 
 class TileAtlas internal constructor(
-        val texture: Texture,
-        val maxSize: Vector2i,
-        private val tiles: List<TileEntry?>,
-        private val animations: List<TileAnimation>) {
+    val texture: Texture,
+    val maxSize: Vector2i,
+    private val tiles: List<TileEntry?>,
+    private val animations: List<TileAnimation>
+) {
     fun tile(tile: Tile): TileEntry? = tile(tile.id)
     fun tile(tile: Int): TileEntry? = tiles.getOrNull(tile)
 
@@ -56,12 +55,14 @@ class TileAtlas internal constructor(
     }
 }
 
-class TileEntry(val x: Int,
-                val y: Int,
-                val width: Int,
-                val height: Int,
-                atlasWidth: Int,
-                atlasHeight: Int) {
+class TileEntry(
+    val x: Int,
+    val y: Int,
+    val width: Int,
+    val height: Int,
+    atlasWidth: Int,
+    atlasHeight: Int
+) {
     val textureX = x.toDouble() / atlasWidth
     val textureY = y.toDouble() / atlasHeight
     val textureWidth = width.toDouble() / atlasWidth
@@ -84,28 +85,38 @@ inline fun TileEntry.atPixelMarginY(value: Int): Double {
     return marginY(atPixelX(value))
 }
 
-inline fun TileEntry.marginX(value: Double,
-                             margin: Double = 0.005): Double {
+inline fun TileEntry.marginX(
+    value: Double,
+    margin: Double = 0.005
+): Double {
     return textureX + margin(value, margin) * textureWidth
 }
 
-inline fun TileEntry.marginY(value: Double,
-                             margin: Double = 0.005): Double {
+inline fun TileEntry.marginY(
+    value: Double,
+    margin: Double = 0.005
+): Double {
     return textureY + margin(value, margin) * textureHeight
 }
 
-internal class TileAnimation(sprite: Sprite,
-                             private val x: Int,
-                             private val y: Int,
-                             private val width: Int,
-                             private val height: Int) {
+internal class TileAnimation(
+    sprite: Sprite,
+    private val x: Int,
+    private val y: Int,
+    private val width: Int,
+    private val height: Int
+) {
     private val newFrame = AtomicInt(-1)
     private val frames: Array<Pair<Double, ByteViewRO>>
     private var spin = 0.0
 
     init {
         frames = sprite.frames.asSequence().map { frame ->
-            Pair(1.0 / frame.duration, frame.image.view)
+            Pair(1.0 / frame.duration, frame.image.let { image ->
+                when (image.format) {
+                    RGBA -> image.cast(RGBA)!!.data.asBytesRO()
+                }
+            })
         }.toArray()
     }
 
@@ -123,7 +134,7 @@ internal class TileAnimation(sprite: Sprite,
         val duration = frames[old].first
 
         spin = ((spin + delta * duration) % frames.size.toDouble())
-                .coerceAtLeast(0.0)
+            .coerceAtLeast(0.0)
         if (!spin.isFinite()) spin = 0.0
 
         val i = spin.floorToInt()
@@ -131,32 +142,47 @@ internal class TileAnimation(sprite: Sprite,
     }
 }
 
-fun atlas(engine: ScapesEngine,
-          tileSets: TileSets<*>): TileAtlas {
+fun atlas(
+    engine: ScapesEngine,
+    tileSets: TileSets<*>
+): TileAtlas {
     val tiles = tileSets.tiles.map { tile ->
         val size = tile.sprite.frames.asSequence().map { it.image.size }
-                .fold(Vector2i.ZERO) { a, b ->
-                    Vector2i(max(a.x, b.x), max(a.y, b.y))
-                }
+            .fold(Vector2i.ZERO) { a, b ->
+                Vector2i(max(a.x, b.x), max(a.y, b.y))
+            }
         val scaledTile = if (tile.sprite.frames.any { it.image.size != size }) {
             Tile(Sprite(tile.sprite.frames.map { (duration, image) ->
-                val scaledImage = if (image.size.x != size.x || image.size.y != size.y) {
-                    val scaled = MutableImage(size.x, size.y)
-                    for (y in 0 until size.x) {
-                        for (x in 0 until size.y) {
-                            scaled[x, y] = image[x * image.size.x / size.x, y * image.size.y / size.y]
+                val scaledImage =
+                    if (image.width != size.x || image.height != size.y) {
+                        when (image.format) {
+                            RGBA -> {
+                                val image = image.cast(RGBA)!!
+                                val scaled =
+                                    MutableIntByteViewBitmap(
+                                        size.x,
+                                        size.y,
+                                        RGBA
+                                    )
+                                for (y in 0 until size.x) {
+                                    for (x in 0 until size.y) {
+                                        scaled[x, y] =
+                                                image[x * image.width / size.x, y * image.height / size.y]
+                                    }
+                                }
+                                @Suppress("USELESS_CAST") // FIXME: False positive
+                                scaled as IntByteViewBitmap<RGBA>
+                            }
                         }
-                    }
-                    scaled.toImage()
-                } else image
+                    } else image
                 Frame(duration, scaledImage)
             }), tile.size, tile.id, tile.tileSet)
         } else tile
         Triple(scaledTile, size, MutableVector2i())
     }
     val atlasSize = assembleAtlas(
-            tiles.asSequence().map { (_, size, position) -> size to position })
-    val atlas = MutableImage(atlasSize.x, atlasSize.y)
+        tiles.asSequence().map { (_, size, position) -> size to position })
+    val atlas = MutableIntByteViewBitmap(atlasSize.x, atlasSize.y, RGBA)
     for ((tile, _, position) in tiles) {
         tile.sprite.frames.firstOrNull()?.let {
             atlas.set(position.x, position.y, it.image)
@@ -165,16 +191,23 @@ fun atlas(engine: ScapesEngine,
     val otiles = ArrayList<TileEntry?>(tiles.size)
     for ((tile, size, position) in tiles) {
         while (otiles.size <= tile.id) otiles.add(null)
-        otiles[tile.id] = TileEntry(position.x, position.y, size.x, size.y,
-                atlas.width, atlas.height)
+        otiles[tile.id] = TileEntry(
+            position.x, position.y, size.x, size.y,
+            atlas.width, atlas.height
+        )
     }
-    val animations = tiles.asSequence().filter { it.first.sprite.frames.size > 1 }
+    val animations =
+        tiles.asSequence().filter { it.first.sprite.frames.size > 1 }
             .map { (tile, size, position) ->
-                TileAnimation(tile.sprite, position.x, position.y, size.x,
-                        size.y)
+                TileAnimation(
+                    tile.sprite, position.x, position.y, size.x,
+                    size.y
+                )
             }.toList()
-    return TileAtlas(engine.graphics.createTexture(atlas.toImage()),
-            tiles.fold(Vector2i.ZERO) { a, (_, b, _) ->
-                Vector2i(max(a.x, b.x), max(a.y, b.y))
-            }, otiles, animations)
+    return TileAtlas(
+        engine.graphics.createTexture(atlas),
+        tiles.fold(Vector2i.ZERO) { a, (_, b, _) ->
+            Vector2i(max(a.x, b.x), max(a.y, b.y))
+        }, otiles, animations
+    )
 }

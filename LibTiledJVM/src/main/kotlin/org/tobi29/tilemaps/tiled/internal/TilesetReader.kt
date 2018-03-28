@@ -16,7 +16,7 @@
 
 package org.tobi29.tilemaps.tiled.internal
 
-import org.tobi29.graphics.Image
+import org.tobi29.graphics.Bitmap
 import org.tobi29.io.ByteStreamInputStream
 import org.tobi29.io.IOException
 import org.tobi29.io.Path
@@ -144,7 +144,7 @@ private suspend fun Node.readTile(
 ): Tile {
     val id = firstGid + requireAttributeInt("id")
 
-    var image: Pair<Image, Vector2i>? = null
+    var image: Pair<Bitmap<*, *>, Vector2i>? = null
     childNodes.forEachElement { child ->
         when (child.nodeNameL) {
             "image" -> {

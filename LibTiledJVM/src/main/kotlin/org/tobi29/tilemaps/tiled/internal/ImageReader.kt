@@ -16,8 +16,9 @@
 
 package org.tobi29.tilemaps.tiled.internal
 
-import org.tobi29.graphics.Image
-import org.tobi29.graphics.decodePNG
+import org.tobi29.graphics.Bitmap
+import org.tobi29.graphics.decodePng
+import org.tobi29.graphics.size
 import org.tobi29.io.Path
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.tilemaps.makeTransparent
@@ -26,14 +27,14 @@ import org.w3c.dom.Node
 // TODO: Support embedded images
 suspend fun Node.readImage(
     path: Path
-): Pair<Image, Vector2i> {
+): Pair<Bitmap<*, *>, Vector2i> {
     val imgSource = requireAttributeValue("source")
     val transStr = getAttributeValue("trans")
     val size = getAttributeVector2i("width", "height")
 
-    val image = path[imgSource].readAsync { decodePNG(it) }
+    val image = path[imgSource].readAsync { decodePng(it) }
     if (transStr != null) {
-        return makeTransparent(image, transStr) to (size ?: image.size)
+        return image.makeTransparent(transStr) to (size ?: image.size)
     }
     return image to (size ?: image.size)
 }

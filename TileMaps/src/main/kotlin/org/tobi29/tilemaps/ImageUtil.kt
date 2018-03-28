@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,47 @@
 
 package org.tobi29.tilemaps
 
-import org.tobi29.graphics.Image
+import org.tobi29.arrays.Int2ByteArray
+import org.tobi29.arrays.IntsRO2
+import org.tobi29.graphics.*
 import org.tobi29.io.view
+import org.tobi29.stdex.JvmName
+import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.splitToBytes
 
-fun makeTransparent(image: Image,
-                    transStr: String): Image {
+fun Bitmap<*, *>.makeTransparent(
+    transStr: String
+): Bitmap<*, *> {
     val str = if (!transStr.isEmpty() && transStr[0] == '#') {
         transStr.substring(1)
     } else {
         transStr
     }
     val colorInt = str.toInt(16)
+    return when (format) {
+        RGBA -> cast(RGBA)!!.makeTransparent(colorInt)
+    }
+}
+
+@JvmName("makeTransparentRGBA")
+private fun Bitmap<IntsRO2, RGBA>.makeTransparent(
+    colorInt: Int
+): Bitmap<*, *> {
     val transR = (colorInt shr 16 and 0xFF).toByte()
     val transG = (colorInt shr 8 and 0xFF).toByte()
     val transB = (colorInt and 0xFF).toByte()
-    val buffer = image.view
-    val filteredBuffer = ByteArray(buffer.size).view
-    var position = 0
-    var positionWrite = 0
-    while (position < buffer.size) {
-        val r = buffer.getByte(position++)
-        val g = buffer.getByte(position++)
-        val b = buffer.getByte(position++)
-        val a = buffer.getByte(position++)
-        if (transR == r && transG == g && transB == b) {
-            repeat(4) { filteredBuffer.setByte(positionWrite++, 0) }
-        } else {
-            filteredBuffer.setByte(positionWrite++, r)
-            filteredBuffer.setByte(positionWrite++, g)
-            filteredBuffer.setByte(positionWrite++, b)
-            filteredBuffer.setByte(positionWrite++, a)
+    val filteredData =
+        Int2ByteArray(ByteArray(width * height shl 2).view, width, height)
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            data[x, y].splitToBytes { r, g, b, a ->
+                if (transR == r && transG == g && transB == b) {
+                    filteredData[x, y] = combineToInt(0, 0, 0, 0)
+                } else {
+                    filteredData[x, y] = combineToInt(r, g, b, a)
+                }
+            }
         }
     }
-    return Image(image.width, image.height, filteredBuffer)
+    return BitmapC(filteredData, RGBA)
 }

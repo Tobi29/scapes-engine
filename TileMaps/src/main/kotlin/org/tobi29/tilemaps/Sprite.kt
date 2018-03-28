@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 
 package org.tobi29.tilemaps
 
-import org.tobi29.graphics.Image
-import org.tobi29.graphics.toImage
+import org.tobi29.graphics.Bitmap
+import org.tobi29.graphics.toBitmap
+import org.tobi29.graphics.toTag
 import org.tobi29.io.tag.*
+import kotlin.collections.set
 
 data class Sprite(val frames: List<Frame>) : TagMapWrite {
     constructor(vararg frames: Frame) : this(frames.toList())
@@ -37,7 +39,7 @@ fun MutableTag.toSprite(): Sprite? {
 
 data class Frame(
     val duration: Double,
-    val image: Image
+    val image: Bitmap<*, *>
 ) : TagMapWrite {
     override fun write(map: ReadWriteTagMap) {
         map["Duration"] = duration.toTag()
@@ -48,6 +50,6 @@ data class Frame(
 fun MutableTag.toFrame(): Frame? {
     val map = toMap() ?: return null
     val duration = map["Duration"]?.toDouble() ?: return null
-    val image = map["Image"]?.toImage() ?: return null
+    val image = map["Image"]?.toBitmap() ?: return null
     return Frame(duration, image)
 }
