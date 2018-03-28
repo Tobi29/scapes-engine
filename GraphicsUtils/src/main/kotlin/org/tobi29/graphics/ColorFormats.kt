@@ -16,17 +16,19 @@
 
 package org.tobi29.graphics
 
-import org.tobi29.io.ReadSource
-import org.tobi29.io.ReadableByteStream
+import org.tobi29.arrays.IntsRO2
+import org.tobi29.arrays.Vars2
+import kotlin.reflect.KClass
 
-expect suspend fun decodePng(asset: ReadSource): Bitmap<*, *>
+sealed class ColorFormat<in D : Vars2>
 
-expect suspend fun decodePng(stream: ReadableByteStream): Bitmap<*, *>
+@Suppress("UNCHECKED_CAST")
+inline val <F : ColorFormat<*>> KClass<F>.instance: F
+    get() = when (this) {
+        RGBA::class -> RGBA as F
+        else -> throw IllegalArgumentException("Unknown format class: $this")
+    }
 
-// TODO: Remove after 0.0.13
+sealed class ColorFormatInt : ColorFormat<IntsRO2>()
 
-suspend fun decodePNG(asset: ReadSource): Image =
-    decodePng(asset).toImage()
-
-suspend fun decodePNG(stream: ReadableByteStream): Image =
-    decodePng(stream).toImage()
+object RGBA : ColorFormatInt()

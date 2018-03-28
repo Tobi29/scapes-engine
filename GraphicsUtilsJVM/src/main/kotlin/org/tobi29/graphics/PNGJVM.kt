@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,16 @@ import ar.com.hjg.pngj.PngjException
 import org.tobi29.io.*
 import java.io.InputStream
 
-actual suspend fun decodePNG(asset: ReadSource): Image {
-    return asset.readAsync { decodePNG(it) }
+actual suspend fun decodePng(asset: ReadSource): Bitmap<*, *> {
+    return asset.readAsync { decodePng(it) }
 }
 
-actual suspend fun decodePNG(stream: ReadableByteStream): Image {
+actual suspend fun decodePng(stream: ReadableByteStream): Bitmap<*, *> {
     return decodePNG(ByteStreamInputStream(stream))
 }
 
 // TODO: @Throws(IOException::class)
-fun decodePNG(streamIn: InputStream): Image {
+fun decodePNG(streamIn: InputStream): Bitmap<*, *> {
     try {
         val reader = PngReaderByte(streamIn)
         val width = reader.imgInfo.cols
@@ -58,7 +58,7 @@ fun decodePNG(streamIn: InputStream): Image {
             }
         }
         reader.end()
-        return Image(width, height, buffer)
+        return IntByteViewBitmap(buffer, width, height, RGBA)
     } catch (e: PngjException) {
         throw IOException(e)
     }
