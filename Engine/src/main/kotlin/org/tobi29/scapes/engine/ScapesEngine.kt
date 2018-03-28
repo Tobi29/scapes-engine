@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.Runnable
+import org.tobi29.io.FileSystemContainer
+import org.tobi29.io.tag.MutableTagMap
+import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -26,16 +29,13 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.utils.*
-import org.tobi29.io.FileSystemContainer
-import org.tobi29.logging.KLogging
-import org.tobi29.io.tag.MutableTagMap
 import kotlin.coroutines.experimental.CoroutineContext
 
 expect class ScapesEngine(
-        container: Container,
-        defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-        taskExecutor: CoroutineContext,
-        configMap: MutableTagMap
+    container: Container,
+    defaultGuiStyle: (ScapesEngine) -> GuiStyle,
+    taskExecutor: CoroutineContext,
+    configMap: MutableTagMap
 ) : CoroutineDispatcher, ComponentHolder<Any> {
     override val componentStorage: ComponentStorage<Any>
     val taskExecutor: CoroutineContext
@@ -70,7 +70,7 @@ expect class ScapesEngine(
     }
 }
 
-interface ComponentLifecycle : ComponentRegistered {
+interface ComponentLifecycle : ComponentRegisteredHolder<ScapesEngine> {
     fun start() {}
     fun halt() {}
 }

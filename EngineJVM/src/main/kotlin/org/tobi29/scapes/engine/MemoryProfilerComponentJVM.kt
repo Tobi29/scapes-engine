@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,16 @@ package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
+import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.utils.ComponentRegisteredHolder
 import org.tobi29.utils.ComponentTypeRegistered
-import org.tobi29.coroutines.Timer
-import org.tobi29.coroutines.loopUntilCancel
 
 class MemoryProfilerComponent(
-        private val debugValues: GuiWidgetDebugValues
+    private val debugValues: GuiWidgetDebugValues
 ) : ComponentRegisteredHolder<ScapesEngine>,
-        ComponentStep {
+    ComponentStep {
     private val runtime = Runtime.getRuntime()
     private var job: Job? = null
 
@@ -39,7 +39,7 @@ class MemoryProfilerComponent(
         job = launch(holder) {
             Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
                 usedMemoryDebug.setValue(
-                        (runtime.totalMemory() - runtime.freeMemory()) / 1048576)
+                    (runtime.totalMemory() - runtime.freeMemory()) / 1048576)
                 heapMemoryDebug.setValue(runtime.totalMemory() / 1048576)
                 maxMemoryDebug.setValue(runtime.maxMemory() / 1048576)
             }
@@ -47,7 +47,7 @@ class MemoryProfilerComponent(
     }
 
     @Synchronized
-    override fun dispose() {
+    override fun dispose(holder: ScapesEngine) {
         job?.cancel()
     }
 

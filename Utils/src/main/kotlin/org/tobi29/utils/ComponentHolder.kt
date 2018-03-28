@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,11 +41,13 @@ interface ComponentHolder<T : Any> {
         type: ComponentType<H, C, T>
     ): C? = componentStorage.getOrNull(type)
 
+    @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> unregisterComponent(
         type: ComponentType<H, C, T>
-    ): Boolean = componentStorage.unregisterComponent(type)
+    ): Boolean = componentStorage.unregisterComponent(this as H, type)
 
-    fun clearComponents() = componentStorage.clearComponents()
+    @Suppress("UNCHECKED_CAST")
+    fun clearComponents() = componentStorage.clearComponents(this)
 }
 
 class ComponentStorage<T : Any>(
@@ -110,6 +112,7 @@ class ComponentStorage<T : Any>(
 
     @Suppress("UNCHECKED_CAST")
     fun <H : ComponentHolder<out T>, C : T> unregisterComponent(
+        holder: H,
         type: ComponentType<H, C, T>
     ): Boolean {
         type.permission?.let { checkPermission(it) }
@@ -119,15 +122,20 @@ class ComponentStorage<T : Any>(
 
         val component = components.remove(type) ?: return false
         if (component is ComponentRegisteredHolder<*>) {
-            component.dispose()
+            component as ComponentRegisteredHolder<H>
+            component.dispose(holder)
         }
         return true
     }
 
-    fun clearComponents() {
+    @Suppress("UNCHECKED_CAST")
+    fun <H : ComponentHolder<out T>> clearComponents(
+        holder: H
+    ) {
         while (true) {
             val component = components.keys.firstOrNull() ?: break
-            unregisterComponent(component)
+            component as ComponentType<H, T, T>
+            unregisterComponent(holder, component)
         }
     }
 }
@@ -157,14 +165,21 @@ class ComponentTypeRegisteredPermission<in H : ComponentHolder<out T>, out C : T
 
 interface ComponentRegisteredHolder<in H : ComponentHolder<out Any>> {
     fun init(holder: H) {}
-    fun dispose() {}
+    fun dispose(holder: H) = dispose()
+
+    @Deprecated("Override with holder parameter")
+    fun dispose() {
+    }
 }
 
 interface ComponentRegistered :
     ComponentRegisteredHolder<ComponentHolder<out Any>> {
-    fun init() {}
 
     override fun init(holder: ComponentHolder<out Any>) = init()
+
+    @Deprecated("Override with holder parameter")
+    fun init() {
+    }
 }
 
 typealias ComponentTypeUniversal<C> =
