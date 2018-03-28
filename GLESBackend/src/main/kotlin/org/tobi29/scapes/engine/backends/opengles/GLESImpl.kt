@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package org.tobi29.scapes.engine.backends.opengles
 
-import org.tobi29.graphics.Image
+import org.tobi29.graphics.Bitmap
+import org.tobi29.graphics.IntByteViewBitmap
+import org.tobi29.graphics.RGBA
 import org.tobi29.graphics.flipVertical
 import org.tobi29.io.ByteViewRO
 import org.tobi29.scapes.engine.graphics.BlendingMode
@@ -134,38 +136,40 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         glh.glGetIntegerv(GL_VIEWPORT, output)
     }
 
-    override fun screenShot(
+    override fun getFrontBuffer(
         x: Int,
         y: Int,
         width: Int,
         height: Int
-    ): Image {
+    ): Bitmap<*, *> {
         glh.glReadBuffer(GL_FRONT)
         return readPixels(x, y, width, height)
     }
 
-    override fun screenShotFBOColor(
+    override fun getFBOColorBuffer(
         x: Int,
         y: Int,
         width: Int,
         height: Int,
         attachment: Int
-    ): Image {
+    ): Bitmap<*, *> {
         glh.glReadBuffer(GL_COLOR_ATTACHMENT(attachment))
         return readPixels(x, y, width, height)
     }
 
-    override fun screenShotFBODepth(
+    override fun getFBODepthBuffer(
         x: Int,
         y: Int,
         width: Int,
         height: Int
-    ): Image {
+    ): Bitmap<*, *> {
         glh.glReadBuffer(GL_DEPTH_ATTACHMENT)
         return readPixels(x, y, width, height)
     }
 
-    private fun readPixels(x: Int, y: Int, width: Int, height: Int): Image {
+    private fun readPixels(
+        x: Int, y: Int, width: Int, height: Int
+    ): Bitmap<*, *> {
         val buffer = glh.byteView(width * height shl 2)
         glh.glReadPixels(
             x, y, width, height,
@@ -173,7 +177,7 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
             GL_UNSIGNED_BYTE, buffer
         )
         flipVertical(width, height, buffer)
-        return Image(width, height, buffer)
+        return IntByteViewBitmap(buffer, width, height, RGBA)
     }
 
     override fun setAttribute1f(

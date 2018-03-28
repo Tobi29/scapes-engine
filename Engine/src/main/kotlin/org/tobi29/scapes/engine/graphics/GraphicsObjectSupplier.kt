@@ -16,7 +16,8 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.graphics.Image
+import org.tobi29.arrays.asBytesRO
+import org.tobi29.graphics.*
 import org.tobi29.io.ByteViewRO
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
@@ -42,14 +43,17 @@ interface GraphicsObjectSupplier {
         createTexture(width, height, ByteArray(width * height * 4).view, 0)
 
     fun createTexture(
-        image: Image,
+        image: Bitmap<*, *>,
         mipmaps: Int
-    ): Texture =
-        createTexture(
-            image.width, image.height, image.view, mipmaps,
-            TextureFilter.NEAREST, TextureFilter.NEAREST,
-            TextureWrap.REPEAT, TextureWrap.REPEAT
-        )
+    ): Texture = when (image.format) {
+        RGBA -> image.cast(RGBA)!!.let {
+            createTexture(
+                it.width, it.height, it.data.asBytesRO(), mipmaps,
+                TextureFilter.NEAREST, TextureFilter.NEAREST,
+                TextureWrap.REPEAT, TextureWrap.REPEAT
+            )
+        }
+    }
 
     fun createTexture(
         width: Int,
@@ -75,17 +79,20 @@ interface GraphicsObjectSupplier {
         )
 
     fun createTexture(
-        image: Image,
+        image: Bitmap<*, *>,
         mipmaps: Int = 0,
         minFilter: TextureFilter = TextureFilter.NEAREST,
         magFilter: TextureFilter = TextureFilter.NEAREST,
         wrapS: TextureWrap = TextureWrap.REPEAT,
         wrapT: TextureWrap = TextureWrap.REPEAT
-    ): Texture =
-        createTexture(
-            image.width, image.height, image.view, mipmaps,
-            minFilter, magFilter, wrapS, wrapT
-        )
+    ): Texture = when (image.format) {
+        RGBA -> image.cast(RGBA)!!.let {
+            createTexture(
+                it.width, it.height, it.data.asBytesRO(), mipmaps,
+                minFilter, magFilter, wrapS, wrapT
+            )
+        }
+    }
 
     fun createTexture(
         width: Int,
@@ -143,6 +150,31 @@ interface GraphicsObjectSupplier {
         shader: CompiledShader,
         properties: Map<String, Expression> = emptyMap()
     ): Shader
+
+    @Deprecated("Use Bitmap class")
+    fun createTexture(
+        image: Image,
+        mipmaps: Int
+    ): Texture =
+        createTexture(
+            image.width, image.height, image.view, mipmaps,
+            TextureFilter.NEAREST, TextureFilter.NEAREST,
+            TextureWrap.REPEAT, TextureWrap.REPEAT
+        )
+
+    @Deprecated("Use Bitmap class")
+    fun createTexture(
+        image: Image,
+        mipmaps: Int = 0,
+        minFilter: TextureFilter = TextureFilter.NEAREST,
+        magFilter: TextureFilter = TextureFilter.NEAREST,
+        wrapS: TextureWrap = TextureWrap.REPEAT,
+        wrapT: TextureWrap = TextureWrap.REPEAT
+    ): Texture =
+        createTexture(
+            image.width, image.height, image.view, mipmaps,
+            minFilter, magFilter, wrapS, wrapT
+        )
 }
 
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -147,8 +147,9 @@ class GraphicsSystem(
         }
     }
 
+    @Deprecated("Use dispatch")
     fun requestScreenshot(block: (Image) -> Unit) {
-        queue.offer { gl ->
+        dispatch { gl ->
             block(gl.screenShot(0, 0, gl.contentWidth, gl.contentHeight))
         }
     }
@@ -164,11 +165,15 @@ class GraphicsSystem(
         queue.processCurrent { it(gl) }
     }
 
+    fun dispatch(block: (GL) -> Unit) {
+        queue.offer(block)
+    }
+
     override fun dispatch(
         context: CoroutineContext,
         block: Runnable
     ) {
-        queue.offer {
+        dispatch {
             try {
                 block.run()
             } catch (e: CancellationException) {

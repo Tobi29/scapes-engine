@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,10 @@
  */
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Cam
 import org.tobi29.graphics.Image
+import org.tobi29.graphics.toImage
 import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 import org.tobi29.math.matrix.Matrix4f
@@ -128,27 +130,52 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
 
     abstract fun getViewport(output: IntArray)
 
-    abstract fun screenShot(
+    abstract fun getFrontBuffer(
         x: Int,
         y: Int,
         width: Int,
         height: Int
-    ): Image
+    ): Bitmap<*, *>
 
-    abstract fun screenShotFBOColor(
+    abstract fun getFBOColorBuffer(
         x: Int,
         y: Int,
         width: Int,
         height: Int,
         attachment: Int = 0
-    ): Image
+    ): Bitmap<*, *>
 
-    abstract fun screenShotFBODepth(
+    abstract fun getFBODepthBuffer(
         x: Int,
         y: Int,
         width: Int,
         height: Int
-    ): Image
+    ): Bitmap<*, *>
+
+    @Deprecated("Use getFrontBuffer")
+    fun screenShot(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): Image = getFrontBuffer(x, y, width, height).toImage()
+
+    @Deprecated("Use getFBOColorBuffer")
+    fun screenShotFBOColor(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        attachment: Int = 0
+    ): Image = getFBOColorBuffer(x, y, width, height, attachment).toImage()
+
+    @Deprecated("Use getFBODepthBuffer")
+    fun screenShotFBODepth(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): Image = getFBODepthBuffer(x, y, width, height).toImage()
 
     fun into(
         framebuffer: Framebuffer,
