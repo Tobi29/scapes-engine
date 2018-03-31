@@ -573,9 +573,9 @@ inline fun <T> Array2<T>.shift(
         }
     }
     (dy * width + dx).let { d ->
-        if (d > 0) {
+        if (d in 1 until array.size) {
             copy(array, array, array.size - d, 0, d)
-        } else {
+        } else if (-d in 1 until array.size) {
             copy(array, array, array.size + d, -d, 0)
         }
     }
