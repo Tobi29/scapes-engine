@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package org.tobi29.server
 
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.LinkedListChannel
-import org.tobi29.stdex.atomic.AtomicBoolean
-import org.tobi29.stdex.atomic.AtomicLong
-import org.tobi29.io.IOException
-import org.tobi29.logging.KLogging
-import org.tobi29.utils.systemClock
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
 import org.tobi29.coroutines.processDrain
+import org.tobi29.io.IOException
+import org.tobi29.logging.KLogging
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.stdex.atomic.AtomicLong
+import org.tobi29.utils.systemClock
 import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
 import kotlin.coroutines.experimental.CoroutineContext
@@ -132,6 +132,8 @@ class ConnectionWorker(
         try {
             selector.wakeup()
         } catch (e: ClosedSelectorException) {
+        } catch (e: IOException) {
+            // Android...
         }
     }
 
