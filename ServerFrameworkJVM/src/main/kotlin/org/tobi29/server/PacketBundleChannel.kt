@@ -21,7 +21,6 @@ import org.tobi29.io.*
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.assert
 import java.lang.ref.WeakReference
-import java.nio.channels.Selector
 
 class PacketBundleChannel(private val channelRead: ReadableByteChannel,
                           private val channelWrite: WritableByteChannel) {
@@ -34,7 +33,6 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
     private val inflater: CompressionUtil.Filter
     private var output: HeapViewByteBE? = null
     private var input = MemoryViewStreamDefault().apply { limit(4) }
-    private var selector: Selector? = null
     private var hasInput: Boolean = false
     private var hasBundle: Boolean = false
 
@@ -72,7 +70,6 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         bundle.setBytes(BUNDLE_HEADER_SIZE, byteBufferStreamOut.bufferSlice())
         if (!queue.offer(bundle)) throw IOException("Send buffer full")
         dataStreamOut.reset()
-        selector?.wakeup()
     }
 
     // TODO: @Throws(IOException::class)
