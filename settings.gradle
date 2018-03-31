@@ -138,6 +138,11 @@ include "TileMapsRendererJS"
 include "TileMapsRendererJVM"
 include "LibTiledJVM"
 
+// JBox2D
+include "JBox2D"
+include "JBox2DJS"
+include "JBox2DJVM"
+
 // Engine
 include "Engine"
 include "EngineJS"
