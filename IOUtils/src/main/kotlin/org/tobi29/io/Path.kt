@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,15 @@
 
 package org.tobi29.io
 
-interface Path : ReadSource {
+interface PathT<out T : ReadableByteChannel> : ReadSourceT<T> {
     operator fun get(path: String): Path
 
     val parent: Path?
 }
 
-interface PathLocal : Path, ReadSourceLocal
+typealias Path = PathT<ReadableByteChannel>
+
+interface PathLocalT<out T : ReadableByteChannel> : PathT<T>,
+    ReadSourceLocalT<T>
+
+typealias PathLocal = PathLocalT<ReadableByteChannel>

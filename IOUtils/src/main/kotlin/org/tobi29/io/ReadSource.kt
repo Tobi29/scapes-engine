@@ -16,31 +16,31 @@
 
 package org.tobi29.io
 
-interface ReadSource {
+interface ReadSourceT<out T : ReadableByteChannel> {
     fun toUri(): Uri? = null
 
     val name: String? get() = null
 
-    // TODO: @Throws(IOException::class)
-    fun channel(): ReadableByteChannel
+    fun channel(): T
 
-    // TODO: @Throws(IOException::class)
-    suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R = channel().use {
-        reader(BufferedReadChannelStream(it))
-    }
+    suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R =
+        channel().use {
+            reader(BufferedReadChannelStream(it))
+        }
 
-    // TODO: @Throws(IOException::class)
     suspend fun data(): ByteViewRO = readAsync { it.asByteView() }
 }
 
-interface ReadSourceLocal : ReadSource {
-    // TODO: @Throws(IOException::class)
+typealias ReadSource = ReadSourceT<ReadableByteChannel>
+
+interface ReadSourceLocalT<out T : ReadableByteChannel> : ReadSourceT<T> {
     fun <R> readNow(reader: (ReadableByteStream) -> R) = channel().use {
         reader(BufferedReadChannelStream(it))
     }
 
     override suspend fun data() = dataNow()
 
-    // TODO: @Throws(IOException::class)
     fun dataNow(): ByteViewRO = readNow { it.asByteView() }
 }
+
+typealias ReadSourceLocal = ReadSourceLocalT<ReadableByteChannel>
