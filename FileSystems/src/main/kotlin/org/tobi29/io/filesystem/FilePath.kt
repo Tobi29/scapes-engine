@@ -16,10 +16,10 @@
 
 package org.tobi29.io.filesystem
 
-import org.tobi29.io.Path
+import org.tobi29.io.PathT
 import org.tobi29.io.Uri
 
-expect interface FilePath : Path, Comparable<FilePath> {
+expect interface FilePath : PathT<FileChannel>, Comparable<FilePath> {
     override fun toUri(): Uri
 
     fun normalize(): FilePath

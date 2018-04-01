@@ -21,7 +21,7 @@ import org.tobi29.io.*
 data class TagBundlePath(
     private val bundle: TagBundle,
     private val path: String
-) : PathLocal {
+) : PathLocalT<SeekableReadByteChannel> {
     private val data by lazy { bundle.resolve(path) }
 
     override fun get(path: String): PathLocal {
@@ -40,7 +40,7 @@ data class TagBundlePath(
         }
 
     override fun channel() = dataNow().viewBE.let(::MemoryViewReadableStream)
-        .let(::ReadableByteStreamChannel)
+        .let(::RandomReadableByteStreamChannel)
 
     override fun <R> readNow(reader: (ReadableByteStream) -> R): R {
         val stream = dataNow().viewBE.let(::MemoryViewReadableStream)

@@ -16,18 +16,18 @@
 
 package org.tobi29.io.filesystem.nio.internal
 
-import org.tobi29.io.*
+import org.tobi29.io.IOException
 import org.tobi29.io.filesystem.*
 import org.tobi29.io.filesystem.DirectoryStream
 import org.tobi29.io.filesystem.FileAttribute
 import org.tobi29.io.filesystem.LinkOption
 import org.tobi29.io.filesystem.OpenOption
+import org.tobi29.io.toUri
 import org.tobi29.stdex.readOnly
 import org.tobi29.stdex.setAt
 import org.tobi29.utils.*
 import java.io.File
 import java.nio.file.*
-import java.nio.file.Path
 import java.nio.file.attribute.*
 import java.util.*
 
@@ -40,14 +40,20 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return path(file.toPath())
     }
 
-    override fun channel(path: FilePath,
-                         options: Array<out OpenOption>,
-                         attributes: Array<out FileAttribute>): FileChannel =
-            java.nio.channels.FileChannel.open(toPath(path), options.toNIOSet(),
-                    *attributes.toNIO()).toChannel()
+    override fun channel(
+        path: FilePath,
+        options: Array<out OpenOption>,
+        attributes: Array<out FileAttribute>
+    ): FileChannel =
+        java.nio.channels.FileChannel.open(
+            toPath(path), options.toNIOSet(),
+            *attributes.toNIO()
+        ).toChannel()
 
-    override fun createFile(path: FilePath,
-                            vararg attributes: FileAttribute): FilePath {
+    override fun createFile(
+        path: FilePath,
+        vararg attributes: FileAttribute
+    ): FilePath {
         return try {
             path(Files.createFile(toPath(path), *attributes.toNIO()))
         } catch (e: java.nio.file.FileAlreadyExistsException) {
@@ -55,13 +61,17 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         }
     }
 
-    override fun createDirectory(path: FilePath,
-                                 vararg attributes: FileAttribute): FilePath {
+    override fun createDirectory(
+        path: FilePath,
+        vararg attributes: FileAttribute
+    ): FilePath {
         return path(Files.createDirectory(toPath(path), *attributes.toNIO()))
     }
 
-    override fun createDirectories(path: FilePath,
-                                   vararg attributes: FileAttribute): FilePath {
+    override fun createDirectories(
+        path: FilePath,
+        vararg attributes: FileAttribute
+    ): FilePath {
         return path(Files.createDirectories(toPath(path), *attributes.toNIO()))
     }
 
@@ -73,30 +83,42 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return Files.deleteIfExists(toPath(path))
     }
 
-    override fun metadata(path: FilePath,
-                          vararg options: LinkOption): Array<FileMetadata> {
+    override fun metadata(
+        path: FilePath,
+        vararg options: LinkOption
+    ): Array<FileMetadata> {
         val list = ArrayList<FileMetadata>()
         val optionsNIO = options.toNIO()
         val posix = try {
-            Files.readAttributes(toPath(path),
-                    PosixFileAttributes::class.java,
-                    *optionsNIO)
+            Files.readAttributes(
+                toPath(path),
+                PosixFileAttributes::class.java,
+                *optionsNIO
+            )
         } catch (e: UnsupportedOperationException) {
             null
         }
         val dos = try {
-            Files.readAttributes(toPath(path),
-                    DosFileAttributes::class.java,
-                    *optionsNIO)
+            Files.readAttributes(
+                toPath(path),
+                DosFileAttributes::class.java,
+                *optionsNIO
+            )
         } catch (e: UnsupportedOperationException) {
             null
         }
-        val basic = posix ?: dos ?: Files.readAttributes(toPath(path),
-                BasicFileAttributes::class.java,
-                *optionsNIO)
+        val basic = posix ?: dos ?: Files.readAttributes(
+            toPath(path),
+            BasicFileAttributes::class.java,
+            *optionsNIO
+        )
 
-        list.add(FileBasicMetadata(basic.fileType(), basic.size(),
-                basic.fileKey()))
+        list.add(
+            FileBasicMetadata(
+                basic.fileType(), basic.size(),
+                basic.fileKey()
+            )
+        )
         list.add(FileModificationTime(basic.lastModifiedTime().toMillis()))
         if (posix != null) {
             list.add(posix.permissions().toUnixPermissionMode())
@@ -109,29 +131,39 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         return list.toTypedArray()
     }
 
-    override fun attributes(path: FilePath,
-                            vararg options: LinkOption): Array<FileAttribute> =
-            metadata(path, *options).asSequence()
-                    .filterIsInstance<FileAttribute>().toArray()
+    override fun attributes(
+        path: FilePath,
+        vararg options: LinkOption
+    ): Array<FileAttribute> =
+        metadata(path, *options).asSequence()
+            .filterIsInstance<FileAttribute>().toArray()
 
-    override fun createTempFile(prefix: String,
-                                suffix: String,
-                                vararg attributes: FileAttribute): FilePath {
+    override fun createTempFile(
+        prefix: String,
+        suffix: String,
+        vararg attributes: FileAttribute
+    ): FilePath {
         return path(Files.createTempFile(prefix, suffix, *attributes.toNIO()))
     }
 
-    override fun createTempDir(prefix: String,
-                               vararg attributes: FileAttribute): FilePath {
+    override fun createTempDir(
+        prefix: String,
+        vararg attributes: FileAttribute
+    ): FilePath {
         return path(Files.createTempDirectory(prefix, *attributes.toNIO()))
     }
 
-    override fun copy(source: FilePath,
-                      target: FilePath): FilePath {
+    override fun copy(
+        source: FilePath,
+        target: FilePath
+    ): FilePath {
         return path(Files.copy(toPath(source), toPath(target)))
     }
 
-    override fun move(source: FilePath,
-                      target: FilePath): FilePath {
+    override fun move(
+        source: FilePath,
+        target: FilePath
+    ): FilePath {
         return path(Files.move(toPath(source), toPath(target)))
     }
 
@@ -139,82 +171,62 @@ internal object NIOFileUtilImpl : FileUtilImpl {
         val stream = Files.newDirectoryStream(toPath(path))
         val iterator = stream.asSequence().map { path(it) }.iterator()
         return object : DirectoryStream,
-                Iterator<FilePath> by iterator {
+            Iterator<FilePath> by iterator {
             override fun close() = stream.close()
         }
     }
 
-    override fun setLastModifiedTime(path: FilePath,
-                                     value: InstantNanos) {
-        Files.setLastModifiedTime(toPath(path),
-                FileTime.fromMillis(value.millis.toLongClamped()))
+    override fun setLastModifiedTime(
+        path: FilePath,
+        value: InstantNanos
+    ) {
+        Files.setLastModifiedTime(
+            toPath(path),
+            FileTime.fromMillis(value.millis.toLongClamped())
+        )
     }
 
     override fun getLastModifiedTime(path: FilePath): InstantNanos {
         return Instant.fromMillis(
-                Files.getLastModifiedTime(toPath(path)).toMillis())
+            Files.getLastModifiedTime(toPath(path)).toMillis()
+        )
     }
 
     private data class FilePathImpl(val path: Path) : FilePath {
-        override fun compareTo(other: FilePath): Int {
-            return path.compareTo(toPath(other))
-        }
+        override fun compareTo(other: FilePath) = path.compareTo(toPath(other))
 
-        override fun toString(): String {
-            return path.toString()
-        }
+        override fun toString() = path.toString()
 
-        override fun toUri(): Uri {
-            return path.toUri().toUri()
-        }
+        override fun toUri() = path.toUri().toUri()
 
         override fun toFile(): File = path.toFile()
 
-        override fun normalize(): FilePath {
-            return path(path.normalize())
-        }
+        override fun normalize() =
+            path(path.normalize())
 
-        override fun resolve(other: String): FilePath {
-            return path(path.resolve(other))
-        }
+        override fun resolve(other: String) =
+            path(path.resolve(other))
 
-        override fun resolve(other: FilePath): FilePath {
-            return path(path.resolve(toPath(other)))
-        }
+        override fun resolve(other: FilePath) =
+            path(path.resolve(toPath(other)))
 
-        override fun startsWith(other: String): Boolean {
-            return path.startsWith(other)
-        }
+        override fun startsWith(other: String) =
+            path.startsWith(other)
 
-        override fun startsWith(other: FilePath): Boolean {
-            return path.startsWith(toPath(other))
-        }
+        override fun startsWith(other: FilePath) =
+            path.startsWith(toPath(other))
 
-        override fun relativize(other: FilePath): FilePath? {
-            return try {
-                path(path.relativize(toPath(other)))
-            } catch (e: IllegalArgumentException) {
-                null
-            }
+        override fun relativize(other: FilePath) = try {
+            path(path.relativize(toPath(other)))
+        } catch (e: IllegalArgumentException) {
+            null
         }
 
         override val fileName get() = path.fileName?.let { path(it) }
 
         override val parent get() = path.parent?.let { path(it) }
 
-        override fun toAbsolutePath(): FilePath {
-            return path(path.toAbsolutePath())
-        }
-
-        override fun channel(): ReadableByteChannel {
-            return channel(this, options = arrayOf(OPEN_READ))
-        }
-
-        override suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R {
-            channel().use {
-                return reader(BufferedReadChannelStream(it))
-            }
-        }
+        override fun toAbsolutePath() = path(path.toAbsolutePath())
     }
 
     private fun toPath(path: FilePath): Path {
@@ -230,14 +242,18 @@ internal object NIOFileUtilImpl : FileUtilImpl {
 
     private fun deleteDir(path: Path) {
         Files.walkFileTree(path, object : SimpleFileVisitor<Path>() {
-            override fun visitFile(file: Path,
-                                   attrs: BasicFileAttributes): FileVisitResult {
+            override fun visitFile(
+                file: Path,
+                attrs: BasicFileAttributes
+            ): FileVisitResult {
                 Files.delete(file)
                 return FileVisitResult.CONTINUE
             }
 
-            override fun postVisitDirectory(dir: Path,
-                                            exc: IOException?): FileVisitResult {
+            override fun postVisitDirectory(
+                dir: Path,
+                exc: IOException?
+            ): FileVisitResult {
                 Files.delete(dir)
                 return FileVisitResult.CONTINUE
             }
@@ -245,68 +261,82 @@ internal object NIOFileUtilImpl : FileUtilImpl {
     }
 
     private fun Array<out LinkOption>.toNIO() =
-            Array(size) { this[it].toNIO() }
+        Array(size) { this[it].toNIO() }
 
     private fun LinkOption.toNIO(): java.nio.file.LinkOption =
-            when (this) {
-                LINK_NOFOLLOW -> java.nio.file.LinkOption.NOFOLLOW_LINKS
-                else -> throw IllegalArgumentException(
-                        "Unsupported option: $this")
-            }
+        when (this) {
+            LINK_NOFOLLOW -> java.nio.file.LinkOption.NOFOLLOW_LINKS
+            else -> throw IllegalArgumentException(
+                "Unsupported option: $this"
+            )
+        }
 
     private fun Array<out OpenOption>.toNIO() =
-            Array(size) { this[it].toNIO() }
+        Array(size) { this[it].toNIO() }
 
     private fun Array<out OpenOption>.toNIOSet() =
-            HashSet<java.nio.file.OpenOption>(size).also { set ->
-                forEach { set.add(it.toNIO()) }
-            }
+        HashSet<java.nio.file.OpenOption>(size).also { set ->
+            forEach { set.add(it.toNIO()) }
+        }
 
     private fun OpenOption.toNIO(): java.nio.file.OpenOption =
-            when (this) {
-                OPEN_READ -> StandardOpenOption.READ
-                OPEN_WRITE -> StandardOpenOption.WRITE
-                OPEN_CREATE -> StandardOpenOption.CREATE
-                OPEN_CREATE_NEW -> StandardOpenOption.CREATE_NEW
-                OPEN_TRUNCATE_EXISTING -> StandardOpenOption.TRUNCATE_EXISTING
-                is LinkOption -> toNIO()
-                else -> throw IllegalArgumentException(
-                        "Unsupported option: $this")
-            }
+        when (this) {
+            OPEN_READ -> StandardOpenOption.READ
+            OPEN_WRITE -> StandardOpenOption.WRITE
+            OPEN_CREATE -> StandardOpenOption.CREATE
+            OPEN_CREATE_NEW -> StandardOpenOption.CREATE_NEW
+            OPEN_TRUNCATE_EXISTING -> StandardOpenOption.TRUNCATE_EXISTING
+            is LinkOption -> toNIO()
+            else -> throw IllegalArgumentException(
+                "Unsupported option: $this"
+            )
+        }
 
     private fun Array<out FileAttribute>.toNIO() =
-            Array(size) { this[it].toNIO() }
+        Array(size) { this[it].toNIO() }
 
     private fun FileAttribute.toNIO(): java.nio.file.attribute.FileAttribute<*> =
-            when (this) {
-                is UnixPermissionMode -> toNIO()
-                else -> throw IllegalArgumentException(
-                        "Unsupported attribute: $this")
-            }
+        when (this) {
+            is UnixPermissionMode -> toNIO()
+            else -> throw IllegalArgumentException(
+                "Unsupported attribute: $this"
+            )
+        }
 
     private fun UnixPermissionMode.toNIO(
     ): java.nio.file.attribute.FileAttribute<Set<java.nio.file.attribute.PosixFilePermission>> {
-        val value = HashSet<java.nio.file.attribute.PosixFilePermission>().apply {
-            if (owner.isExecute) add(
-                    java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE)
-            if (owner.isWrite) add(
-                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE)
-            if (owner.isRead) add(
-                    java.nio.file.attribute.PosixFilePermission.OWNER_READ)
-            if (group.isExecute) add(
-                    java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE)
-            if (group.isWrite) add(
-                    java.nio.file.attribute.PosixFilePermission.GROUP_WRITE)
-            if (group.isRead) add(
-                    java.nio.file.attribute.PosixFilePermission.GROUP_READ)
-            if (others.isExecute) add(
-                    java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE)
-            if (others.isWrite) add(
-                    java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE)
-            if (others.isRead) add(
-                    java.nio.file.attribute.PosixFilePermission.OTHERS_READ)
-        }
-        return object : java.nio.file.attribute.FileAttribute<Set<PosixFilePermission>> {
+        val value =
+            HashSet<java.nio.file.attribute.PosixFilePermission>().apply {
+                if (owner.isExecute) add(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE
+                )
+                if (owner.isWrite) add(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE
+                )
+                if (owner.isRead) add(
+                    java.nio.file.attribute.PosixFilePermission.OWNER_READ
+                )
+                if (group.isExecute) add(
+                    java.nio.file.attribute.PosixFilePermission.GROUP_EXECUTE
+                )
+                if (group.isWrite) add(
+                    java.nio.file.attribute.PosixFilePermission.GROUP_WRITE
+                )
+                if (group.isRead) add(
+                    java.nio.file.attribute.PosixFilePermission.GROUP_READ
+                )
+                if (others.isExecute) add(
+                    java.nio.file.attribute.PosixFilePermission.OTHERS_EXECUTE
+                )
+                if (others.isWrite) add(
+                    java.nio.file.attribute.PosixFilePermission.OTHERS_WRITE
+                )
+                if (others.isRead) add(
+                    java.nio.file.attribute.PosixFilePermission.OTHERS_READ
+                )
+            }
+        return object :
+            java.nio.file.attribute.FileAttribute<Set<PosixFilePermission>> {
             override fun name(): String {
                 return "posix:permissions"
             }
@@ -334,14 +364,16 @@ internal object NIOFileUtilImpl : FileUtilImpl {
                 PosixFilePermission.OTHERS_READ -> others = others.setAt(2)
             }
         }
-        return UnixPermissionMode(owner.toUnixPermissionModeLevel(),
-                group.toUnixPermissionModeLevel(),
-                others.toUnixPermissionModeLevel())
+        return UnixPermissionMode(
+            owner.toUnixPermissionModeLevel(),
+            group.toUnixPermissionModeLevel(),
+            others.toUnixPermissionModeLevel()
+        )
     }
 
     private fun BasicFileAttributes.fileType() =
-            if (isRegularFile) FileType.TYPE_REGULAR_FILE
-            else if (isDirectory) FileType.TYPE_DIRECTORY
-            else if (isSymbolicLink) FileType.TYPE_SYMLINK
-            else FileType.TYPE_UNKNOWN
+        if (isRegularFile) FileType.TYPE_REGULAR_FILE
+        else if (isDirectory) FileType.TYPE_DIRECTORY
+        else if (isSymbolicLink) FileType.TYPE_SYMLINK
+        else FileType.TYPE_UNKNOWN
 }

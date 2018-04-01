@@ -16,11 +16,10 @@
 
 package org.tobi29.io.filesystem
 
-import org.tobi29.io.Path
-import org.tobi29.io.Uri
+import org.tobi29.io.*
 import java.io.File
 
-actual interface FilePath : Path, Comparable<FilePath> {
+actual interface FilePath : PathT<FileChannel>, Comparable<FilePath> {
     actual override fun toUri(): Uri
 
     override val name: String? get() = fileName?.toString()
@@ -45,7 +44,13 @@ actual interface FilePath : Path, Comparable<FilePath> {
 
     actual fun toAbsolutePath(): FilePath
 
-    override fun get(path: String): Path {
-        return resolve(path)
+    override fun get(path: String) = resolve(path)
+
+    override fun channel() = channel(this, options = arrayOf(OPEN_READ))
+
+    override suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R {
+        channel().use {
+            return reader(BufferedReadChannelStream(it))
+        }
     }
 }
