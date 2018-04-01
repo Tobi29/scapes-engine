@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.tobi29.io
 
+import org.tobi29.stdex.toIntClamped
+
 class WritableByteStreamChannel(
-        private val stream: WritableByteStream
+    private val stream: WritableByteStream
 ) : WritableByteChannel {
     override fun write(buffer: ByteViewRO): Int {
         stream.put(buffer)
@@ -29,11 +31,25 @@ class WritableByteStreamChannel(
 }
 
 class ReadableByteStreamChannel(
-        private val stream: ReadableByteStream
+    private val stream: ReadableByteStream
 ) : ReadableByteChannel {
-    override fun read(buffer: ByteView): Int {
-        return stream.getSome(buffer)
-    }
+    override fun read(buffer: ByteView) = stream.getSome(buffer)
+
+    override fun isOpen() = true
+    override fun close() {}
+}
+
+class RandomReadableByteStreamChannel(
+    private val stream: RandomReadableByteStream
+) : SeekableReadByteChannel {
+    override fun read(buffer: ByteView) = stream.getSome(buffer)
+
+    override fun position() = stream.position().toLong()
+
+    override fun position(newPosition: Long) =
+        stream.position(newPosition.toIntClamped())
+
+    override fun size() = stream.limit().toLong()
 
     override fun isOpen() = true
     override fun close() {}
