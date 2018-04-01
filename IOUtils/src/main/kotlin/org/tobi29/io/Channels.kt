@@ -35,8 +35,12 @@ interface ReadableByteChannel : Channel {
     fun skip(length: Long): Long {
         val buffer = ByteArray(length.coerceAtMost(4096).toInt()).view
         while (length > 0) {
-            val read = read(buffer.slice(0,
-                    buffer.size.coerceAtMost(length.toIntClamped())))
+            val read = read(
+                buffer.slice(
+                    0,
+                    buffer.size.coerceAtMost(length.toIntClamped())
+                )
+            )
             if (read == -1) {
                 throw EndOfStreamException()
             }
@@ -49,22 +53,22 @@ interface ReadableByteChannel : Channel {
 }
 
 fun ReadableByteChannel.read(stream: MemoryViewStream<*>): Int =
-        read(stream.bufferSlice()).also {
-            if (it > 0) stream.position(stream.position() + it)
-        }
+    read(stream.bufferSlice()).also {
+        if (it > 0) stream.position(stream.position() + it)
+    }
 
 interface WritableByteChannel : Channel {
     fun write(buffer: ByteViewRO): Int
 }
 
 fun WritableByteChannel.write(stream: MemoryViewStream<*>): Int =
-        write(stream.bufferSlice()).also {
-            if (it > 0) stream.position(stream.position() + it)
-        }
+    write(stream.bufferSlice()).also {
+        if (it > 0) stream.position(stream.position() + it)
+    }
 
 interface ByteChannel : ReadableByteChannel, WritableByteChannel
 
-interface SeekableByteChannel : ByteChannel {
+interface SeekableChannel : Channel {
     /**
      * @throws IOException
      */
@@ -83,14 +87,23 @@ interface SeekableByteChannel : ByteChannel {
     /**
      * @throws IOException
      */
-    fun truncate(size: Long)
-
-    /**
-     * @throws IOException
-     */
     fun remaining(): Long = size() - position()
+}
 
+interface SeekableReadByteChannel : SeekableChannel, ReadableByteChannel {
     override fun skip(length: Long) = length.also {
         position(position() + length)
     }
+}
+
+interface SeekableWriteByteChannel : SeekableChannel, WritableByteChannel {
+    /**
+     * @throws IOException
+     */
+    fun truncate(size: Long)
+}
+
+interface SeekableByteChannel : ByteChannel, SeekableReadByteChannel,
+    SeekableWriteByteChannel {
+    override fun remaining(): Long = super<SeekableReadByteChannel>.remaining()
 }
