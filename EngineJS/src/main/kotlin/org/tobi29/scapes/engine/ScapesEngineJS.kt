@@ -171,14 +171,12 @@ actual class ScapesEngine actual constructor(
             logger.info { "Disposing last state" }
             stateMut?.dispose()
             stateMut = null
-            logger.info { "Disposing components" }
-            clearComponents()
             logger.info { "Disposing GUI" }
             guiStack.clear()
             logger.info { "Disposing sound system" }
             sounds.dispose()
-            logger.info { "Shutting down tasks" }
-            taskExecutor[Job]?.cancel()
+            logger.info { "Disposing components" }
+            clearComponents()
             logger.info { "Stopped Scapes-Engine" }
         }
     }

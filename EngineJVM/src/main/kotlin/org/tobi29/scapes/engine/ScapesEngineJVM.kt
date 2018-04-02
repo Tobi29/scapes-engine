@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -176,14 +176,12 @@ actual class ScapesEngine actual constructor(
             logger.info { "Disposing last state" }
             stateMut?.dispose()
             stateMut = null
-            logger.info { "Disposing components" }
-            clearComponents()
             logger.info { "Disposing GUI" }
             guiStack.clear()
             logger.info { "Disposing sound system" }
             sounds.dispose()
-            logger.info { "Shutting down tasks" }
-            taskExecutor[Job]?.cancel()
+            logger.info { "Disposing components" }
+            clearComponents()
             logger.info { "Stopped Scapes-Engine" }
         }
     }
