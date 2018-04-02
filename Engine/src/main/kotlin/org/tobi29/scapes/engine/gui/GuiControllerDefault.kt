@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,17 +19,18 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.stdex.atomic.AtomicReference
-import org.tobi29.utils.EventDispatcher
 import org.tobi29.stdex.isISOControl
+import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.listenAlive
 
 abstract class GuiControllerDefault(
-        engine: ScapesEngine,
-        protected val controller: ControllerDesktop
+    engine: ScapesEngine,
+    protected val controller: ControllerDesktop
 ) : GuiController(engine) {
     private val currentTextField =
-            AtomicReference<Triple<() -> Boolean, TextFieldData, Boolean>?>(
-                    null)
+        AtomicReference<Triple<() -> Boolean, TextFieldData, Boolean>?>(
+            null
+        )
 
     private val events = EventDispatcher(engine.events) {
         listenAlive<ControllerButtons.PressEvent>(100, {
@@ -47,7 +48,7 @@ abstract class GuiControllerDefault(
                     event.state.isDown(ControllerKey.KEY_SHIFT_RIGHT)
             synchronized(data) {
                 if (event.state is ControllerDesktopState
-                        && event.state.isModifierDown) {
+                    && event.state.isModifierDown) {
                     when (event.key) {
                         ControllerKey.KEY_A -> data.selectAll()
                         ControllerKey.KEY_C -> data.copy()?.let {
@@ -57,11 +58,15 @@ abstract class GuiControllerDefault(
                             container.clipboardCopy(it)
                         }
                         ControllerKey.KEY_V -> {
-                            var paste = container.clipboardPaste()
-                            if (!multiline) {
-                                paste = paste.replace("\n", "")
+                            container.clipboardPaste { paste ->
+                                synchronized(data) {
+                                    data.paste(
+                                        if (multiline) paste
+                                        else paste.replace("\n", "")
+                                    )
+                                    data.dirty.set(true)
+                                }
                             }
-                            data.paste(paste)
                         }
                         else -> return@listenAlive
                     }
@@ -115,9 +120,11 @@ abstract class GuiControllerDefault(
         }
     }
 
-    override fun focusTextField(valid: () -> Boolean,
-                                data: TextFieldData,
-                                multiline: Boolean) {
+    override fun focusTextField(
+        valid: () -> Boolean,
+        data: TextFieldData,
+        multiline: Boolean
+    ) {
         currentTextField.set(Triple(valid, data, multiline))
     }
 

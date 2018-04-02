@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import org.khronos.webgl2.WebGL2RenderingContext as WGL2
 
 abstract class ContainerWebGL2(
     wgl: WGL2
-) : Container,
-    ScapesEngineBackend by ScapesEngineJS {
-    override final val gos = GLESHandle(wgl, this)
+) : Container, ScapesEngineBackend by ScapesEngineJS {
+    final override val gos = GLESHandle(wgl, this)
     protected val gl = GLESImpl(gos)
     protected var isRendering = 0
 

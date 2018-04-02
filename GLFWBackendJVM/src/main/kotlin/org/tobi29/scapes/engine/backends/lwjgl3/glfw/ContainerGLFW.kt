@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
+import kotlinx.coroutines.experimental.launch
 import org.lwjgl.PointerBuffer
 import org.lwjgl.glfw.*
 import org.lwjgl.opengl.GL
@@ -71,7 +72,7 @@ class ContainerGLFW(
     private var valid = false
     private var visible = false
     private var focus = true
-    private var mouseGrabbed = false
+    private var cursorCaptured = false
     private var mouseDeltaSkip = true
     private var plebSyncEnable = true
 
@@ -87,9 +88,6 @@ class ContainerGLFW(
 
     override fun updateContainer() {
         valid = false
-    }
-
-    override fun update(delta: Double) {
     }
 
     fun run(engine: ScapesEngine) {
@@ -154,7 +152,7 @@ class ContainerGLFW(
             val dx = xpos - mouseX
             val dy = ypos - mouseY
             if (dx != 0.0 || dy != 0.0) {
-                if (mouseGrabbed) {
+                if (cursorCaptured) {
                     GLFW.glfwSetCursorPos(window, 0.0, 0.0)
                     mouseX = 0.0
                     mouseY = 0.0
@@ -233,7 +231,7 @@ class ContainerGLFW(
             val start = steadyClock.timeSteadyNanos()
             val engineConfig = engine[ScapesEngineConfig.COMPONENT]
             val vSync = engineConfig.vSync
-            tasks.processCurrent()
+            tasks.processCurrent { it.run() }
             if (!valid) {
                 engine.graphics.reset()
                 controllerDesktop.clearStates()
@@ -265,7 +263,7 @@ class ContainerGLFW(
                     contentHeight = heightBuffer.get(0)
                 }
                 valid = true
-                if (mouseGrabbed) {
+                if (cursorCaptured) {
                     mouseX = containerWidth / density * 0.5
                     mouseY = containerHeight / density * 0.5
                     controllerDesktop.set(mouseX, mouseY)
@@ -283,28 +281,6 @@ class ContainerGLFW(
                     Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
                     contentWidth, contentHeight, containerWidth, containerHeight
                 )
-            }
-            val mouseGrabbed = !emulateTouch && engine.isMouseGrabbed()
-            if (mouseGrabbed != this.mouseGrabbed) {
-                this.mouseGrabbed = mouseGrabbed
-                mouseX = containerWidth / density * 0.5
-                mouseY = containerHeight / density * 0.5
-                if (mouseGrabbed) {
-                    GLFW.glfwSetInputMode(
-                        window, GLFW.GLFW_CURSOR,
-                        GLFW.GLFW_CURSOR_DISABLED
-                    )
-                    mouseDeltaSkip = true
-                } else {
-                    mouseX = containerWidth / density * 0.5
-                    mouseY = containerHeight / density * 0.5
-                    GLFW.glfwSetInputMode(
-                        window, GLFW.GLFW_CURSOR,
-                        GLFW.GLFW_CURSOR_NORMAL
-                    )
-                    GLFW.glfwSetCursorPos(window, mouseX, mouseY)
-                }
-                controllerDesktop.set(mouseX, mouseY)
             }
             if (vSync) {
                 tickDiff = timer.tick()
@@ -361,12 +337,41 @@ class ContainerGLFW(
         running = false
     }
 
-    override fun clipboardCopy(value: String) {
-        GLFW.glfwSetClipboardString(window, value)
+    override fun cursorCapture(value: Boolean) {
+        val cursorCaptured = !emulateTouch && value
+        if (cursorCaptured != this.cursorCaptured) {
+            this.cursorCaptured = cursorCaptured
+            mouseX = containerWidth / density * 0.5
+            mouseY = containerHeight / density * 0.5
+            if (cursorCaptured) {
+                GLFW.glfwSetInputMode(
+                    window, GLFW.GLFW_CURSOR,
+                    GLFW.GLFW_CURSOR_DISABLED
+                )
+                mouseDeltaSkip = true
+            } else {
+                mouseX = containerWidth / density * 0.5
+                mouseY = containerHeight / density * 0.5
+                GLFW.glfwSetInputMode(
+                    window, GLFW.GLFW_CURSOR,
+                    GLFW.GLFW_CURSOR_NORMAL
+                )
+                GLFW.glfwSetCursorPos(window, mouseX, mouseY)
+            }
+            controllerDesktop.set(mouseX, mouseY)
+        }
     }
 
-    override fun clipboardPaste(): String {
-        return GLFW.glfwGetClipboardString(window) ?: ""
+    override fun clipboardCopy(value: String) {
+        launch(this) {
+            GLFW.glfwSetClipboardString(window, value)
+        }
+    }
+
+    override fun clipboardPaste(callback: (String) -> Unit) {
+        launch(this) {
+            callback(GLFW.glfwGetClipboardString(window) ?: "")
+        }
     }
 
     override fun message(
@@ -374,8 +379,10 @@ class ContainerGLFW(
         title: String,
         message: String
     ) {
-        exec {
-            PlatformDialogs.message(this, messageType, title, message)
+        launch(this) {
+            PlatformDialogs.message(
+                this@ContainerGLFW, messageType, title, message
+            )
         }
     }
 
@@ -384,8 +391,10 @@ class ContainerGLFW(
         text: GuiController.TextFieldData,
         multiline: Boolean
     ) {
-        exec {
-            PlatformDialogs.dialog(this, title, text, multiline)
+        launch(this) {
+            PlatformDialogs.dialog(
+                this@ContainerGLFW, title, text, multiline
+            )
         }
     }
 

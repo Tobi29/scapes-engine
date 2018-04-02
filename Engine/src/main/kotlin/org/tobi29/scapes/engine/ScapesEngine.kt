@@ -53,17 +53,18 @@ expect class ScapesEngine(
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
-    val state: GameState
+    val state: GameState?
 
-    override fun dispatch(context: CoroutineContext,
-                          block: Runnable)
+    override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable
+    )
 
     fun switchState(state: GameState)
     fun start()
     suspend fun halt()
     suspend fun dispose()
     fun debugMap(): Map<String, String>
-    fun isMouseGrabbed(): Boolean
 
     companion object : KLogging {
         val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>

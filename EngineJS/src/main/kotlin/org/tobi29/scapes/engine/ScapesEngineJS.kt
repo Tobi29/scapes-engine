@@ -50,7 +50,8 @@ actual class ScapesEngine actual constructor(
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState?>(null)
     private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
-    private var stateMut: GameState? = null
+    private var _state: GameState? = null
+    actual val state: GameState? get() = _state
     actual val files = FileSystemContainer()
     actual val events = EventDispatcher()
     actual val resources = ResourceLoader(taskExecutor)
@@ -103,13 +104,14 @@ actual class ScapesEngine actual constructor(
             DeltaProfilerComponent.COMPONENT,
             DeltaProfilerComponent(performance)
         )
+        registerComponent(
+            CursorCaptureComponent.COMPONENT,
+            CursorCaptureComponent()
+        )
         graphics.initDebug(debugValues)
 
         logger.info { "Engine created" }
     }
-
-    actual val state
-        get() = stateMut ?: throw IllegalStateException("Engine not running")
 
     actual override fun dispatch(
         context: CoroutineContext,
@@ -169,8 +171,8 @@ actual class ScapesEngine actual constructor(
         halt()
         synchronized(this) {
             logger.info { "Disposing last state" }
-            stateMut?.dispose()
-            stateMut = null
+            state?.dispose()
+            _state = null
             logger.info { "Disposing GUI" }
             guiStack.clear()
             logger.info { "Disposing sound system" }
@@ -184,22 +186,18 @@ actual class ScapesEngine actual constructor(
     actual fun debugMap(): Map<String, String> {
         val debugValues = HashMap<String, String>()
         for ((key, value) in this.debugValues.elements()) {
-            debugValues.put(key, value.toString())
+            debugValues[key] = value.toString()
         }
         return debugValues.readOnly()
     }
 
-    actual fun isMouseGrabbed(): Boolean {
-        return stateMut?.isMouseGrabbed ?: false || guiController.captureCursor()
-    }
-
     private fun step(delta: Double): Double {
-        var currentState = this.stateMut
+        var currentState = state
         val newState = newState.getAndSet(null)
         if (newState != null) {
             synchronized(graphics) {
-                this.stateMut?.dispose()
-                this.stateMut = newState
+                state?.dispose()
+                _state = newState
                 newState.init()
             }
             currentState = newState

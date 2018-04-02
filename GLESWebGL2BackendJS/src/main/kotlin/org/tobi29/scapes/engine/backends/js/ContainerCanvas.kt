@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,21 +50,8 @@ class ContainerCanvas(
         )
     }
 
-    override fun updateContainer() {
-    }
-
-    override fun update(delta: Double) {
-    }
-
-    override fun stop() {
-    }
-
-    override fun clipboardCopy(value: String) {
-    }
-
-    override fun clipboardPaste(): String {
-        return ""
-    }
+    // TODO: Implement?
+    override fun stop() {}
 
     override fun message(
         messageType: Container.MessageType,

@@ -18,7 +18,11 @@ package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.sync.Mutex
+import org.tobi29.coroutines.*
+import org.tobi29.io.FileSystemContainer
+import org.tobi29.io.tag.MutableTagMap
 import org.tobi29.logging.KLogging
+import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -26,29 +30,26 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.utils.*
-import org.tobi29.io.FileSystemContainer
-import org.tobi29.profiler.profilerSection
-import org.tobi29.io.tag.MutableTagMap
-import org.tobi29.coroutines.*
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
+import org.tobi29.utils.*
 import kotlin.coroutines.experimental.CoroutineContext
 
 actual class ScapesEngine actual constructor(
-        actual val container: Container,
-        defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-        actual val taskExecutor: CoroutineContext,
-        configMap: MutableTagMap
+    actual val container: Container,
+    defaultGuiStyle: (ScapesEngine) -> GuiStyle,
+    actual val taskExecutor: CoroutineContext,
+    configMap: MutableTagMap
 ) : CoroutineDispatcher(),
-        ComponentHolder<Any> {
+    ComponentHolder<Any> {
     actual override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
     private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
-    private var stateMut: GameState? = null
+    private var _state: GameState? = null
+    actual val state: GameState? get() = _state
     actual val files = FileSystemContainer()
     actual val events = EventDispatcher()
     actual val resources = ResourceLoader(taskExecutor)
@@ -82,22 +83,34 @@ actual class ScapesEngine actual constructor(
         tooltip = GuiTooltip(guiStyle)
         guiStack.addUnfocused("80-Tooltip", tooltip)
         val debugGui = Gui(guiStyle)
-        debugValues = debugGui.add(32.0, 32.0, 360.0, 256.0,
-                ::GuiWidgetDebugValues)
+        debugValues = debugGui.add(
+            32.0, 32.0, 360.0, 256.0,
+            ::GuiWidgetDebugValues
+        )
         debugValues.visible = false
         profiler = debugGui.add(32.0, 32.0, 360.0, 256.0, ::GuiWidgetProfiler)
         profiler.visible = false
-        performance = debugGui.add(32.0, 32.0, 360.0, 256.0,
-                ::GuiWidgetPerformance)
+        performance = debugGui.add(
+            32.0, 32.0, 360.0, 256.0,
+            ::GuiWidgetPerformance
+        )
         performance.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
         tpsDebug = debugValues["Engine-Tps"]
 
         logger.info { "Initializing engine" }
-        registerComponent(DeltaProfilerComponent.COMPONENT,
-                DeltaProfilerComponent(performance))
-        registerComponent(MemoryProfilerComponent.COMPONENT,
-                MemoryProfilerComponent(debugValues))
+        registerComponent(
+            DeltaProfilerComponent.COMPONENT,
+            DeltaProfilerComponent(performance)
+        )
+        registerComponent(
+            MemoryProfilerComponent.COMPONENT,
+            MemoryProfilerComponent(debugValues)
+        )
+        registerComponent(
+            CursorCaptureComponent.COMPONENT,
+            CursorCaptureComponent()
+        )
         graphics.initDebug(debugValues)
 
         logger.info { "Engine created" }
@@ -107,20 +120,22 @@ actual class ScapesEngine actual constructor(
         val runtime = Runtime.getRuntime()
         logger.info {
             "Operating system: ${System.getProperty(
-                    "os.name")} ${System.getProperty(
-                    "os.version")} ${System.getProperty("os.arch")}"
+                "os.name"
+            )} ${System.getProperty(
+                "os.version"
+            )} ${System.getProperty("os.arch")}"
         }
         logger.info {
             "Java: ${System.getProperty(
-                    "java.version")} (MaxMemory: ${runtime.maxMemory() / 1048576}, Processors: ${runtime.availableProcessors()})"
+                "java.version"
+            )} (MaxMemory: ${runtime.maxMemory() / 1048576}, Processors: ${runtime.availableProcessors()})"
         }
     }
 
-    actual val state
-        get() = stateMut ?: throw IllegalStateException("Engine not running")
-
-    actual override fun dispatch(context: CoroutineContext,
-                                 block: Runnable) {
+    actual override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable
+    ) {
         queue.offer {
             try {
                 block.run()
@@ -151,12 +166,12 @@ actual class ScapesEngine actual constructor(
                     tps = step(delta)
                 }
                 components.asSequence().filterIsInstance<ComponentLifecycle>()
-                        .forEach { it.halt() }
+                    .forEach { it.halt() }
             }.join()
         } to stop
         if (updateJob.compareAndSet(null, job)) {
             components.asSequence().filterIsInstance<ComponentLifecycle>()
-                    .forEach { it.start() }
+                .forEach { it.start() }
             startTps = step(0.0001)
             mutex.unlock()
         } else job.first.cancel()
@@ -174,8 +189,8 @@ actual class ScapesEngine actual constructor(
         halt()
         synchronized(this) {
             logger.info { "Disposing last state" }
-            stateMut?.dispose()
-            stateMut = null
+            state?.dispose()
+            _state = null
             logger.info { "Disposing GUI" }
             guiStack.clear()
             logger.info { "Disposing sound system" }
@@ -189,29 +204,25 @@ actual class ScapesEngine actual constructor(
     actual fun debugMap(): Map<String, String> {
         val debugValues = HashMap<String, String>()
         for ((key, value) in this.debugValues.elements()) {
-            debugValues.put(key, value.toString())
+            debugValues[key] = value.toString()
         }
         return debugValues.readOnly()
     }
 
-    actual fun isMouseGrabbed(): Boolean {
-        return stateMut?.isMouseGrabbed ?: false || guiController.captureCursor()
-    }
-
     private fun step(delta: Double): Double {
-        var currentState = this.stateMut
+        var currentState = state
         val newState = newState.getAndSet(null)
         if (newState != null) {
             synchronized(graphics) {
-                this.stateMut?.dispose()
-                this.stateMut = newState
+                state?.dispose()
+                _state = newState
                 newState.init()
             }
             currentState = newState
         }
         profilerSection("Components") {
             components.asSequence().filterIsInstance<ComponentStep>()
-                    .forEach { it.step(delta) }
+                .forEach { it.step(delta) }
         }
         profilerSection("Gui-Controller") {
             guiController.update(delta)
@@ -231,7 +242,8 @@ actual class ScapesEngine actual constructor(
     }
 
     actual companion object : KLogging() {
-        actual val CONFIG_MAP_COMPONENT = ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
+        actual val CONFIG_MAP_COMPONENT =
+            ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
     }
 }
 

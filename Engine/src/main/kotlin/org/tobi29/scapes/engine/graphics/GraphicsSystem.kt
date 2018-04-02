@@ -26,7 +26,6 @@ import org.tobi29.graphics.Image
 import org.tobi29.io.view
 import org.tobi29.logging.KLogging
 import org.tobi29.profiler.profilerSection
-import org.tobi29.scapes.engine.GameState
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import kotlin.coroutines.experimental.CoroutineContext
@@ -48,7 +47,6 @@ class GraphicsSystem(
         byteArrayOf(-1, -1, -1, -1).view, 0
     )
     private val queue = TaskChannel<(GL) -> Unit>()
-    private var renderState: GameState? = null
     private var lastContentWidth = 0
     private var lastContentHeight = 0
     private var lastContainerWidth = 0
@@ -113,19 +111,11 @@ class GraphicsSystem(
                     fboSizeDirty = false
                 }
                 val state = engine.state
-                val renderState = renderState
-                if (renderState !== state) {
-                    profilerSection("SwitchState") {
-                        this.renderState = state
-                    }
-                }
                 executeDispatched(gl)
                 gl.setViewport(0, 0, gl.contentWidth, gl.contentHeight)
                 profilerSection("State") {
-                    if (!state.renderState(
-                            gl, delta,
-                            fboSizeDirty
-                        )) return@synchronized false
+                    if (state?.renderState(gl, delta, fboSizeDirty) != true)
+                        return@synchronized false
                 }
                 fpsDebug.setValue(1.0 / delta)
                 textureDebug.setValue(gos.textureTracker.count())
@@ -144,13 +134,6 @@ class GraphicsSystem(
                 logger.warn { "Graphics error during rendering: $e" }
             }
             true
-        }
-    }
-
-    @Deprecated("Use dispatch")
-    fun requestScreenshot(block: (Image) -> Unit) {
-        dispatch { gl ->
-            block(gl.screenShot(0, 0, gl.contentWidth, gl.contentHeight))
         }
     }
 
@@ -183,4 +166,13 @@ class GraphicsSystem(
     }
 
     companion object : KLogging()
+
+    // TODO: Remove after 0.0.13
+
+    @Deprecated("Use dispatch")
+    fun requestScreenshot(block: (Image) -> Unit) {
+        dispatch { gl ->
+            block(gl.screenShot(0, 0, gl.contentWidth, gl.contentHeight))
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.lwjgl3
 
+import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.Runnable
 import org.lwjgl.Version
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengles.GLES
@@ -35,11 +37,13 @@ import org.tobi29.scapes.engine.backends.opengles.GLESImpl
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.utils.sleep
+import kotlin.coroutines.experimental.CoroutineContext
 
 abstract class ContainerLWJGL3(
     protected val useGLES: Boolean = false
-) : Container, ScapesEngineBackend by ScapesEngineLWJGL3 {
-    protected val tasks = TaskChannel<() -> Unit>()
+) : CoroutineDispatcher(), Container,
+    ScapesEngineBackend by ScapesEngineLWJGL3 {
+    protected val tasks = TaskChannel<Runnable>()
     protected val mainThread: Thread = Thread.currentThread()
     final override val gos: GraphicsObjectSupplier
     protected val gl: GL
@@ -69,12 +73,8 @@ abstract class ContainerLWJGL3(
         }
     }
 
-    fun exec(runnable: () -> Unit) {
-        val thread = Thread.currentThread()
-        if (thread === mainThread) {
-            return runnable()
-        }
-        tasks.offer(runnable)
+    override fun dispatch(context: CoroutineContext, block: Runnable) {
+        tasks.offer(block)
     }
 
     companion object : KLogging() {

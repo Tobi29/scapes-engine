@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,23 +25,31 @@ interface Container : ScapesEngineBackend {
     val containerWidth: Int
     val containerHeight: Int
 
-    fun updateContainer()
+    fun updateContainer() {}
 
-    fun update(delta: Double)
+    fun update(delta: Double) {}
 
     fun stop()
 
-    fun clipboardCopy(value: String)
+    fun cursorCapture(value: Boolean) {}
 
-    fun clipboardPaste(): String
+    fun clipboardCopy(value: String) {}
 
-    fun message(messageType: MessageType,
-                title: String,
-                message: String)
+    fun clipboardPaste(callback: (String) -> Unit) {
+        callback("")
+    }
 
-    fun dialog(title: String,
-               text: GuiController.TextFieldData,
-               multiline: Boolean)
+    fun message(
+        messageType: MessageType,
+        title: String,
+        message: String
+    )
+
+    fun dialog(
+        title: String,
+        text: GuiController.TextFieldData,
+        multiline: Boolean
+    )
 
     fun isRenderCall(): Boolean
 
