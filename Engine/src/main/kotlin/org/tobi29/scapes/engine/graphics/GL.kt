@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.graphics.Bitmap
@@ -70,12 +71,6 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
         }
         timestamp += max((1000000000.0 * delta).roundToLong(), 1L)
     }
-
-    fun aspectRatio(): Double = containerWidth.toDouble() / containerHeight
-
-    fun space(): Double = max(containerWidth, containerHeight) / 1920.0
-
-    fun contentSpace(): Double = max(contentWidth, contentHeight) / 1920.0
 
     fun isRenderCall() = container.isRenderCall()
 
@@ -151,31 +146,6 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
         width: Int,
         height: Int
     ): Bitmap<*, *>
-
-    @Deprecated("Use getFrontBuffer")
-    fun screenShot(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    ): Image = getFrontBuffer(x, y, width, height).toImage()
-
-    @Deprecated("Use getFBOColorBuffer")
-    fun screenShotFBOColor(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        attachment: Int = 0
-    ): Image = getFBOColorBuffer(x, y, width, height, attachment).toImage()
-
-    @Deprecated("Use getFBODepthBuffer")
-    fun screenShotFBODepth(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    ): Image = getFBODepthBuffer(x, y, width, height).toImage()
 
     fun into(
         framebuffer: Framebuffer,
@@ -262,7 +232,67 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
         val TEXTURE_ATTRIBUTE = 2
         val NORMAL_ATTRIBUTE = 3
     }
+
+    // TODO: Remove after 0.0.13
+
+    @Deprecated("Use getFrontBuffer")
+    fun screenShot(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): Image = getFrontBuffer(x, y, width, height).toImage()
+
+    @Deprecated("Use getFBOColorBuffer")
+    fun screenShotFBOColor(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        attachment: Int = 0
+    ): Image = getFBOColorBuffer(x, y, width, height, attachment).toImage()
+
+    @Deprecated("Use getFBODepthBuffer")
+    fun screenShotFBODepth(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int
+    ): Image = getFBODepthBuffer(x, y, width, height).toImage()
+
+    @Deprecated(
+        "Use extension property",
+        ReplaceWith(
+            "aspectRatio",
+            "org.tobi29.scapes.engine.graphics.aspectRatio"
+        )
+    )
+    fun aspectRatio(): Double = aspectRatio
+
+    @Deprecated(
+        "Use extension property",
+        ReplaceWith("aspectRatio", "org.tobi29.scapes.engine.graphics.space")
+    )
+    fun space(): Double = space
+
+    @Deprecated(
+        "Use extension property",
+        ReplaceWith(
+            "aspectRatio",
+            "org.tobi29.scapes.engine.graphics.contentSpace"
+        )
+    )
+    fun contentSpace(): Double = contentSpace
 }
+
+inline val GL.aspectRatio: Double
+    get() = containerWidth.toDouble() / containerHeight
+
+inline val GL.space: Double
+    get() = max(containerWidth, containerHeight) / 1920.0
+
+inline val GL.contentSpace: Double
+    get() = max(contentWidth, contentHeight) / 1920.0
 
 fun Matrix4f.camera(cam: Cam) {
     rotateAccurate((-cam.tilt).toDouble(), 0.0f, 0.0f, 1.0f)
