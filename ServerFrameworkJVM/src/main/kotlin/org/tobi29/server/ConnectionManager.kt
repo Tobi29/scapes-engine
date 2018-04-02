@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,13 @@ package org.tobi29.server
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.runBlocking
-import org.tobi29.stdex.atomic.AtomicBoolean
-import org.tobi29.utils.ComponentRegistered
-import org.tobi29.utils.ComponentTypeRegisteredUniversal
+import org.tobi29.coroutines.launchThread
 import org.tobi29.io.IOException
 import org.tobi29.logging.KLogging
-import org.tobi29.coroutines.launchThread
+import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.utils.ComponentHolder
+import org.tobi29.utils.ComponentRegistered
+import org.tobi29.utils.ComponentTypeRegisteredUniversal
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**
@@ -109,7 +110,7 @@ class ConnectionManager(
     /**
      * Stops all worker threads and blocks until they shut down
      */
-    override fun dispose() {
+    override fun dispose(holder: ComponentHolder<out Any>) {
         val closingWorkers = synchronized(workers) {
             workers.toList().also { workers.clear() }
         }

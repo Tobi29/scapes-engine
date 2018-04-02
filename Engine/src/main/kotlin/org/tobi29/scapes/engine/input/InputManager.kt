@@ -26,6 +26,7 @@ import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
+import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentRegistered
 import org.tobi29.utils.EventDispatcher
 import kotlin.collections.set
@@ -59,12 +60,12 @@ abstract class InputManager<M : InputMode>(
         }
     }.apply { enable() }
 
-    override fun init() {
+    override fun init(holder: ComponentHolder<out Any>) {
         events.enable()
         reloadInput()
     }
 
-    override fun dispose() {
+    override fun dispose(holder: ComponentHolder<out Any>) {
         events.disable()
         changeInput(null)
     }
