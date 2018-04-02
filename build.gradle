@@ -31,12 +31,6 @@ buildscript {
 }
 
 allprojects {
-    def env = System.getenv()
-    if (env.containsKey("VERSION")) {
-        version = env["VERSION"]
-    } else {
-        version = findProperty("build.version")
-    }
     group = "com.github.Tobi29.ScapesEngine"
 
     repositories {
