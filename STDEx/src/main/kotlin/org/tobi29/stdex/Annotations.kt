@@ -19,7 +19,7 @@ package org.tobi29.stdex
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
-expect annotation class JvmOverloads
+expect annotation class JvmOverloads()
 
 @Target(
     AnnotationTarget.FUNCTION,
@@ -27,7 +27,7 @@ expect annotation class JvmOverloads
     AnnotationTarget.PROPERTY_GETTER,
     AnnotationTarget.PROPERTY_SETTER
 )
-expect annotation class JvmStatic
+expect annotation class JvmStatic()
 
 @Target(
     AnnotationTarget.FUNCTION,
@@ -38,7 +38,7 @@ expect annotation class JvmStatic
 expect annotation class JvmName(val name: String)
 
 @Target(AnnotationTarget.FILE)
-expect annotation class JvmMultifileClass
+expect annotation class JvmMultifileClass()
 
 @Target(
     AnnotationTarget.FUNCTION,
@@ -51,10 +51,10 @@ expect annotation class Throws(
 )
 
 @Target(AnnotationTarget.FIELD)
-expect annotation class JvmField
+expect annotation class JvmField()
 
 @Target(AnnotationTarget.FIELD)
-expect annotation class Volatile
+expect annotation class Volatile()
 
 @Target(
     AnnotationTarget.CLASS,
