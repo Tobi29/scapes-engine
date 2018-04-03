@@ -18,6 +18,7 @@ package org.tobi29.platform
 
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.path
+import org.tobi29.stdex.Volatile
 import java.io.File
 
 private val impl: StandardPathsImpl by lazy {
@@ -30,6 +31,9 @@ private val impl: StandardPathsImpl by lazy {
         else -> throw UnsupportedOperationException("Unsupported platform")
     }
 }
+
+@Volatile
+private var androidApplicationContext: AndroidPathsImpl.Context? = null
 
 actual val homeDir: FilePath get() = impl.homeDir
 actual val configHome: FilePath get() = impl.configHome
@@ -52,6 +56,18 @@ actual fun appIDForCache(
     id: String,
     name: String
 ): FilePath = impl.appIDForCache(id, name)
+
+fun installAndroidContext(handle: Any) {
+    if (androidApplicationContext != null) return
+
+    val context = AndroidPathsImpl.Context(handle)
+    val applicationContext = context.getApplicationContext()
+    androidApplicationContext = applicationContext
+}
+
+fun uninstallAndroidContext() {
+    androidApplicationContext = null
+}
 
 private interface StandardPathsImpl {
     val homeDir: FilePath
@@ -155,14 +171,16 @@ private class WindowsPathsImpl : StandardPathsImpl {
 }
 
 private class AndroidPathsImpl : StandardPathsImpl {
-    private val context = Context.getApplicationContext()
+    private val context: Context
+        get() = androidApplicationContext
+                ?: error("Context was not install, consider calling 'installAndroidContext' or using the Android APIs directly")
 
-    override val homeDir = path(Environment.getExternalStorageDirectory())
-    override val configHome = path(context.getFilesDir())
-    override val configDirs = listOf(configHome)
-    override val dataHome = path(context.getFilesDir())
-    override val dataDirs = listOf(dataHome)
-    override val cacheHome = path(context.getCacheDir())
+    override val homeDir get() = path(Environment.getExternalStorageDirectory())
+    override val configHome get() = path(context.getFilesDir())
+    override val configDirs get() = listOf(configHome)
+    override val dataHome get() = path(context.getFilesDir())
+    override val dataDirs get() = listOf(dataHome)
+    override val cacheHome get() = path(context.getCacheDir())
 
     override fun appIDForConfig(
         id: String,
@@ -179,29 +197,32 @@ private class AndroidPathsImpl : StandardPathsImpl {
         name: String
     ) = path("")
 
-    private class Context(private val handle: Any) {
-        fun getFilesDir(): File = getFilesDir.invoke(handle) as File
-        fun getCacheDir(): File = getCacheDir.invoke(handle) as File
+    class Context(private val handle: Any) {
+        fun getFilesDir(): File =
+            getFilesDir.invoke(handle) as File
+
+        fun getCacheDir(): File =
+            getCacheDir.invoke(handle) as File
+
+        fun getApplicationContext(): Context =
+            Context(getApplicationContext.invoke(handle))
 
         companion object {
-            private val clazz = Class.forName("android.app.Context")
-            private val getApplicationContext = clazz.getMethod(
-                "getApplicationContext"
-            )
-            private val getFilesDir = clazz.getMethod("getFilesDir")
-            private val getCacheDir = clazz.getMethod("getCacheDir")
-
-            fun getApplicationContext(): Context =
-                Context(getApplicationContext.invoke(null))
+            private val clazz = Class.forName("android.content.Context")
+            private val getApplicationContext =
+                clazz.getMethod("getApplicationContext")
+            private val getFilesDir =
+                clazz.getMethod("getFilesDir")
+            private val getCacheDir =
+                clazz.getMethod("getCacheDir")
         }
     }
 
-    private class Environment(private val handle: Any) {
+    class Environment(private val handle: Any) {
         companion object {
             private val clazz = Class.forName("android.os.Environment")
-            private val getExternalStorageDirectory = clazz.getMethod(
-                "getExternalStorageDirectory"
-            )
+            private val getExternalStorageDirectory =
+                clazz.getMethod("getExternalStorageDirectory")
 
             fun getExternalStorageDirectory(): File =
                 getExternalStorageDirectory.invoke(null) as File
