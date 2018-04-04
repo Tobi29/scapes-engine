@@ -379,6 +379,7 @@ fun Bitmap<*, *>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> =
         RGBA -> cast(RGBA)!!.toByteViewRGBABitmap()
     }
 
+@JvmName("toByteViewRGBABitmapIntsRO2RGBA")
 fun Bitmap<IntsRO2, RGBA>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> {
     val image = MutableIntByteViewBitmap(width, height, RGBA)
     for (y in 0 until height) {
