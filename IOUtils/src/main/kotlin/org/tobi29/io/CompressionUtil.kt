@@ -44,7 +44,7 @@ object CompressionUtil {
     // TODO: @Throws(IOException::class)
     fun decompress(input: ReadableByteStream): ByteView {
         val stream = MemoryViewStreamDefault()
-        compress(input, stream)
+        decompress(input, stream)
         stream.flip()
         return stream.bufferSlice()
     }
