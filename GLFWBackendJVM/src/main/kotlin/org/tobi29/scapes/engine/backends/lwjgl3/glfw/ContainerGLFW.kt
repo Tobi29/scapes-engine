@@ -231,7 +231,6 @@ class ContainerGLFW(
             val start = steadyClock.timeSteadyNanos()
             val engineConfig = engine[ScapesEngineConfig.COMPONENT]
             val vSync = engineConfig.vSync
-            tasks.processCurrent { it.run() }
             if (!valid) {
                 engine.graphics.reset()
                 controllerDesktop.clearStates()
@@ -269,6 +268,7 @@ class ContainerGLFW(
                     controllerDesktop.set(mouseX, mouseY)
                 }
             }
+            tasks.processCurrent { it.run() }
             if (plebSync > 0) {
                 sleepNanos(plebSync)
             }
@@ -338,27 +338,29 @@ class ContainerGLFW(
     }
 
     override fun cursorCapture(value: Boolean) {
-        val cursorCaptured = !emulateTouch && value
-        if (cursorCaptured != this.cursorCaptured) {
-            this.cursorCaptured = cursorCaptured
-            mouseX = containerWidth / density * 0.5
-            mouseY = containerHeight / density * 0.5
-            if (cursorCaptured) {
-                GLFW.glfwSetInputMode(
-                    window, GLFW.GLFW_CURSOR,
-                    GLFW.GLFW_CURSOR_DISABLED
-                )
-                mouseDeltaSkip = true
-            } else {
+        launch(this) {
+            val cursorCapture = !emulateTouch && value
+            if (cursorCapture != cursorCaptured) {
+                cursorCaptured = cursorCapture
                 mouseX = containerWidth / density * 0.5
                 mouseY = containerHeight / density * 0.5
-                GLFW.glfwSetInputMode(
-                    window, GLFW.GLFW_CURSOR,
-                    GLFW.GLFW_CURSOR_NORMAL
-                )
-                GLFW.glfwSetCursorPos(window, mouseX, mouseY)
+                if (cursorCapture) {
+                    GLFW.glfwSetInputMode(
+                        window, GLFW.GLFW_CURSOR,
+                        GLFW.GLFW_CURSOR_DISABLED
+                    )
+                    mouseDeltaSkip = true
+                } else {
+                    mouseX = containerWidth / density * 0.5
+                    mouseY = containerHeight / density * 0.5
+                    GLFW.glfwSetInputMode(
+                        window, GLFW.GLFW_CURSOR,
+                        GLFW.GLFW_CURSOR_NORMAL
+                    )
+                    GLFW.glfwSetCursorPos(window, mouseX, mouseY)
+                }
+                controllerDesktop.set(mouseX, mouseY)
             }
-            controllerDesktop.set(mouseX, mouseY)
         }
     }
 
