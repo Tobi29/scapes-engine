@@ -369,6 +369,26 @@ fun flipVertical(
     }
 }
 
+fun Bitmap<*, *>.asByteViewRGBABitmap(): IntByteViewBitmap<RGBA> {
+    cast<Int2ByteArrayRO<ByteViewRO>, RGBA>()?.let { return it }
+    return toByteViewRGBABitmap()
+}
+
+fun Bitmap<*, *>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> =
+    when (format) {
+        RGBA -> cast(RGBA)!!.toByteViewRGBABitmap()
+    }
+
+fun Bitmap<IntsRO2, RGBA>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> {
+    val image = MutableIntByteViewBitmap(width, height, RGBA)
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            image[x, y] = this[x, y]
+        }
+    }
+    return image
+}
+
 fun Bitmap<*, *>.toImage(): Image = when (format) {
     RGBA -> cast(RGBA)!!.run {
         val data = data
