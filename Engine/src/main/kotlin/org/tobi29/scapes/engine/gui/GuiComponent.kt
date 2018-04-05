@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,22 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector3d
+import org.tobi29.math.vector.times
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
-import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.Vector3d
-import org.tobi29.math.vector.times
-import org.tobi29.utils.EventDispatcher
-import org.tobi29.utils.ListenerRegistrar
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ConcurrentHashSet
 import org.tobi29.stdex.ConcurrentOrderedCollection
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicInt
 import org.tobi29.stdex.computeAbsent
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.ListenerRegistrar
 
 abstract class GuiComponent(val engine: ScapesEngine,
                             val parent: GuiLayoutData,
@@ -288,6 +288,7 @@ abstract class GuiComponent(val engine: ScapesEngine,
         removed = false
         events.enable()
         init()
+        children.forEach { it.added() }
         gui.selectDefault()
     }
 
