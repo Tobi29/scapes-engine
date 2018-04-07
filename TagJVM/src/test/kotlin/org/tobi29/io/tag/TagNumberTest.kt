@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.tobi29.io.tag
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.data_driven.data
+import org.tobi29.assertions.on
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.assertions.shouldNotEqual
 import java.math.BigDecimal
@@ -27,47 +28,69 @@ import java.math.BigInteger
 
 object TagNumberTests : Spek({
     describe("a number tag") {
-        val tagsEqual = listOf(
-                Pair(TagByte(4),
-                        TagInt(4)),
-                Pair(TagShort(4),
-                        TagInt(4)),
-                Pair(TagLong(4),
-                        TagInt(4)),
-                Pair(TagFloat(4.0f),
-                        TagInt(4)),
-                Pair(TagDouble(4.0),
-                        TagInt(4)),
-                Pair(TagBigInteger(BigInteger("4")),
-                        TagInt(4)),
-                Pair(TagBigDecimal(BigDecimal("4.0")),
-                        TagInt(4))
-        )
-        given("two number tags") {
-            for ((first, second) in tagsEqual) {
-                it("should equal") {
-                    first shouldEqual second
+        on(
+            { a, b -> "comparing $a with $b" },
+            data<Tag, Tag, Boolean>(
+                TagByte(4),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagShort(4),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagLong(4),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagFloat(4.0f),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagDouble(4.0),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagBigInteger(BigInteger("4")),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagBigDecimal(BigDecimal("4.0")),
+                TagInt(4),
+                true
+            ),
+            data<Tag, Tag, Boolean>(
+                TagFloat(4.1f),
+                TagInt(4),
+                false
+            ),
+            data<Tag, Tag, Boolean>(
+                TagDouble(4.1),
+                TagInt(4),
+                false
+            ),
+            data<Tag, Tag, Boolean>(
+                TagBigDecimal(BigDecimal("4.1")),
+                TagInt(4),
+                false
+            )
+        ) { a, b, expected ->
+            if (expected) {
+                it("$a should equal $b") {
+                    a shouldEqual b
                 }
                 it("should give the same hash code") {
-                    first.hashCode() shouldEqual second.hashCode()
+                    a.hashCode() shouldEqual b.hashCode()
                 }
-            }
-        }
-        val tagsNotEqual = listOf(
-                Pair(TagFloat(4.1f),
-                        TagInt(4)),
-                Pair(TagDouble(4.1),
-                        TagInt(4)),
-                Pair(TagBigDecimal(BigDecimal("4.1")),
-                        TagInt(4))
-        )
-        given("two number tags") {
-            for ((first, second) in tagsNotEqual) {
+            } else {
                 it("should not equal") {
-                    first shouldNotEqual second
-                }
-                it("should not give the same hash code") {
-                    first.hashCode() shouldNotEqual second.hashCode()
+                    a shouldNotEqual b
                 }
             }
         }
