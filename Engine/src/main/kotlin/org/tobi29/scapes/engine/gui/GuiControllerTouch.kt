@@ -39,7 +39,7 @@ class GuiControllerTouch(
                 fetch = Finger(tracker.pos)
                 val finger = fetch
                 handleFinger(finger)
-                val guiPos = finger.cursor.currentPos()
+                val guiPos = finger.cursor.pos
                 finger.dragX = guiPos.x
                 finger.dragY = guiPos.y
                 engine.guiStack.fireEvent(GuiComponentEvent(guiPos.x, guiPos.y),
@@ -63,7 +63,7 @@ class GuiControllerTouch(
             .forEach { (tracker, _) ->
                 fingers.remove(tracker)?.let { finger ->
                     finger.dragging?.let { component ->
-                        val guiPos = finger.cursor.currentPos()
+                        val guiPos = finger.cursor.pos
                         if (!finger.clicked) {
                             finger.clicked = true
                             component.gui.sendNewEvent(
@@ -97,9 +97,9 @@ class GuiControllerTouch(
 
     private fun handleFinger(finger: Finger) {
         finger.alive = true
-        finger.cursor.set(finger.tracker.now())
+        finger.cursor.pos = finger.tracker.now()
         finger.dragging?.let { component ->
-            val guiPos = finger.cursor.currentPos()
+            val guiPos = finger.cursor.pos
             val relativeX = guiPos.x - finger.dragX
             val relativeY = guiPos.y - finger.dragY
             finger.dragX = guiPos.x

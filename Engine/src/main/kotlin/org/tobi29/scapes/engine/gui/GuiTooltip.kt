@@ -55,7 +55,7 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
             if (tooltip != null) {
                 val cursor = tooltip.second
                 val layoutData = GuiLayoutDataAbsolute(
-                    this, cursor.currentPos(), Vector2d(-1.0, -1.0), 0, true
+                    this, cursor.pos, Vector2d(-1.0, -1.0), 0, true
                 )
                 val pane = GuiComponentPaneHeavy(layoutData)
                 tooltip.first.tooltip(pane)?.let { update ->
@@ -63,7 +63,7 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
                         val parent = pane.parent
                         if (parent is GuiLayoutDataAbsolute) {
                             val pos = parent.posMutable()
-                            pos.set(cursor.currentPos())
+                            pos.set(cursor.pos)
                         }
                         update()
                     })

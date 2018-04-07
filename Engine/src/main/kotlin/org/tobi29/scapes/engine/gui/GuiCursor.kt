@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,9 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.getValue
+import org.tobi29.math.vector.setValue
 
 class GuiCursor {
-    private val pos = MutableVector2d()
-
-    fun set(pos: Vector2d): Boolean {
-        if (pos.x == this.pos.x && pos.y == this.pos.y) return false
-        this.pos.set(pos)
-        return true
-    }
-
-    fun currentPos(): Vector2d {
-        return pos.now()
-    }
+    var pos: Vector2d by MutableVector2d()
 }
