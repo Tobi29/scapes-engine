@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,37 +15,39 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.yield
-import org.tobi29.scapes.engine.input.ScrollDelta
 import org.tobi29.math.Face
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.div
-import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.scapes.engine.input.ScrollDelta
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.computeAbsent
 
-open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
-        GuiLayoutDataRoot()) {
+open class Gui(
+    val style: GuiStyle
+) : GuiComponentSlabHeavy(style.engine, GuiLayoutDataRoot) {
     private val actions = ConcurrentHashMap<GuiAction, MutableSet<() -> Unit>>()
-    private var updateJob: Job? = null
     private val _currentSelection = AtomicReference<GuiComponent?>(null)
     private var currentSelectionActive: GuiComponent? = null
     var currentSelection: GuiComponent?
         get() = _currentSelection.get()
         set(value) = _currentSelection.set(value)
+    val isFocused: Boolean get() = engine.guiStack.focus === this
 
-    fun swapSelection(old: GuiComponent?,
-                      new: GuiComponent?): Boolean =
-            _currentSelection.compareAndSet(old, new)
+    fun swapSelection(
+        old: GuiComponent?,
+        new: GuiComponent?
+    ): Boolean =
+        _currentSelection.compareAndSet(old, new)
 
     init {
         on(GuiAction.ACTIVATE, {
             currentSelection?.let { selection ->
-                sendNewEvent(GuiEvent.CLICK_LEFT, GuiComponentEvent(),
-                        selection)
+                sendNewEvent(
+                    GuiEvent.CLICK_LEFT, GuiComponentEvent(),
+                    selection
+                )
             }
         })
         on(GuiAction.UP, {
@@ -57,20 +59,30 @@ open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         on(GuiAction.LEFT, {
             if (!moveSelection(Face.EAST)) {
                 currentSelection?.let { selection ->
-                    sendNewEvent(GuiEvent.SCROLL,
-                            GuiComponentEventScroll(Double.NaN, Double.NaN,
-                                    delta = ScrollDelta.Line(
-                                            Vector2d(1.0, 0.0))), selection)
+                    sendNewEvent(
+                        GuiEvent.SCROLL,
+                        GuiComponentEventScroll(
+                            Double.NaN, Double.NaN,
+                            delta = ScrollDelta.Line(
+                                Vector2d(1.0, 0.0)
+                            )
+                        ), selection
+                    )
                 }
             }
         })
         on(GuiAction.RIGHT, {
             if (!moveSelection(Face.WEST)) {
                 currentSelection?.let { selection ->
-                    sendNewEvent(GuiEvent.SCROLL,
-                            GuiComponentEventScroll(Double.NaN, Double.NaN,
-                                    delta = ScrollDelta.Line(
-                                            Vector2d(-1.0, 0.0))), selection)
+                    sendNewEvent(
+                        GuiEvent.SCROLL,
+                        GuiComponentEventScroll(
+                            Double.NaN, Double.NaN,
+                            delta = ScrollDelta.Line(
+                                Vector2d(-1.0, 0.0)
+                            )
+                        ), selection
+                    )
                 }
             }
         })
@@ -111,53 +123,57 @@ open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
         }
     }
 
-    fun on(action: GuiAction,
-           listener: () -> Unit) {
+    fun on(
+        action: GuiAction,
+        listener: () -> Unit
+    ) {
         val listeners = actions.computeAbsent(action) { ConcurrentHashSet() }
         listeners.add(listener)
     }
 
     fun <T : GuiComponentEvent> fireNewEvent(
-            type: GuiEvent<T>,
-            event: T
+        type: GuiEvent<T>,
+        event: T
     ): GuiComponent? {
         return fireNewEvent(event, GuiComponent.sink(type))
     }
 
     fun <T : GuiComponentEvent> fireNewEvent(
-            event: T,
-            listener: (GuiComponent, T) -> Boolean
+        event: T,
+        listener: (GuiComponent, T) -> Boolean
     ): GuiComponent? {
         return fireEvent(scaleEvent(event), listener)
     }
 
     fun <T : GuiComponentEvent> fireNewRecursiveEvent(
-            type: GuiEvent<T>,
-            event: T
+        type: GuiEvent<T>,
+        event: T
     ): Set<GuiComponent>? {
         return fireNewRecursiveEvent(event, GuiComponent.sink(type))
     }
 
     fun <T : GuiComponentEvent> fireNewRecursiveEvent(
-            event: T,
-            listener: (GuiComponent, T) -> Boolean
+        event: T,
+        listener: (GuiComponent, T) -> Boolean
     ): Set<GuiComponent>? {
         return fireRecursiveEvent(scaleEvent(event), listener)
     }
 
     fun <T : GuiComponentEvent> sendNewEvent(
-            type: GuiEvent<T>,
-            event: T,
-            destination: GuiComponent
+        type: GuiEvent<T>,
+        event: T,
+        destination: GuiComponent
     ): Boolean {
-        return sendNewEvent(event, destination,
-                GuiComponent.sink(type, destination))
+        return sendNewEvent(
+            event, destination,
+            GuiComponent.sink(type, destination)
+        )
     }
 
     fun <T : GuiComponentEvent> sendNewEvent(
-            event: T,
-            destination: GuiComponent,
-            listener: (T) -> Unit
+        event: T,
+        destination: GuiComponent,
+        listener: (T) -> Unit
     ): Boolean {
         return destination.sendEvent(scaleEvent(event)) {
             listener(it)
@@ -176,32 +192,13 @@ open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
 
     open fun baseSize(): Vector2d {
         val container = engine.container
-        return Vector2d(container.containerWidth.toDouble(),
-                container.containerHeight.toDouble())
+        return Vector2d(
+            container.containerWidth.toDouble(),
+            container.containerHeight.toDouble()
+        )
     }
 
-    override fun init() = updateVisible()
-
-    override fun updateVisible() {
-        synchronized(this) {
-            dispose()
-            if (!isVisible) return@synchronized
-            updateJob = launch(engine.graphics) {
-                while (true) {
-                    yield() // Wait for next frame
-                    update()
-                }
-            }
-        }
-    }
-
-    override fun dispose() {
-        synchronized(this) {
-            updateJob?.cancel()
-        }
-    }
-
-    private fun update() {
+    internal fun updateHover() {
         val activeCursor = visible && !engine.guiController.activeCursor()
         val selection = if (activeCursor) currentSelection else null
         if (selection != currentSelectionActive) {
@@ -227,8 +224,10 @@ open class Gui(val style: GuiStyle) : GuiComponentSlabHeavy(style.engine,
     private fun <T : GuiComponentEvent> scaleEvent(event: T): T {
         val size = baseSize()
         val container = engine.container
-        val containerSize = Vector2d(container.containerWidth.toDouble(),
-                container.containerHeight.toDouble())
+        val containerSize = Vector2d(
+            container.containerWidth.toDouble(),
+            container.containerHeight.toDouble()
+        )
         return event.scale(size / containerSize, size)
     }
 }

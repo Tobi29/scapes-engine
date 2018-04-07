@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,42 +19,34 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.math.vector.Vector2d
 
 interface GuiContainerColumn {
-    fun <T : GuiComponent> addHori(marginX: Double,
-                                   marginY: Double,
-                                   width: Double,
-                                   height: Double,
-                                   child: (GuiLayoutDataFlow) -> T): T {
-        return addHori(marginX, marginY, marginX, marginY, width, height,
-                child)
-    }
+    fun <T : GuiComponent> addHori(
+        marginX: Double, marginY: Double,
+        width: Double, height: Double,
+        priority: Long = 0L,
+        child: (GuiLayoutDataFlow) -> T
+    ): T = addHori(
+        marginX, marginY, marginX, marginY, width, height, priority, child
+    )
 
-    fun <T : GuiComponent> addHori(marginStartX: Double,
-                                   marginStartY: Double,
-                                   marginEndX: Double,
-                                   marginEndY: Double,
-                                   width: Double,
-                                   height: Double,
-                                   child: (GuiLayoutDataFlow) -> T): T {
-        return addHori(marginStartX, marginStartY, marginEndX, marginEndY,
-                width, height, 0, child)
-    }
+    fun <T : GuiComponent> addHori(
+        marginStartX: Double, marginStartY: Double,
+        marginEndX: Double, marginEndY: Double,
+        width: Double, height: Double,
+        priority: Long = 0L,
+        child: (GuiLayoutDataFlow) -> T
+    ): T = addHori(
+        Vector2d(marginStartX, marginStartY), Vector2d(marginEndX, marginEndY),
+        Vector2d(width, height), priority, child
+    )
 
-    fun <T : GuiComponent> addHori(marginStartX: Double,
-                                   marginStartY: Double,
-                                   marginEndX: Double,
-                                   marginEndY: Double,
-                                   width: Double,
-                                   height: Double,
-                                   priority: Long,
-                                   child: (GuiLayoutDataFlow) -> T): T {
-        return addHori(Vector2d(marginStartX, marginStartY),
-                Vector2d(marginEndX, marginEndY),
-                Vector2d(width, height), priority, child)
-    }
+    fun <T : GuiComponent> addHori(
+        marginStart: Vector2d,
+        marginEnd: Vector2d,
+        size: Vector2d,
+        priority: Long = 0L,
+        child: (GuiLayoutDataFlow) -> T
+    ): T
 
-    fun <T : GuiComponent> addHori(marginStart: Vector2d,
-                                   marginEnd: Vector2d,
-                                   size: Vector2d,
-                                   priority: Long,
-                                   child: (GuiLayoutDataFlow) -> T): T
+    fun spacer(priority: Long = 0): GuiComponentGroup =
+        addHori(0.0, 0.0, 0.0, 0.0, -1.0, -1.0, priority, ::GuiComponentGroup)
 }

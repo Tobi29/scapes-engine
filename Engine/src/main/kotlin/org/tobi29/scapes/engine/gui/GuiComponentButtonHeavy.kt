@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,28 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.sound.CLICK
 import org.tobi29.math.vector.Vector2d
 
-open class GuiComponentButtonHeavy(parent: GuiLayoutData) : GuiComponentSlabHeavy(
-        parent) {
+open class GuiComponentButtonHeavy(
+    parent: GuiLayoutData
+) : GuiComponentSlabHeavy(parent) {
     private var hovered = false
 
     init {
-        on(GuiEvent.CLICK_LEFT) { event ->
-            engine.sounds.playSound(CLICK, "sound.GUI", 1.0, 1.0)
+        on(GuiEvent.CLICK_LEFT) {
+            playClickSound()
         }
-        on(GuiEvent.HOVER_ENTER) { event ->
+        on(GuiEvent.HOVER_ENTER) {
             hovered = true
             dirty()
         }
-        on(GuiEvent.HOVER_LEAVE) { event ->
+        on(GuiEvent.HOVER_LEAVE) {
             hovered = false
             dirty()
         }
     }
 
-    override fun updateMesh(renderer: GuiRenderer,
-                            size: Vector2d) {
+    override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         gui.style.button(renderer, size, hovered)
     }
 }

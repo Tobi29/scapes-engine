@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,42 +19,34 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.math.vector.Vector2d
 
 interface GuiContainerRow {
-    fun <T : GuiComponent> addVert(marginX: Double,
-                                   marginY: Double,
-                                   width: Double,
-                                   height: Double,
-                                   child: (GuiLayoutDataFlow) -> T): T {
-        return addVert(marginX, marginY, marginX, marginY, width, height,
-                child)
-    }
+    fun <T : GuiComponent> addVert(
+        marginX: Double, marginY: Double,
+        width: Double, height: Double,
+        priority: Long = 0L,
+        child: (GuiLayoutDataFlow) -> T
+    ): T = addVert(
+        marginX, marginY, marginX, marginY, width, height, priority, child
+    )
 
-    fun <T : GuiComponent> addVert(marginStartX: Double,
-                                   marginStartY: Double,
-                                   marginEndX: Double,
-                                   marginEndY: Double,
-                                   width: Double,
-                                   height: Double,
-                                   child: (GuiLayoutDataFlow) -> T): T {
-        return addVert(marginStartX, marginStartY, marginEndX, marginEndY,
-                width, height, 0, child)
-    }
+    fun <T : GuiComponent> addVert(
+        marginStartX: Double, marginStartY: Double,
+        marginEndX: Double, marginEndY: Double,
+        width: Double, height: Double,
+        priority: Long = 0L,
+        child: (GuiLayoutDataFlow) -> T
+    ): T = addVert(
+        Vector2d(marginStartX, marginStartY), Vector2d(marginEndX, marginEndY),
+        Vector2d(width, height), priority, child
+    )
 
-    fun <T : GuiComponent> addVert(marginStartX: Double,
-                                   marginStartY: Double,
-                                   marginEndX: Double,
-                                   marginEndY: Double,
-                                   width: Double,
-                                   height: Double,
-                                   priority: Long,
-                                   child: (GuiLayoutDataFlow) -> T): T {
-        return addVert(Vector2d(marginStartX, marginStartY),
-                Vector2d(marginEndX, marginEndY),
-                Vector2d(width, height), priority, child)
-    }
+    fun <T : GuiComponent> addVert(
+        marginStart: Vector2d,
+        marginEnd: Vector2d,
+        size: Vector2d,
+        priority: Long = 0L,
+        child: (GuiLayoutDataFlow) -> T
+    ): T
 
-    fun <T : GuiComponent> addVert(marginStart: Vector2d,
-                                   marginEnd: Vector2d,
-                                   size: Vector2d,
-                                   priority: Long,
-                                   child: (GuiLayoutDataFlow) -> T): T
+    fun spacer(priority: Long = 0): GuiComponentGroup =
+        addVert(0.0, 0.0, 0.0, 0.0, -1.0, -1.0, priority, ::GuiComponentGroup)
 }

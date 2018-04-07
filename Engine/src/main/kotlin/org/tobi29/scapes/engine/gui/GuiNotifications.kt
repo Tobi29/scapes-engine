@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ class GuiNotifications(style: GuiStyle) : Gui(style) {
 
     init {
         spacer()
-        pane = addHori(0.0, 0.0, 310.0, -1.0, ::GuiComponentGroup)
+        pane = addHori(0.0, 0.0, 310.0, -1.0) { GuiComponentGroup(it) }
     }
 
-    fun <T : GuiComponent> add(
-            child: (GuiLayoutDataFlow) -> T): T {
-        return pane.addVert(10.0, 10.0, 10.0, 10.0, -1.0, 60.0,
-                id.getAndIncrement(), child)
-    }
+    fun <T : GuiComponent> add(child: (GuiLayoutDataFlow) -> T): T =
+        pane.addVert(
+            10.0, 10.0, 10.0, 10.0, -1.0, 60.0,
+            id.getAndIncrement(), child
+        )
 }

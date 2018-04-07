@@ -84,17 +84,17 @@ actual class ScapesEngine actual constructor(
         tooltip = GuiTooltip(guiStyle)
         guiStack.addUnfocused("80-Tooltip", tooltip)
         val debugGui = Gui(guiStyle)
-        debugValues = debugGui.add(
-            32.0, 32.0, 360.0, 256.0,
-            ::GuiWidgetDebugValues
-        )
+        debugValues = debugGui.add(32.0, 32.0, 360.0, 256.0) {
+            GuiWidgetDebugValues(it)
+        }
         debugValues.visible = false
-        profiler = debugGui.add(32.0, 32.0, 360.0, 256.0, ::GuiWidgetProfiler)
+        profiler = debugGui.add(32.0, 32.0, 360.0, 256.0) {
+            GuiWidgetProfiler(it)
+        }
         profiler.visible = false
-        performance = debugGui.add(
-            32.0, 32.0, 360.0, 256.0,
-            ::GuiWidgetPerformance
-        )
+        performance = debugGui.add(32.0, 32.0, 360.0, 256.0) {
+            GuiWidgetPerformance(it)
+        }
         performance.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
         tpsDebug = debugValues["Engine-Tps"]

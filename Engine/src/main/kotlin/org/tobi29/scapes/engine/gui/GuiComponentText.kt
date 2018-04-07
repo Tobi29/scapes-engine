@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,17 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.graphics.FontRenderer
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.scapes.engine.graphics.FontRenderer
 
-class GuiComponentText constructor(parent: GuiLayoutData,
-                                   text: String,
-                                   private val r: Double = 1.0,
-                                   private val g: Double = 1.0,
-                                   private val b: Double = 1.0,
-                                   private val a: Double = 1.0) : GuiComponent(
-        parent) {
+class GuiComponentText constructor(
+    parent: GuiLayoutData,
+    text: String,
+    private val r: Double = 1.0,
+    private val g: Double = 1.0,
+    private val b: Double = 1.0,
+    private val a: Double = 1.0
+) : GuiComponent(parent) {
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
@@ -43,10 +44,11 @@ class GuiComponentText constructor(parent: GuiLayoutData,
         this.text = text
     }
 
-    override fun updateMesh(renderer: GuiRenderer,
-                            size: Vector2d) {
+    override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         val font = gui.style.font
-        font.render(FontRenderer.to(renderer, r, g, b, a), textFilter(text),
-                size.y, size.x)
+        font.render(
+            FontRenderer.to(renderer, r, g, b, a), textFilter(text),
+            size.y, size.x
+        )
     }
 }

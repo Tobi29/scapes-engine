@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,31 +16,34 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.scapes.engine.graphics.Texture
 import org.tobi29.scapes.engine.resource.Resource
 
-class GuiComponentIcon(parent: GuiLayoutData,
-                       texture: Resource<Texture>? = null) : GuiComponent(
-        parent) {
+class GuiComponentIcon(
+    parent: GuiLayoutData,
+    texture: Resource<Texture>? = null
+) : GuiComponent(parent) {
+    private var r = 1.0
+    private var g = 1.0
+    private var b = 1.0
+    private var a = 1.0
     var texture: Resource<Texture>? = texture
         set(value) {
             field = value
             value?.onLoaded { dirty() }
         }
-    private var r = 1.0
-    private var g = 1.0
-    private var b = 1.0
-    private var a = 1.0
 
     init {
         texture?.onLoaded { dirty() }
     }
 
-    fun setColor(r: Double,
-                 g: Double,
-                 b: Double,
-                 a: Double) {
+    fun setColor(
+        r: Double,
+        g: Double,
+        b: Double,
+        a: Double
+    ) {
         this.r = r
         this.g = g
         this.b = b
@@ -48,8 +51,7 @@ class GuiComponentIcon(parent: GuiLayoutData,
         dirty()
     }
 
-    override fun updateMesh(renderer: GuiRenderer,
-                            size: Vector2d) {
+    override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         texture?.tryGet()?.let { texture ->
             renderer.texture(texture, 0)
             GuiUtils.rectangle(renderer, 0.0, 0.0, size.x, size.y, r, g, b, a)

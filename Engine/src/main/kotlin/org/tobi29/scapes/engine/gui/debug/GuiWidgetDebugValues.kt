@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,20 @@ package org.tobi29.scapes.engine.gui.debug
 
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
-import org.tobi29.scapes.engine.gui.*
-import org.tobi29.stdex.atomic.AtomicReference
-import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.coroutines.Timer
 import org.tobi29.coroutines.loopUntilCancel
+import org.tobi29.scapes.engine.gui.*
+import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.atomic.AtomicReference
 
-open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
-        parent, "Debug Values") {
+open class GuiWidgetDebugValues(
+    parent: GuiLayoutData
+) : GuiComponentWidget(parent, "Debug Values") {
     private val elements = ConcurrentHashMap<String, Element>()
-    private val scrollPane: GuiComponentScrollPaneViewport = addVert(10.0, 10.0,
-            -1.0, -1.0) { GuiComponentScrollPane(it, 20) }.viewport
+    private val scrollPane: GuiComponentScrollPaneViewport = addVert(
+        10.0, 10.0,
+        -1.0, -1.0
+    ) { GuiComponentScrollPane(it, 20) }.viewport
     private var updateJob: Job? = null
 
     operator fun get(key: String): Element {
@@ -58,13 +61,11 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         return elements.entries
     }
 
-    override fun init() = updateVisible()
-
     override fun updateVisible() {
         synchronized(this) {
-            dispose()
+            updateJob?.cancel()
             if (!isVisible) return@synchronized
-            updateJob = launch(engine.taskExecutor) {
+            updateJob = launch(taskExecutor) {
                 Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
                     for (component in elements.values) {
                         component.update()
@@ -74,17 +75,12 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
         }
     }
 
-    override fun dispose() {
-        synchronized(this) {
-            updateJob?.cancel()
-        }
-    }
-
-    class Element(parent: GuiLayoutData,
-                  key: String) : GuiComponentGroupSlab(parent) {
+    class Element(
+        parent: GuiLayoutData,
+        key: String
+    ) : GuiComponentGroupSlab(parent) {
         private val value: GuiComponentText
         private val text = AtomicReference<String?>(null)
-        private var updateJob: Job? = null
 
         init {
             addHori(2.0, 2.0, -1.0, -1.0) {
@@ -131,18 +127,10 @@ open class GuiWidgetDebugValues(parent: GuiLayoutData) : GuiComponentWidget(
             setValue(value.toString())
         }
 
-        override fun init() = updateVisible()
-
         fun update() {
             val newText = text.getAndSet(null)
             if (newText != null) {
                 value.text = newText
-            }
-        }
-
-        override fun dispose() {
-            synchronized(this) {
-                updateJob?.cancel()
             }
         }
 

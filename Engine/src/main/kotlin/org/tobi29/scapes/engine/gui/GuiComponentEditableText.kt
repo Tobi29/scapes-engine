@@ -109,24 +109,16 @@ class GuiComponentEditableText(
         }
     }
 
-    override fun init() = updateVisible()
-
     override fun updateVisible() {
         synchronized(this) {
-            dispose()
+            updateJob?.cancel()
             if (!isVisible) return@synchronized
-            updateJob = launch(engine.graphics) {
+            updateJob = launch(renderExecutor) {
                 while (true) {
                     yield() // Wait for next frame
                     update()
                 }
             }
-        }
-    }
-
-    override fun dispose() {
-        synchronized(this) {
-            updateJob?.cancel()
         }
     }
 

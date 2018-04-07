@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,28 @@ package org.tobi29.scapes.engine.gui
 
 import kotlin.math.max
 
-class GuiComponentScrollPane(parent: GuiLayoutData,
-                             scrollStep: Int) : GuiComponentVisibleSlabHeavy(
-        parent) {
-    val viewport: GuiComponentScrollPaneViewport = addHori(0.0, 0.0, -1.0, -1.0) {
-        GuiComponentScrollPaneViewport(it, scrollStep)
-    }
+class GuiComponentScrollPane(
+    parent: GuiLayoutData,
+    scrollStep: Int
+) : GuiComponentVisibleSlabHeavy(parent) {
+    val viewport: GuiComponentScrollPaneViewport =
+        addHori(0.0, 0.0, -1.0, -1.0) {
+            GuiComponentScrollPaneViewport(it, scrollStep)
+        }
 
     init {
         val slider = addHori(0.0, 0.0, 10.0, -1.0) {
             GuiComponentSliderVert(it, 0.0)
         }
         slider.on(GuiEvent.CHANGE) { event ->
-            viewport.scrollY = slider.value() * max(0.0,
-                    viewport.max.y - event.size.y)
+            viewport.scrollY = slider.value * max(
+                0.0, viewport.max.y - event.size.y
+            )
         }
         slider.on(GuiEvent.SCROLL) { event ->
-            viewport.scrollY = slider.value() * max(0.0,
-                    viewport.max.y - event.size.y)
+            viewport.scrollY = slider.value * max(
+                0.0, viewport.max.y - event.size.y
+            )
         }
         viewport.sliderY = slider
     }

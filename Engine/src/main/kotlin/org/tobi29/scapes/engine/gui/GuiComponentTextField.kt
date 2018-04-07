@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,27 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.stdex.copyToString
 
 class GuiComponentTextField(
-        parent: GuiLayoutData,
-        textX: Int,
-        textSize: Int,
-        text: String,
-        maxLength: Int,
-        hiddenText: Boolean
+    parent: GuiLayoutData,
+    textX: Int,
+    textSize: Int,
+    text: String,
+    maxLength: Int,
+    hiddenText: Boolean
 ) : GuiComponentButtonHeavy(parent) {
-    private val textComponent = addSubHori(textX.toDouble(), 0.0, -1.0,
-            textSize.toDouble()) {
+    private val textComponent = addSubHori(
+        textX.toDouble(), 0.0, -1.0,
+        textSize.toDouble()
+    ) {
         GuiComponentEditableText(it, text, maxLength, {
-            engine.guiStack.focus === gui
-                    && gui.currentSelection === this@GuiComponentTextField
+            gui.isFocused && gui.currentSelection === this@GuiComponentTextField
         })
     }
+
+    var text: String
+        get() = textComponent.text
+        set(value) {
+            textComponent.text = value
+        }
 
     init {
         if (hiddenText) {
@@ -44,22 +51,18 @@ class GuiComponentTextField(
         }
     }
 
-    constructor(parent: GuiLayoutData,
-                textSize: Int,
-                text: String,
-                hiddenText: Boolean = false
+    constructor(
+        parent: GuiLayoutData,
+        textSize: Int,
+        text: String,
+        hiddenText: Boolean = false
     ) : this(parent, textSize, text, Int.MAX_VALUE, hiddenText)
 
-    constructor(parent: GuiLayoutData,
-                textSize: Int,
-                text: String,
-                maxLength: Int,
-                hiddenText: Boolean = false
+    constructor(
+        parent: GuiLayoutData,
+        textSize: Int,
+        text: String,
+        maxLength: Int,
+        hiddenText: Boolean = false
     ) : this(parent, 4, textSize, text, maxLength, hiddenText)
-
-    var text: String
-        get() = textComponent.text
-        set(value) {
-            textComponent.text = value
-        }
 }

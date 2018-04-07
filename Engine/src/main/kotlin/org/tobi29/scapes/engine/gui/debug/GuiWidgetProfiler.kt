@@ -22,8 +22,9 @@ import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.profiler.*
 import org.tobi29.scapes.engine.gui.*
 
-class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
-        "Profiler") {
+class GuiWidgetProfiler(
+    parent: GuiLayoutData
+) : GuiComponentWidget(parent, "Profiler") {
     private val scrollPane: GuiComponentScrollPaneViewport
     private val profilerNotEnabled: GuiComponentText
     private var elements: List<Element> = emptyList()
@@ -31,7 +32,7 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
     private var updateJob: Job? = null
 
     init {
-        val slab = addVert(2.0, 2.0, -1.0, 20.0, ::GuiComponentGroupSlab)
+        val slab = addVert(2.0, 2.0, -1.0, 20.0) { GuiComponentGroupSlab(it) }
         val toggle = slab.addHori(2.0, 2.0, -1.0, -1.0) {
             GuiComponentTextButton(it, 12, "Enable")
         }
@@ -50,10 +51,10 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
 
         toggle.on(GuiEvent.CLICK_LEFT) {
             if (profilerEnabled) {
-                toggle.setText("Enable")
+                toggle.text = "Enable"
                 profilerDisable()
             } else {
-                toggle.setText("Disable")
+                toggle.text = "Disable"
                 profilerEnable()
             }
             node = profiler?.root
@@ -88,9 +89,9 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
             })
             for (child in node.children.values) {
                 elements.add(
-                        scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
-                            Element(it, child, child)
-                        })
+                    scrollPane.addVert(10.0, 0.0, 0.0, 0.0, -1.0, 20.0) {
+                        Element(it, child, child)
+                    })
             }
             this.elements = elements
         }
@@ -103,13 +104,11 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
     }
 
-    override fun init() = updateVisible()
-
     override fun updateVisible() {
         synchronized(this) {
-            dispose()
+            updateJob?.cancel()
             if (!isVisible) return@synchronized
-            updateJob = launch(engine.taskExecutor) {
+            updateJob = launch(taskExecutor) {
                 Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
                     for (component in elements) {
                         component.update()
@@ -119,17 +118,15 @@ class GuiWidgetProfiler(parent: GuiLayoutData) : GuiComponentWidget(parent,
         }
     }
 
-    override fun dispose() {
-        synchronized(this) {
-            updateJob?.cancel()
-        }
-    }
-
-    private inner class Element(parent: GuiLayoutData,
-                                private val node: Node,
-                                go: Node?) : GuiComponentGroupSlab(parent) {
-        private val key: GuiComponentTextButton = addHori(2.0, 2.0, -1.0,
-                -1.0) {
+    private inner class Element(
+        parent: GuiLayoutData,
+        private val node: Node,
+        go: Node?
+    ) : GuiComponentGroupSlab(parent) {
+        private val key: GuiComponentTextButton = addHori(
+            2.0, 2.0, -1.0,
+            -1.0
+        ) {
             GuiComponentTextButton(it, 12, node.name)
         }
         private val value: GuiComponentText = addHori(4.0, 4.0, -1.0, -1.0) {

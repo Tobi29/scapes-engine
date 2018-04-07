@@ -27,6 +27,7 @@ import org.tobi29.stdex.*
 import org.tobi29.stdex.atomic.AtomicInt
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.ListenerRegistrar
+import kotlin.coroutines.experimental.CoroutineContext
 
 abstract class GuiComponent(
     val engine: ScapesEngine,
@@ -41,6 +42,8 @@ abstract class GuiComponent(
         ConcurrentOrderedCollection(naturalOrder<GuiComponent>())
     private val guiEvents =
         ConcurrentHashMap<GuiEvent<*>, MutableSet<(GuiComponentEvent) -> Unit>>()
+    protected val taskExecutor: CoroutineContext get() = engine.taskExecutor
+    protected val renderExecutor: CoroutineContext get() = engine.graphics
     @Suppress("LeakingThis")
     val gui = gui(parent) ?: this as Gui
     val events by lazy { EventDispatcher(listenerParent) { listeners() } }
@@ -298,6 +301,7 @@ abstract class GuiComponent(
             events.enable()
             init()
         }
+        updateVisible()
         children.forEach { it.added() }
         gui.selectDefault()
     }
@@ -321,6 +325,7 @@ abstract class GuiComponent(
             events.disable()
             dispose()
         }
+        updateVisible()
         children.forEach { it.removed() }
     }
 

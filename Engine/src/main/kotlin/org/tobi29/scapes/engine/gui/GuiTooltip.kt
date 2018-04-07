@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import org.tobi29.math.vector.Vector2d
 import org.tobi29.stdex.atomic.AtomicReference
 
 class GuiTooltip(style: GuiStyle) : Gui(style) {
-    private val currentTooltip = AtomicReference<Pair<GuiComponent, GuiCursor>?>(
-            null)
+    private val currentTooltip =
+        AtomicReference<Pair<GuiComponent, GuiCursor>?>(null)
     private var lastTooltip: Pair<GuiComponent, GuiCursor>? = null
     private var currentPane: Pair<GuiComponent, () -> Unit>? = null
     private var updateJob: Job? = null
@@ -33,24 +33,16 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
         currentTooltip.set(component)
     }
 
-    override fun init() = updateVisible()
-
     override fun updateVisible() {
         synchronized(this) {
-            dispose()
+            updateJob?.cancel()
             if (!isVisible) return@synchronized
-            updateJob = launch(engine.graphics) {
+            updateJob = launch(renderExecutor) {
                 while (true) {
                     yield() // Wait for next frame
                     update()
                 }
             }
-        }
-    }
-
-    override fun dispose() {
-        synchronized(this) {
-            updateJob?.cancel()
         }
     }
 
@@ -62,8 +54,9 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
             currentPane = null
             if (tooltip != null) {
                 val cursor = tooltip.second
-                val layoutData = GuiLayoutDataAbsolute(this,
-                        cursor.currentPos(), Vector2d(-1.0, -1.0), 0, true)
+                val layoutData = GuiLayoutDataAbsolute(
+                    this, cursor.currentPos(), Vector2d(-1.0, -1.0), 0, true
+                )
                 val pane = GuiComponentPaneHeavy(layoutData)
                 tooltip.first.tooltip(pane)?.let { update ->
                     currentPane = Pair(pane, {

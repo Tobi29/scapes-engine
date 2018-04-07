@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.math.vector.Vector2d
 
 class GuiComponentSeparator(parent: GuiLayoutData) : GuiComponent(parent) {
-
-    override fun updateMesh(renderer: GuiRenderer,
-                            size: Vector2d) {
+    override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         gui.style.separator(renderer, size)
     }
 }

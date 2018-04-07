@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,51 @@
 
 package org.tobi29.scapes.engine.gui
 
-class GuiComponentTextButton(parent: GuiLayoutData,
-                             textX: Int,
-                             textSize: Int,
-                             text: String) : GuiComponentButton(parent) {
-    private val text: GuiComponentText = addSubHori(textX.toDouble(), 0.0, -1.0, textSize.toDouble()
+import org.tobi29.stdex.JsName
+import org.tobi29.stdex.JvmName
+
+class GuiComponentTextButton(
+    parent: GuiLayoutData,
+    textX: Int,
+    textSize: Int,
+    text: String
+) : GuiComponentButton(parent) {
+    private val _text: GuiComponentText = addSubHori(
+        textX.toDouble(), 0.0, -1.0, textSize.toDouble()
     ) { GuiComponentText(it, text) }
 
-    constructor(parent: GuiLayoutData,
-                textSize: Int,
-                text: String) : this(parent, 4, textSize, text)
+    constructor(
+        parent: GuiLayoutData,
+        textSize: Int,
+        text: String
+    ) : this(parent, 4, textSize, text)
 
-    fun text(): String {
-        return text.text
-    }
+    var textFilter: (String) -> String
+        get() = _text.textFilter
+        set(value) {
+            _text.textFilter = value
+        }
+    var text: String
+        get() = _text.text
+        set(value) {
+            _text.text = value
+        }
 
+    // TODO: Remove after 0.0.13
+
+    @Deprecated("Use property")
+    @JsName("getText")
+    fun text(): String = text
+
+    @Deprecated("Use property")
+    @JvmName("setTextFun")
     fun setText(text: String) {
-        this.text.text = text
+        this.text = text
     }
 
+    @Deprecated("Use property")
+    @JvmName("setTextFilterFun")
     fun setTextFilter(textFilter: (String) -> String) {
-        text.textFilter = textFilter
+        this.textFilter = textFilter
     }
 }

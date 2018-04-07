@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,15 @@ import org.tobi29.scapes.engine.gui.GuiComponentGraph
 import org.tobi29.scapes.engine.gui.GuiComponentWidget
 import org.tobi29.scapes.engine.gui.GuiLayoutData
 
-class GuiWidgetPerformance(parent: GuiLayoutData) : GuiComponentWidget(
-        parent, "Performance Graph") {
+class GuiWidgetPerformance(
+    parent: GuiLayoutData
+) : GuiComponentWidget(parent, "Performance Graph") {
     private val graph: GuiComponentGraph = addVert(0.0, 0.0, -1.0, -1.0) {
-        GuiComponentGraph(it, 2, floatArrayOf(1.0f, 0.0f),
-                floatArrayOf(0.0f, 0.0f), floatArrayOf(0.0f, 1.0f),
-                floatArrayOf(1.0f, 1.0f))
+        GuiComponentGraph(
+            it, 2, floatArrayOf(1.0f, 0.0f),
+            floatArrayOf(0.0f, 0.0f), floatArrayOf(0.0f, 1.0f),
+            floatArrayOf(1.0f, 1.0f)
+        )
     }
 
     fun renderTimestamp(delta: Double) {

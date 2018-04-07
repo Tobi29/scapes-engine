@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.gui
 
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.div
 import org.tobi29.scapes.engine.graphics.BlendingMode
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
-import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.div
 import org.tobi29.stdex.ConcurrentSortedMap
 
 class GuiStack {
@@ -30,50 +30,40 @@ class GuiStack {
     var focus: Gui? = null
         private set
 
-    fun add(id: String,
-            add: Gui) {
+    fun add(id: String, add: Gui) {
         synchronized(this) {
             addUnfocused(id, add)
             focus = add
         }
     }
 
-    fun addUnfocused(id: String,
-                     add: Gui) {
+    fun addUnfocused(id: String, add: Gui) {
         synchronized(this) {
             val previous = guis.put(id, add)
             if (previous != null) {
                 removed(previous)
             }
-            keys.put(add, id)
+            keys[add] = id
             add.added()
         }
     }
 
-    operator fun get(id: String): Gui? {
-        return guis[id]
+    operator fun get(id: String): Gui? = guis[id]
+
+    operator fun contains(id: String): Boolean = guis.containsKey(id)
+
+    fun remove(id: String): Gui? = synchronized(this) {
+        val previous = guis.remove(id) ?: return@synchronized null
+        removed(previous)
+        previous
     }
 
-    fun has(id: String): Boolean {
-        return guis.containsKey(id)
-    }
-
-    fun remove(id: String): Gui? {
-        return synchronized(this) {
-            val previous = guis.remove(id) ?: return@synchronized null
-            removed(previous)
-            previous
+    fun remove(gui: Gui): Boolean = synchronized(this) {
+        if (!guis.values.remove(gui)) {
+            return@synchronized false
         }
-    }
-
-    fun remove(gui: Gui): Boolean {
-        return synchronized(this) {
-            if (!guis.values.remove(gui)) {
-                return@synchronized false
-            }
-            removed(gui)
-            return@synchronized true
-        }
+        removed(gui)
+        return@synchronized true
     }
 
     fun clear() {
@@ -82,8 +72,7 @@ class GuiStack {
         }
     }
 
-    fun swap(remove: Gui,
-             add: Gui): Boolean {
+    fun swap(remove: Gui, add: Gui): Boolean {
         return synchronized(this) {
             val id = keys[remove] ?: return@synchronized false
             guis.put(id, add)
@@ -109,39 +98,35 @@ class GuiStack {
     }
 
     fun <T : GuiComponentEvent> fireEvent(
-            type: GuiEvent<T>,
-            event: T
-    ): GuiComponent? {
-        return fireEvent(event, GuiComponent.sink(type))
-    }
+        type: GuiEvent<T>,
+        event: T
+    ): GuiComponent? = fireEvent(event, GuiComponent.sink(type))
 
     fun <T : GuiComponentEvent> fireEvent(
-            event: T,
-            listener: (GuiComponent, T) -> Boolean
+        event: T,
+        listener: (GuiComponent, T) -> Boolean
     ): GuiComponent? {
         val guis = ArrayList<Gui>(this.guis.size)
         guis.addAll(this.guis.values)
         return guis.indices.reversed().asSequence()
-                .map { guis[it].fireNewEvent(event, listener) }
-                .firstOrNull { it != null }
+            .map { guis[it].fireNewEvent(event, listener) }
+            .firstOrNull { it != null }
     }
 
     fun <T : GuiComponentEvent> fireRecursiveEvent(
-            type: GuiEvent<T>,
-            event: T
-    ): Set<GuiComponent>? {
-        return fireRecursiveEvent(event, GuiComponent.sink(type))
-    }
+        type: GuiEvent<T>,
+        event: T
+    ): Set<GuiComponent>? = fireRecursiveEvent(event, GuiComponent.sink(type))
 
     fun <T : GuiComponentEvent> fireRecursiveEvent(
-            event: T,
-            listener: (GuiComponent, T) -> Boolean
+        event: T,
+        listener: (GuiComponent, T) -> Boolean
     ): Set<GuiComponent>? {
         val guis = ArrayList<Gui>(this.guis.size)
         guis.addAll(this.guis.map { it.value })
         return guis.indices.reversed().asSequence()
-                .map { guis[it].fireNewRecursiveEvent(event, listener) }
-                .firstOrNull { it != null } ?: emptySet()
+            .map { guis[it].fireNewRecursiveEvent(event, listener) }
+            .firstOrNull { it != null } ?: emptySet()
     }
 
     fun fireAction(action: GuiAction): Boolean {
@@ -149,11 +134,12 @@ class GuiStack {
         return focus != null && focus.fireAction(action)
     }
 
-    fun render(gl: GL,
-               shader: Shader,
-               delta: Double) {
-        val framebufferSize = Vector2d(gl.contentWidth.toDouble(),
-                gl.contentHeight.toDouble())
+    fun render(gl: GL, shader: Shader, delta: Double) {
+        val framebufferSize = Vector2d(
+            gl.contentWidth.toDouble(),
+            gl.contentHeight.toDouble()
+        )
+        guis.forEach { (_, it) -> it.updateHover() }
         guis.forEach { (_, it) ->
             val size = it.baseSize()
             val pixelSize = size / framebufferSize
@@ -162,8 +148,10 @@ class GuiStack {
             gl.setBlending(BlendingMode.NORMAL)
             gl.matrixStack.push { matrix ->
                 matrix.identity()
-                matrix.modelViewProjection().orthogonal(0.0f, 0.0f,
-                        size.x.toFloat(), size.y.toFloat())
+                matrix.modelViewProjection().orthogonal(
+                    0.0f, 0.0f,
+                    size.x.toFloat(), size.y.toFloat()
+                )
                 it.render(gl, shader, size, pixelSize, delta)
             }
         }
@@ -173,4 +161,9 @@ class GuiStack {
             it.renderOverlays(gl, shader, pixelSize)
         }
     }
+
+    // TODO: Remove after 0.0.13
+
+    @Deprecated("Use contains", ReplaceWith("contains(id)"))
+    fun has(id: String): Boolean = guis.containsKey(id)
 }
