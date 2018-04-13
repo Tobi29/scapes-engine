@@ -82,7 +82,7 @@ ext {
         "com.github.Tobi29.WebKTBindings:$module:$webKTBindingsVersion"
     }
 
-    junitJupiterVersion = "5.1.0"
+    junitJupiterVersion = "5.1.1"
     junitJupiterJVM =
             { module -> "org.junit.jupiter:$module:$junitJupiterVersion" }
 
