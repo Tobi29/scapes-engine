@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,40 @@ actual class AtomicReference<V> actual constructor(private var value: V) {
 
     override fun toString() = get().toString()
 }
+
+@Suppress("UNUSED_PARAMETER")
+actual class AtomicReferenceArray<E> @PublishedApi internal constructor(
+    private val values: Array<E>,
+    unused: Nothing?
+) {
+    actual constructor(values: Array<E>) : this(values.copyOf(), null)
+
+    actual fun length() = values.size
+
+    actual operator fun get(i: Int) = values[i]
+
+    actual operator fun set(i: Int, newValue: E) {
+        values[i] = newValue
+    }
+
+    actual fun compareAndSet(i: Int, expect: E, update: E) =
+        if (values[i] === expect) {
+            values[i] = update
+            true
+        } else {
+            false
+        }
+
+    actual fun getAndSet(i: Int, newValue: E) =
+        values[i].also { values[i] = newValue }
+
+    override fun toString() = values.joinToString(prefix = "[", postfix = "]")
+}
+
+actual inline fun <reified E> AtomicReferenceArray(
+    length: Int,
+    crossinline init: (Int) -> E
+) = AtomicReferenceArray(Array(length) { init(it) }, null)
 
 actual class AtomicBoolean actual constructor(private var value: Boolean) {
     actual fun get() = value

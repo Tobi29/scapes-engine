@@ -23,6 +23,15 @@ import org.jetbrains.spek.api.dsl.on
 import org.tobi29.assertions.shouldEqual
 
 object AtomicsTests : Spek({
+    describe("an atomic reference array") {
+        on("constructing a new atomic") {
+            val atomic = AtomicReferenceArray(16) { it.toString() }
+            it("should contain the correct values") {
+                for (i in 0 until atomic.length())
+                    atomic[i] shouldEqual i.toString()
+            }
+        }
+    }
     describe("an atomic boolean") {
         on("constructing a new atomic") {
             val atomic = AtomicBoolean(false)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,23 @@ expect class AtomicReference<V>(value: V) {
 
     fun getAndSet(newValue: V): V
 }
+
+expect class AtomicReferenceArray<E>(values: Array<E>) {
+    fun length(): Int
+
+    operator fun get(i: Int): E
+
+    operator fun set(i: Int, newValue: E)
+
+    fun getAndSet(i: Int, newValue: E): E
+
+    fun compareAndSet(i: Int, expect: E, update: E): Boolean
+}
+
+expect inline fun <reified E> AtomicReferenceArray(
+    length: Int,
+    crossinline init: (Int) -> E
+): AtomicReferenceArray<E>
 
 expect class AtomicBoolean(value: Boolean) {
     fun get(): Boolean

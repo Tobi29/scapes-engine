@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,18 @@
 package org.tobi29.stdex.atomic
 
 actual typealias AtomicReference<T> = java.util.concurrent.atomic.AtomicReference<T>
+
+actual typealias AtomicReferenceArray<E> = java.util.concurrent.atomic.AtomicReferenceArray<E>
+
+actual inline fun <reified E> AtomicReferenceArray(
+    length: Int,
+    crossinline init: (Int) -> E
+) = AtomicReferenceArray<E>(length).apply {
+    for (i in 0 until length) this[i] = init(i)
+}
+
 actual typealias AtomicBoolean = java.util.concurrent.atomic.AtomicBoolean
+
 actual typealias AtomicInt = java.util.concurrent.atomic.AtomicInteger
+
 actual typealias AtomicLong = java.util.concurrent.atomic.AtomicLong
