@@ -37,7 +37,7 @@ actual class AtomicReference<V> actual constructor(private var value: V) {
 }
 
 @Suppress("UNUSED_PARAMETER")
-actual class AtomicReferenceArray<E> @PublishedApi internal constructor(
+actual class AtomicArray<E> @PublishedApi internal constructor(
     private val values: Array<E>,
     unused: Nothing?
 ) {
@@ -65,10 +65,13 @@ actual class AtomicReferenceArray<E> @PublishedApi internal constructor(
     override fun toString() = values.joinToString(prefix = "[", postfix = "]")
 }
 
-actual inline fun <reified E> AtomicReferenceArray(
+actual inline fun <reified E> AtomicArray(
     length: Int,
     crossinline init: (Int) -> E
-) = AtomicReferenceArray(Array(length) { init(it) }, null)
+) = AtomicArray(Array(length) { init(it) }, null)
+
+actual inline fun <reified E> atomicArrayOf(size: Int) =
+    AtomicArray<E?>(arrayOfNulls(size))
 
 actual class AtomicBoolean actual constructor(private var value: Boolean) {
     actual fun get() = value

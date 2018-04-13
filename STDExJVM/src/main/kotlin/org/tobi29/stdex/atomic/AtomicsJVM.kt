@@ -18,14 +18,16 @@ package org.tobi29.stdex.atomic
 
 actual typealias AtomicReference<T> = java.util.concurrent.atomic.AtomicReference<T>
 
-actual typealias AtomicReferenceArray<E> = java.util.concurrent.atomic.AtomicReferenceArray<E>
+actual typealias AtomicArray<E> = java.util.concurrent.atomic.AtomicReferenceArray<E>
 
-actual inline fun <reified E> AtomicReferenceArray(
+actual inline fun <reified E> AtomicArray(
     length: Int,
     crossinline init: (Int) -> E
-) = AtomicReferenceArray<E>(length).apply {
+) = AtomicArray<E>(length).apply {
     for (i in 0 until length) this[i] = init(i)
 }
+
+actual inline fun <reified E> atomicArrayOf(size: Int) = AtomicArray<E?>(size)
 
 actual typealias AtomicBoolean = java.util.concurrent.atomic.AtomicBoolean
 

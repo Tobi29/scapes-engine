@@ -26,7 +26,7 @@ expect class AtomicReference<V>(value: V) {
     fun getAndSet(newValue: V): V
 }
 
-expect class AtomicReferenceArray<E>(values: Array<E>) {
+expect class AtomicArray<E>(values: Array<E>) {
     fun length(): Int
 
     operator fun get(i: Int): E
@@ -38,10 +38,12 @@ expect class AtomicReferenceArray<E>(values: Array<E>) {
     fun compareAndSet(i: Int, expect: E, update: E): Boolean
 }
 
-expect inline fun <reified E> AtomicReferenceArray(
+expect inline fun <reified E> AtomicArray(
     length: Int,
     crossinline init: (Int) -> E
-): AtomicReferenceArray<E>
+): AtomicArray<E>
+
+expect inline fun <reified E> atomicArrayOf(size: Int): AtomicArray<E?>
 
 expect class AtomicBoolean(value: Boolean) {
     fun get(): Boolean
