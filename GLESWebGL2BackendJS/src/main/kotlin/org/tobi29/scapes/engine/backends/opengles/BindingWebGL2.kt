@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -208,7 +208,7 @@ actual inline fun GLESHandle.glGetIntegerv(
     pname: GLEnum,
     params: IntArray
 ): Unit = (wgl.getParameter(pname) as Int32Array).let {
-    copy(params, it.asArray())
+    copy(it.asArray(), params)
 }
 
 actual inline fun GLESHandle.glReadBuffer(
