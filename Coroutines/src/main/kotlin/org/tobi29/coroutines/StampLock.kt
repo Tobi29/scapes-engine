@@ -21,7 +21,7 @@ package org.tobi29.coroutines
  * Writes are always synchronized, whilst reads can happen in parallel as long
  * as there is no write going on at the same time
  */
-expect class StampLock {
+expect class StampLock() {
     /**
      * Returns `true` in case a write lock is held
      * @return `true` in case a write lock is held
