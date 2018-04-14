@@ -23,6 +23,7 @@ import org.tobi29.graphics.toImage
 import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 import org.tobi29.math.matrix.Matrix4f
+import org.tobi29.stdex.JsName
 import org.tobi29.stdex.assert
 import kotlin.math.max
 import kotlin.math.roundToLong
@@ -214,6 +215,7 @@ abstract class GL(
     ): Image = getFBODepthBuffer(x, y, width, height).toImage()
 
     @Deprecated("Use property", ReplaceWith("textureEmpty"))
+    @JsName("textureEmptyFun")
     fun textureEmpty(): Texture = textureEmpty
 
     @Deprecated(
