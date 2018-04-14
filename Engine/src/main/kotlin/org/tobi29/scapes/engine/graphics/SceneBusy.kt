@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,9 +46,10 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
             val width = gl.contentWidth.toFloat()
             val height = gl.contentHeight.toFloat()
             matrix.identity()
-            matrix.modelViewProjection().orthogonal(-width * 0.5f,
-                    -height * 0.5f, width, height)
-            gl.textureEmpty().bind(gl)
+            matrix.modelViewProjection().orthogonal(
+                -width * 0.5f, -height * 0.5f, width, height
+            )
+            gl.textureEmpty.bind(gl)
             matrix.rotateAccurate((gl.timer * 300.0) % 360.0, 0.0f, 0.0f, 1.0f)
             busy.render(gl, shader)
         }

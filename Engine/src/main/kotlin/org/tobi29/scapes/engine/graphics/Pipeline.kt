@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@
 
 package org.tobi29.scapes.engine.graphics
 
-class Pipeline(gl: GL,
-               private val builder: (GL) -> suspend () -> (Double) -> Unit) {
+class Pipeline(
+    gl: GL,
+    private val builder: (GL) -> suspend () -> (Double) -> Unit
+) {
     private var finisher: (suspend () -> (Double) -> Unit)? = builder(gl)
     private var steps: ((Double) -> Unit)? = null
 
@@ -38,8 +40,10 @@ class Pipeline(gl: GL,
     }
 }
 
-fun renderScene(gl: GL,
-                scene: Scene): suspend () -> (Double) -> Unit {
+fun renderScene(
+    gl: GL,
+    scene: Scene
+): suspend () -> (Double) -> Unit {
     val render = scene.appendToPipeline(gl)
     return {
         val steps = render()
@@ -50,23 +54,33 @@ fun renderScene(gl: GL,
     }
 }
 
-fun postProcess(gl: GL,
-                shader: Shader,
-                framebuffer: Framebuffer,
-                config: Shader.() -> Unit): (Double) -> Unit {
-    return postProcess(gl, shader, framebuffer, framebuffer, config)
+inline fun renderInto(
+    gl: GL,
+    framebuffer: Framebuffer,
+    crossinline block: (Double) -> Unit
+): (Double) -> Unit {
+    val viewport = IntArray(4)
+    return { delta ->
+        gl.getViewport(viewport)
+        framebuffer.activate(gl)
+        gl.setViewport(0, 0, framebuffer.width(), framebuffer.height())
+        try {
+            block(delta)
+        } finally {
+            framebuffer.deactivate(gl)
+            gl.setViewport(viewport[0], viewport[1], viewport[2], viewport[3])
+        }
+    }
 }
 
-fun postProcess(gl: GL,
-                shader: Shader,
-                framebuffer: Framebuffer,
-                depthbuffer: Framebuffer = framebuffer,
-                config: Shader.() -> Unit = {}): (Double) -> Unit {
-    val model = gl.createVTI(
-            floatArrayOf(0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 1.0f, 0.0f, 0.0f),
-            floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
-            intArrayOf(0, 1, 2, 3, 2, 1), RenderType.TRIANGLES)
+inline fun postProcess(
+    gl: GL,
+    shader: Shader,
+    framebuffer: Framebuffer,
+    depthbuffer: Framebuffer = framebuffer,
+    crossinline config: Shader.() -> Unit = {}
+): (Double) -> Unit {
+    val model = postProcessModel(gl)
     return {
         config(shader)
         gl.clearDepth()
@@ -75,11 +89,24 @@ fun postProcess(gl: GL,
     }
 }
 
-private fun renderPostProcess(gl: GL,
-                              framebuffer: Framebuffer,
-                              depthbuffer: Framebuffer,
-                              model: Model,
-                              shader: Shader) {
+@PublishedApi
+internal fun postProcessModel(gl: GL) = gl.createVTI(
+    floatArrayOf(
+        0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f, 0.0f
+    ),
+    floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f),
+    intArrayOf(0, 1, 2, 3, 2, 1), RenderType.TRIANGLES
+)
+
+@PublishedApi
+internal fun renderPostProcess(
+    gl: GL,
+    framebuffer: Framebuffer,
+    depthbuffer: Framebuffer,
+    model: Model,
+    shader: Shader
+) {
     gl.disableCulling()
     gl.disableDepthTest()
     gl.setBlending(BlendingMode.NORMAL)

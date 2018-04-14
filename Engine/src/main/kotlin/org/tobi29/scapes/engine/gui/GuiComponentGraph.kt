@@ -87,7 +87,7 @@ class GuiComponentGraph(
                 }
             }
         }
-        gl.textureEmpty().bind(gl)
+        gl.textureEmpty.bind(gl)
         val model = engine.graphics.createVCI(
             vertex, color, index,
             RenderType.LINES

@@ -27,8 +27,9 @@ import org.tobi29.stdex.assert
 import kotlin.math.max
 import kotlin.math.roundToLong
 
-abstract class GL(private val gos: GraphicsObjectSupplier) :
-    GraphicsObjectSupplier by gos {
+abstract class GL(
+    private val gos: GraphicsObjectSupplier
+) : GraphicsObjectSupplier by gos {
     val matrixStack = MatrixStack(64)
     var contentWidth = 1
         protected set
@@ -42,12 +43,8 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
         private set
     var timestamp = 0L
         private set
-    private val empty by lazy {
+    val textureEmpty by lazy {
         createTexture(1, 1, byteArrayOf(-1, -1, -1, -1).view, 0)
-    }
-
-    fun textureEmpty(): Texture {
-        return empty
     }
 
     fun reshape(
@@ -80,12 +77,7 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
 
     abstract fun checkError(message: String)
 
-    abstract fun clear(
-        r: Float,
-        g: Float,
-        b: Float,
-        a: Float
-    )
+    abstract fun clear(r: Float, g: Float, b: Float, a: Float)
 
     abstract fun clearDepth()
 
@@ -107,21 +99,11 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
 
     abstract fun enableWireframe()
 
-    abstract fun enableScissor(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    )
+    abstract fun enableScissor(x: Int, y: Int, width: Int, height: Int)
 
     abstract fun setBlending(mode: BlendingMode)
 
-    abstract fun setViewport(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    )
+    abstract fun setViewport(x: Int, y: Int, width: Int, height: Int)
 
     abstract fun getViewport(output: IntArray)
 
@@ -147,65 +129,36 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
         height: Int
     ): Bitmap<*, *>
 
-    fun into(
-        framebuffer: Framebuffer,
-        block: (Double) -> Unit
-    ): (Double) -> Unit {
-        val viewport = IntArray(4)
-        return { delta ->
-            getViewport(viewport)
-            framebuffer.activate(this)
-            setViewport(0, 0, framebuffer.width(), framebuffer.height())
-            block(delta)
-            framebuffer.deactivate(this)
-            setViewport(viewport[0], viewport[1], viewport[2], viewport[3])
-        }
-    }
-
     abstract fun setAttribute1f(
-        id: Int,
-        v0: Float
+        id: Int, v0: Float
     )
 
     abstract fun setAttribute2f(
-        id: Int,
-        v0: Float,
-        v1: Float
+        id: Int, v0: Float, v1: Float
     )
 
     abstract fun setAttribute3f(
-        id: Int,
-        v0: Float,
-        v1: Float,
-        v2: Float
+        id: Int, v0: Float, v1: Float, v2: Float
     )
 
     abstract fun setAttribute4f(
-        id: Int,
-        v0: Float,
-        v1: Float,
-        v2: Float,
-        v3: Float
+        id: Int, v0: Float, v1: Float, v2: Float, v3: Float
     )
 
     abstract fun setAttribute1f(
-        uniform: Int,
-        values: FloatArray
+        uniform: Int, values: FloatArray
     )
 
     abstract fun setAttribute2f(
-        uniform: Int,
-        values: FloatArray
+        uniform: Int, values: FloatArray
     )
 
     abstract fun setAttribute3f(
-        uniform: Int,
-        values: FloatArray
+        uniform: Int, values: FloatArray
     )
 
     abstract fun setAttribute4f(
-        uniform: Int,
-        values: FloatArray
+        uniform: Int, values: FloatArray
     )
 
     abstract fun replaceTexture(
@@ -227,10 +180,10 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
     abstract fun activeTexture(i: Int)
 
     companion object {
-        val VERTEX_ATTRIBUTE = 0
-        val COLOR_ATTRIBUTE = 1
-        val TEXTURE_ATTRIBUTE = 2
-        val NORMAL_ATTRIBUTE = 3
+        const val VERTEX_ATTRIBUTE = 0
+        const val COLOR_ATTRIBUTE = 1
+        const val TEXTURE_ATTRIBUTE = 2
+        const val NORMAL_ATTRIBUTE = 3
     }
 
     // TODO: Remove after 0.0.13
@@ -259,6 +212,21 @@ abstract class GL(private val gos: GraphicsObjectSupplier) :
         width: Int,
         height: Int
     ): Image = getFBODepthBuffer(x, y, width, height).toImage()
+
+    @Deprecated("Use property", ReplaceWith("textureEmpty"))
+    fun textureEmpty(): Texture = textureEmpty
+
+    @Deprecated(
+        "Use renderInto",
+        ReplaceWith(
+            "renderInto(this, framebuffer, block)",
+            "org.tobi29.scapes.engine.graphics.renderInto"
+        )
+    )
+    fun into(
+        framebuffer: Framebuffer,
+        block: (Double) -> Unit
+    ): (Double) -> Unit = renderInto(this, framebuffer, block)
 
     @Deprecated(
         "Use extension property",

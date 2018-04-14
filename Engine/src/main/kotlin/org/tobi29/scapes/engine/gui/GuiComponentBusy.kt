@@ -46,7 +46,7 @@ class GuiComponentBusy(parent: GuiLayoutData) : GuiComponentHeavy(parent) {
         pixelSize: Vector2d,
         delta: Double
     ) {
-        gl.textureEmpty().bind(gl)
+        gl.textureEmpty.bind(gl)
         gl.matrixStack.push { matrix ->
             matrix.translate(
                 size.x.toFloat() * 0.5f, size.y.toFloat() * 0.5f,

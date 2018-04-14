@@ -173,7 +173,7 @@ class GuiComponentEditableText(
                 }
             }
         }
-        gl.textureEmpty().bind(gl)
+        gl.textureEmpty.bind(gl)
         gl.setBlending(BlendingMode.INVERT)
         vaoSelection?.forEach { it.first.render(gl, shader) }
         gl.setBlending(BlendingMode.NORMAL)

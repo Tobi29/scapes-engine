@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,25 +26,18 @@ interface Texture : GraphicsObject {
 
     fun height(): Int
 
-    fun setWrap(wrapS: TextureWrap,
-                wrapT: TextureWrap)
+    fun setWrap(wrapS: TextureWrap, wrapT: TextureWrap)
 
-    fun setFilter(magFilter: TextureFilter,
-                  minFilter: TextureFilter)
+    fun setFilter(magFilter: TextureFilter, minFilter: TextureFilter)
 
     fun buffer(i: Int): ByteViewRO?
 
     fun setBuffer(buffer: ByteViewRO?)
 
-    fun setBuffer(buffer: ByteViewRO?,
-                  width: Int,
-                  height: Int)
+    fun setBuffer(buffer: ByteViewRO?, width: Int, height: Int)
 }
 
 fun Texture?.bind(gl: GL) {
-    if (this == null) {
-        gl.textureEmpty().bind(gl)
-    } else {
-        bind(gl)
-    }
+    if (this == null) gl.textureEmpty.bind(gl)
+    else bind(gl)
 }
