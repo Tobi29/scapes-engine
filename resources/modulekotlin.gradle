@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 apply plugin: "kotlin-platform-common"
-apply plugin: "maven"
+apply from: "$rootDir/resources/modulemaven.gradle"
 apply plugin: "org.jetbrains.dokka"
 apply plugin: "eclipse"
 
@@ -23,20 +23,6 @@ kotlin {
     experimental {
         coroutines "enable"
     }
-}
-
-configurations {
-    sources
-}
-
-task sourcesJar(type: Jar) {
-    classifier = "sources"
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives sourcesJar
-    sources sourcesJar
 }
 
 eclipse.project {

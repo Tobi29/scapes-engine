@@ -14,23 +14,34 @@
  * limitations under the License.
  */
 
-apply plugin: "kotlin-platform-js"
-apply from: "$rootDir/resources/modulemaven.gradle"
-apply plugin: "eclipse"
+apply plugin: "maven-publish"
 
-kotlin {
-    experimental {
-        coroutines "enable"
+configurations {
+    sources
+}
+
+task sourcesJar(type: Jar) {
+    classifier = "sources"
+    dependsOn configurations.sources
+    from {
+        configurations.sources.collect { it.isDirectory() ? it : zipTree(it) }
     }
+    from sourceSets.main.allSource
 }
 
-compileKotlin2Js {
-    kotlinOptions.metaInfo = true
-    kotlinOptions.sourceMap = true
-    kotlinOptions.sourceMapEmbedSources = "always"
-    kotlinOptions.moduleKind = "umd"
+artifacts {
+    archives sourcesJar
+    sources sourcesJar
 }
 
-eclipse.project {
-    natures "org.jetbrains.kotlin.core.kotlinNature"
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+        }
+    }
 }

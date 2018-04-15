@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 apply plugin: "java"
-apply plugin: "maven"
+apply from: "$rootDir/resources/modulemaven.gradle"
 
 sourceCompatibility = 1.7
 
@@ -23,15 +23,6 @@ test {
     useJUnitPlatform {
         includeEngines "junit-jupiter"
     }
-}
-
-task sourcesJar(type: Jar) {
-    classifier = "sources"
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives sourcesJar
 }
 
 dependencies {
