@@ -43,7 +43,6 @@ artifacts {
 }
 
 compileKotlin2Js {
-    kotlinOptions.typedArrays = true
     kotlinOptions.metaInfo = true
     kotlinOptions.sourceMap = true
     kotlinOptions.sourceMapEmbedSources = "always"
