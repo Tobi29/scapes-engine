@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,19 +53,19 @@ actual interface ConcurrentMap<K, V> : MutableMap<K, V> {
 
 actual class ConcurrentHashMap<K, V> : HashMap<K, V>(),
     ConcurrentMap<K, V> {
-    actual override fun replace(key: K, value: V): V? =
+    override fun replace(key: K, value: V): V? =
         if (containsKey(key)) put(key, value) else null
 
-    actual override fun replace(key: K, oldValue: V, newValue: V): Boolean =
+    override fun replace(key: K, oldValue: V, newValue: V): Boolean =
         if (this[key] == oldValue) {
             put(key, newValue)
             true
         } else false
 
-    actual override fun putIfAbsent(key: K, value: V): V? =
+    override fun putIfAbsent(key: K, value: V): V? =
         putIfAbsent(key, value)
 
-    actual override fun remove(key: K, value: V): Boolean =
+    override fun remove(key: K, value: V): Boolean =
         if (this[key] == value) {
             remove(key)
             true
@@ -75,7 +75,7 @@ actual class ConcurrentHashMap<K, V> : HashMap<K, V>(),
 actual class ConcurrentHashSet<E> : MutableSet<E> {
     private val map = ConcurrentHashMap<E, Unit>()
 
-    actual override fun addAll(elements: Collection<E>): Boolean {
+    override fun addAll(elements: Collection<E>): Boolean {
         var added = false
         for (element in elements) {
             added = add(element) || added
@@ -83,24 +83,24 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
         return added
     }
 
-    actual override fun removeAll(elements: Collection<E>) =
+    override fun removeAll(elements: Collection<E>) =
         map.keys.removeAll(elements)
 
-    actual override fun retainAll(elements: Collection<E>) =
+    override fun retainAll(elements: Collection<E>) =
         map.keys.retainAll(elements)
 
-    actual override fun contains(element: E) = map.keys.contains(element)
-    actual override fun containsAll(elements: Collection<E>) =
+    override fun contains(element: E) = map.keys.contains(element)
+    override fun containsAll(elements: Collection<E>) =
         map.keys.containsAll(elements)
 
-    actual override fun isEmpty() = map.isEmpty()
+    override fun isEmpty() = map.isEmpty()
 
-    actual override val size get() = map.size
+    override val size get() = map.size
 
-    actual override fun add(element: E) = map.put(element, Unit) == null
-    actual override fun remove(element: E) = map.remove(element) != null
-    actual override fun clear() = map.clear()
-    actual override fun iterator(): MutableIterator<E> = map.keys.iterator()
+    override fun add(element: E) = map.put(element, Unit) == null
+    override fun remove(element: E) = map.remove(element) != null
+    override fun clear() = map.clear()
+    override fun iterator(): MutableIterator<E> = map.keys.iterator()
 
     override fun equals(other: Any?) = map.keys == other
     override fun hashCode() = map.keys.hashCode()

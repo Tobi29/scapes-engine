@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,19 @@ actual class ArrayDeque<E : Any> private constructor(
 
     actual constructor(size: Int) : this()
 
-    actual override fun addFirst(element: E) = array.add(0, element)
+    override fun addFirst(element: E) = array.add(0, element)
 
-    actual override fun pollFirst(): E? =
+    override fun pollFirst(): E? =
         if (isEmpty()) null else array.removeAt(0)
 
-    actual override fun pollLast(): E? =
+    override fun pollLast(): E? =
         if (isEmpty()) null else array.removeAt(array.lastIndex)
 
-    actual override fun getFirst(): E = array[0]
+    override fun getFirst(): E = array[0]
 
-    actual override fun getLast(): E = array[size - 1]
+    override fun getLast(): E = array[size - 1]
 
-    actual override fun removeFirstOccurrence(element: Any): Boolean {
+    override fun removeFirstOccurrence(element: Any): Boolean {
         for (i in 0 until size) {
             if (element == array[i]) {
                 array.removeAt(i)
@@ -47,7 +47,7 @@ actual class ArrayDeque<E : Any> private constructor(
         return false
     }
 
-    actual override fun removeLastOccurrence(element: Any): Boolean {
+    override fun removeLastOccurrence(element: Any): Boolean {
         for (i in size - 1 downTo 0) {
             if (element == array[i]) {
                 array.removeAt(i)
@@ -57,7 +57,7 @@ actual class ArrayDeque<E : Any> private constructor(
         return false
     }
 
-    actual override fun descendingIterator(): MutableIterator<E> =
+    override fun descendingIterator(): MutableIterator<E> =
         array.listIterator(array.lastIndex).let { iterator ->
             object : MutableIterator<E> {
                 override fun hasNext(): Boolean = iterator.hasPrevious()
@@ -70,45 +70,45 @@ actual class ArrayDeque<E : Any> private constructor(
 
     // Boilerplate following
 
-    actual override fun offerFirst(element: E): Boolean {
+    override fun offerFirst(element: E): Boolean {
         addFirst(element)
         return true
     }
 
-    actual override fun offerLast(element: E): Boolean {
+    override fun offerLast(element: E): Boolean {
         addLast(element)
         return true
     }
 
-    actual override fun removeFirst(): E {
+    override fun removeFirst(): E {
         return pollFirst() ?: throw NoSuchElementException()
     }
 
-    actual override fun removeLast(): E {
+    override fun removeLast(): E {
         return pollLast() ?: throw NoSuchElementException()
     }
 
-    actual override fun peekFirst() = getFirst()
+    override fun peekFirst() = getFirst()
 
-    actual override fun peekLast() = getLast()
+    override fun peekLast() = getLast()
 
-    actual override fun addLast(element: E) {
+    override fun addLast(element: E) {
         add(element)
     }
 
-    actual override fun offer(element: E) = offerLast(element)
+    override fun offer(element: E) = offerLast(element)
 
-    actual override fun remove() = removeFirst()
+    override fun remove() = removeFirst()
 
-    actual override fun poll() = pollFirst()
+    override fun poll() = pollFirst()
 
-    actual override fun element() = getFirst()
+    override fun element() = getFirst()
 
-    actual override fun peek() = getFirst()
+    override fun peek() = getFirst()
 
-    actual override fun push(element: E) {
+    override fun push(element: E) {
         addFirst(element)
     }
 
-    actual override fun pop() = removeFirst()
+    override fun pop() = removeFirst()
 }
