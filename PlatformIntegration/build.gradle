@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile project(":FileSystems")
+    compile project(":platformintegration")
 }

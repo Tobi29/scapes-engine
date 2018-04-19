@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile project(":Base64JVM")
-    compile project(":TileMapsJVM")
-    compile project(":IOUtilsJVM")
-    testCompile rootProject.ext.kotlinxCoroutinesJVM("kotlinx-coroutines-core")
+    compile project(":libtiled-jvm")
 }

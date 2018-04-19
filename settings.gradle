@@ -15,57 +15,196 @@
  */
 
 // STDEx
+include "stdex"
+include "stdex-js"
+include "stdex-jvm"
+
+// Logging
+include "logging"
+include "logging-js"
+include "logging-jvm"
+
+// Tag
+include "tag"
+include "tag-js"
+include "tag-jvm"
+
+// Uuid
+include "uuid"
+include "uuid-js"
+include "uuid-jvm"
+
+// Arrays
+include "arrays"
+include "arrays-js"
+include "arrays-jvm"
+
+// Argument Parser
+include "argumentparser"
+include "argumentparser-js"
+include "argumentparser-jvm"
+
+// Base64
+include "base64"
+include "base64-js"
+include "base64-jvm"
+
+// Checksums
+include "checksums"
+include "checksums-js"
+include "checksums-jvm"
+
+// Utils
+include "utils"
+include "utils-js"
+include "utils-jvm"
+include "mbeans-cpu-reader-jvm"
+
+// Coroutines
+include "coroutines"
+include "coroutines-js"
+include "coroutines-jvm"
+
+// IO Utils
+include "io"
+include "io-js"
+include "io-jvm"
+include "filesystem"
+include "filesystem-jvm"
+include "filesystem-nio-jvm"
+include "filesystem-io-jvm"
+
+// Content Info
+include "contentinfo"
+include "contentinfo-js"
+include "contentinfo-jvm"
+
+// SimpleMagik
+include "simplemagik"
+include "simplemagik-jvm"
+
+// Math Utils
+include "math"
+include "math-js"
+include "math-jvm"
+
+// Graphics Utils
+include "graphics-utils"
+include "graphics-utils-js"
+include "graphics-utils-jvm"
+
+// Generation Utils
+include "generation-utils"
+include "generation-utils-js"
+include "generation-utils-jvm"
+
+// Chrono Utils
+include "chrono"
+include "chrono-js"
+include "chrono-jvm"
+
+// Platform Integration
+include "platformintegration"
+include "platformintegration-jvm"
+
+// Application Framework
+include "application-framework"
+include "application-framework-jvm"
+
+// SWT Utils
+include "swt-utils-jvm"
+
+// Server Framework
+include "server-framework-jvm"
+
+// Codecs
+include "codec-jvm"
+include "codec-mp3-jvm"
+include "codec-ogg-jvm"
+include "codec-wav-jvm"
+
+// SQL Framework
+include "sql-framework-jvm"
+include "mariadb-jvm"
+include "sqlite-jvm"
+include "sqljet-jvm"
+
+// Tile Maps
+include "tilemaps"
+include "tilemaps-js"
+include "tilemaps-jvm"
+include "tilemaps-renderer"
+include "tilemaps-renderer-js"
+include "tilemaps-renderer-jvm"
+include "libtiled-jvm"
+
+// JBox2D
+include "jbox2d"
+include "jbox2d-js"
+include "jbox2d-jvm"
+
+// Engine
+include "engine"
+include "engine-js"
+include "engine-jvm"
+include "shader-clike"
+include "shader-clike-jvm"
+include "shader-compiler"
+include "shader-compiler-js"
+include "shader-compiler-jvm"
+include "shader-parser-jvm"
+
+// Backend
+include "gl-backend"
+include "gles-backend"
+include "gles-webgl2-backend-js"
+include "gl-lwjgl3-backend-jvm"
+include "gles-lwjgl3-backend-jvm"
+include "glfw-backend-jvm"
+include "openal-sounds-jvm"
+include "lwjgl3-backend-jvm"
+
+// Profiler
+include "profiler"
+include "profiler-js"
+include "profiler-jvm"
+
+// Test Assertions
+include "test-assertions-jvm"
+
+// TODO: Remove after 0.0.13
+
 include "STDEx"
 include "STDExJS"
 include "STDExJVM"
-
-// Logging
 include "Logging"
 include "LoggingJS"
 include "LoggingJVM"
-
-// Tag
 include "Tag"
 include "TagJS"
 include "TagJVM"
-
-// Uuid
 include "Uuid"
 include "UuidJS"
 include "UuidJVM"
-
-// Arrays
 include "Arrays"
 include "ArraysJS"
 include "ArraysJVM"
-
-// Argument Parser
 include "ArgumentParser"
 include "ArgumentParserJS"
 include "ArgumentParserJVM"
-
-// Base64
 include "Base64"
 include "Base64JS"
 include "Base64JVM"
-
-// Checksums
 include "Checksums"
 include "ChecksumsJS"
 include "ChecksumsJVM"
-
-// Utils
 include "Utils"
 include "UtilsJS"
 include "UtilsJVM"
 include "MBeansCPUReaderJVM"
-
-// Coroutines
 include "Coroutines"
 include "CoroutinesJS"
 include "CoroutinesJVM"
-
-// IO Utils
 include "IOUtils"
 include "IOUtilsJS"
 include "IOUtilsJVM"
@@ -73,63 +212,37 @@ include "FileSystems"
 include "FileSystemsJVM"
 include "NIOFileSystemJVM"
 include "IOFileSystemJVM"
-
-// Content Info
 include "ContentInfo"
 include "ContentInfoJS"
 include "ContentInfoJVM"
-
-// SimpleMagik
 include "SimpleMagik"
 include "SimpleMagikJVM"
-
-// Math Utils
 include "MathUtils"
 include "MathUtilsJS"
 include "MathUtilsJVM"
-
-// Graphics Utils
 include "GraphicsUtils"
 include "GraphicsUtilsJS"
 include "GraphicsUtilsJVM"
-
-// Generation Utils
 include "GenerationUtils"
 include "GenerationUtilsJS"
 include "GenerationUtilsJVM"
-
-// Chrono Utils
 include "ChronoUtils"
 include "ChronoUtilsJS"
 include "ChronoUtilsJVM"
-
-// Platform Integration
 include "PlatformIntegration"
 include "PlatformIntegrationJVM"
-
-// Application Framework
 include "ApplicationFramework"
 include "ApplicationFrameworkJVM"
-
-// SWT Utils
 include "SWTUtilsJVM"
-
-// Server Framework
 include "ServerFrameworkJVM"
-
-// Codecs
 include "CodecsJVM"
 include "CodecMP3JVM"
 include "CodecOGGJVM"
 include "CodecWAVJVM"
-
-// SQL Framework
 include "SQLFrameworkJVM"
 include "MariaDBJVM"
 include "SQLiteJVM"
 include "SQLJetJVM"
-
-// Tile Maps
 include "TileMaps"
 include "TileMapsJS"
 include "TileMapsJVM"
@@ -137,13 +250,9 @@ include "TileMapsRenderer"
 include "TileMapsRendererJS"
 include "TileMapsRendererJVM"
 include "LibTiledJVM"
-
-// JBox2D
 include "JBox2D"
 include "JBox2DJS"
 include "JBox2DJVM"
-
-// Engine
 include "Engine"
 include "EngineJS"
 include "EngineJVM"
@@ -153,8 +262,6 @@ include "ShaderCompiler"
 include "ShaderCompilerJS"
 include "ShaderCompilerJVM"
 include "ShaderParser"
-
-// Backend
 include "GLBackend"
 include "GLESBackend"
 include "GLESWebGL2BackendJS"
@@ -163,11 +270,7 @@ include "GLESLWJGL3BackendJVM"
 include "GLFWBackendJVM"
 include "OpenALSoundsJVM"
 include "LWJGL3BackendJVM"
-
-// Profiler
 include "Profiler"
 include "ProfilerJS"
 include "ProfilerJVM"
-
-// Test Assertions
 include "TestAssertionsJVM"

@@ -14,15 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
-
-compileKotlin {
-    kotlinOptions.freeCompilerArgs += "-Xallow-kotlin-package"
-}
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":FileSystems")
-    sources project(path: ":FileSystems", configuration: "sources")
-    compile project(":STDExJVM")
-    compile project(":IOUtilsJVM")
+    compile project(":filesystem-jvm")
 }

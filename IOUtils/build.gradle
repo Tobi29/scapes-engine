@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile project(":Arrays")
-    compile project(":Checksums")
-    compile project(":Tag")
-    compile project(":Utils")
+    compile project(":io")
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":Engine")
-    sources project(path: ":Engine", configuration: "sources")
-    compile project(":Base64JVM")
-    compile project(":GraphicsUtilsJVM")
-    compile project(":IOUtilsJVM")
-    compile project(":ProfilerJVM")
-    compile project(":LoggingJVM")
-    compile project(":ShaderCompilerJVM")
-    compile project(":CoroutinesJVM")
-    compile project(":UtilsJVM")
+    compile project(":engine-jvm")
 }

@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile project(":Base64JVM")
-    compile project(":CoroutinesJVM")
-    compile project(":FileSystemsJVM")
-    compile project(":LoggingJVM")
+    compile project(":server-framework-jvm")
 }

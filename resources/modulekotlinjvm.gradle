@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ test {
 }
 
 dependencies {
-    testCompile project(":TestAssertionsJVM")
+    testCompile project(":test-assertions-jvm")
 
     // Crashes without this
     testRuntime rootProject.ext.junitJupiterJVM("junit-jupiter-engine")

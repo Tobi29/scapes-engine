@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjs.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":GLESBackend")
-    compile project(":EngineJS")
-    compile rootProject.ext.webKTBindingsJS("Gamepad")
-    compile rootProject.ext.webKTBindingsJS("WebAudio")
-    compile rootProject.ext.webKTBindingsJS("WebGL2")
+    compile project(":gles-webgl2-backend-js")
 }

@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjs.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":ContentInfo")
-    sources project(path: ":ContentInfo", configuration: "sources")
-    compile project(":STDExJS")
-    compile project(":IOUtilsJS")
+    compile project(":contentinfo-js")
 }

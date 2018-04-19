@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":ContentInfo")
-    sources project(path: ":ContentInfo", configuration: "sources")
-    compile project(":STDExJVM")
-    compile project(":IOUtilsJVM")
-    compile project(":LoggingJVM")
-    compile project(":SimpleMagikJVM")
+    compile project(":contentinfo-jvm")
 }

@@ -14,14 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":SimpleMagik")
-    sources project(path: ":SimpleMagik", configuration: "sources")
-    compile project(":ArraysJVM")
-    compile project(":STDExJVM")
-    compile project(":LoggingJVM")
-    compile project(":ChronoUtilsJVM")
-    compile project(":UtilsJVM")
+    compile project(":simplemagik-jvm")
 }

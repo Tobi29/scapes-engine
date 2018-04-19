@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile project(":CodecsJVM")
-    compile project(":ContentInfoJVM")
-    compile project(":EngineJVM")
+    compile project(":openal-sounds-jvm")
 }

@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    expectedBy project(":JBox2D")
-    sources project(path: ":JBox2D", configuration: "sources")
-    compile project(":STDExJVM")
-    compile project(":UtilsJVM")
-    compile project(":MathUtilsJVM")
-    compile project(":ProfilerJVM")
+    compile project(":jbox2d-jvm")
 }

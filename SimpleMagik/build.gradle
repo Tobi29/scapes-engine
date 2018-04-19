@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile project(":STDEx")
-    compile project(":Arrays")
-    compile project(":Logging")
-    compile project(":ChronoUtils")
-    compile project(":Utils")
+    compile project(":simplemagik")
 }

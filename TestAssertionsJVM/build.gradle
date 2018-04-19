@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulemavenredirect.gradle"
 
 dependencies {
-    compile rootProject.ext.kotlinJVM("kotlin-stdlib")
-    compile rootProject.ext.kotlinJVM("kotlin-reflect")
-    compile rootProject.ext.kotlinJVM("kotlin-test")
-    compile(rootProject.ext.spekJVM("spek-api")) {
-        exclude group: "org.jetbrains.kotlin"
-    }
-    compile(rootProject.ext.spekJVM("spek-data-driven-extension")) {
-        exclude group: "org.jetbrains.kotlin"
-    }
-
-    runtime(rootProject.ext.spekJVM("spek-junit-platform-engine")) {
-        exclude group: "org.jetbrains.kotlin"
-    }
+    compile project(":test-assertions-jvm")
 }
+
