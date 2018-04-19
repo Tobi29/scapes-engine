@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,37 +18,35 @@ package org.tobi29.base64
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.jetbrains.spek.data_driven.data
 import org.tobi29.assertions.byteArrays
+import org.tobi29.assertions.on
 import org.tobi29.assertions.shouldEqual
 import java.util.*
 
 object Base64Tests : Spek({
-    describe("encoding an array in base64") {
-        for (array in byteArrays()) {
-            given("[${array.joinToString()}]") {
-                on("encoding in base64") {
-                    val actual = array.toBase64()
-                    val expected = Base64.getEncoder().encodeToString(array)
-                    it("should return $expected") {
-                        actual shouldEqual expected
-                    }
-                }
+    describe("base64 encoding and decoding") {
+        on(
+            { a -> "encoding ${a.joinToString()} in base64" },
+            *byteArrays().map {
+                data(it, Base64.getEncoder().encodeToString(it))
+            }.toList().toTypedArray()
+        ) { a, expected ->
+            val actual = a.toBase64()
+            it("should return $expected") {
+                actual shouldEqual expected
             }
         }
-    }
-    describe("decoding a base64 encoded string") {
-        for (expected in byteArrays()) {
-            val str = Base64.getEncoder().encodeToString(expected)
-            given(str) {
-                on("decoding from base64") {
-                    val actual = str.fromBase64()
-                    it("should return [${expected.joinToString()}]") {
-                        actual shouldEqual expected
-                    }
-                }
+        on(
+            { a -> "decoding $a from base64" },
+            *byteArrays().map {
+                data(Base64.getEncoder().encodeToString(it), it)
+            }.toList().toTypedArray()
+        ) { a, expected ->
+            val actual = a.fromBase64()
+            it("should return ${expected.joinToString()}") {
+                actual shouldEqual expected
             }
         }
     }

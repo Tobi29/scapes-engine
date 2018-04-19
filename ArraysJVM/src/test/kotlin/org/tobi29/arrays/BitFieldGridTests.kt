@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,14 @@ package org.tobi29.arrays
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
+import org.jetbrains.spek.api.dsl.on
 import org.tobi29.assertions.shouldEqual
 import java.util.*
 
 object BitFieldGridTests : Spek({
     describe("a bit field grid") {
-        given("an instance filled with random data") {
+        on("filling an instance filled with random data") {
             val random = Random(0)
             val chunkData = BitFieldGrid(15, 7)
             for (y in 0 until chunkData.height) {
@@ -35,13 +35,13 @@ object BitFieldGridTests : Spek({
                     }
                 }
             }
-            it("should contain the same values") {
+            it("should contain the same values afterwards") {
                 val random = Random(0)
                 for (y in 0 until chunkData.height) {
                     for (x in 0 until chunkData.width) {
                         for (i in 0..7) {
-                            chunkData.getAt(x, y,
-                                    i) shouldEqual random.nextBoolean()
+                            chunkData.getAt(x, y, i) shouldEqual
+                                    random.nextBoolean()
                         }
                     }
                 }

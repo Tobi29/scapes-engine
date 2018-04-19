@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,34 +18,29 @@ package org.tobi29.args
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.jetbrains.spek.data_driven.data
+import org.tobi29.assertions.on
 import org.tobi29.assertions.shouldEqual
 
 object TokenizerTests : Spek({
     describe("tokenizing a string") {
-        given("a string with tokens separated by spaces") {
-            val tests by memoized {
-                listOf("" to listOf(),
-                        "\"" to listOf(),
-                        "One Two Three" to listOf("One", "Two", "Three"),
-                        "One \"Two Three\"" to listOf("One", "Two Three"),
-                        "One 'Two Three'" to listOf("One", "Two Three"),
-                        "One \"Two' Three\"" to listOf("One", "Two' Three"),
-                        "One 'Two\" Three'" to listOf("One", "Two\" Three"),
-                        "'One\" '\"Two' Three\"" to listOf("One\" Two' Three"),
-                        "\"One' \"'Two\" Three'" to listOf("One' Two\" Three"),
-                        "One \"\" Three" to listOf("One", "", "Three"))
-            }
-
-            for ((string, expected) in tests) {
-                on("tokenizing $string") {
-                    val tokens = string.tokenize()
-                    it("should return $expected") {
-                        tokens shouldEqual expected
-                    }
-                }
+        on(
+            { a -> "tokenizing $a" },
+            data("", listOf()),
+            data("\"", listOf()),
+            data("One Two Three", listOf("One", "Two", "Three")),
+            data("One \"Two Three\"", listOf("One", "Two Three")),
+            data("One 'Two Three'", listOf("One", "Two Three")),
+            data("One \"Two' Three\"", listOf("One", "Two' Three")),
+            data("One 'Two\" Three'", listOf("One", "Two\" Three")),
+            data("'One\" '\"Two' Three\"", listOf("One\" Two' Three")),
+            data("\"One' \"'Two\" Three'", listOf("One' Two\" Three")),
+            data("One \"\" Three", listOf("One", "", "Three"))
+        ) { a, expected ->
+            val actual = a.tokenize()
+            it("should return $expected") {
+                actual shouldEqual expected
             }
         }
     }

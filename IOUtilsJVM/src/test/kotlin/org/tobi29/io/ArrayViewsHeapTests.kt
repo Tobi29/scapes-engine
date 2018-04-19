@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,43 +18,45 @@ package org.tobi29.io
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.assertions.shouldEqual
 
 object ArrayViewsHeapTests : Spek({
     describe("writing and reading in two different array views") {
-        given("two array views of same length and endianess") {
-            val tests = listOf(
-                    *testsForType({ ByteArray(it) },
-                            ::HeapViewByteBE, "big-endian byte arrays"),
-                    *testsForType({ ByteArray(it) },
-                            ::HeapViewByteLE, "little-endian byte arrays"))
-            for ((name, left, right) in tests.map { (supplier, name) ->
-                name to supplier(269)
-            }.map { (name, views) ->
-                Triple(name, views.first, views.second)
-            }) {
-                on("doing write and read operations on $name") {
-                    writeToView(left)
-                    writeToView(right)
-                    it("should result in two equal views") {
-                        for (i in 0 until left.size) {
-                            left.getByte(i) shouldEqual right.getByte(i)
-                        }
-                        for (i in 0..left.size - 2) {
-                            left.getShort(i) shouldEqual right.getShort(i)
-                            left.getChar(i) shouldEqual right.getChar(i)
-                        }
-                        for (i in 0..left.size - 4) {
-                            left.getInt(i) shouldEqual right.getInt(i)
-                            left.getFloat(i) shouldEqual right.getFloat(i)
-                        }
-                        for (i in 0..left.size - 8) {
-                            left.getLong(i) shouldEqual right.getLong(i)
-                            left.getDouble(i) shouldEqual right.getDouble(i)
-                        }
+        val tests = listOf(
+            *testsForType(
+                { ByteArray(it) },
+                ::HeapViewByteBE, "big-endian byte arrays"
+            ),
+            *testsForType(
+                { ByteArray(it) },
+                ::HeapViewByteLE, "little-endian byte arrays"
+            )
+        )
+        for ((name, left, right) in tests.map { (supplier, name) ->
+            name to supplier(269)
+        }.map { (name, views) ->
+            Triple(name, views.first, views.second)
+        }) {
+            on("doing write and read operations on $name") {
+                writeToView(left)
+                writeToView(right)
+                it("should result in two equal views") {
+                    for (i in 0 until left.size) {
+                        left.getByte(i) shouldEqual right.getByte(i)
+                    }
+                    for (i in 0..left.size - 2) {
+                        left.getShort(i) shouldEqual right.getShort(i)
+                        left.getChar(i) shouldEqual right.getChar(i)
+                    }
+                    for (i in 0..left.size - 4) {
+                        left.getInt(i) shouldEqual right.getInt(i)
+                        left.getFloat(i) shouldEqual right.getFloat(i)
+                    }
+                    for (i in 0..left.size - 8) {
+                        left.getLong(i) shouldEqual right.getLong(i)
+                        left.getDouble(i) shouldEqual right.getDouble(i)
                     }
                 }
             }
@@ -62,43 +64,45 @@ object ArrayViewsHeapTests : Spek({
     }
 })
 
-private fun <B> testsForType(buffer: (Int) -> B,
-                             supplier: (B, Int, Int) -> ByteViewE,
-                             name: String) = arrayOf(
-        { length: Int ->
-            supplier(buffer(length), 0, length) to
-                    supplier(buffer(length), 0, length)
-        } to "aligned $name",
-        { length: Int ->
-            supplier(buffer(length + 1), 1, length) to
-                    supplier(buffer(length + 2), 2, length)
-        } to "unaligned $name",
-        { length: Int ->
-            buffer(length shl 2).let {
-                supplier(it, 0, length) to
-                        supplier(it, length, length)
-            }
-        } to "shared aligned $name",
-        { length: Int ->
-            buffer((length shl 2) + 1).let {
-                supplier(it, 0, length) to
-                        supplier(it, length + 1, length)
-            }
-        } to "shared unaligned $name",
-        { length: Int ->
-            supplier(buffer(length), 0, length).let {
-                it to if (it.isBigEndian)
-                    HeapViewByteBE(ByteArray(length), 0, length)
-                else HeapViewByteLE(ByteArray(length), 0, length)
-            }
-        } to "aligned compare $name to byte array",
-        { length: Int ->
-            supplier(buffer(length + 1), 1, length).let {
-                it to if (it.isBigEndian)
-                    HeapViewByteBE(ByteArray(length), 0, length)
-                else HeapViewByteLE(ByteArray(length), 0, length)
-            }
-        } to "unaligned compare $name to byte array")
+private fun <B> testsForType(
+    buffer: (Int) -> B,
+    supplier: (B, Int, Int) -> ByteViewE,
+    name: String
+) = arrayOf(
+    { length: Int ->
+        supplier(buffer(length), 0, length) to
+                supplier(buffer(length), 0, length)
+    } to "aligned $name",
+    { length: Int ->
+        supplier(buffer(length + 1), 1, length) to
+                supplier(buffer(length + 2), 2, length)
+    } to "unaligned $name",
+    { length: Int ->
+        buffer(length shl 2).let {
+            supplier(it, 0, length) to
+                    supplier(it, length, length)
+        }
+    } to "shared aligned $name",
+    { length: Int ->
+        buffer((length shl 2) + 1).let {
+            supplier(it, 0, length) to
+                    supplier(it, length + 1, length)
+        }
+    } to "shared unaligned $name",
+    { length: Int ->
+        supplier(buffer(length), 0, length).let {
+            it to if (it.isBigEndian)
+                HeapViewByteBE(ByteArray(length), 0, length)
+            else HeapViewByteLE(ByteArray(length), 0, length)
+        }
+    } to "aligned compare $name to byte array",
+    { length: Int ->
+        supplier(buffer(length + 1), 1, length).let {
+            it to if (it.isBigEndian)
+                HeapViewByteBE(ByteArray(length), 0, length)
+            else HeapViewByteLE(ByteArray(length), 0, length)
+        }
+    } to "unaligned compare $name to byte array")
 
 private fun <B : ByteViewE> writeToView(view: B): B {
     for (i in 0 until 16) {

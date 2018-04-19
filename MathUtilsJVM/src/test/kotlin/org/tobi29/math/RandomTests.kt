@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,20 @@
 package org.tobi29.math
 
 import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.given
+import org.jetbrains.spek.api.dsl.describe
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import kotlin.test.assertTrue
 
 object RandomTests : Spek({
-    given("a random") {
+    describe("a random number generator") {
         for (max in 0..10) {
             for (min in -10..max) {
                 on("generating random ints in range $min..$max") {
                     val counts = IntArray(max - min + 1)
                     val random = Random(
-                            12345L + max * 10000L + min)
+                        12345L + max * 10000L + min
+                    )
                     val count = counts.size * 100
                     for (i in 0 until count) {
                         val r = random.nextInt(min, max)
@@ -53,11 +54,14 @@ object RandomTests : Spek({
                 on("generating random longs in range $min..$max") {
                     val counts = IntArray(max - min + 1)
                     val random = Random(
-                            12345L + max * 10000L + min)
+                        12345L + max * 10000L + min
+                    )
                     val count = counts.size * 100
                     for (i in 0 until count) {
-                        val r = random.nextLong(min.toLong(),
-                                max.toLong()).toInt()
+                        val r = random.nextLong(
+                            min.toLong(),
+                            max.toLong()
+                        ).toInt()
                         if (r in min..max) {
                             counts[r - min]++
                         }

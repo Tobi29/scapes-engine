@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2017 Tobi29
+ * Copyright 2012-2018 Tobi29
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.tobi29.arrays
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
 import org.jetbrains.spek.api.dsl.on
 import org.tobi29.assertions.byteArrays
@@ -26,10 +25,22 @@ import org.tobi29.assertions.shouldEqual
 
 object ArrayUtilTests : Spek({
     describe("toHexadecimal and fromHexadecimal") {
-        given("any byte array") {
-            val arrays by memoized { byteArrays() }
-            on("encoding, decoding and encoding again") {
-                for (array in arrays) {
+        on("encoding, decoding and encoding again") {
+            for (array in byteArrays()) {
+                val hex = array.toHexadecimal()
+                val bytes = hex.fromHexadecimal()
+                val hex2 = bytes.toHexadecimal()
+                it("should reproduce arrays") {
+                    bytes shouldEqual array
+                }
+                it("should reproduce encoded strings") {
+                    hex2 shouldEqual hex
+                }
+            }
+        }
+        for (group in 1..15) {
+            on("encoding, decoding and encoding again, grouped by $group") {
+                for (array in byteArrays()) {
                     val hex = array.toHexadecimal()
                     val bytes = hex.fromHexadecimal()
                     val hex2 = bytes.toHexadecimal()
@@ -38,21 +49,6 @@ object ArrayUtilTests : Spek({
                     }
                     it("should reproduce encoded strings") {
                         hex2 shouldEqual hex
-                    }
-                }
-            }
-            for (group in 1..15) {
-                on("encoding, decoding and encoding again, grouped by $group") {
-                    for (array in arrays) {
-                        val hex = array.toHexadecimal()
-                        val bytes = hex.fromHexadecimal()
-                        val hex2 = bytes.toHexadecimal()
-                        it("should reproduce arrays") {
-                            bytes shouldEqual array
-                        }
-                        it("should reproduce encoded strings") {
-                            hex2 shouldEqual hex
-                        }
                     }
                 }
             }

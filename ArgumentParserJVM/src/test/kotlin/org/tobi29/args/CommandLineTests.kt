@@ -18,9 +18,9 @@ package org.tobi29.args
 
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.jetbrains.spek.data_driven.data
+import org.tobi29.assertions.on
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.assertions.shouldThrow
 
@@ -113,408 +113,376 @@ private val command3 = CommandConfig(
 
 object CommandLineTests : Spek({
     describe("parsing options from tokens") {
-        given("a parser configuration") {
-            for (test in listOf(
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "--property", "first", "arg", "-hv",
-                        "arg2", "-p=second", "-m", "1", "2", "-pv"
+        on(
+            { _, b -> "parsing the command $b" },
+            data(
+                command,
+                listOf(
+                    "--property", "first", "arg", "-hv",
+                    "arg2", "-p=second", "-m", "1", "2", "-pv"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        propertyOption,
+                        listOf("first")
                     ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            propertyOption,
-                            listOf("first")
-                        ),
-                        TokenParser.Token.Argument(
-                            argumentArgument,
-                            "arg"
-                        ),
-                        TokenParser.Token.Parameter(
-                            helpFlag,
-                            listOf()
-                        ),
-                        TokenParser.Token.Parameter(
-                            versionFlag,
-                            listOf()
-                        ),
-                        TokenParser.Token.Argument(
-                            argument2Argument,
-                            "arg2"
-                        ),
-                        TokenParser.Token.Parameter(
-                            propertyOption,
-                            listOf("second")
-                        ),
-                        TokenParser.Token.Parameter(
-                            multiPropertyOption,
-                            listOf("1", "2")
-                        ),
-                        TokenParser.Token.Parameter(
-                            propertyOption,
+                    TokenParser.Token.Argument(
+                        argumentArgument,
+                        "arg"
+                    ),
+                    TokenParser.Token.Parameter(
+                        helpFlag,
+                        emptyList()
+                    ),
+                    TokenParser.Token.Parameter(
+                        versionFlag,
+                        emptyList()
+                    ),
+                    TokenParser.Token.Argument(
+                        argument2Argument,
+                        "arg2"
+                    ),
+                    TokenParser.Token.Parameter(
+                        propertyOption,
+                        listOf("second")
+                    ),
+                    TokenParser.Token.Parameter(
+                        multiPropertyOption,
+                        listOf("1", "2")
+                    ),
+                    TokenParser.Token.Parameter(
+                        propertyOption,
+                        listOf("v")
+                    )
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        propertyOption to listOf(
+                            listOf("first"),
+                            listOf("second"),
                             listOf("v")
-                        )
+                        ),
+                        multiPropertyOption to listOf(listOf("1", "2")),
+                        helpFlag to listOf(emptyList()),
+                        versionFlag to listOf(emptyList())
                     ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            propertyOption to listOf(
-                                listOf("first"),
-                                listOf("second"),
-                                listOf("v")
-                            ),
-                            multiPropertyOption to listOf(listOf("1", "2")),
-                            helpFlag to listOf(listOf()),
-                            versionFlag to listOf(listOf())
-                        ),
-                        mapOf(
-                            argumentArgument to listOf("arg"),
-                            argument2Argument to listOf("arg2")
-                        ),
-                        null
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "-p", "a", "sub", "arg", "-p", "b",
-                        "-s", "c"
+                    mapOf(
+                        argumentArgument to listOf("arg"),
+                        argument2Argument to listOf("arg2")
                     ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            propertyOption,
-                            listOf("a")
-                        ),
-                        TokenParser.Token.Argument(
-                            subArgumentArgument,
-                            "arg"
-                        ),
-                        TokenParser.Token.Parameter(
-                            subPropertyOption,
-                            listOf("b")
-                        ),
-                        TokenParser.Token.Parameter(
-                            subSettingOption,
-                            listOf("c")
-                        )
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command, subCommand),
-                        mapOf(
-                            propertyOption to listOf(listOf("a")),
-                            subPropertyOption to listOf(listOf("b")),
-                            subSettingOption to listOf(listOf("c"))
-                        ),
-                        mapOf(
-                            subArgumentArgument to listOf(
-                                "arg"
-                            )
-                        ),
-                        null
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "-c", "-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            abortFlag,
-                            listOf()
-                        ),
-                        TokenParser.Token.Trail("-a"),
-                        TokenParser.Token.Trail("-b"),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            abortFlag to listOf(listOf())
-                        ),
-                        mapOf(),
-                        listOf("-a", "-b", "-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "--abort-flag", "-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            abortFlag,
-                            listOf()
-                        ),
-                        TokenParser.Token.Trail("-a"),
-                        TokenParser.Token.Trail("-b"),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            abortFlag to listOf(listOf())
-                        ),
-                        mapOf(),
-                        listOf("-a", "-b", "-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "-a", "-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            abortOption,
-                            listOf("-a")
-                        ),
-                        TokenParser.Token.Trail("-b"),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            abortOption to listOf(listOf("-a"))
-                        ),
-                        mapOf(),
-                        listOf("-b", "-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "--abort", "-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            abortOption,
-                            listOf("-a")
-                        ),
-                        TokenParser.Token.Trail("-b"),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            abortOption to listOf(listOf("-a"))
-                        ),
-                        mapOf(),
-                        listOf("-b", "-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "--abort=-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            abortOption,
-                            listOf("-a")
-                        ),
-                        TokenParser.Token.Trail("-b"),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            abortOption to listOf(listOf("-a"))
-                        ),
-                        mapOf(),
-                        listOf("-b", "-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "-b", "-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            multiAbortOption,
-                            listOf("-a", "-b")
-                        ),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            multiAbortOption to listOf(listOf("-a", "-b"))
-                        ),
-                        mapOf(),
-                        listOf("-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command,
-                    args = listOf(
-                        "--multi-abort", "-a", "-b", "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            multiAbortOption,
-                            listOf("-a", "-b")
-                        ),
-                        TokenParser.Token.Trail("-c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            multiAbortOption to listOf(listOf("-a", "-b"))
-                        ),
-                        mapOf(),
-                        listOf("-c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command3,
-                    args = listOf(
-                        "a", "b", "c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Argument(
-                            abortArgument,
-                            "a"
-                        ),
-                        TokenParser.Token.Trail("b"),
-                        TokenParser.Token.Trail("c")
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command3),
-                        mapOf(),
-                        mapOf(
-                            abortArgument to listOf("a")
-                        ),
-                        listOf("b", "c")
-                    )
-                ),
-                CommandParseTest(
-                    command = command2,
-                    args = listOf(
-                        "-c"
-                    ),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            abortFlag,
-                            listOf()
-                        )
-                    ),
-                    commandLine = CommandLine(
-                        listOf(command2),
-                        mapOf(
-                            abortFlag to listOf(listOf())
-                        ),
-                        mapOf(),
-                        listOf()
-                    )
+                    null
                 )
-            )) {
-                on("parsing the command ${test.args}") {
-                    val (subcommand, tokens) =
-                            test.command.parseTokens(test.args)
-                    val commandLine = tokens.assemble()
-                        .copy(command = subcommand)
+            ),
+            data(
+                command,
+                listOf(
+                    "-p", "a", "sub", "arg", "-p", "b",
+                    "-s", "c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        propertyOption,
+                        listOf("a")
+                    ),
+                    TokenParser.Token.Argument(
+                        subArgumentArgument,
+                        "arg"
+                    ),
+                    TokenParser.Token.Parameter(
+                        subPropertyOption,
+                        listOf("b")
+                    ),
+                    TokenParser.Token.Parameter(
+                        subSettingOption,
+                        listOf("c")
+                    )
+                ) to CommandLine(
+                    listOf(command, subCommand),
+                    mapOf(
+                        propertyOption to listOf(listOf("a")),
+                        subPropertyOption to listOf(listOf("b")),
+                        subSettingOption to listOf(listOf("c"))
+                    ),
+                    mapOf(
+                        subArgumentArgument to listOf(
+                            "arg"
+                        )
+                    ),
+                    null
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "-c", "-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        abortFlag,
+                        emptyList()
+                    ),
+                    TokenParser.Token.Trail("-a"),
+                    TokenParser.Token.Trail("-b"),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        abortFlag to listOf(emptyList())
+                    ),
+                    mapOf(),
+                    listOf("-a", "-b", "-c")
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "--abort-flag", "-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        abortFlag,
+                        emptyList()
+                    ),
+                    TokenParser.Token.Trail("-a"),
+                    TokenParser.Token.Trail("-b"),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        abortFlag to listOf(emptyList())
+                    ),
+                    mapOf(),
+                    listOf("-a", "-b", "-c")
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "-a", "-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        abortOption,
+                        listOf("-a")
+                    ),
+                    TokenParser.Token.Trail("-b"),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        abortOption to listOf(listOf("-a"))
+                    ),
+                    mapOf(),
+                    listOf("-b", "-c")
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "--abort", "-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        abortOption,
+                        listOf("-a")
+                    ),
+                    TokenParser.Token.Trail("-b"),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        abortOption to listOf(listOf("-a"))
+                    ),
+                    mapOf(),
+                    listOf("-b", "-c")
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "--abort=-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        abortOption,
+                        listOf("-a")
+                    ),
+                    TokenParser.Token.Trail("-b"),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        abortOption to listOf(listOf("-a"))
+                    ),
+                    mapOf(),
+                    listOf("-b", "-c")
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "-b", "-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        multiAbortOption,
+                        listOf("-a", "-b")
+                    ),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        multiAbortOption to listOf(listOf("-a", "-b"))
+                    ),
+                    mapOf(),
+                    listOf("-c")
+                )
+            ),
+            data(
+                command,
+                listOf(
+                    "--multi-abort", "-a", "-b", "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        multiAbortOption,
+                        listOf("-a", "-b")
+                    ),
+                    TokenParser.Token.Trail("-c")
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        multiAbortOption to listOf(listOf("-a", "-b"))
+                    ),
+                    mapOf(),
+                    listOf("-c")
+                )
+            ),
+            data(
+                command3,
+                listOf(
+                    "a", "b", "c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Argument(
+                        abortArgument,
+                        "a"
+                    ),
+                    TokenParser.Token.Trail("b"),
+                    TokenParser.Token.Trail("c")
+                ) to CommandLine(
+                    listOf(command3),
+                    mapOf(),
+                    mapOf(
+                        abortArgument to listOf("a")
+                    ),
+                    listOf("b", "c")
+                )
+            ),
+            data<CommandConfig, List<String>, Pair<List<TokenParser.Token>, CommandLine>>(
+                command2,
+                listOf(
+                    "-c"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        abortFlag,
+                        emptyList()
+                    )
+                ) to CommandLine(
+                    listOf(command2),
+                    mapOf(
+                        abortFlag to listOf(emptyList())
+                    ),
+                    mapOf(),
+                    emptyList()
+                )
+            )
+        ) { a, b, (expectedTokens, expectedCommandLine) ->
+            val (subcommand, tokens) = a.parseTokens(b)
+            val commandLine = tokens.assemble()
+                .copy(command = subcommand)
 
-                    it("should return the correct token sequence") {
-                        tokens shouldEqual test.tokens
-                    }
+            it("should return the correct token sequence") {
+                tokens shouldEqual expectedTokens
+            }
 
-                    it("should return a valid command line") {
-                        commandLine.validate(tokens)
-                    }
+            it("should return a valid command line") {
+                commandLine.validate(tokens)
+            }
 
-                    it("should contain the correct parameters and arguments in the command line") {
-                        commandLine shouldEqual test.commandLine
-                    }
-                }
+            it("should contain the correct parameters and arguments in the command line") {
+                commandLine shouldEqual expectedCommandLine
             }
         }
-        given("a parser configuration with missing arguments") {
-            for (test in listOf(
-                CommandParseTest(
-                    command = command,
-                    args = listOf("--multi-property=1", "-m", "2"),
-                    tokens = listOf(
-                        TokenParser.Token.Parameter(
-                            multiPropertyOption,
-                            listOf("1")
-                        ),
-                        TokenParser.Token.Parameter(
-                            multiPropertyOption,
+        on(
+            { _, b -> "parsing the command $b" },
+            data<CommandConfig, List<String>, Pair<List<TokenParser.Token>, CommandLine>>(
+                command,
+                listOf("--multi-property=1", "-m", "2"),
+                expected = listOf(
+                    TokenParser.Token.Parameter(
+                        multiPropertyOption,
+                        listOf("1")
+                    ),
+                    TokenParser.Token.Parameter(
+                        multiPropertyOption,
+                        listOf("2")
+                    )
+                ) to CommandLine(
+                    listOf(command),
+                    mapOf(
+                        multiPropertyOption to listOf(
+                            listOf("1"),
                             listOf("2")
                         )
                     ),
-                    commandLine = CommandLine(
-                        listOf(command),
-                        mapOf(
-                            multiPropertyOption to listOf(
-                                listOf("1"),
-                                listOf("2")
-                            )
-                        ),
-                        mapOf(),
-                        null
-                    )
-                ),
-                CommandParseTest(
-                    command = command2,
-                    args = listOf(),
-                    tokens = listOf(),
-                    commandLine = CommandLine(
-                        listOf(command2),
-                        mapOf(),
-                        mapOf(),
-                        null
-                    )
+                    mapOf(),
+                    null
                 )
-            )) {
-                on("parsing the command ${test.args}") {
-                    val (subcommand, tokens) =
-                            test.command.parseTokens(test.args)
-                    val commandLine = tokens.assemble()
-                        .copy(command = subcommand)
+            ),
+            data(
+                command2,
+                emptyList(),
+                expected = emptyList<TokenParser.Token>() to CommandLine(
+                    listOf(command2),
+                    mapOf(),
+                    mapOf(),
+                    null
+                )
+            )
+        ) { a, b, (expectedTokens, expectedCommandLine) ->
+            val (subcommand, tokens) = a.parseTokens(b)
+            val commandLine = tokens.assemble()
+                .copy(command = subcommand)
 
-                    it("should return the correct token sequence") {
-                        tokens shouldEqual test.tokens
-                    }
+            it("should return the correct token sequence") {
+                tokens shouldEqual expectedTokens
+            }
 
-                    it("should return a invalid command line") {
-                        shouldThrow<InvalidTokensException> {
-                            commandLine.validate(tokens)
-                        }
-                    }
-
-                    it("should contain the correct parameters and arguments in the command line") {
-                        commandLine shouldEqual test.commandLine
-                    }
+            it("should return a invalid command line") {
+                shouldThrow<InvalidTokensException> {
+                    commandLine.validate(tokens)
                 }
             }
+
+            it("should contain the correct parameters and arguments in the command line") {
+                commandLine shouldEqual expectedCommandLine
+            }
         }
-    }
-    given("a parser configuration with stray arguments") {
-        for (test in listOf(
-            CommandParseTest(
-                command = command,
-                args = listOf("1", "2", "3", "4")
+        on(
+            { _, b -> "parsing the command $b" },
+            data(
+                command,
+                listOf("1", "2", "3", "4"),
+                Unit
             )
-        )) {
-            on("parsing the command ${test.args}") {
-                it("should fails to parse") {
-                    shouldThrow<InvalidTokensException> {
-                        test.command.parseTokens(test.args)
-                    }
+        ) { a, b, _ ->
+            it("should fails to parse") {
+                shouldThrow<InvalidTokensException> {
+                    a.parseTokens(b)
                 }
             }
         }
     }
 })
-
-private data class CommandParseTest(
-    val command: CommandConfig,
-    val args: List<String>,
-    val tokens: List<TokenParser.Token> = emptyList(),
-    val commandLine: CommandLine = CommandLine(
-        emptyList(), emptyMap(), emptyMap(), emptyList()
-    )
-)
