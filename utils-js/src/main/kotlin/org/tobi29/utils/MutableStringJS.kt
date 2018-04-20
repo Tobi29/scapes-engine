@@ -105,30 +105,37 @@ actual class MutableString actual constructor(
     actual override fun toString() = str
 
     // Delegates
-    actual override fun append(csq: CharSequence?, start: Int, end: Int) =
-        append((csq ?: "null").subSequence(start, end))
+    actual override fun append(
+        csq: CharSequence?, start: Int, end: Int
+    ): MutableString = append((csq ?: "null").subSequence(start, end))
 
-    actual fun append(array: CharArray): MutableString =
-        append(array, 0)
+    actual fun append(
+        array: CharArray
+    ): MutableString = append(array, 0)
 
-    actual fun append(array: CharArray, offset: Int): MutableString =
-        append(array, offset, array.size - offset)
+    actual fun append(
+        array: CharArray, offset: Int
+    ): MutableString = append(array, offset, array.size - offset)
 
-    actual fun append(array: CharArray, offset: Int, length: Int) =
-        append(array.copyToString(offset, length))
+    actual fun append(
+        array: CharArray, offset: Int, length: Int
+    ): MutableString = append(array.copyToString(offset, length))
 
-    actual fun insert(position: Int, csq: CharSequence?, start: Int, end: Int) =
-        insert(position, (csq ?: "null").subSequence(start, end))
+    actual fun insert(
+        position: Int, csq: CharSequence?, start: Int, end: Int
+    ): MutableString = insert(position, (csq ?: "null").subSequence(start, end))
 
-    actual fun insert(position: Int, array: CharArray): MutableString =
-        insert(position, array, 0)
+    actual fun insert(
+        position: Int, array: CharArray
+    ): MutableString = insert(position, array, 0)
 
-    actual fun insert(position: Int, array: CharArray, offset: Int) =
-        insert(position, array, offset, array.size - offset)
+    actual fun insert(
+        position: Int, array: CharArray, offset: Int
+    ): MutableString = insert(position, array, offset, array.size - offset)
 
     actual fun insert(
         position: Int, array: CharArray, offset: Int, length: Int
-    ) = insert(position, array.copyToString(offset, length))
+    ): MutableString = insert(position, array.copyToString(offset, length))
 
     actual fun delete(range: IntRange) =
         delete(range.start, range.endInclusive + 1)

@@ -18,7 +18,6 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
 dependencies {
     expectedBy project(":argumentparser")
-    sources project(path: ":argumentparser", configuration: "sources")
     compile project(":stdex-js")
     compile project(":utils-js")
 }

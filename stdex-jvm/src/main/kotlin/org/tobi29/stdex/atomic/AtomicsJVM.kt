@@ -23,7 +23,7 @@ actual typealias AtomicArray<E> = java.util.concurrent.atomic.AtomicReferenceArr
 actual inline fun <reified E> AtomicArray(
     length: Int,
     crossinline init: (Int) -> E
-) = AtomicArray<E>(length).apply {
+): AtomicArray<E> = AtomicArray<E>(length).apply {
     for (i in 0 until length) this[i] = init(i)
 }
 

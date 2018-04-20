@@ -18,6 +18,5 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":stdex")
-    sources project(path: ":stdex", configuration: "sources")
     compile rootProject.ext.kotlinJVM("kotlin-stdlib")
 }

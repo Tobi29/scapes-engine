@@ -18,7 +18,6 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":checksums")
-    sources project(path: ":checksums", configuration: "sources")
     compile project(":stdex-jvm")
     compile project(":arrays-jvm")
     compile project(":tag-jvm")

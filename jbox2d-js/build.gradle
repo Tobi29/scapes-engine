@@ -18,7 +18,6 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
 dependencies {
     expectedBy project(":jbox2d")
-    sources project(path: ":jbox2d", configuration: "sources")
     compile project(":stdex-js")
     compile project(":utils-js")
     compile project(":math-js")

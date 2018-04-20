@@ -18,6 +18,5 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
 dependencies {
     expectedBy project(":arrays")
-    sources project(path: ":arrays", configuration: "sources")
     compile project(":stdex-js")
 }

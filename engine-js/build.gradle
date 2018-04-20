@@ -18,7 +18,6 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
 dependencies {
     expectedBy project(":engine")
-    sources project(path: ":engine", configuration: "sources")
     compile project(":base64-js")
     compile project(":graphics-utils-js")
     compile project(":io-js")

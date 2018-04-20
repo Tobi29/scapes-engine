@@ -18,7 +18,6 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":profiler")
-    sources project(path: ":profiler", configuration: "sources")
     compile project(":stdex-jvm")
     compile project(":logging-jvm")
     compile project(":utils-jvm")

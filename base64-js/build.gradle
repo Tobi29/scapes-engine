@@ -18,6 +18,5 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 
 dependencies {
     expectedBy project(":base64")
-    sources project(path: ":base64", configuration: "sources")
     compile project(":stdex-js")
 }

@@ -22,7 +22,6 @@ compileKotlin {
 
 dependencies {
     expectedBy project(":filesystem")
-    sources project(path: ":filesystem", configuration: "sources")
     compile project(":stdex-jvm")
     compile project(":io-jvm")
 }

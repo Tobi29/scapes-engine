@@ -18,6 +18,5 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":tilemaps")
-    sources project(path: ":tilemaps", configuration: "sources")
     compile project(":graphics-utils-jvm")
 }

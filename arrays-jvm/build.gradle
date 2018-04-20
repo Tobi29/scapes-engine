@@ -18,6 +18,5 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 
 dependencies {
     expectedBy project(":arrays")
-    sources project(path: ":arrays", configuration: "sources")
     compile project(":stdex-jvm")
 }
