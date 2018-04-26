@@ -65,7 +65,7 @@ include "coroutines"
 include "coroutines-js"
 include "coroutines-jvm"
 
-// IO Utils
+// IO
 include "io"
 include "io-js"
 include "io-jvm"
@@ -83,7 +83,7 @@ include "contentinfo-jvm"
 include "simplemagik"
 include "simplemagik-jvm"
 
-// Math Utils
+// Math
 include "math"
 include "math-js"
 include "math-jvm"
@@ -98,7 +98,7 @@ include "generation-utils"
 include "generation-utils-js"
 include "generation-utils-jvm"
 
-// Chrono Utils
+// Chrono
 include "chrono"
 include "chrono-js"
 include "chrono-jvm"
@@ -117,7 +117,7 @@ include "swt-utils-jvm"
 // Server Framework
 include "server-framework-jvm"
 
-// Codecs
+// Codec
 include "codec-jvm"
 include "codec-mp3-jvm"
 include "codec-ogg-jvm"
