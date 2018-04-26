@@ -22,7 +22,6 @@ import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
-import org.tobi29.graphics.Image
 import org.tobi29.io.view
 import org.tobi29.logging.KLogging
 import org.tobi29.profiler.profilerSection
@@ -166,13 +165,4 @@ class GraphicsSystem(
     }
 
     companion object : KLogging()
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Use dispatch")
-    fun requestScreenshot(block: (Image) -> Unit) {
-        dispatch { gl ->
-            block(gl.screenShot(0, 0, gl.contentWidth, gl.contentHeight))
-        }
-    }
 }

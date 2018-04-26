@@ -188,13 +188,6 @@ enum class Month(val value: Int) {
             else ->
                 throw IllegalArgumentException("Invalid month value: $value")
         }
-
-        // TODO: Drop after 0.0.13
-        @Deprecated(
-            "Use of",
-            ReplaceWith("Month.of(value)", "org.tobi29.chrono.Month")
-        )
-        fun ofValue(value: Int): Month = of(value)
     }
 }
 

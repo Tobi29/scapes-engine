@@ -628,23 +628,3 @@ inline fun CharArray2(width: Int, height: Int) =
  */
 inline fun CharArray3(width: Int, height: Int, depth: Int) =
     CharArray3(width, height, depth, CharArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use CharsRO",
-    ReplaceWith("CharsRO", "org.tobi29.array.CharsRO")
-)
-typealias CharArraySliceRO = CharsRO
-
-@Deprecated(
-    "Use Chars",
-    ReplaceWith("Chars", "org.tobi29.array.Chars")
-)
-typealias CharArraySlice = Chars
-
-@Deprecated(
-    "Use HeapChars",
-    ReplaceWith("HeapChars", "org.tobi29.array.HeapChars")
-)
-typealias HeapCharArraySlice = HeapChars

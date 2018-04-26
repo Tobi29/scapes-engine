@@ -194,17 +194,3 @@ internal abstract class SliceIterator<out T>(size: Int) : Iterator<T> {
 
     protected abstract fun access(index: Int): T
 }
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use Vars",
-    ReplaceWith("Vars", "org.tobi29.arrays.Vars")
-)
-typealias ArraySegment = Vars
-
-@Deprecated(
-    "Use VarsIterable<T>",
-    ReplaceWith("VarsIterable<T>", "org.tobi29.arrays.VarsIterable")
-)
-typealias ArrayVarSlice<T> = VarsIterable<T>

@@ -223,13 +223,4 @@ class GuiControllerMouse(
         }
         return true
     }
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("scrollSensitivity is no longer used")
-    constructor(
-        engine: ScapesEngine,
-        controller: ControllerDesktop,
-        scrollSensitivity: Double
-    ) : this(engine, controller)
 }

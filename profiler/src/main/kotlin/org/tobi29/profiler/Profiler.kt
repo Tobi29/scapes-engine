@@ -106,19 +106,3 @@ interface ProfilerDispatcher {
 
     fun exitNode(name: String)
 }
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use profiler",
-    ReplaceWith("profiler", "org.tobi29.profiler.profiler")
-)
-inline val PROFILER: Profiler?
-    get() = profiler
-
-@Deprecated(
-    "Use profilerEnabled",
-    ReplaceWith("profilerEnabled", "org.tobi29.profiler.profilerEnabled")
-)
-inline val PROFILER_ENABLED: Boolean
-    get() = profilerEnabled

@@ -150,31 +150,6 @@ interface GraphicsObjectSupplier {
         shader: CompiledShader,
         properties: Map<String, Expression> = emptyMap()
     ): Shader
-
-    @Deprecated("Use Bitmap class")
-    fun createTexture(
-        image: Image,
-        mipmaps: Int
-    ): Texture =
-        createTexture(
-            image.width, image.height, image.view, mipmaps,
-            TextureFilter.NEAREST, TextureFilter.NEAREST,
-            TextureWrap.REPEAT, TextureWrap.REPEAT
-        )
-
-    @Deprecated("Use Bitmap class")
-    fun createTexture(
-        image: Image,
-        mipmaps: Int = 0,
-        minFilter: TextureFilter = TextureFilter.NEAREST,
-        magFilter: TextureFilter = TextureFilter.NEAREST,
-        wrapS: TextureWrap = TextureWrap.REPEAT,
-        wrapT: TextureWrap = TextureWrap.REPEAT
-    ): Texture =
-        createTexture(
-            image.width, image.height, image.view, mipmaps,
-            minFilter, magFilter, wrapS, wrapT
-        )
 }
 
 

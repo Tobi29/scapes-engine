@@ -165,25 +165,11 @@ class ComponentTypeRegisteredPermission<in H : ComponentHolder<out T>, out C : T
 
 interface ComponentRegisteredHolder<in H : ComponentHolder<out Any>> {
     fun init(holder: H) {}
-    fun dispose(holder: H) = dispose()
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Override with holder parameter")
-    fun dispose() {
-    }
+    fun dispose(holder: H) {}
 }
 
 interface ComponentRegistered :
     ComponentRegisteredHolder<ComponentHolder<out Any>> {
-
-    override fun init(holder: ComponentHolder<out Any>) = init()
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Override with holder parameter")
-    fun init() {
-    }
 }
 
 typealias ComponentTypeUniversal<C> =

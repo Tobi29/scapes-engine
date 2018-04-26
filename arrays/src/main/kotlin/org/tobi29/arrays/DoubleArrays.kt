@@ -628,23 +628,3 @@ inline fun DoubleArray2(width: Int, height: Int) =
  */
 inline fun DoubleArray3(width: Int, height: Int, depth: Int) =
     DoubleArray3(width, height, depth, DoubleArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use DoublesRO",
-    ReplaceWith("DoublesRO", "org.tobi29.array.DoublesRO")
-)
-typealias DoubleArraySliceRO = DoublesRO
-
-@Deprecated(
-    "Use Doubles",
-    ReplaceWith("Doubles", "org.tobi29.array.Doubles")
-)
-typealias DoubleArraySlice = Doubles
-
-@Deprecated(
-    "Use HeapDoubles",
-    ReplaceWith("HeapDoubles", "org.tobi29.array.HeapDoubles")
-)
-typealias HeapDoubleArraySlice = HeapDoubles

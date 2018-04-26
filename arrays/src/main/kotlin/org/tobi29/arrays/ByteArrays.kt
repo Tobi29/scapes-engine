@@ -628,23 +628,3 @@ inline fun ByteArray2(width: Int, height: Int) =
  */
 inline fun ByteArray3(width: Int, height: Int, depth: Int) =
     ByteArray3(width, height, depth, ByteArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use BytesRO",
-    ReplaceWith("BytesRO", "org.tobi29.array.BytesRO")
-)
-typealias ByteArraySliceRO = BytesRO
-
-@Deprecated(
-    "Use Bytes",
-    ReplaceWith("Bytes", "org.tobi29.array.Bytes")
-)
-typealias ByteArraySlice = Bytes
-
-@Deprecated(
-    "Use HeapBytes",
-    ReplaceWith("HeapBytes", "org.tobi29.array.HeapBytes")
-)
-typealias HeapByteArraySlice = HeapBytes

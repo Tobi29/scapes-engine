@@ -627,23 +627,3 @@ inline fun <reified T> array3OfNulls(
     width, height, depth,
     arrayOfNulls<T>(width * height)
 )
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use ElementsRO<T>",
-    ReplaceWith("ElementsRO<T>", "org.tobi29.array.ElementsRO<*>")
-)
-typealias ArraySliceRO<T> = ElementsRO<T>
-
-@Deprecated(
-    "Use Elements<T>",
-    ReplaceWith("Elements<T>", "org.tobi29.array.Elements<*>")
-)
-typealias ArraySlice<T> = Elements<T>
-
-@Deprecated(
-    "Use HeapElements<T>",
-    ReplaceWith("HeapElements<T>", "org.tobi29.array.HeapElements<*>")
-)
-typealias HeapArraySlice<T> = HeapElements<T>

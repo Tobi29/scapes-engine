@@ -22,11 +22,3 @@ import org.tobi29.io.ReadableByteStream
 expect suspend fun decodePng(asset: ReadSource): Bitmap<*, *>
 
 expect suspend fun decodePng(stream: ReadableByteStream): Bitmap<*, *>
-
-// TODO: Remove after 0.0.13
-
-suspend fun decodePNG(asset: ReadSource): Image =
-    decodePng(asset).toImage()
-
-suspend fun decodePNG(stream: ReadableByteStream): Image =
-    decodePng(stream).toImage()

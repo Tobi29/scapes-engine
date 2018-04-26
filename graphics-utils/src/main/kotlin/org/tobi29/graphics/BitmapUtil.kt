@@ -389,19 +389,3 @@ fun Bitmap<IntsRO2, RGBA>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA>
     }
     return image
 }
-
-// TODO: Remove after 0.0.13
-
-@Deprecated("Use Bitmap")
-fun Bitmap<*, *>.toImage(): Image = when (format) {
-    RGBA -> cast(RGBA)!!.run {
-        val data = data
-        when (data) {
-            is Int2ByteArrayRO<*> -> {
-                val array = data.array
-                Image(IntByteViewBitmap(array, width, height, RGBA))
-            }
-            else -> Image(get(0, 0, width, height))
-        }
-    }
-}

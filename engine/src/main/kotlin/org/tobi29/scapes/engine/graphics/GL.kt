@@ -18,12 +18,9 @@ package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Cam
-import org.tobi29.graphics.Image
-import org.tobi29.graphics.toImage
 import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 import org.tobi29.math.matrix.Matrix4f
-import org.tobi29.stdex.JsName
 import org.tobi29.stdex.assert
 import kotlin.math.max
 import kotlin.math.roundToLong
@@ -186,73 +183,6 @@ abstract class GL(
         const val TEXTURE_ATTRIBUTE = 2
         const val NORMAL_ATTRIBUTE = 3
     }
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Use getFrontBuffer")
-    fun screenShot(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    ): Image = getFrontBuffer(x, y, width, height).toImage()
-
-    @Deprecated("Use getFBOColorBuffer")
-    fun screenShotFBOColor(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        attachment: Int = 0
-    ): Image = getFBOColorBuffer(x, y, width, height, attachment).toImage()
-
-    @Deprecated("Use getFBODepthBuffer")
-    fun screenShotFBODepth(
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    ): Image = getFBODepthBuffer(x, y, width, height).toImage()
-
-    @Deprecated("Use property", ReplaceWith("textureEmpty"))
-    @JsName("textureEmptyFun")
-    fun textureEmpty(): Texture = textureEmpty
-
-    @Deprecated(
-        "Use renderInto",
-        ReplaceWith(
-            "renderInto(this, framebuffer, block)",
-            "org.tobi29.scapes.engine.graphics.renderInto"
-        )
-    )
-    fun into(
-        framebuffer: Framebuffer,
-        block: (Double) -> Unit
-    ): (Double) -> Unit = renderInto(this, framebuffer, block)
-
-    @Deprecated(
-        "Use extension property",
-        ReplaceWith(
-            "aspectRatio",
-            "org.tobi29.scapes.engine.graphics.aspectRatio"
-        )
-    )
-    fun aspectRatio(): Double = aspectRatio
-
-    @Deprecated(
-        "Use extension property",
-        ReplaceWith("aspectRatio", "org.tobi29.scapes.engine.graphics.space")
-    )
-    fun space(): Double = space
-
-    @Deprecated(
-        "Use extension property",
-        ReplaceWith(
-            "aspectRatio",
-            "org.tobi29.scapes.engine.graphics.contentSpace"
-        )
-    )
-    fun contentSpace(): Double = contentSpace
 }
 
 inline val GL.aspectRatio: Double

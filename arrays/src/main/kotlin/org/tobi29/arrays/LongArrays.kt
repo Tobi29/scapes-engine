@@ -628,23 +628,3 @@ inline fun LongArray2(width: Int, height: Int) =
  */
 inline fun LongArray3(width: Int, height: Int, depth: Int) =
     LongArray3(width, height, depth, LongArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use LongsRO",
-    ReplaceWith("LongsRO", "org.tobi29.array.LongsRO")
-)
-typealias LongArraySliceRO = LongsRO
-
-@Deprecated(
-    "Use Longs",
-    ReplaceWith("Longs", "org.tobi29.array.Longs")
-)
-typealias LongArraySlice = Longs
-
-@Deprecated(
-    "Use HeapLongs",
-    ReplaceWith("HeapLongs", "org.tobi29.array.HeapLongs")
-)
-typealias HeapLongArraySlice = HeapLongs

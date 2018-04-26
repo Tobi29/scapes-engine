@@ -161,9 +161,4 @@ class GuiStack {
             it.renderOverlays(gl, shader, pixelSize)
         }
     }
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Use contains", ReplaceWith("contains(id)"))
-    fun has(id: String): Boolean = guis.containsKey(id)
 }

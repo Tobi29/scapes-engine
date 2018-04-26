@@ -628,23 +628,3 @@ inline fun ShortArray2(width: Int, height: Int) =
  */
 inline fun ShortArray3(width: Int, height: Int, depth: Int) =
     ShortArray3(width, height, depth, ShortArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use ShortsRO",
-    ReplaceWith("ShortsRO", "org.tobi29.array.ShortsRO")
-)
-typealias ShortArraySliceRO = ShortsRO
-
-@Deprecated(
-    "Use Shorts",
-    ReplaceWith("Shorts", "org.tobi29.array.Shorts")
-)
-typealias ShortArraySlice = Shorts
-
-@Deprecated(
-    "Use HeapShorts",
-    ReplaceWith("HeapShorts", "org.tobi29.array.HeapShorts")
-)
-typealias HeapShortArraySlice = HeapShorts

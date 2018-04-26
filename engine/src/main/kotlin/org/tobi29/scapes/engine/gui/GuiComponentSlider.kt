@@ -17,8 +17,6 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.input.ScrollDelta
-import org.tobi29.stdex.JsName
-import org.tobi29.stdex.JvmName
 import org.tobi29.stdex.math.clamp
 
 class GuiComponentSlider(
@@ -76,19 +74,5 @@ class GuiComponentSlider(
 
     override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         gui.style.slider(renderer, size, true, value, 16.0, hovered)
-    }
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Use property")
-    @JsName("getValue")
-    fun value(): Double {
-        return value
-    }
-
-    @Deprecated("Use property")
-    @JvmName("setValueFun")
-    fun setValue(value: Double) {
-        this.value = value
     }
 }

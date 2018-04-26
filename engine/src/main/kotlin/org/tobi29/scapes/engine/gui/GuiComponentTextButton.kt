@@ -45,22 +45,4 @@ class GuiComponentTextButton(
         set(value) {
             _text.text = value
         }
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Use property")
-    @JsName("getText")
-    fun text(): String = text
-
-    @Deprecated("Use property")
-    @JvmName("setTextFun")
-    fun setText(text: String) {
-        this.text = text
-    }
-
-    @Deprecated("Use property")
-    @JvmName("setTextFilterFun")
-    fun setTextFilter(textFilter: (String) -> String) {
-        this.textFilter = textFilter
-    }
 }

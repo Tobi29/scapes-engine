@@ -628,23 +628,3 @@ inline fun IntArray2(width: Int, height: Int) =
  */
 inline fun IntArray3(width: Int, height: Int, depth: Int) =
     IntArray3(width, height, depth, IntArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use IntsRO",
-    ReplaceWith("IntsRO", "org.tobi29.array.IntsRO")
-)
-typealias IntArraySliceRO = IntsRO
-
-@Deprecated(
-    "Use Ints",
-    ReplaceWith("Ints", "org.tobi29.array.Ints")
-)
-typealias IntArraySlice = Ints
-
-@Deprecated(
-    "Use HeapInts",
-    ReplaceWith("HeapInts", "org.tobi29.array.HeapInts")
-)
-typealias HeapIntArraySlice = HeapInts

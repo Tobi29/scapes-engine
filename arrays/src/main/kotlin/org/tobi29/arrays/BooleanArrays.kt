@@ -628,23 +628,3 @@ inline fun BooleanArray2(width: Int, height: Int) =
  */
 inline fun BooleanArray3(width: Int, height: Int, depth: Int) =
     BooleanArray3(width, height, depth, BooleanArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use BooleansRO",
-    ReplaceWith("BooleansRO", "org.tobi29.array.BooleansRO")
-)
-typealias BooleanArraySliceRO = BooleansRO
-
-@Deprecated(
-    "Use Booleans",
-    ReplaceWith("Booleans", "org.tobi29.array.Booleans")
-)
-typealias BooleanArraySlice = Booleans
-
-@Deprecated(
-    "Use HeapBooleans",
-    ReplaceWith("HeapBooleans", "org.tobi29.array.HeapBooleans")
-)
-typealias HeapBooleanArraySlice = HeapBooleans

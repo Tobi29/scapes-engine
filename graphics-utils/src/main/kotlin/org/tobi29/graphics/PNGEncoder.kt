@@ -198,13 +198,3 @@ private const val TYPE_IDAT = 0x49444154
 private const val TYPE_IEND = 0x49454e44
 
 private val zlibTable = tableCRC32(0xedb88320.toInt())
-
-// TODO: Remove after 0.0.13
-
-@Deprecated("Use encodePng")
-fun encodePNG(
-    image: Image,
-    stream: WritableByteStream,
-    level: Int,
-    alpha: Boolean
-) = encodePng(image.bitmap, stream, level, alpha)

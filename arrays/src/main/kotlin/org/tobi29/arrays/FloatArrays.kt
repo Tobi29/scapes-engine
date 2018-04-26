@@ -628,23 +628,3 @@ inline fun FloatArray2(width: Int, height: Int) =
  */
 inline fun FloatArray3(width: Int, height: Int, depth: Int) =
     FloatArray3(width, height, depth, FloatArray(width * height * depth))
-
-// TODO: Remove after 0.0.13
-
-@Deprecated(
-    "Use FloatsRO",
-    ReplaceWith("FloatsRO", "org.tobi29.array.FloatsRO")
-)
-typealias FloatArraySliceRO = FloatsRO
-
-@Deprecated(
-    "Use Floats",
-    ReplaceWith("Floats", "org.tobi29.array.Floats")
-)
-typealias FloatArraySlice = Floats
-
-@Deprecated(
-    "Use HeapFloats",
-    ReplaceWith("HeapFloats", "org.tobi29.array.HeapFloats")
-)
-typealias HeapFloatArraySlice = HeapFloats

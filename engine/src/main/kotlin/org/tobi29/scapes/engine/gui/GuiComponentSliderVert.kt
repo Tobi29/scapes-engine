@@ -77,25 +77,4 @@ class GuiComponentSliderVert(
     override fun updateMesh(renderer: GuiRenderer, size: Vector2d) {
         gui.style.slider(renderer, size, false, value, sliderHeight, hovered)
     }
-
-    // TODO: Remove after 0.0.13
-
-    @Deprecated("Use property")
-    @JsName("getValue")
-    fun value(): Double {
-        return value
-    }
-
-    @Deprecated("Use property")
-    @JvmName("setValueFun")
-    fun setValue(value: Double) {
-        this.value = value
-    }
-
-    @Deprecated("Use property")
-    @JvmName("setSliderHeightFun")
-    fun setSliderHeight(value: Double) {
-        sliderHeight = value
-        dirty()
-    }
 }
