@@ -24,6 +24,9 @@ import org.tobi29.io.tag.*
 import org.tobi29.io.view
 import org.tobi29.math.vector.Vector2i
 
+// TODO: Remove after 0.0.13
+
+@Deprecated("Use Bitmap")
 class Image(
     val bitmap: IntByteViewBitmap<RGBA>
 ) : TagMapWrite {
@@ -51,6 +54,7 @@ class Image(
     }
 }
 
+@Deprecated("Use Bitmap")
 fun MutableTag.toImage(): Image? {
     val map = toMap() ?: return null
     val width = map["Width"]?.toInt() ?: return null

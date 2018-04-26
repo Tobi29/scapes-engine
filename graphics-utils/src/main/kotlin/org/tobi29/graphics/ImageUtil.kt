@@ -22,6 +22,8 @@ import org.tobi29.io.ByteView
 import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 
+// TODO: Remove after 0.0.13
+
 /**
  * Copies from the receiver at the given coordinates into a new image
  * @receiver The image to copy from
@@ -30,6 +32,7 @@ import org.tobi29.io.view
  * @param width The width of the new image
  * @param height The height of the new image
  */
+@Deprecated("Use Bitmap")
 inline fun Image.get(
     x: Int,
     y: Int,
@@ -46,6 +49,7 @@ inline fun Image.get(
  * @param height The height of the new image
  * @param bufferProvider Provider for buffer allocations
  */
+@Deprecated("Use Bitmap")
 inline fun Image.get(
     x: Int,
     y: Int,
@@ -61,6 +65,7 @@ inline fun Image.get(
  * @param y y-Coordinate in the source image
  * @param image The image to copy into
  */
+@Deprecated("Use Bitmap")
 inline fun Image.get(
     x: Int,
     y: Int,
@@ -76,6 +81,7 @@ inline fun Image.get(
  * @param height The height of the buffer
  * @param buffer The buffer to copy into
  */
+@Deprecated("Use Bitmap")
 inline fun Image.get(
     x: Int,
     y: Int,
@@ -90,6 +96,7 @@ inline fun Image.get(
  * @param x x-Coordinate in the destination image
  * @param y y-Coordinate in the destination image
  */
+@Deprecated("Use Bitmap")
 inline fun MutableImage.set(
     x: Int,
     y: Int,
@@ -105,6 +112,7 @@ inline fun MutableImage.set(
  * @param height The height of the buffer
  * @param buffer The buffer to copy from
  */
+@Deprecated("Use Bitmap")
 inline fun MutableImage.set(
     x: Int,
     y: Int,
@@ -113,6 +121,7 @@ inline fun MutableImage.set(
     buffer: ByteViewRO
 ) = bitmap.set(x, y, width, height, buffer)
 
+@Deprecated("Use Bitmap")
 inline fun MutableImage.flipVertical() = bitmap.flipVertical()
 
 /**
@@ -121,6 +130,7 @@ inline fun MutableImage.flipVertical() = bitmap.flipVertical()
  * @param image The image to merge on top
  * @receiver The image to merge onto
  */
+@Deprecated("Use Bitmap")
 fun MutableImage.mergeBelow(image: Image) = bitmap.mergeBelow(image.bitmap)
 
 /**
@@ -129,6 +139,7 @@ fun MutableImage.mergeBelow(image: Image) = bitmap.mergeBelow(image.bitmap)
  * **Note:** Changes to the old mutable image will change this new instance
  * @param image The image to take size and buffer from
  */
+@Deprecated("Use Bitmap")
 inline fun Image(image: MutableImage) =
     Image(image.width, image.height, image.view)
 
@@ -138,12 +149,14 @@ inline fun Image(image: MutableImage) =
  * **Note:** Changes to the old mutable image will change this new instance
  * @receiver The image to take size and buffer from
  */
+@Deprecated("Use Bitmap")
 inline fun MutableImage.toImage() = Image(this)
 
 /**
  * Creates a new mutable image from an image copying its buffer
  * @param image The image to take size and buffer from
  */
+@Deprecated("Use Bitmap")
 inline fun MutableImage(image: Image) = MutableImage(image.width, image.height,
     image.view.run {
         ByteArray(size).view.also { getBytes(0, it) }
@@ -153,4 +166,5 @@ inline fun MutableImage(image: Image) = MutableImage(image.width, image.height,
  * Creates a new mutable image from an image copying its buffer
  * @receiver The image to take size and buffer from
  */
+@Deprecated("Use Bitmap")
 inline fun Image.toMutableImage() = MutableImage(this)

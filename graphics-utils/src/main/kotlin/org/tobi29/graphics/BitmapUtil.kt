@@ -390,6 +390,9 @@ fun Bitmap<IntsRO2, RGBA>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA>
     return image
 }
 
+// TODO: Remove after 0.0.13
+
+@Deprecated("Use Bitmap")
 fun Bitmap<*, *>.toImage(): Image = when (format) {
     RGBA -> cast(RGBA)!!.run {
         val data = data
