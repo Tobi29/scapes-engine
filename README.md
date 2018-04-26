@@ -66,17 +66,17 @@ build.
 Random extensions to the Kotlin stdlib to make multiplatform code easier.
 
 ### Artifacts
-  * STDEx
-  * STDExJS
-  * STDExJVM
+  * stdex
+  * stdex-js
+  * stdex-jvm
 
 ## Logging
 Basic logging facade, backing into a platform specific implementaion.
 
 ### Artifacts
-  * Logging
-  * LoggingJS
-  * LoggingJVM
+  * logging
+  * logging-js
+  * logging-jvm
 
 ### Dependencies
   * [SLF4J](http://www.slf4j.org) (JVM only)
@@ -86,17 +86,17 @@ Tag structure classes as a universal JSON-like memory structure for
 dynamic hierarchical data.
 
 ### Artifacts
-  * Tag
-  * TagJS
-  * TagJVM
+  * tag
+  * tag-js
+  * tag-jvm
 
 ## Uuid
 A cross-platform Uuid class.
 
 ### Artifacts
-  * Uuid
-  * UuidJS
-  * UuidJVM
+  * uuid
+  * uuid-js
+  * uuid-jvm
 
 ## Arrays
 Various interfaces for arrays and slices mostly useful for creating
@@ -104,9 +104,9 @@ very generic parameter types (whilst avoiding the more complex collections
 from Kotlin).
 
 ### Artifacts
-  * Arrays
-  * ArraysJS
-  * ArraysJVM
+  * arrays
+  * arrays-js
+  * arrays-jvm
 
 ## Argument Parser
 Simple lightweight argument parser both for parsing command line arguments
@@ -117,18 +117,18 @@ Allows building metadata once and parsing commands using that on threads
 in parallel multiple times.
 
 ### Artifacts
-  * ArgumentParser
-  * ArgumentParserJS
-  * ArgumentParserJVM
+  * argumentparser
+  * argumentparser-js
+  * argumentparser-jvm
 
 ## Base64
 Simple base 64 encoder and decoder with very flexible input and output
 handling.
 
 ### Artifacts
-  * Base64
-  * Base64JS
-  * Base64JVM
+  * base64
+  * base64-js
+  * base64-jvm
 
 ## Checksums
 Contains CRC32 and SHA-256 implementations. Additional algorithms may come
@@ -136,9 +136,9 @@ eventually. The JVM version uses the `MessageDigest` class in order to keep
 things lightweight.
 
 ### Artifacts
-  * Checksums
-  * ChecksumsS
-  * ChecksumsJVM
+  * checksums
+  * checksums-js
+  * checksums-jvm
 
 ## Utils
 Contains various convenience functions and provides a common foundation
@@ -148,9 +148,9 @@ Depends on various libraries that provide features available in Java 8 to
 allow easier Android support.
 
 ### Artifacts
-  * Utils
-  * UtilsJS
-  * UtilsJVM
+  * utils
+  * utils-js
+  * utils-jvm
 
 ## Coroutines
 Various coroutine and thread related utilities.
@@ -159,11 +159,11 @@ In particular useful to write cross-platform code that takes advantage of
 threads on the JVM but relies on coroutines on JS.
 
 ### Artifacts
-  * Coroutines
-  * CoroutinesJS
-  * CoroutinesJVM
+  * coroutines
+  * coroutines-js
+  * coroutines-jvm
 
-## IO Utils
+## IO
 Base library for IO operations inspired by `java.nio`.
 
 Contains various interfaces and utilities for doing IO work.
@@ -175,27 +175,27 @@ Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
 Android or other platforms lacking support for `java.nio.file`.
 
 ### Artifacts
-  * IOUtils
-  * IOUtilsJS
-  * IOUtilsJVM
-  * FileSystems
-  * FileSystemsJVM
-  * NIOFileSystemJVM (not recommended on Android)
-  * IOFileSystemJVM (only recommended on Android)
+  * io
+  * io-js
+  * io-jvm
+  * filesystem
+  * filesystem-jvm
+  * filesystem-nio-jvm (not recommended on Android)
+  * filesystem-io-jvm (only recommended on Android)
 
 ## Content Info
 Utilities for inspecting file contents, such as guessing the
 MIME types (aka Media Types) of some data.
 
 ### Artifacts
-  * ContentInfo
-  * ContentInfoJS
-  * ContentInfoJVM
-  
+  * contentinfo
+  * contentinfo-js
+  * contentinfo-jvm
+
 ### Dependencies
   * [Apache Tika](https://tika.apache.org) (JVM only)
 
-## Math Utils
+## Math
 Various math primitives and utils
 
 Contains faster approximations
@@ -204,9 +204,9 @@ useful for game development, as well as a cross platform alternative to
 `java.util.Random`.
 
 ### Artifacts
-  * MathUtils
-  * MathUtilsJS
-  * MathUtilsJVM
+  * math
+  * math-js
+  * math-jvm
 
 ## Graphics Utils
 Library for image loading, writing and very basic manipulations.
@@ -215,10 +215,10 @@ Contains a PNG decoder and encoder function and a simple
 Image class to pass around images and do copy paste operations on them.
 
 ### Artifacts
-  * GraphicsUtils
-  * GraphicsUtilsJS
-  * GraphicsUtilsJVM
-  
+  * graphics-utils
+  * graphics-utils-js
+  * graphics-utils-jvm
+
 ### Dependencies
   * [PNGJ](https://github.com/leonbloy/pngj) (JVM only)
 
@@ -227,17 +227,17 @@ Various utilities for procedural generation, such as Perlin and OpenSimplex
 noise, noise transformations and maze generators
 
 ### Artifacts
-  * GenerationUtils
-  * GenerationUtilsJS
-  * GenerationUtilsJVM
+  * generation-utils
+  * generation-utils-js
+  * generation-utils-jvm
 
-## Chrono Utils
+## Chrono
 Basic calendar classes and convertion from time instants to dates and time.
 
 ### Artifacts
-  * ChronoUtils
-  * ChronoUtilsJS
-  * ChronoUtilsJVM
+  * chrono
+  * chrono-js
+  * chrono-jvm
 
 ## Platform Integration
 Various utilities to allow integrating with the host platform.
@@ -246,8 +246,8 @@ Includes cross-platform functions for retrieving platform info,
 environment variables and standard paths.
 
 ### Artifacts
-  * PlatformIntegration
-  * PlatformIntegrationJVM
+  * platformintegration
+  * platformintegration-jvm
 
 ## Application Framework
 Simple entry point framework for as an easy starting point for all kinds
@@ -257,16 +257,15 @@ Automatically provides infrastructure for command line parsing, exit codes
 and program metadata.
 
 ### Artifacts
-  * ApplicationFramework
-  * ApplicationFrameworkJVM
+  * application-framework
+  * application-framework-jvm
 
 ## SWT Utils
 Framework for multi-document SWT based gui applications.
 
 ### Artifacts
-  * SWTUtils
-  * SWTUtilsJVM
-  
+  * swt-utils-jvm
+
 ### Dependencies
   * [SWT](https://www.eclipse.org/swt)
 
@@ -275,17 +274,17 @@ Various utilities for non-blocking protocol implementations and
 encryption using SSL/TLS.
 
 ### Artifacts
-  * ServerFrameworkJVM
+  * server-framework-jvm
 
-## Codecs
+## Codec
 Audio decoding library that can use mime-types to identify the format
 and load an appropriate decoder through an SPI.
 
 ### Artifacts
-  * CodecsJVM
-  * CodecMP3JVM
-  * CodecOGGJVM (Includes both Vorbis and Opus support)
-  * CodecWAVJVM
+  * codec-jvm
+  * codec-mp3-jvm
+  * codec-ogg-jvm (Includes both Vorbis and Opus support)
+  * codec-wav-jvm
 ### Dependencies
   * [JOrbis](http://www.jcraft.com/jorbis) (OGG Vorbis and Opus, JVM only)
   * [Concentus](https://github.com/lostromb/concentus) (Code is currently stored
@@ -311,10 +310,10 @@ A JVM-only parser for [Tiled](https://mapeditor.org) maps can be found in
 the LibTiled artifact, which in turn is loosely based on their old Java library.
 
 ### Artifacts
-  * TileMaps
-  * TileMapsJS
-  * TileMapsJVM
-  * LibTiledJVM
+  * tilemaps
+  * tilemaps-js
+  * tilemaps-jvm
+  * libtiled-jvm
 
 ## Engine
 General purpose engine foundation
@@ -323,11 +322,11 @@ Straps together a backend and various utilities to allow cross-platform
 development of games or more sophisticated engines
 
 ### Artifacts
-  * Engine
-  * EngineJS
-  * GLESWebGL2BackendJS (Backend supporting WebGL 2 and WebAudio)
-  * EngineJVM
-  * GLFWBackend (Backend supporting OpenGL 3.3, OpenGLES 3.0 using LWJGL
+  * engine
+  * engine-js
+  * gles-webgl2-backend-js (Backend supporting WebGL 2 and WebAudio)
+  * engine-jvm
+  * glfw-backend-jvm (Backend supporting OpenGL 3.3, OpenGLES 3.0 using LWJGL
     for bindings)
 
 ### Dependencies
@@ -338,12 +337,12 @@ Tracing profiler facade to allow cross platform code to take advantage
 of platform specific trace apis (e.g. Android).
 
 ### Artifacts
-  * Profiler
-  * ProfilerJS
-  * ProfilerJVM
+  * profiler
+  * profiler-js
+  * profiler-jvm
 
 ## Test Assertions
 Basic test assertions, in particular useful for Spek.
 
 ### Artifacts
-  * TestAssertionsJVM
+  * test-assertions-jvm
