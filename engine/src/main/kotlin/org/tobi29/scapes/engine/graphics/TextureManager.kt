@@ -20,7 +20,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.computeAbsent
-import org.tobi29.graphics.decodePNG
+import org.tobi29.graphics.decodePng
 import org.tobi29.io.IOException
 import org.tobi29.io.tag.json.readJSON
 import org.tobi29.logging.KLogging
@@ -44,7 +44,7 @@ class TextureManager(private val engine: ScapesEngine) {
             } catch (e: IOException) {
                 TagMap()
             }
-            engine.graphics.createTexture(decodePNG(imageResource),
+            engine.graphics.createTexture(decodePng(imageResource),
                     properties["Mipmaps"]?.toInt() ?: 0,
                     properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
                     properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
