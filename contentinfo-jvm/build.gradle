@@ -21,5 +21,5 @@ dependencies {
     compile project(":stdex-jvm")
     compile project(":io-jvm")
     compile project(":logging-jvm")
-    compile project(":SimpleMagikJVM")
+    compile project(":simplemagik-jvm")
 }
