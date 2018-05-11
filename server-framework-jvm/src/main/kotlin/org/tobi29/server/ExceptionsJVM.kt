@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+package org.tobi29.server
 
-dependencies {
-    expectedBy project(":server-framework")
-    compile project(":stdex-jvm")
-    compile project(":tag-jvm")
-    compile project(":io-jvm")
-    compile project(":base64-jvm")
-    compile project(":coroutines-jvm")
-    compile project(":filesystem-jvm")
-    compile project(":logging-jvm")
-}
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+
+class SavedCertificateException(
+    cause: Exception,
+    val certificates: Array<X509Certificate>
+) : CertificateException(cause)

@@ -23,3 +23,13 @@ open class ConnectionCloseException : IOException {
 
     constructor(e: Exception) : super(e)
 }
+
+class ConnectionEndException : ConnectionCloseException {
+    constructor(message: String) : super(message)
+
+    constructor(e: Exception) : super(e)
+}
+
+class InvalidPacketDataException(message: String) : RuntimeException(message)
+
+class UnresolvableAddressException(hostname: String) : IOException(hostname)

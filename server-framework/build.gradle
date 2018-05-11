@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    expectedBy project(":server-framework")
-    compile project(":stdex-jvm")
-    compile project(":tag-jvm")
-    compile project(":io-jvm")
-    compile project(":base64-jvm")
-    compile project(":coroutines-jvm")
-    compile project(":filesystem-jvm")
-    compile project(":logging-jvm")
+    compile project(":stdex")
+    compile project(":tag")
+    compile project(":io")
 }

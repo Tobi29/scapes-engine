@@ -14,17 +14,24 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.server
 
-import org.tobi29.io.IOException
-import java.security.cert.CertificateException
-import java.security.cert.X509Certificate
+import org.tobi29.io.tag.*
 
-class SavedCertificateException(
-        cause: Exception,
-        val certificates: Array<X509Certificate>
-) : CertificateException(cause)
+class RemoteAddress(val address: String, val port: Int) : TagMapWrite {
+    override fun write(map: ReadWriteTagMap) {
+        map["Address"] = address.toTag()
+        map["Port"] = port.toTag()
+    }
+}
 
-class InvalidPacketDataException(message: String) : RuntimeException(message)
+fun RemoteAddress(map: ReadTagMutableMap): RemoteAddress {
+    val address = map["Address"].toString()
+    val port = map["Port"]?.toInt() ?: -1
+    return RemoteAddress(address, port)
+}
 
-class UnresolvableAddressException(hostname: String) : IOException(hostname)
+inline fun ReadTagMutableMap.toRemoteAddress(): RemoteAddress =
+    RemoteAddress(this)

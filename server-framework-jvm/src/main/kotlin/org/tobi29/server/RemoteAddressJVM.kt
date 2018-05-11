@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.server
 
-class ConnectionEndException : ConnectionCloseException {
-    constructor(message: String) : super(message)
+import java.net.InetSocketAddress
 
-    constructor(e: Exception) : super(e)
-}
+inline fun RemoteAddress(address: InetSocketAddress): RemoteAddress =
+    RemoteAddress(address.hostString, address.port)
+
+inline fun InetSocketAddress.toRemoteAddress(): RemoteAddress =
+    RemoteAddress(this)
