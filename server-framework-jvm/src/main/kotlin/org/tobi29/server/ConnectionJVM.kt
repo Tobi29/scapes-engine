@@ -26,45 +26,6 @@ import java.nio.channels.SelectionKey
 import java.nio.channels.SocketChannel
 
 /**
- * Handle to communicate with the worker from a connection job
- *
- * This class serves 2 purposes:
- * * Notifying the worker that the connection has not timed out
- * * Keeping track of whether or not the connection should gracefully close
- */
-class Connection(private val requestClose: AtomicBoolean,
-                 private val timeout: AtomicLong?) {
-    /**
-     * Set the timeout to at least [timeout] ms from now
-     * @param timeout The time from now in milliseconds
-     */
-    fun increaseTimeout(timeout: Long) {
-        if (this.timeout == null) {
-            return
-        }
-        val nextTime = systemClock.timeMillis() + timeout
-        while (true) {
-            val prev = this.timeout.get()
-            val next = max(prev, nextTime)
-            if (this.timeout.compareAndSet(prev, next)) {
-                break
-            }
-        }
-    }
-
-    /**
-     * Sets [shouldClose] to `true`
-     */
-    fun requestClose() = requestClose.set(true)
-
-    /**
-     * Returns `true` whenever a request was made to close this connection job,
-     * possibly called by the worker
-     */
-    val shouldClose get() = requestClose.get()
-}
-
-/**
  * Async function to resolve and address and connect to it through a
  * [SocketChannel]
  * @param worker This worker will be used for waking when the connection can continue
