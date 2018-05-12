@@ -35,12 +35,14 @@ import kotlin.coroutines.experimental.CoroutineContext
  * @param maxWorkerSleep Maximum sleep time in milliseconds
  */
 class ConnectionManager(
-        /**
-         * The [CoroutineContext] to start threads with
-         */
-        val taskExecutor: CoroutineContext,
-        private val maxWorkerSleep: Long = 1000) : ComponentRegistered {
-    private val workers = ArrayList<Triple<ConnectionWorker, Job, AtomicBoolean>>()
+    /**
+     * The [CoroutineContext] to start threads with
+     */
+    val taskExecutor: CoroutineContext,
+    private val maxWorkerSleep: Long = 1000
+) : ComponentRegistered {
+    private val workers =
+        ArrayList<Triple<ConnectionWorker, Job, AtomicBoolean>>()
 
     /**
      * Starts a specified number of threads for processing connections
@@ -61,17 +63,18 @@ class ConnectionManager(
         val worker = ConnectionWorker(this, maxWorkerSleep)
         val stop = AtomicBoolean(false)
         val w = Triple(worker,
-                launchThread("Connection-Worker") {
+            launchThread("Connection-Worker") {
+                try {
+                    worker.run(stop)
+                } finally {
                     try {
-                        worker.run(stop)
-                    } finally {
-                        try {
-                            worker.close()
-                        } catch (e: IOException) {
-                            logger.warn { "Failed to close worker: $e" }
-                        }
+                        worker.close()
+                    } catch (e: IOException) {
+                        logger.warn { "Failed to close worker: $e" }
                     }
-                }, stop)
+                }
+            }, stop
+        )
         synchronized(workers) { workers.add(w) }
     }
 
@@ -80,16 +83,18 @@ class ConnectionManager(
      * @param block Code that will be executed on this worker's thread
      * @return `false` if no workers were running
      */
-    fun addConnection(block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit) = addConnection(
-            20000, block)
+    fun addConnection(block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit) =
+        addConnection(20000, block)
 
     /**
      * Adds a new connection to the least occupied worker
      * @param block Code that will be executed on this worker's thread
      * @return `false` if no workers were running
      */
-    fun addConnection(timeout: Long,
-                      block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit): Boolean {
+    fun addConnection(
+        timeout: Long,
+        block: suspend CoroutineScope.(ConnectionWorker, Connection) -> Unit
+    ): Boolean {
         var load = Int.MAX_VALUE
         var bestWorker: ConnectionWorker? = null
         for ((worker, _, _) in workers) {
@@ -110,7 +115,7 @@ class ConnectionManager(
     /**
      * Stops all worker threads and blocks until they shut down
      */
-    override fun dispose(holder: ComponentHolder<out Any>) {
+    fun dispose() {
         val closingWorkers = synchronized(workers) {
             workers.toList().also { workers.clear() }
         }
@@ -122,6 +127,8 @@ class ConnectionManager(
             }
         }
     }
+
+    override fun dispose(holder: ComponentHolder<out Any>) = dispose()
 
     companion object : KLogging() {
         val COMPONENT = ComponentTypeRegisteredUniversal<ConnectionManager>()
