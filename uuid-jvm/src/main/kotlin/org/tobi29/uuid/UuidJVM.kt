@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.uuid
 
 actual fun String.toUuid(): Uuid? = try {
@@ -23,3 +25,5 @@ actual fun String.toUuid(): Uuid? = try {
 }
 
 actual typealias Uuid = java.util.UUID
+
+actual inline fun randomUuid(): Uuid = java.util.UUID.randomUUID()

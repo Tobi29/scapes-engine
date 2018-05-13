@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.uuid
 
+import org.khronos.webgl.ArrayBufferView
+import org.khronos.webgl.Int32Array
+import org.khronos.webgl.get
 import org.tobi29.stdex.toString
 
 actual fun String.toUuid(): Uuid? {
@@ -55,4 +60,31 @@ actual class Uuid actual constructor(
         (leastSignificantBits ushr 0
                 and 0xFFFFFFFFFFFFL
                 or 0x1000000000000L).toString(16).substring(1)}"
+}
+
+actual fun randomUuid(): Uuid {
+    val values = Int32Array(4)
+    crypto.getRandomValues(values)
+    val i3 = values[3]
+    // val i2 = values[1] and 0xFFFF0FFF or 0x00004000
+    val i2 = values[1] and -0xF001 or 0x00004000
+    // val i1 = values[2] and 0x3FFFFFFF or 0x80000000
+    val i1 = values[2] and 0x3FFFFFFF or -0x80000000
+    val i0 = values[0]
+    // Cheating here to improve performance
+    return Uuid(Long(i3, i2), Long(i1, i0))
+}
+
+private external val crypto: Crypto
+
+private external class Crypto {
+    fun getRandomValues(array: ArrayBufferView)
+}
+
+@Suppress("UnsafeCastFromDynamic")
+private inline fun Long(high: Int, low: Int): Long =
+    Kotlin.Long(low, high).asDynamic()
+
+private external object Kotlin {
+    class Long(low: Int, high: Int)
 }

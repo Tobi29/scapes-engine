@@ -28,6 +28,8 @@ expect class Uuid(
     open fun getLeastSignificantBits(): Long
 }
 
+expect fun randomUuid(): Uuid
+
 fun Uuid.toTag() = TagMap {
     this["Most"] = getMostSignificantBits().toTag()
     this["Least"] = getLeastSignificantBits().toTag()
