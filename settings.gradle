@@ -116,6 +116,7 @@ include "swt-utils-jvm"
 
 // Server Framework
 include "server-framework"
+include "server-framework-js"
 include "server-framework-jvm"
 
 // Codec
