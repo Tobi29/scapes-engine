@@ -17,16 +17,18 @@
 package org.tobi29.coroutines
 
 actual class StampLock {
-    private var held = false
+    private var held = 0
 
-    actual val isHeld get() = held
+    actual val isHeld get() = held > 0
 
     actual fun lock() {
-        held = true
+        if (held == Int.MAX_VALUE) error("Lock overflowed")
+        held++
     }
 
     actual fun unlock() {
-        held = false
+        if (held == 0) error("Lock underflowed")
+        held--
     }
 }
 
