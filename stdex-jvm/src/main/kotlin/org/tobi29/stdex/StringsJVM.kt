@@ -34,10 +34,9 @@ internal actual inline fun String.utf8ToArrayImpl(
         && (size < 0 || size == it.size)) it
     else {
         val array = destination ?: ByteArray(
-            offset +
-                    if (size < 0) it.size else size
+            offset + if (size < 0) it.size else size
         )
-        copy(it, array, size.coerceAtMost(it.size))
+        copy(it, array, if (size < 0) it.size else size.coerceAtMost(it.size))
         array
     }
 }

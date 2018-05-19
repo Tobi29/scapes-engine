@@ -16,38 +16,34 @@
 
 package org.tobi29.stdex
 
-import org.khronos.webgl.*
+import org.khronos.webgl.BufferDataSource
+import org.khronos.webgl.Uint8Array
 
 @PublishedApi
 internal actual fun ByteArray.utf8ToStringImpl(
     offset: Int,
     size: Int
-): String {
-    val buffer = ArrayBuffer(size)
-    val byteBuffer = Uint8Array(buffer)
-    var j = offset
-    repeat(size) {
-        byteBuffer[it] = this[j++]
-    }
-    return TextDecoder().decode(byteBuffer)
-}
+): String = TextDecoder().decode(asTypedArray().let {
+    Uint8Array(it.buffer, it.byteOffset + offset, it.byteLength)
+})
 
 @PublishedApi
 internal actual fun String.utf8ToArrayImpl(
     destination: ByteArray?,
     offset: Int,
     size: Int
-): ByteArray {
-    val byteBuffer = TextEncoder().encode(this)
-    val array = destination ?: ByteArray(
-        if (size < 0) byteBuffer.length else size
-    )
-    var j = offset
-    repeat(size.coerceAtMost(array.size)) {
-        array[j++] = byteBuffer[it]
+): ByteArray = TextEncoder().encode(this).asInt8Array().asArray().let {
+    if (destination == null && offset == 0
+        && (size < 0 || size == it.size)) it
+    else {
+        val array = destination ?: ByteArray(
+            offset + if (size < 0) it.size else size
+        )
+        copy(it, array, if (size < 0) it.size else size.coerceAtMost(it.size))
+        array
     }
-    return array
 }
+
 
 @PublishedApi
 internal actual fun CharArray.copyToStringImpl(
