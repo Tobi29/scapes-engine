@@ -16,41 +16,39 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.graphics.decodePng
+import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.computeAbsent
-import org.tobi29.graphics.decodePng
-import org.tobi29.io.IOException
-import org.tobi29.io.tag.json.readJSON
-import org.tobi29.logging.KLogging
-import org.tobi29.io.tag.TagMap
-import org.tobi29.io.tag.toInt
 
 class TextureManager(private val engine: ScapesEngine) {
-    private val cache = ConcurrentHashMap<String, Resource<Texture>>()
+    private val cache = ConcurrentHashMap<TextureReference, Resource<Texture>>()
 
-    operator fun get(asset: String): Resource<Texture> {
-        return cache.computeAbsent(asset) { load(asset) }
-    }
+    operator fun get(
+        asset: String,
+        mipmaps: Int = 0,
+        minFilter: TextureFilter = TextureFilter.NEAREST,
+        magFilter: TextureFilter = TextureFilter.NEAREST,
+        wrapS: TextureWrap = TextureWrap.REPEAT,
+        wrapT: TextureWrap = TextureWrap.REPEAT
+    ): Resource<Texture> = TextureReference(
+        asset,
+        mipmaps,
+        minFilter, magFilter,
+        wrapS, wrapT
+    ).let { cache.computeAbsent(it) { load(it) } }
 
-    private fun load(asset: String): Resource<Texture> {
-        return engine.resources.load {
-            val files = engine.files
-            val imageResource = files["$asset.png"]
-            val propertiesResource = files["$asset.json"]
-            val properties = try {
-                propertiesResource.readAsync { readJSON(it) }
-            } catch (e: IOException) {
-                TagMap()
-            }
-            engine.graphics.createTexture(decodePng(imageResource),
-                    properties["Mipmaps"]?.toInt() ?: 0,
-                    properties["MinFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
-                    properties["MagFilter"]?.toString()?.let { TextureFilter[it] } ?: TextureFilter.NEAREST,
-                    properties["WrapS"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT,
-                    properties["WrapT"]?.toString()?.let { TextureWrap[it] } ?: TextureWrap.REPEAT)
-        }
+    private fun load(
+        reference: TextureReference
+    ): Resource<Texture> = engine.resources.load {
+        engine.graphics.createTexture(
+            decodePng(engine.files[reference.asset]),
+            reference.mipmaps,
+            reference.minFilter, reference.magFilter,
+            reference.wrapS, reference.wrapT
+        )
     }
 
     fun clearCache() {
@@ -59,3 +57,12 @@ class TextureManager(private val engine: ScapesEngine) {
 
     companion object : KLogging()
 }
+
+private data class TextureReference(
+    val asset: String,
+    val mipmaps: Int,
+    val minFilter: TextureFilter,
+    val magFilter: TextureFilter,
+    val wrapS: TextureWrap,
+    val wrapT: TextureWrap
+)
