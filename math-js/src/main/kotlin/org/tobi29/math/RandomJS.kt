@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.math
 
 import org.tobi29.stdex.math.floorToInt
 
 internal object RandomJS : Random {
-    override fun nextInt() = ((nextDouble() - 0.5) * (1L shl 31) * 2.0).floorToInt()
+    override fun nextInt() =
+        ((nextDouble() - 0.5) * (1L shl 31) * 2.0).floorToInt()
 
     override fun nextLong() = ((nextDouble() - 0.5) * (1L shl 63) * 2.0).let {
         if (it < 0.0) (it - 1.0).toLong() else it.toLong()
@@ -35,10 +38,10 @@ internal object RandomJS : Random {
 // Mimics `java.util.Random` to allow consistent seeded RNG (especially useful
 // for cross-platform games)
 internal class RandomJSJVM(seed: Long) : Random {
-    private var seed = seed xor MULTIPLIER and MASK
+    private var seed = seed xor 0x5DEECE66DL and 0xFFFFFFFFFFFFL
 
     private fun next(bits: Int): Int {
-        seed = seed * MULTIPLIER + OFFSET and MASK
+        seed = seed * 0x5DEECE66DL + 0xBL and 0xFFFFFFFFFFFFL
         return seed.ushr(48 - bits).toInt()
     }
 
@@ -63,25 +66,25 @@ internal class RandomJSJVM(seed: Long) : Random {
     }
 
     override fun nextLong() =
-            (next(32).toLong() shl 32) + next(32)
+        (next(32).toLong() shl 32) + next(32)
 
     override fun nextBoolean() =
-            next(1) != 0
+        next(1) != 0
 
     override fun nextFloat() =
-            next(24).toFloat() / (1 shl 24)
+        next(24).toFloat() / (1 shl 24)
 
     override fun nextDouble() =
-            ((next(26).toLong() shl 27) + next(27)).toDouble() / (1L shl 53)
+        ((next(26).toLong() shl 27) + next(27)).toDouble() / (1L shl 53)
 }
 
-actual fun Random(): Random = RandomJS
+actual inline fun Random(): Random = threadLocalRandom()
 
-actual fun Random(seed: Long): Random = RandomJSJVM(
-        seed)
+actual fun Random(seed: Long): Random = RandomJSJVM(seed)
 
 actual fun threadLocalRandom(): Random = RandomJS
 
+// FIXME: These cause errors on runtime somehow
 private const val MULTIPLIER = 0x5DEECE66DL
 private const val OFFSET = 0xBL
 private const val MASK = 0xFFFFFFFFFFFFL
