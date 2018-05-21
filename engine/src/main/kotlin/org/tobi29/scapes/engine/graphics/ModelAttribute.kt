@@ -16,6 +16,10 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.utils.Either
+import org.tobi29.utils.EitherLeft
+import org.tobi29.utils.EitherRight
+
 class ModelAttribute {
     val vertexType: VertexType
     val id: Int
@@ -23,55 +27,64 @@ class ModelAttribute {
     val size: Int
     val divisor: Int
     val normalized: Boolean
-    val floatArray: FloatArray?
-    val byteArray: IntArray?
+    val data: Either<FloatArray, IntArray>
     var offset = 0
 
-    constructor(id: Int,
-                size: Int,
-                array: IntArray,
-                divisor: Int,
-                vertexType: VertexType) : this(id, size, array, array.size,
-            divisor, vertexType)
+    constructor(
+        id: Int,
+        size: Int,
+        array: IntArray,
+        divisor: Int,
+        vertexType: VertexType
+    ) : this(
+        id, size, array, array.size,
+        divisor, vertexType
+    )
 
-    constructor(id: Int,
-                size: Int,
-                array: IntArray,
-                length: Int,
-                divisor: Int,
-                vertexType: VertexType) {
+    constructor(
+        id: Int,
+        size: Int,
+        array: IntArray,
+        length: Int,
+        divisor: Int,
+        vertexType: VertexType
+    ) {
         this.id = id
         this.length = length
         this.size = size
         this.divisor = divisor
         this.vertexType = vertexType
-        normalized = true
-        byteArray = array
-        floatArray = null
+        normalized = false
+        data = EitherRight(array)
     }
 
-    constructor(id: Int,
-                size: Int,
-                array: FloatArray,
-                normalized: Boolean,
-                divisor: Int,
-                vertexType: VertexType) : this(id, size, array,
-            array.size, normalized, divisor, vertexType)
+    constructor(
+        id: Int,
+        size: Int,
+        array: FloatArray,
+        normalized: Boolean,
+        divisor: Int,
+        vertexType: VertexType
+    ) : this(
+        id, size, array,
+        array.size, normalized, divisor, vertexType
+    )
 
-    constructor(id: Int,
-                size: Int,
-                array: FloatArray,
-                length: Int,
-                normalized: Boolean,
-                divisor: Int,
-                vertexType: VertexType) {
+    constructor(
+        id: Int,
+        size: Int,
+        array: FloatArray,
+        length: Int,
+        normalized: Boolean,
+        divisor: Int,
+        vertexType: VertexType
+    ) {
         this.id = id
         this.length = length
         this.size = size
         this.normalized = normalized
         this.divisor = divisor
         this.vertexType = vertexType
-        floatArray = array
-        byteArray = null
+        data = EitherLeft(array)
     }
 }

@@ -23,6 +23,8 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
 import org.tobi29.stdex.assert
+import org.tobi29.utils.EitherLeft
+import org.tobi29.utils.EitherRight
 import kotlin.math.round
 
 internal class VBO(
@@ -79,75 +81,59 @@ internal class VBO(
     private fun storeAttribute(gl: GL, attribute: ModelAttributeData) {
         gl.check()
         glh.glEnableVertexAttribArray(attribute.id)
-        if (attribute.integer) {
+        if (!attribute.integer) {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> glh.glVertexAttribIPointer(
-                    attribute.id,
-                    attribute.size,
-                    GL_FLOAT, stride, attribute.offset
+                VertexType.FLOAT -> glh.glVertexAttribPointer(
+                    attribute.id, attribute.size, GL_FLOAT,
+                    attribute.normalized, stride, attribute.offset
                 )
-                VertexType.HALF_FLOAT -> glh.glVertexAttribIPointer(
-                    attribute.id, attribute.size,
-                    GL_HALF_FLOAT, stride, attribute.offset
+                VertexType.HALF_FLOAT -> glh.glVertexAttribPointer(
+                    attribute.id, attribute.size, GL_HALF_FLOAT,
+                    attribute.normalized, stride, attribute.offset
                 )
-                VertexType.BYTE -> glh.glVertexAttribIPointer(
-                    attribute.id,
-                    attribute.size,
-                    GL_BYTE, stride, attribute.offset
+                VertexType.BYTE -> glh.glVertexAttribPointer(
+                    attribute.id, attribute.size, GL_BYTE,
+                    attribute.normalized, stride, attribute.offset
                 )
-                VertexType.UNSIGNED_BYTE -> glh.glVertexAttribIPointer(
-                    attribute.id, attribute.size,
-                    GL_UNSIGNED_BYTE, stride,
-                    attribute.offset
+                VertexType.UNSIGNED_BYTE -> glh.glVertexAttribPointer(
+                    attribute.id, attribute.size, GL_UNSIGNED_BYTE,
+                    attribute.normalized, stride, attribute.offset
                 )
-                VertexType.SHORT -> glh.glVertexAttribIPointer(
-                    attribute.id,
-                    attribute.size,
-                    GL_SHORT, stride, attribute.offset
+                VertexType.SHORT -> glh.glVertexAttribPointer(
+                    attribute.id, attribute.size, GL_SHORT,
+                    attribute.normalized, stride, attribute.offset
                 )
-                VertexType.UNSIGNED_SHORT -> glh.glVertexAttribIPointer(
-                    attribute.id, attribute.size,
-                    GL_UNSIGNED_SHORT, stride,
-                    attribute.offset
+                VertexType.UNSIGNED_SHORT -> glh.glVertexAttribPointer(
+                    attribute.id, attribute.size, GL_UNSIGNED_SHORT,
+                    attribute.normalized, stride, attribute.offset
                 )
-                else -> throw IllegalArgumentException("Unknown vertex type!")
             }
         } else {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> glh.glVertexAttribPointer(
-                    attribute.id,
-                    attribute.size,
-                    GL_FLOAT, attribute.normalized, stride,
-                    attribute.offset
-                )
-                VertexType.HALF_FLOAT -> glh.glVertexAttribPointer(
-                    attribute.id, attribute.size,
-                    GL_HALF_FLOAT, attribute.normalized, stride,
-                    attribute.offset
-                )
-                VertexType.BYTE -> glh.glVertexAttribPointer(
-                    attribute.id,
-                    attribute.size,
-                    GL_BYTE, attribute.normalized, stride,
-                    attribute.offset
-                )
-                VertexType.UNSIGNED_BYTE -> glh.glVertexAttribPointer(
-                    attribute.id, attribute.size,
-                    GL_UNSIGNED_BYTE, attribute.normalized, stride,
-                    attribute.offset
-                )
-                VertexType.SHORT -> glh.glVertexAttribPointer(
-                    attribute.id,
-                    attribute.size,
-                    GL_SHORT, attribute.normalized, stride,
-                    attribute.offset
-                )
-                VertexType.UNSIGNED_SHORT -> glh.glVertexAttribPointer(
-                    attribute.id, attribute.size,
-                    GL_UNSIGNED_SHORT, attribute.normalized,
+                VertexType.FLOAT -> glh.glVertexAttribIPointer(
+                    attribute.id, attribute.size, GL_FLOAT,
                     stride, attribute.offset
                 )
-                else -> throw IllegalArgumentException("Unknown vertex type!")
+                VertexType.HALF_FLOAT -> glh.glVertexAttribIPointer(
+                    attribute.id, attribute.size, GL_HALF_FLOAT,
+                    stride, attribute.offset
+                )
+                VertexType.BYTE -> glh.glVertexAttribIPointer(
+                    attribute.id, attribute.size, GL_BYTE,
+                    stride, attribute.offset
+                )
+                VertexType.UNSIGNED_BYTE -> glh.glVertexAttribIPointer(
+                    attribute.id, attribute.size, GL_UNSIGNED_BYTE,
+                    stride, attribute.offset
+                )
+                VertexType.SHORT -> glh.glVertexAttribIPointer(
+                    attribute.id, attribute.size, GL_SHORT,
+                    stride, attribute.offset
+                )
+                VertexType.UNSIGNED_SHORT -> glh.glVertexAttribIPointer(
+                    attribute.id, attribute.size, GL_UNSIGNED_SHORT,
+                    stride, attribute.offset
+                )
             }
         }
         glh.glVertexAttribDivisor(attribute.id, attribute.divisor)
@@ -158,113 +144,112 @@ internal class VBO(
         vertices: Int,
         buffer: ByteViewE
     ) {
-        val floatArray = attribute.floatArray
-        if (floatArray == null) {
-            val byteArray =
-                attribute.byteArray ?: throw IllegalArgumentException(
-                    "Attribute contains no data"
-                )
-            when (attribute.vertexType) {
-                VertexType.BYTE, VertexType.UNSIGNED_BYTE ->
-                    buffer.storeBytes(
-                        { byteArray[it].toByte() },
+        val data = attribute.data
+        when (data) {
+            is EitherLeft<FloatArray> -> data.value.let { floatArray ->
+                when (attribute.vertexType) {
+                    VertexType.FLOAT ->
+                        buffer.storeFloats(
+                            { floatArray[it] },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    VertexType.HALF_FLOAT ->
+                        buffer.storeShorts(
+                            { FastMath.convertFloatToHalf(floatArray[it]) },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    VertexType.BYTE -> if (attribute.normalized)
+                        buffer.storeBytes(
+                            { round(floatArray[it] * 127.0f).toByte() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    else buffer.storeBytes(
+                        { round(floatArray[it]).toByte() },
                         vertices,
                         attribute.offset,
                         attribute.size,
                         stride
                     )
-                VertexType.SHORT, VertexType.UNSIGNED_SHORT ->
-                    buffer.storeShorts(
-                        { byteArray[it].toShort() },
+                    VertexType.UNSIGNED_BYTE -> if (attribute.normalized)
+                        buffer.storeBytes(
+                            { round(floatArray[it] * 255.0f).toByte() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    else buffer.storeBytes(
+                        { round(floatArray[it]).toByte() },
                         vertices,
                         attribute.offset,
                         attribute.size,
                         stride
                     )
-                else -> throw IllegalArgumentException("Invalid array in vao attribute!")
-            }
-        } else {
-            when (attribute.vertexType) {
-                VertexType.FLOAT ->
-                    buffer.storeFloats(
-                        { floatArray[it] },
-                        vertices,
-                        attribute.offset,
-                        attribute.size,
-                        stride
-                    )
-                VertexType.HALF_FLOAT ->
-                    buffer.storeShorts(
-                        { FastMath.convertFloatToHalf(floatArray[it]) },
-                        vertices,
-                        attribute.offset,
-                        attribute.size,
-                        stride
-                    )
-                VertexType.BYTE -> if (attribute.normalized)
-                    buffer.storeBytes(
-                        { round(floatArray[it] * 127.0f).toByte() },
-                        vertices,
-                        attribute.offset,
-                        attribute.size,
-                        stride
-                    )
-                else buffer.storeBytes(
-                    { round(floatArray[it]).toByte() },
-                    vertices,
-                    attribute.offset,
-                    attribute.size,
-                    stride
-                )
-                VertexType.UNSIGNED_BYTE -> if (attribute.normalized)
-                    buffer.storeBytes(
-                        { round(floatArray[it] * 255.0f).toByte() },
-                        vertices,
-                        attribute.offset,
-                        attribute.size,
-                        stride
-                    )
-                else buffer.storeBytes(
-                    { round(floatArray[it]).toByte() },
-                    vertices,
-                    attribute.offset,
-                    attribute.size,
-                    stride
-                )
-                VertexType.SHORT -> if (attribute.normalized)
-                    buffer.storeShorts(
-                        { round(floatArray[it] * 32768.0f).toShort() },
-                        vertices,
-                        attribute.offset,
-                        attribute.size,
-                        stride
-                    )
-                else buffer.storeShorts(
-                    { round(floatArray[it]).toShort() },
-                    vertices,
-                    attribute.offset,
-                    attribute.size,
-                    stride
-                )
-                VertexType.UNSIGNED_SHORT -> if (attribute.normalized)
-                    buffer.storeShorts(
-                        { round(floatArray[it] * 65535.0f).toShort() },
-                        vertices,
-                        attribute.offset,
-                        attribute.size,
-                        stride
-                    )
-                else
-                    buffer.storeShorts(
+                    VertexType.SHORT -> if (attribute.normalized)
+                        buffer.storeShorts(
+                            { round(floatArray[it] * 32768.0f).toShort() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    else buffer.storeShorts(
                         { round(floatArray[it]).toShort() },
                         vertices,
                         attribute.offset,
                         attribute.size,
                         stride
                     )
-                else -> throw IllegalArgumentException(
-                    "Invalid array in vao attribute!"
-                )
+                    VertexType.UNSIGNED_SHORT -> if (attribute.normalized)
+                        buffer.storeShorts(
+                            { round(floatArray[it] * 65535.0f).toShort() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    else
+                        buffer.storeShorts(
+                            { round(floatArray[it]).toShort() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    else -> throw IllegalArgumentException(
+                        "Invalid array in vao attribute!"
+                    )
+                }
+            }
+            is EitherRight<IntArray> -> data.value.let { byteArray ->
+                when (attribute.vertexType) {
+                    VertexType.BYTE, VertexType.UNSIGNED_BYTE ->
+                        buffer.storeBytes(
+                            { byteArray[it].toByte() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    VertexType.SHORT, VertexType.UNSIGNED_SHORT ->
+                        buffer.storeShorts(
+                            { byteArray[it].toShort() },
+                            vertices,
+                            attribute.offset,
+                            attribute.size,
+                            stride
+                        )
+                    else -> throw IllegalArgumentException("Invalid array in vao attribute!")
+                }
             }
         }
     }
@@ -315,7 +300,7 @@ internal class VBO(
         val size = attribute.size
         val divisor = attribute.divisor
         val normalized = attribute.normalized
-        val integer = attribute.byteArray != null
+        val integer = attribute.data is EitherRight<IntArray>
     }
 }
 
