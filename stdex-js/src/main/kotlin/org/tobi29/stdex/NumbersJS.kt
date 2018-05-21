@@ -32,3 +32,23 @@ actual inline fun Long.toString(radix: Int): String {
     @Suppress("UnsafeCastFromDynamic")
     return asDynamic().toString(radix)
 }
+
+// Dirty hack, but should be reasonably stable
+
+@Suppress("UnsafeCastFromDynamic")
+actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R {
+    val l: Kotlin.Long = asDynamic()
+    return output(l.getHighBits(), l.getLowBits())
+}
+
+@Suppress("UnsafeCastFromDynamic")
+actual inline fun combineToLong(i1: Int, i0: Int): Long =
+    Kotlin.Long(i0, i1).asDynamic()
+
+@PublishedApi
+internal external object Kotlin {
+    class Long(low: Int, high: Int) {
+        fun getHighBits(): Int
+        fun getLowBits(): Int
+    }
+}

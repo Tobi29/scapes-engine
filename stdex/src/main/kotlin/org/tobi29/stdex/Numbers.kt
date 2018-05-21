@@ -288,13 +288,7 @@ inline fun <R> Long.splitToShorts(output: (Short, Short, Short, Short) -> R): R 
  * @receiver Number to split
  * @return Return value of [output]
  */
-inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
-    let { l ->
-        output(
-            (l ushr 32).toInt(),
-            (l ushr 0).toInt()
-        )
-    }
+expect inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R
 
 /**
  * Combines the given bytes into a number, going from high bytes to low
@@ -347,9 +341,7 @@ inline fun combineToLong(s3: Short, s2: Short, s1: Short, s0: Short): Long =
  * @param i0 2nd int (if big-endian)
  * @return Combined number
  */
-inline fun combineToLong(i1: Int, i0: Int): Long =
-    (i1.toLong() and 0xFFFFFFFF shl 32) or
-            (i0.toLong() and 0xFFFFFFFF shl 0)
+expect fun combineToLong(i1: Int, i0: Int): Long
 
 inline fun Boolean.primitiveHashCode(): Int = if (this) 1231 else 1237
 
