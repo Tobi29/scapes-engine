@@ -21,6 +21,7 @@ package org.tobi29.uuid
 import org.khronos.webgl.ArrayBufferView
 import org.khronos.webgl.Int32Array
 import org.khronos.webgl.get
+import org.tobi29.stdex.combineToLong
 import org.tobi29.stdex.toString
 
 actual fun String.toUuid(): Uuid? {
@@ -71,20 +72,11 @@ actual fun randomUuid(): Uuid {
     // val i1 = values[2] and 0x3FFFFFFF or 0x80000000
     val i1 = values[2] and 0x3FFFFFFF or -0x80000000
     val i0 = values[0]
-    // Cheating here to improve performance
-    return Uuid(Long(i3, i2), Long(i1, i0))
+    return Uuid(combineToLong(i3, i2), combineToLong(i1, i0))
 }
 
 private external val crypto: Crypto
 
 private external class Crypto {
     fun getRandomValues(array: ArrayBufferView)
-}
-
-@Suppress("UnsafeCastFromDynamic")
-private inline fun Long(high: Int, low: Int): Long =
-    Kotlin.Long(low, high).asDynamic()
-
-private external object Kotlin {
-    class Long(low: Int, high: Int)
 }
