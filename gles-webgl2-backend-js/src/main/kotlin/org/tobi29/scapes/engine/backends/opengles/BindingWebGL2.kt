@@ -18,8 +18,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
-import org.khronos.webgl.Int32Array
-import org.khronos.webgl.Uint8Array
+import org.khronos.webgl.*
 import org.tobi29.io.*
 import org.tobi29.stdex.*
 import org.khronos.webgl.WebGLRenderingContext as WGL1
@@ -74,16 +73,9 @@ actual inline fun GLESHandle.glTexImage2D(
     type: GLEnum,
     pixels: ByteViewRO?
 ) {
-    val data = pixels?.asDataView()
-    val buffer = when (type) {
-        GL_UNSIGNED_BYTE -> data?.let {
-            Uint8Array(data.buffer, data.byteOffset, data.byteLength)
-        }
-        else -> throw IllegalArgumentException("Unknown type")
-    }
     wgl.texImage2D(
         target, level, internalformat, width, height, border,
-        format, type, buffer
+        format, type, pixels?.asByteArray()?.castBuffer(type)
     )
 }
 
@@ -241,16 +233,9 @@ actual inline fun GLESHandle.glTexSubImage2D(
     type: Int,
     pixels: ByteViewRO
 ) {
-    val data = pixels.asDataView()
-    val buffer = when (type) {
-        GL_UNSIGNED_BYTE -> data?.let {
-            Uint8Array(data.buffer, data.byteOffset, data.byteLength)
-        }
-        else -> throw IllegalArgumentException("Unknown type")
-    }
     wgl.texSubImage2D(
         target, level, xoffset, yoffset, width, height,
-        format, type, buffer
+        format, type, pixels.asByteArray().castBuffer(type)
     )
 }
 
@@ -476,3 +461,27 @@ actual inline fun GLESHandle.glDetachShader(
     program: GLProgram,
     shader: GLShader
 ) = wgl.detachShader(program.c, shader.c)
+
+@PublishedApi
+internal inline fun ByteArray.castBuffer(
+    type: GLEnum
+): ArrayBufferView = asTypedArray().castBuffer(type)
+
+@PublishedApi
+internal fun ArrayBufferView.castBuffer(
+    type: GLEnum
+): ArrayBufferView = when (type) {
+    GL_UNSIGNED_BYTE ->
+        Uint8Array(buffer, byteOffset, byteLength)
+    GL_BYTE ->
+        Int8Array(buffer, byteOffset, byteLength)
+    GL_UNSIGNED_SHORT, GL_HALF_FLOAT ->
+        Uint16Array(buffer, byteOffset, byteLength)
+    GL_SHORT ->
+        Int16Array(buffer, byteOffset, byteLength)
+    GL_UNSIGNED_INT ->
+        Uint32Array(buffer, byteOffset, byteLength)
+    GL_FLOAT ->
+        Float32Array(buffer, byteOffset, byteLength)
+    else -> throw IllegalArgumentException("Unknown type")
+}
