@@ -21,7 +21,10 @@ import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.utils.steadyClock
+import org.w3c.dom.Document
 import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.events.Event
+import kotlin.browser.document
 import kotlin.browser.window
 import org.khronos.webgl.WebGLRenderingContext as WGL1
 import org.khronos.webgl2.WebGL2RenderingContext as WGL2
@@ -35,6 +38,7 @@ class ContainerCanvas(
     // TODO: HiDPI
     override val containerWidth get() = canvas.width
     override val containerHeight get() = canvas.height
+    internal var cursorCaptured = false
 
     fun render(
         delta: Double,
@@ -53,6 +57,15 @@ class ContainerCanvas(
     // TODO: Implement?
     override fun stop() {}
 
+    override fun cursorCapture(value: Boolean) {
+        if (value) {
+            canvas.requestPointerLock()
+        } else if (document.pointerLockElement === canvas) {
+            document.exitPointerLock()
+        }
+        cursorCaptured = value
+    }
+
     override fun message(
         messageType: Container.MessageType,
         title: String,
@@ -69,25 +82,63 @@ class ContainerCanvas(
 }
 
 suspend fun ContainerCanvas.run(engine: ScapesEngine): Nothing {
-    engine.start()
-    var lastTime = steadyClock.timeSteadyNanos()
-    while (true) {
-        window.awaitAnimationFrame()
-        val time = steadyClock.timeSteadyNanos()
-        val delta = (time - lastTime) / 1000000000.0
-        lastTime = time
+    val clickListener: (Event) -> Unit = { event ->
+        if (cursorCaptured) canvas.requestPointerLock()
+    }
+    canvas.addEventListener("click", clickListener)
+    try {
+        engine.start()
+        var lastTime = steadyClock.timeSteadyNanos()
+        while (true) {
+            window.awaitAnimationFrame()
+            val time = steadyClock.timeSteadyNanos()
+            val delta = (time - lastTime) / 1000000000.0
+            lastTime = time
 
-        val style = window.getComputedStyle(canvas)
-        val width = style.getPropertyValue("width").removeSuffix(
-            "px"
-        ).toDouble().toInt()
-        val height = style.getPropertyValue("height").removeSuffix(
-            "px"
-        ).toDouble().toInt()
+            val style = window.getComputedStyle(canvas)
+            val width = style.getPropertyValue("width").removeSuffix(
+                "px"
+            ).toDouble().toInt()
+            val height = style.getPropertyValue("height").removeSuffix(
+                "px"
+            ).toDouble().toInt()
 
-        if (canvas.width != width) canvas.width = width
-        if (canvas.height != height) canvas.height = height
+            if (canvas.width != width) canvas.width = width
+            if (canvas.height != height) canvas.height = height
 
-        render(delta, engine)
+            render(delta, engine)
+        }
+    } finally {
+        canvas.removeEventListener("click", clickListener)
     }
 }
+
+@Suppress("UnsafeCastFromDynamic")
+private inline fun HTMLCanvasElement.requestPointerLock() {
+    when {
+        asDynamic().requestPointerLock !== undefined ->
+            asDynamic().requestPointerLock()
+        asDynamic().mozRequestPointerLock !== undefined ->
+            asDynamic().mozRequestPointerLock()
+    }
+}
+
+@Suppress("UnsafeCastFromDynamic")
+private inline fun Document.exitPointerLock() {
+    when {
+        asDynamic().exitPointerLock !== undefined ->
+            asDynamic().exitPointerLock()
+        asDynamic().mozExitPointerLock !== undefined ->
+            asDynamic().mozExitPointerLock()
+    }
+}
+
+@Suppress("UnsafeCastFromDynamic")
+private inline val Document.pointerLockElement: HTMLCanvasElement?
+    get() = when {
+        asDynamic().pointerLockElement !== undefined ->
+            asDynamic().pointerLockElement
+        asDynamic().mozPointerLockElement !== undefined ->
+            asDynamic().mozPointerLockElement
+        else -> null
+    }
