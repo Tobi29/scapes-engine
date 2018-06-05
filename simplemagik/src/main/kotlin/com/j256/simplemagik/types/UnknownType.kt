@@ -20,34 +20,11 @@ import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
 
 object UnknownType : MagicMatcher {
-    override fun convertTestString(typeStr: String, testStr: String): Any? {
-        return null
-    }
-
-    override fun extractValueFromBytes(
-        offset: Int,
+    override fun isMatch(
         bytes: BytesRO,
         required: Boolean
-    ): Any? {
-        return null
-    }
-
-    override fun isMatch(
-        testValue: Any?,
-        andValue: Long?,
-        unsignedType: Boolean,
-        extractedValue: Any?,
-        offset: MagicMatcher.MutableOffset,
-        bytes: BytesRO
-    ): Any? {
-        return null
-    }
-
-    override fun renderValue(
-        sb: Appendable,
-        extractedValue: Any?,
-        formatter: MagicFormatter
-    ) {
-        formatter.format(sb, extractedValue)
-    }
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? = null
 }
+
+val unknownType: (String, String?, Long?, Boolean) -> UnknownType =
+    { _, _, _, _ -> UnknownType }

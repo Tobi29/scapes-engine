@@ -20,239 +20,235 @@ import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import com.j256.simplemagik.entries.unescapeString
 import org.tobi29.arrays.BytesRO
-import org.tobi29.stdex.copyToString
+import org.tobi29.stdex.combineToShort
+import org.tobi29.stdex.utf8ToArray
 
-/**
- * From the magic(5) man page: A string of bytes. The string type specification can be optionally followed by /[Bbc]*.
- * The ``B'' flag compacts whitespace in the target, which must contain at least one whitespace character. If the magic
- * has n consecutive blanks, the target needs at least n consecutive blanks to match. The ``b'' flag treats every blank
- * in the target as an optional blank. Finally the ``c'' flag, specifies case insensitive matching: lower-case
- * characters in the magic match both lower and upper case characters in the target, whereas upper case characters in
- * the magic only match upper-case characters in the target.
- *
- * @author graywatson
- */
-open class StringType : BaseStringType() {
-    override fun getStartingBytes(testValue: Any?): ByteArray? {
-        return if (testValue == null) {
-            null
-        } else {
-            (testValue as TestInfo).startingBytes
-        }
-    }
-
-    override fun convertTestString(typeStr: String, testStr: String): Any {
-        val typeSplit = typeStr.indexOf('/')
-        val flagsStr = if (typeSplit != -1) {
-            typeStr.substring(typeSplit + 1)
-        } else null
-        var testStr = testStr
-        var compactWhiteSpace = false
-        var optionalWhiteSpace = false
-        var caseInsensitiveLower = false
-        var caseInsensitiveUpper = false
-        var trim = false
-        if (flagsStr != null) {
-            // look at flags/modifiers
-            for (ch in flagsStr) {
-                when (ch) {
-                    'W' -> compactWhiteSpace = true
-                    'w' -> optionalWhiteSpace = true
-                    'c' -> caseInsensitiveLower = true
-                    'C' -> caseInsensitiveUpper = true
-                    'T' -> trim = true
-                    'b', 't' -> {
-                        // Should we implement these?
-                    }
-                    's' -> {
-                        // XXX: no idea what these do
-                    }
-                    else -> throw IllegalArgumentException("Invalid flag: $ch")
-                }
-            }
-        }
-        var operator = StringOperator.fromTest(testStr)
-        if (operator == null) {
-            operator = StringOperator.DEFAULT_OPERATOR
-        } else {
-            testStr = testStr.substring(1)
-        }
-        val processedPattern = unescapeString(testStr)
-            .let { if (trim) it.trim() else it }
-        return TestInfo(
-            operator,
-            processedPattern,
-            compactWhiteSpace,
-            optionalWhiteSpace,
-            caseInsensitiveLower,
-            caseInsensitiveUpper
-        )
-    }
-}
-
-abstract class BaseStringType : MagicMatcher {
-    override fun extractValueFromBytes(
-        offset: Int,
+data class StringType(
+    val comparison: StringComparison?
+) : MagicMatcher {
+    override fun isMatch(
         bytes: BytesRO,
         required: Boolean
-    ): Any? {
-        return ""
-    }
-
-    override fun isMatch(
-        testValue: Any?,
-        andValue: Long?,
-        unsignedType: Boolean,
-        extractedValue: Any?,
-        mutableOffset: MagicMatcher.MutableOffset,
-        bytes: BytesRO
-    ): Any? {
-        return findOffsetMatch(
-            testValue,
-            mutableOffset.offset,
-            mutableOffset,
-            bytes,
-            null,
-            bytes.size
-        )
-    }
-
-    override fun renderValue(
-        sb: Appendable,
-        extractedValue: Any?,
-        formatter: MagicFormatter
-    ) {
-        formatter.format(sb, extractedValue)
-    }
-
-    protected fun findOffsetMatch(
-        info: Any?,
-        startOffset: Int,
-        mutableOffset: MagicMatcher.MutableOffset,
-        bytes: BytesRO?,
-        chars: CharArray?,
-        maxPos: Int
-    ): String? {
-        info as TestInfo
-        var chars = chars
-
-        var targetPos = startOffset
-        var lastMagicCompactWhitespace = false
-        for (magicPos in 0 until info.pattern!!.length) {
-            val magicCh = info.pattern[magicPos]
-            val lastChar = magicPos == info.pattern.length - 1
-            // did we reach the end?
-            if (targetPos >= maxPos) {
-                return null
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        (if (comparison == null) 0
+        else findOffsetMatchUtf8(
+            comparison.operator,
+            comparison.pattern,
+            comparison.compactWhiteSpace,
+            comparison.optionalWhiteSpace,
+            comparison.caseInsensitiveLower,
+            comparison.caseInsensitiveUpper,
+            bytes
+        ))?.let { offset ->
+            offset to { sb: Appendable, formatter: MagicFormatter ->
+                formatter.formatUtf8(sb, bytes)
             }
-            var targetCh: Char
-            if (bytes == null) {
-                targetCh = chars!![targetPos]
-            } else {
-                targetCh = charFromByte(bytes, targetPos)
-            }
-            targetPos++
+        }
 
-            // if it matches, we can continue
-            if (info.operator.doTest(targetCh, magicCh, lastChar)) {
-                if (info.compactWhiteSpace) {
+    override val startingBytes: ByteArray?
+        get() = if (comparison == null || comparison.operator != StringOperator.EQUALS) null
+        else comparison.pattern.utf8ToArray()
+}
+
+fun StringType(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): StringType =
+    StringType(parseStringTestStr(typeStr, testStr))
+
+internal fun parseStringTestStr(
+    typeStr: String,
+    testStr: String?,
+    unknownFlag: (Char) -> Boolean = { false }
+): StringComparison? {
+    val typeSplit = typeStr.indexOf('/')
+    val flagsStr = if (typeSplit != -1) {
+        typeStr.substring(typeSplit + 1)
+    } else null
+    return parseStringTestStrFlags(flagsStr, testStr, unknownFlag)
+}
+
+internal fun parseStringTestStrFlags(
+    flagsStr: String?,
+    testStr: String?,
+    unknownFlag: (Char) -> Boolean = { false }
+): StringComparison? {
+    var compactWhiteSpace = false
+    var optionalWhiteSpace = false
+    var caseInsensitiveLower = false
+    var caseInsensitiveUpper = false
+    var trim = false
+    if (flagsStr != null) {
+        // look at flags/modifiers
+        for (ch in flagsStr) {
+            when (ch) {
+                'W' -> compactWhiteSpace = true
+                'w' -> optionalWhiteSpace = true
+                'c' -> caseInsensitiveLower = true
+                'C' -> caseInsensitiveUpper = true
+                'T' -> trim = true
+                'b', 't' -> {
+                    // Should we implement these?
+                }
+                's' -> {
+                    // XXX: no idea what these do
+                }
+                else -> if (!unknownFlag(ch))
+                    throw IllegalArgumentException("Invalid flag: $ch")
+            }
+        }
+    }
+    if (testStr == null) return null
+    var operator = StringOperator.fromTest(testStr)
+    var testStr = testStr
+    if (operator == null) {
+        operator = StringOperator.DEFAULT_OPERATOR
+    } else {
+        testStr = testStr.substring(1)
+    }
+    val processedPattern = unescapeString(testStr)
+        .let { if (trim) it.trim() else it }
+    return StringComparison(
+        processedPattern,
+        operator,
+        compactWhiteSpace,
+        optionalWhiteSpace,
+        caseInsensitiveLower,
+        caseInsensitiveUpper
+    )
+}
+
+data class StringComparison(
+    val pattern: String,
+    val operator: StringOperator,
+    val compactWhiteSpace: Boolean,
+    val optionalWhiteSpace: Boolean,
+    val caseInsensitiveLower: Boolean,
+    val caseInsensitiveUpper: Boolean
+)
+
+internal fun findOffsetMatchUtf8(
+    operator: StringOperator,
+    pattern: String,
+    compactWhiteSpace: Boolean,
+    optionalWhiteSpace: Boolean,
+    caseInsensitiveLower: Boolean,
+    caseInsensitiveUpper: Boolean,
+    bytes: BytesRO
+): Int? = findOffsetMatch(
+    operator,
+    pattern,
+    compactWhiteSpace,
+    optionalWhiteSpace,
+    caseInsensitiveLower,
+    caseInsensitiveUpper,
+    { (bytes[it].toInt() and 0xFF).toChar() },
+    bytes.size
+)
+
+internal fun findOffsetMatchUtf16BE(
+    operator: StringOperator,
+    pattern: String,
+    compactWhiteSpace: Boolean,
+    optionalWhiteSpace: Boolean,
+    caseInsensitiveLower: Boolean,
+    caseInsensitiveUpper: Boolean,
+    bytes: BytesRO
+): Int? = findOffsetMatch(
+    operator,
+    pattern,
+    compactWhiteSpace,
+    optionalWhiteSpace,
+    caseInsensitiveLower,
+    caseInsensitiveUpper,
+    { (it shl 1).let { combineToShort(bytes[it], bytes[it + 1]) }.toChar() },
+    bytes.size shr 1
+)?.let { it shl 1 }
+
+internal fun findOffsetMatchUtf16LE(
+    operator: StringOperator,
+    pattern: String,
+    compactWhiteSpace: Boolean,
+    optionalWhiteSpace: Boolean,
+    caseInsensitiveLower: Boolean,
+    caseInsensitiveUpper: Boolean,
+    bytes: BytesRO
+): Int? = findOffsetMatch(
+    operator,
+    pattern,
+    compactWhiteSpace,
+    optionalWhiteSpace,
+    caseInsensitiveLower,
+    caseInsensitiveUpper,
+    { (it shl 1).let { combineToShort(bytes[it + 1], bytes[it]) }.toChar() },
+    bytes.size shr 1
+)?.let { it shl 1 }
+
+internal inline fun findOffsetMatch(
+    operator: StringOperator,
+    pattern: String,
+    compactWhiteSpace: Boolean,
+    optionalWhiteSpace: Boolean,
+    caseInsensitiveLower: Boolean,
+    caseInsensitiveUpper: Boolean,
+    input: (Int) -> Char,
+    size: Int
+): Int? {
+    var targetPos = 0
+    var lastMagicCompactWhitespace = false
+    for (magicPos in 0 until pattern.length) {
+        val magicCh = pattern[magicPos]
+        val lastChar = magicPos == pattern.length - 1
+        // did we reach the end?
+        if (targetPos >= size) {
+            return null
+        }
+        var targetCh = input(targetPos++)
+
+        // if it matches, we can continue
+        if (operator.doTest(targetCh, magicCh, lastChar)) {
+            if (compactWhiteSpace) {
+                lastMagicCompactWhitespace = magicCh.isWhitespace()
+            }
+            continue
+        }
+
+        // if it doesn't match, maybe the target is a whitespace
+        if ((lastMagicCompactWhitespace || optionalWhiteSpace) && targetCh.isWhitespace()) {
+            do {
+                if (targetPos >= size) {
+                    break
+                }
+                targetCh = input(targetPos++)
+                targetPos++
+            } while (targetCh.isWhitespace())
+            // now that we get to the first non-whitespace, it must match
+            if (operator.doTest(targetCh, magicCh, lastChar)) {
+                if (compactWhiteSpace) {
                     lastMagicCompactWhitespace = magicCh.isWhitespace()
                 }
                 continue
             }
-
-            // if it doesn't match, maybe the target is a whitespace
-            if ((lastMagicCompactWhitespace || info.optionalWhiteSpace) && targetCh.isWhitespace()) {
-                do {
-                    if (targetPos >= maxPos) {
-                        break
-                    }
-                    if (bytes == null) {
-                        targetCh = chars!![targetPos]
-                    } else {
-                        targetCh = charFromByte(bytes, targetPos)
-                    }
-                    targetPos++
-                } while (targetCh.isWhitespace())
-                // now that we get to the first non-whitespace, it must match
-                if (info.operator.doTest(targetCh, magicCh, lastChar)) {
-                    if (info.compactWhiteSpace) {
-                        lastMagicCompactWhitespace = magicCh.isWhitespace()
-                    }
-                    continue
-                }
-                // if it doesn't match, check the case insensitive
-            }
-
-            if (info.caseInsensitiveLower) {
-                if (info.operator.doTest(
-                        targetCh.toLowerCase(),
-                        magicCh,
-                        lastChar
-                    )) {
-                    // matches
-                    continue
-                }
-            }
-
-            if (info.caseInsensitiveUpper) {
-                if (info.operator.doTest(
-                        targetCh.toUpperCase(),
-                        magicCh,
-                        lastChar
-                    )) {
-                    // matches
-                    continue
-                }
-            }
-
-            return null
+            // if it doesn't match, check the case insensitive
         }
 
-        if (bytes == null) {
-            chars = chars!!.copyOfRange(startOffset, targetPos)
-        } else {
-            chars = CharArray(targetPos - startOffset)
-            for (i in chars.indices) {
-                chars[i] = charFromByte(bytes, startOffset + i)
+        if (caseInsensitiveLower) {
+            if (operator.doTest(targetCh.toLowerCase(), magicCh, lastChar)) {
+                // matches
+                continue
             }
         }
-        mutableOffset.offset = targetPos
-        return chars.copyToString()
-    }
 
-    private fun charFromByte(bytes: BytesRO, index: Int): Char {
-        return (bytes[index].toInt() and 0xFF).toChar()
-    }
-
-    protected open class TestInfo(
-        val operator: StringOperator,
-        val pattern: String?,
-        val compactWhiteSpace: Boolean,
-        val optionalWhiteSpace: Boolean,
-        val caseInsensitiveLower: Boolean,
-        val caseInsensitiveUpper: Boolean
-    ) {
-
-        /**
-         * Get the bytes that start the pattern from an optimization standpoint.
-         */
-        val startingBytes: ByteArray?
-            get() = if (pattern == null || pattern.length < 4) {
-                null
-            } else {
-                byteArrayOf(
-                    pattern[0].toByte(),
-                    pattern[1].toByte(),
-                    pattern[2].toByte(),
-                    pattern[3].toByte()
-                )
+        if (caseInsensitiveUpper) {
+            if (operator.doTest(targetCh.toUpperCase(), magicCh, lastChar)) {
+                // matches
+                continue
             }
-
-        override fun toString(): String {
-            // TODO: Is this fine?
-            return pattern ?: ""
         }
+
+        return null
     }
+    return targetPos
 }
-

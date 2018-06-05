@@ -16,111 +16,22 @@
 
 package com.j256.simplemagik.types
 
+import org.tobi29.stdex.maskAll
+import org.tobi29.stdex.maskAny
+import kotlin.experimental.and
+import kotlin.experimental.inv
+
 /**
  * Operators for tests. If no operator character then equals is assumed.
  */
 enum class TestOperator(private val prefixChar: Char) {
-
-    EQUALS('=') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            return numberType.compare(
-                unsignedType,
-                extractedValue,
-                testValue
-            ) == 0
-        }
-    },
-    NOT_EQUALS('!') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            return numberType.compare(
-                unsignedType,
-                extractedValue,
-                testValue
-            ) != 0
-        }
-    },
-    GREATER_THAN('>') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            return numberType.compare(
-                unsignedType,
-                extractedValue,
-                testValue
-            ) > 0
-        }
-    },
-    LESS_THAN('<') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            return numberType.compare(
-                unsignedType,
-                extractedValue,
-                testValue
-            ) < 0
-        }
-    },
-    AND_ALL_SET('&') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            // NOTE: we assume that we are dealing with decimal numbers here
-            val testValueLong = testValue.toLong()
-            return extractedValue.toLong() and testValueLong == testValueLong
-        }
-    },
-    AND_ALL_CLEARED('^') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            // NOTE: we assume that we are dealing with decimal numbers here
-            return extractedValue.toLong() and testValue.toLong() == 0L
-        }
-    },
-    NEGATE('~') {
-        override fun doTest(
-            unsignedType: Boolean,
-            extractedValue: Number,
-            testValue: Number,
-            numberType: NumberType
-        ): Boolean {
-            // we need the mask because we are using bit negation but testing only a portion of the long
-            // NOTE: we assume that we are dealing with decimal numbers here
-            val negatedValue = numberType.maskValue(testValue.toLong().inv())
-            return extractedValue.toLong() == negatedValue
-        }
-    };
-
-    /**
-     * Perform the test using the operator.
-     */
-    abstract fun doTest(
-        unsignedType: Boolean, extractedValue: Number, testValue: Number,
-        numberType: NumberType
-    ): Boolean
+    EQUALS('='),
+    NOT_EQUALS('!'),
+    GREATER_THAN('>'),
+    LESS_THAN('<'),
+    AND_ALL_SET('&'),
+    AND_ALL_CLEARED('^'),
+    NEGATE('~');
 
     companion object {
         inline val DEFAULT_OPERATOR get() = EQUALS
@@ -140,4 +51,125 @@ enum class TestOperator(private val prefixChar: Char) {
             return null
         }
     }
+}
+
+fun TestOperator.compare(x: Byte, y: Byte): Boolean = when (this) {
+    TestOperator.EQUALS -> x == y
+    TestOperator.NOT_EQUALS -> x != y
+    TestOperator.GREATER_THAN -> x > y
+    TestOperator.LESS_THAN -> x < y
+    TestOperator.AND_ALL_SET -> x.maskAll(y)
+    TestOperator.AND_ALL_CLEARED -> !x.maskAny(y)
+    TestOperator.NEGATE -> x.inv() == y
+}
+
+fun TestOperator.compare(
+    x: Byte, y: Byte,
+    unsignedType: Boolean
+): Boolean = if (
+    unsignedType && (
+            this == TestOperator.GREATER_THAN
+                    || this == TestOperator.LESS_THAN
+            )) compare(
+    x.toShort() and (-1).toShort(),
+    y.toShort() and (-1).toShort()
+) else compare(x, y)
+
+fun TestOperator.compare(x: Short, y: Short): Boolean = when (this) {
+    TestOperator.EQUALS -> x == y
+    TestOperator.NOT_EQUALS -> x != y
+    TestOperator.GREATER_THAN -> x > y
+    TestOperator.LESS_THAN -> x < y
+    TestOperator.AND_ALL_SET -> x.maskAll(y)
+    TestOperator.AND_ALL_CLEARED -> !x.maskAny(y)
+    TestOperator.NEGATE -> x.inv() == y
+}
+
+fun TestOperator.compare(
+    x: Short, y: Short,
+    unsignedType: Boolean
+): Boolean = if (
+    unsignedType && (
+            this == TestOperator.GREATER_THAN
+                    || this == TestOperator.LESS_THAN
+            )) compare(
+    x.toInt() and -1,
+    y.toInt() and -1
+) else compare(x, y)
+
+fun TestOperator.compare(x: Int, y: Int): Boolean = when (this) {
+    TestOperator.EQUALS -> x == y
+    TestOperator.NOT_EQUALS -> x != y
+    TestOperator.GREATER_THAN -> x > y
+    TestOperator.LESS_THAN -> x < y
+    TestOperator.AND_ALL_SET -> x.maskAll(y)
+    TestOperator.AND_ALL_CLEARED -> !x.maskAny(y)
+    TestOperator.NEGATE -> x.inv() == y
+}
+
+fun TestOperator.compare(
+    x: Int, y: Int,
+    unsignedType: Boolean
+): Boolean = if (
+    unsignedType && (
+            this == TestOperator.GREATER_THAN
+                    || this == TestOperator.LESS_THAN
+            )) compare(
+    x.toLong() and -1L,
+    y.toLong() and -1L
+) else compare(x, y)
+
+fun TestOperator.compare(x: Long, y: Long): Boolean = when (this) {
+    TestOperator.EQUALS -> x == y
+    TestOperator.NOT_EQUALS -> x != y
+    TestOperator.GREATER_THAN -> x > y
+    TestOperator.LESS_THAN -> x < y
+    TestOperator.AND_ALL_SET -> x.maskAll(y)
+    TestOperator.AND_ALL_CLEARED -> !x.maskAny(y)
+    TestOperator.NEGATE -> x.inv() == y
+}
+
+fun TestOperator.compare(
+    x: Long, y: Long,
+    unsignedType: Boolean
+): Boolean = if (
+    unsignedType && (
+            this == TestOperator.GREATER_THAN
+                    || this == TestOperator.LESS_THAN
+            )) {
+    val xLarge = x < 0
+    val yLarge = y < 0
+    when (this) {
+        TestOperator.GREATER_THAN ->
+            if (xLarge && !yLarge) true
+            else if (!xLarge && yLarge) false
+            else if (!xLarge && !yLarge) x > y
+            else x < y
+        TestOperator.LESS_THAN ->
+            if (xLarge && !yLarge) false
+            else if (!xLarge && yLarge) true
+            else if (!xLarge && !yLarge) x < y
+            else x > y
+        else -> error("Impossible")
+    }
+} else compare(x, y)
+
+fun TestOperator.compare(x: Float, y: Float): Boolean = when (this) {
+    TestOperator.EQUALS -> x == y
+    TestOperator.NOT_EQUALS -> x != y
+    TestOperator.GREATER_THAN -> x > y
+    TestOperator.LESS_THAN -> x < y
+    TestOperator.AND_ALL_SET -> x.toLong().maskAll(y.toLong())
+    TestOperator.AND_ALL_CLEARED -> !x.toLong().maskAny(y.toLong())
+    TestOperator.NEGATE -> x.toLong().inv() == y.toLong()
+}
+
+fun TestOperator.compare(x: Double, y: Double): Boolean = when (this) {
+    TestOperator.EQUALS -> x == y
+    TestOperator.NOT_EQUALS -> x != y
+    TestOperator.GREATER_THAN -> x > y
+    TestOperator.LESS_THAN -> x < y
+    TestOperator.AND_ALL_SET -> x.toLong().maskAll(y.toLong())
+    TestOperator.AND_ALL_CLEARED -> !x.toLong().maskAny(y.toLong())
+    TestOperator.NEGATE -> x.toLong().inv() == y.toLong()
 }

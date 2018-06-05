@@ -20,51 +20,19 @@ import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
 
-/**
- * This is intended to be used with the test @code{x} (which is always true) and a message that is to be used if there
- * are no other matches.
- *
- *
- *
- * **WARNING:** This type _is_ used in the magic files.
- *
- *
- * @author graywatson
- */
-class DefaultType : MagicMatcher {
-
-    override fun convertTestString(typeStr: String, testStr: String): Any {
-        // null is an error so we just return junk
-        return EMPTY
-    }
-
-    override fun extractValueFromBytes(
-        offset: Int,
+object DefaultType : MagicMatcher {
+    override fun isMatch(
         bytes: BytesRO,
         required: Boolean
-    ): Any {
-        return EMPTY
-    }
-
-    override fun isMatch(
-        testValue: Any?,
-        andValue: Long?,
-        unsignedType: Boolean,
-        extractedValue: Any?,
-        offset: MagicMatcher.MutableOffset,
-        bytes: BytesRO
-    ): Any {
-        // always matches
-        return EMPTY
-    }
-
-    override fun renderValue(
-        sb: Appendable,
-        extractedValue: Any?,
-        formatter: MagicFormatter
-    ) {
-        formatter.format(sb, extractedValue)
-    }
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        0 to { sb, formatter ->
+            formatter.format(sb, "")
+        }
 }
 
-private const val EMPTY = ""
+fun DefaultType(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): DefaultType = DefaultType

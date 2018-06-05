@@ -17,40 +17,84 @@
 package com.j256.simplemagik.types
 
 import com.j256.simplemagik.endian.EndianType
+import com.j256.simplemagik.endian.convert
+import com.j256.simplemagik.entries.MagicFormatter
+import com.j256.simplemagik.entries.MagicMatcher
+import org.tobi29.arrays.BytesRO
+import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.splitToBytes
 
-/**
- * A 32-bit single precision IEEE floating point number in this machine's native byte order.
- *
- * @author graywatson
- */
-class FloatType(endianType: EndianType) : DoubleType(endianType) {
+data class FloatType(
+    val comparison: Pair<Float, TestOperator>?,
+    val endianType: EndianType
+) : MagicMatcher {
+    override val startingBytes
+        get() = if (comparison != null)
+            comparison.first.convert(endianType).toRawBits()
+                .splitToBytes { v3, v2, v1, v0 ->
+                    byteArrayOf(v3, v2, v1, v0)
+                } else null
 
-    override val bytesPerType: Int
-        get() = BYTES_PER_FLOAT
-
-    override fun decodeValueString(valueStr: String): Number {
-        return valueStr.toFloat()
-    }
-
-    override fun compare(
-        unsignedType: Boolean,
-        extractedValue: Number,
-        testValue: Number
-    ): Int {
-        val extractedFloat = extractedValue.toFloat()
-        val testFloat = testValue.toFloat()
-        return if (extractedFloat > testFloat) {
-            1
-        } else if (extractedFloat < testFloat) {
-            -1
-        } else {
-            0
-        }
-    }
-
-    override fun longToObject(value: Long?): Any {
-        return Float.fromBits(value!!.toInt())
-    }
+    override fun isMatch(
+        bytes: BytesRO,
+        required: Boolean
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        if (bytes.size >= 4)
+            Float.fromBits(
+                combineToInt(
+                    bytes[0], bytes[1], bytes[2], bytes[3]
+                )
+            ).convert(endianType).let { extracted ->
+                if (comparison == null || comparison.second.compare(
+                        extracted, comparison.first
+                    )) 4 to
+                        { sb: Appendable, formatter: MagicFormatter ->
+                            formatter.format(sb, extracted)
+                        } else null
+            } else null
 }
 
-private const val BYTES_PER_FLOAT = 4
+fun FloatType(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    endianType: EndianType
+): FloatType = FloatType(decodeComparisonDecimal(testStr)?.let { (a, b) ->
+    a.toFloat() to b
+}, endianType)
+
+fun FloatTypeBE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): FloatType = FloatType(
+    typeStr, testStr, andValue, EndianType.BIG
+)
+
+fun FloatTypeLE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): FloatType = FloatType(
+    typeStr, testStr, andValue, EndianType.LITTLE
+)
+
+fun FloatTypeME(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): FloatType = FloatType(
+    typeStr, testStr, andValue, EndianType.MIDDLE
+)
+
+fun FloatTypeNE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): FloatType = FloatType(
+    typeStr, testStr, andValue, EndianType.NATIVE
+)

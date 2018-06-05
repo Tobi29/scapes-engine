@@ -13,43 +13,14 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-package com.j256.simplemagik.types
 
-import com.j256.simplemagik.entries.MagicFormatter
-import com.j256.simplemagik.entries.MagicMatcher
-import org.tobi29.arrays.BytesRO
+package com.j256.simplemagik.types
 
 // TODO: Implement
 
-class UseType : MagicMatcher {
-    override fun convertTestString(typeStr: String, testStr: String): Any? {
-        return null
-    }
-
-    override fun extractValueFromBytes(
-        offset: Int,
-        bytes: BytesRO,
-        required: Boolean
-    ): Any? {
-        return null
-    }
-
-    override fun isMatch(
-        testValue: Any?,
-        andValue: Long?,
-        unsignedType: Boolean,
-        extractedValue: Any?,
-        offset: MagicMatcher.MutableOffset,
-        bytes: BytesRO
-    ): Any? {
-        return null
-    }
-
-    override fun renderValue(
-        sb: Appendable,
-        extractedValue: Any?,
-        formatter: MagicFormatter
-    ) {
-        formatter.format(sb, extractedValue)
-    }
-}
+fun UseType(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): UnknownType = UnknownType

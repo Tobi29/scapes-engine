@@ -16,8 +16,8 @@
 
 package com.j256.simplemagik
 
-        /**
-         * Optional call-back which will be made whenever we discover an error while parsing the magic configuration files.
-         * There are usually tons of badly formed lines and other errors.
-         */
+/**
+ * Optional call-back which will be made whenever we discover an error while parsing the magic configuration files.
+ * There are usually tons of badly formed lines and other errors.
+ */
 typealias ErrorCallBack = (String, String?, Exception?) -> Unit

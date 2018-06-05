@@ -20,82 +20,87 @@ import com.j256.simplemagik.endian.EndianType
 import com.j256.simplemagik.endian.convert
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
+import com.j256.simplemagik.entries.toIntChecked
 import org.tobi29.arrays.BytesRO
-import org.tobi29.stdex.combineToLong
+import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.splitToBytes
 
-data class DoubleType(
-    val comparison: Pair<Double, TestOperator>?,
+data class IntType(
+    val comparison: Pair<Int, TestOperator>?,
+    val andValue: Int,
+    val unsignedType: Boolean,
     val endianType: EndianType
 ) : MagicMatcher {
     override val startingBytes
-        get() = if (comparison != null)
-            comparison.first.convert(endianType).toRawBits()
-                .splitToBytes { v7, v6, v5, v4, v3, v2, v1, v0 ->
-                    byteArrayOf(v7, v6, v5, v4, v3, v2, v1, v0)
+        get() = if (comparison != null && andValue == -1)
+            comparison.first.convert(endianType)
+                .splitToBytes { v3, v2, v1, v0 ->
+                    byteArrayOf(v3, v2, v1, v0)
                 } else null
 
     override fun isMatch(
         bytes: BytesRO,
         required: Boolean
     ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
-        if (bytes.size >= 8)
-            Double.fromBits(
-                combineToLong(
-                    bytes[0], bytes[1], bytes[2], bytes[3],
-                    bytes[4], bytes[5], bytes[6], bytes[7]
-                )
-            ).convert(endianType).let { extracted ->
+        if (bytes.size >= 4)
+            (combineToInt(
+                bytes[0], bytes[1], bytes[2], bytes[3]
+            ) and andValue).convert(endianType).let { extracted ->
                 if (comparison == null || comparison.second.compare(
-                        extracted, comparison.first
-                    )) 8 to
+                        extracted, comparison.first, unsignedType
+                    )) 4 to
                         { sb: Appendable, formatter: MagicFormatter ->
-                            formatter.format(sb, extracted)
+                            formatter.format(
+                                sb, extracted.toLongSigned(unsignedType)
+                            )
                         } else null
             } else null
 }
 
-fun DoubleType(
+fun IntType(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
+    unsignedType: Boolean,
     endianType: EndianType
-): DoubleType = DoubleType(decodeComparisonDecimal(testStr)?.let { (a, b) ->
-    a.toDouble() to b
-}, endianType)
+): IntType = (andValue?.toIntChecked() ?: -1).let { andValue2 ->
+    IntType(decodeComparison(testStr)?.let { (a, b) ->
+        a.toIntChecked() to b
+    }, andValue2, unsignedType, endianType)
+}
 
-fun DoubleTypeBE(
+fun IntTypeBE(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): DoubleType = DoubleType(
-    typeStr, testStr, andValue, EndianType.BIG
+): IntType = IntType(
+    typeStr, testStr, andValue, unsignedType, EndianType.BIG
 )
 
-fun DoubleTypeLE(
+fun IntTypeLE(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): DoubleType = DoubleType(
-    typeStr, testStr, andValue, EndianType.LITTLE
+): IntType = IntType(
+    typeStr, testStr, andValue, unsignedType, EndianType.LITTLE
 )
 
-fun DoubleTypeME(
+fun IntTypeME(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): DoubleType = DoubleType(
-    typeStr, testStr, andValue, EndianType.MIDDLE
+): IntType = IntType(
+    typeStr, testStr, andValue, unsignedType, EndianType.MIDDLE
 )
 
-fun DoubleTypeNE(
+fun IntTypeNE(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): DoubleType = DoubleType(
-    typeStr, testStr, andValue, EndianType.NATIVE
+): IntType = IntType(
+    typeStr, testStr, andValue, unsignedType, EndianType.NATIVE
 )

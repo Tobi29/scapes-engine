@@ -66,6 +66,7 @@ enum class StringOperator(internal val prefixChar: Char) {
         }
     };
 
+
     /**
      * Test 2 characters. If this is the last character then the operator might want to be more strict in its testing.
      * For example, "dogs" > "dog" but 'd', 'o', and 'g' should be tested as >=.

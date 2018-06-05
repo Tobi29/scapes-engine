@@ -19,40 +19,21 @@ import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
 
-class IndirectType : MagicMatcher {
-
-    override fun convertTestString(typeStr: String, testStr: String): Any {
-        // null is an error so we just return junk
-        return EMPTY
-    }
-
-    override fun extractValueFromBytes(
-        offset: Int,
-        bytes: BytesRO,
-        required: Boolean
-    ): Any {
-        return EMPTY
-    }
+object IndirectType : MagicMatcher {
+    override val isIndirect: Boolean get() = true
 
     override fun isMatch(
-        testValue: Any?,
-        andValue: Long?,
-        unsignedType: Boolean,
-        extractedValue: Any?,
-        offset: MagicMatcher.MutableOffset,
-        bytes: BytesRO
-    ): Any {
-        // always matches
-        return EMPTY
-    }
-
-    override fun renderValue(
-        sb: Appendable,
-        extractedValue: Any?,
-        formatter: MagicFormatter
-    ) {
-        formatter.format(sb, extractedValue)
-    }
+        bytes: BytesRO,
+        required: Boolean
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        0 to { sb, formatter ->
+            formatter.format(sb, "")
+        }
 }
 
-private const val EMPTY = ""
+fun IndirectType(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): IndirectType = IndirectType

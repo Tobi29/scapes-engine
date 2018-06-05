@@ -142,7 +142,7 @@ internal class MagicEntries {
         for (entry in entryList) {
             val info = entry.matchBytes(
                 bytes, indirect
-            )?.takeIf { it.name != MagicEntry.UNKNOWN_NAME } ?: continue
+            )?.takeIf { it.name != null } ?: continue
             if (info.indirect) {
                 logger.trace { "found indirect match $entry" }
                 return info
@@ -170,8 +170,8 @@ internal class MagicEntries {
         }
     }
 
-    companion object : KLogging() {
-        private const val MAX_LEVELS = 20
-        private const val FIRST_BYTE_LIST_SIZE = 256
-    }
+    companion object : KLogging()
 }
+
+private const val MAX_LEVELS = 20
+private const val FIRST_BYTE_LIST_SIZE = 256

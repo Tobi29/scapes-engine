@@ -93,12 +93,32 @@ private inline fun <R> String.decodeHexChar(
     return output(this[pos], 0)
 }
 
-internal fun decodeInt(str: String): Int {
-    val n = decodeLong(str)
-    if (n < Int.MIN_VALUE || n > 0xFFFFFFFFL)
-        throw NumberFormatException("Number out of range: $str")
-    return n.toInt()
+internal fun Long.toByteChecked(): Byte {
+    if (this < Byte.MIN_VALUE || this > 0xFFL)
+        throw NumberFormatException("Number out of range: $this")
+    return toByte()
 }
+
+internal fun Long.toShortChecked(): Short {
+    if (this < Short.MIN_VALUE || this > 0xFFFFL)
+        throw NumberFormatException("Number out of range: $this")
+    return toShort()
+}
+
+internal fun Long.toIntChecked(): Int {
+    if (this < Int.MIN_VALUE || this > 0xFFFFFFFFL)
+        throw NumberFormatException("Number out of range: $this")
+    return toInt()
+}
+
+internal fun decodeByte(str: String): Byte =
+    decodeLong(str).toByteChecked()
+
+internal fun decodeShort(str: String): Short =
+    decodeLong(str).toShortChecked()
+
+internal fun decodeInt(str: String): Int =
+    decodeLong(str).toIntChecked()
 
 internal fun decodeLong(str: String): Long {
     if (str == "0") return 0L

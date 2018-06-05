@@ -17,31 +17,89 @@
 package com.j256.simplemagik.types
 
 import com.j256.simplemagik.endian.EndianType
+import com.j256.simplemagik.endian.convert
+import com.j256.simplemagik.entries.MagicFormatter
+import com.j256.simplemagik.entries.MagicMatcher
+import com.j256.simplemagik.entries.toIntChecked
 import org.tobi29.arrays.BytesRO
-import org.tobi29.arrays.sliceOver
-import kotlin.experimental.and
+import org.tobi29.stdex.combineToInt
 
-/**
- * A four-byte integer value where the high bit of each byte is ignored.
- *
- * @author graywatson
- */
-class Id3LengthType(endianType: EndianType) : IntegerType(endianType) {
-
-    override fun extractValueFromBytes(
-        offset: Int,
+data class Id3LengthType(
+    val comparison: Pair<Int, TestOperator>?,
+    val andValue: Int,
+    val unsignedType: Boolean,
+    val endianType: EndianType
+) : MagicMatcher {
+    override fun isMatch(
         bytes: BytesRO,
         required: Boolean
-    ): Any? {
-        // because we only use the lower 7-bits of each byte, we need to copy into a local byte array
-        val bytesPerType = bytesPerType
-        val sevenBitBytes = ByteArray(bytesPerType)
-        for (i in 0 until bytesPerType) {
-            sevenBitBytes[i] = bytes[offset + i] and 0x7F
-        }
-        // because we've copied into a local array, we use the 0 offset
-        return endianConverter.convertNumber(
-            0, sevenBitBytes.sliceOver(), bytesPerType
-        )
-    }
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        if (bytes.size >= 4) {
+            (combineToInt(
+                bytes[0], bytes[1], bytes[2], bytes[3]
+            ) and andValue).convert(endianType).parseId3().let { extracted ->
+                if (comparison == null || comparison.second.compare(
+                        extracted, comparison.first, unsignedType
+                    )) 4 to
+                        { sb: Appendable, formatter: MagicFormatter ->
+                            formatter.format(
+                                sb, extracted.toLongSigned(unsignedType)
+                            )
+                        } else null
+            }
+        } else null
 }
+
+fun Id3LengthType(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean,
+    endianType: EndianType
+): Id3LengthType = (andValue?.toIntChecked() ?: -1).let { andValue2 ->
+    Id3LengthType(decodeComparison(testStr)?.let { (a, b) ->
+        a.toIntChecked() to b
+    }, andValue2, unsignedType, endianType)
+}
+
+fun Id3LengthTypeBE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): Id3LengthType = Id3LengthType(
+    typeStr, testStr, andValue, unsignedType, EndianType.BIG
+)
+
+fun Id3LengthTypeLE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): Id3LengthType = Id3LengthType(
+    typeStr, testStr, andValue, unsignedType, EndianType.LITTLE
+)
+
+fun Id3LengthTypeME(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): Id3LengthType = Id3LengthType(
+    typeStr, testStr, andValue, unsignedType, EndianType.MIDDLE
+)
+
+fun Id3LengthTypeNE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): Id3LengthType = Id3LengthType(
+    typeStr, testStr, andValue, unsignedType, EndianType.NATIVE
+)
+
+internal fun Int.parseId3(): Int =
+    ((this shr 24) and 0x7F shl 21) or
+            ((this shr 16) and 0x7F shl 14) or
+            ((this shr 8) and 0x7F shl 7) or
+            ((this shr 0) and 0x7F shl 0)

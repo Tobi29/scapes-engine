@@ -16,14 +16,37 @@
 
 package com.j256.simplemagik.types
 
-/**
- * A two-byte unicode (UCS16) string in little-endian byte order.
- *
- * @author graywatson
- */
-class LittleEndianString16Type : BigEndianString16Type() {
+import com.j256.simplemagik.entries.MagicFormatter
+import com.j256.simplemagik.entries.MagicMatcher
+import org.tobi29.arrays.BytesRO
 
-    override fun bytesToChar(firstByte: Int, secondByte: Int): Char {
-        return ((secondByte shl 8) + firstByte).toChar()
-    }
+data class LittleEndianString16Type(
+    val comparison: StringComparison?
+) : MagicMatcher {
+    override fun isMatch(
+        bytes: BytesRO,
+        required: Boolean
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        (if (comparison == null) 0
+        else findOffsetMatchUtf16LE(
+            comparison.operator,
+            comparison.pattern,
+            comparison.compactWhiteSpace,
+            comparison.optionalWhiteSpace,
+            comparison.caseInsensitiveLower,
+            comparison.caseInsensitiveUpper,
+            bytes
+        ))?.let { offset ->
+            offset to { sb: Appendable, formatter: MagicFormatter ->
+                formatter.formatUtf16LE(sb, bytes)
+            }
+        }
 }
+
+fun LittleEndianString16Type(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): LittleEndianString16Type =
+    LittleEndianString16Type(parseStringTestStr(typeStr, testStr))

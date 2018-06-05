@@ -16,11 +16,13 @@
 
 package com.j256.simplemagik.entries
 
-import com.j256.simplemagik.endian.EndianConverter
-import com.j256.simplemagik.entries.MagicMatcher.MutableOffset
-import com.j256.simplemagik.types.IndirectType
+import com.j256.simplemagik.endian.EndianType
+import com.j256.simplemagik.endian.convert
+import com.j256.simplemagik.types.parseId3
 import org.tobi29.arrays.BytesRO
 import org.tobi29.logging.KLogging
+import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.combineToShort
 
 /**
  * Representation of a line of information from the magic (5) format. A number of methods are package protected because
@@ -43,30 +45,17 @@ internal constructor(
     private val offset: Int,
     private val offsetInfo: OffsetInfo?,
     private val matcher: MagicMatcher,
-    private val andValue: Long?,
-    private val unsignedType: Boolean, // the testValue object is defined by the particular matcher
-    private val testValue: Any?,
     private val formatSpacePrefix: Boolean,
     private val clearFormat: Boolean,
     private val formatter: Lazy<MagicFormatter>?
 ) {
-    init {
-        if (!addOffset && offset < 0 && offsetInfo == null)
-            throw IllegalArgumentException("Negative offset: $offset")
-    }
-
     /** if this entry matches then check the children entry(s) which may provide more content type details  */
     private val children = ArrayList<MagicEntry>()
     internal var mimeType: String? = null
-    private val indirect: Boolean get() = matcher is IndirectType
     internal var isOptional: Boolean = false
 
     internal val startsWithByte: ByteArray?
-        get() = if (offset != 0) {
-            null
-        } else {
-            matcher.getStartingBytes(testValue)
-        }
+        get() = if (offset != 0) null else matcher.startingBytes
 
     internal fun addChild(child: MagicEntry) {
         children.add(child)
@@ -77,7 +66,6 @@ internal constructor(
         sb.append("level ").append(level)
         val name = name
         val mimeType = mimeType
-        val testValue = testValue
         val formatter = formatter
         if (name != null) {
             sb.append(",name '").append(name).append('\'')
@@ -85,9 +73,7 @@ internal constructor(
         if (mimeType != null) {
             sb.append(",mime '").append(mimeType).append('\'')
         }
-        if (testValue != null) {
-            sb.append(",test '").append(testValue).append('\'')
-        }
+        sb.append(",test '").append(matcher).append('\'')
         if (formatter != null) {
             sb.append(",format '").append(formatter).append('\'')
         }
@@ -99,33 +85,27 @@ internal constructor(
      */
     internal fun matchBytes(
         bytes: BytesRO,
+        indirect: ContentData? = null,
         contentData: ContentData? = null,
         prevOffset: Int = 0,
         level: Int = 0
     ): ContentData? {
-        contentData?.indirect = false
         var contentData = contentData
-        var offset = (offsetInfo?.getOffset(bytes, prevOffset) ?: this.offset)
+        val offset2 = (offsetInfo?.getOffset(bytes, prevOffset) ?: this.offset)
             .let { if (addOffset) it + prevOffset else it }
-        val required = testValue == null && formatter != null
-        var `val`: Any? = matcher.extractValueFromBytes(offset, bytes, required)
-                ?: return null
-        if (testValue != null) {
-            val mutableOffset = MutableOffset(offset)
-            `val` = matcher.isMatch(
-                testValue,
-                andValue,
-                unsignedType,
-                `val`,
-                mutableOffset,
-                bytes
-            )
-            if (`val` == null) return null
-            offset = mutableOffset.offset
-        }
+        if (offset2 !in 0..bytes.size) return null
+        val (offset1, match) =
+                matcher.isMatch(bytes.slice(offset2), formatter != null)
+                        ?: return null
+        val offset = offset1 + offset2
 
         if (contentData == null) {
-            contentData = ContentData(name, mimeType, level)
+            contentData = ContentData()
+            if (indirect != null) {
+                contentData.mimeType = indirect.mimeType
+                contentData.mimeTypeLevel = indirect.mimeTypeLevel
+                contentData.messageBuilder.addAll(indirect.messageBuilder)
+            }
             // default is a child didn't match, set a partial so the matcher will keep looking
             contentData.partial = true
         }
@@ -136,12 +116,16 @@ internal constructor(
             contentData.messageBuilder.add {
                 // if we are appending and need a space then prepend one
                 if (formatSpacePrefix && isNotEmpty()) append(' ')
-                matcher.renderValue(this, `val`, formatter.value)
+                match(this, formatter.value)
             }
         }
-        if (indirect) contentData.indirect = true
+        if (matcher.isIndirect) contentData.indirect = true
         if (children.isEmpty()) contentData.offset = offset
         logger.trace { "matched data: $this: $contentData" }
+
+        if (name != null) {
+            contentData.name = name
+        }
 
         if (children.isEmpty()) {
             // no children so we have a full match and can set partial to false
@@ -154,7 +138,9 @@ internal constructor(
                     allOptional = false
                 }
                 // goes recursive here
-                entry.matchBytes(bytes, contentData, offset, level + 1)
+                entry.matchBytes(
+                    bytes, indirect, contentData, offset, level + 1
+                )
                 // we continue to match to see if we can add additional children info to the name
             }
             if (allOptional) {
@@ -162,16 +148,6 @@ internal constructor(
             }
         }
 
-        /*
-		 * Now that we have processed this entry (either with or without children), see if we still need to annotate the
-		 * content information.
-		 *
-		 * NOTE: the children will have the first opportunity to set this which makes sense since they are the most
-		 * specific.
-		 */
-        if (name !== UNKNOWN_NAME && contentData.name === UNKNOWN_NAME) {
-            contentData.name = name
-        }
         /*
 		 * Set the mime-type if it is not set already or if we've gotten more specific in the processing of a pattern
 		 * and determine that it's actually a different type so we can override the previous mime-type. Example of this
@@ -188,18 +164,15 @@ internal constructor(
      * Internal processing data about the content.
      */
     internal data class ContentData(
-        var name: String?,
-        var mimeType: String?,
-        var mimeTypeLevel: Int
+        var name: String? = null,
+        var mimeType: String? = null,
+        var mimeTypeLevel: Int = -1,
+        var partial: Boolean = false,
+        var indirect: Boolean = false,
+        var offset: Int = 0,
+        val messageBuilder: MutableList<StringBuilder.() -> Unit> = ArrayList()
     ) {
-        var partial = false
-        var indirect = false
-        var offset = 0
-        val messageBuilder = ArrayList<StringBuilder.() -> Unit>()
         val message get() = buildString { messageBuilder.forEach { it() } }
-
-        override fun toString(): String =
-            "ContentData(name=$name, mimeType=$mimeType, mimeTypeLevel=$mimeTypeLevel, partial=$partial, indirect=$indirect, offset=$offset, sb=$message"
     }
 
     /**
@@ -207,28 +180,42 @@ internal constructor(
      */
     internal class OffsetInfo(
         val offset: Int,
-        val converter: EndianConverter,
+        val endianType: EndianType,
         val addOffset: Boolean,
         val isId3: Boolean,
         val size: Int,
         val add: Int
     ) {
-
         fun getOffset(
             bytes: BytesRO,
             prevOffset: Int
-        ): Int {
-            val off = if (isId3) {
-                converter.convertId3(offset, bytes, size)!!
-            } else {
-                converter.convertNumber(offset, bytes, size)!!
+        ): Int? {
+            if (bytes.size - offset < size) return null
+            val value = if (isId3) when (size) {
+                4 -> combineToInt(
+                    bytes[offset + 0],
+                    bytes[offset + 1],
+                    bytes[offset + 2],
+                    bytes[offset + 3]
+                ).convert(endianType).parseId3()
+                else -> error("Invalid size: $size")
+            } else when (size) {
+                1 -> bytes[offset + 0].toInt() and 0xFF
+                2 -> combineToShort(
+                    bytes[offset + 0],
+                    bytes[offset + 1]
+                ).convert(endianType).toInt() and 0xFFFF
+                4 -> combineToInt(
+                    bytes[offset + 0],
+                    bytes[offset + 1],
+                    bytes[offset + 2],
+                    bytes[offset + 3]
+                ).convert(endianType)
+                else -> error("Invalid size: $size")
             }
-            return (off + add).toInt()
-                .let { if (addOffset) it + prevOffset else it }
+            return (value + add).let { if (addOffset) it + prevOffset else it }
         }
     }
 
-    companion object : KLogging() {
-        internal const val UNKNOWN_NAME = "unknown"
-    }
+    companion object : KLogging()
 }

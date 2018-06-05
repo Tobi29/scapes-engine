@@ -21,17 +21,19 @@ import com.j256.simplemagik.endian.convert
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
+import org.tobi29.chrono.*
 import org.tobi29.stdex.combineToLong
 import org.tobi29.stdex.splitToBytes
+import org.tobi29.utils.toInt128
 
-data class LongType(
+data class LongDateType(
     val comparison: Pair<Long, TestOperator>?,
     val andValue: Long,
-    val unsignedType: Boolean,
+    val local: Boolean,
     val endianType: EndianType
 ) : MagicMatcher {
     override val startingBytes
-        get() = if (comparison != null && andValue == (-1).toLong())
+        get() = if (comparison != null && andValue == -1L)
             comparison.first.convert(endianType)
                 .splitToBytes { v7, v6, v5, v4, v3, v2, v1, v0 ->
                     byteArrayOf(v7, v6, v5, v4, v3, v2, v1, v0)
@@ -47,58 +49,105 @@ data class LongType(
                 bytes[4], bytes[5], bytes[6], bytes[7]
             ) and andValue).convert(endianType).let { extracted ->
                 if (comparison == null || comparison.second.compare(
-                        extracted, comparison.first, unsignedType
+                        extracted, comparison.first
                     )) 8 to
                         { sb: Appendable, formatter: MagicFormatter ->
+                            // TODO: is this in millis or seconds?
+                            val (dateTime, offset) =
+                                    timeZone.encodeWithOffset(
+                                        extracted.toInt128() * 1000000L.toInt128()
+                                    )
+                            val (date, time) = dateTime
                             formatter.format(
-                                sb, extracted // TODO: Unsigned
+                                sb, "${isoDate(date)} ${
+                                isoTime(time)} ${plainOffset(offset)}"
                             )
                         } else null
             } else null
+
+    private val timeZone: TimeZone
+        get() = if (local) timeZoneLocal else timeZoneUtc
 }
 
-fun LongType(
+fun LongDateType(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean,
+    local: Boolean,
     endianType: EndianType
-): LongType = (andValue ?: -1).let { andValue2 ->
-    LongType(decodeComparison(testStr), andValue2, unsignedType, endianType)
+): LongDateType = (andValue ?: -1L).let { andValue2 ->
+    LongDateType(decodeComparison(testStr), andValue2, local, endianType)
 }
 
-fun LongTypeBE(
+fun LongDateTypeUtcBE(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): LongType = LongType(
-    typeStr, testStr, andValue, unsignedType, EndianType.BIG
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, false, EndianType.BIG
 )
 
-fun LongTypeLE(
+fun LongDateTypeUtcLE(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): LongType = LongType(
-    typeStr, testStr, andValue, unsignedType, EndianType.LITTLE
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, false, EndianType.LITTLE
 )
 
-fun LongTypeME(
+fun LongDateTypeUtcME(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): LongType = LongType(
-    typeStr, testStr, andValue, unsignedType, EndianType.MIDDLE
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, false, EndianType.MIDDLE
 )
 
-fun LongTypeNE(
+fun LongDateTypeUtcNE(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): LongType = LongType(
-    typeStr, testStr, andValue, unsignedType, EndianType.NATIVE
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, false, EndianType.NATIVE
+)
+
+fun LongDateTypeLocalBE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, true, EndianType.BIG
+)
+
+fun LongDateTypeLocalLE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, true, EndianType.LITTLE
+)
+
+fun LongDateTypeLocalME(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, true, EndianType.MIDDLE
+)
+
+fun LongDateTypeLocalNE(
+    typeStr: String,
+    testStr: String?,
+    andValue: Long?,
+    unsignedType: Boolean
+): LongDateType = LongDateType(
+    typeStr, testStr, andValue, unsignedType, true, EndianType.NATIVE
 )

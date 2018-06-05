@@ -16,8 +16,7 @@
 
 package com.j256.simplemagik.endian
 
-import org.tobi29.stdex.BIG_ENDIAN
-import org.tobi29.stdex.NATIVE_ENDIAN
+import org.tobi29.stdex.*
 
 /**
  * Types of endian supported by the system.
@@ -25,17 +24,55 @@ import org.tobi29.stdex.NATIVE_ENDIAN
  * @author graywatson
  */
 enum class EndianType(
-    /**
-     * Returns the converter associated with this endian-type.
-     */
-    val converter: EndianConverter
+    resolved: EndianType? = null
 ) {
     /** big endian, also called network byte order (motorola 68k)  */
-    BIG(BigEndianConverter()),
+    BIG,
     /** little endian (x86)  */
-    LITTLE(LittleEndianConverter()),
+    LITTLE,
     /** old PDP11 byte order  */
-    MIDDLE(MiddleEndianConverter()),
+    MIDDLE,
     /** uses the byte order of the current system  */
-    NATIVE(if (NATIVE_ENDIAN == BIG_ENDIAN) BIG.converter else LITTLE.converter)
+    NATIVE(if (NATIVE_ENDIAN == BIG_ENDIAN) BIG else LITTLE);
+
+    val resolved: EndianType = resolved ?: this
 } // end
+
+fun Short.convert(endianType: EndianType): Short = when (endianType.resolved) {
+    EndianType.BIG -> this
+    EndianType.LITTLE -> splitToBytes { v1, v0 ->
+        combineToShort(v0, v1)
+    }
+    EndianType.MIDDLE -> splitToBytes { v1, v0 ->
+        combineToShort(v0, v1)
+    }
+    else -> error("Impossible")
+}
+
+fun Int.convert(endianType: EndianType): Int = when (endianType.resolved) {
+    EndianType.BIG -> this
+    EndianType.LITTLE -> splitToBytes { v3, v2, v1, v0 ->
+        combineToInt(v0, v1, v2, v3)
+    }
+    EndianType.MIDDLE -> splitToBytes { v3, v2, v1, v0 ->
+        combineToInt(v2, v3, v0, v1)
+    }
+    else -> error("Impossible")
+}
+
+fun Long.convert(endianType: EndianType): Long = when (endianType.resolved) {
+    EndianType.BIG -> this
+    EndianType.LITTLE -> splitToBytes { v7, v6, v5, v4, v3, v2, v1, v0 ->
+        combineToLong(v0, v1, v2, v3, v4, v5, v6, v7)
+    }
+    EndianType.MIDDLE -> splitToBytes { v7, v6, v5, v4, v3, v2, v1, v0 ->
+        combineToLong(v6, v7, v4, v5, v2, v3, v0, v1)
+    }
+    else -> error("Impossible")
+}
+
+fun Float.convert(endianType: EndianType): Float =
+    Float.fromBits(toRawBits().convert(endianType))
+
+fun Double.convert(endianType: EndianType): Double =
+    Double.fromBits(toRawBits().convert(endianType))

@@ -16,7 +16,12 @@
 
 package com.j256.simplemagik.entries
 
+import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.readAsByteArray
+import org.tobi29.stdex.combineToShort
+import org.tobi29.stdex.copyToString
 import org.tobi29.stdex.toString
+import org.tobi29.stdex.utf8ToString
 import org.tobi29.utils.toStringDecimal
 import org.tobi29.utils.toStringExponential
 
@@ -72,7 +77,12 @@ internal class PercentExpression(expression: String) {
             'b', 's' -> {
                 val truncateWidth = dotPrecision
                 // same as s but interpret character escapes in backslash notation
-                var strValue = extractedValue.toString()
+                var strValue = when (extractedValue) {
+                    is BytesRO -> extractedValue.slice(
+                        0, extractedValue.size.coerceAtMost(truncateWidth)
+                    ).readAsByteArray().utf8ToString()
+                    else -> extractedValue.toString()
+                }
                 if (truncateWidth >= 0 && strValue.length > truncateWidth) {
                     strValue = strValue.substring(0, truncateWidth)
                 }
@@ -204,6 +214,55 @@ internal class PercentExpression(expression: String) {
 
         // oh well, just dump it out
         sb.append(extractedValue.toString())
+    }
+
+    fun appendUtf8(extractedValue: BytesRO, sb: Appendable) {
+        var size = 0
+        for (i in 0 until extractedValue.size) {
+            if (extractedValue[i] == 0.toByte()) break
+            size++
+        }
+        val strValue = extractedValue.slice(
+            0, if (dotPrecision < 0) size else size.coerceAtMost(dotPrecision)
+        ).readAsByteArray().utf8ToString()
+        append(strValue, sb)
+    }
+
+    fun appendUtf16BE(extractedValue: BytesRO, sb: Appendable) {
+        var size = 0
+        for (i in 0..extractedValue.size - 2 step 2) {
+            if (extractedValue[i] == 0.toByte()
+                && extractedValue[i + 1] == 0.toByte()) break
+            size++
+        }
+        if (dotPrecision >= 0) size = size.coerceAtMost(dotPrecision)
+        val strValue = extractedValue.slice(
+            0, size shl 1
+        ).let { array ->
+            CharArray(size) {
+                combineToShort(array[it shl 1], array[(it shl 1) + 1]).toChar()
+            }.copyToString()
+        }
+        append(strValue, sb)
+    }
+
+    fun appendUtf16LE(extractedValue: BytesRO, sb: Appendable) {
+        var size = 0
+        for (i in 0..extractedValue.size - 2 step 2) {
+            if (extractedValue[i] == 0.toByte()
+                && extractedValue[i + 1] == 0.toByte()) break
+            size++
+        }
+        if (dotPrecision >= 0) size = size.coerceAtMost(dotPrecision)
+        val strValue = extractedValue.slice(
+            0, size shl 1
+        ).let { array ->
+            CharArray(size) {
+                combineToShort(array[it shl 1], array[(it shl 1) + 1]).toChar()
+                combineToShort(array[(it shl 1) + 1], array[it shl 1]).toChar()
+            }.copyToString()
+        }
+        append(strValue, sb)
     }
 
     private fun appendHex(

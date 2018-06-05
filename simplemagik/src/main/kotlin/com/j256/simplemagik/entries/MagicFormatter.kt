@@ -16,6 +16,8 @@
 
 package com.j256.simplemagik.entries
 
+import org.tobi29.arrays.BytesRO
+
 /**
  * Formatter that handles the C %0.2f type formats appropriately. I would have used the [java.util.Formatter] but
  * you can't pre-parse those for some stupid reason. Also, I needed this to be compatible with the printf(3) C formats.
@@ -89,6 +91,33 @@ class MagicFormatter
     fun format(sb: Appendable, value: Any?) {
         prefix?.let { sb.append(it) }
         if (value != null) percentExpression?.append(value, sb)
+        suffix?.let { sb.append(it) }
+    }
+
+    /**
+     * Formats the extracted value assigned and returns the associated string
+     */
+    fun formatUtf8(sb: Appendable, value: BytesRO) {
+        prefix?.let { sb.append(it) }
+        percentExpression?.appendUtf8(value, sb)
+        suffix?.let { sb.append(it) }
+    }
+
+    /**
+     * Formats the extracted value assigned and returns the associated string
+     */
+    fun formatUtf16BE(sb: Appendable, value: BytesRO) {
+        prefix?.let { sb.append(it) }
+        percentExpression?.appendUtf16BE(value, sb)
+        suffix?.let { sb.append(it) }
+    }
+
+    /**
+     * Formats the extracted value assigned and returns the associated string
+     */
+    fun formatUtf16LE(sb: Appendable, value: BytesRO) {
+        prefix?.let { sb.append(it) }
+        percentExpression?.appendUtf16LE(value, sb)
         suffix?.let { sb.append(it) }
     }
 

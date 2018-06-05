@@ -16,43 +16,30 @@
 
 package com.j256.simplemagik.types
 
-/**
- * Internal class that compares a number from the bytes with the value from the magic rule.
- */
-class NumberComparison
-/**
- * Pre-process the test string into an operator and a value.
- */
-    (private val numberType: NumberType, testStr: String) {
-    val operator: TestOperator
-    val value: Number
+import com.j256.simplemagik.entries.decodeLong
 
-    init {
-        var op = TestOperator.fromTest(testStr)
-        val valueStr: String
-        if (op == null) {
-            op = TestOperator.DEFAULT_OPERATOR
-            valueStr = testStr
-        } else {
-            valueStr = testStr.substring(1).trim { it <= ' ' }
-        }
-        this.operator = op
-        this.value = numberType.decodeValueString(valueStr)
+fun decodeComparison(testStr: String?): Pair<Long, TestOperator>? {
+    if (testStr == null) return null
+    var op = TestOperator.fromTest(testStr)
+    val valueStr: String
+    if (op == null) {
+        op = TestOperator.DEFAULT_OPERATOR
+        valueStr = testStr
+    } else {
+        valueStr = testStr.substring(1).trim { it <= ' ' }
     }
+    return decodeLong(valueStr) to op
+}
 
-    fun isMatch(
-        andValue: Long?,
-        unsignedType: Boolean,
-        extractedValue: Number
-    ): Boolean {
-        var extractedValue = extractedValue
-        if (andValue != null) {
-            extractedValue = extractedValue.toLong() and andValue
-        }
-        return operator.doTest(unsignedType, extractedValue, value, numberType)
+fun decodeComparisonDecimal(testStr: String?): Pair<Double, TestOperator>? {
+    if (testStr == null) return null
+    var op = TestOperator.fromTest(testStr)
+    val valueStr: String
+    if (op == null) {
+        op = TestOperator.DEFAULT_OPERATOR
+        valueStr = testStr
+    } else {
+        valueStr = testStr.substring(1).trim { it <= ' ' }
     }
-
-    override fun toString(): String {
-        return operator.toString() + ", value " + value
-    }
+    return valueStr.toDouble() to op
 }
