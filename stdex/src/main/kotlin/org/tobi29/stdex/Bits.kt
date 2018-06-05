@@ -43,11 +43,15 @@ inline fun bitMaskL(index: Int): Long = 1L shl index
 
 inline fun Byte.maskAll(mask: Byte): Boolean = this and mask == mask
 
+inline fun Short.maskAll(mask: Short): Boolean = this and mask == mask
+
 inline fun Int.maskAll(mask: Int): Boolean = this and mask == mask
 
 inline fun Long.maskAll(mask: Long): Boolean = this and mask == mask
 
 inline fun Byte.maskAny(mask: Byte): Boolean = this and mask != 0.toByte()
+
+inline fun Short.maskAny(mask: Short): Boolean = this and mask != 0.toShort()
 
 inline fun Int.maskAny(mask: Int): Boolean = this and mask != 0
 
