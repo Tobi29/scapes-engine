@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.utils
+
+import org.tobi29.stdex.assert
 
 /**
  * Returns an iterator containing the results of applying the given [transform]
@@ -48,6 +52,13 @@ fun <T> Iterator<T>.andNull(): Iterator<T?> =
             return this@andNull.next()
         }
     }
+
+/**
+ * Returns `true` if and only if the iterator returns
+ * [element] and nothing else.
+ */
+inline fun <T> Iterator<T>.exact(element: T): Boolean =
+    hasNext() && next() == element && !hasNext()
 
 /**
  * Constructs an iterator starting with all the elements in the given
@@ -141,3 +152,10 @@ inline fun <T> Iterator(crossinline supplier: () -> T?): Iterator<T> =
             return element
         }
     }
+
+@PublishedApi
+internal fun Iterator<*>.verifyNotNull() {
+    while (hasNext()) {
+        assert { next() != null }
+    }
+}

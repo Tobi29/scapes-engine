@@ -29,6 +29,13 @@ inline fun <reified T : Any> Iterable<*>.findMap(): T? {
 }
 
 /**
+ * Returns `true` if and only if the collection contains
+ * [element] and nothing else.
+ */
+inline fun <T> Iterable<T>.exact(element: T): Boolean =
+    iterator().exact(element)
+
+/**
  * Construct an iterator returning all combinations of the elements from
  * the given [Iterable] and [other].
  *
@@ -150,3 +157,30 @@ inline fun <reified T> Iterable<T>.permutations(size: Int): Iterator<List<T>> =
  */
 inline fun <reified T> Iterable<Iterable<T>>.permutations(): Iterator<List<T>> =
     map { it.toList().toTypedArray() }.toTypedArray().permutations()
+
+/**
+ * Asserts each element as non-null and returns a casted collection
+ */
+inline fun <T> Set<T?>.verifyNotNull(): Set<T> {
+    iterator().verifyNotNull()
+    @Suppress("UNCHECKED_CAST")
+    return this as Set<T>
+}
+
+/**
+ * Asserts each element as non-null and returns a casted collection
+ */
+inline fun <T> List<T?>.verifyNotNull(): List<T> {
+    iterator().verifyNotNull()
+    @Suppress("UNCHECKED_CAST")
+    return this as List<T>
+}
+
+/**
+ * Asserts each element as non-null and returns a casted collection
+ */
+inline fun <T> Iterable<T?>.verifyNotNull(): Iterable<T> {
+    iterator().verifyNotNull()
+    @Suppress("UNCHECKED_CAST")
+    return this as Iterable<T>
+}
