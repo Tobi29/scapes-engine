@@ -18,6 +18,8 @@
 
 package org.tobi29.io.tag
 
+import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ConcurrentMap
 import org.tobi29.stdex.readOnly
@@ -173,25 +175,25 @@ inline fun Double.toTag() = TagDouble(this)
 /**
  * Tag for storing a [ByteArray]
  */
-class TagByteArray(internal val valueMut: ByteArray) : TagPrimitive() {
-    override val value get() = valueMut.copyOf()
+class TagByteArray(override val value: BytesRO) : TagPrimitive() {
+    constructor(value: ByteArray) : this(value.sliceOver())
 
     override fun equals(other: Any?): Boolean {
         if (other is TagByteArray) {
-            return valueMut contentEquals other.valueMut
+            return value == other.value
         } else if (other is TagList) {
-            if (valueMut.size != other.value.size) {
+            if (value.size != other.value.size) {
                 return false
             }
-            return valueMut.asSequence().zip(other.value.asSequence())
+            return value.asSequence().zip(other.value.asSequence())
                 .all { (a, b) ->
                     compareNumbers(a, b.value)
                 }
         } else if (other is MutableTagList) {
-            if (valueMut.size != other.value.size) {
+            if (value.size != other.value.size) {
                 return false
             }
-            return valueMut.asSequence().zip(other.value.asSequence())
+            return value.asSequence().zip(other.value.asSequence())
                 .all { (a, b) ->
                     compareNumbers(a, b.value)
                 }
@@ -200,13 +202,18 @@ class TagByteArray(internal val valueMut: ByteArray) : TagPrimitive() {
     }
 
     override fun hashCode(): Int {
-        return value.contentHashCode()
+        return value.hashCode()
     }
 
     override fun toString(): String {
         return value.joinToString(prefix = "[", postfix = "]")
     }
 }
+
+/**
+ * Get the tag for the given value
+ */
+inline fun BytesRO.toTag() = TagByteArray(this)
 
 /**
  * Get the tag for the given value
@@ -292,10 +299,10 @@ class TagList @PublishedApi internal constructor(
         } else if (other is MutableTagList) {
             return value == other.value
         } else if (other is TagByteArray) {
-            if (value.size != other.valueMut.size) {
+            if (value.size != other.value.size) {
                 return false
             }
-            return value.asSequence().zip(other.valueMut.asSequence())
+            return value.asSequence().zip(other.value.asSequence())
                 .all { (a, b) -> compareNumbers(a.value, b) }
         }
         return false
@@ -327,10 +334,10 @@ class MutableTagList internal constructor(override val value: MutableList<Mutabl
         } else if (other is MutableTagList) {
             return value == other.value
         } else if (other is TagByteArray) {
-            if (value.size != other.valueMut.size) {
+            if (value.size != other.value.size) {
                 return false
             }
-            return value.asSequence().zip(other.valueMut.asSequence())
+            return value.asSequence().zip(other.value.asSequence())
                 .all { (a, b) -> compareNumbers(a.value, b) }
         }
         return false

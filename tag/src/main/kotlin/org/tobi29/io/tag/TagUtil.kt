@@ -18,6 +18,8 @@
 
 package org.tobi29.io.tag
 
+import org.tobi29.arrays.readAsByteArray
+import org.tobi29.arrays.toByteArray
 import org.tobi29.stdex.computeAlways
 
 inline fun MutableTag.toBoolean() = value as? Boolean
@@ -78,7 +80,7 @@ fun MutableTag.asList(): ReadTagMutableList? = when (this) {
 }
 
 fun MutableTag.toByteArray() = when (this) {
-    is TagByteArray -> value
+    is TagByteArray -> value.toByteArray()
     is TagList -> {
         ByteArray(size).also { array ->
             for ((i, element) in this.withIndex()) {
@@ -87,6 +89,11 @@ fun MutableTag.toByteArray() = when (this) {
         }
     }
     else -> null
+}
+
+fun MutableTag.readAsByteArray() = when (this) {
+    is TagByteArray -> value.readAsByteArray()
+    else -> toByteArray()
 }
 
 fun Sequence<MutableTag>.toTag() = TagList {

@@ -185,7 +185,7 @@ class TagStructureWriterBinary(
             is TagByteArray -> {
                 structureStream.put(ID_TAG_BYTE_ARRAY)
                 writeKey(key, structureStream, dictionary)
-                structureStream.putByteArrayLong(tag.value)
+                structureStream.putByteArrayLong(tag.value.readAsByteArray())
             }
             else -> throw IOException("Invalid type: $tag")
         }
@@ -241,7 +241,7 @@ class TagStructureWriterBinary(
             }
             is TagByteArray -> {
                 structureStream.put(ID_TAG_BYTE_ARRAY)
-                structureStream.putByteArrayLong(tag.value)
+                structureStream.putByteArrayLong(tag.value.readAsByteArray())
             }
             else -> throw IOException("Invalid type: $tag")
         }
