@@ -16,114 +16,162 @@
 
 package org.tobi29.io
 
-@PublishedApi actual internal fun ByteViewRO.roImpl(): ByteViewRO = when (this) {
-    is ByteViewRORO -> this
-    else -> ByteViewRORO(this)
-}
+actual val ByteViewRO.ro: ByteViewRO
+    get() = when (this) {
+        is ByteViewRORO -> this
+        else -> ByteViewRORO(this)
+    }
 
-private class ByteViewRORO(private val handle: ByteViewRO) : ByteViewRO by handle
+private class ByteViewRORO(
+    private val handle: ByteViewRO
+) : ByteViewRO by handle
 
-@PublishedApi actual internal fun ByteViewERO.roImpl(): ByteViewERO = when (this) {
-    is ByteViewERORO -> this
-    else -> ByteViewERORO(this)
-}
+actual val ByteViewERO.ro: ByteViewERO
+    get() = when (this) {
+        is ByteViewERORO -> this
+        else -> ByteViewERORO(this)
+    }
 
-private class ByteViewERORO(private val handle: ByteViewERO) : ByteViewERO by handle
+private class ByteViewERORO(
+    private val handle: ByteViewERO
+) : ByteViewERO by handle
 
-@PublishedApi actual internal fun ByteViewBERO.roImpl(): ByteViewBERO = when (this) {
-    is ByteViewBERORO -> this
-    else -> ByteViewBERORO(this)
-}
+actual val ByteViewBERO.ro: ByteViewBERO
+    get() = when (this) {
+        is ByteViewBERORO -> this
+        else -> ByteViewBERORO(this)
+    }
 
-private class ByteViewBERORO(private val handle: ByteViewBERO) : ByteViewBERO by handle
+private class ByteViewBERORO(
+    private val handle: ByteViewBERO
+) : ByteViewBERO by handle
 
-@PublishedApi actual internal fun ByteViewLERO.roImpl(): ByteViewLERO = when (this) {
-    is ByteViewLERORO -> this
-    else -> ByteViewLERORO(this)
-}
+actual val ByteViewLERO.ro: ByteViewLERO
+    get() = when (this) {
+        is ByteViewLERORO -> this
+        else -> ByteViewLERORO(this)
+    }
 
-private class ByteViewLERORO(private val handle: ByteViewLERO) : ByteViewLERO by handle
+private class ByteViewLERORO(
+    private val handle: ByteViewLERO
+) : ByteViewLERO by handle
 
-@PublishedApi actual internal fun ShortViewRO.roImpl(): ShortViewRO = when (this) {
-    is ShortViewRORO -> this
-    else -> ShortViewRORO(this)
-}
+actual val ShortViewRO.ro: ShortViewRO
+    get() = when (this) {
+        is ShortViewRORO -> this
+        else -> ShortViewRORO(this)
+    }
 
-private class ShortViewRORO(private val handle: ShortViewRO) : ShortViewRO by handle
+private class ShortViewRORO(
+    private val handle: ShortViewRO
+) : ShortViewRO by handle
 
-@PublishedApi actual internal fun ShortViewERO.roImpl(): ShortViewERO = when (this) {
-    is ShortViewERORO -> this
-    else -> ShortViewERORO(this)
-}
+actual val ShortViewERO.ro: ShortViewERO
+    get() = when (this) {
+        is ShortViewERORO -> this
+        else -> ShortViewERORO(this)
+    }
 
-private class ShortViewERORO(private val handle: ShortViewERO) : ShortViewERO by handle
+private class ShortViewERORO(
+    private val handle: ShortViewERO
+) : ShortViewERO by handle
 
-@PublishedApi actual internal fun ShortViewBERO.roImpl(): ShortViewBERO = when (this) {
-    is ShortViewBERORO -> this
-    else -> ShortViewBERORO(this)
-}
+actual val ShortViewBERO.ro: ShortViewBERO
+    get() = when (this) {
+        is ShortViewBERORO -> this
+        else -> ShortViewBERORO(this)
+    }
 
-private class ShortViewBERORO(private val handle: ShortViewBERO) : ShortViewBERO by handle
+private class ShortViewBERORO(
+    private val handle: ShortViewBERO
+) : ShortViewBERO by handle
 
-@PublishedApi actual internal fun ShortViewLERO.roImpl(): ShortViewLERO = when (this) {
-    is ShortViewLERORO -> this
-    else -> ShortViewLERORO(this)
-}
+actual val ShortViewLERO.ro: ShortViewLERO
+    get() = when (this) {
+        is ShortViewLERORO -> this
+        else -> ShortViewLERORO(this)
+    }
 
-private class ShortViewLERORO(private val handle: ShortViewLERO) : ShortViewLERO by handle
+private class ShortViewLERORO(
+    private val handle: ShortViewLERO
+) : ShortViewLERO by handle
 
-@PublishedApi actual internal fun IntViewRO.roImpl(): IntViewRO = when (this) {
-    is IntViewRORO -> this
-    else -> IntViewRORO(this)
-}
+actual val IntViewRO.ro: IntViewRO
+    get() = when (this) {
+        is IntViewRORO -> this
+        else -> IntViewRORO(this)
+    }
 
-private class IntViewRORO(private val handle: IntViewRO) : IntViewRO by handle
+private class IntViewRORO(
+    private val handle: IntViewRO
+) : IntViewRO by handle
 
-@PublishedApi actual internal fun IntViewERO.roImpl(): IntViewERO = when (this) {
-    is IntViewERORO -> this
-    else -> IntViewERORO(this)
-}
+actual val IntViewERO.ro: IntViewERO
+    get() = when (this) {
+        is IntViewERORO -> this
+        else -> IntViewERORO(this)
+    }
 
-private class IntViewERORO(private val handle: IntViewERO) : IntViewERO by handle
+private class IntViewERORO(
+    private val handle: IntViewERO
+) : IntViewERO by handle
 
-@PublishedApi actual internal fun IntViewBERO.roImpl(): IntViewBERO = when (this) {
-    is IntViewBERORO -> this
-    else -> IntViewBERORO(this)
-}
+actual val IntViewBERO.ro: IntViewBERO
+    get() = when (this) {
+        is IntViewBERORO -> this
+        else -> IntViewBERORO(this)
+    }
 
-private class IntViewBERORO(private val handle: IntViewBERO) : IntViewBERO by handle
+private class IntViewBERORO(
+    private val handle: IntViewBERO
+) : IntViewBERO by handle
 
-@PublishedApi actual internal fun IntViewLERO.roImpl(): IntViewLERO = when (this) {
-    is IntViewLERORO -> this
-    else -> IntViewLERORO(this)
-}
+actual val IntViewLERO.ro: IntViewLERO
+    get() = when (this) {
+        is IntViewLERORO -> this
+        else -> IntViewLERORO(this)
+    }
 
-private class IntViewLERORO(private val handle: IntViewLERO) : IntViewLERO by handle
+private class IntViewLERORO(
+    private val handle: IntViewLERO
+) : IntViewLERO by handle
 
-@PublishedApi actual internal fun LongViewRO.roImpl(): LongViewRO = when (this) {
-    is LongViewRORO -> this
-    else -> LongViewRORO(this)
-}
+actual val LongViewRO.ro: LongViewRO
+    get() = when (this) {
+        is LongViewRORO -> this
+        else -> LongViewRORO(this)
+    }
 
-private class LongViewRORO(private val handle: LongViewRO) : LongViewRO by handle
+private class LongViewRORO(
+    private val handle: LongViewRO
+) : LongViewRO by handle
 
-@PublishedApi actual internal fun LongViewERO.roImpl(): LongViewERO = when (this) {
-    is LongViewERORO -> this
-    else -> LongViewERORO(this)
-}
+actual val LongViewERO.ro: LongViewERO
+    get() = when (this) {
+        is LongViewERORO -> this
+        else -> LongViewERORO(this)
+    }
 
-private class LongViewERORO(private val handle: LongViewERO) : LongViewERO by handle
+private class LongViewERORO(
+    private val handle: LongViewERO
+) : LongViewERO by handle
 
-@PublishedApi actual internal fun LongViewBERO.roImpl(): LongViewBERO = when (this) {
-    is LongViewBERORO -> this
-    else -> LongViewBERORO(this)
-}
+actual val LongViewBERO.ro: LongViewBERO
+    get() = when (this) {
+        is LongViewBERORO -> this
+        else -> LongViewBERORO(this)
+    }
 
-private class LongViewBERORO(private val handle: LongViewBERO) : LongViewBERO by handle
+private class LongViewBERORO(
+    private val handle: LongViewBERO
+) : LongViewBERO by handle
 
-@PublishedApi actual internal fun LongViewLERO.roImpl(): LongViewLERO = when (this) {
-    is LongViewLERORO -> this
-    else -> LongViewLERORO(this)
-}
+actual val LongViewLERO.ro: LongViewLERO
+    get() = when (this) {
+        is LongViewLERORO -> this
+        else -> LongViewLERORO(this)
+    }
 
-private class LongViewLERORO(private val handle: LongViewLERO) : LongViewLERO by handle
+private class LongViewLERORO(
+    private val handle: LongViewLERO
+) : LongViewLERO by handle

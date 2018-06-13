@@ -18,22 +18,22 @@
 
 package org.tobi29.io
 
-@PublishedApi actual inline internal fun ByteViewRO.roImpl(): ByteViewRO = this
-@PublishedApi actual inline internal fun ByteViewERO.roImpl(): ByteViewERO = this
-@PublishedApi actual inline internal fun ByteViewBERO.roImpl(): ByteViewBERO = this
-@PublishedApi actual inline internal fun ByteViewLERO.roImpl(): ByteViewLERO = this
+actual inline val ByteViewRO.ro: ByteViewRO get() = this
+actual inline val ByteViewERO.ro: ByteViewERO get() = this
+actual inline val ByteViewBERO.ro: ByteViewBERO get() = this
+actual inline val ByteViewLERO.ro: ByteViewLERO get() = this
 
-@PublishedApi actual inline internal fun ShortViewRO.roImpl(): ShortViewRO = this
-@PublishedApi actual inline internal fun ShortViewERO.roImpl(): ShortViewERO = this
-@PublishedApi actual inline internal fun ShortViewBERO.roImpl(): ShortViewBERO = this
-@PublishedApi actual inline internal fun ShortViewLERO.roImpl(): ShortViewLERO = this
+actual inline val ShortViewRO.ro: ShortViewRO get() = this
+actual inline val ShortViewERO.ro: ShortViewERO get() = this
+actual inline val ShortViewBERO.ro: ShortViewBERO get() = this
+actual inline val ShortViewLERO.ro: ShortViewLERO get() = this
 
-@PublishedApi actual inline internal fun IntViewRO.roImpl(): IntViewRO = this
-@PublishedApi actual inline internal fun IntViewERO.roImpl(): IntViewERO = this
-@PublishedApi actual inline internal fun IntViewBERO.roImpl(): IntViewBERO = this
-@PublishedApi actual inline internal fun IntViewLERO.roImpl(): IntViewLERO = this
+actual inline val IntViewRO.ro: IntViewRO get() = this
+actual inline val IntViewERO.ro: IntViewERO get() = this
+actual inline val IntViewBERO.ro: IntViewBERO get() = this
+actual inline val IntViewLERO.ro: IntViewLERO get() = this
 
-@PublishedApi actual inline internal fun LongViewRO.roImpl(): LongViewRO = this
-@PublishedApi actual inline internal fun LongViewERO.roImpl(): LongViewERO = this
-@PublishedApi actual inline internal fun LongViewBERO.roImpl(): LongViewBERO = this
-@PublishedApi actual inline internal fun LongViewLERO.roImpl(): LongViewLERO = this
+actual inline val LongViewRO.ro: LongViewRO get() = this
+actual inline val LongViewERO.ro: LongViewERO get() = this
+actual inline val LongViewBERO.ro: LongViewBERO get() = this
+actual inline val LongViewLERO.ro: LongViewLERO get() = this
