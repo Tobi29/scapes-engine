@@ -113,6 +113,17 @@ internal fun String.parseVector2iList(): List<Vector2i> =
         }
     }.toList()
 
+internal fun String.parseVector2dList(): List<Vector2d> =
+    splitToSequence(' ').map { it.trim() }.map {
+        val chunk = it.split(',')
+        if (chunk.size != 2) throw IOException("Uneven number of values")
+        try {
+            Vector2d(chunk[0].toDouble(), chunk[1].toDouble())
+        } catch (e: NumberFormatException) {
+            throw IOException(e)
+        }
+    }.toList()
+
 internal inline val Node.nodeNameL: String get() = nodeName.toLowerCase()
 
 internal inline fun NodeList.forEach(block: (Node) -> Unit) {

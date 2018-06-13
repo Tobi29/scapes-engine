@@ -18,6 +18,7 @@ package org.tobi29.tilemaps.tiled
 
 import org.tobi29.arrays.Array2
 import org.tobi29.graphics.Bitmap
+import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.tilemaps.Tile
 import org.tobi29.tilemaps.TileSets
@@ -63,7 +64,7 @@ class TMXTileLayer(
 }
 
 data class TMXMapObject(
-    val pos: Vector2i,
+    val pos: Vector2d,
     val shape: TMXShape,
     val properties: Map<String, String>,
     val name: String,
@@ -73,11 +74,11 @@ data class TMXMapObject(
 )
 
 sealed class TMXShape {
-    data class Ellipse(val size: Vector2i) : TMXShape()
+    data class Ellipse(val size: Vector2d) : TMXShape()
 
-    data class Rectangle(val size: Vector2i) : TMXShape()
+    data class Rectangle(val size: Vector2d) : TMXShape()
 
-    data class Polygon(val points: List<Vector2i>) : TMXShape()
+    data class Polygon(val points: List<Vector2d>) : TMXShape()
 
-    data class Polyline(val points: List<Vector2i>) : TMXShape()
+    data class Polyline(val points: List<Vector2d>) : TMXShape()
 }

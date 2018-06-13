@@ -22,6 +22,7 @@ import org.tobi29.base64.fromBase64
 import org.tobi29.graphics.Bitmap
 import org.tobi29.io.IOException
 import org.tobi29.io.Path
+import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.math.vector.plus
 import org.tobi29.stdex.readOnly
@@ -172,7 +173,7 @@ internal suspend fun Node.readbjectGroup(
 ): TMXObjectLayer {
     val name = getAttributeValue("name") ?: ""
     val properties = readProperties()
-    val offset = getAttributeVector2i("x", "y") ?: Vector2i.ZERO
+    val offset = getAttributeVector2d("x", "y") ?: Vector2d.ZERO
 
     val list = ArrayList<TMXMapObject>()
     childNodes.forEachElement { child ->
@@ -281,7 +282,7 @@ private fun Node.readXmlData(
 }
 
 private suspend fun Node.readMapObject(
-    offset: Vector2i,
+    offset: Vector2d,
     tiles: Map<Int, Tile>,
     assetProvider: Path,
     warn: (String) -> Unit
@@ -289,11 +290,11 @@ private suspend fun Node.readMapObject(
     val name = getAttributeValue("name") ?: "Object"
     val type = getAttributeValue("type") ?: ""
     val gid = getAttributeInt("gid") ?: -1
-    val pos = (getAttributeVector2i("x", "y") ?: Vector2i.ZERO) + offset
-    val width = getAttributeInt("width") ?: 0
-    val height = getAttributeInt("height") ?: 0
+    val pos = (getAttributeVector2d("x", "y") ?: Vector2d.ZERO) + offset
+    val width = getAttributeDouble("width") ?: 0.0
+    val height = getAttributeDouble("height") ?: 0.0
 
-    var shape: TMXShape = TMXShape.Rectangle(Vector2i(width, height))
+    var shape: TMXShape = TMXShape.Rectangle(Vector2d(width, height))
     val tile = getTileForTileGID(gid, tiles, warn)
     var image: Pair<Bitmap<*, *>, Vector2i>? = null
 
@@ -308,15 +309,15 @@ private suspend fun Node.readMapObject(
                 break@loop
             }
             "ellipse" -> {
-                shape = TMXShape.Ellipse(Vector2i(width, height))
+                shape = TMXShape.Ellipse(Vector2d(width, height))
             }
             "polygon" -> {
                 val pointsAttribute = child.requireAttributeValue("points")
-                shape = TMXShape.Polygon(pointsAttribute.parseVector2iList())
+                shape = TMXShape.Polygon(pointsAttribute.parseVector2dList())
             }
             "polyline" -> {
                 val pointsAttribute = child.requireAttributeValue("points")
-                shape = TMXShape.Polyline(pointsAttribute.parseVector2iList())
+                shape = TMXShape.Polyline(pointsAttribute.parseVector2dList())
             }
         }
     }
