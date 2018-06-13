@@ -17,6 +17,7 @@
 package org.tobi29.graphics
 
 import org.khronos.webgl.Int8Array
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
 import org.tobi29.stdex.asArray
 import org.w3c.dom.CanvasRenderingContext2D
@@ -47,12 +48,12 @@ private suspend fun loadImage(uri: Uri): Bitmap<*, *> =
                 canvas.width.toDouble(), canvas.height.toDouble()
             )
             cont.resume(
-                IntByteViewBitmap(
+                Ints2BytesBitmap(
                     Int8Array(
                         imageData.data.buffer,
                         imageData.data.byteOffset,
                         imageData.data.length
-                    ).asArray().view,
+                    ).asArray().sliceOver(),
                     imageData.width, imageData.height, RGBA
                 )
             )

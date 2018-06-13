@@ -18,7 +18,11 @@ package org.tobi29.graphics
 
 import ar.com.hjg.pngj.PngReaderByte
 import ar.com.hjg.pngj.PngjException
-import org.tobi29.io.*
+import org.tobi29.arrays.sliceOver
+import org.tobi29.io.ByteStreamInputStream
+import org.tobi29.io.IOException
+import org.tobi29.io.ReadSource
+import org.tobi29.io.ReadableByteStream
 import java.io.InputStream
 
 actual suspend fun decodePng(asset: ReadSource): Bitmap<*, *> {
@@ -36,7 +40,7 @@ fun decodePNG(streamIn: InputStream): Bitmap<*, *> {
         val width = reader.imgInfo.cols
         val height = reader.imgInfo.rows
         val fillAlpha = !reader.imgInfo.alpha
-        val buffer = ByteArray(width * height shl 2).view
+        val buffer = ByteArray(width * height shl 2).sliceOver()
         var positionWrite = 0
         if (fillAlpha) {
             for (i in 0 until height) {
@@ -53,12 +57,12 @@ fun decodePNG(streamIn: InputStream): Bitmap<*, *> {
         } else {
             for (i in 0 until height) {
                 val line = reader.readRowByte()
-                buffer.setBytes(positionWrite, line.scanlineByte.view)
+                buffer.setBytes(positionWrite, line.scanlineByte.sliceOver())
                 positionWrite += line.scanlineByte.size
             }
         }
         reader.end()
-        return IntByteViewBitmap(buffer, width, height, RGBA)
+        return Ints2BytesBitmap(buffer, width, height, RGBA)
     } catch (e: PngjException) {
         throw IOException(e)
     }

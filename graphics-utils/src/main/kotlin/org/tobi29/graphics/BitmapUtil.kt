@@ -80,7 +80,7 @@ inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
     y: Int,
     width: Int,
     height: Int
-): MutableIntByteViewBitmap<F> =
+): Ints2BytesBitmap<F> =
     get(x, y, width, height, DefaultMemoryViewProvider)
 
 /**
@@ -99,11 +99,11 @@ inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
     y: Int,
     width: Int,
     height: Int,
-    bufferProvider: (Int) -> ByteView
-): MutableIntByteViewBitmap<F> {
+    bufferProvider: (Int) -> Bytes
+): Ints2BytesBitmap<F> {
     val buffer = bufferProvider(width * height shl 2)
     cast<IntsRO2, ColorFormatInt>()!!.get(x, y, width, height, buffer)
-    return MutableIntByteViewBitmap(buffer, width, height, format)
+    return Ints2BytesBitmap(buffer, width, height, format)
 }
 
 /**
@@ -117,8 +117,8 @@ inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
 inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
     x: Int,
     y: Int,
-    image: MutableIntByteViewBitmap<F>
-) = get(x, y, image.width, image.height, image.data.array)
+    image: Ints2BytesBitmap<F>
+) = get(x, y, image.width, image.height, image.data.array.array)
 
 /**
  * Copies from the receiver at the given coordinates into the buffer
@@ -216,36 +216,48 @@ fun <D : Ints2, F : ColorFormatInt> Bitmap<D, F>.set(
     buffer: ByteViewRO
 ) {
     val data = data
-    when (data) {
-        is Int2ByteArray<*> -> {
+    if (data is Ints2Ints<*>) {
+        val array = data.array
+        if (array is IntsBytes<*>) {
             copy(
                 0, 0,
                 width, height,
                 buffer,
                 x, y,
                 this.width, this.height,
-                data.array,
+                array.array,
                 width, height
             )
+            return
         }
-        else -> {
-            var i = 0
-            for (yy in y until y + height) {
-                for (xx in x until x + width) {
-                    this[xx, yy] = combineToInt(
-                        buffer[i++],
-                        buffer[i++],
-                        buffer[i++],
-                        buffer[i++]
-                    )
-                }
-            }
+    }
+    if (data is Int2ByteArray<*>) {
+        copy(
+            0, 0,
+            width, height,
+            buffer,
+            x, y,
+            this.width, this.height,
+            data.array,
+            width, height
+        )
+        return
+    }
+    var i = 0
+    for (yy in y until y + height) {
+        for (xx in x until x + width) {
+            this[xx, yy] = combineToInt(
+                buffer[i++],
+                buffer[i++],
+                buffer[i++],
+                buffer[i++]
+            )
         }
     }
 }
 
-inline fun MutableIntByteViewBitmap<*>.flipVertical() {
-    flipVertical(width, height, data.array)
+inline fun Ints2BytesBitmap<*>.flipVertical() {
+    flipVertical(width, height, data.array.array)
 }
 
 /**
@@ -302,10 +314,10 @@ fun Bitmap<Ints2, RGBA>.mergeBelow(image: Bitmap<IntsRO2, RGBA>) {
 fun copy(
     srcX: Int, srcY: Int,
     srcWidth: Int, srcHeight: Int,
-    srcBuffer: ByteViewRO,
+    srcBuffer: BytesRO,
     destX: Int, destY: Int,
     destWidth: Int, destHeight: Int,
-    destBuffer: ByteView,
+    destBuffer: Bytes,
     width: Int, height: Int
 ) {
     if (srcX < 0)
@@ -369,16 +381,56 @@ fun flipVertical(
     }
 }
 
+fun Bitmap<*, *>.asBytesRORGBABitmap(): Ints2BytesROBitmap<RGBA> {
+    cast<Ints2BytesRO<ByteViewRO>, RGBA>()?.let { return it }
+    return toByteArrayRGBABitmap()
+}
+
+fun Bitmap<*, *>.toByteArrayRGBABitmap(): Ints2ByteArrayBitmap<RGBA> =
+    when (format) {
+        RGBA -> cast(RGBA)!!.toByteArrayRGBABitmap()
+    }
+
+@JvmName("toByteArrayRGBABitmapIntsRO2RGBA")
+fun Bitmap<IntsRO2, RGBA>.toByteArrayRGBABitmap(): Ints2ByteArrayBitmap<RGBA> {
+    val image = Ints2ByteArrayBitmap(width, height, RGBA)
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            image[x, y] = this[x, y]
+        }
+    }
+    return image
+}
+
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use new array wrappers")
+@JvmName("flipVerticalOld")
+inline fun MutableIntByteViewBitmap<*>.flipVertical() {
+    flipVertical(width, height, data.array)
+}
+
+@Deprecated("Use new array wrappers")
+@JvmName("getIntOld")
+inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
+    x: Int,
+    y: Int,
+    image: MutableIntByteViewBitmap<F>
+) = get(x, y, image.width, image.height, image.data.array)
+
+@Deprecated("Use new array wrappers", ReplaceWith("asBytesRORGBABitmap()"))
 fun Bitmap<*, *>.asByteViewRGBABitmap(): IntByteViewBitmap<RGBA> {
     cast<Int2ByteArrayRO<ByteViewRO>, RGBA>()?.let { return it }
     return toByteViewRGBABitmap()
 }
 
+@Deprecated("Use new array wrappers", ReplaceWith("toByteArrayRGBABitmap()"))
 fun Bitmap<*, *>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> =
     when (format) {
         RGBA -> cast(RGBA)!!.toByteViewRGBABitmap()
     }
 
+@Deprecated("Use new array wrappers", ReplaceWith("toByteArrayRGBABitmap()"))
 @JvmName("toByteViewRGBABitmapIntsRO2RGBA")
 fun Bitmap<IntsRO2, RGBA>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> {
     val image = MutableIntByteViewBitmap(width, height, RGBA)

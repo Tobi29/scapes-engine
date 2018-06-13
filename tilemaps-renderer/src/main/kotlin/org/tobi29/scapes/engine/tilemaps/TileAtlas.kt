@@ -159,7 +159,7 @@ fun atlas(
                             RGBA -> {
                                 val image = image.cast(RGBA)!!
                                 val scaled =
-                                    MutableIntByteViewBitmap(
+                                    Ints2ByteArrayBitmap(
                                         size.x,
                                         size.y,
                                         RGBA
@@ -170,8 +170,7 @@ fun atlas(
                                                 image[x * image.width / size.x, y * image.height / size.y]
                                     }
                                 }
-                                @Suppress("USELESS_CAST") // FIXME: False positive
-                                scaled as IntByteViewBitmap<RGBA>
+                                scaled
                             }
                         }
                     } else image
@@ -182,7 +181,7 @@ fun atlas(
     }
     val atlasSize = assembleAtlas(
         tiles.asSequence().map { (_, size, position) -> size to position })
-    val atlas = MutableIntByteViewBitmap(atlasSize.x, atlasSize.y, RGBA)
+    val atlas = Ints2ByteArrayBitmap(atlasSize.x, atlasSize.y, RGBA)
     for ((tile, _, position) in tiles) {
         tile.sprite.frames.firstOrNull()?.let {
             atlas.set(position.x, position.y, it.image)

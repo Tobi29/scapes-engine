@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.backends.opengl
 
 import org.tobi29.graphics.Bitmap
-import org.tobi29.graphics.IntByteViewBitmap
+import org.tobi29.graphics.Ints2BytesBitmap
 import org.tobi29.graphics.RGBA
 import org.tobi29.graphics.flipVertical
 import org.tobi29.io.ByteViewRO
@@ -173,8 +173,9 @@ class GLImpl(private val glh: GLHandle) : GL(glh) {
             GL_RGBA,
             GL_UNSIGNED_BYTE, buffer
         )
-        flipVertical(width, height, buffer)
-        return IntByteViewBitmap(buffer, width, height, RGBA)
+        return Ints2BytesBitmap(buffer, width, height, RGBA).apply {
+            flipVertical()
+        }
     }
 
     override fun setAttribute1f(

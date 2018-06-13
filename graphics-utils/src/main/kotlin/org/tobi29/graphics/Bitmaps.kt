@@ -60,10 +60,41 @@ inline operator fun Bitmap<Ints2, ColorFormatInt>.set(
     data[x, y] = value
 }
 
+typealias Ints2BytesROBitmap<F> = Bitmap<Ints2BytesRO<*>, F>
+typealias Ints2BytesBitmap<F> = Bitmap<Ints2Bytes<*>, F>
+
+inline fun <F : ColorFormatInt> Ints2BytesROBitmap(
+    data: BytesRO, width: Int, height: Int, format: F
+): Ints2BytesROBitmap<F> = BitmapC(
+    Ints2BytesRO(data, width, height),
+    format
+)
+
+inline fun <F : ColorFormatInt> Ints2BytesBitmap(
+    data: Bytes, width: Int, height: Int, format: F
+): Ints2BytesBitmap<F> = BitmapC(
+    Ints2Bytes(data, width, height),
+    format
+)
+
+typealias Ints2ByteArrayBitmap<F> = Bitmap<Ints2ByteArray, F>
+
+inline fun <F : ColorFormatInt> Ints2ByteArrayBitmap(
+    width: Int, height: Int, format: F
+): Ints2ByteArrayBitmap<F> = BitmapC(
+    Ints2ByteArray(width, height),
+    format
+)
+
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use new array wrappers")
 typealias IntByteViewBitmap<F> = Bitmap<Int2ByteArrayRO<ByteViewRO>, F>
 
+@Deprecated("Use new array wrappers")
 typealias MutableIntByteViewBitmap<F> = Bitmap<Int2ByteArray<ByteView>, F>
 
+@Deprecated("Use new array wrappers")
 inline fun <F : ColorFormatInt> IntByteViewBitmap(
     data: ByteViewRO, width: Int, height: Int, format: F
 ): IntByteViewBitmap<F> = BitmapC(
@@ -71,6 +102,7 @@ inline fun <F : ColorFormatInt> IntByteViewBitmap(
     format
 )
 
+@Deprecated("Use new array wrappers")
 inline fun <F : ColorFormatInt> MutableIntByteViewBitmap(
     width: Int, height: Int, format: F
 ): MutableIntByteViewBitmap<F> = BitmapC(
@@ -78,6 +110,7 @@ inline fun <F : ColorFormatInt> MutableIntByteViewBitmap(
     format
 )
 
+@Deprecated("Use new array wrappers")
 inline fun <F : ColorFormatInt> MutableIntByteViewBitmap(
     data: ByteView, width: Int, height: Int, format: F
 ): MutableIntByteViewBitmap<F> = BitmapC(

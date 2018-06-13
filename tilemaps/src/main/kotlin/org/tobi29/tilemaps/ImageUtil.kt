@@ -16,10 +16,9 @@
 
 package org.tobi29.tilemaps
 
-import org.tobi29.arrays.Int2ByteArray
+import org.tobi29.arrays.Ints2ByteArray
 import org.tobi29.arrays.IntsRO2
 import org.tobi29.graphics.*
-import org.tobi29.io.view
 import org.tobi29.stdex.JvmName
 import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.splitToBytes
@@ -45,8 +44,7 @@ private fun Bitmap<IntsRO2, RGBA>.makeTransparent(
     val transR = (colorInt shr 16 and 0xFF).toByte()
     val transG = (colorInt shr 8 and 0xFF).toByte()
     val transB = (colorInt and 0xFF).toByte()
-    val filteredData =
-        Int2ByteArray(ByteArray(width * height shl 2).view, width, height)
+    val filteredData = Ints2ByteArray(width, height)
     for (y in 0 until height) {
         for (x in 0 until width) {
             data[x, y].splitToBytes { r, g, b, a ->

@@ -16,13 +16,11 @@
 
 package org.tobi29.graphics
 
-import org.tobi29.arrays.Int2ByteArrayRO
 import org.tobi29.arrays.IntsRO2
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.asBytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.readAsByteArray
 import org.tobi29.io.tag.*
-import org.tobi29.io.view
-import org.tobi29.stdex.splitToBytes
 
 fun Bitmap<*, *>.toTag(): TagMap = TagMap {
     this["Width"] = width.toTag()
@@ -37,30 +35,10 @@ fun MutableTag.toBitmap(): Bitmap<*, *>? {
     val width = map["Width"]?.toInt() ?: return null
     val height = map["Height"]?.toInt() ?: return null
     map["RGBA"]?.toByteArray()?.let {
-        return IntByteViewBitmap(it.view, width, height, RGBA)
+        return Ints2BytesBitmap(it.sliceOver(), width, height, RGBA)
     }
     return null
 }
 
-private fun IntsRO2.unwrapByteArray(): ByteArray = when (this) {
-    is Int2ByteArrayRO<*> -> {
-        val array = array
-        when (array) {
-            is ByteViewRO -> array.readAsByteArray()
-            else -> ByteArray(array.size) { array[it] }
-        }
-    }
-    else -> ByteArray(width * height shl 2).apply {
-        var i = 0
-        for (y in 0 until height) {
-            for (x in 0 until width) {
-                this@unwrapByteArray[x, y].splitToBytes { b3, b2, b1, b0 ->
-                    this[i++] = b3
-                    this[i++] = b2
-                    this[i++] = b1
-                    this[i++] = b0
-                }
-            }
-        }
-    }
-}
+private fun IntsRO2.unwrapByteArray(): ByteArray =
+    asBytesRO().readAsByteArray()
