@@ -16,26 +16,27 @@
 
 package org.tobi29.scapes.engine.gui
 
+import kotlinx.coroutines.experimental.Deferred
+import org.tobi29.coroutines.tryGet
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.scapes.engine.resource.Resource
 
 class GuiComponentIcon(
     parent: GuiLayoutData,
-    texture: Resource<Texture>? = null
+    texture: Deferred<Texture>? = null
 ) : GuiComponent(parent) {
     private var r = 1.0
     private var g = 1.0
     private var b = 1.0
     private var a = 1.0
-    var texture: Resource<Texture>? = texture
+    var texture: Deferred<Texture>? = texture
         set(value) {
             field = value
-            value?.onLoaded { dirty() }
+            value?.invokeOnCompletion { dirty() }
         }
 
     init {
-        texture?.onLoaded { dirty() }
+        texture?.invokeOnCompletion { dirty() }
     }
 
     fun setColor(

@@ -17,16 +17,17 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.launch
+import org.tobi29.coroutines.LinkedListChannel
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.graphics.loadShader
 import org.tobi29.stdex.atomic.AtomicBoolean
-import org.tobi29.coroutines.LinkedListChannel
 
 abstract class GameState(val engine: ScapesEngine) {
-    open val tps = 60.0
-    private val newPipeline = LinkedListChannel<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>()
+    open val tps: Double get() = 60.0
+    private val newPipeline =
+        LinkedListChannel<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>()
     private var newPipelineLoaded: (() -> (() -> Unit)?)? = null
     private val dirtyPipeline = AtomicBoolean(false)
     private var pipeline: Pipeline? = null
@@ -39,9 +40,7 @@ abstract class GameState(val engine: ScapesEngine) {
 
     abstract fun step(delta: Double)
 
-    fun renderState(gl: GL,
-                    delta: Double,
-                    updateSize: Boolean): Boolean {
+    fun renderState(gl: GL, delta: Double, updateSize: Boolean): Boolean {
         while (!newPipeline.isEmpty) {
             newPipeline.poll()?.let { (_, newPipeline) ->
                 finishPipeline(gl, Pipeline(gl, newPipeline))
@@ -60,8 +59,7 @@ abstract class GameState(val engine: ScapesEngine) {
         return pipeline.render(delta)
     }
 
-    private fun finishPipeline(gl: GL,
-                               pipeline: Pipeline) {
+    private fun finishPipeline(gl: GL, pipeline: Pipeline) {
         var loaded: (() -> Unit)? = null
         newPipelineLoaded = { loaded }
         launch(engine.graphics) {
@@ -86,13 +84,15 @@ abstract class GameState(val engine: ScapesEngine) {
     }
 
     fun switchPipeline(block: (GL) -> suspend () -> (Double) -> Unit) =
-            switchPipeline(true, block)
+        switchPipeline(true, block)
 
     fun switchPipelineWhenLoaded(block: (GL) -> suspend () -> (Double) -> Unit) =
-            switchPipeline(false, block)
+        switchPipeline(false, block)
 
-    fun switchPipeline(sync: Boolean,
-                       block: (GL) -> suspend () -> (Double) -> Unit) {
+    fun switchPipeline(
+        sync: Boolean,
+        block: (GL) -> suspend () -> (Double) -> Unit
+    ) {
         switchPipelineBare(sync) { gl ->
             val blockFinish = block(gl)
             val guiFinish = renderGui(gl)
@@ -107,15 +107,17 @@ abstract class GameState(val engine: ScapesEngine) {
         }
     }
 
-    fun switchPipelineBare(sync: Boolean,
-                           block: (GL) -> suspend () -> (Double) -> Unit) {
+    fun switchPipelineBare(
+        sync: Boolean,
+        block: (GL) -> suspend () -> (Double) -> Unit
+    ) {
         newPipeline.offer(Pair(sync, block))
     }
 
     private fun renderGui(gl: GL): suspend () -> (Double) -> Unit {
         val shader = engine.graphics.loadShader(SHADER_TEXTURED)
-        return render@ {
-            val s = shader.getAsync()
+        return render@{
+            val s = shader.await()
             ;{ delta ->
             gl.clearDepth()
             engine.guiStack.render(gl, s, delta)

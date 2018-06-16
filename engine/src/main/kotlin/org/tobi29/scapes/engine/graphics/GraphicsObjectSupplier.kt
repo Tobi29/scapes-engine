@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import kotlinx.coroutines.experimental.Deferred
 import org.tobi29.arrays.asBytesRO
 import org.tobi29.graphics.*
 import org.tobi29.io.ByteViewRO
@@ -24,7 +25,6 @@ import org.tobi29.io.ReadSource
 import org.tobi29.io.tag.binary.readBinary
 import org.tobi29.io.view
 import org.tobi29.scapes.engine.Container
-import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.scapes.engine.shader.CompiledShader
 import org.tobi29.scapes.engine.shader.Expression
 import org.tobi29.scapes.engine.shader.toCompiledShader
@@ -156,13 +156,13 @@ interface GraphicsObjectSupplier {
 fun GraphicsSystem.loadShader(
     asset: String,
     properties: Map<String, Expression> = emptyMap()
-): Resource<Shader> =
+): Deferred<Shader> =
     loadShader(engine.files[asset], properties)
 
 fun GraphicsSystem.loadShader(
     asset: ReadSource,
     properties: Map<String, Expression> = emptyMap()
-): Resource<Shader> =
+): Deferred<Shader> =
     loadShader({
         asset.readAsync { readBinary(it) }.toCompiledShader()
                 ?: throw IOException("Failed to deserialize shader")
@@ -171,11 +171,11 @@ fun GraphicsSystem.loadShader(
 fun GraphicsSystem.loadShader(
     shader: suspend () -> CompiledShader,
     properties: Map<String, Expression> = emptyMap()
-): Resource<Shader> =
+): Deferred<Shader> =
     engine.resources.load { createShader(shader(), properties) }
 
 fun GraphicsSystem.loadShader(
     shader: CompiledShader,
     properties: Map<String, Expression> = emptyMap()
-): Resource<Shader> =
+): Deferred<Shader> =
     engine.resources.load { createShader(shader, properties) }

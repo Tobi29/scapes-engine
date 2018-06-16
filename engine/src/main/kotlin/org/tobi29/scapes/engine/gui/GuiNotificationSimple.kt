@@ -15,21 +15,22 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import kotlinx.coroutines.experimental.Deferred
+import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Matrix
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.Texture
-import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.Vector3d
-import org.tobi29.scapes.engine.resource.Resource
 import kotlin.math.PI
 import kotlin.math.sin
 
-class GuiNotificationSimple constructor(parent: GuiLayoutData,
-                                        icon: Resource<Texture>,
-                                        text: String,
-                                        time: Double = 3.0) : GuiComponentVisibleSlabHeavy(
-        parent) {
+class GuiNotificationSimple(
+    parent: GuiLayoutData,
+    icon: Deferred<Texture>,
+    text: String,
+    time: Double = 3.0
+) : GuiComponentVisibleSlabHeavy(parent) {
     private val speed: Double
     private var progress = 0.0
 
@@ -39,11 +40,13 @@ class GuiNotificationSimple constructor(parent: GuiLayoutData,
         speed = 1.0 / time
     }
 
-    public override fun renderComponent(gl: GL,
-                                        shader: Shader,
-                                        size: Vector2d,
-                                        pixelSize: Vector2d,
-                                        delta: Double) {
+    public override fun renderComponent(
+        gl: GL,
+        shader: Shader,
+        size: Vector2d,
+        pixelSize: Vector2d,
+        delta: Double
+    ) {
         progress += speed * delta
         if (progress > 1.1) {
             progress = 1.1
@@ -51,8 +54,10 @@ class GuiNotificationSimple constructor(parent: GuiLayoutData,
         }
     }
 
-    override fun transform(matrix: Matrix,
-                           size: Vector2d) {
+    override fun transform(
+        matrix: Matrix,
+        size: Vector2d
+    ) {
         val sin = sin(progress * PI).toFloat() - 1.0f
         var sqr = sin * sin
         sqr *= sqr

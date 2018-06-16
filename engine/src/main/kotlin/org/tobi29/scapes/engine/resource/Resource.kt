@@ -14,49 +14,60 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.CompletableDeferred
+import kotlinx.coroutines.experimental.CompletionHandler
 import kotlinx.coroutines.experimental.Deferred
+import org.tobi29.coroutines.tryGet
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-interface Resource<out T : Any> {
-    fun get(): Deferred<T>
-
-    fun tryGet(): T?
-
-    fun onLoaded(block: (T) -> Unit)
-
-    suspend fun getAsync(): T
-}
-
-internal class ImmediateResource<out T : Any>(private val loaded: T) : Resource<T> {
-    override fun get(): Deferred<T> = CompletableDeferred(loaded)
-
-    override fun tryGet(): T? = loaded
-
-    override fun onLoaded(block: (T) -> Unit) = block(loaded)
-
-    override suspend fun getAsync(): T = loaded
-}
-
-class DeferredResource<out T : Any>(private val loaded: Deferred<T>) : Resource<T> {
-    override fun get(): Deferred<T> = loaded
-
-    override fun tryGet(): T? =
-            if (loaded.isCompleted) loaded.getCompleted() else null
-
-    override fun onLoaded(block: (T) -> Unit) {
-        loaded.invokeOnCompletion { block(loaded.getCompleted()) }
+fun <T : Any> Deferred<T>.asProperty(fail: () -> Throwable) =
+    object : ReadOnlyProperty<Any?, T> {
+        override fun getValue(
+            thisRef: Any?,
+            property: KProperty<*>
+        ): T = tryGet() ?: throw fail()
     }
 
-    override suspend fun getAsync(): T = loaded.await()
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use Deferred",
+    ReplaceWith("Deferred", "kotlinx.coroutines.experimental.Deferred")
+)
+typealias Resource<T> = Deferred<T>
+
+@Deprecated("Use Deferred", ReplaceWith("this"))
+inline fun <T> Resource<T>.get(): Deferred<T> = this
+
+@Deprecated("Use Deferred", ReplaceWith("invokeOnCompletion(handler)"))
+inline fun <T> Resource<T>.onLoaded(noinline handler: CompletionHandler) {
+    invokeOnCompletion(handler)
 }
 
-fun <T : Any> Resource(resource: T): Resource<T> = ImmediateResource(resource)
+@Deprecated("Use Deferred", ReplaceWith("await()"))
+suspend inline fun <T> Resource<T>.getAsync(): T = await()
 
-fun <T : Any> Resource<T>.asProperty(fail: () -> Throwable) = object : ReadOnlyProperty<Any?, T> {
-    override fun getValue(thisRef: Any?,
-                          property: KProperty<*>): T = tryGet() ?: throw fail()
-}
+@Deprecated(
+    "Use Deferred",
+    ReplaceWith(
+        "CompletableDeferred(resource)",
+        "kotlinx.coroutines.experimental.CompletableDeferred"
+    )
+)
+inline fun <T : Any> Resource(resource: T): Resource<T> =
+    CompletableDeferred(resource)
+
+@Deprecated(
+    "Use Deferred",
+    ReplaceWith("Deferred", "kotlinx.coroutines.experimental.Deferred")
+)
+typealias DeferredResource<T> = Deferred<T>
+
+@Deprecated("Use Deferred", ReplaceWith("loaded"))
+inline fun <T> DeferredResource(loaded: Deferred<T>): DeferredResource<T> =
+    loaded

@@ -16,15 +16,15 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import kotlinx.coroutines.experimental.Deferred
 import org.tobi29.graphics.decodePng
 import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.resource.Resource
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.computeAbsent
 
 class TextureManager(private val engine: ScapesEngine) {
-    private val cache = ConcurrentHashMap<TextureReference, Resource<Texture>>()
+    private val cache = ConcurrentHashMap<TextureReference, Deferred<Texture>>()
 
     operator fun get(
         asset: String,
@@ -33,7 +33,7 @@ class TextureManager(private val engine: ScapesEngine) {
         magFilter: TextureFilter = TextureFilter.NEAREST,
         wrapS: TextureWrap = TextureWrap.REPEAT,
         wrapT: TextureWrap = TextureWrap.REPEAT
-    ): Resource<Texture> = TextureReference(
+    ): Deferred<Texture> = TextureReference(
         asset,
         mipmaps,
         minFilter, magFilter,
@@ -42,7 +42,7 @@ class TextureManager(private val engine: ScapesEngine) {
 
     private fun load(
         reference: TextureReference
-    ): Resource<Texture> = engine.resources.load {
+    ): Deferred<Texture> = engine.resources.load {
         engine.graphics.createTexture(
             decodePng(engine.files[reference.asset]),
             reference.mipmaps,

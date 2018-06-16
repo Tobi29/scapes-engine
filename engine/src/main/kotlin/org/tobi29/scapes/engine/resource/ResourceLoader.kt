@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.resource
 
+import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
 import org.tobi29.coroutines.TaskLock
@@ -24,15 +25,15 @@ import kotlin.coroutines.experimental.CoroutineContext
 class ResourceLoader(private val taskExecutor: CoroutineContext) {
     private val tasks = TaskLock()
 
-    fun <T : Any> load(supplier: suspend () -> T): Resource<T> {
+    fun <T : Any> load(supplier: suspend () -> T): Deferred<T> {
         tasks.increment()
-        return DeferredResource(async(taskExecutor) {
+        return async(taskExecutor) {
             try {
                 supplier()
             } finally {
                 tasks.decrement()
             }
-        })
+        }
     }
 
     fun onDone(block: () -> Unit) = tasks.onDone(block)

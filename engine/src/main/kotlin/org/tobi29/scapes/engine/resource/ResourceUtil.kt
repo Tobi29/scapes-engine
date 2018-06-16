@@ -22,12 +22,14 @@ import org.tobi29.coroutines.map
 import org.tobi29.io.ReadSource
 import org.tobi29.stdex.utf8ToString
 
-fun ResourceLoader.loadString(source: ReadSource) =
-        load {
-            source.data().readAsByteArray { array, offset, size ->
-                array.utf8ToString(offset, size)
-            }
+fun ResourceLoader.loadString(source: ReadSource): Deferred<String> =
+    load {
+        source.data().readAsByteArray { array, offset, size ->
+            array.utf8ToString(offset, size)
         }
+    }
+
+// TODO: Remove after 0.0.14
 
 /**
  * Transforms a resource by calling [transform] on completion
@@ -39,6 +41,7 @@ fun ResourceLoader.loadString(source: ReadSource) =
  * @receiver Resource to map
  * @return A resource available as soon as the given one is available
  */
+@Deprecated("Use Deferred")
 inline fun <T : Any, R : Any> Resource<T>.map(
-        crossinline transform: (T) -> R
+    crossinline transform: (T) -> R
 ): Resource<R> = DeferredResource(get().map(transform))
