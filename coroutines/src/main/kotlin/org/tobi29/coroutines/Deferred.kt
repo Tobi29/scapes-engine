@@ -34,7 +34,7 @@ import kotlinx.coroutines.experimental.Deferred
 inline fun <T, R> Deferred<T>.map(
     crossinline transform: (T) -> R
 ): Deferred<R> = CompletableDeferred<R>().also { deferred ->
-    invokeOnCompletion(true) { cause ->
+    invokeOnCompletion(onCancelling = true, handler = { cause ->
         if (cause == null) {
             try {
                 deferred.complete(transform(getCompleted()))
@@ -42,7 +42,7 @@ inline fun <T, R> Deferred<T>.map(
                 deferred.completeExceptionally(e)
             }
         } else deferred.completeExceptionally(cause)
-    }
+    })
 }
 
 inline fun <T> Deferred<T>.tryGet(): T? =

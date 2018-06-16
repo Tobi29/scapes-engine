@@ -22,12 +22,15 @@ import org.tobi29.utils.Option
 import org.tobi29.utils.OptionSome
 import org.tobi29.utils.nil
 
-        /**
-         * A queue of tasks or [nil] indicating the end of a batch.
-         */
-typealias TaskChannel<T> = UnboundChannel<Option<T>>
+// FIXME: Compiler crash when using non-deprecated versions
 
-inline fun <T> TaskChannel(): TaskChannel<T> = LinkedListChannel()
+/**
+ * A queue of tasks or [nil] indicating the end of a batch.
+ */
+typealias TaskChannel<T> = Channel<Option<T>>
+
+inline fun <T> TaskChannel(): TaskChannel<T> =
+    kotlinx.coroutines.experimental.channels.Channel(Channel.UNLIMITED)
 
 /**
  * Adds an element to the end of the queue.

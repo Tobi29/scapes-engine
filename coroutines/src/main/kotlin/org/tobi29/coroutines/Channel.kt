@@ -16,37 +16,52 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.CancellationException
+import kotlinx.coroutines.experimental.channels.Channel
 
-/**
- * Common interface for thread-safe channels
- *
- * **Note:** This interface is incomplete and shall *never* be implemented
- * manually as it would be missing methods on jvm!
- */
-expect interface Channel<E> {
-    val isEmpty: Boolean
-    val isFull: Boolean
-    val isClosedForSend: Boolean
-    val isClosedForReceive: Boolean
+// TODO: Remove after 0.0.14
 
-    suspend fun send(element: E)
-    fun offer(element: E): Boolean
+@Deprecated(
+    "Use kotlinx.coroutines version",
+    ReplaceWith(
+        "Channel<E>",
+        "kotlinx.coroutines.experimental.channels.Channel"
+    )
+)
+typealias Channel<E> = kotlinx.coroutines.experimental.channels.Channel<E>
 
-    suspend fun receive(): E
-    suspend fun receiveOrNull(): E?
-    fun poll(): E?
+@Deprecated(
+    "Use kotlinx.coroutines version",
+    ReplaceWith(
+        "Channel<E>",
+        "kotlinx.coroutines.experimental.channels.Channel"
+    )
+)
+typealias UnboundChannel<E> = kotlinx.coroutines.experimental.channels.Channel<E>
 
-    fun close(cause: Throwable?): Boolean
-    fun cancel(cause: Throwable?): Boolean
-}
+@Deprecated(
+    "Use kotlinx.coroutines version",
+    ReplaceWith(
+        "Channel<E>(Channel.UNLIMITED)",
+        "kotlinx.coroutines.experimental.channels.Channel"
+    )
+)
+inline fun <E> LinkedListChannel() =
+    kotlinx.coroutines.experimental.channels.Channel<E>(Channel.UNLIMITED)
 
-typealias UnboundChannel<E> = Channel<E>
+@Deprecated(
+    "Use kotlinx.coroutines version",
+    ReplaceWith(
+        "ClosedSendChannelException",
+        "kotlinx.coroutines.experimental.channels.ClosedSendChannelException"
+    )
+)
+typealias ClosedSendChannelException = kotlinx.coroutines.experimental.channels.ClosedSendChannelException
 
-expect class ClosedSendChannelException(message: String?) :
-    CancellationException
-
-expect class ClosedReceiveChannelException(message: String?) :
-    NoSuchElementException
-
-expect fun <E> LinkedListChannel(): UnboundChannel<E>
+@Deprecated(
+    "Use kotlinx.coroutines version",
+    ReplaceWith(
+        "ClosedReceiveChannelException",
+        "kotlinx.coroutines.experimental.channels.ClosedReceiveChannelException"
+    )
+)
+typealias ClosedReceiveChannelException = kotlinx.coroutines.experimental.channels.ClosedReceiveChannelException

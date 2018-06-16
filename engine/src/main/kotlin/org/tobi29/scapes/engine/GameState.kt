@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine
 
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
-import org.tobi29.coroutines.LinkedListChannel
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
@@ -27,7 +27,7 @@ import org.tobi29.stdex.atomic.AtomicBoolean
 abstract class GameState(val engine: ScapesEngine) {
     open val tps: Double get() = 60.0
     private val newPipeline =
-        LinkedListChannel<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>()
+        Channel<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>(Channel.UNLIMITED)
     private var newPipelineLoaded: (() -> (() -> Unit)?)? = null
     private val dirtyPipeline = AtomicBoolean(false)
     private var pipeline: Pipeline? = null
