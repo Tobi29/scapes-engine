@@ -19,7 +19,6 @@
 package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.CompletionHandler
 import kotlinx.coroutines.experimental.Deferred
 import org.tobi29.coroutines.tryGet
 import kotlin.properties.ReadOnlyProperty
@@ -33,6 +32,18 @@ fun <T : Any> Deferred<T>.asProperty(fail: () -> Throwable) =
         ): T = tryGet() ?: throw fail()
     }
 
+/**
+ * Calls [handler] with the completed value as soon as it is available
+ *
+ * **Note:** Just like with [Deferred.invokeOnCompletion] [handler] should be
+ * lock-free and fast and not throw any exceptions
+ * @param handler Handler to be called
+ * @receiver Deferred to await
+ */
+inline fun <T> Deferred<T>.onLoaded(crossinline handler: (T) -> Unit) {
+    invokeOnCompletion { handler(getCompleted()) }
+}
+
 // TODO: Remove after 0.0.14
 
 @Deprecated(
@@ -43,11 +54,6 @@ typealias Resource<T> = Deferred<T>
 
 @Deprecated("Use Deferred", ReplaceWith("this"))
 inline fun <T> Resource<T>.get(): Deferred<T> = this
-
-@Deprecated("Use Deferred", ReplaceWith("invokeOnCompletion(handler)"))
-inline fun <T> Resource<T>.onLoaded(noinline handler: CompletionHandler) {
-    invokeOnCompletion(handler)
-}
 
 @Deprecated("Use Deferred", ReplaceWith("await()"))
 suspend inline fun <T> Resource<T>.getAsync(): T = await()
