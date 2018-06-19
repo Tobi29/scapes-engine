@@ -185,8 +185,8 @@ inline fun <T : R, E, R> Result<T, E>.unwrapOr(error: (E) -> R): R =
  */
 inline fun <R, reified E : Throwable> tryWrap(block: () -> R): Result<R, E> =
     try {
-        ResultOk(block())
+        EitherLeft(block()) // FIXME: Compiler bug
     } catch (e: Throwable) {
         if (e !is E) throw e
-        ResultError(e)
+        EitherRight(e) // FIXME: Compiler bug
     }

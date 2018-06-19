@@ -18,10 +18,7 @@ package org.tobi29.coroutines
 
 import org.tobi29.stdex.atomic.AtomicLong
 import org.tobi29.stdex.toIntClamped
-import org.tobi29.utils.Option
-import org.tobi29.utils.OptionSome
-import org.tobi29.utils.get
-import org.tobi29.utils.nil
+import org.tobi29.utils.*
 import java.util.concurrent.ConcurrentLinkedQueue
 
 actual class TaskLock {
@@ -56,7 +53,7 @@ actual class TaskLock {
         if (isDone()) {
             block()
         } else {
-            val blockOption = OptionSome(block)
+            val blockOption = EitherLeft(block) // FIXME: Compiler bug
             onDone.add(blockOption)
             if (isDone() && onDone.remove(blockOption)) block()
         }

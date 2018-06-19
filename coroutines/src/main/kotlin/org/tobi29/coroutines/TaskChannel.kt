@@ -18,6 +18,7 @@
 
 package org.tobi29.coroutines
 
+import org.tobi29.utils.EitherLeft
 import org.tobi29.utils.Option
 import org.tobi29.utils.OptionSome
 import org.tobi29.utils.nil
@@ -38,7 +39,7 @@ inline fun <T> TaskChannel(): TaskChannel<T> =
  * @receiver The queue to add to
  */
 inline fun <T> TaskChannel<T>.offer(block: T) {
-    offer(OptionSome(block))
+    offer(EitherLeft(block)) // FIXME: Compiler bug
 }
 
 /**

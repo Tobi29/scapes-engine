@@ -389,9 +389,9 @@ class OpenALSoundSystem(
                             )
                         }
                     cache[asset] = completed?.let { EitherRight(completed) }
-                    OptionSome(completed)
+                    EitherLeft(completed) // FIXME: Compiler bug
                 } else nil
-            is EitherRight<OpenALAudioData> -> OptionSome(entry.value)
+            is EitherRight<OpenALAudioData> -> EitherLeft(entry.value) // FIXME: Compiler bug
         }
     }
 
