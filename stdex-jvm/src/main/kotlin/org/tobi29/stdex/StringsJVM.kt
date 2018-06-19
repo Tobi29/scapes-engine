@@ -42,12 +42,6 @@ internal actual inline fun String.utf8ToArrayImpl(
 }
 
 @PublishedApi
-internal actual inline fun CharArray.copyToStringImpl(
-    offset: Int,
-    size: Int
-) = String(this, offset, size)
-
-@PublishedApi
 internal actual inline fun String.copyToArrayImpl(
     destination: CharArray,
     offset: Int,

@@ -120,18 +120,6 @@ fun CharSequence.utf8ToArray(
 ): ByteArray = toString().utf8ToArray(destination, offset, size)
 
 /**
- * Copies the characters of the given array into a new string
- * @param offset First index to read in the array
- * @param size Number of characters to read
- * @receiver Array to read from
- * @return A new string containing the copied characters
- */
-inline fun CharArray.copyToString(
-    offset: Int = 0,
-    size: Int = this.size - offset
-): String = copyToStringImpl(offset, size)
-
-/**
  * Copies the characters of the given string into an array
  * @param destination Array to write to
  * @param offset First index to write into in the array
@@ -334,15 +322,27 @@ expect internal fun String.utf8ToArrayImpl(
 ): ByteArray
 
 @PublishedApi
-expect internal fun CharArray.copyToStringImpl(
-    offset: Int,
-    size: Int
-): String
-
-@PublishedApi
 expect internal fun String.copyToArrayImpl(
     destination: CharArray,
     offset: Int,
     startIndex: Int,
     endIndex: Int
 ): CharArray
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use stdlib fake constructor",
+    ReplaceWith("String(this)")
+)
+inline fun CharArray.copyToString(
+): String = String(this)
+
+@Deprecated(
+    "Use stdlib fake constructor",
+    ReplaceWith("String(this, offset, size)")
+)
+inline fun CharArray.copyToString(
+    offset: Int = 0,
+    size: Int = this.size - offset
+): String = String(this, offset, size)

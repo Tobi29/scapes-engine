@@ -19,7 +19,6 @@ package com.j256.simplemagik.entries
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
 import org.tobi29.stdex.combineToShort
-import org.tobi29.stdex.copyToString
 import org.tobi29.stdex.toString
 import org.tobi29.stdex.utf8ToString
 import org.tobi29.utils.toStringDecimal
@@ -239,9 +238,9 @@ internal class PercentExpression(expression: String) {
         val strValue = extractedValue.slice(
             0, size shl 1
         ).let { array ->
-            CharArray(size) {
+            String(CharArray(size) {
                 combineToShort(array[it shl 1], array[(it shl 1) + 1]).toChar()
-            }.copyToString()
+            })
         }
         append(strValue, sb)
     }
@@ -257,10 +256,10 @@ internal class PercentExpression(expression: String) {
         val strValue = extractedValue.slice(
             0, size shl 1
         ).let { array ->
-            CharArray(size) {
+            String(CharArray(size) {
                 combineToShort(array[it shl 1], array[(it shl 1) + 1]).toChar()
                 combineToShort(array[(it shl 1) + 1], array[it shl 1]).toChar()
-            }.copyToString()
+            })
         }
         append(strValue, sb)
     }

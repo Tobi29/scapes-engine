@@ -16,8 +16,6 @@
 
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.stdex.copyToString
-
 class GuiComponentTextField(
     parent: GuiLayoutData,
     textX: Int,
@@ -44,7 +42,7 @@ class GuiComponentTextField(
     init {
         if (hiddenText) {
             this.textComponent.textFilter = { str ->
-                CharArray(str.length) { '*' }.copyToString()
+                String(CharArray(str.length) { '*' })
             }
         } else {
             this.textComponent.textFilter = { str -> str }

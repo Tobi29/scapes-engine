@@ -35,7 +35,7 @@ fun Int.toStringCaseSensitive(radix: Int): String {
         value /= radix
     }
     if (!sign) str[--i] = '-'
-    return str.copyToString(i)
+    return String(str, i, str.size - i)
 }
 
 fun Long.toStringCaseSensitive(radix: Int): String {
@@ -51,7 +51,7 @@ fun Long.toStringCaseSensitive(radix: Int): String {
         value /= radix
     }
     if (!sign) str[--i] = '-'
-    return str.copyToString(i)
+    return String(str, i, str.size - i)
 }
 
 inline fun String.toIntCaseSensitive(radix: Int): Int =

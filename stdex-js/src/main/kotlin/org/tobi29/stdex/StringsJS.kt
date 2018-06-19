@@ -44,17 +44,6 @@ internal actual fun String.utf8ToArrayImpl(
     }
 }
 
-
-@PublishedApi
-internal actual fun CharArray.copyToStringImpl(
-    offset: Int,
-    size: Int
-) = StringBuilder(size).apply {
-    for (i in offset until offset + size) {
-        append(this@copyToStringImpl[i])
-    }
-}.toString()
-
 @PublishedApi
 internal actual fun String.copyToArrayImpl(
     destination: CharArray,

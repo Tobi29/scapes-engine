@@ -16,8 +16,6 @@
 
 package org.tobi29.utils
 
-import org.tobi29.stdex.copyToString
-
 actual class MutableString actual constructor(
     private var str: String
 ) : CharSequence, Appendable {
@@ -119,7 +117,7 @@ actual class MutableString actual constructor(
 
     actual fun append(
         array: CharArray, offset: Int, length: Int
-    ): MutableString = append(array.copyToString(offset, length))
+    ): MutableString = append(String(array, offset, length))
 
     actual fun insert(
         position: Int, csq: CharSequence?, start: Int, end: Int
@@ -135,7 +133,7 @@ actual class MutableString actual constructor(
 
     actual fun insert(
         position: Int, array: CharArray, offset: Int, length: Int
-    ): MutableString = insert(position, array.copyToString(offset, length))
+    ): MutableString = insert(position, String(array, offset, length))
 
     actual fun delete(range: IntRange) =
         delete(range.start, range.endInclusive + 1)

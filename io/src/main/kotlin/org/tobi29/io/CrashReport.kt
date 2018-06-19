@@ -16,8 +16,6 @@
 
 package org.tobi29.io
 
-import org.tobi29.stdex.copyToString
-
 fun crashReportName(time: String): String =
         "CrashReport-$time.txt"
 
@@ -26,8 +24,8 @@ fun Appendable.crashReportSection(name: String,
     val dashes = columns - name.length - 1
     val dashesLeft = dashes shr 1
     val dashesRight = dashes - dashesLeft
-    val dashesLeftStr = CharArray(dashesLeft) { '-' }.copyToString()
-    val dashesRightStr = CharArray(dashesRight) { '-' }.copyToString()
+    val dashesLeftStr = String(CharArray(dashesLeft) { '-' })
+    val dashesRightStr = String(CharArray(dashesRight) { '-' })
     println("$dashesLeftStr$name:$dashesRightStr")
 }
 
