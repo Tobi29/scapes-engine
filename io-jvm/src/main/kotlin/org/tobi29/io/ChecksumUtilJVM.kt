@@ -20,12 +20,15 @@ import org.tobi29.checksums.Checksum
 import org.tobi29.checksums.ChecksumAlgorithm
 import java.nio.ByteBuffer
 
+// TODO: Remove after 0.0.14
+
 /**
  * Creates a checksum from the given [ByteBuffer]
  * @param buffer    [ByteBuffer] that will be used to create the checksum
  * @param algorithm The algorithm that will be used to create the checksum
  * @return A [Checksum] containing the checksum
  */
+@Deprecated("Will be dropped without direct replacement")
 fun checksum(
     buffer: ByteBuffer,
     algorithm: ChecksumAlgorithm = ChecksumAlgorithm.Sha256

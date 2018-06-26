@@ -19,6 +19,8 @@ package org.tobi29.io
 import org.tobi29.checksums.Checksum
 import org.tobi29.checksums.ChecksumAlgorithm
 
+// TODO: Remove after 0.0.14
+
 /**
  * Creates a checksum from the given [ReadableByteStream]
  * @param input     [ReadableByteStream] that will be used to create the checksum
@@ -26,6 +28,7 @@ import org.tobi29.checksums.ChecksumAlgorithm
  * @return A [Checksum] containing the checksum
  * @throws IOException When an IO error occurs
  */
+@Deprecated("Will be dropped without direct replacement")
 fun checksum(
     input: ReadableByteStream,
     algorithm: ChecksumAlgorithm = ChecksumAlgorithm.Sha256
