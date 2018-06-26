@@ -66,25 +66,23 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
                 this@ConcurrentSortedMap.remove(element.key) != null
         }
 
-    override fun put(
-        key: K,
-        value: V
-    ) =
-        map.put(key, value).also { previous ->
-            if (previous == null) {
-                val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
-                    list.size + 1
-                )
-                newList.addAll(list)
-                newList.add(map.entries.first { it.key == key })
-                newList.sortBy { it.key }
-                list = newList
-            } else {
-                list.asSequence().filter { it.key == key }.forEach {
-                    it.setValue(value)
-                }
+    override fun get(key: K) = map[key]
+
+    override fun put(key: K, value: V) = map.put(key, value).also { previous ->
+        if (previous == null) {
+            val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
+                list.size + 1
+            )
+            newList.addAll(list)
+            newList.add(map.entries.first { it.key == key })
+            newList.sortBy { it.key }
+            list = newList
+        } else {
+            list.asSequence().filter { it.key == key }.forEach {
+                it.setValue(value)
             }
         }
+    }
 
     override fun putAll(from: Map<out K, V>) {
         val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
@@ -105,16 +103,10 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
         list = newList
     }
 
-    override fun replace(
-        key: K,
-        value: V
-    ): V? = if (map.containsKey(key)) put(key, value) else null
+    override fun replace(key: K, value: V): V? =
+        if (map.containsKey(key)) put(key, value) else null
 
-    override fun replace(
-        key: K,
-        oldValue: V,
-        newValue: V
-    ): Boolean =
+    override fun replace(key: K, oldValue: V, newValue: V): Boolean =
         if (map[key] == oldValue) {
             put(key, newValue)
             true
