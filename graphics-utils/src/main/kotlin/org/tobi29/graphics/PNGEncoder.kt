@@ -22,6 +22,7 @@ import org.tobi29.checksums.finishChainCrc32
 import org.tobi29.checksums.initChainCrc32
 import org.tobi29.checksums.tableCrc32
 import org.tobi29.io.*
+import org.tobi29.io.compression.deflate.deflate
 import org.tobi29.stdex.splitToBytes
 
 fun encodePng(
@@ -59,7 +60,7 @@ private fun WritableByteStream.writeImage(
         override fun isOpen() = true
         override fun close() {}
     })
-    CompressionUtil.compress(data, write, level)
+    deflate(data, write, level)
     write.flush()
     writeChunk(TYPE_IEND)
 }

@@ -23,6 +23,8 @@ import org.jetbrains.spek.api.dsl.on
 import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.shouldEqual
 
+// TODO: Remove after 0.0.14
+
 object CompressionUtilTests : Spek({
     given("any byte array") {
         val arrays by memoized { byteArrays(32, 8) }

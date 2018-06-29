@@ -19,6 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     expectedBy project(":graphics-utils")
     compile project(":stdex-jvm")
+    compile project(":compression-deflate-jvm")
     compile project(":tag-jvm")
     compile project(":io-jvm")
     compile project(":math-jvm")

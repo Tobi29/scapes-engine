@@ -19,7 +19,9 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     expectedBy project(":server-framework")
     compile project(":stdex-jvm")
+    compile project(":compression-deflate-jvm")
     compile project(":tag-jvm")
+    compile project(":tag-binary-jvm")
     compile project(":io-jvm")
     compile project(":base64-jvm")
     compile project(":coroutines-jvm")

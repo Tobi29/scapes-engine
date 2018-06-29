@@ -24,6 +24,7 @@ dependencies {
     compile project(":profiler-js")
     compile project(":logging-js")
     compile project(":shader-compiler-js")
+    compile project(":tag-binary-js")
     compile project(":coroutines-js")
     compile project(":utils-js")
 }

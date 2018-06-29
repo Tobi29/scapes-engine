@@ -18,28 +18,29 @@ package org.tobi29.server
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.io.*
+import org.tobi29.io.compression.deflate.DeflateHandle
+import org.tobi29.io.compression.deflate.InflateHandle
+import org.tobi29.io.compression.deflate.deflate
+import org.tobi29.io.compression.deflate.inflate
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.assert
 import java.lang.ref.WeakReference
 
-class PacketBundleChannel(private val channelRead: ReadableByteChannel,
-                          private val channelWrite: WritableByteChannel) {
+class PacketBundleChannel(
+    private val channelRead: ReadableByteChannel,
+    private val channelWrite: WritableByteChannel
+) {
     private val dataStreamOut = MemoryViewStreamDefault(
-            growth = { it + 102400 })
+        growth = { it + 102400 })
     private val byteBufferStreamOut = MemoryViewStreamDefault(
-            growth = { it + 102400 })
+        growth = { it + 102400 })
     private val queue = Channel<HeapViewByteBE>(Channel.UNLIMITED)
-    private val deflater: CompressionUtil.Filter
-    private val inflater: CompressionUtil.Filter
+    private val deflater = DeflateHandle(1)
+    private val inflater = InflateHandle()
     private var output: HeapViewByteBE? = null
     private var input = MemoryViewStreamDefault().apply { limit(4) }
     private var hasInput: Boolean = false
     private var hasBundle: Boolean = false
-
-    init {
-        deflater = ZDeflater(1, 8192)
-        inflater = ZInflater(8192)
-    }
 
     constructor(channel: ByteChannel) : this(channel, channel)
 
@@ -59,7 +60,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
     fun queueBundle() {
         dataStreamOut.flip()
         byteBufferStreamOut.reset()
-        CompressionUtil.filter(dataStreamOut, byteBufferStreamOut, deflater)
+        deflater.deflate(dataStreamOut, byteBufferStreamOut)
         byteBufferStreamOut.flip()
         val size = byteBufferStreamOut.remaining()
         if (size > BUNDLE_MAX_SIZE) {
@@ -156,7 +157,8 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
         if (!hasInput) {
             if (input.remaining() != BUNDLE_HEADER_SIZE) {
                 throw IOException(
-                        "Invalid bundle header size: " + input.remaining())
+                    "Invalid bundle header size: " + input.remaining()
+                )
             }
             val limit = input.getInt()
             if (limit > BUNDLE_MAX_SIZE) {
@@ -168,7 +170,7 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
             return false
         }
         byteBufferStreamOut.reset()
-        CompressionUtil.filter(input, byteBufferStreamOut, inflater)
+        inflater.inflate(input, byteBufferStreamOut)
         byteBufferStreamOut.flip()
         hasInput = false
         input.reset()
@@ -180,7 +182,8 @@ class PacketBundleChannel(private val channelRead: ReadableByteChannel,
     companion object {
         private val BUNDLE_HEADER_SIZE = 4
         private val BUNDLE_MAX_SIZE = 1 shl 10 shl 10 shl 6
-        private val BUFFER_CACHE = ThreadLocal { ArrayList<WeakReference<ByteArray>>() }
+        private val BUFFER_CACHE =
+            ThreadLocal { ArrayList<WeakReference<ByteArray>>() }
     }
 
     enum class FetchResult {

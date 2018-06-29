@@ -16,9 +16,9 @@
 
 package org.tobi29.io
 
-/**
- * Utility class for compressing and decompressing data
- */
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use compression-deflate module")
 object CompressionUtil {
 
     // TODO: @Throws(IOException::class)

@@ -21,6 +21,8 @@ import org.khronos.webgl.Uint8Array
 import org.tobi29.stdex.ArrayDeque
 import org.tobi29.stdex.asArray
 
+// TODO: Remove after 0.0.14
+
 actual class ZDeflater actual constructor(
     private val level: Int,
     buffer: Int

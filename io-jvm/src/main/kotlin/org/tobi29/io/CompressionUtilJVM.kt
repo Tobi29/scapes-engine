@@ -19,6 +19,8 @@ package org.tobi29.io
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
+// TODO: Remove after 0.0.14
+
 actual class ZDeflater actual constructor(
     level: Int,
     private val buffer: Int

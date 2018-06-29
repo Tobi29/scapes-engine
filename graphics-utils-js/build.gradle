@@ -19,6 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 dependencies {
     expectedBy project(":graphics-utils")
     compile project(":stdex-js")
+    compile project(":compression-deflate-js")
     compile project(":tag-js")
     compile project(":io-js")
     compile project(":math-js")

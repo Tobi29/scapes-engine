@@ -19,8 +19,10 @@ package org.tobi29.io
 import org.tobi29.stdex.toIntClamped
 import org.tobi29.stdex.utf8ToString
 
-inline fun ReadableByteStream.process(bufferSize: Int = 1024,
-                                      sink: (ByteViewRO) -> Unit) {
+inline fun ReadableByteStream.process(
+    bufferSize: Int = 1024,
+    sink: (ByteViewRO) -> Unit
+) {
     val buffer = ByteArray(bufferSize).view
     while (true) {
         val read = getSome(buffer)
@@ -29,16 +31,39 @@ inline fun ReadableByteStream.process(bufferSize: Int = 1024,
     }
 }
 
+inline fun filter(
+    input: ReadableByteStream,
+    output: WritableByteStream,
+    filterInput: (ReadableByteStream) -> Boolean,
+    filterOutput: (WritableByteStream) -> Int,
+    filterFinish: () -> Unit,
+    filterNeedsInput: () -> Boolean,
+    filterFinished: () -> Boolean
+) {
+    while (filterInput(input)) {
+        while (!filterNeedsInput()) {
+            val len = filterOutput(output)
+            if (len <= 0) break
+        }
+    }
+    filterFinish()
+    while (!filterFinished()) {
+        val len = filterOutput(output)
+        if (len <= 0) break
+    }
+}
+
 fun ReadableByteStream.asByteArray(): ByteArray =
-        asByteView().readAsByteArray()
+    asByteView().readAsByteArray()
 
 fun ReadableByteStream.asString(): String =
-        asByteView().let { it.array.utf8ToString(it.offset, it.size) }
+    asByteView().let { it.array.utf8ToString(it.offset, it.size) }
 
 fun ReadableByteStream.asByteView(): HeapViewByteBE =
-        (if (this is SeekableByteChannel) MemoryViewStreamDefault(
-                ByteArray(remaining().toIntClamped()).viewBE)
-        else MemoryViewStreamDefault()).also { stream ->
-            process { stream.put(it) }
-            stream.flip()
-        }.bufferSlice()
+    (if (this is SeekableByteChannel) MemoryViewStreamDefault(
+        ByteArray(remaining().toIntClamped()).viewBE
+    )
+    else MemoryViewStreamDefault()).also { stream ->
+        process { stream.put(it) }
+        stream.flip()
+    }.bufferSlice()

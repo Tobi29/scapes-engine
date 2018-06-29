@@ -24,6 +24,7 @@ dependencies {
     compile project(":profiler-jvm")
     compile project(":logging-jvm")
     compile project(":shader-compiler-jvm")
+    compile project(":tag-binary-jvm")
     compile project(":coroutines-jvm")
     compile project(":utils-jvm")
 }

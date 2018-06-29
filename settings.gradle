@@ -28,6 +28,15 @@ include "logging-jvm"
 include "tag"
 include "tag-js"
 include "tag-jvm"
+include "tag-binary"
+include "tag-binary-js"
+include "tag-binary-jvm"
+include "tag-bundle"
+include "tag-bundle-js"
+include "tag-bundle-jvm"
+include "tag-json"
+include "tag-json-js"
+include "tag-json-jvm"
 
 // Uuid
 include "uuid"
@@ -73,6 +82,15 @@ include "filesystem"
 include "filesystem-jvm"
 include "filesystem-nio-jvm"
 include "filesystem-io-jvm"
+
+// Compression
+include "compression-deflate"
+include "compression-deflate-js"
+include "compression-deflate-jvm"
+
+// Kzlib
+include "kzlib"
+include "kzlib-js"
 
 // Content Info
 include "contentinfo"
