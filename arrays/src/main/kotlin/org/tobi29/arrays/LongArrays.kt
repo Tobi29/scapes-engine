@@ -144,7 +144,7 @@ internal open class LongsROSlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is LongsRO) return false
+        if (other !is LongsRO || size != other.size) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -212,7 +212,7 @@ open class HeapLongs(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is LongsRO) return false
+        if (other !is LongsRO || size != other.size) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }

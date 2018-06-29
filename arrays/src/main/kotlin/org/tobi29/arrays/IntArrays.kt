@@ -144,7 +144,7 @@ internal open class IntsROSlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is IntsRO) return false
+        if (other !is IntsRO || size != other.size) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -212,7 +212,7 @@ open class HeapInts(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is IntsRO) return false
+        if (other !is IntsRO || size != other.size) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }

@@ -144,7 +144,7 @@ internal open class BooleansROSlice(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is BooleansRO) return false
+        if (other !is BooleansRO || size != other.size) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
@@ -212,7 +212,7 @@ open class HeapBooleans(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is BooleansRO) return false
+        if (other !is BooleansRO || size != other.size) return false
         for (i in 0 until size) {
             if (this[i] != other[i]) return false
         }
