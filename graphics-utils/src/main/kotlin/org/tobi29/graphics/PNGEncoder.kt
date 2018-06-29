@@ -17,10 +17,10 @@
 package org.tobi29.graphics
 
 import org.tobi29.arrays.IntsRO2
-import org.tobi29.checksums.chainCRC32
-import org.tobi29.checksums.finishChainCRC32
-import org.tobi29.checksums.initChainCRC32
-import org.tobi29.checksums.tableCRC32
+import org.tobi29.checksums.chainCrc32
+import org.tobi29.checksums.finishChainCrc32
+import org.tobi29.checksums.initChainCrc32
+import org.tobi29.checksums.tableCrc32
 import org.tobi29.io.*
 import org.tobi29.stdex.splitToBytes
 
@@ -171,21 +171,21 @@ private fun WritableByteStream.writeChunk(
     type: Int,
     chunk: ByteViewRO? = null
 ) {
-    var crc = initChainCRC32()
-    crc = chainCRC32(crc, (type ushr 24).toByte(), zlibTable)
-    crc = chainCRC32(crc, (type ushr 16).toByte(), zlibTable)
-    crc = chainCRC32(crc, (type ushr 8).toByte(), zlibTable)
-    crc = chainCRC32(crc, type.toByte(), zlibTable)
+    var crc = initChainCrc32()
+    crc = chainCrc32(crc, (type ushr 24).toByte(), zlibTable)
+    crc = chainCrc32(crc, (type ushr 16).toByte(), zlibTable)
+    crc = chainCrc32(crc, (type ushr 8).toByte(), zlibTable)
+    crc = chainCrc32(crc, type.toByte(), zlibTable)
     if (chunk == null) {
         putInt(0)
         putInt(type)
     } else {
-        crc = chainCRC32(crc, chunk, zlibTable)
+        crc = chainCrc32(crc, chunk, zlibTable)
         putInt(chunk.size)
         putInt(type)
         put(chunk)
     }
-    putInt(crc.finishChainCRC32())
+    putInt(crc.finishChainCrc32())
 }
 
 private val PNG_HEADER = byteArrayOf(
@@ -197,4 +197,4 @@ private const val TYPE_IHDR = 0x49484452
 private const val TYPE_IDAT = 0x49444154
 private const val TYPE_IEND = 0x49454e44
 
-private val zlibTable = tableCRC32(0xedb88320.toInt())
+private val zlibTable = tableCrc32(0xedb88320.toInt())
