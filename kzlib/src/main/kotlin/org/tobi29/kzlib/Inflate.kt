@@ -64,7 +64,7 @@ class Inflate(private val z: ZStream) {
 
     var wbits: Int = 0            // log2(window size)  (8..15, defaults to 15)
 
-    var blocks: InfBlocks? = null     // current inflate_blocks state
+    private var blocks: InfBlocks? = null     // current inflate_blocks state
 
     private var flags: Int = 0
 

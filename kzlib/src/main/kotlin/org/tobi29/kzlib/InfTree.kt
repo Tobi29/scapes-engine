@@ -54,8 +54,12 @@ internal class InfTree {
         m: IntArray, // maximum lookup bits, returns actual
         hp: IntArray, // space for trees
         hn: IntArray, // hufts used in space
-        v: IntArray?  // working area: values in order of bit length
+        v: IntArray  // working area: values in order of bit length
     ): Int {
+        val c = c!!
+        val r = r!!
+        val u = u!!
+        val x = x!!
         var n = n
         // Given a list of code lengths and a maximum table size, make a set of
         // tables to decode that set of codes.  Return Z_OK on success, Z_BUF_ERROR
@@ -84,12 +88,12 @@ internal class InfTree {
         p = 0
         i = n
         do {
-            c!![b[bindex + p]]++
+            c[b[bindex + p]]++
             p++
             i--   // assume all entries <= BMAX
         } while (i != 0)
 
-        if (c!![0] == n) {                // null input--all zero length codes
+        if (c[0] == n) {                // null input--all zero length codes
             t[0] = -1
             m[0] = 0
             return Z_OK
@@ -99,7 +103,7 @@ internal class InfTree {
         l = m[0]
         j = 1
         while (j <= BMAX) {
-            if (c!![j] != 0) break
+            if (c[j] != 0) break
             j++
         }
         k = j                        // minimum code length
@@ -108,7 +112,7 @@ internal class InfTree {
         }
         i = BMAX
         while (i != 0) {
-            if (c!![i] != 0) break
+            if (c[i] != 0) break
             i--
         }
         g = i                        // maximum code length
@@ -120,27 +124,27 @@ internal class InfTree {
         // Adjust last length count to fill out codes, if needed
         y = 1 shl j
         while (j < i) {
-            y -= c!![j]
+            y -= c[j]
             if (y < 0) {
                 return Z_DATA_ERROR
             }
             j++
             y = y shl 1
         }
-        y -= c!![i]
+        y -= c[i]
         if (y < 0) {
             return Z_DATA_ERROR
         }
-        c!![i] += y
+        c[i] += y
 
         // Generate starting offsets into the value table for each length
         j = 0
-        x!![1] = j
+        x[1] = j
         p = 1
         xp = 2
         while (--i != 0) {                 // note that i == g from above
-            j += c!![p]
-            x!![xp] = j
+            j += c[p]
+            x[xp] = j
             xp++
             p++
         }
@@ -151,25 +155,25 @@ internal class InfTree {
         do {
             j = b[bindex + p]
             if (j != 0) {
-                v!![x!![j]++] = i
+                v!![x[j]++] = i
             }
             p++
         } while (++i < n)
-        n = x!![g]                     // set n to length of v
+        n = x[g]                     // set n to length of v
 
         // Generate the Huffman codes and for each, make the table entries
         i = 0
-        x!![0] = i                 // first Huffman code is zero
+        x[0] = i                 // first Huffman code is zero
         p = 0                        // grab values in bit order
         h = -1                       // no tables yet--level -1
         w = -l                       // bits decoded == (l * h)
-        u!![0] = 0                     // just to keep compilers happy
+        u[0] = 0                     // just to keep compilers happy
         q = 0                        // ditto
         z = 0                        // ditto
 
         // go through the bit lengths (k already is bits in shortest code)
         while (k <= g) {
-            a = c!![k]
+            a = c[k]
             while (a-- != 0) {
                 // here i is the Huffman code of length k bits for value *p
                 // make tables up to required level
@@ -188,9 +192,9 @@ internal class InfTree {
                         if (j < z) {
                             while (++j < z) {        // try smaller tables up to z bits
                                 f = f shl 1
-                                if (f <= c!![++xp])
+                                if (f <= c[++xp])
                                     break              // enough codes to use up j bits
-                                f -= c!![xp]           // else deduct codes from patterns
+                                f -= c[xp]           // else deduct codes from patterns
                             }
                         }
                     }
@@ -201,17 +205,17 @@ internal class InfTree {
                         return Z_DATA_ERROR       // overflow of MANY
                     }
                     q = /*hp+*/ hn[0]
-                    u!![h] = q   // DEBUG
+                    u[h] = q   // DEBUG
                     hn[0] += z
 
                     // connect to last table, if there is one
                     if (h != 0) {
-                        x!![h] = i           // save pattern for backing up
-                        r!![0] = j.toByte().toInt()     // bits in this table
-                        r!![1] = l.toByte()
+                        x[h] = i           // save pattern for backing up
+                        r[0] = j.toByte().toInt()     // bits in this table
+                        r[1] = l.toByte()
                             .toInt()     // bits to dump before this table
                         j = i.ushr(w - l)
-                        r!![2] = q - u!![h - 1] -
+                        r[2] = q - u[h - 1] -
                                 j               // offset to this table
                         /*System.arraycopy(
                             r!!,
@@ -221,24 +225,24 @@ internal class InfTree {
                             3
                         )*/
                         // connect to last table
-                        copy(r!!, hp, 3, 0, (u!![h - 1] + j) * 3)
+                        copy(r, hp, 3, 0, (u[h - 1] + j) * 3)
                     } else {
                         t[0] = q               // first table is returned result
                     }
                 }
 
                 // set up table entry in r
-                r!![1] = (k - w).toByte().toInt()
+                r[1] = (k - w).toByte().toInt()
                 if (p >= n) {
-                    r!![0] = 128 + 64      // out of values--invalid code
-                } else if (v!![p] < s) {
-                    r!![0] = (if (v[p] < 256) 0 else 32 + 64).toByte()
+                    r[0] = 128 + 64      // out of values--invalid code
+                } else if (v[p] < s) {
+                    r[0] = (if (v[p] < 256) 0 else 32 + 64).toByte()
                         .toInt()  // 256 is end-of-block
-                    r!![2] = v[p++]          // simple code is just the value
+                    r[2] = v[p++]          // simple code is just the value
                 } else {
-                    r!![0] = (e!![v[p] - s] + 16 + 64).toByte()
+                    r[0] = (e!![v[p] - s] + 16 + 64).toByte()
                         .toInt() // non-simple--look up in lists
-                    r!![2] = d!![v[p++] - s]
+                    r[2] = d!![v[p++] - s]
                 }
 
                 // fill code-like entries with r
@@ -246,7 +250,7 @@ internal class InfTree {
                 j = i.ushr(w)
                 while (j < z) {
                     //System.arraycopy(r!!, 0, hp, (q + j) * 3, 3)
-                    copy(r!!, hp, 3, 0, (q + j) * 3)
+                    copy(r, hp, 3, 0, (q + j) * 3)
                     j += f
                 }
 
@@ -260,7 +264,7 @@ internal class InfTree {
 
                 // backup over finished tables
                 mask = (1 shl w) - 1      // needed on HP, cc -O bug
-                while (i and mask != x!![h]) {
+                while (i and mask != x[h]) {
                     h--                    // don't need to update q
                     w -= l
                     mask = (1 shl w) - 1
@@ -282,7 +286,7 @@ internal class InfTree {
         var result: Int
         initWorkArea(19)
         hn!![0] = 0
-        result = huft_build(c, 0, 19, 19, null, null, tb, bb, hp, hn!!, v)
+        result = huft_build(c, 0, 19, 19, null, null, tb, bb, hp, hn!!, v!!)
 
         if (result == Z_DATA_ERROR) {
             z.msg = "oversubscribed dynamic bit lengths tree"
@@ -312,7 +316,7 @@ internal class InfTree {
         result = huft_build(
             c, 0, nl, 257,
             cplens,
-            cplext, tl, bl, hp, hn!!, v
+            cplext, tl, bl, hp, hn!!, v!!
         )
         if (result != Z_OK || bl[0] == 0) {
             if (result == Z_DATA_ERROR) {
@@ -329,7 +333,7 @@ internal class InfTree {
         result = huft_build(
             c, nl, nd, 0,
             cpdist,
-            cpdext, td, bd, hp, hn!!, v
+            cpdext, td, bd, hp, hn!!, v!!
         )
 
         if (result != Z_OK || bd[0] == 0 && nl > 257) {

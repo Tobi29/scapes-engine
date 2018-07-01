@@ -85,16 +85,16 @@ internal class GZIPHeader {
         if (extra != null) {
             d.put_byte(extra!!.size.toByte())
             d.put_byte((extra!!.size shr 8).toByte())
-            d.put_byte(extra, 0, extra!!.size)
+            d.put_byte(extra!!, 0, extra!!.size)
         }
 
         if (name != null) {
-            d.put_byte(name, 0, name!!.size)
+            d.put_byte(name!!, 0, name!!.size)
             d.put_byte(0.toByte())
         }
 
         if (comment != null) {
-            d.put_byte(comment, 0, comment!!.size)
+            d.put_byte(comment!!, 0, comment!!.size)
             d.put_byte(0.toByte())
         }
     }

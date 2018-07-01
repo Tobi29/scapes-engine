@@ -35,42 +35,41 @@ package org.tobi29.kzlib
 import org.tobi29.arrays.fill
 import org.tobi29.stdex.copy
 
-class InfBlocks(
+internal class InfBlocks(
     private val z: ZStream,
     var end: Int,             // one byte after sliding window
     wrap: Int
 ) {
-    var mode =
-        TYPE            // current inflate_block mode
+    private var mode = TYPE // current inflate_block mode
 
-    var left: Int = 0            // if STORED, bytes left to copy
+    private var left = 0            // if STORED, bytes left to copy
 
-    var table: Int = 0           // table lengths (14 bits)
-    var index: Int = 0           // index into blens (or border)
-    var blens: IntArray? = null         // bit lengths of codes
-    val bb = IntArray(1) // bit length tree depth
-    val tb = IntArray(1) // bit length decoding tree
+    private var table = 0           // table lengths (14 bits)
+    private var index= 0           // index into blens (or border)
+    private var blens: IntArray? = null         // bit lengths of codes
+    private val bb = IntArray(1) // bit length tree depth
+    private val tb = IntArray(1) // bit length decoding tree
 
-    val bl = IntArray(1)
-    val bd = IntArray(1)
+    private val bl = IntArray(1)
+    private val bd = IntArray(1)
 
-    var tl = arrayOfNulls<IntArray>(1)
-    var td = arrayOfNulls<IntArray>(1)
-    val tli = IntArray(1) // tl_index
-    val tdi = IntArray(1) // td_index
+    private var tl = arrayOfNulls<IntArray>(1)
+    private var td = arrayOfNulls<IntArray>(1)
+    private val tli = IntArray(1) // tl_index
+    private val tdi = IntArray(1) // td_index
 
     private val codes =
         InfCodes(this.z, this)      // if CODES, current state
 
-    var last: Int = 0            // true if this block is the last block
+    private var last = 0            // true if this block is the last block
 
     // mode independent information
-    var bitk: Int = 0            // bits in bit buffer
-    var bitb: Int = 0            // bit buffer
-    val hufts = IntArray(MANY * 3)         // single malloc for tree space
+    var bitk = 0            // bits in bit buffer
+    var bitb = 0            // bit buffer
+    private val hufts = IntArray(MANY * 3) // single malloc for tree space
     val window = ByteArray(end)       // sliding window
-    var read: Int = 0            // window read pointer
-    var write: Int = 0           // window write pointer
+    var read = 0            // window read pointer
+    var write = 0           // window write pointer
     private val check = if (wrap == 0) false else true
 
     private val inftree = InfTree()
@@ -1178,6 +1177,7 @@ class InfBlocks(
         return r
     }
 }
+
 private const val MANY = 1440
 
 // And'ing with mask[n] masks the lower n bits
