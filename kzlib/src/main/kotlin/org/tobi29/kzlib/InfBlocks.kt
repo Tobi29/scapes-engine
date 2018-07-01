@@ -158,7 +158,7 @@ class InfBlocks(
                         }
                         1                         // fixed
                         -> {
-                            InfTree.inflate_trees_fixed(
+                            inflate_trees_fixed(
                                 bl,
                                 bd,
                                 tl,
@@ -1177,55 +1177,42 @@ class InfBlocks(
         // done
         return r
     }
-
-    companion object {
-        private val MANY = 1440
-
-        // And'ing with mask[n] masks the lower n bits
-        private val inflate_mask = intArrayOf(
-            0x00000000,
-            0x00000001,
-            0x00000003,
-            0x00000007,
-            0x0000000f,
-            0x0000001f,
-            0x0000003f,
-            0x0000007f,
-            0x000000ff,
-            0x000001ff,
-            0x000003ff,
-            0x000007ff,
-            0x00000fff,
-            0x00001fff,
-            0x00003fff,
-            0x00007fff,
-            0x0000ffff
-        )
-
-        // Table for deflate from PKZIP's appnote.txt.
-        val border = intArrayOf( // Order of the bit length code lengths
-            16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
-        )
-
-        private val Z_OK = 0
-        private val Z_STREAM_END = 1
-        private val Z_NEED_DICT = 2
-        private val Z_ERRNO = -1
-        private val Z_STREAM_ERROR = -2
-        private val Z_DATA_ERROR = -3
-        private val Z_MEM_ERROR = -4
-        private val Z_BUF_ERROR = -5
-        private val Z_VERSION_ERROR = -6
-
-        private val TYPE = 0  // get type bits (3, including end bit)
-        private val LENS = 1  // get lengths for stored
-        private val STORED = 2 // processing stored block
-        private val TABLE = 3 // get table lengths
-        private val BTREE = 4 // get bit lengths tree for a dynamic block
-        private val DTREE = 5 // get length, distance trees for a dynamic block
-        private val CODES = 6 // processing fixed or dynamic block
-        private val DRY = 7   // output remaining window bytes
-        private val DONE = 8  // finished last block, done
-        private val BAD = 9   // ot a data error--stuck here
-    }
 }
+private const val MANY = 1440
+
+// And'ing with mask[n] masks the lower n bits
+private val inflate_mask = intArrayOf(
+    0x00000000,
+    0x00000001,
+    0x00000003,
+    0x00000007,
+    0x0000000f,
+    0x0000001f,
+    0x0000003f,
+    0x0000007f,
+    0x000000ff,
+    0x000001ff,
+    0x000003ff,
+    0x000007ff,
+    0x00000fff,
+    0x00001fff,
+    0x00003fff,
+    0x00007fff,
+    0x0000ffff
+)
+
+// Table for deflate from PKZIP's appnote.txt.
+private val border = intArrayOf( // Order of the bit length code lengths
+    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
+)
+
+private const val TYPE = 0  // get type bits (3, including end bit)
+private const val LENS = 1  // get lengths for stored
+private const val STORED = 2 // processing stored block
+private const val TABLE = 3 // get table lengths
+private const val BTREE = 4 // get bit lengths tree for a dynamic block
+private const val DTREE = 5 // get length, distance trees for a dynamic block
+private const val CODES = 6 // processing fixed or dynamic block
+private const val DRY = 7   // output remaining window bytes
+private const val DONE = 8  // finished last block, done
+private const val BAD = 9   // ot a data error--stuck here
