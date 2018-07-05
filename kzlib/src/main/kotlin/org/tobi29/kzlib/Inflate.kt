@@ -670,6 +670,7 @@ class Inflate(private val z: ZStream) {
 
     @Throws(Return::class)
     private fun readBytes(n: Int, r: Int, f: Int): Int {
+        val z_next_in = z.next_in!!
         var r = r
         if (need_bytes == -1) {
             need_bytes = n
@@ -683,7 +684,7 @@ class Inflate(private val z: ZStream) {
             z.avail_in--
             z.total_in++
             this.need = this.need or
-                    (z.next_in!![z.next_in_index++].toInt() and 0xFF shl (n - need_bytes) * 8)
+                    (z_next_in[z.next_in_index++].toInt() and 0xFF shl (n - need_bytes) * 8)
             need_bytes--
         }
         if (n == 2) {
@@ -721,10 +722,11 @@ class Inflate(private val z: ZStream) {
 
     @Throws(Return::class)
     private fun readBytes(r: Int, f: Int): Int {
+        val z_next_in = z.next_in!!
         var r = r
-        if (tmp_string == null) {
-            tmp_string = MemoryViewStreamDefault()
-        }
+        val tmp_string = tmp_string
+                ?: MemoryViewStreamDefault().also{ tmp_string = it }
+
         var b = 0
         while (this.need > 0) {
             if (z.avail_in == 0) {
@@ -733,9 +735,9 @@ class Inflate(private val z: ZStream) {
             r = f
             z.avail_in--
             z.total_in++
-            b = z.next_in!![z.next_in_index].toInt()
-            tmp_string!!.put(z.next_in!![z.next_in_index])
-            z.adler.update(z.next_in!!, z.next_in_index, 1)
+            b = z_next_in[z.next_in_index].toInt()
+            tmp_string.put(z_next_in[z.next_in_index])
+            z.adler.update(z_next_in, z.next_in_index, 1)
             z.next_in_index++
             this.need--
         }
