@@ -77,7 +77,7 @@ ext {
     lwjglVersion = "3.1.6"
     lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 
-    webKTBindingsVersion = "0.0.3"
+    webKTBindingsVersion = "0.0.5"
     webKTBindingsJS = { module ->
         "com.github.Tobi29.WebKTBindings:$module:$webKTBindingsVersion"
     }

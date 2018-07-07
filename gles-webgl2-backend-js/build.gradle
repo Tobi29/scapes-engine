@@ -19,7 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 dependencies {
     expectedBy project(":gles-backend")
     compile project(":engine-js")
-    compile rootProject.ext.webKTBindingsJS("Gamepad")
-    compile rootProject.ext.webKTBindingsJS("WebAudio")
-    compile rootProject.ext.webKTBindingsJS("WebGL2")
+    compile rootProject.ext.webKTBindingsJS("gamepad")
+    compile rootProject.ext.webKTBindingsJS("webaudio")
+    compile rootProject.ext.webKTBindingsJS("webgl2")
 }
