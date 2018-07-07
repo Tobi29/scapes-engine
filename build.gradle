@@ -57,7 +57,7 @@ ext {
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
 
-    kotlinxCoroutinesVersion = "0.23.3"
+    kotlinxCoroutinesVersion = "0.23.4"
     kotlinxCoroutines = { module ->
         "org.jetbrains.kotlinx:$module-common:$kotlinxCoroutinesVersion"
     }
