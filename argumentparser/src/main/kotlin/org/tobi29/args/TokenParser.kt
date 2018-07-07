@@ -16,6 +16,7 @@
 
 package org.tobi29.args
 
+import org.tobi29.stdex.Throws
 import org.tobi29.stdex.readOnly
 
 /**
@@ -38,12 +39,12 @@ class TokenParser(command: CommandConfig) {
     /**
      * The command path
      */
-    val command = commandMut.readOnly()
+    val command: List<CommandConfig> get() = commandMut.readOnly()
 
     /**
      * The current list of parsed tokens
      */
-    val tokens = tokensMut.readOnly()
+    val tokens: List<Token> get() = tokensMut.readOnly()
 
     init {
         enterCommand(command)
@@ -53,10 +54,10 @@ class TokenParser(command: CommandConfig) {
      * Finishes the parsing and returns a list of parsed tokens
      * @throws InvalidTokensException The parser finished on an invalid token
      */
+    @Throws(InvalidTokensException::class)
     fun finish(): Pair<List<CommandConfig>, List<Token>> {
         currentOption?.let { option ->
-            tokensMut.add(Token.Parameter(option, currentArgs.toList()))
-            if (option.abortParse) aborted = true
+            appendToken(Token.Parameter(option, currentArgs.toList()))
             currentArgs.clear()
             currentOption = null
         }
@@ -69,6 +70,7 @@ class TokenParser(command: CommandConfig) {
      * @param token The token to parse
      * @throws InvalidTokensException The token is invalid
      */
+    @Throws(InvalidTokensException::class)
     fun append(token: String) {
         val length = token.length
 
@@ -78,47 +80,36 @@ class TokenParser(command: CommandConfig) {
         }
 
         if (length == 0 || optionsTerminated || currentOption != null) {
-            // Token: ".*"
-            appendArg(token)
+            appendArg(token) // Token: ".*"
             return
         }
 
-        when (token[0]) {
-            '-' -> {
-                if (length == 1) {
-                    // Token: "-"
-                    appendArg(token)
-                } else when (token[1]) {
-                    '-' -> {
-                        if (length == 2) {
-                            // Token: "--"
-                            appendTerminateOptions()
-                        } else {
-                            // Token: "--.+"
-                            appendLong(token.substring(2))
-                        }
-                    }
-                    else -> {
-                        // Token: "-.+"
-                        appendShort(token.substring(1))
-                    }
-                }
+        if (token[0] == '-') {
+            if (length == 1) {
+                appendArg(token) // Token: "-"
+                return
             }
-            else -> {
-                // Token: ".+"
-                appendArg(token)
+
+            if (token[1] == '-') {
+                if (length == 2) appendTerminateOptions() // Token: "--"
+                else appendLong(token.substring(2)) // Token: "--.+"
+                return
             }
+
+            appendShort(token.substring(1)) // Token: "-.+"
+            return
         }
+
+        appendArg(token) // Token: ".+"
     }
 
     // Handle plain arguments
     private fun appendArg(token: String) {
         currentOption?.let { option ->
             if (currentArgs.size >= option.args.size - 1) {
-                tokensMut.add(Token.Parameter(option, currentArgs + token))
+                appendToken(Token.Parameter(option, currentArgs + token))
                 currentArgs.clear()
                 currentOption = null
-                if (option.abortParse) aborted = true
             } else {
                 currentArgs.add(token)
             }
@@ -132,17 +123,15 @@ class TokenParser(command: CommandConfig) {
 
         if (argumentCount > 0) args@ {
             val argument = arguments[argumentsIndex]
-            tokensMut.add(Token.Argument(argument, token))
-            if (argument.abortParse) aborted = true
-            else { // No need to maintain state when aborting
-                argumentCount--
-                if (argumentCount <= 0) {
-                    argumentsIndex++
-                    if (argumentsIndex >= arguments.size) {
-                        return@args
-                    }
-                    argumentCount = arguments[argumentsIndex].count.last
+            if (appendToken(Token.Argument(argument, token))) return
+            // No need to maintain state when aborting
+            argumentCount--
+            if (argumentCount <= 0) {
+                argumentsIndex++
+                if (argumentsIndex >= arguments.size) {
+                    return@args // No arguments needed anymore, bail out
                 }
+                argumentCount = arguments[argumentsIndex].count.last
             }
             return
         }
@@ -162,8 +151,7 @@ class TokenParser(command: CommandConfig) {
                     if (it.args.isNotEmpty()) {
                         currentOption = it
                     } else {
-                        tokensMut.add(Token.Parameter(it, emptyList()))
-                        if (it.abortParse) aborted = true
+                        appendToken(Token.Parameter(it, emptyList()))
                     }
                 }
             }
@@ -173,8 +161,7 @@ class TokenParser(command: CommandConfig) {
 
             (shortOptions[name]
                     ?: throw UnknownOptionException(null, name)).let {
-                tokensMut.add(Token.Parameter(it, listOf(argument)))
-                if (it.abortParse) aborted = true
+                appendToken(Token.Parameter(it, listOf(argument)))
             }
             return
         }
@@ -184,10 +171,7 @@ class TokenParser(command: CommandConfig) {
             shortOptions[token[0]]?.let { option ->
                 if (option.args.size != 1) return@let
 
-                tokensMut.add(
-                    Token.Parameter(option, listOf(token.substring(1)))
-                )
-                if (option.abortParse) aborted = true
+                appendToken(Token.Parameter(option, listOf(token.substring(1))))
                 return
             }
         }
@@ -199,8 +183,7 @@ class TokenParser(command: CommandConfig) {
                 if (flag.args.isNotEmpty()) {
                     currentOption = flag
                 } else {
-                    tokensMut.add(Token.Parameter(flag, emptyList()))
-                    if (flag.abortParse) aborted = true
+                    appendToken(Token.Parameter(flag, emptyList()))
                 }
             }
         }
@@ -216,8 +199,7 @@ class TokenParser(command: CommandConfig) {
 
             (longOptions[name]
                     ?: throw UnknownOptionException(null, name)).let {
-                tokensMut.add(Token.Parameter(it, listOf(argument)))
-                if (it.abortParse) aborted = true
+                appendToken(Token.Parameter(it, listOf(argument)))
             }
             return
         }
@@ -228,8 +210,7 @@ class TokenParser(command: CommandConfig) {
             if (flag.args.isNotEmpty()) {
                 currentOption = flag
             } else {
-                tokensMut.add(Token.Parameter(flag, emptyList()))
-                if (flag.abortParse) aborted = true
+                appendToken(Token.Parameter(flag, emptyList()))
             }
         }
     }
@@ -264,6 +245,22 @@ class TokenParser(command: CommandConfig) {
         }
         argumentCount = if (arguments.isNotEmpty())
             arguments.first().count.last else 0
+    }
+
+    private fun appendToken(token: Token.Parameter): Boolean {
+        tokensMut.add(token)
+        return if (token.option.abortParse) {
+            aborted = true
+            true
+        } else false
+    }
+
+    private fun appendToken(token: Token.Argument): Boolean {
+        tokensMut.add(token)
+        return if (token.argument.abortParse) {
+            aborted = true
+            true
+        } else false
     }
 
     /**
@@ -312,10 +309,10 @@ class TokenParser(command: CommandConfig) {
 
 /**
  * Parse the given tokens into parameters, flags and arguments
- * @receiver The parser configuration
  * @throws InvalidTokensException When a token is invalid
  * @return A list of parameters, flags and arguments
  */
+@Throws(InvalidTokensException::class)
 fun CommandConfig.parseTokens(
     tokens: Iterable<String>
 ): Pair<List<CommandConfig>, List<TokenParser.Token>> =
