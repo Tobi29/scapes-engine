@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.2.50"
+    def kotlinVersion = "1.2.51"
     def dokkaVersion = "0.9.17"
 
     repositories {
@@ -52,7 +52,7 @@ task wrapper(type: Wrapper) {
 }
 
 ext {
-    kotlinVersion = "1.2.50"
+    kotlinVersion = "1.2.51"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
