@@ -45,12 +45,6 @@ allprojects {
     }
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion = "4.7"
-    distributionUrl =
-            "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
-}
-
 ext {
     kotlinVersion = "1.2.51"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
