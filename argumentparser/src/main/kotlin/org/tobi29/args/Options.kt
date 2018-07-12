@@ -18,6 +18,9 @@
 
 package org.tobi29.args
 
+import org.tobi29.arrays.Array2
+import org.tobi29.utils.formatTable
+
 /**
  * Command element for parsing command line arguments
  */
@@ -106,7 +109,6 @@ data class CommandArgument(
 
 /**
  * Checks if the given name matches one of the short names
- * @receiver The [CommandOption] to check on
  * @param name The name to check
  * @return `true` if the name matches
  */
@@ -114,34 +116,38 @@ fun CommandOption.matches(name: Char) = name in shortNames
 
 /**
  * Checks if the given name matches one of the long names
- * @receiver The [CommandOption] to check on
  * @param name The name to check
  * @return `true` if the name matches
  */
 fun CommandOption.matches(name: String) = name in longNames
 
 /**
- * Generate a help text for the given options with descriptions aligned
- * when using a monospace font
- * @receiver The sequence of [CommandOption]s to read
- * @param command Command options to show
- * @return The help info in a string
+ * Checks if the given option is a flag
  */
-fun Iterable<CommandConfig>.printHelp() =
-    StringBuilder().also { printHelp(it) }.toString()
+inline val CommandOption.isFlag: Boolean get() = args.isEmpty()
 
 /**
- * Generate a help text for the given options with descriptions aligned
- * when using a monospace font
- * @receiver The sequence of [CommandOption]s to read
- * @param appendable The appendable to write to
- * @param command Command options to show
+ * Generate a usage text for the given options
  */
-fun Iterable<CommandConfig>.printHelp(appendable: Appendable) {
+fun Iterable<CommandConfig>.printUsage() =
+    StringBuilder().also { printUsage(it) }.toString()
+
+/**
+ * Generate a usage text for the given options
+ * @param appendable The appendable to write to
+ */
+fun Iterable<CommandConfig>.printUsage(appendable: Appendable) {
     val elements = flatMap { it.elements }
 
-    appendable.append("Usage:")
-    forEach { appendable.append(' ').append(it.name) }
+    var first = true
+    for (config in this) {
+        if (first) {
+            first = false
+        } else {
+            appendable.append(' ')
+        }
+        appendable.append(config.name)
+    }
     elements.forEach { element ->
         if (element !is CommandArgument) return@forEach
         if (element.count.start == 0) {
@@ -152,29 +158,40 @@ fun Iterable<CommandConfig>.printHelp(appendable: Appendable) {
         if (element.count.endInclusive > element.count.start)
             appendable.append("...")
     }
+}
+
+/**
+ * Generate a help text for the given options with descriptions aligned
+ * when using a monospace font
+ */
+fun Iterable<CommandConfig>.printHelp() =
+    StringBuilder().also { printHelp(it) }.toString()
+
+/**
+ * Generate a help text for the given options with descriptions aligned
+ * when using a monospace font
+ * @param appendable The appendable to write to
+ */
+fun Iterable<CommandConfig>.printHelp(appendable: Appendable) {
+    val elements = flatMap { it.elements }
+
+    appendable.append("Usage:\n    ")
+    printUsage(appendable)
     appendable.append('\n')
 
-    val options = elements.mapNotNull {
-        (it as? CommandOption)?.let { it to it.printUsage() }
+    elements.optionsTable().takeIf { it.height > 0 }?.let {
+        appendable.append("\nOptions:\n")
+        it.formatTable(appendable, delimiter = "    ", prefix = "    ")
     }
-    val descriptionGap = (options.map { it.second.length }.max() ?: 0) + 4
-    var first = false
-    options.forEach { (option, usage) ->
-        if (!first) {
-            first = true
-        } else {
-            appendable.append('\n')
-        }
 
-        appendable.append(usage)
-        repeat(descriptionGap - usage.length) { appendable.append(' ') }
-        appendable.append(option.description)
+    elements.flagsTable().takeIf { it.height > 0 }?.let {
+        appendable.append("\nFlags:\n")
+        it.formatTable(appendable, delimiter = "    ", prefix = "    ")
     }
 }
 
 /**
  * Generate a usage text for the given option from its parameters
- * @receiver The [CommandOption] to read
  * @return The usage info in a string
  */
 fun CommandOption.printUsage() =
@@ -182,7 +199,6 @@ fun CommandOption.printUsage() =
 
 /**
  * Generate a usage text for the given option from its parameters
- * @receiver The [CommandOption] to read
  * @param appendable The appendable to write to
  */
 fun CommandOption.printUsage(appendable: Appendable) {
@@ -206,4 +222,21 @@ fun CommandOption.printUsage(appendable: Appendable) {
         appendable.append("--").append(it)
     }
     if (args.isNotEmpty()) args.joinTo(appendable, prefix = " <", postfix = ">")
+}
+
+private fun Iterable<CommandElement>.optionsTable() =
+    mapNotNull { (it as? CommandOption)?.takeIf { !it.isFlag } }.table()
+
+private fun Iterable<CommandElement>.flagsTable() =
+    mapNotNull { (it as? CommandOption)?.takeIf { it.isFlag } }.table()
+
+private fun List<CommandOption>.table(): Array2<String> {
+    return Array2(2, size) { x, y ->
+        val option = this[y]
+        when (x) {
+            0 -> option.printUsage()
+            1 -> option.description
+            else -> error("Impossible")
+        }
+    }
 }

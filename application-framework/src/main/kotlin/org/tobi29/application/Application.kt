@@ -44,11 +44,14 @@ abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
         val commandLine = try {
             commandConfig.parseCommandLine(args.asIterable())
         } catch (e: InvalidTokensException) {
-            printerrln(e.message)
-            return 255
+            return handleCommandLineError(e)
         }
         handleEarly(commandLine)?.let { return it }
         return execute(commandLine)
+    }
+
+    protected open fun handleCommandLineError(e: InvalidTokensException): StatusCode {
+        return 255
     }
 
     protected open fun handleEarly(commandLine: CommandLine): StatusCode? {
@@ -68,11 +71,23 @@ abstract class Application : BareApplication() {
         abortParse = true
     )
 
+    override fun handleCommandLineError(e: InvalidTokensException): StatusCode {
+        printerrln(e.message)
+        when (e) {
+            is MissingOptionException,
+            is MissingArgumentException -> {
+                e as InvalidCommandLineException
+                printerrln("Usage: ${e.commandLine.command.printUsage()}")
+            }
+        }
+        return super.handleCommandLineError(e)
+    }
+
     override fun handleEarly(commandLine: CommandLine): StatusCode? {
         super.handleEarly(commandLine)?.let { return it }
 
         if (commandLine.getBoolean(helpOption)) {
-            println(commandLine.command.printHelp())
+            print(commandLine.command.printHelp())
             return 0
         }
 
