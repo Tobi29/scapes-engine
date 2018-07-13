@@ -17,9 +17,10 @@
 package org.tobi29.math
 
 import org.tobi29.stdex.ThreadLocal
+import org.tobi29.stdex.isAndroidAPI
 import java.util.concurrent.ThreadLocalRandom
 
-internal class RandomJVM(private val random: java.util.Random) : Random {
+internal open class RandomJVM(private val random: java.util.Random) : Random {
     override fun nextBoolean() = random.nextBoolean()
 
     override fun nextInt() = random.nextInt()
@@ -33,13 +34,23 @@ internal class RandomJVM(private val random: java.util.Random) : Random {
     override fun nextDouble() = random.nextDouble()
 }
 
-actual fun Random(): Random = RandomJVM(
-        java.util.Random())
+internal class SecureRandomJVM(
+    random: java.security.SecureRandom
+) : RandomJVM(random), SecureRandom
 
-actual fun Random(seed: Long): Random = RandomJVM(
-        java.util.Random(seed))
+actual fun Random(): Random = RandomJVM(java.util.Random())
+
+actual fun Random(seed: Long): Random = RandomJVM(java.util.Random(seed))
 
 actual fun threadLocalRandom(): Random = tlRandom.get()
+
+actual fun SecureRandom(
+    highQuality: Boolean
+): SecureRandom = SecureRandomJVM(
+    if (highQuality && isAndroidAPI(26))
+        java.security.SecureRandom.getInstanceStrong()
+    else java.security.SecureRandom()
+)
 
 private val tlRandom = ThreadLocal {
     RandomJVM(ThreadLocalRandom.current())

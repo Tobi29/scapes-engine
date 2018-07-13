@@ -18,6 +18,11 @@
 
 package org.tobi29.math
 
+import org.khronos.webgl.*
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.Ints
+import org.tobi29.arrays.Shorts
+import org.tobi29.arrays.mutateAsTypedArray
 import org.tobi29.stdex.math.floorToInt
 
 internal object RandomJS : Random {
@@ -65,17 +70,45 @@ internal class RandomJSJVM(seed: Long) : Random {
         }
     }
 
-    override fun nextLong() =
-        (next(32).toLong() shl 32) + next(32)
-
-    override fun nextBoolean() =
-        next(1) != 0
-
     override fun nextFloat() =
         next(24).toFloat() / (1 shl 24)
 
     override fun nextDouble() =
         ((next(26).toLong() shl 27) + next(27)).toDouble() / (1L shl 53)
+}
+
+internal object SecureRandomCrypto : SecureRandom {
+    private val buffer = ArrayBuffer(4)
+    private val byte = Int8Array(buffer, 0, 1)
+    private val short = Int16Array(buffer, 0, 1)
+    private val int = Int32Array(buffer, 0, 1)
+
+    override fun nextByte(): Byte {
+        crypto.getRandomValues(byte)
+        return byte[0]
+    }
+
+    override fun nextBytes(array: Bytes) {
+        array.mutateAsTypedArray { crypto.getRandomValues(it) }
+    }
+
+    override fun nextShort(): Short {
+        crypto.getRandomValues(short)
+        return short[0]
+    }
+
+    override fun nextShorts(array: Shorts) {
+        array.mutateAsTypedArray { crypto.getRandomValues(it) }
+    }
+
+    override fun nextInt(): Int {
+        crypto.getRandomValues(int)
+        return int[0]
+    }
+
+    override fun nextInts(array: Ints) {
+        array.mutateAsTypedArray { crypto.getRandomValues(it) }
+    }
 }
 
 actual inline fun Random(): Random = threadLocalRandom()
@@ -84,6 +117,10 @@ actual fun Random(seed: Long): Random = RandomJSJVM(seed)
 
 actual fun threadLocalRandom(): Random = RandomJS
 
+actual fun SecureRandom(
+    highQuality: Boolean
+): SecureRandom = SecureRandomCrypto
+
 // FIXME: These cause errors on runtime somehow
 private const val MULTIPLIER = 0x5DEECE66DL
 private const val OFFSET = 0xBL
@@ -91,4 +128,10 @@ private const val MASK = 0xFFFFFFFFFFFFL
 
 private external object Math {
     fun random(): Double
+}
+
+private external val crypto: Crypto
+
+private external class Crypto {
+    fun getRandomValues(array: ArrayBufferView)
 }

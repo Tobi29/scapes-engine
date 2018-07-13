@@ -16,8 +16,8 @@
 
 package org.tobi29.generation.value
 
+import org.tobi29.arrays.sliceOver
 import org.tobi29.math.Random
-import org.tobi29.math.nextBytes
 import org.tobi29.stdex.math.floorToInt
 
 // Taken from: https://gist.github.com/digitalshadow/134a3a02b67cecd72181
@@ -30,7 +30,7 @@ class OpenSimplexNoise(random: Random) : ValueNoise {
     constructor(seed: Long) : this(Random(seed))
 
     init {
-        random.nextBytes(perm)
+        random.nextBytes(perm.sliceOver())
         for (i in 255 downTo 0) {
             perm2D[i] = random.nextInt(15).toByte()
             // TODO: In the original this forced the value to always be a multiple of 3
