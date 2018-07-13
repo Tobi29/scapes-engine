@@ -20,5 +20,4 @@ dependencies {
     expectedBy project(":utils")
     compile project(":stdex-jvm")
     compile project(":arrays-jvm")
-    compile project(":tag-jvm")
 }
