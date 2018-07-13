@@ -17,7 +17,6 @@
 package org.tobi29.utils
 
 import java.util.*
-import kotlin.collections.ArrayList
 
 inline fun <S> spiLoadFirst(
     iterator: Iterator<S>,
