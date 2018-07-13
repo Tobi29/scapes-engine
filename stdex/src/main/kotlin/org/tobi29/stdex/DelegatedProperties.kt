@@ -102,7 +102,7 @@ class MutableLazy<T> : Lazy<T> {
      * Drop the value and set a new initializer
      */
     fun set(initializer: () -> T) {
-        synchronized(initializer) {
+        synchronized(this.initializer) {
             this.initializer.set(initializer)
             _value = Uninitialized
         }
