@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package org.tobi29.stdex
+package org.tobi29.utils
 
+import org.tobi29.stdex.ConcurrentSortedSet
 import org.tobi29.stdex.atomic.AtomicLong
 
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use version from utils",
-    ReplaceWith(
-        "ConcurrentOrderedCollection<T>",
-        "org.tobi29.utils.ConcurrentOrderedCollection"
-    )
-)
 class ConcurrentOrderedCollection<T>(
     private val comparator: Comparator<T> = DummyComparator()
 ) : AbstractCollection<T>(), MutableCollection<T> {
