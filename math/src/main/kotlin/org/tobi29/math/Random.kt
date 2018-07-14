@@ -51,7 +51,7 @@ interface Random {
             var r = nextInt()
             repeat((size - i).coerceAtMost(4)) {
                 array[i++] = r.toByte()
-                r = r shr 4
+                r = r shr 8
             }
         }
     }
@@ -71,7 +71,7 @@ interface Random {
             var r = nextInt()
             repeat((size - i).coerceAtMost(2)) {
                 array[i++] = r.toShort()
-                r = r shr 8
+                r = r shr 16
             }
         }
     }
