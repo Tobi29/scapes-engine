@@ -32,7 +32,6 @@ import kotlin.experimental.and
 interface Random {
     /**
      * Returns either `true` or `false`
-     * @return `true` or `false`
      */
     fun nextBoolean(): Boolean = nextByte() and 0x1 == 1.toByte()
 
@@ -225,7 +224,6 @@ interface SecureRandom : Random {
  *
  * **Note:** The implementation will probably be not be thread-safe nor fit for
  * security related tasks
- * @return a new instance of [Random]
  */
 expect fun Random(): Random
 
@@ -240,7 +238,6 @@ expect fun Random(): Random
  *
  * **Note:** The implementation will probably be not be thread-safe nor fit for
  * security related tasks
- * @return a new instance of [Random]
  */
 expect fun Random(seed: Long): Random
 
@@ -252,7 +249,6 @@ expect fun Random(seed: Long): Random
  *
  * **Note:** The implementation may not be thread-safe nor fit for security
  * related tasks
- * @return a new instance of [Random]
  */
 expect fun threadLocalRandom(): Random
 
@@ -263,7 +259,6 @@ expect fun threadLocalRandom(): Random
  * **Note:** To avoid leaks one must call close() after use
  * **Note:** [highQuality] is a NOOP on JavaScript version and old Android
  * @param highQuality Ensure best quality available at cost of blocking
- * @return a new instance of [SecureRandom]
  */
 expect fun SecureRandom(
     highQuality: Boolean = false
