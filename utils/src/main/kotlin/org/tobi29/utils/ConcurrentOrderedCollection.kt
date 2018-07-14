@@ -83,23 +83,31 @@ class ConcurrentOrderedCollection<T>(
 
     private inner class Entry(
         val value: T,
-        private val uid: Long = uidCounter.incrementAndGet()
+        private val uid: Long = nextUid()
     ) : Comparable<Entry> {
         override fun compareTo(other: Entry) =
             comparator.compare(value, other.value).let {
-                if (uid > other.uid) 1
+                if (uid == 0L || other.uid == 0L) it
+                else if (uid > other.uid) 1
                 else if (uid < other.uid) -1
-                else 0
+                else it
             }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || other !is ConcurrentOrderedCollection<*>.Entry)
                 return false
-            return value == other.value
+            return value == other.value && (uid == other.uid || uid == 0L || other.uid == 0L)
         }
 
         override fun hashCode(): Int = value?.hashCode() ?: 0
+    }
+
+    private fun nextUid(): Long {
+        while (true) {
+            val uid = uidCounter.incrementAndGet()
+            if (uid != 0L) return uid
+        }
     }
 }
 
