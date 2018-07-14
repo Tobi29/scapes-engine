@@ -16,16 +16,14 @@
 
 package org.tobi29.arrays
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.shouldEqual
 
 object ArrayUtilTests : Spek({
     describe("toHexadecimal and fromHexadecimal") {
-        on("encoding, decoding and encoding again") {
+        describe("encoding, decoding and encoding again") {
             for (array in byteArrays()) {
                 val hex = array.toHexadecimal()
                 val bytes = hex.fromHexadecimal()
@@ -39,7 +37,7 @@ object ArrayUtilTests : Spek({
             }
         }
         for (group in 1..15) {
-            on("encoding, decoding and encoding again, grouped by $group") {
+            describe("encoding, decoding and encoding again, grouped by $group") {
                 for (array in byteArrays()) {
                     val hex = array.toHexadecimal()
                     val bytes = hex.fromHexadecimal()
@@ -53,7 +51,7 @@ object ArrayUtilTests : Spek({
                 }
             }
         }
-        on("decoding and encoding, grouped by 1") {
+        describe("decoding and encoding, grouped by 1") {
             val hex = "ff 0f 00 f0 ff"
             val bytes = hex.fromHexadecimal()
             val hex2 = bytes.toHexadecimal(1)

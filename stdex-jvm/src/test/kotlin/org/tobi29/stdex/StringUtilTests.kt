@@ -16,11 +16,9 @@
 
 package org.tobi29.stdex
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 
 object StringUtilTests : Spek({
@@ -29,7 +27,7 @@ object StringUtilTests : Spek({
             "ABC" to "123",
             "BCD" to "ABC"
         ).toReplace().let { replacements ->
-            on(
+            data(
                 { a -> "applying the replacements on \"$a\"" },
                 data("ABCD", "123D"),
                 data("BCD", "ABC")
@@ -44,7 +42,7 @@ object StringUtilTests : Spek({
             "[0-8]+" to "A",
             "[0-9]+" to "B"
         ).toRegexReplace().let { replacements ->
-            on(
+            data(
                 { a -> "applying the replacements on \"$a\"" },
                 data("123", "A"),
                 data("1239123", "ABA")

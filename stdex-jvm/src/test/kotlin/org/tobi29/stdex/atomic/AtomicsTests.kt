@@ -16,15 +16,13 @@
 
 package org.tobi29.stdex.atomic
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 
 object AtomicsTests : Spek({
     describe("an atomic reference array") {
-        on("constructing a new atomic") {
+        describe("constructing a new atomic") {
             val atomic = AtomicArray(16) { it.toString() }
             it("should contain the correct values") {
                 for (i in 0 until atomic.length())
@@ -33,20 +31,20 @@ object AtomicsTests : Spek({
         }
     }
     describe("an atomic boolean") {
-        on("constructing a new atomic") {
+        describe("constructing a new atomic") {
             val atomic = AtomicBoolean(false)
             it("should contain the correct value") {
                 atomic.get() shouldEqual false
             }
         }
-        on("setting the value it should get updated") {
+        describe("setting the value it should get updated") {
             val atomic = AtomicBoolean(false)
             atomic.set(true)
             it("should contain the correct value") {
                 atomic.get() shouldEqual true
             }
         }
-        on("getting and setting the value it should get updated") {
+        describe("getting and setting the value it should get updated") {
             val atomic = AtomicBoolean(false)
             it("should return and contain the correct value") {
                 atomic.getAndSet(true) shouldEqual false
@@ -55,27 +53,27 @@ object AtomicsTests : Spek({
         }
     }
     describe("an atomic int") {
-        on("constructing a new atomic") {
+        describe("constructing a new atomic") {
             val atomic = AtomicInt(0)
             it("should contain the correct value") {
                 atomic.get() shouldEqual 0
             }
         }
-        on("setting the value it should get updated") {
+        describe("setting the value it should get updated") {
             val atomic = AtomicInt(0)
             atomic.set(42)
             it("should contain the correct value") {
                 atomic.get() shouldEqual 42
             }
         }
-        on("getting and setting the value it should get updated") {
+        describe("getting and setting the value it should get updated") {
             val atomic = AtomicInt(0)
             it("should return and contain the correct value") {
                 atomic.getAndSet(42) shouldEqual 0
                 atomic.get() shouldEqual 42
             }
         }
-        on("incrementing the value it should get updated") {
+        describe("incrementing the value it should get updated") {
             val atomic = AtomicInt(0)
             atomic.incrementAndGet()
             atomic.incrementAndGet()
@@ -87,27 +85,27 @@ object AtomicsTests : Spek({
         }
     }
     describe("an atomic double") {
-        on("constructing a new atomic") {
+        describe("constructing a new atomic") {
             val atomic = AtomicDouble(0.0)
             it("should contain the correct value") {
                 atomic.get() shouldEqual 0.0
             }
         }
-        on("setting the value it should get updated") {
+        describe("setting the value it should get updated") {
             val atomic = AtomicDouble(0.0)
             atomic.set(42.0)
             it("should contain the correct value") {
                 atomic.get() shouldEqual 42.0
             }
         }
-        on("getting and setting the value it should get updated") {
+        describe("getting and setting the value it should get updated") {
             val atomic = AtomicDouble(0.0)
             it("should return and contain the correct value") {
                 atomic.getAndSet(42.0) shouldEqual 0.0
                 atomic.get() shouldEqual 42.0
             }
         }
-        on("incrementing the value it should get updated") {
+        describe("incrementing the value it should get updated") {
             val atomic = AtomicDouble(0.0)
             atomic.addAndGet(1.0)
             it("should return and contain the correct value") {

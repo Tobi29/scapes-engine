@@ -16,18 +16,16 @@
 
 package org.tobi29.base64
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.byteArrays
-import org.tobi29.assertions.on
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 import java.util.*
 
 object Base64Tests : Spek({
     describe("base64 encoding and decoding") {
-        on(
+        data(
             { a -> "encoding ${a.joinToString()} in base64" },
             *byteArrays().map {
                 data(it, Base64.getEncoder().encodeToString(it))
@@ -38,7 +36,7 @@ object Base64Tests : Spek({
                 actual shouldEqual expected
             }
         }
-        on(
+        data(
             { a -> "decoding $a from base64" },
             *byteArrays().map {
                 data(Base64.getEncoder().encodeToString(it), it)

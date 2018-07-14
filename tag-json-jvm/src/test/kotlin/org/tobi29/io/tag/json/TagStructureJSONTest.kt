@@ -16,11 +16,8 @@
 
 package org.tobi29.io.tag.json
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.assertions.shouldThrow
 import org.tobi29.io.IOException
@@ -107,8 +104,10 @@ private fun createTagMap(): TagMap {
     }
 }
 
-private fun checkWriteAndRead(map: TagMap,
-                              pretty: Boolean): TagMap {
+private fun checkWriteAndRead(
+    map: TagMap,
+    pretty: Boolean
+): TagMap {
     val channel = MemoryViewStreamDefault()
     map.writeJSON(channel, pretty)
     channel.flip()
@@ -117,28 +116,32 @@ private fun checkWriteAndRead(map: TagMap,
 
 object TagStructureJSONTests : Spek({
     describe("serialization for tag map") {
-        given("any tag map") {
+        describe("a normal tag structure") {
             val tagMapComplex by memoized { createTagMap() }
-            on("writing and reading, pretty") {
+            describe("writing and reading, pretty") {
                 val tagMap = tagMapComplex
-                val read = checkWriteAndRead(tagMap,
-                        true)
+                val read = checkWriteAndRead(
+                    tagMap,
+                    true
+                )
                 it("should return an equal tag map") {
                     read shouldEqual tagMap
                 }
             }
-            on("writing and reading, ugly") {
+            describe("writing and reading, ugly") {
                 val tagMap = tagMapComplex
-                val read = checkWriteAndRead(tagMap,
-                        false)
+                val read = checkWriteAndRead(
+                    tagMap,
+                    false
+                )
                 it("should return an equal tag map") {
                     read shouldEqual tagMap
                 }
             }
         }
-        val invalidTag = TagMap { this["NaN"] = Double.NaN.toTag() }
-        given("a tag with an invalid number") {
-            on("writing") {
+        describe("a tag with an invalid number") {
+            val invalidTag = TagMap { this["NaN"] = Double.NaN.toTag() }
+            describe("writing") {
                 it("should fail") {
                     shouldThrow<IOException> {
                         val channel = MemoryViewStreamDefault()
@@ -149,21 +152,21 @@ object TagStructureJSONTests : Spek({
         }
     }
     describe("parsing json") {
-        given("any valid json input") {
+        describe("normal json input") {
             val sample by memoized {
                 ClasspathPath(this::class.java.classLoader, "sample.json")
             }
-            on("parsing the input") {
+            describe("parsing the input") {
                 it("should succeed") {
                     sample.readNow { readJSON(it) }
                 }
             }
         }
-        given("overly deep json input") {
+        describe("overly deep json input") {
             val sample by memoized {
                 ClasspathPath(this::class.java.classLoader, "overflow.json")
             }
-            on("parsing the input") {
+            describe("parsing the input") {
                 it("should fail") {
                     shouldThrow<IOException> { sample.readNow { readJSON(it) } }
                 }

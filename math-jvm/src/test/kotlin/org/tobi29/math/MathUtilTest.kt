@@ -16,11 +16,8 @@
 
 package org.tobi29.math
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.stdex.math.ceilToInt
 import org.tobi29.stdex.math.floorToInt
@@ -30,105 +27,94 @@ import kotlin.math.roundToInt
 object MathUtilTests : Spek({
     describe("floor") {
         val numbersDouble = listOf(
-                Pair(-1.5, -2),
-                Pair(-1.0, -1),
-                Pair(-0.5, -1),
-                Pair(0.0, 0),
-                Pair(0.5, 0),
-                Pair(1.0, 1),
-                Pair(1.5, 1))
+            Pair(-1.5, -2),
+            Pair(-1.0, -1),
+            Pair(-0.5, -1),
+            Pair(0.0, 0),
+            Pair(0.5, 0),
+            Pair(1.0, 1),
+            Pair(1.5, 1)
+        )
         val numbersFloat = numbersDouble.map { (a, b) -> Pair(a.toFloat(), b) }
-        given("any float number") {
-            for (number in numbersFloat) {
-                on("calculating the floor") {
-                    val floor = (number.first).floorToInt()
-                    it("should equal the mathematical floor") {
-                        floor shouldEqual number.second
-                    }
+        for (number in numbersFloat) {
+            describe("calculating the floor of ${number.first}") {
+                val floor = (number.first).floorToInt()
+                it("should equal the mathematical floor") {
+                    floor shouldEqual number.second
                 }
             }
         }
-        given("any double number") {
-            for (number in numbersDouble) {
-                on("calculating the floor") {
-                    val floor = (number.first).floorToInt()
-                    it("should equal the mathematical floor") {
-                        floor shouldEqual number.second
-                    }
+        for (number in numbersDouble) {
+            describe("calculating the floor of ${number.first}") {
+                val floor = (number.first).floorToInt()
+                it("should equal the mathematical floor") {
+                    floor shouldEqual number.second
                 }
             }
         }
     }
     describe("ceil") {
         val numbersDouble = listOf(
-                Pair(-1.5, -1),
-                Pair(-1.0, -1),
-                Pair(-0.5, 0),
-                Pair(0.0, 0),
-                Pair(0.5, 1),
-                Pair(1.0, 1),
-                Pair(1.5, 2))
+            Pair(-1.5, -1),
+            Pair(-1.0, -1),
+            Pair(-0.5, 0),
+            Pair(0.0, 0),
+            Pair(0.5, 1),
+            Pair(1.0, 1),
+            Pair(1.5, 2)
+        )
         val numbersFloat = numbersDouble.map { (a, b) -> Pair(a.toFloat(), b) }
-        given("any float number") {
-            for (number in numbersFloat) {
-                on("calculating the ceil") {
-                    val ceil = number.first.ceilToInt()
-                    it("should equal the mathematical ceil") {
-                        ceil shouldEqual number.second
-                    }
+        for (number in numbersFloat) {
+            describe("calculating the ceil of ${number.first}") {
+                val ceil = number.first.ceilToInt()
+                it("should equal the mathematical ceil") {
+                    ceil shouldEqual number.second
                 }
             }
         }
-        given("any double number") {
-            for (number in numbersDouble) {
-                on("calculating the ceil") {
-                    val ceil = number.first.ceilToInt()
-                    it("should equal the mathematical ceil") {
-                        ceil shouldEqual number.second
-                    }
+        for (number in numbersDouble) {
+            describe("calculating the ceil of ${number.first}") {
+                val ceil = number.first.ceilToInt()
+                it("should equal the mathematical ceil") {
+                    ceil shouldEqual number.second
                 }
             }
         }
     }
     describe("round") {
         val numbersDouble = listOf(
-                Pair(-0.6, -1),
-                Pair(-0.5, 0),
-                Pair(-0.4, 0),
-                Pair(0.4, 0),
-                Pair(0.5, 1),
-                Pair(0.6, 1))
+            Pair(-0.6, -1),
+            Pair(-0.5, 0),
+            Pair(-0.4, 0),
+            Pair(0.4, 0),
+            Pair(0.5, 1),
+            Pair(0.6, 1)
+        )
         val numbersFloat = numbersDouble.map { (a, b) -> Pair(a.toFloat(), b) }
-        given("any float number") {
-            for (number in numbersFloat) {
-                on("calculating the round") {
-                    val round = (number.first).roundToInt()
-                    it("should equal the mathematical round") {
-                        round shouldEqual number.second
-                    }
+        for (number in numbersFloat) {
+            describe("calculating the round of ${number.first}") {
+                val round = (number.first).roundToInt()
+                it("should equal the mathematical round") {
+                    round shouldEqual number.second
                 }
             }
         }
-        given("any double number") {
-            for (number in numbersDouble) {
-                on("calculating the round") {
-                    val round = (number.first).roundToInt()
-                    it("should equal the mathematical round") {
-                        round shouldEqual number.second
-                    }
+        for (number in numbersDouble) {
+            describe("calculating the round of ${number.first}") {
+                val round = (number.first).roundToInt()
+                it("should equal the mathematical round") {
+                    round shouldEqual number.second
                 }
             }
         }
     }
     describe("log base 2") {
-        given("any number") {
-            for (i in 0..30) {
-                on("calculating 2 to the power of it and then the log base 2") {
-                    val j = 1 shl i
-                    val k = lb(j)
-                    it("should produce the original number") {
-                        k shouldEqual i
-                    }
+        for (i in 0..30) {
+            describe("calculating 2 to the power of $i and then the log base 2") {
+                val j = 1 shl i
+                val k = lb(j)
+                it("should produce the original number") {
+                    k shouldEqual i
                 }
             }
         }

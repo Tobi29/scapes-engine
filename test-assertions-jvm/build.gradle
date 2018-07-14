@@ -20,14 +20,11 @@ dependencies {
     compile rootProject.ext.kotlinJVM("kotlin-stdlib")
     compile rootProject.ext.kotlinJVM("kotlin-reflect")
     compile rootProject.ext.kotlinJVM("kotlin-test")
-    compile(rootProject.ext.spekJVM("spek-api")) {
-        exclude group: "org.jetbrains.kotlin"
-    }
-    compile(rootProject.ext.spekJVM("spek-data-driven-extension")) {
+    compile(rootProject.ext.spekJVM("spek-dsl")) {
         exclude group: "org.jetbrains.kotlin"
     }
 
-    runtime(rootProject.ext.spekJVM("spek-junit-platform-engine")) {
+    runtime(rootProject.ext.spek("spek-runner-junit5")) {
         exclude group: "org.jetbrains.kotlin"
     }
 }

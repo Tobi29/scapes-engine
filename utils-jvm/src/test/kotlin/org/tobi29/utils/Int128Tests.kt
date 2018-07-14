@@ -16,11 +16,9 @@
 
 package org.tobi29.utils
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 import java.math.BigInteger
 import java.util.*
@@ -28,7 +26,7 @@ import java.util.*
 object Int128Tests : Spek({
     describe("128-bit signed integers") {
         val random = Random(1234567L)
-        on(
+        data(
             { a -> "converting $a to a string and back" },
             *(0 until 100).map { random.randomInt128() }.map { a ->
                 data(a, a)
@@ -39,7 +37,7 @@ object Int128Tests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { a, b -> "adding $a to $b" },
             *(0 until 100).map { random.randomInt128Pair() }.map { (a, b) ->
                 data(
@@ -55,7 +53,7 @@ object Int128Tests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { a, b -> "subtracting $a from $b" },
             *(0 until 100).map { random.randomInt128Pair() }.map { (a, b) ->
                 data(
@@ -71,7 +69,7 @@ object Int128Tests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { a, b -> "multiplying $a by $b" },
             *(0 until 100).map { random.randomInt128Pair() }.map { (a, b) ->
                 data(
@@ -87,7 +85,7 @@ object Int128Tests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { a, b -> "dividing $a by $b" },
             *((0 until 100).map { random.randomInt128Pair() } +
                     listOf(
@@ -117,7 +115,7 @@ object Int128Tests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { a, b -> "shifting $a $b to the left" },
             *(0 until 100).map { random.randomInt128() to random.nextInt(64) }.map { (a, b) ->
                 data(
@@ -133,7 +131,7 @@ object Int128Tests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { a, b -> "shifting $a $b to the right" },
             *(0 until 100).map { random.randomInt128() to random.nextInt(64) }.map { (a, b) ->
                 data(

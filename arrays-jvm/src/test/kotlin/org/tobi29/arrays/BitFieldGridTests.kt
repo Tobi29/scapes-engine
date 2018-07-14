@@ -16,16 +16,14 @@
 
 package org.tobi29.arrays
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 import java.util.*
 
 object BitFieldGridTests : Spek({
     describe("a bit field grid") {
-        on("filling an instance filled with random data") {
+        describe("filling an instance filled with random data") {
             val random = Random(0)
             val chunkData = BitFieldGrid(15, 7)
             for (y in 0 until chunkData.height) {

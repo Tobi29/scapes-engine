@@ -16,23 +16,21 @@
 
 package org.tobi29.generation.maze
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
-import org.tobi29.math.Random
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
+import org.tobi29.math.Random
 
 object PrimsAlgorithmMazeTests : Spek({
     describe("generating a maze") {
-        on("generating a maze") {
-            val maze = PrimsAlgorithmMazeGenerator.generate(64, 32, Random(0))
-            it("should have the correct width") {
-                maze.width shouldEqual 64
-            }
-            it("should have the correct height") {
-                maze.height shouldEqual 32
-            }
+        val maze = PrimsAlgorithmMazeGenerator.generate(
+            64, 32, Random(0)
+        )
+        it("should have the correct width") {
+            maze.width shouldEqual 64
+        }
+        it("should have the correct height") {
+            maze.height shouldEqual 32
         }
     }
 })

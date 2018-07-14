@@ -16,10 +16,8 @@
 
 package org.tobi29.io
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 
 object ArrayViewsHeapTests : Spek({
@@ -39,7 +37,7 @@ object ArrayViewsHeapTests : Spek({
         }.map { (name, views) ->
             Triple(name, views.first, views.second)
         }) {
-            on("doing write and read operations on $name") {
+            describe("doing write and read operations on $name") {
                 writeToView(left)
                 writeToView(right)
                 it("should result in two equal views") {

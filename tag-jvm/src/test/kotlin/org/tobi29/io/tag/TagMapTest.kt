@@ -16,15 +16,13 @@
 
 package org.tobi29.io.tag
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 
 object TagMapTests : Spek({
     describe("a tag map") {
-        on("remap") {
+        describe("remap") {
             val tagStructure = MutableTagMap {
                 this["Replace"] = "Value".toTag()
                 this["Keep"] = "Value".toTag()
@@ -47,46 +45,53 @@ object TagMapTests : Spek({
                 tagStructure shouldEqual testStructure
             }
         }
-        on("inserting an array and retrieving it as a list") {
+        describe("inserting an array and retrieving it as a list") {
             val tagStructure = TagMap {
                 this["Array"] = byteArrayOf(0, 1, 2, 3, 4).toTag()
             }
             it("should return an equal list") {
                 tagStructure["Array"]?.toList() shouldEqual tagListOf(
-                        0, 1,
-                        2, 3, 4)
+                    0, 1,
+                    2, 3, 4
+                )
             }
         }
-        on("inserting a list and retrieving it as an array") {
+        describe("inserting a list and retrieving it as an array") {
             val tagStructure = TagMap {
                 this["List"] = tagListOf(0, 1, 2, 3, 4)
             }
             it("should return an equal array") {
-                tagStructure["List"]?.toByteArray() shouldEqual byteArrayOf(0,
-                        1, 2, 3, 4)
+                tagStructure["List"]?.toByteArray() shouldEqual byteArrayOf(
+                    0,
+                    1, 2, 3, 4
+                )
             }
         }
-        on("inserting an array into one tag map and an equal list into another") {
+        describe("inserting an array into one tag map and an equal list into another") {
             val tagStructure1 = TagMap {
                 this["Array"] = byteArrayOf(0, 1, 2, 3, 4).toTag()
                 this["List"] = tagListOf(0, 1, 2, 3, 4)
             }
             val tagStructure2 = TagMap {
                 this["List"] = byteArrayOf(0, 1, 2, 3, 4).toTag()
-                this["Array"] = tagListOf(0, 1, 2, 3,
-                        4)
+                this["Array"] = tagListOf(
+                    0, 1, 2, 3,
+                    4
+                )
             }
             it("should make equal tag maps") {
                 tagStructure2 shouldEqual tagStructure1
             }
         }
         val tagsEqual = listOf(
-                Pair(TagMap {
-                    this["Data"] = byteArrayOf(1, 2, 3, 4).toTag()
-                }, TagMap {
-                    this["Data"] = tagListOf(1, 2, 3,
-                            4)
-                })
+            Pair(TagMap {
+                this["Data"] = byteArrayOf(1, 2, 3, 4).toTag()
+            }, TagMap {
+                this["Data"] = tagListOf(
+                    1, 2, 3,
+                    4
+                )
+            })
         )
         for ((first, second) in tagsEqual) {
             it("should equal") {

@@ -370,16 +370,12 @@ interface TagListWrite : TagWrite {
 }
 
 private fun compareNumbers(first: Any, second: Any) =
-    if (first is Number && second is Number) compareNumbers(
-        first,
-        second
-    ) else false
+    if (first is Number && second is Number) compareNumbers(first, second)
+    else false
 
 private fun compareNumbers(first: Number, second: Number): Boolean =
-    compareNumbersSameType(
-        convertNumberToType(first, second),
-        first
-    ) && compareNumbersSameType(convertNumberToType(second, first), second)
+    compareNumbersSameType(convertNumberToType(first, second), first) &&
+            compareNumbersSameType(convertNumberToType(second, first), second)
 
 private fun compareNumbersSameType(first: Number, second: Number): Boolean {
     if (first is Float && second is Float) {

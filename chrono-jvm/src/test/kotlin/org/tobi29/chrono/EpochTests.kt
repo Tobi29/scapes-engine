@@ -16,18 +16,16 @@
 
 package org.tobi29.chrono
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 import java.util.*
 
 object EpochTests : Spek({
     describe("converting a date to epoch offset back and forth") {
         val random = Random(123456789L)
-        on(
+        data(
             { a -> "converting $a to epoch and back" },
             *((0 until 100).map {
                 val year = random.nextInt(20000) - 10000

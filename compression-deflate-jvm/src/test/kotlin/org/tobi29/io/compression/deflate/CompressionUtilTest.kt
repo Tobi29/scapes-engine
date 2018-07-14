@@ -16,49 +16,63 @@
 
 package org.tobi29.io.compression.deflate
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.arrays.fromHexadecimal
 import org.tobi29.arrays.readAsByteArray
+import org.tobi29.arrays.toHexadecimal
 import org.tobi29.assertions.byteArrays
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.io.*
+import org.tobi29.utils.toArray
 import java.util.zip.DeflaterOutputStream
 
 object DeflateTests : Spek({
-    fun deflateJvm(
-        input: ReadableByteStream,
-        level: Int = -1
-    ) = MemoryViewStreamDefault().also { stream ->
-        DeflaterOutputStream(ByteStreamOutputStream(stream)).use { streamOut ->
-            input.process {
-                it.readAsByteArray { array, index, offset ->
-                    streamOut.write(array, index, offset)
-                }
+    describe("deflating and inflating data") {
+        data(
+            { a -> "compressing \"$a\"" },
+            *randomTests
+        ) { a, expected ->
+            val actual =
+                deflate(MemoryViewReadableStream(a.fromHexadecimal().viewBE))
+                    .asByteArray().toHexadecimal()
+            it("should return \"$expected\"") {
+                actual shouldEqual expected
             }
         }
-        stream.flip()
-    }.bufferSlice()
-
-    given("any byte array") {
-        val arrays by memoized { byteArrays(32, 8) }
-        on("compressing and decompressing") {
-            for (array in arrays) {
-                val data = array.viewBE
-                val compressedJvm = deflateJvm(MemoryViewReadableStream(data))
-                val compressed = deflate(MemoryViewReadableStream(data)).viewBE
-
-                it("should give the same compressed data as zlib") {
-                    compressed shouldEqual compressedJvm
-                }
-
-                val decompressed = inflate(MemoryViewReadableStream(compressed))
-
-                it("should result with the same array") {
-                    decompressed shouldEqual data
-                }
+        data(
+            { a -> "decompressing \"$a\"" },
+            *randomTests.map { (a, b) -> data(b, a) }.toTypedArray()
+        ) { a, expected ->
+            val actual =
+                inflate(MemoryViewReadableStream(a.fromHexadecimal().viewBE))
+                    .asByteArray().toHexadecimal()
+            it("should return \"$expected\"") {
+                actual shouldEqual expected
             }
         }
     }
 })
+
+private val randomTests = byteArrays(32, 8).map {
+    data(
+        it.toHexadecimal(),
+        deflateJvm(MemoryViewReadableStream(it.viewBE))
+            .asByteArray().toHexadecimal()
+    )
+}.toArray()
+
+private fun deflateJvm(
+    input: ReadableByteStream,
+    level: Int = -1
+) = MemoryViewStreamDefault().also { stream ->
+    DeflaterOutputStream(ByteStreamOutputStream(stream)).use { streamOut ->
+        input.process {
+            it.readAsByteArray { array, index, offset ->
+                streamOut.write(array, index, offset)
+            }
+        }
+    }
+    stream.flip()
+}.bufferSlice()

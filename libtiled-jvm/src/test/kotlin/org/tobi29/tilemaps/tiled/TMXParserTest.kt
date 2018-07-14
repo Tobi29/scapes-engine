@@ -17,33 +17,26 @@
 package org.tobi29.tilemaps.tiled
 
 import kotlinx.coroutines.experimental.runBlocking
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.io.IOException
 import org.tobi29.io.classpath.ClasspathPath
 import kotlin.test.assertFalse
 
 object TMXParserTest : Spek({
     describe("parsing a tmx file") {
-        given("a tmx file") {
-            // Just a basic smoke test
-            val classLoader = this::class.java.classLoader
-            val path = ClasspathPath(classLoader, "csvmap.tmx")
-            on("reading the file") {
-                val map = runBlocking {
-                    path.readAsync {
-                        it.readTMXMap(
-                            path.parent ?: throw IOException("No parent")
-                        )
-                    }
-                }
-                it("should have read layers") {
-                    assertFalse(map.layers.isEmpty())
-                }
+        // Just a basic smoke test
+        val classLoader = this::class.java.classLoader
+        val path = ClasspathPath(classLoader, "csvmap.tmx")
+        val map = runBlocking {
+            path.readAsync {
+                it.readTMXMap(
+                    path.parent ?: throw IOException("No parent")
+                )
             }
+        }
+        it("should have read layers") {
+            assertFalse(map.layers.isEmpty())
         }
     }
 })

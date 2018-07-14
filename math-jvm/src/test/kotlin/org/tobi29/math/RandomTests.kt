@@ -16,28 +16,26 @@
 
 package org.tobi29.math
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import kotlin.test.assertTrue
 
 object RandomTests : Spek({
     describe("a random number generator") {
         for (max in 0..10) {
             for (min in -10..max) {
-                on("generating random ints in range $min..$max") {
+                describe("generating random ints in range $min..$max") {
                     val counts = IntArray(max - min + 1)
                     val random = Random(
                         12345L + max * 10000L + min
                     )
                     val count = counts.size * 100
-                    for (i in 0 until count) {
-                        val r = random.nextInt(min, max)
-                        if (r in min..max) {
-                            counts[r - min]++
-                        }
-                        it("should be inside the given range") {
+                    it("should be inside the given range") {
+                        for (i in 0 until count) {
+                            val r = random.nextInt(min, max)
+                            if (r in min..max) {
+                                counts[r - min]++
+                            }
                             assertTrue { r in min..max }
                         }
                     }
@@ -51,21 +49,21 @@ object RandomTests : Spek({
                         }
                     }
                 }
-                on("generating random longs in range $min..$max") {
+                describe("generating random longs in range $min..$max") {
                     val counts = IntArray(max - min + 1)
                     val random = Random(
                         12345L + max * 10000L + min
                     )
                     val count = counts.size * 100
-                    for (i in 0 until count) {
-                        val r = random.nextLong(
-                            min.toLong(),
-                            max.toLong()
-                        ).toInt()
-                        if (r in min..max) {
-                            counts[r - min]++
-                        }
-                        it("should be inside the given range") {
+                    it("should be inside the given range") {
+                        for (i in 0 until count) {
+                            val r = random.nextLong(
+                                min.toLong(),
+                                max.toLong()
+                            ).toInt()
+                            if (r in min..max) {
+                                counts[r - min]++
+                            }
                             assertTrue { r in min..max }
                         }
                     }

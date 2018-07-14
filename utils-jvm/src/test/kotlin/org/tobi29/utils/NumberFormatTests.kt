@@ -16,11 +16,9 @@
 
 package org.tobi29.utils
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 
 object NumberFormatTests : Spek({
@@ -43,10 +41,10 @@ object NumberFormatTests : Spek({
                 )
             ),
             data(
-                0.2500000000000000,
+                0.2400000000000000,
                 Expected(
-                    "0", "0.250000", "0.25000000",
-                    "2e-01", "2.500000e-01", "2.50000000e-01"
+                    "0", "0.240000", "0.24000000",
+                    "2e-01", "2.400000e-01", "2.40000000e-01"
                 )
             ),
             data(
@@ -86,42 +84,42 @@ object NumberFormatTests : Spek({
             )
         )
 
-        on({ a -> "formatting $a with precision 0" }, *cases) { a, expected ->
+        data({ a -> "formatting $a with precision 0" }, *cases) { a, expected ->
             val decimal0 = a.toStringDecimal(0)
             it("should return ${expected.decimal0}") {
                 decimal0 shouldEqual expected.decimal0
             }
         }
 
-        on({ a -> "formatting $a with precision 6" }, *cases) { a, expected ->
+        data({ a -> "formatting $a with precision 6" }, *cases) { a, expected ->
             val decimal6 = a.toStringDecimal(6)
             it("should return ${expected.decimal0}") {
                 decimal6 shouldEqual expected.decimal6
             }
         }
 
-        on({ a -> "formatting $a with precision 8" }, *cases) { a, expected ->
+        data({ a -> "formatting $a with precision 8" }, *cases) { a, expected ->
             val decimal8 = a.toStringDecimal(8)
             it("should return ${expected.decimal0}") {
                 decimal8 shouldEqual expected.decimal8
             }
         }
 
-        on({ a -> "formatting $a with precision 0" }, *cases) { a, expected ->
+        data({ a -> "formatting $a with precision 0" }, *cases) { a, expected ->
             val exponential0 = a.toStringExponential(0)
             it("should return ${expected.exponential0}") {
                 exponential0 shouldEqual expected.exponential0
             }
         }
 
-        on({ a -> "formatting $a with precision 6" }, *cases) { a, expected ->
+        data({ a -> "formatting $a with precision 6" }, *cases) { a, expected ->
             val exponential6 = a.toStringExponential(6)
             it("should return ${expected.exponential0}") {
                 exponential6 shouldEqual expected.exponential6
             }
         }
 
-        on({ a -> "formatting $a with precision 8" }, *cases) { a, expected ->
+        data({ a -> "formatting $a with precision 8" }, *cases) { a, expected ->
             val exponential8 = a.toStringExponential(8)
             it("should return ${expected.exponential0}") {
                 exponential8 shouldEqual expected.exponential8

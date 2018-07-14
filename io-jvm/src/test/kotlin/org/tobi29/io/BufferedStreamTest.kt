@@ -16,20 +16,20 @@
 
 package org.tobi29.io
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.shouldEqual
 
 object BufferedStreamTests : Spek({
     for (size in (0..15).map { 1 shl 16 }) {
-        on("writing to and reading from a buffered stream with buffer size $size") {
+        describe("writing to and reading from a buffered stream with buffer size $size") {
             val buffer = MemoryViewStreamDefault()
             val arrays = byteArrays(16, 8)
             buffer.reset()
             BufferedWriteChannelStream(
-                    WritableByteStreamChannel(buffer)).apply {
+                WritableByteStreamChannel(buffer)
+            ).apply {
                 for (array in arrays) {
                     put(array.view)
                 }
@@ -41,7 +41,8 @@ object BufferedStreamTests : Spek({
             }
             buffer.flip()
             BufferedReadChannelStream(
-                    ReadableByteStreamChannel(buffer)).apply {
+                ReadableByteStreamChannel(buffer)
+            ).apply {
                 for (array in arrays) {
                     val check = ByteArray(array.size)
                     get(check.view)

@@ -16,11 +16,9 @@
 
 package org.tobi29.args
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.assertions.shouldThrow
 
@@ -113,7 +111,7 @@ private val command3 = CommandConfig(
 
 object CommandLineTests : Spek({
     describe("parsing options from tokens") {
-        on(
+        data(
             { _, b -> "parsing the command $b" },
             data(
                 command,
@@ -415,7 +413,7 @@ object CommandLineTests : Spek({
                 commandLine shouldEqual expectedCommandLine
             }
         }
-        on(
+        data(
             { _, b -> "parsing the command $b" },
             data<CommandConfig, List<String>, Pair<List<TokenParser.Token>, CommandLine>>(
                 command,
@@ -470,7 +468,7 @@ object CommandLineTests : Spek({
                 commandLine shouldEqual expectedCommandLine
             }
         }
-        on(
+        data(
             { _, b -> "parsing the command $b" },
             data(
                 command,

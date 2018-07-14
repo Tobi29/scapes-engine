@@ -16,11 +16,9 @@
 
 package org.tobi29.stdex
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 
 object NumbersTests : Spek({
@@ -71,7 +69,7 @@ object NumbersTests : Spek({
     }
 
     describe("various operations on numbers") {
-        on(
+        data(
             { a -> "splitting short $a into bytes" },
             data(
                 0x0000.toShort(),
@@ -101,7 +99,7 @@ object NumbersTests : Spek({
                 actual shouldEqual expected
             }
         }
-        on(
+        data(
             { a -> "splitting integer $a into bytes" },
             data(
                 0x00000000,
@@ -131,7 +129,7 @@ object NumbersTests : Spek({
                 actual shouldEqual expected
             }
         }
-        on(
+        data(
             { a -> "splitting long $a into bytes" },
             data(
                 0x0000000000000000L,

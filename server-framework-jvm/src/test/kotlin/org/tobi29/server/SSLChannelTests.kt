@@ -20,13 +20,11 @@ import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.yield
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
-import org.tobi29.stdex.atomic.AtomicLong
 import org.tobi29.io.*
+import org.tobi29.stdex.atomic.AtomicLong
 import java.nio.channels.Pipe
 import java.security.KeyStoreException
 import javax.net.ssl.KeyManager
@@ -36,7 +34,7 @@ object SSLChannelTests : Spek({
         // No certificate checking with in memory connection
         val sslServer = SSLHandle(getKeyManagers())
         val sslClient = SSLHandle.insecure()
-        on("writing data through a pipe") {
+        describe("writing data through a pipe") {
             val taskExecutor = CommonPool
 
             val success = AtomicLong(0L)
@@ -57,12 +55,20 @@ object SSLChannelTests : Spek({
                 configureBlocking(false)
             }.toChannel()
 
-            val channelLeft = sslClient.newSSLChannel(address,
-                    sslServer.newSSLChannel(address, sourceLeft, sinkLeft,
-                            taskExecutor, false), taskExecutor, true)
-            val channelRight = sslServer.newSSLChannel(address,
-                    sslClient.newSSLChannel(address, sourceRight, sinkRight,
-                            taskExecutor, true), taskExecutor, false)
+            val channelLeft = sslClient.newSSLChannel(
+                address,
+                sslServer.newSSLChannel(
+                    address, sourceLeft, sinkLeft,
+                    taskExecutor, false
+                ), taskExecutor, true
+            )
+            val channelRight = sslServer.newSSLChannel(
+                address,
+                sslClient.newSSLChannel(
+                    address, sourceRight, sinkRight,
+                    taskExecutor, true
+                ), taskExecutor, false
+            )
 
             val job1 = launch(taskExecutor) {
                 val bufferSend = ByteBuffer(1024).apply { fill { 42 }._flip() }
@@ -156,8 +162,10 @@ object SSLChannelTests : Spek({
 
 private fun getKeyManagers(): Array<KeyManager> {
     return try {
-        val keyStore = keyStore("default.p12", "storepass",
-                SSLChannelTests::class.java.classLoader)
+        val keyStore = keyStore(
+            "default.p12", "storepass",
+            SSLChannelTests::class.java.classLoader
+        )
         keyManagers(keyStore, "storepass")
     } catch (e: KeyStoreException) {
         throw IOException(e)

@@ -16,16 +16,14 @@
 
 package org.tobi29.utils
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 
 object MutableStringTests : Spek({
     describe("a mutable string") {
-        on(
+        data(
             { initial, append -> "appending \"$append\" to \"$initial\"" },
             data("A", "B", "AB"),
             data("ABC", "DEF", "ABCDEF")
@@ -35,7 +33,7 @@ object MutableStringTests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { initial, insert, pos -> "inserting \"$insert\" into \"$initial\" at $pos" },
             data("A", "B", 0, "BA"),
             data("A", "B", 1, "AB"),
@@ -47,7 +45,7 @@ object MutableStringTests : Spek({
                 actual shouldEqual expect
             }
         }
-        on(
+        data(
             { initial, range -> "deleting the range $range from \"$initial\"" },
             data("A", 0..0, ""),
             data("ABC", 0..0, "BC"),

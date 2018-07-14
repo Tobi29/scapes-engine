@@ -16,11 +16,8 @@
 
 package org.tobi29.io.tag.binary
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.io.MemoryViewStreamDefault
 import org.tobi29.io.tag.TagList
@@ -104,8 +101,10 @@ private fun createTagMap(): TagMap {
     }
 }
 
-private fun checkWriteAndRead(map: TagMap,
-                              compression: Byte = -1): TagMap {
+private fun checkWriteAndRead(
+    map: TagMap,
+    compression: Byte = -1
+): TagMap {
     val channel = MemoryViewStreamDefault()
     map.writeBinary(channel, compression)
     channel.flip()
@@ -114,9 +113,9 @@ private fun checkWriteAndRead(map: TagMap,
 
 object TagStructureBinaryTests : Spek({
     describe("serialization for tag structures") {
-        given("any tag structure") {
+        describe("a normal tag structure") {
             val tagMapComplex by memoized { createTagMap() }
-            on("writing and reading, uncompressed") {
+            describe("writing and reading, uncompressed") {
                 val tagMap = tagMapComplex
                 val read = checkWriteAndRead(
                     tagMap,
@@ -126,7 +125,7 @@ object TagStructureBinaryTests : Spek({
                     read shouldEqual tagMap
                 }
             }
-            on("writing and reading, compressed") {
+            describe("writing and reading, compressed") {
                 val tagMap = tagMapComplex
                 val read = checkWriteAndRead(tagMap, 1)
                 it("should return an equal tag structure") {
@@ -134,13 +133,13 @@ object TagStructureBinaryTests : Spek({
                 }
             }
         }
-        given("a tag structure with more than 255 different keys") {
+        describe("a tag structure with more than 255 different keys") {
             val tagMapManyKeys by memoized {
                 TagMap {
                     repeat(512) { this["Entry#$it"] = it.toTag() }
                 }
             }
-            on("writing and reading, uncompressed") {
+            describe("writing and reading, uncompressed") {
                 val tagMap = tagMapManyKeys
                 val read = checkWriteAndRead(
                     tagMap,

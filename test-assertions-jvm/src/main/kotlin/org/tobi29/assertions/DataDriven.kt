@@ -14,224 +14,349 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.assertions
 
-import org.jetbrains.spek.api.dsl.ActionBody
-import org.jetbrains.spek.api.dsl.SpecBody
-import org.jetbrains.spek.api.dsl.on
-import org.jetbrains.spek.data_driven.*
+import org.spekframework.spek2.style.specification.Suite
 
-inline fun <I1, Expected> SpecBody.on(
+data class Data1<I1, Expected>(
+    val i1: I1,
+    val expected: Expected
+)
+
+inline fun <I1, Expected> data(
+    i1: I1,
+    expected: Expected
+) = Data1(i1, expected)
+
+inline fun <I1, Expected> Suite.data(
     description: (I1) -> String,
     vararg with: Data1<I1, Expected>,
-    crossinline body: ActionBody.(I1, Expected) -> Unit
+    crossinline body: Suite.(I1, Expected) -> Unit
 ) {
     with.forEach { (i1, expected) ->
-        on(description(i1)) {
+        describe(description(i1)) {
             body(i1, expected)
         }
     }
 }
 
-inline fun <I1, Expected> SpecBody.on(
+inline fun <I1, Expected> Suite.data(
     description: (I1, Expected) -> String,
     vararg with: Data1<I1, Expected>,
-    crossinline body: ActionBody.(I1, Expected) -> Unit
+    crossinline body: Suite.(I1, Expected) -> Unit
 ) {
     with.forEach { (i1, expected) ->
-        on(description(i1, expected)) {
+        describe(description(i1, expected)) {
             body(i1, expected)
         }
     }
 }
 
-inline fun <I1, I2, Expected> SpecBody.on(
+data class Data2<I1, I2, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val expected: Expected
+)
+
+inline fun <I1, I2, Expected> data(
+    i1: I1, i2: I2,
+    expected: Expected
+) = Data2(i1, i2, expected)
+
+inline fun <I1, I2, Expected> Suite.data(
     description: (I1, I2) -> String,
     vararg with: Data2<I1, I2, Expected>,
-    crossinline body: ActionBody.(I1, I2, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, expected) ->
-        on(description(i1, i2)) {
+        describe(description(i1, i2)) {
             body(i1, i2, expected)
         }
     }
 }
 
-inline fun <I1, I2, Expected> SpecBody.on(
+inline fun <I1, I2, Expected> Suite.data(
     description: (I1, I2, Expected) -> String,
     vararg with: Data2<I1, I2, Expected>,
-    crossinline body: ActionBody.(I1, I2, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, expected) ->
-        on(description(i1, i2, expected)) {
+        describe(description(i1, i2, expected)) {
             body(i1, i2, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, Expected> SpecBody.on(
+data class Data3<I1, I2, I3, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, Expected> data(
+    i1: I1, i2: I2, i3: I3,
+    expected: Expected
+) = Data3(i1, i2, i3, expected)
+
+inline fun <I1, I2, I3, Expected> Suite.data(
     description: (I1, I2, I3) -> String,
     vararg with: Data3<I1, I2, I3, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, expected) ->
-        on(description(i1, i2, i3)) {
+        describe(description(i1, i2, i3)) {
             body(i1, i2, i3, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, Expected> SpecBody.on(
+inline fun <I1, I2, I3, Expected> Suite.data(
     description: (I1, I2, I3, Expected) -> String,
     vararg with: Data3<I1, I2, I3, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, expected) ->
-        on(description(i1, i2, i3, expected)) {
+        describe(description(i1, i2, i3, expected)) {
             body(i1, i2, i3, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, Expected> SpecBody.on(
+data class Data4<I1, I2, I3, I4, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val i4: I4,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, I4, Expected> data(
+    i1: I1, i2: I2, i3: I3, i4: I4,
+    expected: Expected
+) = Data4(i1, i2, i3, i4, expected)
+
+inline fun <I1, I2, I3, I4, Expected> Suite.data(
     description: (I1, I2, I3, I4) -> String,
     vararg with: Data4<I1, I2, I3, I4, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, expected) ->
-        on(description(i1, i2, i3, i4)) {
+        describe(description(i1, i2, i3, i4)) {
             body(i1, i2, i3, i4, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, Expected> SpecBody.on(
+inline fun <I1, I2, I3, I4, Expected> Suite.data(
     description: (I1, I2, I3, I4, Expected) -> String,
     vararg with: Data4<I1, I2, I3, I4, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, expected) ->
-        on(description(i1, i2, i3, i4, expected)) {
+        describe(description(i1, i2, i3, i4, expected)) {
             body(i1, i2, i3, i4, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, Expected> SpecBody.on(
+data class Data5<I1, I2, I3, I4, I5, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val i4: I4,
+    val i5: I5,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, I4, I5, Expected> data(
+    i1: I1, i2: I2, i3: I3, i4: I4, i5: I5,
+    expected: Expected
+) = Data5(i1, i2, i3, i4, i5, expected)
+
+inline fun <I1, I2, I3, I4, I5, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5) -> String,
     vararg with: Data5<I1, I2, I3, I4, I5, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, expected) ->
-        on(description(i1, i2, i3, i4, i5)) {
+        describe(description(i1, i2, i3, i4, i5)) {
             body(i1, i2, i3, i4, i5, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, Expected> SpecBody.on(
+inline fun <I1, I2, I3, I4, I5, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, Expected) -> String,
     vararg with: Data5<I1, I2, I3, I4, I5, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, expected) ->
-        on(description(i1, i2, i3, i4, i5, expected)) {
+        describe(description(i1, i2, i3, i4, i5, expected)) {
             body(i1, i2, i3, i4, i5, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, Expected> SpecBody.on(
+data class Data6<I1, I2, I3, I4, I5, I6, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val i4: I4,
+    val i5: I5,
+    val i6: I6,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, I4, I5, I6, Expected> data(
+    i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6,
+    expected: Expected
+) = Data6(i1, i2, i3, i4, i5, i6, expected)
+
+inline fun <I1, I2, I3, I4, I5, I6, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6) -> String,
     vararg with: Data6<I1, I2, I3, I4, I5, I6, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6)) {
+        describe(description(i1, i2, i3, i4, i5, i6)) {
             body(i1, i2, i3, i4, i5, i6, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, Expected> SpecBody.on(
+inline fun <I1, I2, I3, I4, I5, I6, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, Expected) -> String,
     vararg with: Data6<I1, I2, I3, I4, I5, I6, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, expected)) {
+        describe(description(i1, i2, i3, i4, i5, i6, expected)) {
             body(i1, i2, i3, i4, i5, i6, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, I7, Expected> SpecBody.on(
+data class Data7<I1, I2, I3, I4, I5, I6, I7, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val i4: I4,
+    val i5: I5,
+    val i6: I6,
+    val i7: I7,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, I4, I5, I6, I7, Expected> data(
+    i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6, i7: I7,
+    expected: Expected
+) = Data7(i1, i2, i3, i4, i5, i6, i7, expected)
+
+inline fun <I1, I2, I3, I4, I5, I6, I7, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, I7) -> String,
     vararg with: Data7<I1, I2, I3, I4, I5, I6, I7, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, I7, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, I7, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, i7, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, i7)) {
+        describe(description(i1, i2, i3, i4, i5, i6, i7)) {
             body(i1, i2, i3, i4, i5, i6, i7, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, I7, Expected> SpecBody.on(
+inline fun <I1, I2, I3, I4, I5, I6, I7, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, I7, Expected) -> String,
     vararg with: Data7<I1, I2, I3, I4, I5, I6, I7, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, I7, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, I7, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, i7, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, i7, expected)) {
+        describe(description(i1, i2, i3, i4, i5, i6, i7, expected)) {
             body(i1, i2, i3, i4, i5, i6, i7, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, I7, I8, Expected> SpecBody.on(
+data class Data8<I1, I2, I3, I4, I5, I6, I7, I8, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val i4: I4,
+    val i5: I5,
+    val i6: I6,
+    val i7: I7,
+    val i8: I8,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, I4, I5, I6, I7, I8, Expected> data(
+    i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6, i7: I7, i8: I8,
+    expected: Expected
+) = Data8(i1, i2, i3, i4, i5, i6, i7, i8, expected)
+
+inline fun <I1, I2, I3, I4, I5, I6, I7, I8, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, I7, I8) -> String,
     vararg with: Data8<I1, I2, I3, I4, I5, I6, I7, I8, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, I7, I8, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, I7, I8, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, i7, i8, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, i7, i8)) {
+        describe(description(i1, i2, i3, i4, i5, i6, i7, i8)) {
             body(i1, i2, i3, i4, i5, i6, i7, i8, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, I7, I8, Expected> SpecBody.on(
+inline fun <I1, I2, I3, I4, I5, I6, I7, I8, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, I7, I8, Expected) -> String,
     vararg with: Data8<I1, I2, I3, I4, I5, I6, I7, I8, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, I7, I8, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, I7, I8, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, i7, i8, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, i7, i8, expected)) {
+        describe(description(i1, i2, i3, i4, i5, i6, i7, i8, expected)) {
             body(i1, i2, i3, i4, i5, i6, i7, i8, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected> SpecBody.on(
+data class Data9<I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected>(
+    val i1: I1,
+    val i2: I2,
+    val i3: I3,
+    val i4: I4,
+    val i5: I5,
+    val i6: I6,
+    val i7: I7,
+    val i8: I8,
+    val i9: I9,
+    val expected: Expected
+)
+
+inline fun <I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected> data(
+    i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6, i7: I7, i8: I8, i9: I9,
+    expected: Expected
+) = Data9(i1, i2, i3, i4, i5, i6, i7, i8, i9, expected)
+
+inline fun <I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, I7, I8, I9) -> String,
     vararg with: Data9<I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, i7, i8, i9, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, i7, i8, i9)) {
+        describe(description(i1, i2, i3, i4, i5, i6, i7, i8, i9)) {
             body(i1, i2, i3, i4, i5, i6, i7, i8, i9, expected)
         }
     }
 }
 
-inline fun <I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected> SpecBody.on(
+inline fun <I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected> Suite.data(
     description: (I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected) -> String,
     vararg with: Data9<I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected>,
-    crossinline body: ActionBody.(I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected) -> Unit
+    crossinline body: Suite.(I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected) -> Unit
 ) {
     with.forEach { (i1, i2, i3, i4, i5, i6, i7, i8, i9, expected) ->
-        on(description(i1, i2, i3, i4, i5, i6, i7, i8, i9, expected)) {
+        describe(description(i1, i2, i3, i4, i5, i6, i7, i8, i9, expected)) {
             body(i1, i2, i3, i4, i5, i6, i7, i8, i9, expected)
         }
     }

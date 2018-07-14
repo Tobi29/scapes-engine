@@ -16,10 +16,8 @@
 
 package org.tobi29.math
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.given
-import org.jetbrains.spek.api.dsl.it
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.stdex.math.toRad
 import kotlin.math.cos
@@ -27,78 +25,72 @@ import kotlin.math.sin
 
 object FastSinTests : Spek({
     describe("table sin") {
-        given("any number") {
-            it("should be close to the mathematical sin") {
-                var r = -8.0
-                while (r <= 8.0) {
-                    val sin = FastSin.sin(r)
-                    val expected = sin(r)
-                    sin.shouldEqual(expected, 0.002)
-                    r += 0.0009765625
-                }
-                val big = 1e10
-                r = big
-                repeat(10000) {
-                    val sin = FastSin.sin(r)
-                    val expected = sin(r)
-                    sin.shouldEqual(expected, 0.002)
-                    r += 0.1
-                }
+        it("should be close to the mathematical sin") {
+            var r = -8.0
+            while (r <= 8.0) {
+                val sin = FastSin.sin(r)
+                val expected = sin(r)
+                sin.shouldEqual(expected, 0.002)
+                r += 0.0009765625
+            }
+            val big = 1e10
+            r = big
+            repeat(10000) {
+                val sin = FastSin.sin(r)
+                val expected = sin(r)
+                sin.shouldEqual(expected, 0.002)
+                r += 0.1
             }
         }
-        given("cardinal directions") {
-            it("should be equal to the mathematical sin") {
-                for ((r, expected) in sequenceOf(
-                        (-360.0).toRad() to 0.0,
-                        (-270.0).toRad() to 1.0,
-                        (-180.0).toRad() to 0.0,
-                        (-90.0).toRad() to -1.0,
-                        0.0.toRad() to 0.0,
-                        90.0.toRad() to 1.0,
-                        180.0.toRad() to 0.0,
-                        270.0.toRad() to -1.0,
-                        360.0.toRad() to 0.0)) {
-                    val sin = FastSin.sin(r)
-                    sin shouldEqual expected
-                }
+        it("should be equal to the mathematical sin") {
+            for ((r, expected) in sequenceOf(
+                (-360.0).toRad() to 0.0,
+                (-270.0).toRad() to 1.0,
+                (-180.0).toRad() to 0.0,
+                (-90.0).toRad() to -1.0,
+                0.0.toRad() to 0.0,
+                90.0.toRad() to 1.0,
+                180.0.toRad() to 0.0,
+                270.0.toRad() to -1.0,
+                360.0.toRad() to 0.0
+            )) {
+                val sin = FastSin.sin(r)
+                sin shouldEqual expected
             }
         }
     }
     describe("table cos") {
-        given("any number") {
-            it("should be close to the mathematical cos") {
-                var r = -8.0
-                while (r <= 8.0) {
-                    val cos = FastSin.cos(r)
-                    val expected = cos(r)
-                    cos.shouldEqual(expected, 0.002)
-                    r += 0.0009765625
-                }
-                val big = 1e10
-                r = big
-                repeat(10000) {
-                    val cos = FastSin.cos(r)
-                    val expected = cos(r)
-                    cos.shouldEqual(expected, 0.002)
-                    r += 0.1
-                }
+        it("should be close to the mathematical cos") {
+            var r = -8.0
+            while (r <= 8.0) {
+                val cos = FastSin.cos(r)
+                val expected = cos(r)
+                cos.shouldEqual(expected, 0.002)
+                r += 0.0009765625
+            }
+            val big = 1e10
+            r = big
+            repeat(10000) {
+                val cos = FastSin.cos(r)
+                val expected = cos(r)
+                cos.shouldEqual(expected, 0.002)
+                r += 0.1
             }
         }
-        given("cardinal directions") {
-            it("should be equal to the mathematical cos") {
-                for ((r, expected) in sequenceOf(
-                        (-360.0).toRad() to 1.0,
-                        (-270.0).toRad() to 0.0,
-                        (-180.0).toRad() to -1.0,
-                        (-90.0).toRad() to 0.0,
-                        0.0.toRad() to 1.0,
-                        90.0.toRad() to 0.0,
-                        180.0.toRad() to -1.0,
-                        270.0.toRad() to 0.0,
-                        360.0.toRad() to 1.0)) {
-                    val sin = FastSin.cos(r)
-                    sin shouldEqual expected
-                }
+        it("should be equal to the mathematical cos") {
+            for ((r, expected) in sequenceOf(
+                (-360.0).toRad() to 1.0,
+                (-270.0).toRad() to 0.0,
+                (-180.0).toRad() to -1.0,
+                (-90.0).toRad() to 0.0,
+                0.0.toRad() to 1.0,
+                90.0.toRad() to 0.0,
+                180.0.toRad() to -1.0,
+                270.0.toRad() to 0.0,
+                360.0.toRad() to 1.0
+            )) {
+                val sin = FastSin.cos(r)
+                sin shouldEqual expected
             }
         }
     }

@@ -16,15 +16,13 @@
 
 package org.tobi29.utils
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.api.dsl.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
 
 object ListenerTests : Spek({
     describe("listener owners") {
-        val graphPriority by memoized {
+        val graphPriority = {
             var counter = 0
             val graph = HashMap<String, EventDispatcher>()
             graph.put("Root", EventDispatcher().apply {
@@ -56,7 +54,7 @@ object ListenerTests : Spek({
             })
             Pair(graph, { counter })
         }
-        val graphListeners by memoized {
+        val graphListeners = {
             var counter = 0
             val graph = HashMap<String, EventDispatcher>()
             graph.put("Root", EventDispatcher().apply {
@@ -76,29 +74,29 @@ object ListenerTests : Spek({
             })
             Pair(graph, { counter })
         }
-        on("firing an event on root") {
-            val (graph, counter) = graphPriority
+        describe("firing an event on root") {
+            val (graph, counter) = graphPriority()
             graph["Root"]?.fire(Unit)
             it("should fire all listeners in the correct order") {
                 counter() shouldEqual 4
             }
         }
-        on("firing an event on root") {
-            val (graph, counter) = graphListeners
+        describe("firing an event on root") {
+            val (graph, counter) = graphListeners()
             graph["Root"]?.fire(Unit)
             it("should fire all listeners") {
                 counter() shouldEqual 4
             }
         }
-        on("firing an event on a child") {
-            val (graph, counter) = graphListeners
+        describe("firing an event on a child") {
+            val (graph, counter) = graphListeners()
             graph["1"]?.fire(Unit)
             it("should fire all listeners") {
                 counter() shouldEqual 4
             }
         }
-        on("disabling a child and firing an event on root") {
-            val (graph, counter) = graphListeners
+        describe("disabling a child and firing an event on root") {
+            val (graph, counter) = graphListeners()
             graph["1"]?.disable()
             graph["Root"]?.fire(Unit)
             it("should fire all enabled listeners") {

@@ -16,16 +16,14 @@
 
 package org.tobi29.uuid
 
-import org.jetbrains.spek.api.Spek
-import org.jetbrains.spek.api.dsl.describe
-import org.jetbrains.spek.api.dsl.it
-import org.jetbrains.spek.data_driven.data
-import org.tobi29.assertions.on
+import org.spekframework.spek2.Spek
+import org.spekframework.spek2.style.specification.describe
+import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 
 object UuidTests : Spek({
     describe("converting a binary uuid to a string") {
-        on(
+        data(
             { a -> "converting ${a.first}, ${a.second} to a string" },
             data(
                 Pair(0L, 0L),
@@ -75,7 +73,7 @@ object UuidTests : Spek({
         }
     }
     describe("converting a string uuid to binary") {
-        on(
+        data(
             { a -> "converting $a to binary" },
             data(
                 "00000000-0000-0000-0000-000000000000",
