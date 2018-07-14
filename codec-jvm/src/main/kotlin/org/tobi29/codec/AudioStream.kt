@@ -21,13 +21,14 @@ import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteChannel
 import org.tobi29.logging.KLogging
 import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.Throws
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
 
 object AudioStream : KLogging() {
     private val CODECS = ConcurrentHashMap<String, ReadableAudioStreamProvider>()
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun create(channel: ReadableByteChannel,
                mime: String): ReadableAudioStream {
         val codec = AudioStream[mime]

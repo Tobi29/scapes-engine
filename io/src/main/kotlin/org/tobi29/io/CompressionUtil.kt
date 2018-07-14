@@ -16,12 +16,14 @@
 
 package org.tobi29.io
 
+import org.tobi29.stdex.Throws
+
 // TODO: Remove after 0.0.14
 
 @Deprecated("Use compression-deflate module")
 object CompressionUtil {
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun compress(
         input: ReadableByteStream,
         level: Int = -1
@@ -32,7 +34,7 @@ object CompressionUtil {
         return stream.bufferSlice()
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun compress(
         input: ReadableByteStream,
         output: WritableByteStream,
@@ -41,7 +43,7 @@ object CompressionUtil {
         ZDeflater(level, 8192).use { filter -> filter(input, output, filter) }
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun decompress(input: ReadableByteStream): ByteView {
         val stream = MemoryViewStreamDefault()
         decompress(input, stream)
@@ -49,7 +51,7 @@ object CompressionUtil {
         return stream.bufferSlice()
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun decompress(
         input: ReadableByteStream,
         output: WritableByteStream
@@ -57,7 +59,7 @@ object CompressionUtil {
         ZInflater(8192).use { filter -> filter(input, output, filter) }
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun filter(
         input: ReadableByteStream,
         output: WritableByteStream,
@@ -82,10 +84,10 @@ object CompressionUtil {
     }
 
     interface Filter : AutoCloseable {
-        // TODO: @Throws(IOException::class)
+        @Throws(IOException::class)
         fun input(buffer: ReadableByteStream): Boolean
 
-        // TODO: @Throws(IOException::class)
+        @Throws(IOException::class)
         fun output(buffer: WritableByteStream): Int
 
         fun finish()

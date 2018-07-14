@@ -18,17 +18,18 @@ package org.tobi29.io
 
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
+import org.tobi29.stdex.Throws
 import java.io.InputStream
 import java.io.OutputStream
 
 class ByteStreamInputStream(private val stream: ReadableByteStream) :
     InputStream() {
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun read(): Int {
         return stream.get().toInt() and 0xFF
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun read(
         b: ByteArray,
         off: Int,
@@ -37,14 +38,14 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) :
         return stream.getSome(b.view.slice(off, len))
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun skip(n: Long): Long {
         val len = n.toInt()
         stream.skip(len)
         return len.toLong()
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun available(): Int {
         return stream.available()
     }
@@ -53,12 +54,12 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) :
 class ByteStreamOutputStream(private val stream: WritableByteStream) :
     OutputStream() {
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun write(b: Int) {
         stream.put(b.toByte())
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun write(
         b: ByteArray,
         off: Int,

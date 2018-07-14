@@ -24,12 +24,18 @@ import org.tobi29.utils.systemClock
 import org.tobi29.utils.toInt128
 
 object FileCache {
-    fun store(root: FilePath,
-              stream: ReadableByteStream): Location {
+    fun store(
+        root: FilePath,
+        stream: ReadableByteStream
+    ): Location {
         val write = createTempFile("CacheWrite", ".tmp")
         try {
-            channel(write, options = arrayOf(OPEN_READ, OPEN_WRITE, OPEN_CREATE,
-                    OPEN_TRUNCATE_EXISTING)).use { channel ->
+            channel(
+                write, options = arrayOf(
+                    OPEN_READ, OPEN_WRITE, OPEN_CREATE,
+                    OPEN_TRUNCATE_EXISTING
+                )
+            ).use { channel ->
                 val ctx = ChecksumAlgorithm.Sha256.createContext()
                 val streamOut = BufferedWriteChannelStream(channel)
                 stream.process {
@@ -57,8 +63,10 @@ object FileCache {
         }
     }
 
-    fun retrieve(root: FilePath,
-                 location: Location): FilePath? {
+    fun retrieve(
+        root: FilePath,
+        location: Location
+    ): FilePath? {
         val file = root.resolve(location.array.toHexadecimal())
         if (exists(file)) {
             try {
@@ -70,25 +78,31 @@ object FileCache {
         return null
     }
 
-    fun delete(root: FilePath,
-               location: Location) {
+    fun delete(
+        root: FilePath,
+        location: Location
+    ) {
         val file = root.resolve(location.array.toHexadecimal())
         deleteIfExists(file)
     }
 
-    fun check(root: FilePath,
-              time: DurationNanos = (16L * 24L * 60L * 60L * 1000L).toInt128()) {
+    fun check(
+        root: FilePath,
+        time: DurationNanos = (16L * 24L * 60L * 60L * 1000L).toInt128()
+    ) {
         val currentTime = systemClock() - time
         list(root) {
-            filter { isRegularFile(it) }.filter(::isNotHidden).filter { file ->
-                try {
-                    getLastModifiedTime(file) < currentTime
-                } catch (e: IOException) {
-                    false
+            filter { isRegularFile(it) }
+                .filter { isNotHidden(it) }
+                .filter { file ->
+                    try {
+                        getLastModifiedTime(file) < currentTime
+                    } catch (e: IOException) {
+                        false
+                    }
+                }.forEach { file ->
+                    deleteIfExists(file)
                 }
-            }.forEach { file ->
-                deleteIfExists(file)
-            }
         }
     }
 

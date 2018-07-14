@@ -25,102 +25,90 @@ import java.io.File
 
 private object FileUtil {
     val i = spiLoadFirst(
-            spiLoad<FileSystemProvider>(
-                    FileUtil::class.java.classLoader), { e ->
+        spiLoad<FileSystemProvider>(
+            FileUtil::class.java.classLoader
+        ), { e ->
             // TODO: How handle logging?
-    }, { it.available() })?.implementation()
+        }, { it.available() })?.implementation()
             ?: throw UnsupportedJVMException(
-            "No filesystem implementation available")
+                "No filesystem implementation available"
+            )
 }
 
-actual fun path(path: String): FilePath {
-    return FileUtil.i.path(path)
-}
+actual fun path(path: String) = FileUtil.i.path(path)
 
-fun path(path: File): FilePath {
-    return FileUtil.i.path(path)
-}
+fun path(path: File): FilePath = FileUtil.i.path(path)
 
-actual internal fun channelImpl(path: FilePath,
-                                options: Array<out OpenOption>,
-                                attributes: Array<out FileAttribute>) =
-        FileUtil.i.channel(path, options, attributes)
+actual fun channel(
+    path: FilePath,
+    options: Array<out OpenOption>,
+    attributes: Array<out FileAttribute>
+) = FileUtil.i.channel(path, options, attributes)
 
-// TODO: @Throws(IOException::class)
-actual fun createFile(path: FilePath,
-                      vararg attributes: FileAttribute): FilePath {
+actual fun createFile(
+    path: FilePath,
+    vararg attributes: FileAttribute
+): FilePath {
     return FileUtil.i.createFile(path, *attributes)
 }
 
-// TODO: @Throws(IOException::class)
-actual fun createDirectory(path: FilePath,
-                           vararg attributes: FileAttribute): FilePath {
-    return FileUtil.i.createDirectory(path, *attributes)
-}
+actual fun createDirectory(
+    path: FilePath,
+    vararg attributes: FileAttribute
+) = FileUtil.i.createDirectory(path, *attributes)
 
-// TODO: @Throws(IOException::class)
-actual fun createDirectories(path: FilePath,
-                             vararg attributes: FileAttribute): FilePath {
-    return FileUtil.i.createDirectories(path, *attributes)
-}
+actual fun createDirectories(
+    path: FilePath,
+    vararg attributes: FileAttribute
+) = FileUtil.i.createDirectories(path, *attributes)
 
-// TODO: @Throws(IOException::class)
 actual fun delete(path: FilePath) {
     FileUtil.i.delete(path)
 }
 
-// TODO: @Throws(IOException::class)
-actual fun deleteIfExists(path: FilePath): Boolean {
-    return FileUtil.i.deleteIfExists(path)
-}
+actual fun deleteIfExists(path: FilePath) =
+    FileUtil.i.deleteIfExists(path)
 
-actual fun metadata(path: FilePath,
-                    vararg options: LinkOption): Array<FileMetadata> {
-    return FileUtil.i.metadata(path, *options)
-}
+actual fun metadata(
+    path: FilePath,
+    vararg options: LinkOption
+) = FileUtil.i.metadata(path, *options)
 
-actual fun attributes(path: FilePath,
-                      vararg options: LinkOption): Array<FileAttribute> {
-    return FileUtil.i.attributes(path, *options)
-}
+actual fun attributes(
+    path: FilePath,
+    vararg options: LinkOption
+) = FileUtil.i.attributes(path, *options)
 
-// TODO: @Throws(IOException::class)
-actual fun createTempFile(prefix: String,
-                          suffix: String,
-                          vararg attributes: FileAttribute): FilePath {
-    return FileUtil.i.createTempFile(prefix, suffix, *attributes)
-}
+actual fun createTempFile(
+    prefix: String,
+    suffix: String,
+    vararg attributes: FileAttribute
+) = FileUtil.i.createTempFile(prefix, suffix, *attributes)
 
-// TODO: @Throws(IOException::class)
-actual fun createTempDir(prefix: String,
-                         vararg attributes: FileAttribute): FilePath {
-    return FileUtil.i.createTempDir(prefix, *attributes)
-}
+actual fun createTempDir(
+    prefix: String,
+    vararg attributes: FileAttribute
+) = FileUtil.i.createTempDir(prefix, *attributes)
 
-// TODO: @Throws(IOException::class)
-actual fun copy(source: FilePath,
-                target: FilePath): FilePath {
-    return FileUtil.i.copy(source, target)
-}
+actual fun copy(
+    source: FilePath,
+    target: FilePath
+) = FileUtil.i.copy(source, target)
 
-// TODO: @Throws(IOException::class)
-actual fun move(source: FilePath,
-                target: FilePath): FilePath {
-    return FileUtil.i.move(source, target)
-}
+actual fun move(
+    source: FilePath,
+    target: FilePath
+) = FileUtil.i.move(source, target)
 
-// TODO: @Throws(IOException::class)
-actual fun directoryStream(path: FilePath): DirectoryStream {
-    return FileUtil.i.directoryStream(path)
-}
+actual fun directoryStream(path: FilePath) =
+    FileUtil.i.directoryStream(path)
 
-// TODO: @Throws(IOException::class)
-actual fun setLastModifiedTime(path: FilePath,
-                               value: InstantNanos) {
+actual fun setLastModifiedTime(
+    path: FilePath,
+    value: InstantNanos
+) {
     FileUtil.i.setLastModifiedTime(path, value)
 }
 
-// TODO: @Throws(IOException::class)
-actual fun getLastModifiedTime(path: FilePath): InstantNanos {
-    return FileUtil.i.getLastModifiedTime(path)
-}
+actual fun getLastModifiedTime(path: FilePath) =
+    FileUtil.i.getLastModifiedTime(path)

@@ -17,17 +17,18 @@ package org.tobi29.server
 
 import kotlinx.coroutines.experimental.channels.LinkedListChannel
 import kotlinx.coroutines.experimental.yield
-import org.tobi29.logging.KLogging
-import org.tobi29.utils.EventDispatcher
-import org.tobi29.utils.ListenerRegistrar
 import org.tobi29.io.IOException
+import org.tobi29.io.tag.*
 import org.tobi29.io.tag.binary.readBinary
 import org.tobi29.io.tag.binary.writeBinary
 import org.tobi29.io.view
-import org.tobi29.utils.systemClock
-import org.tobi29.io.tag.*
+import org.tobi29.logging.KLogging
 import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.Throws
 import org.tobi29.stdex.computeAbsent
+import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.ListenerRegistrar
+import org.tobi29.utils.systemClock
 import java.security.*
 import java.security.spec.InvalidKeySpecException
 import javax.crypto.*
@@ -78,7 +79,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     open fun ListenerRegistrar.listeners() {}
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     suspend fun runClient(connection: Connection,
                           client: String,
                           authentication: (String, Int, ByteArray) -> Cipher) {
@@ -93,7 +94,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     suspend fun runClientAsym(connection: Connection,
                               client: String,
                               authentication: (String, Int) -> Cipher) {
@@ -108,7 +109,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     suspend fun runServer(connection: Connection,
                           authentication: (String, Int, ByteArray) -> Cipher?) {
         try {
@@ -121,7 +122,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     suspend fun runServerAsym(connection: Connection,
                               authentication: (String, Int) -> Cipher?) {
         try {

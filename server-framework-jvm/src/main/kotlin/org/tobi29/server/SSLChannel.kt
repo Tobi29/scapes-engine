@@ -19,6 +19,7 @@ import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.io.*
+import org.tobi29.stdex.Throws
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicInt
@@ -42,7 +43,7 @@ class SSLChannel(address: RemoteAddress,
 
     val inputRate get() = inRate.getAndSet(0)
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun read(buffer: ByteView): Int {
         var currentBuffer = buffer
         while (currentBuffer.size > 0) {
@@ -68,7 +69,7 @@ class SSLChannel(address: RemoteAddress,
         return if (len > 0 || isOpen()) len else -1
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun write(buffer: ByteViewRO): Int {
         var currentBuffer = buffer
         while (currentBuffer.size > 0 && process()) {
@@ -82,7 +83,7 @@ class SSLChannel(address: RemoteAddress,
         return buffer.size - currentBuffer.size
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun close() {
     }
 

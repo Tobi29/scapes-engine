@@ -23,6 +23,7 @@ import org.tobi29.io.compression.deflate.InflateHandle
 import org.tobi29.io.compression.deflate.deflate
 import org.tobi29.io.compression.deflate.inflate
 import org.tobi29.stdex.ThreadLocal
+import org.tobi29.stdex.Throws
 import org.tobi29.stdex.assert
 import java.lang.ref.WeakReference
 
@@ -56,7 +57,7 @@ class PacketBundleChannel(
 
     val outputFlushed get() = queue.isEmpty && output == null
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun queueBundle() {
         dataStreamOut.flip()
         byteBufferStreamOut.reset()
@@ -73,7 +74,7 @@ class PacketBundleChannel(
         dataStreamOut.reset()
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun process(): FetchResult {
         var timeout = 0
         while (timeout < 2) {
@@ -116,7 +117,7 @@ class PacketBundleChannel(
         }
     }
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun close() {
         channelRead.close()
         channelWrite.close()
@@ -191,7 +192,7 @@ class PacketBundleChannel(
     }
 }
 
-// TODO: @Throws(IOException::class)
+@Throws(IOException::class)
 suspend fun PacketBundleChannel.receive(): Boolean {
     while (true) {
         when (process()) {
@@ -202,14 +203,14 @@ suspend fun PacketBundleChannel.receive(): Boolean {
     }
 }
 
-// TODO: @Throws(IOException::class)
+@Throws(IOException::class)
 suspend fun PacketBundleChannel.receiveOrThrow() {
     if (receive()) {
         throw IOException("Connection closed")
     }
 }
 
-// TODO: @Throws(IOException::class)
+@Throws(IOException::class)
 suspend fun PacketBundleChannel.flushAsync() {
     try {
         while (!outputFlushed) {
@@ -222,7 +223,7 @@ suspend fun PacketBundleChannel.flushAsync() {
     }
 }
 
-// TODO: @Throws(IOException::class)
+@Throws(IOException::class)
 suspend fun PacketBundleChannel.finishAsync() {
     while (!receive()) {
     }

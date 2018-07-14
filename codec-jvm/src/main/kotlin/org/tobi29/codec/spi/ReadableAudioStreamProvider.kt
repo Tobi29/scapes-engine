@@ -17,11 +17,13 @@
 package org.tobi29.codec.spi
 
 import org.tobi29.codec.ReadableAudioStream
+import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteChannel
+import org.tobi29.stdex.Throws
 
 interface ReadableAudioStreamProvider {
     fun accepts(mime: String): Boolean
 
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     operator fun get(channel: ReadableByteChannel): ReadableAudioStream
 }

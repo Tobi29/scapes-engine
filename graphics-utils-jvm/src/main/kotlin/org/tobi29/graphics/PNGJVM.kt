@@ -23,6 +23,7 @@ import org.tobi29.io.ByteStreamInputStream
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
 import org.tobi29.io.ReadableByteStream
+import org.tobi29.stdex.Throws
 import java.io.InputStream
 
 actual suspend fun decodePng(asset: ReadSource): Bitmap<*, *> {
@@ -33,7 +34,7 @@ actual suspend fun decodePng(stream: ReadableByteStream): Bitmap<*, *> {
     return decodePNG(ByteStreamInputStream(stream))
 }
 
-// TODO: @Throws(IOException::class)
+@Throws(IOException::class)
 fun decodePNG(streamIn: InputStream): Bitmap<*, *> {
     try {
         val reader = PngReaderByte(streamIn)

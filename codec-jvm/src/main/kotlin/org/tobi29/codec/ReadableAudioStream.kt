@@ -17,7 +17,9 @@
 package org.tobi29.codec
 
 import org.tobi29.io.Closeable
+import org.tobi29.io.IOException
 import org.tobi29.io.tag.TagMap
+import org.tobi29.stdex.Throws
 
 /**
  * Interface for reading audio data from an encoded source
@@ -46,14 +48,14 @@ interface ReadableAudioStream : Closeable {
      * @return [Result], for info head there
      * @see [Result]
      */
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     fun get(buffer: AudioBuffer?): Result
 
     /**
      * Disposes any resources held by this object, no further calls should be
      * done on it
      */
-    // TODO: @Throws(IOException::class)
+    @Throws(IOException::class)
     override fun close() {}
 
     /**
