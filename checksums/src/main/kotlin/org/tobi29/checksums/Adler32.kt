@@ -156,4 +156,6 @@ inline fun computeAdler32(
 }
 
 const val ADLER32_BASE = 65521
-const val ADLER32_MAX_FAST = 5552
+// TODO: What would be highest safe value?
+//const val ADLER32_MAX_FAST = 5552
+const val ADLER32_MAX_FAST = 2000
