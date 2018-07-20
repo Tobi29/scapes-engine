@@ -1,796 +1,1811 @@
 /*
- * Copyright (c) 2000,2001,2002,2003 ymnk, JCraft,Inc. All rights reserved.
+ * KZLib - Kotlin port of ZLib
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
+ * Copyright of original source:
  *
- *   1. Redistributions of source code must retain the above copyright notice,
- *      this list of conditions and the following disclaimer.
+ * Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler
  *
- *   2. Redistributions in binary form must reproduce the above copyright
- *      notice, this list of conditions and the following disclaimer in
- *      the documentation and/or other materials provided with the distribution.
+ * This software is provided 'as-is', without any express or implied
+ * warranty.  In no event will the authors be held liable for any damages
+ * arising from the use of this software.
  *
- *   3. The names of the authors may not be used to endorse or promote products
- *      derived from this software without specific prior written permission.
+ * Permission is granted to anyone to use this software for any purpose,
+ * including commercial applications, and to alter it and redistribute it
+ * freely, subject to the following restrictions:
  *
- * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
- * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
- * INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 1. The origin of this software must not be misrepresented; you must not
+ *    claim that you wrote the original software. If you use this software
+ *    in a product, an acknowledgment in the product documentation would be
+ *    appreciated but is not required.
+ * 2. Altered source versions must be plainly marked as such, and must not be
+ *    misrepresented as being the original software.
+ * 3. This notice may not be removed or altered from any source distribution.
  *
- * This program is based on zlib-1.1.3, so all credit should go authors
- * Jean-loup Gailly(jloup@gzip.org) and Mark Adler(madler@alumni.caltech.edu)
- * and contributors of zlib.
+ * Jean-loup Gailly        Mark Adler
+ * jloup@gzip.org          madler@alumni.caltech.edu
+ *
+ *
+ * The data format used by the zlib library is described by RFCs (Request for
+ * Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+ * (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
  */
+
+@file:Suppress("NOTHING_TO_INLINE")
 
 package org.tobi29.kzlib
 
-import org.tobi29.io.HeapViewByteBE
-import org.tobi29.io.MemoryViewStream
-import org.tobi29.io.MemoryViewStreamDefault
-import org.tobi29.io.asByteArray
-import org.tobi29.stdex.Throws
-import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.copy
 import org.tobi29.stdex.splitToBytes
+import kotlin.experimental.and
 
-class Inflate(private val z: ZStream) {
+//local unsigned syncsearch OF((unsigned FAR *have, const unsigned char FAR *buf,
+//unsigned len));
 
-    var mode: Int = 0                            // current inflate mode
+private fun inflateStateCheck(
+    strm: z_stream,
+    state: inflate_state
+): Boolean {
+    if (strm == Z_NULL
+    /* || strm.zalloc == (alloc_func)0 || strm.zfree == (free_func)0 */)
+        return true
+    if (state == Z_NULL
+    /* || state.strm != strm || state.mode < inflate_mode.HEAD || state.mode > inflate_mode.SYNC */)
+        return true
+    return false
+}
 
-    // mode dependent information
-    var method: Int = 0        // if FLAGS, method byte
+fun inflateResetKeep(
+    strm: z_stream,
+    state: inflate_state
+): Int {
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    strm.total_in = 0
+    strm.total_out = 0
+    state.total = 0
+    strm.msg = Z_NULL
+    if (state.wrap != 0)        /* to support ill-conceived Java test suite */
+        strm.adler = state.wrap and 1
+    state.mode = inflate_mode.HEAD
+    state.last = 0
+    state.havedict = 0
+    state.dmax = 32768
+    state.head = Z_NULL
+    state.hold = 0
+    state.bits = 0
+    state.lencode = state.codes
+    state.lencode_i = 0
+    state.distcode = state.codes
+    state.distcode_i = 0
+    state.next = 0
+    state.sane = true
+    state.back = -1
+    // Tracev((stderr, "inflate: reset\n"));
+    return Z_OK
+}
 
-    // if CHECK, check values to compare
-    var was = -1           // computed check value
-    var need = 0               // stream check value
+fun inflateReset(
+    strm: z_stream,
+    state: inflate_state
+): Int {
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    state.wsize = 0
+    state.whave = 0
+    state.wnext = 0
+    return inflateResetKeep(strm, state)
+}
 
-    // if BAD, inflateSync's marker bytes count
-    var marker: Int = 0
+fun inflateReset2(
+    strm: z_stream,
+    state: inflate_state,
+    windowBits: Int
+): Int {
+    var windowBits = windowBits
 
-    // mode independent information
-    var wrap: Int = 0          // flag for no wrapper
-    // 0: no wrapper
-    // 1: zlib header
-    // 2: gzip header
-    // 4: auto detection
+    /* get the state */
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
 
-    var wbits: Int = 0            // log2(window size)  (8..15, defaults to 15)
-
-    private var blocks: InfBlocks? = null     // current inflate_blocks state
-
-    private var flags: Int = 0
-
-    private var need_bytes = -1
-    private val crcbuf = ByteArray(4)
-
-    internal var gzipHeader: GZIPHeader? = null
-
-    private var tmp_string: MemoryViewStream<HeapViewByteBE>? = null
-
-    fun reset(): Int {
-        z.total_out = 0
-        z.total_in = z.total_out
-        z.msg = null
-        mode = HEAD
-        need_bytes = -1
-        blocks?.reset()
-        return Z_OK
-    }
-
-    fun end(): Int {
-        blocks?.reset()
-        return Z_OK
-    }
-
-    fun init(w: Int = Z_DEF_WBITS, wrapperType: WrapperType = W_ZLIB): Int {
-        var w = w
-        if (wrapperType == W_NONE) {
-            w = -w
-        } else if (wrapperType == W_GZIP) {
-            w += 16
-        } else if (wrapperType == W_ANY) {
-            w = w or INFLATE_ANY
-        } else if (wrapperType == W_ZLIB) {
-        }
-        z.msg = null
-        blocks = null
-
-        // handle undocumented wrap option (no zlib header or check)
+    /* extract wrap request from windowBits parameter */
+    val wrap: Int
+    if (windowBits < 0) {
         wrap = 0
-        if (w < 0) {
-            w = -w
-        } else if (w and INFLATE_ANY != 0) {
-            wrap = 4
-            w = w and INFLATE_ANY.inv()
-            if (w < 48)
-                w = w and 15
-        } else if (w and 31.inv() != 0) { // for example, DEF_WBITS + 32
-            wrap =
-                    4               // zlib and gzip wrapped data should be accepted.
-            w = w and 15
-        } else {
-            wrap = (w shr 4) + 1
-            if (w < 48)
-                w = w and 15
-        }
-
-        if (w < 8 || w > 15) {
-            end()
-            return Z_STREAM_ERROR
-        }
-        if (wbits != w) {
-            blocks?.reset()
-            blocks = null
-        }
-
-        // set window size
-        wbits = w
-
-        this.blocks = InfBlocks(z!!, 1 shl w, wrap)
-
-        // reset state
-        reset()
-
-        return Z_OK
+        windowBits = -windowBits
+    } else {
+        wrap = (windowBits ushr 4) + 5
+        //#ifdef GUNZIP
+        if (windowBits < 48)
+            windowBits = windowBits and 15
+        //#endif
     }
 
-    fun inflate(f: Int): Int {
-        val hold = 0
+    /* set number of window bits, free window if different */
+    if (windowBits != 0 && (windowBits < 8 || windowBits > 15))
+        return Z_STREAM_ERROR
+    if (state.window != Z_NULL && state.wbits != windowBits) {
+        state.window = Z_NULL
+    }
 
-        if (z == null || z.next_in == null) {
-            return if (f == Z_FINISH && this.mode == HEAD) Z_OK else Z_STREAM_ERROR
+    /* update state and reset the rest of it */
+    state.wrap = wrap
+    state.wbits = windowBits
+    return inflateReset(strm, state)
+}
+
+fun inflateInit(
+    strm: z_stream,
+    state: inflate_state,
+    windowBits: Int = DEF_WBITS
+): Int {
+    if (strm == Z_NULL) return Z_STREAM_ERROR
+    strm.msg = Z_NULL /* in case we return an error */
+    if (state == Z_NULL) return Z_MEM_ERROR
+    //Tracev((stderr, "inflate: allocated\n"));
+    state.window = Z_NULL
+    state.mode = inflate_mode.HEAD /* to pass state test in inflateReset2() */
+    return inflateReset2(strm, state, windowBits)
+}
+
+fun inflatePrime(
+    strm: z_stream,
+    state: inflate_state,
+    bits: Int,
+    value: Int
+): Int {
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    if (bits < 0) {
+        state.hold = 0
+        state.bits = 0
+        return Z_OK
+    }
+    if (bits > 16 || state.bits + bits > 32) return Z_STREAM_ERROR
+    val value = value and (1 shl bits) - 1
+    state.hold += value shl state.bits
+    state.bits += bits
+    return Z_OK
+}
+
+/*
+   Return state with length and distance decoding tables and index sizes set to
+   fixed code decoding.  Normally this returns fixed tables from inffixed.h.
+   If BUILDFIXED is defined, then instead this routine builds the tables the
+   first time it's called, and returns those tables the first time and
+   thereafter.  This reduces the size of the code by about 2K bytes, in
+   exchange for a little execution time.  However, BUILDFIXED should not be
+   used for threaded applications, since the rewriting of the tables and virgin
+   may not be thread-safe.
+ */
+private fun fixedtables(state: inflate_state) {
+    state.lencode = fixed
+    state.lencode_i = lenfix
+    state.lenbits = 9
+    state.distcode = fixed
+    state.distcode_i = distfix
+    state.distbits = 5
+}
+
+/*
+   Update the window with the last wsize (normally 32K) bytes written before
+   returning.  If window does not exist yet, create it.  This is only called
+   when a window is already in use, or when output has been written during this
+   inflate call, but the end of the deflate stream has not been reached yet.
+   It is also called to create a window for dictionary data when a dictionary
+   is loaded.
+   Providing output buffers larger than 32K to inflate() should provide a speed
+   advantage, since only the last 32K of output is copied to the sliding window
+   upon return from inflate(), and since all distances after the first 32K of
+   output will fall in the output data, making match copies simpler and faster.
+   The advantage may be dependent on the size of the processor's data caches.
+ */
+private fun updatewindow(
+    strm: z_stream,
+    state: inflate_state,
+    end: ByteArray,
+    end_i: UInt,
+    copy: UInt
+): Int {
+    /* if it hasn't been done already, allocate space for the window */
+    val window =
+        state.window ?: ByteArray(1 shl state.wbits).also { state.window = it }
+
+
+    /* if window not in use yet, initialize */
+    if (state.wsize == 0) {
+        state.wsize = 1 shl state.wbits
+        state.wnext = 0
+        state.whave = 0
+    }
+
+    /* copy state.wsize or less output bytes into the circular window */
+    if (copy >= state.wsize) {
+        zmemcpy(
+            window, 0,
+            end, end_i - state.wsize,
+            state.wsize
+        )
+        state.wnext = 0
+        state.whave = state.wsize
+    } else {
+        var dist = state.wsize - state.wnext
+        if (dist > copy) dist = copy
+        zmemcpy(
+            window, state.wnext,
+            end, end_i - copy,
+            dist
+        )
+        val copy = copy - dist
+        if (copy != 0) {
+            zmemcpy(
+                window, 0,
+                end, end_i - copy,
+                copy
+            )
+            state.wnext = copy
+            state.whave = state.wsize
+        } else {
+            state.wnext += dist
+            if (state.wnext == state.wsize) state.wnext = 0
+            if (state.whave < state.wsize) state.whave += dist
         }
+    }
 
-        var f = if (f == Z_FINISH) Z_BUF_ERROR else Z_OK
-        var r = Z_BUF_ERROR
-        loop@ while (true) {
-            if (mode == HEAD) {
-                if (wrap == 0) {
-                    this.mode =
-                            BLOCKS
-                    continue@loop
-                }
+    return 0
+}
 
-                try {
-                    r = readBytes(2, r, f)
-                } catch (e: Return) {
-                    return e.r
-                }
+/* Macros for inflate(): */
 
-                if ((wrap == 4 || wrap and 2 != 0) && this.need == 0x8b1f) {   // gzip header
-                    if (wrap == 4) {
-                        wrap = 2
-                    }
-                    z.adler = Crc32()
-                    checksum(2, this.need)
+/* check function to use adler32() for zlib or crc32() for gzip */
+//#ifdef GUNZIP
+private inline fun UPDATE(
+    state: inflate_state,
+    check: UInt,
+    buf: ByteArray,
+    buf_i: Int,
+    len: Int
+): UInt = if (state.flags != 0) crc32(check, buf, buf_i, len)
+else adler32(check, buf, buf_i, len)
+//#else
+//#  define UPDATE(check, buf, len) adler32(check, buf, len)
+//#endif
 
-                    if (gzipHeader == null)
-                        gzipHeader = GZIPHeader()
+/* check macros for header crc */
+//#ifdef GUNZIP
+private inline fun CRC2(
+    hbuf: ByteArray,
+    check: UInt,
+    word: Short
+): UInt {
+    word.splitToBytes { b1, b0 ->
+        hbuf[0] = b1
+        hbuf[1] = b0
+    }
+    return crc32(check, hbuf, 0, 2)
+}
 
-                    this.mode =
-                            FLAGS
-                    continue@loop
-                }
+private inline fun CRC4(
+    hbuf: ByteArray,
+    check: UInt,
+    word: Int
+): UInt {
+    word.splitToBytes { b3, b2, b1, b0 ->
+        hbuf[0] = b3
+        hbuf[1] = b2
+        hbuf[2] = b1
+        hbuf[3] = b0
+    }
+    return crc32(check, hbuf, 0, 2)
+}
+//#endif
 
-                if (wrap and 2 != 0) {
-                    this.mode = BAD
-                    z.msg = "incorrect header check"
-                    continue@loop
-                }
+/* Load registers with state in inflate() for speed */
+/*#define LOAD() \
+do {
+    \
+    put = strm.next_out; \
+    left = strm.avail_out; \
+    next = strm.next_in; \
+    have = strm.avail_in; \
+    hold = state.hold; \
+    bits = state.bits; \
+} while (0)*/
 
-                flags = 0
+/* Restore state from registers in inflate() */
+/*#define RESTORE() \
+do {
+    \
+    strm.next_out = put; \
+    strm.avail_out = left; \
+    strm.next_in = next; \
+    strm.avail_in = have; \
+    state.hold = hold; \
+    state.bits = bits; \
+} while (0)*/
 
-                this.method = this.need.toInt() and 0xFF
-                var b = (this.need shr 8).toInt() and 0xFF
+/* Clear the input bit accumulator */
+/*#define INITBITS() \
+do {
+    \
+    hold = 0; \
+    bits = 0; \
+} while (0)*/
 
-                if ((wrap and 1 == 0 ||  // check if zlib header allowed
-                            ((this.method shl 8) + b) % 31 != 0) && this.method and 0xf != Z_DEFLATED) {
-                    if (wrap == 4) {
-                        z.next_in_index -= 2
-                        z.avail_in += 2
-                        z.total_in -= 2
-                        wrap = 0
-                        this.mode =
-                                BLOCKS
-                        continue@loop
-                    }
-                    this.mode = BAD
-                    z.msg = "incorrect header check"
-                    // since zlib 1.2, it is allowted to inflateSync for this case.
-                    /*
-          this.marker = 5;       // can't try inflateSync
-          */
-                    continue@loop
-                }
+/* Get a byte of input into the bit accumulator, or return from inflate()
+   if there is no input available. */
+/*#define PULLBYTE() \
+do {
+    \
+    if (have == 0) break@loop \
+    have--; \
+    hold += (unsigned long)(*next++) < < bits; \
+    bits += 8; \
+} while (0)*/
 
-                if (this.method and 0xf != Z_DEFLATED) {
-                    this.mode = BAD
-                    z.msg = "unknown compression method"
-                    // since zlib 1.2, it is allowted to inflateSync for this case.
-                    /*
-          this.marker = 5;       // can't try inflateSync
-	  */
-                    continue@loop
-                }
+/* Assure that there are at least n bits in the bit accumulator.  If there is
+   not enough available input to do that, then return from inflate(). */
+/*#define NEEDBITS(n) \
+do {
+    \
+    while (bits < (unsigned)(n)) \
+    PULLBYTE(); \
+} while (0)*/
 
-                if (wrap == 4) {
-                    wrap = 1
-                }
+/* Return the low n bits of the bit accumulator (n < 16) */
+private inline fun BITS(hold: UInt, n: UInt) =
+    hold and ((1 shl n) - 1)
 
-                if ((this.method shr 4) + 8 > this.wbits) {
-                    this.mode = BAD
-                    z.msg = "invalid window size"
-                    // since zlib 1.2, it is allowted to inflateSync for this case.
-                    /*
-          this.marker = 5;       // can't try inflateSync
-	  */
-                    continue@loop
-                }
+/* Remove n bits from the bit accumulator */
+/*#define DROPBITS(n) \
+do {
+    \
+    hold > >=(n); \
+    bits -= (unsigned)(n); \
+} while (0)*/
 
-                z.adler = Adler32()
+/* Remove zero to seven bits as needed to go to a byte boundary */
+/*#define BYTEBITS() \
+do {
+    \
+    hold > >= bits & 7; \
+    bits -= bits & 7; \
+} while (0)*/
 
-                if (b and PRESET_DICT == 0) {
-                    this.mode =
-                            BLOCKS
-                    continue@loop
-                }
-                this.mode = DICT4
-            }
-            if (mode == DICT4) {
-                if (z.avail_in == 0) return r
-                r = f
+/*
+   inflate() uses a state machine to process as much input data and generate as
+   much output data as possible before returning.  The state machine is
+   structured roughly as follows:
+    for (;;) switch (state) {
+    ...
+    case STATEn:
+        if (not enough input data or output space to make progress)
+            return;
+        ... make progress ...
+        state = STATEm;
+        break;
+    ...
+    }
+   so when inflate() is called again, the same case is attempted again, and
+   if the appropriate resources are provided, the machine proceeds to the
+   next state.  The NEEDBITS() macro is usually the way the state evaluates
+   whether it can proceed or should return.  NEEDBITS() does the return if
+   the requested bits are not available.  The typical use of the BITS macros
+   is:
+        NEEDBITS(n);
+        ... do something with BITS(n) ...
+        DROPBITS(n);
+   where NEEDBITS(n) either returns from inflate() if there isn't enough
+   input left to load n bits into the accumulator, or it continues.  BITS(n)
+   gives the low n bits in the accumulator.  When done, DROPBITS(n) drops
+   the low n bits off the accumulator.  INITBITS() clears the accumulator
+   and sets the number of available bits to zero.  BYTEBITS() discards just
+   enough bits to put the accumulator on a byte boundary.  After BYTEBITS()
+   and a NEEDBITS(8), then BITS(8) would return the next byte in the stream.
+   NEEDBITS(n) uses PULLBYTE() to get an available byte of input, or to return
+   if there is no input available.  The decoding of variable length codes uses
+   PULLBYTE() directly in order to pull just enough bytes to decode the next
+   code, and no more.
+   Some states loop until they get enough input, making sure that enough
+   state information is maintained to continue the loop where it left off
+   if NEEDBITS() returns in the loop.  For example, want, need, and keep
+   would all have to actually be part of the saved state in case NEEDBITS()
+   returns:
+    case STATEw:
+        while (want < need) {
+            NEEDBITS(n);
+            keep[want++] = BITS(n);
+            DROPBITS(n);
+        }
+        state = STATEx;
+    case STATEx:
+   As shown above, if the next state is also the next case, then the break
+   is omitted.
+   A state may also return if there is not enough output space available to
+   complete that state.  Those states are copying stored data, writing a
+   literal byte, and copying a matching string.
+   When returning, a "goto inf_leave" is used to update the total counters,
+   update the check value, and determine whether any progress has been made
+   during that inflate() call in order to return the proper return code.
+   Progress is defined as a change in either strm.avail_in or strm.avail_out.
+   When there is a window, goto inf_leave will update the window with the last
+   output written.  If a goto inf_leave occurs in the middle of decompression
+   and there is no window currently, goto inf_leave will create one and copy
+   output to the window for the next call of inflate().
+   In this implementation, the flush parameter of inflate() only affects the
+   return code (per zlib.h).  inflate() always writes as much as possible to
+   strm.next_out, given the space available and the provided input--the effect
+   documented in zlib.h of Z_SYNC_FLUSH.  Furthermore, inflate() always defers
+   the allocation of and copying into a sliding window until necessary, which
+   provides the effect documented in zlib.h for Z_FINISH when the entire input
+   stream available.  So the only thing the flush parameter actually does is:
+   when flush is set to Z_FINISH, inflate() cannot return Z_OK.  Instead it
+   will return Z_BUF_ERROR if it has not reached the end of the stream.
+ */
 
-                z.avail_in--
-                z.total_in++
-                this.need = z.next_in!![z.next_in_index++].toInt() shl 24 and
-                        0xFF000000.toInt()
-                this.mode = DICT3
-            }
-            if (mode == DICT3) {
-                if (z.avail_in == 0) return r
-                r = f
+fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
+    val hbuf = ByteArray(4) /* buffer for gzip header crc calculation */
+    val next_ref = IntArray(1)
+    val lenbits_ref = IntArray(1)
+    val distbits_ref = IntArray(1)
 
-                z.avail_in--
-                z.total_in++
-                this.need += z.next_in!![z.next_in_index++].toInt() shl 16 and 0xFF0000
-                this.mode = DICT2
-            }
-            if (mode == DICT2) {
-                if (z.avail_in == 0) return r
-                r = f
+    if (inflateStateCheck(strm, state) || strm.next_out == Z_NULL ||
+        (strm.next_in == Z_NULL && strm.avail_in != 0))
+        return Z_STREAM_ERROR
 
-                z.avail_in--
-                z.total_in++
-                this.need += z.next_in!![z.next_in_index++].toInt() shl 8 and 0xFF00
-                this.mode = DICT1
-            }
-            if (mode == DICT1) {
-                if (z.avail_in == 0) return r
-                r = f
+    if (state.mode == inflate_mode.TYPE) state.mode =
+            inflate_mode.TYPEDO /* skip check */
 
-                z.avail_in--
-                z.total_in++
-                this.need += z.next_in!![z.next_in_index++].toInt() shl 0 and 0xFF
-                z.adler.reset(this.need.toInt())
-                this.mode = DICT0
-                return Z_NEED_DICT
-            }
-            if (mode == DICT0) {
-                this.mode = BAD
-                z.msg = "need dictionary"
-                this.marker = 0       // can try inflateSync
-                return Z_STREAM_ERROR
-            }
-            if (mode == BLOCKS) {
-                r = this.blocks!!.proc(r)
-                if (r == Z_DATA_ERROR) {
-                    this.mode = BAD
-                    this.marker = 0     // can try inflateSync
-                    continue@loop
-                }
-                if (r == Z_OK) {
-                    r = f
-                }
-                if (r != Z_STREAM_END) return r
-                r = f
-                this.was = z.adler.value
-                this.blocks!!.reset()
-                if (this.wrap == 0) {
-                    this.mode =
-                            DONE
-                    continue@loop
-                }
-                this.mode = CHECK4
-            }
-            if (mode == CHECK4) {
-                if (z.avail_in == 0) return r
-                r = f
+    // LOAD();
+    var put = strm.next_out!! /* next output */
+    var put_i = strm.next_out_i
+    var left = strm.avail_out /* available output */
+    var next = strm.next_in!! /* next input */
+    var next_i = strm.next_in_i
+    var have = strm.avail_in /* available input */
+    var hold = state.hold /* bit buffer */
+    var bits = state.bits /* bits in bit buffer */
 
-                z.avail_in--
-                z.total_in++
-                this.need = z.next_in!![z.next_in_index++].toInt() shl 24 and
-                        0xFF000000.toInt()
-                this.mode = CHECK3
-            }
-            if (mode == CHECK3) {
-                if (z.avail_in == 0) return r
-                r = f
-
-                z.avail_in--
-                z.total_in++
-                this.need += z.next_in!![z.next_in_index++].toInt() shl 16 and 0xFF0000
-                this.mode = CHECK2
-            }
-            if (mode == CHECK2) {
-                if (z.avail_in == 0) return r
-                r = f
-
-                z.avail_in--
-                z.total_in++
-                this.need += z.next_in!![z.next_in_index++].toInt() shl 8 and 0xFF00
-                this.mode = CHECK1
-            }
-            if (mode == CHECK1) {
-                if (z.avail_in == 0) return r
-                r = f
-
-                z.avail_in--
-                z.total_in++
-                this.need += z.next_in!![z.next_in_index++].toInt() shl 0 and 0xFF
-
-                if (flags != 0) {  // gzip
-                    this.need = need.splitToBytes { b3, b2, b1, b0 ->
-                        combineToInt(b0, b1, b2, b3)
-                    }
-                }
-
-                if (this.was.toInt() != this.need.toInt()) {
-                    z.msg = "incorrect data check"
-                    // chack is delayed
-                    /*
-      this.mode = BAD;
-      this.marker = 5;       // can't try inflateSync
-      break;
-  */
-                } else if (flags != 0 && gzipHeader != null) {
-                    gzipHeader!!.crc = this.need.toInt()
-                }
-
-                this.mode = LENGTH
-            }
-            if (mode == LENGTH) {
-                if (wrap != 0 && flags != 0) {
-
-                    try {
-                        r = readBytes(4, r, f)
-                    } catch (e: Return) {
-                        return e.r
-                    }
-
-                    if (z.msg != null && z.msg == "incorrect data check") {
-                        this.mode =
-                                BAD
-                        this.marker = 5       // can't try inflateSync
-                        continue@loop
-                    }
-
-                    if (this.need != z.total_out.toInt()) {
-                        z.msg = "incorrect length check"
-                        this.mode =
-                                BAD
-                        continue@loop
-                    }
-                    z.msg = null
-                } else {
-                    if (z.msg != null && z.msg == "incorrect data check") {
-                        this.mode =
-                                BAD
-                        this.marker = 5       // can't try inflateSync
-                        continue@loop
-                    }
-                }
-
-                this.mode = DONE
-            }
-            if (mode == DONE) {
-                return Z_STREAM_END
-            }
-            if (mode == BAD) {
-                return Z_DATA_ERROR
-            }
-            if (mode == FLAGS) {
-                try {
-                    r = readBytes(2, r, f)
-                } catch (e: Return) {
-                    return e.r
-                }
-
-                flags = this.need.toInt() and 0xFFFF
-
-                if (flags and 0xFF != Z_DEFLATED) {
-                    z.msg = "unknown compression method"
-                    this.mode = BAD
-                    continue@loop
-                }
-                if (flags and 0xe000 != 0) {
-                    z.msg = "unknown header flags set"
-                    this.mode = BAD
-                    continue@loop
-                }
-
-                if (flags and 0x0200 != 0) {
-                    checksum(2, this.need)
-                }
-
-                this.mode = TIME
-            }
-            if (mode == TIME) {
-                try {
-                    r = readBytes(4, r, f)
-                } catch (e: Return) {
-                    return e.r
-                }
-
-                if (gzipHeader != null)
-                    gzipHeader!!.time = this.need.toLong() and 0xFFFFFFFFL
-                if (flags and 0x0200 != 0) {
-                    checksum(4, this.need)
-                }
-                this.mode = OS
-            }
-            if (mode == OS) {
-                try {
-                    r = readBytes(2, r, f)
-                } catch (e: Return) {
-                    return e.r
-                }
-
-                if (gzipHeader != null) {
-                    gzipHeader!!.xflags = this.need.toInt() and 0xFF
-                    gzipHeader!!.os = this.need.toInt() shr 8 and 0xFF
-                }
-                if (flags and 0x0200 != 0) {
-                    checksum(2, this.need)
-                }
-                this.mode = EXLEN
-            }
-            if (mode == EXLEN) {
-                if (flags and 0x0400 != 0) {
-                    try {
-                        r = readBytes(2, r, f)
-                    } catch (e: Return) {
-                        return e.r
-                    }
-
-                    if (gzipHeader != null) {
-                        gzipHeader!!.extra =
-                                ByteArray(this.need.toInt() and 0xFFFF)
-                    }
-                    if (flags and 0x0200 != 0) {
-                        checksum(2, this.need)
-                    }
-                } else if (gzipHeader != null) {
-                    gzipHeader!!.extra = null
-                }
-                this.mode = EXTRA
-            }
-            if (mode == EXTRA) {
-                if (flags and 0x0400 != 0) {
-                    try {
-                        r = readBytes(r, f)
-                        if (gzipHeader != null) {
-                            val foo =
-                                tmp_string!!.bufferSlice().asByteArray()
-                            tmp_string = null
-                            if (foo.size == gzipHeader!!.extra!!.size) {
-                                /*System.arraycopy(
-                                                foo,
-                                                0,
-                                                gzipHeader!!.extra!!,
-                                                0,
-                                                foo.size
-                                            )*/
-                                copy(foo, gzipHeader!!.extra!!)
-                            } else {
-                                z.msg = "bad extra field length"
-                                this.mode =
-                                        BAD
-                                continue@loop
-                            }
-                        }
-                    } catch (e: Return) {
-                        return e.r
-                    }
-
-                } else if (gzipHeader != null) {
-                    gzipHeader!!.extra = null
-                }
-                this.mode = NAME
-            }
-            if (mode == NAME) {
-                if (flags and 0x0800 != 0) {
-                    try {
-                        r = readString(r, f)
-                        if (gzipHeader != null) {
-                            gzipHeader!!.name =
-                                    tmp_string!!.bufferSlice().asByteArray()
-                        }
-                        tmp_string = null
-                    } catch (e: Return) {
-                        return e.r
-                    }
-
-                } else if (gzipHeader != null) {
-                    gzipHeader!!.name = null
-                }
-                this.mode = COMMENT
-            }
-            if (mode == COMMENT) {
-                if (flags and 0x1000 != 0) {
-                    try {
-                        r = readString(r, f)
-                        if (gzipHeader != null) {
-                            gzipHeader!!.comment =
-                                    tmp_string!!.bufferSlice().asByteArray()
-                        }
-                        tmp_string = null
-                    } catch (e: Return) {
-                        return e.r
-                    }
-
-                } else if (gzipHeader != null) {
-                    gzipHeader!!.comment = null
-                }
-                this.mode = HCRC
-            }
-            if (mode == HCRC) {
-                if (flags and 0x0200 != 0) {
-                    try {
-                        r = readBytes(2, r, f)
-                    } catch (e: Return) {
-                        return e.r
-                    }
-
-                    if (gzipHeader != null) {
-                        gzipHeader!!.hcrc = (this.need and 0xFFFF).toInt()
-                    }
-                    if (this.need != z.adler.value and 0xFFFF) {
-                        this.mode = BAD
-                        z.msg = "header crc mismatch"
-                        this.marker = 5
-                        continue@loop
-                    }
-                }
-
-                z.adler = Crc32()
-                this.mode = BLOCKS
+    var `in` = have /* save starting available input */
+    var out = left /* save starting available output */
+    var ret = Z_OK /* return code */
+    loop@ while (true) when (state.mode) {
+        inflate_mode.HEAD -> {
+            if (state.wrap == 0) {
+                state.mode = inflate_mode.TYPEDO
                 continue@loop
             }
 
-            return Z_STREAM_ERROR;
-        }
-    }
+            // NEEDBITS(16);
+            while (bits < 16) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
 
-    fun setDictionary(dictionary: ByteArray, dictLength: Int): Int {
-        if (z == null || this.mode != DICT0 && this.wrap != 0) {
+            //#ifdef GUNZIP
+            if ((state.wrap and 2) != 0 && hold == 0x8b1f) {
+                /* gzip header */
+                if (state.wbits == 0)
+                    state.wbits = 15
+                state.check = crc32(0, Z_NULL, 0, 0)
+                CRC2(hbuf, state.check, hold.toShort())
+
+                // INITBITS();
+                hold = 0
+                bits = 0
+
+                state.mode = inflate_mode.FLAGS
+                continue@loop
+            }
+            state.flags = 0           /* expect zlib header */
+            if (state.head != Z_NULL)
+                state.head!!.done = -1
+            if ((state.wrap and 1) == 0 ||   /* check if zlib header allowed */
+                /*#else
+            if (
+            #endif*/
+                ((BITS(hold, 8) shl 8) + (hold ushr 8)) % 31 != 0) {
+                strm.msg = "incorrect header check"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            if (BITS(hold, 4) != Z_DEFLATED) {
+                strm.msg = "unknown compression method"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+
+            // DROPBITS(4);
+            hold = hold ushr 4
+            bits -= 4
+
+            val len = BITS(hold, 4) + 8
+            if (state.wbits == 0)
+                state.wbits = len
+            if (len > 15 || len > state.wbits) {
+                strm.msg = "invalid window size"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            state.dmax = 1 shl len
+            // Tracev((stderr, "inflate:   zlib header ok\n"));
+            strm.adler = adler32(0, Z_NULL, 0, 0)
+            state.check = strm.adler
+            state.mode = if (hold and 0x200 != 0) inflate_mode.DICTID
+            else inflate_mode.TYPE
+
+            // INITBITS();
+            hold = 0
+            bits = 0
+
+            //break;
+            //#ifdef GUNZIP
+        }
+        inflate_mode.FLAGS -> {
+            // NEEDBITS(16);
+            while (bits < 16) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            state.flags = hold
+            if ((state.flags and 0xff) != Z_DEFLATED) {
+                strm.msg = "unknown compression method"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            if (state.flags and 0xe000 != 0) {
+                strm.msg = "unknown header flags set"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            if (state.head != Z_NULL)
+                state.head!!.text = (hold ushr 8) and 1
+            if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                CRC2(hbuf, state.check, hold.toShort())
+
+            // INITBITS();
+            hold = 0
+            bits = 0
+
+            state.mode = inflate_mode.TIME
+        }
+        inflate_mode.TIME -> {
+            // NEEDBITS(32);
+            while (bits < 32) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            if (state.head != Z_NULL)
+                state.head!!.time = hold.toULong()
+            if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                CRC4(hbuf, state.check, hold)
+
+            // INITBITS();
+            hold = 0
+            bits = 0
+
+            state.mode = inflate_mode.OS
+        }
+        inflate_mode.OS -> {
+            // NEEDBITS(16);
+            while (bits < 16) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            if (state.head != Z_NULL) {
+                state.head!!.xflags = hold and 0xff
+                state.head!!.os = hold ushr 8
+            }
+            if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                CRC2(hbuf, state.check, hold.toShort())
+
+            // INITBITS();
+            hold = 0
+            bits = 0
+
+            state.mode = inflate_mode.EXLEN
+        }
+        inflate_mode.EXLEN -> {
+            if (state.flags and 0x0400 != 0) {
+                // NEEDBITS(16);
+                while (bits < 16) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                state.length = hold
+                if (state.head != Z_NULL)
+                    state.head!!.extra_len = hold
+                if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                    CRC2(hbuf, state.check, hold.toShort())
+
+                // INITBITS();
+                hold = 0
+                bits = 0
+            } else if (state.head != Z_NULL)
+                state.head!!.extra = Z_NULL
+            state.mode = inflate_mode.EXTRA
+        }
+        inflate_mode.EXTRA -> {
+            if (state.flags and 0x0400 != 0) {
+                var copy = state.length
+                if (copy > have) copy = have
+                if (copy != 0) {
+                    if (state.head != Z_NULL &&
+                        state.head!!.extra != Z_NULL) {
+                        val len = state.head!!.extra_len - state.length
+                        zmemcpy(
+                            state.head!!.extra!!, len,
+                            next, next_i,
+                            if (len + copy > state.head!!.extra_max)
+                                state.head!!.extra_max - len else copy
+                        )
+                    }
+                    if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                        state.check = crc32(state.check, next, next_i, copy)
+                    have -= copy
+                    next_i += copy
+                    state.length -= copy
+                }
+                if (state.length != 0) break@loop
+            }
+            state.length = 0
+            state.mode = inflate_mode.NAME
+        }
+        inflate_mode.NAME -> {
+            if (state.flags and 0x0800 != 0) {
+                if (have == 0) break@loop
+                var copy = 0
+                var len: Int
+                do {
+                    len = next[next_i + copy].toUInt()
+                    copy++
+                    if (state.head != Z_NULL &&
+                        state.head!!.name != Z_NULL &&
+                        state.length < state.head!!.name_max)
+                        state.head!!.name!![state.length] = len.toByte()
+                    state.length++
+                } while (len != 0 && copy < have)
+                if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                    state.check = crc32(state.check, next, next_i, copy)
+                have -= copy
+                next_i += copy
+                if (len != 0) break@loop
+            } else if (state.head != Z_NULL)
+                state.head!!.name = Z_NULL
+            state.length = 0
+            state.mode = inflate_mode.COMMENT
+        }
+        inflate_mode.COMMENT -> {
+            if (state.flags and 0x1000 != 0) {
+                if (have == 0) break@loop
+                var copy = 0
+                var len: UInt
+                do {
+                    len = next[next_i + copy].toUInt()
+                    copy++
+                    if (state.head != Z_NULL &&
+                        state.head!!.comment != Z_NULL &&
+                        state.length < state.head!!.comm_max)
+                        state.head!!.comment!![state.length++] = len.toByte()
+                } while (len != 0 && copy < have)
+                if ((state.flags and 0x0200) != 0 && (state.wrap and 4) != 0)
+                    state.check = crc32(state.check, next, next_i, copy)
+                have -= copy
+                next_i += copy
+                if (len != 0) break@loop
+            } else if (state.head != Z_NULL)
+                state.head!!.comment = Z_NULL
+            state.mode = inflate_mode.HCRC
+        }
+        inflate_mode.HCRC -> {
+            if (state.flags and 0x0200 != 0) {
+                // NEEDBITS(16);
+                while (bits < 16) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                if ((state.wrap and 4) != 0 && hold != (state.check and 0xffff)) {
+                    strm.msg = "header crc mismatch"
+                    state.mode = inflate_mode.BAD
+                    continue@loop
+                }
+
+                // INITBITS();
+                hold = 0
+                bits = 0
+            }
+            if (state.head != Z_NULL) {
+                state.head!!.hcrc = (state.flags ushr 9) and 1
+                state.head!!.done = 1
+            }
+            strm.adler = crc32(0, Z_NULL, 0, 0)
+            state.check = strm.adler
+            state.mode = inflate_mode.TYPE
+            //break;
+            //#endif
+        }
+        inflate_mode.DICTID -> {
+            // NEEDBITS(32);
+            while (bits < 16) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            strm.adler = ZSWAP32(hold)
+            state.check = strm.adler
+
+            // INITBITS();
+            hold = 0
+            bits = 0
+
+            state.mode = inflate_mode.DICT
+        }
+        inflate_mode.DICT -> {
+            if (state.havedict == 0) {
+
+                // RESTORE();
+                strm.next_out = put
+                strm.next_out_i = put_i
+                strm.avail_out = left
+                strm.next_in = next
+                strm.next_in_i = next_i
+                strm.avail_in = have
+                state.hold = hold
+                state.bits = bits
+
+                return Z_NEED_DICT
+            }
+            strm.adler = adler32(0, Z_NULL, 0, 0)
+            state.check = strm.adler
+            state.mode = inflate_mode.TYPE
+        }
+        inflate_mode.TYPE -> {
+            if (flush == Z_BLOCK || flush == Z_TREES) break@loop
+            state.mode = inflate_mode.TYPEDO
+        }
+        inflate_mode.TYPEDO -> {
+            if (state.last != 0) {
+
+                // BYTEBITS();
+                hold = hold ushr (bits and 7)
+                bits -= bits and 7
+
+                state.mode = inflate_mode.CHECK
+                continue@loop
+            }
+
+            // NEEDBITS(3);
+            while (bits < 16) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            state.last = BITS(hold, 1)
+
+            // DROPBITS(1);
+            hold = hold ushr 1
+            bits -= 1
+
+            when (BITS(hold, 2)) {
+                0 -> {                             /* stored block */
+                    /*Tracev(
+                    (stderr, "inflate:     stored block%s\n",
+                    state.last ? " (last)" : ""));*/
+                    state.mode = inflate_mode.STORED
+                }
+                1 -> {                             /* fixed block */
+                    fixedtables(state)
+                    /*Tracev(
+                    (stderr, "inflate:     fixed codes block%s\n",
+                    state.last ? " (last)" : ""));*/
+                    state.mode =
+                            inflate_mode.LEN_             /* decode codes */
+                    if (flush == Z_TREES) {
+                        // DROPBITS(2);
+                        hold = hold ushr 2
+                        bits -= 2
+
+                        break@loop
+                    }
+                }
+                2 -> {                             /* dynamic block */
+                    /*Tracev(
+                    (stderr, "inflate:     dynamic codes block%s\n",
+                    state.last ? " (last)" : ""));*/
+                    state.mode = inflate_mode.TABLE
+                }
+                3 -> {
+                    strm.msg = "invalid block type"
+                    state.mode = inflate_mode.BAD
+                }
+            }
+
+            // DROPBITS(2);
+            hold = hold ushr 2
+            bits -= 2
+
+            //break;
+        }
+        inflate_mode.STORED -> {
+            // BYTEBITS();                         /* go to byte boundary */
+            hold = hold ushr (bits and 7)
+            bits -= bits and 7
+
+            // NEEDBITS(32);
+            while (bits < 32) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            if ((hold and 0xffff) != ((hold ushr 16) xor 0xffff)) {
+                strm.msg = "invalid stored block lengths"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            state.length = hold and 0xffff
+            /*Tracev(
+                (stderr, "inflate:       stored length %u\n",
+                state.length
+            ));*/
+
+            // INITBITS();
+            hold = 0
+            bits = 0
+
+            state.mode = inflate_mode.COPY_
+            if (flush == Z_TREES) break@loop
+        }
+        inflate_mode.COPY_ -> {
+            state.mode = inflate_mode.COPY
+        }
+        inflate_mode.COPY -> {
+            var copy = state.length
+            if (copy != 0) {
+                if (copy > have) copy = have
+                if (copy > left) copy = left
+                if (copy == 0) break@loop
+                zmemcpy(put, put_i, next, next_i, copy)
+                have -= copy
+                next_i += copy
+                left -= copy
+                put_i += copy
+                state.length -= copy
+                continue@loop
+            }
+            // Tracev((stderr, "inflate:       stored end\n"));
+            state.mode = inflate_mode.TYPE
+            //break;
+        }
+        inflate_mode.TABLE -> {
+            // NEEDBITS(14);
+            while (bits < 14) {
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+
+            state.nlen = BITS(hold, 5) + 257
+
+            // DROPBITS(5);
+            hold = hold ushr 5
+            bits -= 5
+
+            state.ndist = BITS(hold, 5) + 1
+
+            // DROPBITS(5);
+            hold = hold ushr 5
+            bits -= 5
+
+            state.ncode = BITS(hold, 4) + 4
+
+            // DROPBITS(4);
+            hold = hold ushr 4
+            bits -= 4
+
+            //#ifndef PKZIP_BUG_WORKAROUND
+            if (state.nlen > 286 || state.ndist > 30) {
+                strm.msg = "too many length or distance symbols"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            //#endif
+            //Tracev((stderr, "inflate:       table sizes ok\n"));
+            state.have = 0
+            state.mode = inflate_mode.LENLENS
+        }
+        inflate_mode.LENLENS -> {
+            while (state.have < state.ncode) {
+                // NEEDBITS(3);
+                while (bits < 3) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                state.lens[order[state.have++].toUInt()] =
+                        BITS(hold, 3).toShort()
+
+                // DROPBITS(3);
+                hold = hold ushr 3
+                bits -= 3
+            }
+            while (state.have < 19)
+                state.lens[order[state.have++].toUInt()] = 0
+            state.next = 0
+            state.lencode = state.codes
+            state.lencode_i = 0
+            state.lenbits = 7
+            next_ref[0] = state.next
+            lenbits_ref[0] = state.lenbits
+            ret = inflate_table(
+                codetype.CODES, state.lens, 0, 19, state.codes, next_ref,
+                lenbits_ref, state.work
+            )
+            state.next = next_ref[0]
+            state.lenbits = lenbits_ref[0]
+            if (ret != 0) {
+                strm.msg = "invalid code lengths set"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            //Tracev((stderr, "inflate:       code lengths ok\n"));
+            state.have = 0
+            state.mode = inflate_mode.CODELENS
+        }
+        inflate_mode.CODELENS -> {
+            while (state.have < state.nlen + state.ndist) {
+                val here = code()
+                while (true) {
+                    here.set(
+                        state.lencode!![state.lencode_i +
+                                BITS(hold, state.lenbits)]
+                    )
+                    if (here.bits.toUInt() <= bits) break
+
+                    // PULLBYTE();
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+                if (here.`val`.toUInt() < 16) {
+
+                    // DROPBITS(here.bits);
+                    hold = hold ushr here.bits.toUInt()
+                    bits -= here.bits.toUInt()
+
+                    state.lens[state.have++] = here.`val`
+                } else {
+                    val len: UInt
+                    var copy: UInt
+                    if (here.`val` == 16.toShort()) {
+                        // NEEDBITS(here.bits + 2);
+                        while (bits < here.bits + 2) {
+                            if (have == 0) break@loop
+                            have--
+                            hold += next[next_i++].toUInt() shl bits
+                            bits += 8
+                        }
+
+                        // DROPBITS(here.bits.toUInt());
+                        hold = hold ushr here.bits.toUInt()
+                        bits -= here.bits.toUInt()
+
+                        if (state.have == 0) {
+                            strm.msg = "invalid bit length repeat"
+                            state.mode = inflate_mode.BAD
+                            break
+                        }
+                        len = state.lens[state.have - 1].toUInt()
+                        copy = 3 + BITS(hold, 2)
+
+                        // DROPBITS(2);
+                        hold = hold ushr 2
+                        bits -= 2
+
+                    } else if (here.`val` == 17.toShort()) {
+                        // NEEDBITS(here.bits + 3);
+                        while (bits < here.bits + 3) {
+                            if (have == 0) break@loop
+                            have--
+                            hold += next[next_i++].toUInt() shl bits
+                            bits += 8
+                        }
+
+                        // DROPBITS(here.bits.toUInt());
+                        hold = hold ushr here.bits.toUInt()
+                        bits -= here.bits.toUInt()
+
+                        len = 0
+                        copy = 3 + BITS(hold, 3)
+
+                        // DROPBITS(3);
+                        hold = hold ushr 3
+                        bits -= 3
+                    } else {
+                        // NEEDBITS(here.bits + 7);
+                        while (bits < here.bits + 7) {
+                            if (have == 0) break@loop
+                            have--
+                            hold += next[next_i++].toUInt() shl bits
+                            bits += 8
+                        }
+
+                        // DROPBITS(here.bits.toUInt());
+                        hold = hold ushr here.bits.toUInt()
+                        bits -= here.bits.toUInt()
+
+                        len = 0
+                        copy = 11 + BITS(hold, 7)
+
+                        // DROPBITS(7);
+                        hold = hold ushr 7
+                        bits -= 7
+                    }
+                    if (state.have + copy > state.nlen + state.ndist) {
+                        strm.msg = "invalid bit length repeat"
+                        state.mode = inflate_mode.BAD
+                        break
+                    }
+                    while (copy != 0) {
+                        copy--
+                        state.lens[state.have++] = len.toShort()
+                    }
+                }
+            }
+
+            /* handle error breaks in while */
+            if (state.mode == inflate_mode.BAD) continue@loop
+
+            /* check for end-of-block code (better have one) */
+            if (state.lens[256] == 0.toShort()) {
+                strm.msg = "invalid code -- missing end-of-block"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+
+            /* build code tables -- note: do not change the lenbits or distbits
+           values here (9 and 6) without reading the comments in inftrees.h
+           concerning the ENOUGH constants, which depend on those values */
+            state.next = 0
+            state.lencode = state.codes
+            state.lencode_i = state.next
+            state.lenbits = 9
+            next_ref[0] = state.next
+            lenbits_ref[0] = state.lenbits
+            ret = inflate_table(
+                codetype.LENS, state.lens, 0, state.nlen, state.codes, next_ref,
+                lenbits_ref, state.work
+            )
+            state.next = next_ref[0]
+            state.lenbits = lenbits_ref[0]
+            if (ret != 0) {
+                strm.msg = "invalid literal/lengths set"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            state.distcode = state.codes
+            state.distcode_i = state.next
+            state.distbits = 6
+            next_ref[0] = state.next
+            distbits_ref[0] = state.distbits
+            ret = inflate_table(
+                codetype.DISTS, state.lens, state.nlen, state.ndist,
+                state.codes, next_ref, distbits_ref, state.work
+            )
+            state.next = next_ref[0]
+            state.distbits = distbits_ref[0]
+            if (ret != 0) {
+                strm.msg = "invalid distances set"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            // Tracev((stderr, "inflate:       codes ok\n"));
+            state.mode = inflate_mode.LEN_
+            if (flush == Z_TREES) break@loop
+        }
+        inflate_mode.LEN_ -> {
+            state.mode = inflate_mode.LEN
+        }
+        inflate_mode.LEN -> {
+            if (have >= 6 && left >= 258) {
+
+                // RESTORE();
+                strm.next_out = put
+                strm.next_out_i = put_i
+                strm.avail_out = left
+                strm.next_in = next
+                strm.next_in_i = next_i
+                strm.avail_in = have
+                state.hold = hold
+                state.bits = bits
+
+                inflate_fast(strm, state, out)
+
+                // LOAD();
+                put = strm.next_out!!
+                put_i = strm.next_out_i
+                left = strm.avail_out
+                next = strm.next_in!!
+                next_i = strm.next_in_i
+                have = strm.avail_in
+                hold = state.hold
+                bits = state.bits
+
+                if (state.mode == inflate_mode.TYPE)
+                    state.back = -1
+                continue@loop
+            }
+            state.back = 0
+            var here: code
+            while (true) {
+                here = state.lencode!![state.lencode_i +
+                        BITS(hold, state.lenbits)]
+                if (here.bits.toUInt() <= bits) break
+
+                // PULLBYTE();
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+            if (here.op != 0.toByte() && (here.op and 0xf0.toByte()) == 0.toByte()) {
+                val last = here
+                while (true) {
+                    here = state.lencode!![state.lencode_i +
+                            last.`val`.toUInt() + (BITS(
+                        hold, last.bits.toUInt() + last.op.toUInt()
+                    ) ushr last.bits.toUInt())]
+                    if (last.bits.toUInt() + here.bits.toUInt() <= bits) break
+
+                    // PULLBYTE();
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+
+                }
+
+                // DROPBITS(last.bits.toUInt());
+                hold = hold ushr last.bits.toUInt()
+                bits -= last.bits.toUInt()
+
+                state.back += last.bits
+            }
+
+            // DROPBITS(here.bits.toUInt());
+            hold = hold ushr here.bits.toUInt()
+            bits -= here.bits.toUInt()
+
+            state.back += here.bits
+            state.length = here.`val`.toUInt()
+            if (here.op == 0.toByte()) {
+                /*Tracevv(
+                (stderr, here.
+                    val >= 0x20 && here .val < 0x7f ?
+            "inflate:         literal '%c'\n" :
+            "inflate:         literal 0x%02x\n", here.val ));*/
+                state.mode = inflate_mode.LIT
+                continue@loop
+            }
+            if (here.op and 32 != 0.toByte()) {
+                //Tracevv((stderr, "inflate:         end of block\n"));
+                state.back = -1
+                state.mode = inflate_mode.TYPE
+                continue@loop
+            }
+            if (here.op and 64 != 0.toByte()) {
+                strm.msg = "invalid literal/length code"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            state.extra = here.op.toUInt() and 15
+            state.mode = inflate_mode.LENEXT
+        }
+        inflate_mode.LENEXT -> {
+            if (state.extra != 0) {
+                // NEEDBITS(state.extra);
+                while (bits < state.extra) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                state.length += BITS(hold, state.extra)
+
+                // DROPBITS(state.extra);
+                hold = hold ushr state.extra
+                bits -= state.extra
+
+                state.back += state.extra
+            }
+            //Tracevv((stderr, "inflate:         length %u\n", state.length));
+            state.was = state.length
+            state.mode = inflate_mode.DIST
+        }
+        inflate_mode.DIST -> {
+            val here = code()
+            while (true) {
+                here.set(
+                    state.distcode!![state.distcode_i +
+                            BITS(hold, state.distbits)]
+                )
+                if (here.bits.toUInt() <= bits) break
+
+                // PULLBYTE();
+                if (have == 0) break@loop
+                have--
+                hold += next[next_i++].toUInt() shl bits
+                bits += 8
+            }
+            if ((here.op and 0xf0.toByte()) == 0.toByte()) {
+                val last = code()
+                last.set(here)
+                while (true) {
+                    here.set(
+                        state.distcode!![state.distcode_i + last.`val` + (
+                                BITS(hold, last.bits + last.op) ushr
+                                        last.bits.toUInt()
+                                )]
+                    )
+                    if (last.bits.toUInt() + here.bits.toUInt() <= bits) break
+
+                    // PULLBYTE();
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                // DROPBITS(last.bits.toUInt());
+                hold = hold ushr last.bits.toUInt()
+                bits -= last.bits.toUInt()
+
+                state.back += last.bits
+            }
+
+            // DROPBITS(here.bits.toUInt());
+            hold = hold ushr here.bits.toUInt()
+            bits -= here.bits.toUInt()
+
+            state.back += here.bits
+            if (here.op and 64 != 0.toByte()) {
+                strm.msg = "invalid distance code"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            state.offset = here.`val`.toUInt()
+            state.extra = here.op.toUInt() and 15
+            state.mode = inflate_mode.DISTEXT
+        }
+        inflate_mode.DISTEXT -> {
+            if (state.extra != 0) {
+                // NEEDBITS(state.extra);
+                while (bits < state.extra) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                state.offset += BITS(hold, state.extra)
+
+                // DROPBITS(state.extra);
+                hold = hold ushr state.extra
+                bits -= state.extra
+
+                state.back += state.extra
+            }
+            //#ifdef INFLATE_STRICT
+            if (state.offset > state.dmax) {
+                strm.msg = "invalid distance too far back"
+                state.mode = inflate_mode.BAD
+                continue@loop
+            }
+            //#endif
+            //Tracevv((stderr, "inflate:         distance %u\n", state.offset));
+            state.mode = inflate_mode.MATCH
+        }
+        inflate_mode.MATCH -> {
+            if (left == 0) break@loop
+            var copy = out - left
+            val from: ByteArray
+            var from_i: Int
+            if (state.offset > copy) {
+                /* copy from window */
+                copy = state.offset - copy
+                if (copy > state.whave) {
+                    if (state.sane) {
+                        strm.msg = "invalid distance too far back"
+                        state.mode = inflate_mode.BAD
+                        continue@loop
+                    }
+                    /*#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+                        Trace((stderr, "inflate.c too far\n"));
+                copy -= state.whave;
+                if (copy > state.length) copy = state.length;
+                if (copy > left) copy = left;
+                left -= copy;
+                state.length -= copy;
+                do {
+                    *put++ = 0;
+                } while (--copy);
+                if (state.length == 0) state.mode = LEN;
+                break;
+                #endif*/
+                }
+                if (copy > state.wnext) {
+                    copy -= state.wnext
+                    from = state.window!!
+                    from_i = state.wsize - copy
+                } else {
+                    from = state.window!!
+                    from_i = state.wnext - copy
+                }
+                if (copy > state.length) copy = state.length
+            } else {
+                /* copy from output */
+                from = put
+                from_i = put_i - state.offset
+                copy = state.length
+            }
+            if (copy > left) copy = left
+            left -= copy
+            state.length -= copy
+            do {
+                put[put_i++] = from[from_i++]
+                copy--
+            } while (copy != 0)
+            if (state.length == 0) state.mode = inflate_mode.LEN
+            //break;
+        }
+        inflate_mode.LIT -> {
+            if (left == 0) break@loop
+            put[put_i++] = state.length.toByte()
+            left--
+            state.mode = inflate_mode.LEN
+            //break;
+        }
+        inflate_mode.CHECK -> {
+            if (state.wrap != 0) {
+                // NEEDBITS(32);
+                while (bits < 32) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                out -= left
+                strm.total_out += out
+                state.total += out
+                if ((state.wrap and 4) != 0 && out != 0) {
+                    strm.adler =
+                            UPDATE(state, state.check, put, put_i - out, out)
+                    state.check = strm.adler
+                }
+                out = left
+                if ((state.wrap and 4) != 0 && (
+                            //#ifdef GUNZIP
+                            if (state.flags != 0) hold else
+                            //#endif
+                                ZSWAP32(hold)) != state.check) {
+                    strm.msg = "incorrect data check"
+                    state.mode = inflate_mode.BAD
+                    continue@loop
+                }
+
+                // INITBITS();
+                hold = 0
+                bits = 0
+
+                //Tracev((stderr, "inflate:   check matches trailer\n"));
+            }
+            //#ifdef GUNZIP
+            state.mode = inflate_mode.LENGTH
+        }
+        inflate_mode.LENGTH -> {
+            if (state.wrap != 0 && state.flags != 0) {
+                // NEEDBITS(32);
+                while (bits < 32) {
+                    if (have == 0) break@loop
+                    have--
+                    hold += next[next_i++].toUInt() shl bits
+                    bits += 8
+                }
+
+                if (hold != (state.total and -1 /* 0xffffffff */)) {
+                    strm.msg = "incorrect length check"
+                    state.mode = inflate_mode.BAD
+                    continue@loop
+                }
+
+                // INITBITS();
+                hold = 0
+                bits = 0
+
+                //Tracev((stderr, "inflate:   length matches trailer\n"));
+            }
+            //#endif
+            state.mode = inflate_mode.DONE
+        }
+        inflate_mode.DONE -> {
+            ret = Z_STREAM_END
+            break@loop
+        }
+        inflate_mode.BAD -> {
+            ret = Z_DATA_ERROR
+            break@loop
+        }
+        inflate_mode.MEM -> {
+            return Z_MEM_ERROR
+        }
+        inflate_mode.SYNC -> {
             return Z_STREAM_ERROR
         }
-
-        var index = 0
-        var length = dictLength
-
-        if (this.mode == DICT0) {
-            val adler_need = z.adler.value
-            z.adler.reset()
-            z.adler.update(dictionary, 0, dictLength)
-            if (z.adler.value != adler_need) {
-                return Z_DATA_ERROR
-            }
-        }
-
-        z.adler.reset()
-
-        if (length >= 1 shl this.wbits) {
-            length = (1 shl this.wbits) - 1
-            index = dictLength - length
-        }
-        this.blocks!!.set_dictionary(dictionary, index, length)
-        this.mode = BLOCKS
-        return Z_OK
     }
 
-    fun sync(): Int {
-        var n: Int       // number of bytes to look at
-        var p: Int       // pointer to bytes
-        var m: Int       // number of marker bytes found in a row
-        val r: Long
-        val w: Long   // temporaries to save total_in and total_out
+    /*
+       Return from inflate(), updating the total counts and the check value.
+       If there was no progress during the inflate() call, return a buffer
+       error.  Call updatewindow() to create and/or update the window state.
+       Note: a memory error from inflate() is non-recoverable.
+     */
+    //inf_leave:
 
-        // set up
-        if (this.mode != BAD) {
-            this.mode = BAD
-            this.marker = 0
+    // RESTORE();
+    strm.next_out = put
+    strm.next_out_i = put_i
+    strm.avail_out = left
+    strm.next_in = next
+    strm.next_in_i = next_i
+    strm.avail_in = have
+    state.hold = hold
+    state.bits = bits
+
+    if (state.wsize != 0 || (out != strm.avail_out && !state.mode.is_error &&
+                (!state.mode.is_finish || flush != Z_FINISH)))
+        if (updatewindow(
+                strm, state, strm.next_out!!, strm.next_out_i,
+                out - strm.avail_out
+            ) != 0) {
+            state.mode = inflate_mode.MEM
+            return Z_MEM_ERROR
         }
-        n = z.avail_in
-        if (n == 0)
-            return Z_BUF_ERROR
-
-        p = z.next_in_index
-        m = this.marker
-        // search
-        while (n != 0 && m < 4) {
-            if (z.next_in!![p] == mark[m]) {
-                m++
-            } else if (z.next_in!![p].toInt() != 0) {
-                m = 0
-            } else {
-                m = 4 - m
-            }
-            p++
-            n--
-        }
-
-        // restore
-        z.total_in += (p - z.next_in_index).toLong()
-        z.next_in_index = p
-        z.avail_in = n
-        this.marker = m
-
-        // return no joy or set up to restart on a new block
-        if (m != 4) {
-            return Z_DATA_ERROR
-        }
-        r = z.total_in
-        w = z.total_out
-        reset()
-        z.total_in = r
-        z.total_out = w
-        this.mode = BLOCKS
-
-        return Z_OK
+    `in` -= strm.avail_in
+    out -= strm.avail_out
+    strm.total_in += `in`
+    strm.total_out += out
+    state.total += out
+    if ((state.wrap and 4) != 0 && out != 0) {
+        strm.adler =
+                UPDATE(
+                    state, state.check,
+                    strm.next_out!!, strm.next_out_i - out, out
+                )
+        state.check = strm.adler
     }
-
-    // Returns true if inflate is currently at the end of a block generated
-    // by Z_SYNC_FLUSH or Z_FULL_FLUSH. This function is used by one PPP
-    // implementation to provide an additional safety check. PPP uses Z_SYNC_FLUSH
-    // but removes the length bytes of the resulting empty stored block. When
-    // decompressing, PPP checks that at the end of input packet, inflate is
-    // waiting for these length bytes.
-    fun syncPoint(): Int {
-        return if (z == null || this.blocks == null) Z_STREAM_ERROR else this.blocks!!.sync_point()
-    }
-
-    @Throws(Return::class)
-    private fun readBytes(n: Int, r: Int, f: Int): Int {
-        val z_next_in = z.next_in!!
-        var r = r
-        if (need_bytes == -1) {
-            need_bytes = n
-            this.need = 0
-        }
-        while (need_bytes > 0) {
-            if (z.avail_in == 0) {
-                throw Return(r)
-            }
-            r = f
-            z.avail_in--
-            z.total_in++
-            this.need = this.need or
-                    (z_next_in[z.next_in_index++].toInt() and 0xFF shl (n - need_bytes) * 8)
-            need_bytes--
-        }
-        if (n == 2) {
-            this.need = this.need and 0xFFFF
-        } else if (n == 4) {
-            this.need = this.need // TODO: What do here?
-        }
-        need_bytes = -1
-        return r
-    }
-
-    internal inner class Return(var r: Int) : Exception()
-
-    @Throws(Return::class)
-    private fun readString(r: Int, f: Int): Int {
-        var r = r
-        if (tmp_string == null) {
-            tmp_string = MemoryViewStreamDefault()
-        }
-        var b = 0
-        do {
-            if (z.avail_in == 0) {
-                throw Return(r)
-            }
-            r = f
-            z.avail_in--
-            z.total_in++
-            b = z.next_in!![z.next_in_index].toInt()
-            if (b != 0) tmp_string!!.put(z.next_in!![z.next_in_index])
-            z.adler.update(z.next_in!!, z.next_in_index, 1)
-            z.next_in_index++
-        } while (b != 0)
-        return r
-    }
-
-    @Throws(Return::class)
-    private fun readBytes(r: Int, f: Int): Int {
-        val z_next_in = z.next_in!!
-        var r = r
-        val tmp_string = tmp_string
-                ?: MemoryViewStreamDefault().also{ tmp_string = it }
-
-        var b = 0
-        while (this.need > 0) {
-            if (z.avail_in == 0) {
-                throw Return(r)
-            }
-            r = f
-            z.avail_in--
-            z.total_in++
-            b = z_next_in[z.next_in_index].toInt()
-            tmp_string.put(z_next_in[z.next_in_index])
-            z.adler.update(z_next_in, z.next_in_index, 1)
-            z.next_in_index++
-            this.need--
-        }
-        return r
-    }
-
-    private fun checksum(n: Int, v: Int) {
-        var v = v
-        for (i in 0 until n) {
-            crcbuf[i] = (v and 0xFF).toByte()
-            v = v shr 8
-        }
-        z.adler.update(crcbuf, 0, n)
-    }
-
-    fun inParsingHeader(): Boolean {
-        when (mode) {
-            HEAD, DICT4, DICT3, DICT2, DICT1, FLAGS, TIME, OS, EXLEN, EXTRA, NAME, COMMENT, HCRC -> return true
-            else -> return false
-        }
-    }
+    strm.data_type = state.bits + (if (state.last != 0) 64 else 0) +
+            (if (state.mode == inflate_mode.TYPE) 128 else 0) +
+            (if (state.mode == inflate_mode.LEN_ || state.mode == inflate_mode.COPY_) 256 else 0)
+    if (((`in` == 0 && out == 0) || flush == Z_FINISH) && ret == Z_OK)
+        ret = Z_BUF_ERROR
+    return ret
 }
 
-// preset dictionary flag in zlib header
-private const val PRESET_DICT = 0x20
+fun inflateEnd(
+    strm: z_stream,
+    state: inflate_state
+): Int {
+    if (inflateStateCheck(strm, state))
+        return Z_STREAM_ERROR
+    //Tracev((stderr, "inflate: end\n"));
+    return Z_OK
+}
 
-private const val METHOD = 0   // waiting for method byte
-private const val FLAG = 1     // waiting for flag byte
-private const val DICT4 = 2    // four dictionary check bytes to go
-private const val DICT3 = 3    // three dictionary check bytes to go
-private const val DICT2 = 4    // two dictionary check bytes to go
-private const val DICT1 = 5    // one dictionary check byte to go
-private const val DICT0 = 6    // waiting for inflateSetDictionary
-private const val BLOCKS = 7   // decompressing blocks
-private const val CHECK4 = 8   // four check bytes to go
-private const val CHECK3 = 9   // three check bytes to go
-private const val CHECK2 = 10  // two check bytes to go
-private const val CHECK1 = 11  // one check byte to go
-private const val DONE = 12    // finished check, done
-private const val BAD = 13     // got an error--stay here
+fun inflateGetDictionary(
+    strm: z_stream,
+    state: inflate_state,
+    dictionary: ByteArray,
+    dictionary_i: Int,
+    dictLength: IntArray
+): Int {
+    /* check state */
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
 
-private const val HEAD = 14
-private const val LENGTH = 15
-private const val TIME = 16
-private const val OS = 17
-private const val EXLEN = 18
-private const val EXTRA = 19
-private const val NAME = 20
-private const val COMMENT = 21
-private const val HCRC = 22
-private const val FLAGS = 23
+    /* copy dictionary */
+    if (state.whave != 0 && dictionary != Z_NULL) {
+        zmemcpy(
+            dictionary, dictionary_i,
+            state.window!!, state.wnext,
+            state.whave - state.wnext
+        )
+        zmemcpy(
+            dictionary, dictionary_i + state.whave - state.wnext,
+            state.window!!, 0,
+            state.wnext
+        )
+    }
+    if (dictLength != Z_NULL)
+        dictLength[0] = state.whave
+    return Z_OK
+}
 
-internal const val INFLATE_ANY = 0x40000000
+fun inflateSetDictionary(
+    strm: z_stream,
+    state: inflate_state,
+    dictionary: ByteArray,
+    dictionary_i: Int,
+    dictLength: UInt
+): Int {
+    /* check state */
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    if (state.wrap != 0 && state.mode != inflate_mode.DICT)
+        return Z_STREAM_ERROR
 
-private val mark =
-    byteArrayOf(0.toByte(), 0.toByte(), 0xFF.toByte(), 0xFF.toByte())
+    /* check for correct dictionary identifier */
+    if (state.mode == inflate_mode.DICT) {
+        var dictid = adler32(0, Z_NULL, 0, 0)
+        dictid = adler32(dictid, dictionary, dictionary_i, dictLength)
+        if (dictid != state.check) return Z_DATA_ERROR
+    }
+
+    /* copy dictionary to window using updatewindow(), which will amend the
+       existing dictionary if appropriate */
+    val ret = updatewindow(
+        strm, state, dictionary, dictionary_i + dictLength, dictLength
+    )
+    if (ret != 0) {
+        state.mode = inflate_mode.MEM
+        return Z_MEM_ERROR
+    }
+    state.havedict = 1
+    //Tracev((stderr, "inflate:   dictionary set\n"));
+    return Z_OK
+}
+
+fun inflateGetHeader(
+    strm: z_stream,
+    state: inflate_state,
+    head: gz_header
+): Int {
+    /* check state */
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    if ((state.wrap and 2) == 0) return Z_STREAM_ERROR
+
+    /* save header structure */
+    state.head = head
+    head.done = 0
+    return Z_OK
+}
+
+/*
+   Search buf[0..len-1] for the pattern: 0, 0, 0xff, 0xff.  Return when found
+   or when out of input.  When called, *have is the number of pattern bytes
+   found in order so far, in 0..3.  On return *have is updated to the new
+   state.  If on return *have equals four, then the pattern was found and the
+   return value is how many bytes were read including the last byte of the
+   pattern.  If *have is less than four, then the pattern has not been found
+   yet and the return value is len.  In the latter case, syncsearch() can be
+   called again with more data and the *have state.  *have is initialized to
+   zero for the first call.
+ */
+private fun syncsearch(
+    have: IntArray,
+    buf: ByteArray,
+    buf_i: Int,
+    len: UInt
+): UInt {
+    var got: UInt = have[0]
+    var next: UInt = buf_i
+    while (next < len + buf_i && got < 4) {
+        if (buf[next] == (if (got < 2) 0 else 0xff).toByte())
+            got++
+        else if (buf[next] != 0.toByte())
+            got = 0
+        else
+            got = 4 - got
+        next++
+    }
+    have[0] = got
+    return next
+}
+
+fun inflateSync(
+    strm: z_stream,
+    state: inflate_state
+): Int {
+    val buf = ByteArray(4) /* to restore bit buffer to byte string */
+    val have_ref = IntArray(1)
+
+    /* check parameters */
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    if (strm.avail_in == 0 && state.bits < 8) return Z_BUF_ERROR
+
+    /* if first time, start search in bit buffer */
+    if (state.mode != inflate_mode.SYNC) {
+        state.mode = inflate_mode.SYNC
+        state.hold = state.hold shl (state.bits and 7)
+        state.bits -= state.bits and 7
+        var len = 0
+        while (state.bits >= 8) {
+            buf[len++] = state.hold.toByte()
+            state.hold = state.hold ushr 8
+            state.bits -= 8
+        }
+        have_ref[0] = 0
+        syncsearch(have_ref, buf, 0, len)
+        state.have = have_ref[0]
+    }
+
+    /* search available input */
+    have_ref[0] = state.have
+    val len =
+        syncsearch(have_ref, strm.next_in!!, strm.next_in_i, strm.avail_in)
+    state.have = have_ref[0]
+    strm.avail_in -= len
+    strm.next_in_i += len
+    strm.total_in += len
+
+    /* return no joy or set up to restart inflate() on a new block */
+    if (state.have != 4) return Z_DATA_ERROR
+    val `in` = strm.total_in
+    val out = strm.total_out
+    inflateReset(strm, state)
+    strm.total_in = `in`
+    strm.total_out = out
+    state.mode = inflate_mode.TYPE
+    return Z_OK
+}
+
+/*
+   Returns true if inflate is currently at the end of a block generated by
+   Z_SYNC_FLUSH or Z_FULL_FLUSH. This function is used by one PPP
+   implementation to provide an additional safety check. PPP uses
+   Z_SYNC_FLUSH but removes the length bytes of the resulting empty stored
+   block. When decompressing, PPP checks that at the end of input packet,
+   inflate is waiting for these length bytes.
+ */
+fun inflateSyncPoint(
+    strm: z_stream,
+    state: inflate_state
+): Int {
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    return if (state.mode == inflate_mode.STORED && state.bits == 0) 1 else 0
+}
+
+fun inflateCopy(
+    dest: z_stream,
+    copy: inflate_state,
+    source: z_stream,
+    state: inflate_state
+): Int {
+    /* check input */
+    if (inflateStateCheck(source, state) || dest == Z_NULL)
+        return Z_STREAM_ERROR
+
+    /* copy state */
+    dest.data_type = source.data_type
+    dest.next_in = source.next_in
+    dest.next_in_i = source.next_in_i
+    dest.avail_in = source.avail_in
+    dest.total_in = source.total_in
+    dest.next_out = source.next_out
+    dest.next_out_i = source.next_out_i
+    dest.avail_out = source.avail_out
+    dest.total_out = source.total_out
+    dest.msg = source.msg
+    dest.data_type = source.data_type
+    dest.adler = source.adler
+    copy.mode = state.mode
+    copy.last = state.last
+    copy.wrap = state.wrap
+    copy.havedict = state.havedict
+    copy.flags = state.flags
+    copy.dmax = state.dmax
+    copy.check = state.check
+    copy.total = state.total
+    copy.head = state.head
+    copy.wbits = state.wbits
+    copy.wsize = state.wsize
+    copy.whave = state.whave
+    copy.wnext = state.wnext
+    copy.window = state.window?.copyOf()
+    copy.hold = state.hold
+    copy.bits = state.bits
+    copy.length = state.length
+    copy.offset = state.offset
+    copy.extra = state.extra
+    copy.lencode =
+            if (state.lencode === state.codes) copy.codes else state.lencode
+    copy.lencode_i = state.lencode_i
+    copy.distcode =
+            if (state.distcode === state.codes) copy.codes else state.distcode
+    copy.distcode_i = state.distcode_i
+    copy.lenbits = state.lenbits
+    copy.distbits = state.distbits
+    copy.ncode = state.ncode
+    copy.nlen = state.nlen
+    copy.ndist = state.ndist
+    copy.have = state.have
+    copy.next = state.next
+    copy(state.lens, copy.lens)
+    copy(state.work, copy.work)
+    copy(state.codes, copy.codes)
+    copy.sane = state.sane
+    copy.back = state.back
+    copy.was = state.was
+    return Z_OK
+}
+
+fun inflateUndermine(
+    strm: z_stream,
+    state: inflate_state,
+    subvert: Int
+): Int {
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    /*#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+        state.sane = !subvert;
+    return Z_OK;
+    #else*/
+    //(void) subvert;
+    state.sane = true
+    return Z_DATA_ERROR
+    //#endif
+}
+
+fun inflateValidate(
+    strm: z_stream,
+    state: inflate_state,
+    check: Boolean
+): Int {
+    if (inflateStateCheck(strm, state)) return Z_STREAM_ERROR
+    if (check)
+        state.wrap = state.wrap or 4
+    else
+        state.wrap = state.wrap and 4.inv()
+    return Z_OK
+}
+
+fun inflateMark(
+    strm: z_stream,
+    state: inflate_state
+): Long {
+    if (inflateStateCheck(strm, state)) return -(1L shl 16)
+    return (state.back.toLong() shl 16) +
+            (if (state.mode == inflate_mode.COPY) state.length else
+                (if (state.mode == inflate_mode.MATCH) state.was - state.length else 0))
+}
+
+fun inflateCodesUsed(
+    strm: z_stream,
+    state: inflate_state
+): ULong {
+    if (inflateStateCheck(strm, state)) return -1L
+    return state.next.toULong()
+}
+
+private val order = shortArrayOf( /* permutation of code lengths */
+    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
+)

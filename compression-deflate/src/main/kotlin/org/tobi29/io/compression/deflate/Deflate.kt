@@ -19,13 +19,16 @@ package org.tobi29.io.compression.deflate
 import org.tobi29.io.*
 
 expect class DeflateHandle(
-    level: Int = -1, bufferSize: Int = 8192
+    level: Int = -1,
+    outputBufferSize: Int = 8192,
+    inputBufferSize: Int = 8192
 ) : AutoCloseable {
     fun reset()
 }
 
 expect class InflateHandle(
-    bufferSize: Int = 8192
+    outputBufferSize: Int = 8192,
+    inputBufferSize: Int = 8192
 ) : AutoCloseable {
     fun reset()
 }

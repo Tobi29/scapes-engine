@@ -18,5 +18,4 @@ apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
     compile project(":checksums")
-    compile project(":io")
 }

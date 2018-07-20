@@ -16,6 +16,7 @@
 
 package org.tobi29.io.compression.deflate
 
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
 import org.tobi29.kzlib.*
 
@@ -25,52 +26,67 @@ class DeflateException : IOException {
 }
 
 actual class DeflateHandle(
-    level: Int = -1, internal val bufferSize: Int = 8192,
-    gzip: Boolean = false
+    level: Int = -1,
+    outputBufferSize: Int = 16384,
+    inputBufferSize: Int = 16384,
+    method: Int = Z_DEFLATED,
+    windowBits: Int = DEF_WBITS,
+    memLevel: Int = DEF_MEM_LEVEL,
+    strategy: Int = Z_DEFAULT_STRATEGY,
+    wrapperType: WrapperType = WrapperType.ZLIB
 ) : AutoCloseable {
-    internal val outputBuffer = ByteArray(bufferSize)
-    internal val inputBuffer = MemoryViewStreamDefault()
-    internal val deflater = try {
-        Deflater(level, wrapperType = if (gzip) W_GZIP else W_ZLIB)
-    } catch (e: GZIPException) {
-        throw DeflateException(e)
-    }
+    internal val outputBuffer = ByteArray(outputBufferSize)
+    internal val inputBuffer = ByteArray(inputBufferSize)
+    internal val deflater = Deflater(
+        level, method, windowBits, memLevel, strategy, wrapperType
+    )
 
-    actual constructor(level: Int, bufferSize: Int) : this(
-        level, bufferSize, false
+    actual constructor(
+        level: Int,
+        outputBufferSize: Int,
+        inputBufferSize: Int
+    ) : this(
+        level, outputBufferSize, inputBufferSize,
+        Z_DEFLATED, DEF_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY,
+        WrapperType.ZLIB
     )
 
     actual fun reset() {
-        deflater.first.reset()
-        inputBuffer.reset()
+        deflater.reset()
     }
 
     override fun close() {
-        deflater.first.end()
+        deflater.end()
     }
 }
 
 actual class InflateHandle(
-    internal val bufferSize: Int = 8192,
-    any: Boolean = false
+    outputBufferSize: Int = 16384,
+    inputBufferSize: Int = 16384,
+    windowBits: Int = DEF_WBITS,
+    wrapperType: WrapperType = WrapperType.ZLIB
 ) : AutoCloseable {
-    internal val outputBuffer = ByteArray(bufferSize)
-    internal val inputBuffer = MemoryViewStreamDefault()
-    internal val inflater = try {
-        Inflater(wrapperType = if (any) W_ANY else W_ZLIB)
-    } catch (e: GZIPException) {
-        throw DeflateException(e)
-    }
+    internal val outputBuffer = ByteArray(outputBufferSize)
+    internal val inputBuffer = ByteArray(inputBufferSize)
+    internal val inflater = Inflater(
+        windowBits, wrapperType
+    )
 
-    actual constructor(bufferSize: Int) : this(bufferSize, false)
+    actual constructor(
+        outputBufferSize: Int,
+        inputBufferSize: Int
+    ) : this(
+        outputBufferSize, inputBufferSize,
+        DEF_WBITS,
+        WrapperType.ZLIB
+    )
 
     actual fun reset() {
-        inflater.first.reset()
-        inputBuffer.reset()
+        inflater.reset()
     }
 
     override fun close() {
-        inflater.first.end()
+        inflater.end()
     }
 }
 
@@ -82,18 +98,15 @@ actual fun DeflateHandle.deflate(
         var finishing = false
         while (true) {
             if (!finishing && !bufferInput(input)) finishing = true
-            while (finishing || deflater.second.avail_in > 0) {
+            while (finishing || deflater.first.avail_in > 0) {
                 val status =
                     bufferOutput(
                         if (finishing) Z_FINISH else Z_NO_FLUSH, output
                     )
                 if (status == Z_STREAM_END) return
-                if (status != Z_OK) throw DeflateException(
-                    "ZLib error: $status, ${deflater.second.msg}"
-                )
             }
         }
-    } catch (e: GZIPException) {
+    } catch (e: ZLibException) {
         throw DeflateException(e)
     }
 }
@@ -106,67 +119,62 @@ actual fun InflateHandle.inflate(
         var finishing = false
         while (true) {
             if (!finishing && !bufferInput(input)) finishing = true
-            while (finishing || inflater.second.avail_in > 0) {
+            while (finishing || inflater.first.avail_in > 0) {
                 val status =
                     bufferOutput(
                         if (finishing) Z_FINISH else Z_NO_FLUSH, output
                     )
                 if (status == Z_STREAM_END) return
-                if (status != Z_OK) throw DeflateException(
-                    "ZLib error: $status, ${inflater.second.msg}"
-                )
             }
         }
-    } catch (e: GZIPException) {
+    } catch (e: ZLibException) {
         throw DeflateException(e)
     }
 }
 
 fun DeflateHandle.bufferInput(
     buffer: ReadableByteStream
-): Boolean = deflater.second.bufferInput(bufferSize, inputBuffer, buffer)
+): Boolean = deflater.first.bufferInput(inputBuffer, buffer)
 
 fun InflateHandle.bufferInput(
     buffer: ReadableByteStream
-): Boolean = inflater.second.bufferInput(bufferSize, inputBuffer, buffer)
+): Boolean = inflater.first.bufferInput(inputBuffer, buffer)
 
-private fun <B : ByteViewE> ZStream.bufferInput(
-    bufferSize: Int,
-    inputBuffer: MemoryViewStream<B>,
+private fun z_stream.bufferInput(
+    inputBuffer: ByteArray,
     buffer: ReadableByteStream
 ): Boolean {
-    inputBuffer.limit(inputBuffer.position() + bufferSize)
-    val read = buffer.getSome(inputBuffer.bufferSlice())
+    val read = buffer.getSome(inputBuffer.sliceOver())
     if (read < 0) return false
-    inputBuffer.position(inputBuffer.position() + read)
-    @Suppress("UNCHECKED_CAST")
-    setInput(inputBuffer.buffer().readAsByteArray(), 0, inputBuffer.position())
+    next_in = inputBuffer
+    next_in_i = 0
+    avail_in = read
     return true
 }
 
 fun DeflateHandle.bufferOutput(
     flush: Int,
     buffer: WritableByteStream
-): Int = deflater.second.bufferOutput(inputBuffer, outputBuffer, buffer) {
-    deflater.first.deflate(flush)
+): Int = deflater.first.bufferOutput(outputBuffer, buffer) {
+    deflater.deflate(flush)
 }
 
 fun InflateHandle.bufferOutput(
     flush: Int,
     buffer: WritableByteStream
-): Int = inflater.second.bufferOutput(inputBuffer, outputBuffer, buffer) {
-    inflater.first.inflate(flush)
+): Int = inflater.first.bufferOutput(outputBuffer, buffer) {
+    inflater.inflate(flush)
 }
 
-private inline fun ZStream.bufferOutput(
-    inputBuffer: MemoryViewStream<*>,
+private inline fun z_stream.bufferOutput(
     outputBuffer: ByteArray,
     buffer: WritableByteStream,
     output: () -> Int
 ): Int {
-    setOutput(outputBuffer)
+    next_out = outputBuffer
+    next_out_i = 0
+    avail_out = outputBuffer.size
     val status = output()
-    buffer.put(outputBuffer.view.slice(0, next_out_index))
-    inputBuffer.reset()
+    buffer.put(outputBuffer.view.slice(0, next_out_i))
     return status
 }

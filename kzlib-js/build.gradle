@@ -19,5 +19,4 @@ apply from: "$rootDir/resources/modulekotlinjs.gradle"
 dependencies {
     expectedBy project(":kzlib")
     compile project(":checksums-js")
-    compile project(":io-js")
 }

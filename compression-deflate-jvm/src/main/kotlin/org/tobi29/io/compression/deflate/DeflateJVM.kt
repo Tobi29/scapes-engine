@@ -18,20 +18,22 @@
 
 package org.tobi29.io.compression.deflate
 
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
 actual class DeflateHandle actual constructor(
-    level: Int, internal val bufferSize: Int
+    level: Int,
+    outputBufferSize: Int,
+    inputBufferSize: Int
 ) : AutoCloseable {
-    internal val outputBuffer = ByteArray(bufferSize)
-    internal val inputBuffer = MemoryViewStreamDefault()
+    internal val outputBuffer = ByteArray(outputBufferSize)
+    internal val inputBuffer = ByteArray(inputBufferSize)
     internal val deflater = Deflater(level)
 
     actual fun reset() {
         deflater.reset()
-        inputBuffer.reset()
     }
 
     override fun close() {
@@ -40,15 +42,15 @@ actual class DeflateHandle actual constructor(
 }
 
 actual class InflateHandle actual constructor(
-    internal val bufferSize: Int
+    outputBufferSize: Int,
+    inputBufferSize: Int
 ) : AutoCloseable {
-    internal val outputBuffer = ByteArray(bufferSize)
-    internal val inputBuffer = MemoryViewStreamDefault()
+    internal val outputBuffer = ByteArray(outputBufferSize)
+    internal val inputBuffer = ByteArray(inputBufferSize)
     internal val inflater = Inflater()
 
     actual fun reset() {
         inflater.reset()
-        inputBuffer.reset()
     }
 
     override fun close() {
@@ -94,51 +96,45 @@ actual fun InflateHandle.inflate(
 
 private fun DeflateHandle.bufferInput(
     buffer: ReadableByteStream
-): Boolean = bufferInput(bufferSize, inputBuffer, buffer) {
-    deflater.setInput(it.array, it.offset, it.size)
+): Boolean = bufferInput(inputBuffer, buffer) { array, offset, size ->
+    deflater.setInput(array, offset, size)
 }
 
 private fun InflateHandle.bufferInput(
     buffer: ReadableByteStream
-): Boolean = bufferInput(bufferSize, inputBuffer, buffer) {
-    inflater.setInput(it.array, it.offset, it.size)
+): Boolean = bufferInput(inputBuffer, buffer) { array, offset, size ->
+    inflater.setInput(array, offset, size)
 }
 
-private inline fun <B : ByteViewE> bufferInput(
-    bufferSize: Int,
-    inputBuffer: MemoryViewStream<B>,
+private inline fun bufferInput(
+    inputBuffer: ByteArray,
     buffer: ReadableByteStream,
-    setInput: (B) -> Unit
+    setInput: (ByteArray, Int, Int) -> Unit
 ): Boolean {
-    inputBuffer.limit(inputBuffer.position() + bufferSize)
-    val read = buffer.getSome(inputBuffer.bufferSlice())
+    val read = buffer.getSome(inputBuffer.sliceOver())
     if (read < 0) return false
-    inputBuffer.position(inputBuffer.position() + read)
-    @Suppress("UNCHECKED_CAST")
-    setInput(inputBuffer.buffer().slice(0, inputBuffer.position()) as B)
+    setInput(inputBuffer, 0, read)
     return true
 }
 
 private fun DeflateHandle.bufferOutput(
     buffer: WritableByteStream
-): Int = bufferOutput(inputBuffer, outputBuffer, buffer) {
+): Int = bufferOutput(outputBuffer, buffer) {
     deflater.deflate(it)
 }
 
 private fun InflateHandle.bufferOutput(
     buffer: WritableByteStream
-): Int = bufferOutput(inputBuffer, outputBuffer, buffer) {
+): Int = bufferOutput(outputBuffer, buffer) {
     inflater.inflate(it)
 }
 
 private inline fun bufferOutput(
-    inputBuffer: MemoryViewStream<*>,
     outputBuffer: ByteArray,
     buffer: WritableByteStream,
     output: (ByteArray) -> Int
 ): Int {
     val length = output(outputBuffer)
     buffer.put(outputBuffer.view.slice(0, length))
-    inputBuffer.reset()
     return length
 }
