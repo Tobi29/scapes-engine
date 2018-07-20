@@ -139,8 +139,8 @@ local void gen_trees_header OF((void));
 #endif*/
 
 //#ifndef ZLIB_DEBUG
-internal inline fun send_code(s: deflate_state, c: UInt, tree: Array<ct_data>) =
-    send_bits(s, tree[c].code.toUInt(), tree[c].len.toUInt())
+internal inline fun send_code(s: deflate_state, c: UInt, tree: ShortArray) =
+    send_bits(s, tree[freq(c)]/*.code*/.toUInt(), tree[len(c)]/*.len*/.toUInt())
 /* Send a code of the given tree. c and tree must not have side effects */
 
 /*#else /* !ZLIB_DEBUG */
@@ -310,11 +310,11 @@ fun _tr_init(s: deflate_state) {
  */
 fun init_block(s: deflate_state) {
     /* Initialize the trees. */
-    for (n in 0 until L_CODES) s.dyn_ltree[n].freq = 0
-    for (n in 0 until D_CODES) s.dyn_dtree[n].freq = 0
-    for (n in 0 until BL_CODES) s.bl_tree[n].freq = 0
+    for (n in 0 until L_CODES) s.dyn_ltree[freq(n)]/*.freq*/ = 0
+    for (n in 0 until D_CODES) s.dyn_dtree[freq(n)]/*.freq*/ = 0
+    for (n in 0 until BL_CODES) s.bl_tree[freq(n)]/*.freq*/ = 0
 
-    s.dyn_ltree[END_BLOCK].freq = 1
+    s.dyn_ltree[freq(END_BLOCK)]/*.freq*/ = 1
     s.opt_len = 0
     s.static_len = 0
     s.last_lit = 0
@@ -329,7 +329,7 @@ private const val SMALLEST = 1
  * Remove the smallest element from the heap and recreate the heap with
  * one less element. Updates heap and heap_len.
  */
-internal inline fun pqremove(s: deflate_state, tree: Array<ct_data>): Int {
+internal inline fun pqremove(s: deflate_state, tree: ShortArray): Int {
     val top = s.heap[SMALLEST]
     s.heap[SMALLEST] = s.heap[s.heap_len--]
     pqdownheap(s, tree, SMALLEST)
@@ -341,13 +341,13 @@ internal inline fun pqremove(s: deflate_state, tree: Array<ct_data>): Int {
  * the subtrees have equal frequency. This minimizes the worst case length.
  */
 internal inline fun smaller(
-    tree: Array<ct_data>,
+    tree: ShortArray,
     n: UInt,
     m: UInt,
     depth: ByteArray
 ) =
-    (tree[n].freq.toUInt() < tree[m].freq.toUInt() ||
-            (tree[n].freq == tree[m].freq &&
+    (tree[freq(n)]/*.freq*/.toUInt() < tree[freq(m)]/*.freq*/.toUInt() ||
+            (tree[freq(n)]/*.freq*/ == tree[freq(m)]/*.freq*/ &&
                     depth[n].toUInt() <= depth[m].toUInt()))
 
 
@@ -359,7 +359,7 @@ internal inline fun smaller(
  */
 fun pqdownheap(
     s: deflate_state,
-    tree: Array<ct_data>, /* the tree to restore */
+    tree: ShortArray, /* the tree to restore */
     k: Int /* node to move down */
 ) {
     var k = k
@@ -411,16 +411,17 @@ fun gen_bitlen(
     /* In a first pass, compute the optimal bit lengths (which may
      * overflow in the case of the bit length tree).
      */
-    tree[s.heap[s.heap_max]].len = 0 /* root of the heap */
+    tree[len(s.heap[s.heap_max])]/*.len*/ = 0 /* root of the heap */
 
     for (h in s.heap_max + 1 until HEAP_SIZE) {
         val n = s.heap[h] /* iterate over the tree elements */
-        var bits = tree[tree[n].dad.toUInt()].len + 1 /* bit length */
+        var bits =
+            tree[len(tree[dad(n)]/*.dad*/.toUInt())]/*.len*/ + 1 /* bit length */
         if (bits > max_length) {
             bits = max_length
             overflow++
         }
-        tree[n].len = bits.toShort()
+        tree[len(n)]/*.len*/ = bits.toShort()
         /* We overwrite tree[n].dad which is no longer needed */
 
         if (n > max_code) continue /* not a leaf node */
@@ -428,9 +429,9 @@ fun gen_bitlen(
         s.bl_count[bits]++
         var xbits = 0 /* extra bits */
         if (n >= base) xbits = extra[n - base]
-        val f = tree[n].freq /* frequency */
+        val f = tree[freq(n)]/*.freq*/ /* frequency */
         s.opt_len += f.toUInt() * (bits + xbits)
-        if (stree != null) s.static_len += f.toUInt() * (stree[n].len + xbits)
+        if (stree != null) s.static_len += f.toUInt() * (stree[len(n)]/*.len*/ + xbits)
     }
     if (overflow == 0) return
 
@@ -462,11 +463,11 @@ fun gen_bitlen(
         while (n != 0) {
             val m = s.heap[--h]
             if (m > max_code) continue
-            if (tree[m].len.toUInt() != bits) {
+            if (tree[len(m)]/*.len*/.toUInt() != bits) {
                 //Tracev((stderr,"code %d bits %d .%d\n", m, tree[m].len, bits));
-                s.opt_len += (bits - tree[m].len.toUInt()) *
-                        tree[m].freq.toUInt()
-                tree[m].len = bits.toShort()
+                s.opt_len += (bits - tree[len(m)]/*.len*/.toUInt()) *
+                        tree[freq(m)]/*.freq*/.toUInt()
+                tree[len(m)]/*.len*/ = bits.toShort()
             }
             n--
         }
@@ -482,7 +483,7 @@ fun gen_bitlen(
  *     zero code length.
  */
 fun gen_codes(
-    tree: Array<ct_data>,             /* the tree to decorate */
+    tree: ShortArray,             /* the tree to decorate */
     max_code: Int,              /* largest code with non zero frequency */
     bl_count: ShortArray            /* number of codes at each bit length */
 ) {
@@ -505,10 +506,11 @@ fun gen_codes(
     //Tracev((stderr,"\ngen_codes: max_code %d ", max_code));
 
     for (n in 0..max_code) {
-        val len = tree[n].len.toUInt()
+        val len = tree[len(n)]/*.len*/.toUInt()
         if (len == 0) continue
         /* Now reverse the bits */
-        tree[n].code = bi_reverse(next_code[len].toUInt(), len).toShort()
+        tree[code(n)]/*.code*/ =
+                bi_reverse(next_code[len].toUInt(), len).toShort()
         next_code[len]++
 
         //Tracecv(tree != static_ltree, (stderr,"\nn %3d %c l %2d c %4x (%x) ",
@@ -541,12 +543,12 @@ fun build_tree(
     s.heap_max = HEAP_SIZE
 
     for (n in 0 until elems) {
-        if (tree[n].freq != 0.toShort()) {
+        if (tree[freq(n)]/*.freq*/ != 0.toShort()) {
             max_code = n
             s.heap[++(s.heap_len)] = n
             s.depth[n] = 0
         } else {
-            tree[n].len = 0
+            tree[len(n)]/*.len*/ = 0
         }
     }
 
@@ -559,10 +561,10 @@ fun build_tree(
         val node =
             if (max_code < 2) ++max_code else 0 /* new node being created */
         s.heap[++(s.heap_len)] = node
-        tree[node].freq = 1
+        tree[freq(node)]/*.freq*/ = 1
         s.depth[node] = 0
         s.opt_len--
-        if (stree != null) s.static_len -= stree[node].len
+        if (stree != null) s.static_len -= stree[len(node)]/*.len*/
         /* node is 0 or 1 so it does not have extra bits */
     }
     desc.max_code = max_code
@@ -584,11 +586,12 @@ fun build_tree(
         s.heap[--(s.heap_max)] = m
 
         /* Create a new node father of n and m */
-        tree[node].freq = (tree[n].freq + tree[m].freq).toShort()
+        tree[freq(node)]/*.freq*/ =
+                (tree[freq(n)]/*.freq*/ + tree[freq(m)]/*.freq*/).toShort()
         s.depth[node] = ((if (s.depth[n].toUInt() >= s.depth[m].toUInt())
             s.depth[n] else s.depth[m]) + 1).toByte()
-        tree[n].dad = node.toShort()
-        tree[m].dad = node.toShort()
+        tree[dad(n)]/*.dad*/ = node.toShort()
+        tree[dad(m)]/*.dad*/ = node.toShort()
         /*#ifdef DUMP_BL_TREE
                 if (tree == s .bl_tree) {
             fprintf(stderr,"\nnode %d(%d), sons %d(%d) %d(%d)",
@@ -618,11 +621,11 @@ fun build_tree(
  */
 fun scan_tree(
     s: deflate_state,
-    tree: Array<ct_data>,   /* the tree to be scanned */
+    tree: ShortArray,   /* the tree to be scanned */
     max_code: Int    /* and its largest code of non zero frequency */
 ) {
     var prevlen = -1          /* last emitted length */
-    var nextlen = tree[0].len /* length of next code */
+    var nextlen = tree[len(0)]/*.len*/ /* length of next code */
     var count = 0             /* repeat count of the current code */
     var max_count = 7         /* max repeat count */
     var min_count = 4         /* min repeat count */
@@ -631,22 +634,23 @@ fun scan_tree(
         max_count = 138
         min_count = 3
     }
-    tree[max_code + 1].len = 0xffff.toShort() /* guard */
+    tree[len(max_code + 1)]/*.len*/ = 0xffff.toShort() /* guard */
 
     for (n in 0..max_code) {
         val curlen = nextlen.toUInt() /* length of current code */
-        nextlen = tree[n + 1].len
+        nextlen = tree[len(n + 1)]/*.len*/
         if (++count < max_count && curlen == nextlen.toUInt()) {
             continue
         } else if (count < min_count) {
-            s.bl_tree[curlen].freq = (s.bl_tree[curlen].freq + count).toShort()
+            s.bl_tree[freq(curlen)]/*.freq*/ =
+                    (s.bl_tree[freq(curlen)]/*.freq*/ + count).toShort()
         } else if (curlen != 0) {
-            if (curlen != prevlen) s.bl_tree[curlen].freq++
-            s.bl_tree[REP_3_6].freq++
+            if (curlen != prevlen) s.bl_tree[freq(curlen)]/*.freq*/++
+            s.bl_tree[freq(REP_3_6)]/*.freq*/++
         } else if (count <= 10) {
-            s.bl_tree[REPZ_3_10].freq++
+            s.bl_tree[freq(REPZ_3_10)]/*.freq*/++
         } else {
-            s.bl_tree[REPZ_11_138].freq++
+            s.bl_tree[freq(REPZ_11_138)]/*.freq*/++
         }
         count = 0
         prevlen = curlen
@@ -669,11 +673,11 @@ fun scan_tree(
  */
 fun send_tree(
     s: deflate_state,
-    tree: Array<ct_data>, /* the tree to be scanned */
+    tree: ShortArray, /* the tree to be scanned */
     max_code: Int       /* and its largest code of non zero frequency */
 ) {
     var prevlen = -1          /* last emitted length */
-    var nextlen = tree[0].len /* length of next code */
+    var nextlen = tree[len(0)]/*.len*/ /* length of next code */
     var count = 0             /* repeat count of the current code */
     var max_count = 7         /* max repeat count */
     var min_count = 4         /* min repeat count */
@@ -686,7 +690,7 @@ fun send_tree(
 
     for (n in 0..max_code) {
         val curlen = nextlen.toUInt()
-        nextlen = tree[n + 1].len /* length of current code */
+        nextlen = tree[len(n + 1)]/*.len*/ /* length of current code */
         if (++count < max_count && curlen == nextlen.toUInt()) {
             continue
         } else if (count < min_count) {
@@ -745,7 +749,7 @@ fun build_bl_tree(
     var max_blindex =
         BL_CODES - 1 /* index of last bit length code of non zero freq */
     while (max_blindex >= 3) {
-        if (s.bl_tree[bl_order[max_blindex].toUInt()].len != 0.toShort()) break
+        if (s.bl_tree[len(bl_order[max_blindex].toUInt())]/*.len*/ != 0.toShort()) break
         max_blindex--
     }
     /* Update opt_len to include the bit length tree and counts */
@@ -776,7 +780,9 @@ fun send_all_trees(
     send_bits(s, blcodes - 4, 4) /* not -3 as stated in appnote.txt */
     for (rank in 0 until blcodes) {
         //Tracev((stderr, "\nbl code %2d ", bl_order[rank]));
-        send_bits(s, s.bl_tree[bl_order[rank].toUInt()].len.toUInt(), 3)
+        send_bits(
+            s, s.bl_tree[len(bl_order[rank].toUInt())]/*.len*/.toUInt(), 3
+        )
     }
     //Tracev((stderr, "\nbl tree: sent %ld", s .bits_sent));
 
@@ -961,7 +967,7 @@ fun _tr_tally(
     s.last_lit++
     if (dist == 0.toShort()) {
         /* lc is the unmatched char */
-        s.dyn_ltree[lc.toUInt()].freq++
+        s.dyn_ltree[freq(lc.toUInt())]/*.freq*/++
     } else {
         s.matches++
         /* Here, lc is the match length - MIN_MATCH */
@@ -970,8 +976,8 @@ fun _tr_tally(
         //        (ush)lc <= (ush)(MAX_MATCH-MIN_MATCH) &&
         //        (ush)d_code(dist) < (ush)D_CODES,  "_tr_tally: bad match");
 
-        s.dyn_ltree[_length_code[lc.toUInt()].toUInt() + LITERALS + 1].freq++
-        s.dyn_dtree[d_code(dist).toUInt()].freq++
+        s.dyn_ltree[freq(_length_code[lc.toUInt()].toUInt() + LITERALS + 1)]/*.freq*/++
+        s.dyn_dtree[freq(d_code(dist).toUInt())]/*.freq*/++
     }
 
     /*#ifdef TRUNCATE_BLOCK
@@ -1005,8 +1011,8 @@ fun _tr_tally(
  */
 fun compress_block(
     s: deflate_state,
-    ltree: Array<ct_data>, /* literal tree */
-    dtree: Array<ct_data> /* distance tree */
+    ltree: ShortArray, /* literal tree */
+    dtree: ShortArray /* distance tree */
 ) {
     var lx: UInt = 0    /* running index in l_buf */
 
@@ -1076,18 +1082,18 @@ fun detect_data_type(
 
     /* Check for non-textual ("black-listed") bytes. */
     for (n in 0..31) {
-        if ((black_mask and 1) != 0 && (s.dyn_ltree[n].freq != 0.toShort()))
+        if ((black_mask and 1) != 0 && (s.dyn_ltree[freq(n)] != 0.toShort()))
             return Z_BINARY
         black_mask = black_mask ushr 1
     }
 
     /* Check for textual ("white-listed") bytes. */
-    if (s.dyn_ltree[9].freq != 0.toShort()
-        || s.dyn_ltree[10].freq != 0.toShort()
-        || s.dyn_ltree[13].freq != 0.toShort())
+    if (s.dyn_ltree[freq(9)]/*.freq*/ != 0.toShort()
+        || s.dyn_ltree[freq(10)]/*.freq*/ != 0.toShort()
+        || s.dyn_ltree[freq(13)]/*.freq*/ != 0.toShort())
         return Z_TEXT
     for (n in 32 until LITERALS)
-        if (s.dyn_ltree[n].freq != 0.toShort())
+        if (s.dyn_ltree[freq(n)]/*.freq*/ != 0.toShort())
             return Z_TEXT
 
     /* There are no "black-listed" or "white-listed" bytes:
@@ -1152,7 +1158,7 @@ fun bi_windup(
     #endif*/
 }
 
-private val static_ltree = Array(L_CODES + 2) { ct_data() }.also { static_ltree ->
+private val static_ltree = ShortArray(2 * (L_CODES + 2)).also { static_ltree ->
     val bl_count = ShortArray(MAX_BITS + 1)
     /* number of codes at each bit length for an optimal tree */
 
@@ -1160,19 +1166,19 @@ private val static_ltree = Array(L_CODES + 2) { ct_data() }.also { static_ltree 
     for (bits in 0..MAX_BITS) bl_count[bits] = 0
     var n = 0
     while (n <= 143) {
-        static_ltree[n++].len = 8
+        static_ltree[len(n++)]/*.len*/ = 8
         bl_count[8]++
     }
     while (n <= 255) {
-        static_ltree[n++].len = 9
+        static_ltree[len(n++)]/*.len*/ = 9
         bl_count[9]++
     }
     while (n <= 279) {
-        static_ltree[n++].len = 7
+        static_ltree[len(n++)]/*.len*/ = 7
         bl_count[7]++
     }
     while (n <= 287) {
-        static_ltree[n++].len = 8
+        static_ltree[len(n++)]/*.len*/ = 8
         bl_count[8]++
     }
     /* Codes 286 and 287 do not exist, but we must include them in the
@@ -1182,11 +1188,11 @@ private val static_ltree = Array(L_CODES + 2) { ct_data() }.also { static_ltree 
     gen_codes(static_ltree, L_CODES + 1, bl_count)
 }
 
-private val static_dtree = Array(D_CODES) { ct_data() }.also { static_dtree ->
+private val static_dtree = ShortArray(2 * D_CODES).also { static_dtree ->
     /* The static distance tree is trivial: */
     for (n in 0 until D_CODES) {
-        static_dtree[n].len = 5
-        static_dtree[n].code = bi_reverse(n, 5).toShort()
+        static_dtree[len(n)]/*.len*/ = 5
+        static_dtree[code(n)]/*.code*/ = bi_reverse(n, 5).toShort()
     }
 }
 

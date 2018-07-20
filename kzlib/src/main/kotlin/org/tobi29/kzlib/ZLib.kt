@@ -246,11 +246,11 @@ class deflate_state {
     /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
     internal val dyn_ltree =
-        Array(HEAP_SIZE) { ct_data() } /* literal and length tree */
+        ShortArray(2 * HEAP_SIZE) /* literal and length tree */
     internal val dyn_dtree =
-        Array(2 * D_CODES + 1) { ct_data() } /* distance tree */
+        ShortArray(2 * (2 * D_CODES + 1)) /* distance tree */
     internal val bl_tree =
-        Array(2 * BL_CODES + 1) { ct_data() } /* Huffman tree for bit lengths */
+        ShortArray(2 * (2 * BL_CODES + 1))  /* Huffman tree for bit lengths */
 
     internal val l_desc = tree_desc() /* desc. for literal tree */
     internal val d_desc = tree_desc() /* desc. for distance tree */
@@ -332,36 +332,32 @@ class deflate_state {
 }
 
 class inflate_state {
-    internal var mode = inflate_mode.BAD          /* current inflate mode */
-    internal var last = 0                   /* true if processing last block */
-    internal var wrap = 0                   /* bit 0 true for zlib, bit 1 true for gzip,
+    internal var mode = inflate_mode.BAD /* current inflate mode */
+    internal var last = 0 /* true if processing last block */
+    internal var wrap = 0 /* bit 0 true for zlib, bit 1 true for gzip,
                                    bit 2 true to validate check value */
-    internal var havedict = 0               /* true if dictionary provided */
-    internal var flags = 0        /* gzip header method and flags (0 if zlib) */
-    internal var dmax: UInt =
-        0       /* zlib header max distance (INFLATE_STRICT) */
-    internal var check: UInt = 0        /* protected copy of check value */
-    internal var total: UInt = 0        /* protected copy of output count */
+    internal var havedict = 0 /* true if dictionary provided */
+    internal var flags = 0 /* gzip header method and flags (0 if zlib) */
+    internal var dmax: UInt = 0 /* zlib header max distance (INFLATE_STRICT) */
+    internal var check: UInt = 0 /* protected copy of check value */
+    internal var total: UInt = 0 /* protected copy of output count */
     internal var head: gz_header? =
         null /* where to save gzip header information */
     /* sliding window */
-    internal var wbits: UInt = 0      /* log base 2 of requested window size */
-    internal var wsize: UInt =
-        0      /* window size or zero if not using window */
-    internal var whave: UInt = 0      /* valid bytes in the window */
-    internal var wnext: UInt = 0      /* window write index */
+    internal var wbits: UInt = 0 /* log base 2 of requested window size */
+    internal var wsize: UInt = 0 /* window size or zero if not using window */
+    internal var whave: UInt = 0 /* valid bytes in the window */
+    internal var wnext: UInt = 0 /* window write index */
     internal var window: ByteArray? =
-        null  /* allocated sliding window, if needed */
+        null /* allocated sliding window, if needed */
     /* bit accumulator */
-    internal var hold: UInt = 0         /* input bit accumulator */
-    internal var bits: UInt = 0              /* number of bits in "in" */
+    internal var hold: UInt = 0 /* input bit accumulator */
+    internal var bits: UInt = 0 /* number of bits in "in" */
     /* for string and stored block copying */
-    internal var length: UInt =
-        0            /* literal or length of data to copy */
-    internal var offset: UInt =
-        0            /* distance back to copy string from */
+    internal var length: UInt = 0 /* literal or length of data to copy */
+    internal var offset: UInt = 0 /* distance back to copy string from */
     /* for table and code decoding */
-    internal var extra: UInt = 0             /* extra bits needed */
+    internal var extra: UInt = 0 /* extra bits needed */
     /* fixed and dynamic code tables */
     internal var lencode: Array<code>? =
         null /* starting table for length/literal codes */
@@ -372,55 +368,52 @@ class inflate_state {
     internal var lenbits: UInt = 0 /* index bits for lencode */
     internal var distbits: UInt = 0 /* index bits for distcode */
     /* dynamic table building */
-    internal var ncode: UInt = 0      /* number of code length code lengths */
-    internal var nlen: UInt = 0       /* number of length code lengths */
-    internal var ndist: UInt = 0      /* number of distance code lengths */
-    internal var have: UInt = 0       /* number of code lengths in lens[] */
+    internal var ncode: UInt = 0 /* number of code length code lengths */
+    internal var nlen: UInt = 0 /* number of length code lengths */
+    internal var ndist: UInt = 0 /* number of distance code lengths */
+    internal var have: UInt = 0 /* number of code lengths in lens[] */
     internal var next: UInt = 0 /* next available space in codes[] */
-    internal val lens =
-        ShortArray(320)   /* temporary storage for code lengths */
-    internal val work =
-        ShortArray(288)   /* work area for code table building */
+    internal val lens = ShortArray(320) /* temporary storage for code lengths */
+    internal val work = ShortArray(288) /* work area for code table building */
     internal val codes = Array(ENOUGH) { code() } /* space for code tables */
     internal var sane = false /* if false, allow invalid distance too far */
-    internal var back =
-        0          /* bits back of last unprocessed length/lit */
-    internal var was: UInt = 0      /* initial length of match */
+    internal var back = 0 /* bits back of last unprocessed length/lit */
+    internal var was: UInt = 0 /* initial length of match */
 }
 
 enum class inflate_mode {
-    HEAD,       /* i: waiting for magic header */
-    FLAGS,      /* i: waiting for method and flags (gzip) */
-    TIME,       /* i: waiting for modification time (gzip) */
-    OS,         /* i: waiting for extra flags and operating system (gzip) */
-    EXLEN,      /* i: waiting for extra length (gzip) */
-    EXTRA,      /* i: waiting for extra bytes (gzip) */
-    NAME,       /* i: waiting for end of file name (gzip) */
-    COMMENT,    /* i: waiting for end of comment (gzip) */
-    HCRC,       /* i: waiting for header crc (gzip) */
-    DICTID,     /* i: waiting for dictionary check value */
-    DICT,       /* waiting for inflateSetDictionary() call */
-    TYPE,       /* i: waiting for type bits, including last-flag bit */
-    TYPEDO,     /* i: same, but skip check to exit inflate on new block */
-    STORED,     /* i: waiting for stored size (length and complement) */
-    COPY_,      /* i/o: same as COPY below, but only first time in */
-    COPY,       /* i/o: waiting for input or output to copy stored block */
-    TABLE,      /* i: waiting for dynamic block table lengths */
-    LENLENS,    /* i: waiting for code length code lengths */
-    CODELENS,   /* i: waiting for length/lit and distance code lengths */
-    LEN_,       /* i: same as LEN below, but only first time in */
-    LEN,        /* i: waiting for length/lit/eob code */
-    LENEXT,     /* i: waiting for length extra bits */
-    DIST,       /* i: waiting for distance code */
-    DISTEXT,    /* i: waiting for distance extra bits */
-    MATCH,      /* o: waiting for output space to copy string */
-    LIT,        /* o: waiting for output space to write literal */
-    CHECK,      /* i: waiting for 32-bit check value */
-    LENGTH,     /* i: waiting for 32-bit length (gzip) */
-    DONE,       /* finished check, done -- remain here until reset */
-    BAD,        /* got a data error -- remain here until reset */
-    MEM,        /* got an inflate() memory error -- remain here until reset */
-    SYNC        /* looking for synchronization bytes to restart inflate() */
+    HEAD, /* i: waiting for magic header */
+    FLAGS, /* i: waiting for method and flags (gzip) */
+    TIME, /* i: waiting for modification time (gzip) */
+    OS, /* i: waiting for extra flags and operating system (gzip) */
+    EXLEN, /* i: waiting for extra length (gzip) */
+    EXTRA, /* i: waiting for extra bytes (gzip) */
+    NAME, /* i: waiting for end of file name (gzip) */
+    COMMENT, /* i: waiting for end of comment (gzip) */
+    HCRC, /* i: waiting for header crc (gzip) */
+    DICTID, /* i: waiting for dictionary check value */
+    DICT, /* waiting for inflateSetDictionary() call */
+    TYPE, /* i: waiting for type bits, including last-flag bit */
+    TYPEDO, /* i: same, but skip check to exit inflate on new block */
+    STORED, /* i: waiting for stored size (length and complement) */
+    COPY_, /* i/o: same as COPY below, but only first time in */
+    COPY, /* i/o: waiting for input or output to copy stored block */
+    TABLE, /* i: waiting for dynamic block table lengths */
+    LENLENS, /* i: waiting for code length code lengths */
+    CODELENS, /* i: waiting for length/lit and distance code lengths */
+    LEN_, /* i: same as LEN below, but only first time in */
+    LEN, /* i: waiting for length/lit/eob code */
+    LENEXT, /* i: waiting for length extra bits */
+    DIST, /* i: waiting for distance code */
+    DISTEXT, /* i: waiting for distance extra bits */
+    MATCH, /* o: waiting for output space to copy string */
+    LIT, /* o: waiting for output space to write literal */
+    CHECK, /* i: waiting for 32-bit check value */
+    LENGTH, /* i: waiting for 32-bit length (gzip) */
+    DONE, /* finished check, done -- remain here until reset */
+    BAD, /* got a data error -- remain here until reset */
+    MEM, /* got an inflate() memory error -- remain here until reset */
+    SYNC /* looking for synchronization bytes to restart inflate() */
 }
 
 inline val inflate_mode.is_error: Boolean
@@ -476,7 +469,8 @@ class code(
     }
 }
 
-class ct_data(
+/*
+internal class ct_data(
     var freq: UShort = 0,
     var dad: UShort = 0
 ) {
@@ -486,20 +480,26 @@ class ct_data(
     }
 }
 
-inline var ct_data.code: UShort
+internal inline var ct_data.code: UShort
     get() = freq
     set(value) {
         freq = value
     }
 
-inline var ct_data.len: UShort
+internal inline var ct_data.len: UShort
     get() = dad
     set(value) {
         dad = value
     }
+*/
+
+internal inline fun freq(i: Int) = 2 * i + 0
+internal inline fun code(i: Int) = freq(i)
+internal inline fun dad(i: Int) = 2 * i + 1
+internal inline fun len(i: Int) = dad(i)
 
 class static_tree_desc(
-    var static_tree: Array<ct_data>? = null, /* static tree or NULL */
+    var static_tree: ShortArray? = null, /* static tree or NULL */
     var extra_bits: IntArray? = null, /* extra bits for each code or NULL */
     var extra_base: Int = 0, /* base index for extra_bits */
     var elems: Int = 0, /* max number of elements in the tree */
@@ -507,7 +507,7 @@ class static_tree_desc(
 )
 
 class tree_desc(
-    var dyn_tree: Array<ct_data>? = null, /* the dynamic tree */
+    var dyn_tree: ShortArray? = null, /* the dynamic tree */
     var max_code: Int = 0, /* largest code with non zero frequency */
     var stat_desc: static_tree_desc? = null /* the corresponding static tree */
 ) {

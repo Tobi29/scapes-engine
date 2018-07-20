@@ -71,7 +71,7 @@ private inline fun _tr_tally_lit(
     pending_buf[s.d_buf + s.last_lit * 2 + 1] = 0
     pending_buf[s.l_buf + s.last_lit] = c
     s.last_lit++
-    s.dyn_ltree[c.toUInt()].freq++
+    s.dyn_ltree[freq(c.toUInt())]/*.freq*/++
     return s.last_lit == s.lit_bufsize - 1
 }
 
@@ -89,8 +89,8 @@ private inline fun _tr_tally_dist(
     pending_buf[s.l_buf + s.last_lit] = length
     s.last_lit++
     val dist = (distance - 1).toShort()
-    s.dyn_ltree[_length_code[length.toUInt()].toUInt() + LITERALS + 1].freq++
-    s.dyn_dtree[d_code(dist.toUInt()).toUInt()].freq++
+    s.dyn_ltree[freq(_length_code[length.toUInt()].toUInt() + LITERALS + 1)]/*.freq*/++
+    s.dyn_dtree[freq(d_code(dist.toUInt()).toUInt())]/*.freq*/++
     return s.last_lit == s.lit_bufsize - 1
 }
 
@@ -1212,9 +1212,9 @@ fun deflateCopy(
     ds.strategy = ss.strategy
     ds.good_match = ss.good_match
     ds.nice_match = ss.nice_match
-    for (i in ds.dyn_ltree.indices) ds.dyn_ltree[i].set(ss.dyn_ltree[i])
-    for (i in ds.dyn_dtree.indices) ds.dyn_dtree[i].set(ss.dyn_dtree[i])
-    for (i in ds.bl_tree.indices) ds.bl_tree[i].set(ss.bl_tree[i])
+    copy(ss.dyn_ltree, ds.dyn_ltree)
+    copy(ss.dyn_dtree, ds.dyn_dtree)
+    copy(ss.bl_tree, ds.bl_tree)
     ds.l_desc.setCopy(ss.l_desc)
     ds.d_desc.setCopy(ss.d_desc)
     ds.bl_desc.setCopy(ss.bl_desc)
