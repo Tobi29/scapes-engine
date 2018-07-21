@@ -84,20 +84,19 @@ inline fun <R> chainAdler32(
 ): R {
     var ca = a.toInt() and 0xFFFF
     var cb = b.toInt() and 0xFFFF
-    var fast = ADLER32_MAX_FAST
-    for (i in offset until offset + size) {
-        chainAdler32Fast(ca, cb, data[i]) { na, nb ->
-            ca = na
-            cb = nb
+    val limit = offset + size
+    var i = offset
+    while (i < limit) {
+        val fast = (i + ADLER32_MAX_FAST).coerceAtMost(limit)
+        while (i < fast) {
+            chainAdler32Fast(ca, cb, data[i++]) { na, nb ->
+                ca = na
+                cb = nb
+            }
         }
-        if (fast-- == 0) {
-            fast = ADLER32_MAX_FAST
-            ca %= ADLER32_BASE
-            cb %= ADLER32_BASE
-        }
+        ca %= ADLER32_BASE
+        cb %= ADLER32_BASE
     }
-    ca %= ADLER32_BASE
-    cb %= ADLER32_BASE
     return output(ca.toShort(), cb.toShort())
 }
 
@@ -127,20 +126,19 @@ inline fun <R> chainAdler32(
 ): R {
     var ca = a.toInt() and 0xFFFF
     var cb = b.toInt() and 0xFFFF
-    var fast = ADLER32_MAX_FAST
-    for (i in 0 until data.size) {
-        chainAdler32Fast(ca, cb, data[i]) { na, nb ->
-            ca = na
-            cb = nb
+    val limit = data.size
+    var i = 0
+    while (i < limit) {
+        val fast = (i + ADLER32_MAX_FAST).coerceAtMost(limit)
+        while (i < fast) {
+            chainAdler32Fast(ca, cb, data[i++]) { na, nb ->
+                ca = na
+                cb = nb
+            }
         }
-        if (fast-- == 0) {
-            fast = ADLER32_MAX_FAST
-            ca %= ADLER32_BASE
-            cb %= ADLER32_BASE
-        }
+        ca %= ADLER32_BASE
+        cb %= ADLER32_BASE
     }
-    ca %= ADLER32_BASE
-    cb %= ADLER32_BASE
     return output(ca.toShort(), cb.toShort())
 }
 
