@@ -91,6 +91,7 @@ include "compression-deflate-jvm"
 // Kzlib
 include "kzlib"
 include "kzlib-js"
+include "kzlib-jvm"
 
 // Content Info
 include "contentinfo"
