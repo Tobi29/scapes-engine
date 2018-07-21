@@ -19,4 +19,5 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     expectedBy project(":kzlib")
     compile project(":checksums-jvm")
+    testCompile project(":io-jvm")
 }
