@@ -22,4 +22,6 @@ dependencies {
     compile project(":checksums-js")
     compile project(":tag-js")
     compile project(":utils-js")
+    // TODO: Remove after 0.0.14
+    compile project(":kzlib-js")
 }

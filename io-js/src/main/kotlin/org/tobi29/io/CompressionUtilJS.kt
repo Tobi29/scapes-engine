@@ -16,10 +16,8 @@
 
 package org.tobi29.io
 
-import org.khronos.webgl.Int8Array
-import org.khronos.webgl.Uint8Array
-import org.tobi29.stdex.ArrayDeque
-import org.tobi29.stdex.asArray
+import org.tobi29.arrays.sliceOver
+import org.tobi29.kzlib.*
 
 // TODO: Remove after 0.0.14
 
@@ -27,133 +25,107 @@ actual class ZDeflater actual constructor(
     private val level: Int,
     buffer: Int
 ) : CompressionUtil.Filter {
-    private var deflater = Pako.Deflate(DeflateOptions(level))
-    private var input = ByteArray(buffer).view
-    private val outputs = ArrayDeque<Uint8Array>()
-
-    init {
-        deflater.onData = { outputs.add(it) }
-    }
+    private val inputBuffer = ByteArray(buffer).sliceOver()
+    private val outputBuffer = ByteArray(buffer).sliceOver()
+    private var finishing = false
+    private var hasFinished = false
+    private val deflater = Deflater(level)
 
     actual override fun input(buffer: ReadableByteStream): Boolean {
-        val read = buffer.getSome(input)
-        if (read < 0) return false
-        deflater.push(input.slice(0, read).readAsUint8Array(), 0)
+        if (deflater.first.avail_in <= 0) {
+            val read = buffer.getSome(inputBuffer)
+            if (read < 0) return false
+            deflater.first.next_in = inputBuffer.array
+            deflater.first.next_in_i = inputBuffer.offset
+            deflater.first.avail_in = read
+        }
         return true
     }
 
     actual override fun output(buffer: WritableByteStream): Int {
-        val output = outputs.poll() ?: return -1
-        buffer.put(
-            Int8Array(
-                output.buffer, output.byteOffset,
-                output.byteLength
-            ).asArray().view
-        )
-        return output.length
+        deflater.first.next_out = outputBuffer.array
+        deflater.first.next_out_i = outputBuffer.offset
+        deflater.first.avail_out = outputBuffer.size
+        val status = deflater.deflate(if (finishing) Z_FINISH else Z_NO_FLUSH)
+        if (status == Z_STREAM_END) hasFinished = true
+        return deflater.first.next_out_i - outputBuffer.offset
     }
 
     actual override fun finish() {
-        deflater.push(Uint8Array(0), 4)
+        finishing = true
     }
 
     actual override fun reset() {
-        deflater = Pako.Deflate(DeflateOptions(level))
+        try {
+            deflater.reset()
+        } catch (e: ZLibException) {
+            throw IOException(e)
+        }
     }
 
-    actual override fun needsInput(): Boolean {
-        return outputs.isEmpty()
-    }
+    actual override fun needsInput(): Boolean = deflater.first.avail_in <= 0
 
-    actual override fun finished(): Boolean {
-        return outputs.isEmpty()
-    }
+    actual override fun finished(): Boolean = hasFinished
 
     actual override fun close() {
+        try {
+            deflater.end()
+        } catch (e: ZLibException) {
+            throw IOException(e)
+        }
     }
 }
 
 actual class ZInflater actual constructor(
     buffer: Int
 ) : CompressionUtil.Filter {
-    private var inflater = Pako.Inflate()
-    private var input = ByteArray(buffer).view
-    private val outputs = ArrayDeque<Uint8Array>()
-
-    init {
-        inflater.onData = { outputs.add(it) }
-    }
+    private val inputBuffer = ByteArray(buffer).sliceOver()
+    private val outputBuffer = ByteArray(buffer).sliceOver()
+    private var finishing = false
+    private var hasFinished = false
+    private val inflater = Inflater()
 
     actual override fun input(buffer: ReadableByteStream): Boolean {
-        val read = buffer.getSome(input)
-        if (read < 0) return false
-        inflater.push(input.slice(0, read).readAsUint8Array(), 0)
+        if (inflater.first.avail_in <= 0) {
+            val read = buffer.getSome(inputBuffer)
+            if (read < 0) return false
+            inflater.first.next_in = inputBuffer.array
+            inflater.first.next_in_i = inputBuffer.offset
+            inflater.first.avail_in = read
+        }
         return true
     }
 
     actual override fun output(buffer: WritableByteStream): Int {
-        val output = outputs.poll() ?: return -1
-        buffer.put(
-            Int8Array(
-                output.buffer, output.byteOffset,
-                output.byteLength
-            ).asArray().view
-        )
-        return output.length
+        inflater.first.next_out = outputBuffer.array
+        inflater.first.next_out_i = outputBuffer.offset
+        inflater.first.avail_out = outputBuffer.size
+        val status = inflater.inflate(if (finishing) Z_FINISH else Z_NO_FLUSH)
+        if (status == Z_STREAM_END) hasFinished = true
+        return inflater.first.next_out_i - outputBuffer.offset
     }
 
     actual override fun finish() {
-        inflater.push(Uint8Array(0), 4)
+        finishing = true
     }
 
     actual override fun reset() {
-        inflater = Pako.Inflate()
+        try {
+            inflater.reset()
+        } catch (e: ZLibException) {
+            throw IOException(e)
+        }
     }
 
-    actual override fun needsInput(): Boolean {
-        return outputs.isEmpty()
-    }
+    actual override fun needsInput(): Boolean = inflater.first.avail_in <= 0
 
-    actual override fun finished(): Boolean {
-        return outputs.isEmpty()
-    }
+    actual override fun finished(): Boolean = hasFinished
 
     actual override fun close() {
+        try {
+            inflater.end()
+        } catch (e: ZLibException) {
+            throw IOException(e)
+        }
     }
-}
-
-@JsModule("pako")
-@JsNonModule
-private external object Pako {
-    class Deflate(options: dynamic = definedExternally) {
-        val err: Int
-        val msg: String
-        val ended: Boolean
-        val result: Uint8Array
-        var onData: (Uint8Array) -> Unit
-        var onEnd: (Int) -> Unit
-        fun push(
-            data: Uint8Array,
-            mode: Int
-        ): Boolean
-    }
-
-    class Inflate {
-        val err: Int
-        val msg: String
-        val ended: Boolean
-        val result: Uint8Array
-        var onData: (Uint8Array) -> Unit
-        var onEnd: (Int) -> Unit
-        fun push(
-            data: Uint8Array,
-            mode: Int
-        ): Boolean
-    }
-}
-
-private fun DeflateOptions(level: Int): dynamic {
-    val options = object {}.asDynamic()
-    options.level = level
-    return options
 }
