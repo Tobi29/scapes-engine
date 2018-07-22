@@ -18,21 +18,62 @@
 
 package org.tobi29.io.compression.deflate
 
-import org.tobi29.arrays.sliceOver
-import org.tobi29.io.*
+import org.tobi29.arrays.HeapBytes
+import java.util.zip.DataFormatException
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
 actual class DeflateHandle actual constructor(
-    level: Int,
-    outputBufferSize: Int,
-    inputBufferSize: Int
-) : AutoCloseable {
-    internal val outputBuffer = ByteArray(outputBufferSize)
-    internal val inputBuffer = ByteArray(inputBufferSize)
-    internal val deflater = Deflater(level)
+    level: Int
+) : FilterHandle {
+    private val deflater = Deflater(level)
 
-    actual fun reset() {
+    override fun process(
+        inputBuffer: HeapBytes,
+        outputBuffer: HeapBytes,
+        output: (HeapBytes) -> Unit
+    ): Boolean {
+        try {
+            deflater.setInput(
+                inputBuffer.array,
+                inputBuffer.offset,
+                inputBuffer.size
+            )
+            while (!deflater.needsInput()) {
+                val size = deflater.deflate(
+                    outputBuffer.array,
+                    outputBuffer.offset,
+                    outputBuffer.size
+                )
+                if (size > 0) output(outputBuffer.slice(0, size))
+                if (deflater.finished()) return false
+            }
+            return true
+        } catch (e: DataFormatException) {
+            throw DeflateException(e)
+        }
+    }
+
+    override fun processFinish(
+        outputBuffer: HeapBytes,
+        output: (HeapBytes) -> Unit
+    ) {
+        try {
+            deflater.finish()
+            while (!deflater.finished()) {
+                val size = deflater.deflate(
+                    outputBuffer.array,
+                    outputBuffer.offset,
+                    outputBuffer.size
+                )
+                if (size > 0) output(outputBuffer.slice(0, size))
+            }
+        } catch (e: DataFormatException) {
+            throw DeflateException(e)
+        }
+    }
+
+    override fun reset() {
         deflater.reset()
     }
 
@@ -42,99 +83,58 @@ actual class DeflateHandle actual constructor(
 }
 
 actual class InflateHandle actual constructor(
-    outputBufferSize: Int,
-    inputBufferSize: Int
-) : AutoCloseable {
-    internal val outputBuffer = ByteArray(outputBufferSize)
-    internal val inputBuffer = ByteArray(inputBufferSize)
-    internal val inflater = Inflater()
+) : FilterHandle {
+    private val inflater = Inflater()
 
-    actual fun reset() {
+    override fun process(
+        inputBuffer: HeapBytes,
+        outputBuffer: HeapBytes,
+        output: (HeapBytes) -> Unit
+    ): Boolean {
+        try {
+            inflater.setInput(
+                inputBuffer.array,
+                inputBuffer.offset,
+                inputBuffer.size
+            )
+            while (!inflater.needsInput()) {
+                val size = inflater.inflate(
+                    outputBuffer.array,
+                    outputBuffer.offset,
+                    outputBuffer.size
+                )
+                if (size > 0) output(outputBuffer.slice(0, size))
+                if (inflater.finished()) return false
+            }
+            return true
+        } catch (e: DataFormatException) {
+            throw DeflateException(e)
+        }
+    }
+
+    override fun processFinish(
+        outputBuffer: HeapBytes,
+        output: (HeapBytes) -> Unit
+    ) {
+        try {
+            while (!inflater.finished()) {
+                val size = inflater.inflate(
+                    outputBuffer.array,
+                    outputBuffer.offset,
+                    outputBuffer.size
+                )
+                if (size > 0) output(outputBuffer.slice(0, size))
+            }
+        } catch (e: DataFormatException) {
+            throw DeflateException(e)
+        }
+    }
+
+    override fun reset() {
         inflater.reset()
     }
 
     override fun close() {
         inflater.end()
     }
-}
-
-actual fun DeflateHandle.deflate(
-    input: ReadableByteStream,
-    output: WritableByteStream
-) {
-    try {
-        filter(
-            input, output,
-            { bufferInput(it) },
-            { bufferOutput(it) },
-            { deflater.finish() },
-            { deflater.needsInput() },
-            { deflater.finished() }
-        )
-    } finally {
-        deflater.end()
-    }
-}
-
-actual fun InflateHandle.inflate(
-    input: ReadableByteStream,
-    output: WritableByteStream
-) {
-    try {
-        filter(
-            input, output,
-            { bufferInput(it) },
-            { bufferOutput(it) },
-            {},
-            { inflater.needsInput() },
-            { inflater.finished() }
-        )
-    } finally {
-        inflater.end()
-    }
-}
-
-private fun DeflateHandle.bufferInput(
-    buffer: ReadableByteStream
-): Boolean = bufferInput(inputBuffer, buffer) { array, offset, size ->
-    deflater.setInput(array, offset, size)
-}
-
-private fun InflateHandle.bufferInput(
-    buffer: ReadableByteStream
-): Boolean = bufferInput(inputBuffer, buffer) { array, offset, size ->
-    inflater.setInput(array, offset, size)
-}
-
-private inline fun bufferInput(
-    inputBuffer: ByteArray,
-    buffer: ReadableByteStream,
-    setInput: (ByteArray, Int, Int) -> Unit
-): Boolean {
-    val read = buffer.getSome(inputBuffer.sliceOver())
-    if (read < 0) return false
-    setInput(inputBuffer, 0, read)
-    return true
-}
-
-private fun DeflateHandle.bufferOutput(
-    buffer: WritableByteStream
-): Int = bufferOutput(outputBuffer, buffer) {
-    deflater.deflate(it)
-}
-
-private fun InflateHandle.bufferOutput(
-    buffer: WritableByteStream
-): Int = bufferOutput(outputBuffer, buffer) {
-    inflater.inflate(it)
-}
-
-private inline fun bufferOutput(
-    outputBuffer: ByteArray,
-    buffer: WritableByteStream,
-    output: (ByteArray) -> Int
-): Int {
-    val length = output(outputBuffer)
-    buffer.put(outputBuffer.view.slice(0, length))
-    return length
 }

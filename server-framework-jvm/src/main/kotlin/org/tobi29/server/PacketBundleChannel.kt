@@ -20,8 +20,7 @@ import kotlinx.coroutines.experimental.yield
 import org.tobi29.io.*
 import org.tobi29.io.compression.deflate.DeflateHandle
 import org.tobi29.io.compression.deflate.InflateHandle
-import org.tobi29.io.compression.deflate.deflate
-import org.tobi29.io.compression.deflate.inflate
+import org.tobi29.io.compression.deflate.process
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.Throws
 import org.tobi29.stdex.assert
@@ -61,7 +60,7 @@ class PacketBundleChannel(
     fun queueBundle() {
         dataStreamOut.flip()
         byteBufferStreamOut.reset()
-        deflater.deflate(dataStreamOut, byteBufferStreamOut)
+        deflater.process(dataStreamOut, byteBufferStreamOut)
         byteBufferStreamOut.flip()
         val size = byteBufferStreamOut.remaining()
         if (size > BUNDLE_MAX_SIZE) {
@@ -171,7 +170,7 @@ class PacketBundleChannel(
             return false
         }
         byteBufferStreamOut.reset()
-        inflater.inflate(input, byteBufferStreamOut)
+        inflater.process(input, byteBufferStreamOut)
         byteBufferStreamOut.flip()
         hasInput = false
         input.reset()

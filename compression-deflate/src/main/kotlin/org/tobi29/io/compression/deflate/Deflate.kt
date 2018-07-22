@@ -16,22 +16,37 @@
 
 package org.tobi29.io.compression.deflate
 
+import org.tobi29.arrays.HeapBytes
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
 
-expect class DeflateHandle(
-    level: Int = -1,
-    outputBufferSize: Int = 8192,
-    inputBufferSize: Int = 8192
-) : AutoCloseable {
+class DeflateException : IOException {
+    internal constructor(message: String) : super(message)
+    internal constructor(cause: Exception) : super(cause)
+}
+
+interface FilterHandle : AutoCloseable {
+    fun process(
+        inputBuffer: HeapBytes,
+        outputBuffer: HeapBytes,
+        output: (HeapBytes) -> Unit
+    ): Boolean
+
+    fun processFinish(
+        outputBuffer: HeapBytes,
+        output: (HeapBytes) -> Unit
+    )
+
     fun reset()
 }
 
+expect class DeflateHandle(
+    level: Int = -1
+) : FilterHandle
+
+
 expect class InflateHandle(
-    outputBufferSize: Int = 8192,
-    inputBufferSize: Int = 8192
-) : AutoCloseable {
-    fun reset()
-}
+) : FilterHandle
 
 fun deflate(
     input: ReadableByteStream,
@@ -47,12 +62,7 @@ fun deflate(
     input: ReadableByteStream,
     output: WritableByteStream,
     level: Int = -1
-) = DeflateHandle(level).use { it.deflate(input, output) }
-
-expect fun DeflateHandle.deflate(
-    input: ReadableByteStream,
-    output: WritableByteStream
-)
+) = DeflateHandle(level).use { it.process(input, output) }
 
 fun inflate(
     input: ReadableByteStream
@@ -66,9 +76,19 @@ fun inflate(
 fun inflate(
     input: ReadableByteStream,
     output: WritableByteStream
-) = InflateHandle().use { it.inflate(input, output) }
+) = InflateHandle().use { it.process(input, output) }
 
-expect fun InflateHandle.inflate(
+fun FilterHandle.process(
     input: ReadableByteStream,
-    output: WritableByteStream
-)
+    output: WritableByteStream,
+    inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
+    outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
+) {
+    val callback: (HeapBytes) -> Unit = { output.put(it) }
+    while (true) {
+        val read = input.getSome(inputBuffer)
+        if (read < 0) break
+        if (!process(inputBuffer.slice(0, read), outputBuffer, callback)) break
+    }
+    processFinish(outputBuffer, callback)
+}
