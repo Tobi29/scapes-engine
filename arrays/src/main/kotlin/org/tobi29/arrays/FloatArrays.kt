@@ -312,7 +312,7 @@ inline fun <R> Floats.mutateAsFloatArray(block: (FloatArray, Int, Int) -> R): R 
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getFloats(0, array.sliceOver())
+        if (!mapped) setFloats(0, array.sliceOver())
     }
 }
 

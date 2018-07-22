@@ -312,7 +312,7 @@ inline fun <R> Booleans.mutateAsBooleanArray(block: (BooleanArray, Int, Int) -> 
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getBooleans(0, array.sliceOver())
+        if (!mapped) setBooleans(0, array.sliceOver())
     }
 }
 

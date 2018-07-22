@@ -312,7 +312,7 @@ inline fun <R> Ints.mutateAsIntArray(block: (IntArray, Int, Int) -> R): R {
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getInts(0, array.sliceOver())
+        if (!mapped) setInts(0, array.sliceOver())
     }
 }
 

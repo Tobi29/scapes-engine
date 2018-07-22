@@ -312,7 +312,7 @@ inline fun <R> Longs.mutateAsLongArray(block: (LongArray, Int, Int) -> R): R {
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getLongs(0, array.sliceOver())
+        if (!mapped) setLongs(0, array.sliceOver())
     }
 }
 

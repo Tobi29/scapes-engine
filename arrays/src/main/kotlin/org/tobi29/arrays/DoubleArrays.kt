@@ -312,7 +312,7 @@ inline fun <R> Doubles.mutateAsDoubleArray(block: (DoubleArray, Int, Int) -> R):
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getDoubles(0, array.sliceOver())
+        if (!mapped) setDoubles(0, array.sliceOver())
     }
 }
 

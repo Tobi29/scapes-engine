@@ -474,7 +474,7 @@ inline fun${appendedGenericReified("R")} ${specialize(elements)}.mutateAs${speci
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) get${specializeName(elements)}(0, array.sliceOver())
+        if (!mapped) set${specializeName(elements)}(0, array.sliceOver())
     }
 }
 

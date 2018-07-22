@@ -312,7 +312,7 @@ inline fun <R> Shorts.mutateAsShortArray(block: (ShortArray, Int, Int) -> R): R 
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getShorts(0, array.sliceOver())
+        if (!mapped) setShorts(0, array.sliceOver())
     }
 }
 

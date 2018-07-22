@@ -312,7 +312,7 @@ inline fun <R> Chars.mutateAsCharArray(block: (CharArray, Int, Int) -> R): R {
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getChars(0, array.sliceOver())
+        if (!mapped) setChars(0, array.sliceOver())
     }
 }
 

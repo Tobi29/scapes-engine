@@ -309,7 +309,7 @@ inline fun <reified T, R> Elements<T>.mutateAsArray(block: (Array<T>, Int, Int) 
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getElements(0, array.sliceOver())
+        if (!mapped) setElements(0, array.sliceOver())
     }
 }
 

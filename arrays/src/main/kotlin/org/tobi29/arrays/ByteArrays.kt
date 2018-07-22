@@ -312,7 +312,7 @@ inline fun <R> Bytes.mutateAsByteArray(block: (ByteArray, Int, Int) -> R): R {
     return try {
         block(array, offset, size)
     } finally {
-        if (!mapped) getBytes(0, array.sliceOver())
+        if (!mapped) setBytes(0, array.sliceOver())
     }
 }
 
