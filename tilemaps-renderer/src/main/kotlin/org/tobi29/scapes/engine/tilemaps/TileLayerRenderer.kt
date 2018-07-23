@@ -34,22 +34,33 @@ class TileLayerRenderer(
     val engine: ScapesEngine,
     val tileDimensions: Vector2i,
     val map: Array2<out Tile?>,
-    val atlas: TileAtlas,
+    val atlas: Array<TileAtlas>,
+    val atlasBits: Int,
     private val cx: Int = 4,
     private val cy: Int = 4
 ) {
     private val cw = 1 shl cx
     private val ch = 1 shl cy
+    private val atlasMask = (1 shl atlasBits) - 1
     private val vlimit = Vector2d(
         (cw * tileDimensions.x).toDouble(),
         (ch * tileDimensions.y).toDouble()
     )
     private val addAbove = Vector2i(
-        atlas.maxSize.x / tileDimensions.x,
-        atlas.maxSize.y / tileDimensions.y
+        (atlas.maxBy { it.maxSize.x }?.maxSize?.x ?: 0) / tileDimensions.x,
+        (atlas.maxBy { it.maxSize.y }?.maxSize?.y ?: 0) / tileDimensions.y
     )
     private val chunksOffset = MutableVector2i(0, 0)
     private var chunks = Array2<TileLayerRendererChunk>(0, 0, arrayOf())
+
+    constructor(
+        engine: ScapesEngine,
+        tileDimensions: Vector2i,
+        map: Array2<out Tile?>,
+        atlas: TileAtlas,
+        cx: Int = 4,
+        cy: Int = 4
+    ) : this(engine, tileDimensions, map, arrayOf(atlas), 31, cx, cy)
 
     fun render(
         gl: GL,
@@ -88,7 +99,7 @@ class TileLayerRenderer(
             chunks.shift(
                 shiftX,
                 shiftY,
-                { it, _, _ -> it.model?.markAsDisposed() },
+                { it, _, _ -> it.model?.forEach { it.second.markAsDisposed() } },
                 { xx, yy ->
                     TileLayerRendererChunk(
                         xx + chunksOffset.x, yy + chunksOffset.y
@@ -104,18 +115,23 @@ class TileLayerRenderer(
                 flag
             }
         }
-        atlas.texture.bind(gl)
+        var lastTexture: Texture? = null
         for (yy in sy..ey) {
             val yyy = ((yy shl cy) * tileDimensions.y - origin.y).toFloat()
             for (xx in sx..ex) {
-                chunks[xx - chunksOffset.x, yy - chunksOffset.y].model?.let { model ->
-                    val xxx =
-                        ((xx shl cx) * tileDimensions.x - origin.x).toFloat()
-                    gl.matrixStack.push { matrix ->
-                        matrix.translate(xxx, yyy, 0.0f)
-                        model.render(gl, shader)
+                chunks[xx - chunksOffset.x, yy - chunksOffset.y].model
+                    ?.forEach { (texture, model) ->
+                        val xxx =
+                            ((xx shl cx) * tileDimensions.x - origin.x).toFloat()
+                        if (lastTexture !== texture) {
+                            texture.bind(gl)
+                            lastTexture = texture
+                        }
+                        gl.matrixStack.push { matrix ->
+                            matrix.translate(xxx, yyy, 0.0f)
+                            model.render(gl, shader)
+                        }
                     }
-                }
             }
         }
     }
@@ -124,14 +140,16 @@ class TileLayerRenderer(
         val x: Int,
         val y: Int
     ) {
-        var model: Model? = null
+        var model: Array<Pair<Texture, Model>>? = null
 
         init {
             prepare()
         }
 
         fun prepare() {
-            val mesh = Mesh(false, false)
+            val meshes = ArrayList<Pair<Texture, Mesh>>()
+            var atlas: TileAtlas? = null
+            var mesh: Mesh? = null
             val xc = x shl cx
             val yc = y shl cy
             for (yy in 0..ch + addAbove.y) {
@@ -140,7 +158,14 @@ class TileLayerRenderer(
                     val xxx = xc + xx
 
                     val tile = map.getOrNull(xxx, yyy) ?: continue
-                    val entry = atlas.tile(tile) ?: continue
+                    val nextAtlas =
+                        this@TileLayerRenderer.atlas[tile.id ushr atlasBits]
+                    if (nextAtlas !== atlas || mesh == null) {
+                        mesh = Mesh(false, false)
+                        atlas = nextAtlas
+                        meshes.add(atlas.texture to mesh)
+                    }
+                    val entry = atlas.tile(tile.id and atlasMask) ?: continue
 
                     val yo = tileDimensions.y - tile.size.y
                     val vx = (xx * tileDimensions.x).toDouble()
@@ -165,7 +190,11 @@ class TileLayerRenderer(
                     }
                 }
             }
-            model = mesh.finish(engine.graphics)
+            model = Array(meshes.size) {
+                meshes[it].let { (texture, mesh) ->
+                    texture to mesh.finish(engine.graphics)
+                }
+            }
         }
     }
 }
