@@ -17,6 +17,7 @@
 package org.tobi29.utils
 
 import org.tobi29.stdex.assert
+import org.tobi29.stdex.math.clz
 import org.tobi29.stdex.toString
 
 // Min and max unsigned numbers
@@ -459,35 +460,9 @@ internal fun clzImpl(
 
 internal fun clzImpl(value: Long) =
     (value ushr 32).toInt().let {
-        if (it == 0) clzImpl(value.toInt()) + 32
-        else clzImpl(it)
+        if (it == 0) clz(value.toInt()) + 32
+        else clz(it)
     }
-
-internal fun clzImpl(value: Int): Int {
-    if (value == 0) return 32
-
-    var n = 1
-    var x = value
-    if (x ushr 16 == 0) {
-        n += 16
-        x = x shl 16
-    }
-    if (x ushr 24 == 0) {
-        n += 8
-        x = x shl 8
-    }
-    if (x ushr 28 == 0) {
-        n += 4
-        x = x shl 4
-    }
-    if (x ushr 30 == 0) {
-        n += 2
-        x = x shl 2
-    }
-    n -= x ushr 31
-
-    return n
-}
 
 @Suppress("NAME_SHADOWING")
 internal fun stringImpl(
