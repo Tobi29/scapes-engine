@@ -34,7 +34,7 @@ package org.tobi29.kzlib
 
 import org.tobi29.stdex.assert
 
-private const val MAXBITS = MAX_BITS
+private inline val MAXBITS get() = MAX_BITS
 
 /*
    Build a set of tables to decode the provided canonical Huffman code.
