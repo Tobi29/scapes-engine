@@ -1421,57 +1421,56 @@ private fun longest_match(
 
         #else /* UNALIGNED_OK */*/
 
-        if (window[match + best_len] != scan_end ||
-            window[match + best_len - 1] != scan_end1 ||
-            window[match] != window[scan] ||
-            window[++match] != window[scan + 1]) continue
+        if (window[match + best_len] == scan_end &&
+            window[match + best_len - 1] == scan_end1 &&
+            window[match] == window[scan] &&
+            window[++match] == window[scan + 1]) {
 
-        /* The check at best_len-1 can be removed because it will be made
+            /* The check at best_len-1 can be removed because it will be made
          * again later. (This heuristic is not always a win.)
          * It is not necessary to compare scan[2] and match[2] since they
          * are always equal when the other bytes match, given that
          * the hash keys are equal and that HASH_BITS >= 8.
          */
-        scan += 2
-        match++
-        //Assert(*scan == * match, "match[2]?");
+            scan += 2
+            match++
+            //Assert(*scan == * match, "match[2]?");
 
-        /* We check for insufficient lookahead only every 8th comparison;
+            /* We check for insufficient lookahead only every 8th comparison;
          * the 256th check will be made at strstart+258.
          */
-        do {
-        } while (window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            window[++scan] == window[++match] &&
-            scan < strend)
+            do {
+            } while (window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                window[++scan] == window[++match] &&
+                scan < strend)
 
-        //Assert(scan <= s.window + (unsigned)(s.window_size - 1), "wild scan");
+            //Assert(scan <= s.window + (unsigned)(s.window_size - 1), "wild scan");
 
-        val len = MAX_MATCH - (strend - scan) /* length of current match */
-        scan = strend - MAX_MATCH
+            val len = MAX_MATCH - (strend - scan) /* length of current match */
+            scan = strend - MAX_MATCH
 
-        //#endif /* UNALIGNED_OK */
+            //#endif /* UNALIGNED_OK */
 
-        if (len > best_len) {
-            s.match_start = cur_match
-            best_len = len
-            if (len >= nice_match) break
-            /*#ifdef UNALIGNED_OK
+            if (len > best_len) {
+                s.match_start = cur_match
+                best_len = len
+                if (len >= nice_match) break
+                /*#ifdef UNALIGNED_OK
                     scan_end = *(ushf *)(scan + best_len - 1);
             #else*/
-            scan_end1 = window[scan + best_len - 1]
-            scan_end = window[scan + best_len]
-            //#endif
+                scan_end1 = window[scan + best_len - 1]
+                scan_end = window[scan + best_len]
+                //#endif
+            }
         }
-    } while (run {
-            cur_match = prev[cur_match and wmask].toUInt()
-            cur_match
-        } > limit && --chain_length != 0)
+        cur_match = prev[cur_match and wmask].toUInt()
+    } while (cur_match > limit && --chain_length != 0)
 
     if (best_len <= s.lookahead) return best_len
     return s.lookahead
