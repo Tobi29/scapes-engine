@@ -35,6 +35,7 @@
 package org.tobi29.kzlib
 
 import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.combineToShort
 import org.tobi29.stdex.copy
 import org.tobi29.stdex.splitToBytes
 
@@ -359,10 +360,10 @@ class inflate_state {
     /* for table and code decoding */
     internal var extra: UInt = 0 /* extra bits needed */
     /* fixed and dynamic code tables */
-    internal var lencode: Array<code>? =
+    internal var lencode: ShortArray? =
         null /* starting table for length/literal codes */
     internal var lencode_i: UInt = 0
-    internal var distcode: Array<code>? =
+    internal var distcode: ShortArray? =
         null /* starting table for distance codes */
     internal var distcode_i: UInt = 0
     internal var lenbits: UInt = 0 /* index bits for lencode */
@@ -375,7 +376,7 @@ class inflate_state {
     internal var next: UInt = 0 /* next available space in codes[] */
     internal val lens = ShortArray(320) /* temporary storage for code lengths */
     internal val work = ShortArray(288) /* work area for code table building */
-    internal val codes = Array(ENOUGH) { code() } /* space for code tables */
+    internal val codes = ShortArray(2 * ENOUGH) /* space for code tables */
     internal var sane = false /* if false, allow invalid distance too far */
     internal var back = 0 /* bits back of last unprocessed length/lit */
     internal var was: UInt = 0 /* initial length of match */
@@ -456,6 +457,7 @@ class gz_header {
                            when writing a gzip file) */
 }
 
+/*
 class code(
     var op: Byte = 0,
     var bits: Byte = 0,
@@ -468,6 +470,13 @@ class code(
         `val` = other.`val`
     }
 }
+*/
+
+internal inline fun op_bits(i: Int) = 2 * i + 0
+internal inline fun `val`(i: Int) = 2 * i + 1
+internal inline val Short.op_bits_op get() = splitToBytes { b1, _ -> b1 }
+internal inline val Short.op_bits_bits get() = splitToBytes { _, b0 -> b0 }
+internal inline fun op_bits(op: Byte, bits: Byte) = combineToShort(op, bits)
 
 /*
 internal class ct_data(

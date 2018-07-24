@@ -53,7 +53,7 @@ internal fun inflate_table(
     lens: ShortArray,
     lens_i: UInt,
     codes: UInt,
-    table: Array<code>,
+    table: ShortArray,
     table_i_ref: IntArray,
     bits: IntArray,
     work: ShortArray
@@ -99,13 +99,20 @@ internal fun inflate_table(
     var max = MAXBITS /* maximum code length */
     while (max >= 1 && count[max] == 0.toShort()) max--
     if (root > max) root = max
-    val here = code() /* table entry for duplication */
+    /* table entry for duplication */
+    var here_op: Byte = 0
+    var here_bits: Byte = 0
+    var here_val: Short = 0
     if (max == 0) {                     /* no symbols to code at all */
-        here.op = 64 /* invalid code marker */
-        here.bits = 1
-        here.`val` = 0
-        table[table_i++].set(here) /* make a table to force an error */
-        table[table_i++].set(here)
+        here_op = 64 /* invalid code marker */
+        here_bits = 1
+        here_val = 0
+        /* make a table to force an error */
+        table[op_bits(table_i)] = op_bits(here_op, here_bits)
+        table[`val`(table_i)] = here_val
+        table_i++
+        table[op_bits(table_i)] = op_bits(here_op, here_bits)
+        table[`val`(table_i)] = here_val
         bits[0] = 1
         return 0 /* no symbols, but wait for decoding to report error */
     }
@@ -206,16 +213,16 @@ internal fun inflate_table(
     /* process all codes and make table entries */
     while (true) {
         /* create table entry */
-        here.bits = (len - drop).toByte()
+        here_bits = (len - drop).toByte()
         if (work[sym] + 1 < match) {
-            here.op = 0
-            here.`val` = work[sym]
+            here_op = 0
+            here_val = work[sym]
         } else if (work[sym] >= match) {
-            here.op = extra[work[sym] - match].toByte()
-            here.`val` = base[work[sym] - match]
+            here_op = extra[work[sym] - match].toByte()
+            here_val = base[work[sym] - match]
         } else {
-            here.op = 32 + 64 /* end of block */
-            here.`val` = 0
+            here_op = 32 + 64 /* end of block */
+            here_val = 0
         }
 
         /* replicate for those indices with low len bits equal to huff */
@@ -224,7 +231,9 @@ internal fun inflate_table(
         min = fill                 /* save offset to next table */
         do {
             fill -= incr
-            table[next + (huff ushr drop) + fill].set(here)
+            val i = next + (huff ushr drop) + fill
+            table[op_bits(i)] = op_bits(here_op, here_bits)
+            table[`val`(i)] = here_val
         } while (fill != 0)
 
         /* backwards increment the len-bit code huff */
@@ -269,10 +278,9 @@ internal fun inflate_table(
 
             /* point entry in root table to sub-table */
             low = huff and mask
-            val t = table[table_i + low]
-            t.op = curr.toByte()
-            t.bits = root.toByte()
-            t.`val` = (next - table_i).toShort()
+            val i = table_i + low
+            table[op_bits(i)] = op_bits(curr.toByte(), root.toByte())
+            table[`val`(i)] = (next - table_i).toShort()
         }
     }
 
@@ -280,10 +288,12 @@ internal fun inflate_table(
        at most one remaining entry, since if the code is incomplete, the
        maximum code length that was allowed to get this far is one bit) */
     if (huff != 0) {
-        here.op = 64 /* invalid code marker */
-        here.bits = (len - drop).toByte()
-        here.`val` = 0
-        table[next + huff].set(here)
+        here_op = 64 /* invalid code marker */
+        here_bits = (len - drop).toByte()
+        here_val = 0
+        val i = next + huff
+        table[op_bits(i)] = op_bits(here_op, here_bits)
+        table[`val`(i)] = here_val
     }
 
     /* set return parameters */
@@ -314,7 +324,7 @@ private val dext = shortArrayOf( /* Distance codes 0..29 extra */
 
 internal inline val lenfix: UInt get() = 0
 internal inline val distfix: UInt get() = 512
-internal val fixed = Array(544) { code() }.also { fixed ->
+internal val fixed = ShortArray(2 * 544).also { fixed ->
     val lens = ShortArray(320)
     val work = ShortArray(288)
 

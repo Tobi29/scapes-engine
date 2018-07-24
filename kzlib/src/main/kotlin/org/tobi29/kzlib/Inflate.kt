@@ -974,13 +974,15 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
         }
         inflate_mode.CODELENS -> {
             while (state.have < state.nlen + state.ndist) {
-                val here = code()
+                var here_op: Byte
+                var here_bits: Byte
+                var here_val: Short
                 while (true) {
-                    here.set(
-                        state.lencode!![state.lencode_i +
-                                BITS(hold, state.lenbits)]
-                    )
-                    if (here.bits.toUInt() <= bits) break
+                    val i = state.lencode_i + BITS(hold, state.lenbits)
+                    here_op = state.lencode!![op_bits(i)].op_bits_op
+                    here_bits = state.lencode!![op_bits(i)].op_bits_bits
+                    here_val = state.lencode!![`val`(i)]
+                    if (here_bits.toUInt() <= bits) break
 
                     // PULLBYTE();
                     if (have == 0) break@loop
@@ -988,28 +990,28 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                     hold += next[next_i++].toUInt() shl bits
                     bits += 8
                 }
-                if (here.`val`.toUInt() < 16) {
+                if (here_val.toUInt() < 16) {
 
-                    // DROPBITS(here.bits);
-                    hold = hold ushr here.bits.toUInt()
-                    bits -= here.bits.toUInt()
+                    // DROPBITS(here_bits);
+                    hold = hold ushr here_bits.toUInt()
+                    bits -= here_bits.toUInt()
 
-                    state.lens[state.have++] = here.`val`
+                    state.lens[state.have++] = here_val
                 } else {
                     val len: UInt
                     var copy: UInt
-                    if (here.`val` == 16.toShort()) {
-                        // NEEDBITS(here.bits + 2);
-                        while (bits < here.bits + 2) {
+                    if (here_val == 16.toShort()) {
+                        // NEEDBITS(here_bits + 2);
+                        while (bits < here_bits + 2) {
                             if (have == 0) break@loop
                             have--
                             hold += next[next_i++].toUInt() shl bits
                             bits += 8
                         }
 
-                        // DROPBITS(here.bits.toUInt());
-                        hold = hold ushr here.bits.toUInt()
-                        bits -= here.bits.toUInt()
+                        // DROPBITS(here_bits.toUInt());
+                        hold = hold ushr here_bits.toUInt()
+                        bits -= here_bits.toUInt()
 
                         if (state.have == 0) {
                             strm.msg = "invalid bit length repeat"
@@ -1023,18 +1025,18 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                         hold = hold ushr 2
                         bits -= 2
 
-                    } else if (here.`val` == 17.toShort()) {
-                        // NEEDBITS(here.bits + 3);
-                        while (bits < here.bits + 3) {
+                    } else if (here_val == 17.toShort()) {
+                        // NEEDBITS(here_bits + 3);
+                        while (bits < here_bits + 3) {
                             if (have == 0) break@loop
                             have--
                             hold += next[next_i++].toUInt() shl bits
                             bits += 8
                         }
 
-                        // DROPBITS(here.bits.toUInt());
-                        hold = hold ushr here.bits.toUInt()
-                        bits -= here.bits.toUInt()
+                        // DROPBITS(here_bits.toUInt());
+                        hold = hold ushr here_bits.toUInt()
+                        bits -= here_bits.toUInt()
 
                         len = 0
                         copy = 3 + BITS(hold, 3)
@@ -1043,17 +1045,17 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                         hold = hold ushr 3
                         bits -= 3
                     } else {
-                        // NEEDBITS(here.bits + 7);
-                        while (bits < here.bits + 7) {
+                        // NEEDBITS(here_bits + 7);
+                        while (bits < here_bits + 7) {
                             if (have == 0) break@loop
                             have--
                             hold += next[next_i++].toUInt() shl bits
                             bits += 8
                         }
 
-                        // DROPBITS(here.bits.toUInt());
-                        hold = hold ushr here.bits.toUInt()
-                        bits -= here.bits.toUInt()
+                        // DROPBITS(here_bits.toUInt());
+                        hold = hold ushr here_bits.toUInt()
+                        bits -= here_bits.toUInt()
 
                         len = 0
                         copy = 11 + BITS(hold, 7)
@@ -1157,11 +1159,15 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                 continue@loop
             }
             state.back = 0
-            var here: code
+            var here_op: Byte
+            var here_bits: Byte
+            var here_val: Short
             while (true) {
-                here = state.lencode!![state.lencode_i +
-                        BITS(hold, state.lenbits)]
-                if (here.bits.toUInt() <= bits) break
+                val i = state.lencode_i + BITS(hold, state.lenbits)
+                here_op = state.lencode!![op_bits(i)].op_bits_op
+                here_bits = state.lencode!![op_bits(i)].op_bits_bits
+                here_val = state.lencode!![`val`(i)]
+                if (here_bits.toUInt() <= bits) break
 
                 // PULLBYTE();
                 if (have == 0) break@loop
@@ -1169,14 +1175,18 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                 hold += next[next_i++].toUInt() shl bits
                 bits += 8
             }
-            if (here.op != 0.toByte() && (here.op and 0xf0.toByte()) == 0.toByte()) {
-                val last = here
+            if (here_op != 0.toByte() && (here_op and 0xf0.toByte()) == 0.toByte()) {
+                val last_op = here_op
+                val last_bits = here_bits
+                val last_val = here_val
                 while (true) {
-                    here = state.lencode!![state.lencode_i +
-                            last.`val`.toUInt() + (BITS(
-                        hold, last.bits.toUInt() + last.op.toUInt()
-                    ) ushr last.bits.toUInt())]
-                    if (last.bits.toUInt() + here.bits.toUInt() <= bits) break
+                    val i = state.lencode_i + last_val.toUInt() + (BITS(
+                        hold, last_bits.toUInt() + last_op.toUInt()
+                    ) ushr last_bits.toUInt())
+                    here_op = state.lencode!![op_bits(i)].op_bits_op
+                    here_bits = state.lencode!![op_bits(i)].op_bits_bits
+                    here_val = state.lencode!![`val`(i)]
+                    if (last_bits.toUInt() + here_bits.toUInt() <= bits) break
 
                     // PULLBYTE();
                     if (have == 0) break@loop
@@ -1186,20 +1196,20 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
 
                 }
 
-                // DROPBITS(last.bits.toUInt());
-                hold = hold ushr last.bits.toUInt()
-                bits -= last.bits.toUInt()
+                // DROPBITS(last_bits.toUInt());
+                hold = hold ushr last_bits.toUInt()
+                bits -= last_bits.toUInt()
 
-                state.back += last.bits
+                state.back += last_bits
             }
 
             // DROPBITS(here.bits.toUInt());
-            hold = hold ushr here.bits.toUInt()
-            bits -= here.bits.toUInt()
+            hold = hold ushr here_bits.toUInt()
+            bits -= here_bits.toUInt()
 
-            state.back += here.bits
-            state.length = here.`val`.toUInt()
-            if (here.op == 0.toByte()) {
+            state.back += here_bits
+            state.length = here_val.toUInt()
+            if (here_op == 0.toByte()) {
                 /*Tracevv(
                 (stderr, here.
                     val >= 0x20 && here .val < 0x7f ?
@@ -1208,18 +1218,18 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                 state.mode = inflate_mode.LIT
                 continue@loop
             }
-            if (here.op and 32 != 0.toByte()) {
+            if (here_op and 32 != 0.toByte()) {
                 //Tracevv((stderr, "inflate:         end of block\n"));
                 state.back = -1
                 state.mode = inflate_mode.TYPE
                 continue@loop
             }
-            if (here.op and 64 != 0.toByte()) {
+            if (here_op and 64 != 0.toByte()) {
                 strm.msg = "invalid literal/length code"
                 state.mode = inflate_mode.BAD
                 continue@loop
             }
-            state.extra = here.op.toUInt() and 15
+            state.extra = here_op.toUInt() and 15
             state.mode = inflate_mode.LENEXT
         }
         inflate_mode.LENEXT -> {
@@ -1245,13 +1255,15 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
             state.mode = inflate_mode.DIST
         }
         inflate_mode.DIST -> {
-            val here = code()
+            var here_op: Byte
+            var here_bits: Byte
+            var here_val: Short
             while (true) {
-                here.set(
-                    state.distcode!![state.distcode_i +
-                            BITS(hold, state.distbits)]
-                )
-                if (here.bits.toUInt() <= bits) break
+                val i = state.distcode_i + BITS(hold, state.distbits)
+                here_op = state.distcode!![op_bits(i)].op_bits_op
+                here_bits = state.distcode!![op_bits(i)].op_bits_bits
+                here_val = state.distcode!![`val`(i)]
+                if (here_bits.toUInt() <= bits) break
 
                 // PULLBYTE();
                 if (have == 0) break@loop
@@ -1259,17 +1271,18 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                 hold += next[next_i++].toUInt() shl bits
                 bits += 8
             }
-            if ((here.op and 0xf0.toByte()) == 0.toByte()) {
-                val last = code()
-                last.set(here)
+            if ((here_op and 0xf0.toByte()) == 0.toByte()) {
+                val last_op = here_op
+                val last_bits = here_bits
+                val last_val = here_val
                 while (true) {
-                    here.set(
-                        state.distcode!![state.distcode_i + last.`val` + (
-                                BITS(hold, last.bits + last.op) ushr
-                                        last.bits.toUInt()
-                                )]
-                    )
-                    if (last.bits.toUInt() + here.bits.toUInt() <= bits) break
+                    val i = state.distcode_i + last_val + (BITS(
+                        hold, last_bits + last_op
+                    ) ushr last_bits.toUInt())
+                    here_op = state.lencode!![op_bits(i)].op_bits_op
+                    here_bits = state.lencode!![op_bits(i)].op_bits_bits
+                    here_val = state.lencode!![`val`(i)]
+                    if (last_bits.toUInt() + here_bits.toUInt() <= bits) break
 
                     // PULLBYTE();
                     if (have == 0) break@loop
@@ -1279,24 +1292,24 @@ fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
                 }
 
                 // DROPBITS(last.bits.toUInt());
-                hold = hold ushr last.bits.toUInt()
-                bits -= last.bits.toUInt()
+                hold = hold ushr last_bits.toUInt()
+                bits -= last_bits.toUInt()
 
-                state.back += last.bits
+                state.back += last_bits
             }
 
             // DROPBITS(here.bits.toUInt());
-            hold = hold ushr here.bits.toUInt()
-            bits -= here.bits.toUInt()
+            hold = hold ushr here_bits.toUInt()
+            bits -= here_bits.toUInt()
 
-            state.back += here.bits
-            if (here.op and 64 != 0.toByte()) {
+            state.back += here_bits
+            if (here_op and 64 != 0.toByte()) {
                 strm.msg = "invalid distance code"
                 state.mode = inflate_mode.BAD
                 continue@loop
             }
-            state.offset = here.`val`.toUInt()
-            state.extra = here.op.toUInt() and 15
+            state.offset = here_val.toUInt()
+            state.extra = here_op.toUInt() and 15
             state.mode = inflate_mode.DISTEXT
         }
         inflate_mode.DISTEXT -> {

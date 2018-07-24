@@ -65,8 +65,6 @@ internal fun inflate_fast(
     state: inflate_state,
     start: Int /* inflate()'s starting value for strm->avail_out */
 ) {
-    val here = code()
-
     /* copy state to local variables */
     val `in` = strm.next_in!! /* local strm->next_in */
     var in_i = strm.next_in_i
@@ -106,23 +104,26 @@ internal fun inflate_fast(
             hold += `in`[in_i++].toUInt() shl bits
             bits += 8
         }
-        here.set(lcode[lcode_i + (hold and lmask)]) /* retrieved table entry */
+        var i = lcode_i + (hold and lmask)
+        var here_op = lcode[op_bits(i)].op_bits_op /* retrieved table entry */
+        var here_bits = lcode[op_bits(i)].op_bits_bits
+        var here_val = lcode[`val`(i)]
         dolen@ while (true) {
             var op =
-                here.bits.toUInt() /* code bits, operation, extra bits, or */
+                here_bits.toUInt() /* code bits, operation, extra bits, or */
             hold = hold ushr op
             bits -= op
-            op = here.op.toUInt()
+            op = here_op.toUInt()
             if (op == 0) {                          /* literal */
                 /*Tracevv(
                 (stderr, here.
                     val >= 0x20 && here .val < 0x7f ?
             "inflate:         literal '%c'\n" :
             "inflate:         literal 0x%02x\n", here.val ));*/
-                out[out_i++] = here.`val`.toByte()
+                out[out_i++] = here_val.toByte()
             } else if (op and 16 != 0) {
                 /* length base */
-                var len = here.`val`.toUInt()
+                var len = here_val.toUInt()
                 op = op and 15 /* number of extra bits */
                 if (op != 0) {
                     if (bits < op) {
@@ -140,15 +141,18 @@ internal fun inflate_fast(
                     hold += `in`[in_i++].toUInt() shl bits
                     bits += 8
                 }
-                here.set(dcode[dcode_i + (hold and dmask)])
+                i = dcode_i + (hold and dmask)
+                here_op = dcode[op_bits(i)].op_bits_op
+                here_bits = dcode[op_bits(i)].op_bits_bits
+                here_val = dcode[`val`(i)]
                 dodist@ while (true) {
-                    op = here.bits.toUInt()
+                    op = here_bits.toUInt()
                     hold = hold ushr op
                     bits -= op
-                    op = here.op.toUInt()
+                    op = here_op.toUInt()
                     if (op and 16 != 0) {
                         /* distance base */
-                        var dist = here.`val`.toUInt() /* match distance */
+                        var dist = here_val.toUInt() /* match distance */
                         op = op and 15 /* number of extra bits */
                         if (bits < op) {
                             hold += `in`[in_i++].toUInt() shl bits
@@ -269,7 +273,10 @@ internal fun inflate_fast(
                         }
                     } else if ((op and 64) == 0) {
                         /* 2nd level distance code */
-                        here.set(dcode[dcode_i + (here.`val` + (hold and ((1 shl op) - 1)))])
+                        i = dcode_i + (here_val + (hold and ((1 shl op) - 1)))
+                        here_op = dcode[op_bits(i)].op_bits_op
+                        here_bits = dcode[op_bits(i)].op_bits_bits
+                        here_val = dcode[`val`(i)]
                         continue@dodist
                     } else {
                         strm.msg = "invalid distance code"
@@ -280,7 +287,10 @@ internal fun inflate_fast(
                 }
             } else if ((op and 64) == 0) {
                 /* 2nd level length code */
-                here.set(lcode[lcode_i + (here.`val` + (hold and ((1 shl op) - 1)))])
+                i = lcode_i + (here_val + (hold and ((1 shl op) - 1)))
+                here_op = lcode[op_bits(i)].op_bits_op
+                here_bits = lcode[op_bits(i)].op_bits_bits
+                here_val = lcode[`val`(i)]
                 continue@dolen
             } else if (op and 32 != 0) {
                 /* end-of-block */
