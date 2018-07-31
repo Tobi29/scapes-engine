@@ -17,6 +17,8 @@
 package org.tobi29.coroutines
 
 import org.tobi29.stdex.assert
+import org.tobi29.utils.Duration64Nanos
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 import java.util.concurrent.locks.ReentrantLock
 
@@ -40,6 +42,24 @@ actual class StampLock {
         }
         assert { counterCurrent and 1 != 0 }
     }
+
+    actual fun tryLock(): Boolean =
+        if (writeLock.tryLock()) {
+            if (writeLock.holdCount == 1) {
+                counterFU.incrementAndGet(this)
+            }
+            assert { counterCurrent and 1 != 0 }
+            true
+        } else false
+
+    actual fun tryLock(timeout: Duration64Nanos): Boolean =
+        if (writeLock.tryLock(timeout, TimeUnit.NANOSECONDS)) {
+            if (writeLock.holdCount == 1) {
+                counterFU.incrementAndGet(this)
+            }
+            assert { counterCurrent and 1 != 0 }
+            true
+        } else false
 
     actual fun unlock() {
         assert { counterCurrent and 1 != 0 }

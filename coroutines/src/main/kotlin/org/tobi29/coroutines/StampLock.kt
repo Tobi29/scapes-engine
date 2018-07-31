@@ -16,6 +16,8 @@
 
 package org.tobi29.coroutines
 
+import org.tobi29.utils.Duration64Nanos
+
 /**
  * Simple stamp lock optimized using Kotlin's inline modifier
  * Writes are always synchronized, whilst reads can happen in parallel as long
@@ -32,6 +34,16 @@ expect class StampLock() {
      * Acquires a write lock
      */
     fun lock()
+
+    /**
+     * Tries to aquire a write lock
+     */
+    fun tryLock(): Boolean
+
+    /**
+     * Tries to aquire a write lock with given timeout
+     */
+    fun tryLock(timeout: Duration64Nanos): Boolean
 
     /**
      * Releases a write lock

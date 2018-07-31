@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.coroutines
+
+import org.tobi29.utils.Duration64Nanos
 
 actual class StampLock {
     private var held = 0
@@ -24,6 +28,16 @@ actual class StampLock {
     actual fun lock() {
         if (held == Int.MAX_VALUE) error("Lock overflowed")
         held++
+    }
+
+    actual inline fun tryLock(): Boolean {
+        lock()
+        return true
+    }
+
+    actual inline fun tryLock(timeout: Duration64Nanos): Boolean {
+        lock()
+        return true
     }
 
     actual fun unlock() {
