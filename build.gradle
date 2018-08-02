@@ -97,9 +97,6 @@ ext {
     sqljetVersion = "1.1.10"
     sqljetJVM = { module -> "org.tmatesoft.sqljet:$module:$sqljetVersion" }
 
-    pngjVersion = "2.1.0"
-    pngjJVM = { module -> "ar.com.hjg:$module:$pngjVersion" }
-
     jlayerVersion = "1.0.1"
     jlayerJVM = { module -> "javazoom:$module:$jlayerVersion" }
 

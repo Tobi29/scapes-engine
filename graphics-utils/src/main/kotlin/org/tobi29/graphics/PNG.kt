@@ -14,11 +14,44 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.graphics
 
 import org.tobi29.io.ReadSource
 import org.tobi29.io.ReadableByteStream
+import org.tobi29.io.WritableByteStream
 
-expect suspend fun decodePng(asset: ReadSource): Bitmap<*, *>
+@Deprecated(
+    "Use new package",
+    ReplaceWith(
+        "org.tobi29.graphics.png.decodePng(asset)",
+        "org.tobi29.graphics.png.decodePng"
+    )
+)
+suspend inline fun decodePng(asset: ReadSource): Bitmap<*, *> =
+    org.tobi29.graphics.png.decodePng(asset)
 
-expect suspend fun decodePng(stream: ReadableByteStream): Bitmap<*, *>
+@Deprecated(
+    "Use new package",
+    ReplaceWith(
+        "org.tobi29.graphics.png.decodePng(stream)",
+        "org.tobi29.graphics.png.decodePng"
+    )
+)
+suspend inline fun decodePng(stream: ReadableByteStream): Bitmap<*, *> =
+    org.tobi29.graphics.png.decodePng(stream)
+
+@Deprecated(
+    "Use new package",
+    ReplaceWith(
+        "org.tobi29.graphics.png.encodePng(image, stream, level, alpha)",
+        "org.tobi29.graphics.png.encodePng"
+    )
+)
+inline fun encodePng(
+    image: Bitmap<*, *>,
+    stream: WritableByteStream,
+    level: Int,
+    alpha: Boolean
+) = org.tobi29.graphics.png.encodePng(image, stream, level, alpha)

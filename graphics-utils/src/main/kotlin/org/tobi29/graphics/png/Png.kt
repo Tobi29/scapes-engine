@@ -14,13 +14,18 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+package org.tobi29.graphics.png
 
-dependencies {
-    expectedBy project(":graphics-utils")
-    compile project(":stdex-jvm")
-    compile project(":compression-deflate-jvm")
-    compile project(":tag-jvm")
-    compile project(":io-jvm")
-    compile project(":math-jvm")
-}
+import org.tobi29.checksums.tableCrc32
+
+internal val PNG_HEADER = byteArrayOf(
+    0x89.toByte(), 0x50.toByte(),
+    0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(),
+    0x1A.toByte(), 0x0A.toByte()
+)
+internal inline val TYPE_IHDR get() = 0x49484452
+internal inline val TYPE_PLTE get() = 0x504c5445
+internal inline val TYPE_IDAT get() = 0x49444154
+internal inline val TYPE_IEND get() = 0x49454e44
+
+internal val zlibTable = tableCrc32(0xedb88320.toInt())

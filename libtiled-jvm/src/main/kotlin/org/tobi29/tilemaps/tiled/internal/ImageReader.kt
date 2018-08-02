@@ -17,7 +17,7 @@
 package org.tobi29.tilemaps.tiled.internal
 
 import org.tobi29.graphics.Bitmap
-import org.tobi29.graphics.decodePng
+import org.tobi29.graphics.png.decodePng
 import org.tobi29.graphics.size
 import org.tobi29.io.Path
 import org.tobi29.math.vector.Vector2i
@@ -32,7 +32,7 @@ suspend fun Node.readImage(
     val transStr = getAttributeValue("trans")
     val size = getAttributeVector2i("width", "height")
 
-    val image = path[imgSource].readAsync { decodePng(it) }
+    val image = decodePng(path[imgSource])
     if (transStr != null) {
         return image.makeTransparent(transStr) to (size ?: image.size)
     }
