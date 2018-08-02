@@ -44,6 +44,17 @@ open class Ints2IntsRO<out D : IntsRO>(
         }
         return array[index2 * width + index1]
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Ints2IntsRO<*>) return false
+
+        return array == other.array &&
+                width == other.width &&
+                height == other.height
+    }
+
+    override fun hashCode(): Int = array.hashCode()
 }
 
 class Ints2Ints<out D : Ints>(

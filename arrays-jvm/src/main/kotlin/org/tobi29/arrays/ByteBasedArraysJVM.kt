@@ -17,6 +17,7 @@
 package org.tobi29.arrays
 
 import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.primitiveHashCode
 import org.tobi29.stdex.splitToBytes
 
 actual open class IntsBytesRO<out D : BytesRO> actual constructor(
@@ -32,6 +33,23 @@ actual open class IntsBytesRO<out D : BytesRO> actual constructor(
         return combineToInt(
             array[i + 0], array[i + 1], array[i + 2], array[i + 3]
         )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is IntsRO || size != other.size) return false
+        for (i in 0 until size) {
+            if (this[i] != other[i]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        for (i in 0 until size) {
+            h = h * 31 + this[i].primitiveHashCode()
+        }
+        return h
     }
 }
 
