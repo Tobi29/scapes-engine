@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.io.compression.deflate
 
 import org.tobi29.arrays.HeapBytes
@@ -26,24 +28,28 @@ class DeflateException : IOException {
 }
 
 interface FilterHandle : AutoCloseable {
+    fun input(
+        inputBuffer: HeapBytes
+    )
+
     fun process(
-        inputBuffer: HeapBytes,
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ): Boolean
+        outputBuffer: HeapBytes
+    ): Int
 
     fun processFinish(
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    )
+        outputBuffer: HeapBytes
+    ): Int
 
     fun reset()
 }
 
+const val FILTER_NEEDS_INPUT = 0
+inline fun filteredBytes(size: Int): Int =
+    if (size >= 0) size else size + Int.MIN_VALUE
+
 expect class DeflateHandle(
     level: Int = -1
 ) : FilterHandle
-
 
 expect class InflateHandle(
 ) : FilterHandle
@@ -91,4 +97,31 @@ fun FilterHandle.process(
         if (!process(inputBuffer.slice(0, read), outputBuffer, callback)) break
     }
     processFinish(outputBuffer, callback)
+}
+
+inline fun FilterHandle.process(
+    inputBuffer: HeapBytes,
+    outputBuffer: HeapBytes,
+    output: (HeapBytes) -> Unit
+): Boolean {
+    input(inputBuffer)
+    while (true) {
+        val size = process(outputBuffer)
+        if (size == FILTER_NEEDS_INPUT) return true
+        val bytes = filteredBytes(size)
+        if (bytes != 0) output(outputBuffer.slice(0, bytes))
+        if (size < 0) return false
+    }
+}
+
+inline fun FilterHandle.processFinish(
+    outputBuffer: HeapBytes,
+    output: (HeapBytes) -> Unit
+) {
+    while (true) {
+        val size = processFinish(outputBuffer)
+        val bytes = filteredBytes(size)
+        if (bytes != 0) output(outputBuffer.slice(0, bytes))
+        if (size < 0) return
+    }
 }

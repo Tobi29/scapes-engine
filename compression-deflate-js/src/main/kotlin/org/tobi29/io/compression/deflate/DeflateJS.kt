@@ -39,51 +39,42 @@ actual class DeflateHandle(
         WrapperType.ZLIB
     )
 
+    override fun input(inputBuffer: HeapBytes) {
+        val stream = deflater.first
+        stream.next_in = inputBuffer.array
+        stream.next_in_i = inputBuffer.offset
+        stream.avail_in = inputBuffer.size
+    }
+
     override fun process(
-        inputBuffer: HeapBytes,
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ): Boolean {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
             val stream = deflater.first
-            stream.next_in = inputBuffer.array
-            stream.next_in_i = inputBuffer.offset
-            stream.avail_in = inputBuffer.size
-            while (stream.avail_in > 0) {
-                stream.next_out = outputBuffer.array
-                stream.next_out_i = outputBuffer.offset
-                stream.avail_out = outputBuffer.size
-                val status = deflater.deflate(Z_NO_FLUSH)
-                output(
-                    outputBuffer.slice(
-                        0, stream.next_out_i - outputBuffer.offset
-                    )
-                )
-                if (status == Z_STREAM_END) return false
+            if (stream.avail_in == 0) return FILTER_NEEDS_INPUT
+            stream.next_out = outputBuffer.array
+            stream.next_out_i = outputBuffer.offset
+            stream.avail_out = outputBuffer.size
+            val status = deflater.deflate(Z_NO_FLUSH)
+            return (stream.next_out_i - outputBuffer.offset).let {
+                if (status == Z_STREAM_END) it + Int.MIN_VALUE else it
             }
-            return true
         } catch (e: ZLibException) {
             throw DeflateException(e)
         }
     }
 
     override fun processFinish(
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ) {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
             val stream = deflater.first
-            while (true) {
-                stream.next_out = outputBuffer.array
-                stream.next_out_i = outputBuffer.offset
-                stream.avail_out = outputBuffer.size
-                val status = deflater.deflate(Z_FINISH)
-                output(
-                    outputBuffer.slice(
-                        0, stream.next_out_i - outputBuffer.offset
-                    )
-                )
-                if (status == Z_STREAM_END) return
+            stream.next_out = outputBuffer.array
+            stream.next_out_i = outputBuffer.offset
+            stream.avail_out = outputBuffer.size
+            val status = deflater.deflate(Z_FINISH)
+            return (stream.next_out_i - outputBuffer.offset).let {
+                if (status == Z_STREAM_END) it + Int.MIN_VALUE else it
             }
         } catch (e: ZLibException) {
             throw DeflateException(e)
@@ -113,51 +104,42 @@ actual class InflateHandle(
         WrapperType.ZLIB
     )
 
+    override fun input(inputBuffer: HeapBytes) {
+        val stream = inflater.first
+        stream.next_in = inputBuffer.array
+        stream.next_in_i = inputBuffer.offset
+        stream.avail_in = inputBuffer.size
+    }
+
     override fun process(
-        inputBuffer: HeapBytes,
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ): Boolean {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
             val stream = inflater.first
-            stream.next_in = inputBuffer.array
-            stream.next_in_i = inputBuffer.offset
-            stream.avail_in = inputBuffer.size
-            while (stream.avail_in > 0) {
-                stream.next_out = outputBuffer.array
-                stream.next_out_i = outputBuffer.offset
-                stream.avail_out = outputBuffer.size
-                val status = inflater.inflate(Z_NO_FLUSH)
-                output(
-                    outputBuffer.slice(
-                        0, stream.next_out_i - outputBuffer.offset
-                    )
-                )
-                if (status == Z_STREAM_END) return false
+            if (stream.avail_in == 0) return FILTER_NEEDS_INPUT
+            stream.next_out = outputBuffer.array
+            stream.next_out_i = outputBuffer.offset
+            stream.avail_out = outputBuffer.size
+            val status = inflater.inflate(Z_NO_FLUSH)
+            return (stream.next_out_i - outputBuffer.offset).let {
+                if (status == Z_STREAM_END) it + Int.MIN_VALUE else it
             }
-            return true
         } catch (e: ZLibException) {
             throw DeflateException(e)
         }
     }
 
     override fun processFinish(
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ) {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
             val stream = inflater.first
-            while (true) {
-                stream.next_out = outputBuffer.array
-                stream.next_out_i = outputBuffer.offset
-                stream.avail_out = outputBuffer.size
-                val status = inflater.inflate(Z_FINISH)
-                output(
-                    outputBuffer.slice(
-                        0, stream.next_out_i - outputBuffer.offset
-                    )
-                )
-                if (status == Z_STREAM_END) return
+            stream.next_out = outputBuffer.array
+            stream.next_out_i = outputBuffer.offset
+            stream.avail_out = outputBuffer.size
+            val status = inflater.inflate(Z_FINISH)
+            return (stream.next_out_i - outputBuffer.offset).let {
+                if (status == Z_STREAM_END) it + Int.MIN_VALUE else it
             }
         } catch (e: ZLibException) {
             throw DeflateException(e)

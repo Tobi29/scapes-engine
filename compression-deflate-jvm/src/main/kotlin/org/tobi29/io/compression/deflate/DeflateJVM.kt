@@ -28,46 +28,39 @@ actual class DeflateHandle actual constructor(
 ) : FilterHandle {
     private val deflater = Deflater(level)
 
+    override fun input(inputBuffer: HeapBytes) {
+        deflater.setInput(
+            inputBuffer.array,
+            inputBuffer.offset,
+            inputBuffer.size
+        )
+    }
+
     override fun process(
-        inputBuffer: HeapBytes,
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ): Boolean {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
-            deflater.setInput(
-                inputBuffer.array,
-                inputBuffer.offset,
-                inputBuffer.size
-            )
-            while (!deflater.needsInput()) {
-                val size = deflater.deflate(
-                    outputBuffer.array,
-                    outputBuffer.offset,
-                    outputBuffer.size
-                )
-                if (size > 0) output(outputBuffer.slice(0, size))
-                if (deflater.finished()) return false
-            }
-            return true
+            if (deflater.needsInput()) return FILTER_NEEDS_INPUT
+            return deflater.deflate(
+                outputBuffer.array,
+                outputBuffer.offset,
+                outputBuffer.size
+            ).let { if (deflater.finished()) it + Int.MIN_VALUE else it }
         } catch (e: DataFormatException) {
             throw DeflateException(e)
         }
     }
 
     override fun processFinish(
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ) {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
             deflater.finish()
-            while (!deflater.finished()) {
-                val size = deflater.deflate(
-                    outputBuffer.array,
-                    outputBuffer.offset,
-                    outputBuffer.size
-                )
-                if (size > 0) output(outputBuffer.slice(0, size))
-            }
+            return deflater.deflate(
+                outputBuffer.array,
+                outputBuffer.offset,
+                outputBuffer.size
+            ).let { if (deflater.finished()) it + Int.MIN_VALUE else it }
         } catch (e: DataFormatException) {
             throw DeflateException(e)
         }
@@ -86,45 +79,38 @@ actual class InflateHandle actual constructor(
 ) : FilterHandle {
     private val inflater = Inflater()
 
+    override fun input(inputBuffer: HeapBytes) {
+        inflater.setInput(
+            inputBuffer.array,
+            inputBuffer.offset,
+            inputBuffer.size
+        )
+    }
+
     override fun process(
-        inputBuffer: HeapBytes,
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ): Boolean {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
-            inflater.setInput(
-                inputBuffer.array,
-                inputBuffer.offset,
-                inputBuffer.size
-            )
-            while (!inflater.needsInput()) {
-                val size = inflater.inflate(
-                    outputBuffer.array,
-                    outputBuffer.offset,
-                    outputBuffer.size
-                )
-                if (size > 0) output(outputBuffer.slice(0, size))
-                if (inflater.finished()) return false
-            }
-            return true
+            if (inflater.needsInput()) return FILTER_NEEDS_INPUT
+            return inflater.inflate(
+                outputBuffer.array,
+                outputBuffer.offset,
+                outputBuffer.size
+            ).let { if (inflater.finished()) it + Int.MIN_VALUE else it }
         } catch (e: DataFormatException) {
             throw DeflateException(e)
         }
     }
 
     override fun processFinish(
-        outputBuffer: HeapBytes,
-        output: (HeapBytes) -> Unit
-    ) {
+        outputBuffer: HeapBytes
+    ): Int {
         try {
-            while (!inflater.finished()) {
-                val size = inflater.inflate(
-                    outputBuffer.array,
-                    outputBuffer.offset,
-                    outputBuffer.size
-                )
-                if (size > 0) output(outputBuffer.slice(0, size))
-            }
+            return inflater.inflate(
+                outputBuffer.array,
+                outputBuffer.offset,
+                outputBuffer.size
+            ).let { if (inflater.finished()) it + Int.MIN_VALUE else it }
         } catch (e: DataFormatException) {
             throw DeflateException(e)
         }
