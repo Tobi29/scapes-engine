@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.2.51"
+    def kotlinVersion = "1.2.60"
     def dokkaVersion = "0.9.17"
 
     repositories {
@@ -46,7 +46,7 @@ allprojects {
 }
 
 ext {
-    kotlinVersion = "1.2.51"
+    kotlinVersion = "1.2.60"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
