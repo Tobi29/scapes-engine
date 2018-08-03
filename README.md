@@ -1,5 +1,6 @@
 # Scapes Engine
-General purpose game engine written in Kotlin.
+General purpose game engine written in Kotlin and various cross-platform
+libraries to allow as much code sharing as possible.
 
 Its codebase was split off [Scapes](https://github.com/Tobi29/Scapes) to make it
 reusable for other projects.
@@ -54,7 +55,7 @@ is `kotlinx.coroutines` support.
 ## Build
 The project uses Gradle to build all modules.
 
-You can run `:install` to install all its module as maven artifacts.
+You can run `:publishToMavenLocal` to install all its module as maven artifacts.
 
 To use anything you can add any module through
 [jitpack.io](https://jitpack.io/#Tobi29/ScapesEngine) or set up a composite
@@ -89,6 +90,15 @@ dynamic hierarchical data.
   * tag
   * tag-js
   * tag-jvm
+  * tag-binary
+  * tag-binary-js
+  * tag-binary-jvm
+  * tag-bundle
+  * tag-bundle-js
+  * tag-bundle-jvm
+  * tag-json
+  * tag-json-js
+  * tag-json-jvm
 
 ## Uuid
 A cross-platform Uuid class.
@@ -131,9 +141,10 @@ handling.
   * base64-jvm
 
 ## Checksums
-Contains CRC32 and SHA-256 implementations. Additional algorithms may come
-eventually. The JVM version uses the `MessageDigest` class in order to keep
-things lightweight.
+Contains CRC32, Adler32 and SHA-256 implementations.
+Additional algorithms may come eventually.
+The JVM version uses the `MessageDigest` class wherever appropriate in order to
+keep things lightweight.
 
 ### Artifacts
   * checksums
@@ -192,9 +203,6 @@ MIME types (aka Media Types) of some data.
   * contentinfo-js
   * contentinfo-jvm
 
-### Dependencies
-  * [Apache Tika](https://tika.apache.org) (JVM only)
-
 ## Math
 Various math primitives and utils
 
@@ -218,9 +226,6 @@ Image class to pass around images and do copy paste operations on them.
   * graphics-utils
   * graphics-utils-js
   * graphics-utils-jvm
-
-### Dependencies
-  * [PNGJ](https://github.com/leonbloy/pngj) (JVM only)
 
 ## Generation Utils
 Various utilities for procedural generation, such as Perlin and OpenSimplex
