@@ -19,13 +19,12 @@ package org.tobi29.stdex
 actual class ConcurrentSortedMap<K : Comparable<K>, V> :
     AbstractMutableMap<K, V>(),
     ConcurrentMap<K, V> {
-    private val map = HashMap<K, V>()
-    private var list = emptyList<MutableMap.MutableEntry<K, V>>()
+    private var list = emptyList<Entry<K, V>>()
 
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>> =
         object : AbstractMutableSet<MutableMap.MutableEntry<K, V>>(),
             MutableSet<MutableMap.MutableEntry<K, V>> {
-            override val size get() = map.size
+            override val size get() = list.size
 
             override fun add(element: MutableMap.MutableEntry<K, V>): Boolean =
                 throw UnsupportedOperationException(
@@ -42,22 +41,16 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
             override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> {
                 val iterator = list.iterator()
                 return object : MutableIterator<MutableMap.MutableEntry<K, V>> {
-                    private var current: MutableMap.MutableEntry<K, V>? =
-                        null
+                    private var current: MutableMap.MutableEntry<K, V>? = null
 
                     override fun hasNext() = iterator.hasNext()
 
+                    @Suppress("UNCHECKED_CAST")
                     override fun next() =
                         iterator.next().also { current = it }
 
                     override fun remove() {
-                        (current
-                                ?: throw IllegalStateException(
-                                    "No element in iterator yet"
-                                )
-                                ).let { current ->
-                            remove(current)
-                        }
+                        remove(current ?: error("No element in iterator yet"))
                     }
                 }
             }
@@ -66,72 +59,105 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
                 this@ConcurrentSortedMap.remove(element.key) != null
         }
 
-    override fun get(key: K) = map[key]
+    private fun binarySearchKey(key: K) = list.binarySearchKey(key)
 
-    override fun put(key: K, value: V) = map.put(key, value).also { previous ->
-        if (previous == null) {
-            val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
-                list.size + 1
-            )
-            newList.addAll(list)
-            newList.add(map.entries.first { it.key == key })
-            newList.sortBy { it.key }
-            list = newList
-        } else {
-            list.asSequence().filter { it.key == key }.forEach {
-                it.setValue(value)
+    private fun List<Entry<K, V>>.binarySearchKey(key: K) =
+        binarySearchBy(key) { it.key }
+
+    override fun get(key: K) =
+        binarySearchKey(key).let { if (it < 0) null else list[it].value }
+
+    override fun put(key: K, value: V): V? {
+        var i = binarySearchKey(key)
+        return if (i < 0) {
+            i = -i - 1
+            val newList = ArrayList<Entry<K, V>>(list.size + 1)
+            for (j in 0 until i) {
+                newList.add(list[j])
             }
+            newList.add(Entry(key, value))
+            for (j in i until list.size) {
+                newList.add(list[j])
+            }
+            list = newList
+            null
+        } else {
+            val entry = list[i]
+            entry.value.also { entry.setValue(value) }
         }
     }
 
     override fun putAll(from: Map<out K, V>) {
-        val newList = ArrayList<MutableMap.MutableEntry<K, V>>(
-            list.size + from.size
-        )
+        val newList = ArrayList<Entry<K, V>>(list.size + from.size)
         newList.addAll(list)
         for ((key, value) in from) {
-            val previous = map.put(key, value)
-            if (previous == null) {
-                newList.add(map.entries.first { it.key == key })
+            var i = newList.binarySearchKey(key)
+            if (i < 0) {
+                i = -i - 1
+                newList.add(i, Entry(key, value))
             } else {
-                newList.asSequence().filter { it.key == key }.forEach {
-                    it.setValue(value)
-                }
+                newList[i].setValue(value)
             }
         }
-        newList.sortBy { it.key }
         list = newList
     }
 
     override fun replace(key: K, value: V): V? =
-        if (map.containsKey(key)) put(key, value) else null
+        if (containsKey(key)) put(key, value) else null
 
     override fun replace(key: K, oldValue: V, newValue: V): Boolean =
-        if (map[key] == oldValue) {
+        if (this[key] == oldValue) {
             put(key, newValue)
             true
         } else false
 
     override fun putIfAbsent(key: K, value: V): V? =
-        putIfAbsent(key, value)
+        putAbsent(key, value)
 
-    override fun remove(key: K) =
-        map.remove(key)?.also {
-            list = list.filter { it.key != key }
+    override fun remove(key: K): V? {
+        val i = binarySearchKey(key)
+        return if (i < 0) {
+            null
+        } else {
+            val newList = ArrayList<Entry<K, V>>(list.size - 1)
+            for (j in 0 until i) {
+                newList.add(list[j])
+            }
+            for (j in i until list.size) {
+                newList.add(list[j])
+            }
+            list = newList
+            list[i].value
         }
+    }
 
     override fun remove(key: K, value: V): Boolean =
-        if (map[key] == value) {
-            map.remove(key)
+        if (this[key] == value) {
+            remove(key)
             true
         } else false
 
     override fun clear() {
-        map.clear()
         list = emptyList()
     }
+}
 
-    override fun equals(other: Any?) = map == other
+private class Entry<K, V>(
+    override val key: K, value: V
+) : MutableMap.MutableEntry<K, V> {
+    override var value: V = value
+        private set
 
-    override fun hashCode() = map.hashCode()
+    override fun setValue(newValue: V): V = value.also { value = newValue }
+
+    override fun toString() = "$key=$value"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Map.Entry<*, *>) return false
+        return key == other.key && value == other.value
+    }
+
+    override fun hashCode() =
+        (key?.hashCode() ?: 0) xor (value?.hashCode() ?: 0)
 }

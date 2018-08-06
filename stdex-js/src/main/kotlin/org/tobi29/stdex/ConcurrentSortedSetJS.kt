@@ -16,12 +16,11 @@
 
 package org.tobi29.stdex
 
-actual class ConcurrentSortedSet<T : Comparable<T>> private constructor(
-    private val set: HashSet<T>
-) : MutableSet<T>, Set<T> by set {
-    actual constructor() : this(HashSet<T>())
-
+actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractMutableSet<T>(),
+    MutableSet<T> {
     private var list = emptyList<T>()
+
+    override val size get() = list.size
 
     override fun iterator() = list.iterator().let { iterator ->
         object : MutableIterator<T> {
@@ -32,56 +31,102 @@ actual class ConcurrentSortedSet<T : Comparable<T>> private constructor(
             override fun next() = iterator.next().also { current = it }
 
             override fun remove() {
-                this@ConcurrentSortedSet.remove(
-                    current
-                            ?: throw IllegalStateException(
-                                "No element in iterator yet"
-                            )
-                )
+                remove(current ?: error("No element in iterator yet"))
             }
         }
     }
 
-    override fun add(element: T) =
-        if (set.add(element)) {
-            val newList = ArrayList<T>(list.size + 1)
-            newList.addAll(list)
-            newList.add(element)
-            newList.sort()
-            list = newList
-            true
-        } else false
+    private fun binarySearchKey(element: T) = list.binarySearchKey(element)
 
-    override fun addAll(elements: Collection<T>) =
-        if (set.addAll(elements)) {
-            val newList = ArrayList<T>(list.size + elements.size)
-            newList.addAll(list)
-            newList.addAll(elements)
-            newList.sort()
+    private fun List<T>.binarySearchKey(element: T) = binarySearch(element)
+
+    override fun contains(element: T) = binarySearchKey(element) < 0
+
+    override fun add(element: T): Boolean {
+        var i = binarySearchKey(element)
+        return if (i < 0) {
+            i = -i - 1
+            val newList = ArrayList<T>(list.size + 1)
+            for (j in 0 until i) {
+                newList.add(list[j])
+            }
+            newList.add(element)
+            for (j in i until list.size) {
+                newList.add(list[j])
+            }
             list = newList
             true
         } else false
+    }
+
+    override fun addAll(elements: Collection<T>): Boolean {
+        val newList = ArrayList<T>(list.size + elements.size)
+        newList.addAll(list)
+        var modified = false
+        for (element in elements) {
+            var i = newList.binarySearchKey(element)
+            if (i < 0) {
+                i = -i - 1
+                newList.add(i, element)
+                modified = true
+            }
+        }
+        list = newList
+        return modified
+    }
 
     override fun clear() {
-        set.clear()
         list = emptyList()
     }
 
-    override fun remove(element: T) =
-        if (set.remove(element)) {
-            list -= element
+    override fun remove(element: T): Boolean {
+        val i = binarySearchKey(element)
+        return if (i < 0) false
+        else {
+            val newList = ArrayList<T>(list.size - 1)
+            for (j in 0 until i) {
+                newList.add(list[j])
+            }
+            for (j in i until list.size) {
+                newList.add(list[j])
+            }
+            list = newList
             true
-        } else false
+        }
+    }
 
-    override fun removeAll(elements: Collection<T>) =
-        if (set.removeAll(elements)) {
-            list -= elements
+    override fun removeAll(elements: Collection<T>): Boolean {
+        val newList = ArrayList<T>(list.size - elements.size)
+        newList.addAll(list)
+        for (element in elements) {
+            val i = newList.binarySearchKey(element)
+            if (i >= 0) {
+                newList.removeAt(i)
+            }
+        }
+        return if (list.size == newList.size) false
+        else {
+            list = newList
             true
-        } else false
+        }
+    }
 
-    override fun retainAll(elements: Collection<T>) =
-        if (set.retainAll(elements)) {
-            list = elements.filter { set.contains(it) }
+    override fun retainAll(elements: Collection<T>): Boolean {
+        val newList = ArrayList<T>(elements.size)
+        for (element in elements) {
+            val i = list.binarySearchKey(element)
+            if (i >= 0) {
+                var j = newList.binarySearchKey(element)
+                if (j < 0) {
+                    j = -j - 1
+                    newList.add(j, list[i])
+                }
+            }
+        }
+        return if (list.size == newList.size) false
+        else {
+            list = newList
             true
-        } else false
+        }
+    }
 }
