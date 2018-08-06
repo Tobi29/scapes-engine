@@ -18,7 +18,9 @@
 
 package org.tobi29.platform
 
+import org.tobi29.io.IOException
 import org.tobi29.io.filesystem.FilePath
+import org.tobi29.stdex.Throws
 
 expect class Process {
     val exitCode: Int
@@ -51,6 +53,7 @@ sealed class RedirectIn {
 
 // TODO: Support changing environment variables
 
+@Throws(IOException::class)
 fun launchProcess(
     executable: FilePath,
     vararg arguments: String,
@@ -64,6 +67,7 @@ fun launchProcess(
     redirectStdin = redirectStdin
 )
 
+@Throws(IOException::class)
 fun launchProcess(
     executable: String,
     vararg arguments: String,
