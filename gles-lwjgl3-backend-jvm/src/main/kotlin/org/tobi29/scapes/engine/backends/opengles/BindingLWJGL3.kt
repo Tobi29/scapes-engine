@@ -114,8 +114,8 @@ actual inline fun GLESHandle.glDrawElements(
     mode: Int,
     count: Int,
     type: Int,
-    indices: Long
-) = GLES20.glDrawElements(mode, count, type, indices)
+    indices: Int
+) = GLES20.glDrawElements(mode, count, type, indices.toLong() and 0xFFFFFFFF)
 
 actual inline fun GLESHandle.glGenBuffers() = GLES20.glGenBuffers()
 
@@ -141,9 +141,11 @@ actual inline fun GLESHandle.glBufferData(
 
 actual inline fun GLESHandle.glBufferSubData(
     target: Int,
-    offset: Long,
+    offset: Int,
     data: ByteViewRO
-) = GLES20.glBufferSubData(target, offset, data.readAsNativeByteBuffer())
+) = GLES20.glBufferSubData(
+    target, offset.toLong() and 0xFFFFFFFF, data.readAsNativeByteBuffer()
+)
 
 actual inline fun GLESHandle.glVertexAttribDivisor(
     index: Int,
@@ -177,7 +179,8 @@ actual inline fun GLESHandle.glEnable(target: Int) = GLES20.glEnable(target)
 
 actual inline fun GLESHandle.glDisable(target: Int) = GLES20.glDisable(target)
 
-actual inline fun GLESHandle.glDepthMask(flag: Boolean) = GLES20.glDepthMask(flag)
+actual inline fun GLESHandle.glDepthMask(flag: Boolean) =
+    GLES20.glDepthMask(flag)
 
 actual inline fun GLESHandle.glDepthFunc(func: Int) = GLES20.glDepthFunc(func)
 

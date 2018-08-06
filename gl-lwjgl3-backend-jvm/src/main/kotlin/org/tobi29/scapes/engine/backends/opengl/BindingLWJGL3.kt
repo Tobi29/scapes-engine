@@ -113,8 +113,8 @@ actual inline fun GLHandle.glDrawElements(
     mode: Int,
     count: Int,
     type: Int,
-    indices: Long
-) = GL11.glDrawElements(mode, count, type, indices)
+    indices: Int
+) = GL11.glDrawElements(mode, count, type, indices.toLong() and 0xFFFFFFFF)
 
 actual inline fun GLHandle.glGenBuffers() = GL15.glGenBuffers()
 
@@ -140,9 +140,11 @@ actual inline fun GLHandle.glBufferData(
 
 actual inline fun GLHandle.glBufferSubData(
     target: GLEnum,
-    offset: Long,
+    offset: Int,
     data: ByteViewRO
-) = GL15.glBufferSubData(target, offset, data.readAsNativeByteBuffer())
+) = GL15.glBufferSubData(
+    target, offset.toLong() and 0xFFFFFFFF, data.readAsNativeByteBuffer()
+)
 
 actual inline fun GLHandle.glVertexAttribDivisor(
     index: Int,

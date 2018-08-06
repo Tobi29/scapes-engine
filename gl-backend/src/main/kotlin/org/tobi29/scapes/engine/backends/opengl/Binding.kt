@@ -94,7 +94,7 @@ expect fun GLHandle.glDrawElements(
     mode: GLEnum,
     count: Int,
     type: Int,
-    indices: Long
+    indices: Int
 )
 
 expect fun GLHandle.glGenBuffers(): GLVBO
@@ -120,7 +120,7 @@ expect fun GLHandle.glBufferData(
 
 expect fun GLHandle.glBufferSubData(
     target: GLEnum,
-    offset: Long,
+    offset: Int,
     data: ByteViewRO
 )
 

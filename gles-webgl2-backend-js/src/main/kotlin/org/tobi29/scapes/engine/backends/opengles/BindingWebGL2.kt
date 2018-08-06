@@ -118,8 +118,8 @@ actual inline fun GLESHandle.glDrawElements(
     mode: Int,
     count: Int,
     type: Int,
-    indices: Long
-) = wgl.drawElements(mode, count, type, indices.toIntClamped())
+    indices: Int
+) = wgl.drawElements(mode, count, type, indices)
 
 actual inline fun GLESHandle.glGenBuffers() = wgl.createBuffer().c
 
@@ -145,9 +145,9 @@ actual inline fun GLESHandle.glBufferData(
 
 actual inline fun GLESHandle.glBufferSubData(
     target: GLEnum,
-    offset: Long,
+    offset: Int,
     data: ByteViewRO
-) = wgl.bufferSubData(target, offset.toInt(), data.asDataView())
+) = wgl.bufferSubData(target, offset, data.asDataView())
 
 actual inline fun GLESHandle.glVertexAttribDivisor(
     index: Int,
