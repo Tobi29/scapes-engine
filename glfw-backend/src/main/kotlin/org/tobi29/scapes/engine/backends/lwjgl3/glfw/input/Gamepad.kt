@@ -116,7 +116,7 @@ internal class GLFWControllerGamepad(
         value: Double,
         events: EventDispatcher
     ) {
-        GLFWKeyMap.gamepadAxis(axis).let {
+        glfwGamepadAxis(axis).let {
             if (it >= 0) super.setAxis(it, value, events)
         }
     }
@@ -126,7 +126,7 @@ internal class GLFWControllerGamepad(
         value: Boolean,
         events: EventDispatcher
     ) {
-        GLFWKeyMap.gamepadButton(button)?.let {
+        glfwGamepadButton(button)?.let {
             setButton(it, value, events)
         }
     }

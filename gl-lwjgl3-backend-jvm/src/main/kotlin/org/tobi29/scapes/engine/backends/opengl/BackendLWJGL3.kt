@@ -1,0 +1,118 @@
+/*
+ * Copyright 2012-2018 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.tobi29.scapes.engine.backends.opengl
+
+import org.lwjgl.opengl.GL11
+import org.lwjgl.system.Platform
+import org.tobi29.io.tag.ReadTagMutableMap
+import org.tobi29.io.tag.toBoolean
+import org.tobi29.io.tag.toMap
+import org.tobi29.logging.KLogging
+import org.tobi29.scapes.engine.Container
+import org.tobi29.scapes.engine.GLBackend
+import org.tobi29.scapes.engine.graphics.GL
+import org.tobi29.scapes.engine.graphics.GraphicsCheckException
+import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
+
+object GLBackendLWJGL : KLogging(), GLBackend {
+    override fun createGL(container: Container): Pair<GraphicsObjectSupplier, GL> =
+        GLHandle(container).let { it to GLImpl(it) }
+
+    override fun initContext() {
+        org.lwjgl.opengl.GL.createCapabilities()
+        checkContextGL()?.let { throw GraphicsCheckException(it) }
+    }
+
+    override fun requestLegacy(config: ReadTagMutableMap): String? {
+        org.lwjgl.opengl.GL.createCapabilities()
+        val tagMap = config["Compatibility"]?.toMap()
+        return workaroundLegacyProfile(tagMap)
+    }
+
+    private fun workaroundLegacyProfile(tagMap: ReadTagMutableMap?): String? {
+        if (tagMap?.get("ForceLegacyGL")?.toBoolean() == true) {
+            logger.warn { "Forcing a legacy profile, this is unsupported!" }
+            return "Forced by config"
+        }
+        if (tagMap?.get("ForceCoreGL")?.toBoolean() == true) {
+            logger.warn { "Forcing a core profile, this is unsupported!" }
+            return null
+        }
+        val platform = Platform.get()
+        val vendor = GL11.glGetString(GL11.GL_VENDOR)
+        // AMD Catalyst/Crimson driver on both Linux and MS Windows ©
+        // causes JVM crashes in glDrawArrays and glDrawElements without
+        // any obvious reason to why, using a legacy context appears to
+        // fully get rid of those crashes, so this might be a driver bug
+        // as this does not happen on any other driver
+        // Note: This does not affect the macOS driver or radeonsi
+        // Note: Untested with AMDGPU-Pro
+        if ((platform == Platform.LINUX || platform == Platform.WINDOWS) &&
+            vendor == "ATI Technologies Inc.") {
+            // AMD is bloody genius with their names
+            return "Crashes on AMD Radeon Software Crimson"
+        }
+        return null
+    }
+
+    private fun checkContextGL(): String? {
+        logger.info {
+            "OpenGL: ${GL11.glGetString(
+                GL11.GL_VERSION
+            )} (Vendor: ${GL11.glGetString(
+                GL11.GL_VENDOR
+            )}, Renderer: ${GL11.glGetString(
+                GL11.GL_RENDERER
+            )})"
+        }
+        val capabilities = org.lwjgl.opengl.GL.getCapabilities()
+        if (!capabilities.OpenGL11) {
+            return "Your graphics card has no OpenGL 1.1 support!"
+        }
+        if (!capabilities.OpenGL12) {
+            return "Your graphics card has no OpenGL 1.2 support!"
+        }
+        if (!capabilities.OpenGL13) {
+            return "Your graphics card has no OpenGL 1.3 support!"
+        }
+        if (!capabilities.OpenGL14) {
+            return "Your graphics card has no OpenGL 1.4 support!"
+        }
+        if (!capabilities.OpenGL15) {
+            return "Your graphics card has no OpenGL 1.5 support!"
+        }
+        if (!capabilities.OpenGL20) {
+            return "Your graphics card has no OpenGL 2.0 support!"
+        }
+        if (!capabilities.OpenGL21) {
+            return "Your graphics card has no OpenGL 2.1 support!"
+        }
+        if (!capabilities.OpenGL30) {
+            return "Your graphics card has no OpenGL 3.0 support!"
+        }
+        if (!capabilities.OpenGL31) {
+            return "Your graphics card has no OpenGL 3.1 support!"
+        }
+        if (!capabilities.OpenGL32) {
+            return "Your graphics card has no OpenGL 3.2 support!"
+        }
+        if (!capabilities.OpenGL33) {
+            return "Your graphics card has no OpenGL 3.3 support!"
+        }
+        return null
+    }
+}

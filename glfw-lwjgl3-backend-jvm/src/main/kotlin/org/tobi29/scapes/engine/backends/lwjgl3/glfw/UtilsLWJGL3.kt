@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+package org.tobi29.scapes.engine.backends.lwjgl3.glfw
 
-dependencies {
-    compile project(":openal-sounds-jvm")
-    compile rootProject.ext.lwjglJVM("lwjgl")
-    compile rootProject.ext.lwjglJVM("lwjgl-egl")
-    compile rootProject.ext.lwjglJVM("lwjgl-openal")
-    compile rootProject.ext.lwjglJVM("lwjgl-stb")
+import org.tobi29.arrays.Floats
+import java.nio.FloatBuffer
+
+@PublishedApi
+internal fun FloatBuffer.asFloats() = object : Floats {
+    override val size: Int get() = remaining()
+
+    override fun get(index: Int): Float = this@asFloats.get(position() + index)
+
+    override fun set(index: Int, value: Float) {
+        this@asFloats.put(position() + index, value)
+    }
 }
