@@ -16,7 +16,7 @@
 
 @file:Suppress("NOTHING_TO_INLINE", "EXTENSION_SHADOWED_BY_MEMBER")
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw
+package org.tobi29.scapes.engine.backends.glfw
 
 import org.lwjgl.PointerBuffer
 import org.tobi29.arrays.BytesRO

@@ -16,9 +16,9 @@
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
+package org.tobi29.scapes.engine.backends.glfw.input
 
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.*
+import org.tobi29.scapes.engine.backends.glfw.*
 import org.tobi29.scapes.engine.input.ControllerAxis
 import org.tobi29.scapes.engine.input.ControllerKey
 

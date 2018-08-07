@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw
+package org.tobi29.scapes.engine.backends.glfw
 
 import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.Runnable
@@ -28,10 +28,10 @@ import org.tobi29.logging.KLogging
 import org.tobi29.platform.PLATFORM
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.*
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerDesktop
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllerJoystick
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.GLFWControllers
-import org.tobi29.scapes.engine.backends.lwjgl3.glfw.input.glfwKey
+import org.tobi29.scapes.engine.backends.glfw.input.GLFWControllerDesktop
+import org.tobi29.scapes.engine.backends.glfw.input.GLFWControllerJoystick
+import org.tobi29.scapes.engine.backends.glfw.input.GLFWControllers
+import org.tobi29.scapes.engine.backends.glfw.input.glfwKey
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
@@ -59,13 +59,15 @@ class ContainerGLFW(
         private set
     override var containerHeight = 0
         private set
-    private val controllerDesktop = GLFWControllerDesktop()
+    private val controllerDesktop =
+        GLFWControllerDesktop()
     private val joysticks =
         ConcurrentHashMap<Int, GLFWControllerJoystick>()
-    private val errorFun = GLFWErrorCallback { error, _ ->
-        // TODO: Improve logging
-        logger.error { "Error $error occurred in GLFW" }
-    }
+    private val errorFun =
+        GLFWErrorCallback { error, _ ->
+            // TODO: Improve logging
+            logger.error { "Error $error occurred in GLFW" }
+        }
     private val useGLES: Boolean
     override val gos: GraphicsObjectSupplier
     private val gl: GL
@@ -137,13 +139,25 @@ class ContainerGLFW(
                 mouseX = containerWidth / density * 0.5
                 mouseY = containerHeight / density * 0.5
                 if (cursorCapture) {
-                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
+                    glfwSetInputMode(
+                        window,
+                        GLFW_CURSOR,
+                        GLFW_CURSOR_DISABLED
+                    )
                     mouseDeltaSkip = true
                 } else {
                     mouseX = containerWidth / density * 0.5
                     mouseY = containerHeight / density * 0.5
-                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
-                    glfwSetCursorPos(window, mouseX, mouseY)
+                    glfwSetInputMode(
+                        window,
+                        GLFW_CURSOR,
+                        GLFW_CURSOR_NORMAL
+                    )
+                    glfwSetCursorPos(
+                        window,
+                        mouseX,
+                        mouseY
+                    )
                 }
                 controllerDesktop.set(mouseX, mouseY)
             }
@@ -152,13 +166,19 @@ class ContainerGLFW(
 
     override fun clipboardCopy(value: String) {
         launch(this) {
-            glfwSetClipboardString(window, value)
+            glfwSetClipboardString(
+                window,
+                value
+            )
         }
     }
 
     override fun clipboardPaste(callback: (String) -> Unit) {
         launch(this) {
-            callback(glfwGetClipboardString(window) ?: "")
+            callback(
+                glfwGetClipboardString(
+                    window
+                ) ?: "")
         }
     }
 
@@ -168,7 +188,12 @@ class ContainerGLFW(
         message: String
     ) {
         launch(this) {
-            message(this@ContainerGLFW, messageType, title, message)
+            message(
+                this@ContainerGLFW,
+                messageType,
+                title,
+                message
+            )
         }
     }
 
@@ -178,7 +203,12 @@ class ContainerGLFW(
         multiline: Boolean
     ) {
         launch(this) {
-            dialog(this@ContainerGLFW, title, text, multiline)
+            dialog(
+                this@ContainerGLFW,
+                title,
+                text,
+                multiline
+            )
         }
     }
 
@@ -192,47 +222,64 @@ class ContainerGLFW(
         val engine: ScapesEngine
     ) : AutoCloseable {
         val engineConfig = engine[ScapesEngineConfig.COMPONENT]
-        val controllers = GLFWControllers(engine.events, joysticks)
-        val windowSizeFun = GLFWWindowSizeCallback { _, width, height ->
-            containerWidth = (width * density).roundToInt()
-            containerHeight = (height * density).roundToInt()
-        }
-        val windowCloseFun = GLFWWindowCloseCallback { stop() }
+        val controllers =
+            GLFWControllers(
+                engine.events,
+                joysticks
+            )
+        val windowSizeFun =
+            GLFWWindowSizeCallback { _, width, height ->
+                containerWidth = (width * density).roundToInt()
+                containerHeight = (height * density).roundToInt()
+            }
+        val windowCloseFun =
+            GLFWWindowCloseCallback { stop() }
         val windowFocusFun =
-            GLFWWindowFocusCallback { _, focused -> focus = focused }
+            GLFWWindowFocusCallback { _, focused ->
+                focus = focused
+            }
         val frameBufferSizeFun =
             GLFWFramebufferSizeCallback { _, width, height ->
                 contentWidth = width
                 contentHeight = height
             }
-        val keyFun = GLFWKeyCallback { _, key, _, action, _ ->
-            val virtualKey = glfwKey(key)
-            if (virtualKey != null) {
-                if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW_RELEASE) {
-                    controllerDesktop.addTypeEvent(127.toChar(), engine.events)
+        val keyFun =
+            GLFWKeyCallback { _, key, _, action, _ ->
+                val virtualKey =
+                    glfwKey(key)
+                if (virtualKey != null) {
+                    if (virtualKey == ControllerKey.KEY_BACKSPACE && action != GLFW_RELEASE) {
+                        controllerDesktop.addTypeEvent(
+                            127.toChar(),
+                            engine.events
+                        )
+                    }
+                    when (action) {
+                        GLFW_PRESS -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.PRESS,
+                            engine.events
+                        )
+                        GLFW_REPEAT -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.REPEAT,
+                            engine.events
+                        )
+                        GLFW_RELEASE -> controllerDesktop.addPressEvent(
+                            virtualKey, ControllerButtons.Action.RELEASE,
+                            engine.events
+                        )
+                    }
                 }
-                when (action) {
-                    GLFW_PRESS -> controllerDesktop.addPressEvent(
-                        virtualKey, ControllerButtons.Action.PRESS,
-                        engine.events
-                    )
-                    GLFW_REPEAT -> controllerDesktop.addPressEvent(
-                        virtualKey, ControllerButtons.Action.REPEAT,
-                        engine.events
-                    )
-                    GLFW_RELEASE -> controllerDesktop.addPressEvent(
-                        virtualKey, ControllerButtons.Action.RELEASE,
-                        engine.events
-                    )
+                if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+                    plebSyncEnable = !plebSyncEnable
                 }
             }
-            if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
-                plebSyncEnable = !plebSyncEnable
+        val charFun =
+            GLFWCharCallback { _, codepoint ->
+                controllerDesktop.addTypeEvent(
+                    codepoint.toChar(),
+                    engine.events
+                )
             }
-        }
-        val charFun = GLFWCharCallback { _, codepoint ->
-            controllerDesktop.addTypeEvent(codepoint.toChar(), engine.events)
-        }
         val mouseButtonFun =
             GLFWMouseButtonCallback { _, button, action, _ ->
                 val virtualKey = ControllerKey.button(button)
@@ -249,34 +296,43 @@ class ContainerGLFW(
                     }
                 }
             }
-        val cursorPosFun = GLFWCursorPosCallback { window, xpos, ypos ->
-            val dx = xpos - mouseX
-            val dy = ypos - mouseY
-            if (dx != 0.0 || dy != 0.0) {
-                if (cursorCaptured) {
-                    glfwSetCursorPos(window, 0.0, 0.0)
-                    mouseX = 0.0
-                    mouseY = 0.0
-                } else {
-                    controllerDesktop.set(xpos * density, ypos * density)
-                    mouseX = xpos
-                    mouseY = ypos
-                }
-                if (mouseDeltaSkip) {
-                    mouseDeltaSkip = false
-                } else {
-                    controllerDesktop.addDelta(dx, dy, engine.events)
+        val cursorPosFun =
+            GLFWCursorPosCallback { window, xpos, ypos ->
+                val dx = xpos - mouseX
+                val dy = ypos - mouseY
+                if (dx != 0.0 || dy != 0.0) {
+                    if (cursorCaptured) {
+                        glfwSetCursorPos(
+                            window,
+                            0.0,
+                            0.0
+                        )
+                        mouseX = 0.0
+                        mouseY = 0.0
+                    } else {
+                        controllerDesktop.set(xpos * density, ypos * density)
+                        mouseX = xpos
+                        mouseY = ypos
+                    }
+                    if (mouseDeltaSkip) {
+                        mouseDeltaSkip = false
+                    } else {
+                        controllerDesktop.addDelta(dx, dy, engine.events)
+                    }
                 }
             }
-        }
-        val scrollFun = GLFWScrollCallback { _, xoffset, yoffset ->
-            if (xoffset != 0.0 || yoffset != 0.0) {
-                controllerDesktop.addScroll(xoffset, yoffset, engine.events)
+        val scrollFun =
+            GLFWScrollCallback { _, xoffset, yoffset ->
+                if (xoffset != 0.0 || yoffset != 0.0) {
+                    controllerDesktop.addScroll(xoffset, yoffset, engine.events)
+                }
             }
-        }
-        val monitorFun = GLFWMonitorCallback { _, _ ->
-            refreshRate = refreshRate(window) ?: 60
-        }
+        val monitorFun =
+            GLFWMonitorCallback { _, _ ->
+                refreshRate = refreshRate(
+                    window
+                ) ?: 60
+            }
         val latencyDebug = engine.debugValues["Input-Latency"]
         val plebSyncDebug = engine.debugValues["PlebSync™-Sleep"]
         var plebSync = 0L
@@ -327,7 +383,9 @@ class ContainerGLFW(
         val timer = Timer()
 
         fun init() {
-            glfwSetMonitorCallback(monitorFun)
+            glfwSetMonitorCallback(
+                monitorFun
+            )
             controllers.init()
             timer.init()
         }
@@ -347,10 +405,16 @@ class ContainerGLFW(
                 engineConfig.fullscreen, engineConfig.vSync,
                 useGLES, this
             )
-            refreshRate = refreshRate(window) ?: 60
+            refreshRate = refreshRate(
+                window
+            ) ?: 60
             val widthBuffer = IntArray(1)
             val heightBuffer = IntArray(1)
-            glfwGetWindowSize(window, widthBuffer, heightBuffer)
+            glfwGetWindowSize(
+                window,
+                widthBuffer,
+                heightBuffer
+            )
             containerWidth = (widthBuffer[0] * density).roundToInt()
             containerHeight = (heightBuffer[0] * density).roundToInt()
             glfwGetFramebufferSize(
@@ -497,7 +561,8 @@ private fun initWindow(
 ): GLFWWindow {
     ContainerGLFW.logger.info { "Creating GLFW window..." }
     val monitor = glfwGetPrimaryMonitor()
-    val videoMode = glfwGetVideoMode(monitor)
+    val videoMode =
+        glfwGetVideoMode(monitor)
     val monitorWidth = videoMode?.width ?: 1280
     val monitorHeight = videoMode?.height ?: 720
     glfwDefaultWindowHints()
@@ -532,15 +597,42 @@ private fun initWindow(
         window
     }
     initContext()
-    glfwSetWindowSizeCallback(window, state.windowSizeFun)
-    glfwSetWindowCloseCallback(window, state.windowCloseFun)
-    glfwSetWindowFocusCallback(window, state.windowFocusFun)
-    glfwSetFramebufferSizeCallback(window, state.frameBufferSizeFun)
-    glfwSetKeyCallback(window, state.keyFun)
-    glfwSetCharCallback(window, state.charFun)
-    glfwSetMouseButtonCallback(window, state.mouseButtonFun)
-    glfwSetCursorPosCallback(window, state.cursorPosFun)
-    glfwSetScrollCallback(window, state.scrollFun)
+    glfwSetWindowSizeCallback(
+        window,
+        state.windowSizeFun
+    )
+    glfwSetWindowCloseCallback(
+        window,
+        state.windowCloseFun
+    )
+    glfwSetWindowFocusCallback(
+        window,
+        state.windowFocusFun
+    )
+    glfwSetFramebufferSizeCallback(
+        window,
+        state.frameBufferSizeFun
+    )
+    glfwSetKeyCallback(
+        window,
+        state.keyFun
+    )
+    glfwSetCharCallback(
+        window,
+        state.charFun
+    )
+    glfwSetMouseButtonCallback(
+        window,
+        state.mouseButtonFun
+    )
+    glfwSetCursorPosCallback(
+        window,
+        state.cursorPosFun
+    )
+    glfwSetScrollCallback(
+        window,
+        state.scrollFun
+    )
     glfwSwapInterval(if (vSync) 1 else 0)
     return window
 }
@@ -548,31 +640,70 @@ private fun initWindow(
 private fun disposeWindow(
     window: GLFWWindow
 ) {
-    glfwSetWindowSizeCallback(window, null)
-    glfwSetWindowCloseCallback(window, null)
-    glfwSetWindowFocusCallback(window, null)
-    glfwSetFramebufferSizeCallback(window, null)
+    glfwSetWindowSizeCallback(
+        window,
+        null
+    )
+    glfwSetWindowCloseCallback(
+        window,
+        null
+    )
+    glfwSetWindowFocusCallback(
+        window,
+        null
+    )
+    glfwSetFramebufferSizeCallback(
+        window,
+        null
+    )
     glfwSetKeyCallback(window, null)
     glfwSetCharCallback(window, null)
-    glfwSetMouseButtonCallback(window, null)
-    glfwSetCursorPosCallback(window, null)
+    glfwSetMouseButtonCallback(
+        window,
+        null
+    )
+    glfwSetCursorPosCallback(
+        window,
+        null
+    )
     glfwSetScrollCallback(window, null)
     glfwDestroyWindow(window)
 }
 
 private fun initContextGL(contextLegacy: Boolean = false) {
     if (!contextLegacy) {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
+        glfwWindowHint(
+            GLFW_CONTEXT_VERSION_MAJOR,
+            3
+        )
+        glfwWindowHint(
+            GLFW_CONTEXT_VERSION_MINOR,
+            3
+        )
+        glfwWindowHint(
+            GLFW_OPENGL_PROFILE,
+            GLFW_OPENGL_CORE_PROFILE
+        )
+        glfwWindowHint(
+            GLFW_OPENGL_FORWARD_COMPAT,
+            GLFW_TRUE
+        )
     }
 }
 
 private fun initContextGLES() {
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0)
+    glfwWindowHint(
+        GLFW_CLIENT_API,
+        GLFW_OPENGL_ES_API
+    )
+    glfwWindowHint(
+        GLFW_CONTEXT_VERSION_MAJOR,
+        3
+    )
+    glfwWindowHint(
+        GLFW_CONTEXT_VERSION_MINOR,
+        0
+    )
 }
 
 private fun initWindow(
@@ -582,9 +713,15 @@ private fun initWindow(
     monitorWidth: Int,
     monitorHeight: Int
 ): GLFWWindow {
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
+    glfwWindowHint(
+        GLFW_VISIBLE,
+        GLFW_FALSE
+    )
     // >:V Seriously, stop with this crap!
-    glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE)
+    glfwWindowHint(
+        GLFW_AUTO_ICONIFY,
+        GLFW_FALSE
+    )
     return if (fullscreen) {
         val window = glfwCreateWindow(
             monitorWidth, monitorHeight, title, monitor, 0L
@@ -606,7 +743,11 @@ private fun initWindow(
             height = 540
         }
         val window = glfwCreateWindow(
-            width, height, title, GLFWMonitor_EMPTY, 0L
+            width,
+            height,
+            title,
+            GLFWMonitor_EMPTY,
+            0L
         )
         if (window == GLFWWindow_EMPTY) {
             throw GraphicsCheckException("Failed to create window")
@@ -616,7 +757,8 @@ private fun initWindow(
 }
 
 private fun refreshRate(window: GLFWWindow): Int? {
-    val monitor = glfwGetWindowMonitor(window)
+    val monitor =
+        glfwGetWindowMonitor(window)
     if (monitor != GLFWMonitor_EMPTY) {
         return glfwGetVideoMode(monitor)?.refreshRate ?: 60
     }

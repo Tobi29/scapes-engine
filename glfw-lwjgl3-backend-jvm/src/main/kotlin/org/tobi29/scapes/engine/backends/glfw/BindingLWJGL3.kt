@@ -16,7 +16,7 @@
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw
+package org.tobi29.scapes.engine.backends.glfw
 
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.system.MemoryUtil

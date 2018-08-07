@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw.input
+package org.tobi29.scapes.engine.backends.glfw.input
 
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.platform.PLATFORM

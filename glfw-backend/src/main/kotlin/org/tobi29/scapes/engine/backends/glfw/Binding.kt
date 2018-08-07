@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.lwjgl3.glfw
+package org.tobi29.scapes.engine.backends.glfw
 
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.FloatsRO
