@@ -654,6 +654,7 @@ class Collision(private val pool: IWorldPool) {
     ) {
         manifold.pointCount = 0
 
+        val d = MutableVector2d()
 
         // Compute circle in frame of edge
         // Vec2 Q = MulT(xfA, Mul(xfB, circleB.m_p));
@@ -1488,8 +1489,5 @@ class Collision(private val pool: IWorldPool) {
         }
 
         // #### COLLISION STUFF (not from collision.h or collision.cpp) ####
-
-        // djm pooling
-        private val d = MutableVector2d()
     }
 }

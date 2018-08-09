@@ -132,12 +132,11 @@ class Transform() {
             return C
         }
 
-        private val pool = MutableVector2d()
-
         fun mulTrans(
             A: Transform,
             B: Transform
         ): Transform {
+            val pool = MutableVector2d()
             val C = Transform()
             Rot.mulTrans(A.q, B.q, C.q)
             pool.set(B.p)

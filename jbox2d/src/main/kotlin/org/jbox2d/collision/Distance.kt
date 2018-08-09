@@ -29,6 +29,7 @@ import org.jbox2d.common.Settings
 import org.jbox2d.common.Transform
 import org.jbox2d.common.cross
 import org.tobi29.math.vector.*
+import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.copy
 import kotlin.math.max
@@ -622,7 +623,8 @@ class Distance {
         cache: SimplexCache,
         input: DistanceInput
     ) {
-        GJK_CALLS++
+        val stats = stats
+        stats.GJK_CALLS++
 
         val proxyA = input.proxyA
         val proxyB = input.proxyB
@@ -722,7 +724,7 @@ class Distance {
 
             // Iteration count is equated to the number of support point calls.
             ++iter
-            ++GJK_ITERS
+            ++stats.GJK_ITERS
 
             // Check for duplicate support points. This is the main termination criteria.
             var duplicate = false
@@ -742,7 +744,7 @@ class Distance {
             ++simplex.m_count
         }
 
-        GJK_MAX_ITERS = max(GJK_MAX_ITERS, iter)
+        stats.GJK_MAX_ITERS = max(stats.GJK_MAX_ITERS, iter)
 
         // Prepare output.
         simplex.getWitnessPoints(output.pointA, output.pointB)
@@ -783,6 +785,10 @@ class Distance {
     companion object {
         const val MAX_ITERS = 20
 
+        val stats by ThreadLocal { DistanceStats() }
+    }
+
+    class DistanceStats {
         var GJK_CALLS = 0
         var GJK_ITERS = 0
         var GJK_MAX_ITERS = 20

@@ -28,6 +28,7 @@ import org.jbox2d.collision.Distance.SimplexCache
 import org.jbox2d.common.*
 import org.jbox2d.pooling.IWorldPool
 import org.tobi29.math.vector.*
+import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.assert
 import kotlin.math.abs
 import kotlin.math.max
@@ -95,10 +96,11 @@ class TimeOfImpact(private val pool: IWorldPool) {
         output: TOIOutput,
         input: TOIInput
     ) {
+        val stats = stats
         // CCD via the local separating axis method. This seeks progression
         // by computing the largest time at which separation is maintained.
 
-        ++toiCalls
+        ++stats.toiCalls
 
         output.state = TOIOutputState.UNKNOWN
         output.t = input.tMax
@@ -234,7 +236,7 @@ class TimeOfImpact(private val pool: IWorldPool) {
                     }
 
                     ++rootIterCount
-                    ++toiRootIters
+                    ++stats.toiRootIters
 
                     val s = fcn.evaluate(indexes[0], indexes[1], t)
 
@@ -258,7 +260,8 @@ class TimeOfImpact(private val pool: IWorldPool) {
                     }
                 }
 
-                toiMaxRootIters = max(toiMaxRootIters, rootIterCount)
+                stats.toiMaxRootIters =
+                        max(stats.toiMaxRootIters, rootIterCount)
 
                 ++pushBackIter
 
@@ -268,7 +271,7 @@ class TimeOfImpact(private val pool: IWorldPool) {
             }
 
             ++iter
-            ++toiIters
+            ++stats.toiIters
 
             if (done) {
                 // System.out.println("done");
@@ -285,13 +288,17 @@ class TimeOfImpact(private val pool: IWorldPool) {
         }
 
         // System.out.printf("final sweeps: %f, %f, %f; %f, %f, %f", input.s)
-        toiMaxIters = max(toiMaxIters, iter)
+        stats.toiMaxIters = max(stats.toiMaxIters, iter)
     }
 
     companion object {
         const val MAX_ITERATIONS = 20
         const val MAX_ROOT_ITERATIONS = 50
 
+        val stats by ThreadLocal { ToiStats() }
+    }
+
+    class ToiStats {
         var toiCalls = 0
         var toiIters = 0
         var toiMaxIters = 0
