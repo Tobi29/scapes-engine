@@ -22,6 +22,7 @@ import org.tobi29.arrays.asBytesRO
 import org.tobi29.graphics.*
 import org.tobi29.io.ByteViewRO
 import org.tobi29.math.margin
+import org.tobi29.math.max
 import org.tobi29.math.vector.MutableVector2i
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.scapes.engine.ScapesEngine
@@ -147,10 +148,9 @@ fun atlas(
     tileSets: TileSets<*>
 ): TileAtlas {
     val tiles = tileSets.tiles.map { tile ->
-        val size = tile.sprite.frames.asSequence().map { it.image.size }
-            .fold(Vector2i.ZERO) { a, b ->
-                Vector2i(max(a.x, b.x), max(a.y, b.y))
-            }
+        val size = tile.sprite.frames.fold(Vector2i.ZERO) { a, b ->
+            max(a, b.image.size)
+        }
         val scaledTile = if (tile.sprite.frames.any { it.image.size != size }) {
             Tile(Sprite(tile.sprite.frames.map { (duration, image) ->
                 val scaledImage =
