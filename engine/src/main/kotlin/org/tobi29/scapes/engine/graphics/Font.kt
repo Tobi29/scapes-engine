@@ -16,8 +16,11 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.io.AutoCloseable
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 
-interface Font {
+interface Font : AutoCloseable {
     fun createGlyphRenderer(size: Int): GlyphRenderer
+
+    override fun close() {}
 }
