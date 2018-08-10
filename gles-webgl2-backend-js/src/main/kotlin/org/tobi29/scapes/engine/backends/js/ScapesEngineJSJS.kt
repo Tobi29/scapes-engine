@@ -16,11 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.js
 
-import org.khronos.webgl.ArrayBuffer
-import org.khronos.webgl.DataView
-import org.tobi29.io.ByteViewE
 import org.tobi29.io.ReadSource
-import org.tobi29.io.viewNative
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.ScapesEngineBackend
 import org.tobi29.scapes.engine.backends.js.audio.WebAudioSoundSystem
@@ -28,9 +24,6 @@ import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.sound.SoundSystem
 
 object ScapesEngineJS : ScapesEngineBackend {
-    override fun allocateNative(size: Int): ByteViewE =
-        DataView(ArrayBuffer(size)).viewNative
-
     override suspend fun loadFont(asset: ReadSource): Font =
         JSFont.loadFont(asset)
 
