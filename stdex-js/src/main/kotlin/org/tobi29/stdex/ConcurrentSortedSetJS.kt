@@ -22,19 +22,8 @@ actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractMutableSet<T>(),
 
     override val size get() = list.size
 
-    override fun iterator() = list.iterator().let { iterator ->
-        object : MutableIterator<T> {
-            private var current: T? = null
-
-            override fun hasNext() = iterator.hasNext()
-
-            override fun next() = iterator.next().also { current = it }
-
-            override fun remove() {
-                remove(current ?: error("No element in iterator yet"))
-            }
-        }
-    }
+    override fun iterator(): MutableIterator<T> =
+        IteratorImpl(this, list.iterator())
 
     private fun binarySearchKey(element: T) = list.binarySearchKey(element)
 
@@ -127,6 +116,21 @@ actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractMutableSet<T>(),
         else {
             list = newList
             true
+        }
+    }
+
+    private class IteratorImpl<T : Comparable<T>>(
+        val set: ConcurrentSortedSet<T>,
+        val iterator: Iterator<T>
+    ) : MutableIterator<T> {
+        private var current: T? = null
+
+        override fun hasNext() = iterator.hasNext()
+
+        override fun next() = iterator.next().also { current = it }
+
+        override fun remove() {
+            set.remove(current ?: error("No element in iterator yet"))
         }
     }
 }

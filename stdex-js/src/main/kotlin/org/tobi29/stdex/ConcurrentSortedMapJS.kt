@@ -38,22 +38,8 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
 
             override fun clear() = this@ConcurrentSortedMap.clear()
 
-            override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> {
-                val iterator = list.iterator()
-                return object : MutableIterator<MutableMap.MutableEntry<K, V>> {
-                    private var current: MutableMap.MutableEntry<K, V>? = null
-
-                    override fun hasNext() = iterator.hasNext()
-
-                    @Suppress("UNCHECKED_CAST")
-                    override fun next() =
-                        iterator.next().also { current = it }
-
-                    override fun remove() {
-                        remove(current ?: error("No element in iterator yet"))
-                    }
-                }
-            }
+            override fun iterator(): MutableIterator<MutableMap.MutableEntry<K, V>> =
+                IteratorImpl(this@ConcurrentSortedMap, list.iterator())
 
             override fun remove(element: MutableMap.MutableEntry<K, V>) =
                 this@ConcurrentSortedMap.remove(element.key) != null
@@ -140,24 +126,39 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
     override fun clear() {
         list = emptyList()
     }
-}
 
-private class Entry<K, V>(
-    override val key: K, value: V
-) : MutableMap.MutableEntry<K, V> {
-    override var value: V = value
-        private set
+    private class Entry<K, V>(
+        override val key: K, value: V
+    ) : MutableMap.MutableEntry<K, V> {
+        override var value: V = value
+            private set
 
-    override fun setValue(newValue: V): V = value.also { value = newValue }
+        override fun setValue(newValue: V): V = value.also { value = newValue }
 
-    override fun toString() = "$key=$value"
+        override fun toString() = "$key=$value"
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Map.Entry<*, *>) return false
-        return key == other.key && value == other.value
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Map.Entry<*, *>) return false
+            return key == other.key && value == other.value
+        }
+
+        override fun hashCode() =
+            (key?.hashCode() ?: 0) xor (value?.hashCode() ?: 0)
     }
 
-    override fun hashCode() =
-        (key?.hashCode() ?: 0) xor (value?.hashCode() ?: 0)
+    private class IteratorImpl<K : Comparable<K>, V>(
+        val map: ConcurrentSortedMap<K, V>,
+        val iterator: Iterator<MutableMap.MutableEntry<K, V>>
+    ) : MutableIterator<MutableMap.MutableEntry<K, V>> {
+        private var current: MutableMap.MutableEntry<K, V>? = null
+
+        override fun hasNext() = iterator.hasNext()
+
+        override fun next() = iterator.next().also { current = it }
+
+        override fun remove() {
+            map.remove(current?.key ?: error("No element in iterator yet"))
+        }
+    }
 }
