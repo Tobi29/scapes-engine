@@ -562,7 +562,7 @@ private fun initWindow(
     ContainerGLFW.logger.info { "Creating GLFW window..." }
     val monitor = glfwGetPrimaryMonitor()
     val videoMode =
-        glfwGetVideoMode(monitor)
+        if (monitor == GLFWMonitor_EMPTY) null else glfwGetVideoMode(monitor)
     val monitorWidth = videoMode?.width ?: 1280
     val monitorHeight = videoMode?.height ?: 720
     glfwDefaultWindowHints()
