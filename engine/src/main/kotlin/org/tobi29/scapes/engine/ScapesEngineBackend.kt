@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
 import org.tobi29.io.ReadSource
 import org.tobi29.io.tag.ReadTagMutableMap
@@ -28,7 +29,8 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.dummy.DummySoundSystem
 
 interface ScapesEngineBackend {
-    fun allocateNative(size: Int): ByteViewE
+    fun allocateNative(size: Int): ByteViewE =
+        allocateMemoryBuffer(size)
 
     suspend fun loadFont(asset: ReadSource): Font =
         DummyFont
@@ -36,6 +38,20 @@ interface ScapesEngineBackend {
     fun createSoundSystem(engine: ScapesEngine): SoundSystem =
         DummySoundSystem(engine)
 }
+
+expect sealed class MemoryBuffer : ByteViewE
+expect sealed class MemoryBufferPinned : /* MemoryBuffer, */ ByteViewE
+expect sealed class MemoryBufferExternal : ByteViewE
+
+expect fun MemoryBufferPinned.asMemoryBuffer(): MemoryBuffer
+
+expect fun MemoryBufferPinned.close()
+
+expect fun allocateMemoryBuffer(size: Int): MemoryBuffer
+expect fun allocateMemoryBufferPinned(size: Int): MemoryBufferPinned
+
+expect fun BytesRO.readAsMemoryBuffer(): MemoryBuffer
+expect fun BytesRO.readAsMemoryBufferPinned(): MemoryBufferPinned
 
 interface GraphicsBackend
 

@@ -14,13 +14,8 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlinjvm.gradle"
+apply from: "$rootDir/resources/modulekotlin.gradle"
 
 dependencies {
-    compile project(":openal-sounds-jvm")
-    compile project(":stb-truetype-lwjgl3-font-jvm")
-    compile rootProject.ext.lwjglJVM("lwjgl")
-    compile rootProject.ext.lwjglJVM("lwjgl-egl")
-    compile rootProject.ext.lwjglJVM("lwjgl-openal")
-    compile rootProject.ext.lwjglJVM("lwjgl-stb")
+    compile project(":engine")
 }
