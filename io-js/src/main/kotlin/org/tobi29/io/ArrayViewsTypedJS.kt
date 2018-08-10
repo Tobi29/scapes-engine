@@ -28,7 +28,7 @@ sealed class TypedView(
         size: Int
 ) : HeapBytes(Int8Array(buffer, bufferOffset).asArray(), offset,
         size),
-        HeapView {
+        HeapView, ByteViewE {
     constructor(array: ByteArray,
                 offset: Int,
                 size: Int) : this(array.js.buffer,

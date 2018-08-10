@@ -56,6 +56,10 @@ sealed class ByteBufferView(protected val buffer: ByteBuffer) : ByteViewE {
     override final val size = buffer.remaining()
     abstract val byteBuffer: ByteBuffer
 
+    abstract override fun slice(index: Int): ByteBufferView
+
+    abstract override fun slice(index: Int, size: Int): ByteBufferView
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BytesRO || size != other.size) return false
