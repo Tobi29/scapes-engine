@@ -16,32 +16,19 @@
 
 package org.tobi29.scapes.engine.shader.backend.glsl
 
-import org.tobi29.utils.MutableString
 import org.tobi29.scapes.engine.shader.*
-import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.computeAbsent
 import org.tobi29.stdex.readOnly
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
-import kotlin.collections.List
-import kotlin.collections.Map
-import kotlin.collections.asSequence
-import kotlin.collections.firstOrNull
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.joinToString
-import kotlin.collections.lastIndex
-import kotlin.collections.map
-import kotlin.collections.plus
+import org.tobi29.utils.MutableString
 import kotlin.collections.set
-import kotlin.collections.toMap
 
 class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private var output = MutableString(2048)
     private val identifiers = HashMap<Identifier, Expression>()
     private lateinit var context: ShaderContext
-    private val functionImplementations = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
+    private val functionImplementations =
+        HashMap<FunctionExportedSignature, (Array<String>) -> String>()
 
     private fun variable(identifier: Identifier): String? {
         return identifiers[identifier]?.let { expression(it) } ?: return null
@@ -82,7 +69,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return ""
         }
         throw IllegalArgumentException(
-                "Unknown expression: ${expression::class}")
+            "Unknown expression: ${expression::class}"
+        )
     }
 
     private fun glslExpression(expression: GLSLExpression): String {
@@ -94,8 +82,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun conditionExpression(expression: ConditionExpression): String {
-        return combine(expression.left, expression.right,
-                conditionOperator(expression.type))
+        return combine(
+            expression.left, expression.right,
+            conditionOperator(expression.type)
+        )
     }
 
     private fun conditionOperator(type: ConditionType): String {
@@ -103,7 +93,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             ConditionType.OR -> "||"
             ConditionType.AND -> "&&"
             else -> throw IllegalArgumentException(
-                    "Unexpected expression type: $type")
+                "Unexpected expression type: $type"
+            )
         }
     }
 
@@ -119,7 +110,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             UnaryType.BIT_NOT -> '~' + str
             UnaryType.NOT -> '!' + str
             else -> throw IllegalArgumentException(
-                    "Unexpected expression type: ${statement.type}")
+                "Unexpected expression type: ${statement.type}"
+            )
         }
     }
 
@@ -135,14 +127,16 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             expression(statement.arguments[it])
         }
         val signature = FunctionParameterSignature(name,
-                statement.arguments.map { it.type(context) })
+            statement.arguments.map { it.type(context) })
         val newFunction = context.functions[signature]
         if (newFunction != null) {
             functionImplementations[newFunction]?.let { return it(args) }
+            stdFunctions[newFunction]?.let { return it(args) }
             return glslFunction(newFunction.name, *args)
         }
         throw ShaderGenerateException(
-                "No functions for given arguments: $signature", statement)
+            "No functions for given arguments: $signature", statement
+        )
     }
 
     private fun arrayAccessExpression(expression: ArrayAccessExpression): String {
@@ -168,15 +162,18 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun variableExpression(expression: IdentifierExpression): String {
         return variable(expression.identifier) ?: throw ShaderGenerateException(
-                "Unknown identifier: ${expression.identifier.name}", expression)
+            "Unknown identifier: ${expression.identifier.name}", expression
+        )
     }
 
     private fun memberExpression(expression: MemberExpression): String {
         return pack(expression.member) + '.' + member(expression.name)
     }
 
-    private fun ifStatement(expression: IfStatement,
-                            level: Int) {
+    private fun ifStatement(
+        expression: IfStatement,
+        level: Int
+    ) {
         val condition = expression.condition.simplify(context, identifiers)
         if (condition is BooleanExpression) {
             if (condition.value) {
@@ -194,12 +191,16 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun loopFixedStatement(expression: LoopFixedStatement,
-                                   level: Int) {
+    private fun loopFixedStatement(
+        expression: LoopFixedStatement,
+        level: Int
+    ) {
         val startInt = integer(
-                expression.start.simplify(context, identifiers))
+            expression.start.simplify(context, identifiers)
+        )
         val endInt = integer(
-                expression.end.simplify(context, identifiers))
+            expression.end.simplify(context, identifiers)
+        )
         for (i in startInt until endInt) {
             identifiers[expression.index] = IntegerExpression(i)
             statement(expression.statement, level)
@@ -207,48 +208,60 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 
     private fun declarationStatement(
-            statement: FieldDeclarationStatement,
-            level: Int) {
+        statement: FieldDeclarationStatement,
+        level: Int
+    ) {
         identifiers[statement.identifier] = GLSLExpression(
-                statement.identifier.type, statement.identifier.name)
+            statement.identifier.type, statement.identifier.name
+        )
         val declaration = type(statement.type, statement.identifier)
         if (statement.initializer == null) {
             println(level, "$declaration;")
         } else {
-            println(level,
-                    "$declaration = ${expression(statement.initializer)};")
+            println(
+                level,
+                "$declaration = ${expression(statement.initializer)};"
+            )
         }
     }
 
     private fun arrayDeclarationStatement(
-            statement: ArrayDeclarationStatement,
-            level: Int) {
+        statement: ArrayDeclarationStatement,
+        level: Int
+    ) {
         identifiers[statement.identifier] = GLSLExpression(
-                statement.identifier.type, statement.identifier.name)
+            statement.identifier.type, statement.identifier.name
+        )
         val declaration = type(statement.type, statement.identifier)
         if (statement.initializer == null) {
             println(level, declaration + ';')
         } else {
-            println(level, declaration + " = " +
-                    type(statement.type.type) + "[]" +
-                    expression(statement.initializer) + ';')
+            println(
+                level, declaration + " = " +
+                        type(statement.type.type) + "[]" +
+                        expression(statement.initializer) + ';'
+            )
         }
     }
 
     private fun arrayExpression(initializer: ArrayExpression) =
-            initializer.content.asSequence().map {
-                expression(it)
-            }.joinToString(prefix = "(", postfix = ")")
+        initializer.content.asSequence().map {
+            expression(it)
+        }.joinToString(prefix = "(", postfix = ")")
 
-    private fun combine(a: Expression,
-                        b: Expression,
-                        operator: String): String {
+    private fun combine(
+        a: Expression,
+        b: Expression,
+        operator: String
+    ): String {
         return pack(a) + ' ' + operator + ' ' + pack(b)
     }
 
-    private fun combineNotPacked(a: Expression,
-                                 b: Expression,
-                                 operator: String): String {
+    private fun combineNotPacked(
+        a: Expression,
+        b: Expression,
+        operator: String
+    ): String {
         return expression(a) + ' ' + operator + ' ' + pack(b)
     }
 
@@ -256,21 +269,26 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         return "(${expression(expression)})"
     }
 
-    private fun type(type: Type,
-                     identifier: Identifier): String? {
+    private fun type(
+        type: Type,
+        identifier: Identifier
+    ): String? {
         val expression = identifiers[identifier] ?: return null
         return type(type, expression(expression))
     }
 
-    private fun type(type: Type,
-                     identifier: String): String {
+    private fun type(
+        type: Type,
+        identifier: String
+    ): String {
         val str = StringBuilder(24)
         if (type.constant) {
             str.append("const ")
         }
         when (version) {
             GLSLGenerator.Version.GLES_300 -> str.append(
-                    precision(type.precision)).append(' ')
+                precision(type.precision)
+            ).append(' ')
             else -> Unit
         }
         str.append(type(type.type))
@@ -291,20 +309,25 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
         when (version) {
             GLSLGenerator.Version.GLES_300 -> qualifiers.append(
-                    precision(type.precision)).append(' ')
+                precision(type.precision)
+            ).append(' ')
             else -> Unit
         }
         return qualifiers.toString() + type(type.type)
     }
 
-    private fun identifier(type: Type,
-                           identifier: Identifier): String? {
+    private fun identifier(
+        type: Type,
+        identifier: Identifier
+    ): String? {
         val expression = identifiers[identifier] ?: return null
         return identifier(type, expression(expression))
     }
 
-    private fun identifier(type: Type,
-                           identifier: String): String {
+    private fun identifier(
+        type: Type,
+        identifier: String
+    ): String {
         if (type.array != null) {
             return "$identifier[${expression(type.array)}]"
         }
@@ -340,25 +363,30 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             Precision.mediump -> "mediump"
             Precision.highp -> "highp"
             else -> throw IllegalArgumentException(
-                    "Unexpected precision: $precision")
+                "Unexpected precision: $precision"
+            )
         }
     }
 
     private fun integer(expression: Expression): Int {
-        val integer = expression.simplify(context,
-                identifiers) as? IntegerExpression
+        val integer = expression.simplify(
+            context,
+            identifiers
+        ) as? IntegerExpression
                 ?: throw ShaderGenerateException(
-                "Expression has to be integer on compile time", expression)
+                    "Expression has to be integer on compile time", expression
+                )
         return integer.value
     }
 
-    private inline fun initBuiltIn(identifier: Identifier?,
-                                   init: (Identifier) -> Expression) {
+    private inline fun initBuiltIn(
+        identifier: Identifier?,
+        init: (Identifier) -> Expression
+    ) {
         identifier?.let { identifiers[it] = init(it) }
     }
 
     private fun init(scope: Scope) {
-        functionImplementations.putAll(stdFunctions)
         initBuiltIn(scope["out_Position"]) {
             GLSLExpression(Types.Vector4.exported, "gl_Position")
         }
@@ -367,17 +395,21 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    fun generate(shader: CompiledShader,
-                 properties: Map<String, Expression>): GLSLProgram {
-        context = ShaderContext(shader.functionMap + stdFunctions2,
-                STDLib.functions, properties)
+    fun generate(
+        shader: CompiledShader,
+        properties: Map<String, Expression>
+    ): GLSLProgram {
+        context = ShaderContext(
+            shader.functionMap + stdFunctions2,
+            STDLib.functions, properties
+        )
         val scope = Scope()
         scope.add("out_Position", Types.Vector4.exported)
         scope.add("varying_Fragment", Types.Vector4.exported)
         shader.declarations.forEach { scope.add(it.identifier) }
         shader.properties.forEach { scope.add(it.identifier) }
         shader.uniforms().asSequence().filterNotNull()
-                .forEach { scope.add(it.identifier) }
+            .forEach { scope.add(it.identifier) }
         shader.outputs?.parameters?.forEach { scope.add(it.identifier) }
 
         init(scope)
@@ -391,19 +423,25 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         functionImplementations.clear()
 
         return GLSLProgram(
-                vertex = vertex,
-                fragment = fragment)
+            vertex = vertex,
+            fragment = fragment
+        )
     }
 
-    private fun generateVertex(shader: CompiledShader,
-                               properties: Map<String, Expression>): String {
+    private fun generateVertex(
+        shader: CompiledShader,
+        properties: Map<String, Expression>
+    ): String {
         if (output.isNotEmpty()) {
             output.clear()
         }
         val shaderVertex = shader.shaderVertex ?: throw IllegalStateException(
-                "No vertex shader")
-        val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
-                "No fragment shader")
+            "No vertex shader"
+        )
+        val shaderFragment =
+            shader.shaderFragment ?: throw IllegalStateException(
+                "No fragment shader"
+            )
         propertyIdentifiers(shader.properties, properties)
         signatureIdentifiers(shaderVertex.signature)
         signatureIdentifiers(shaderFragment.signature)
@@ -419,15 +457,20 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         return output.toString()
     }
 
-    private fun generateFragment(shader: CompiledShader,
-                                 properties: Map<String, Expression>): String {
+    private fun generateFragment(
+        shader: CompiledShader,
+        properties: Map<String, Expression>
+    ): String {
         if (output.isNotEmpty()) {
             output.clear()
         }
-        val shaderFragment = shader.shaderFragment ?: throw IllegalStateException(
-                "No fragment shader")
+        val shaderFragment =
+            shader.shaderFragment ?: throw IllegalStateException(
+                "No fragment shader"
+            )
         val outputs = shader.outputs ?: throw IllegalStateException(
-                "No outputs")
+            "No outputs"
+        )
         propertyIdentifiers(shader.properties, properties)
         signatureIdentifiers(outputs)
         header(shader.uniforms(), shaderFragment.signature)
@@ -442,8 +485,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         return output.toString()
     }
 
-    private fun header(uniforms: Array<Uniform?>,
-                       input: ShaderSignature) {
+    private fun header(
+        uniforms: Array<Uniform?>,
+        input: ShaderSignature
+    ) {
         when (version) {
             GLSLGenerator.Version.GL_330 -> println(0, "#version 330")
             GLSLGenerator.Version.GLES_300 -> println(0, "#version 300 es")
@@ -452,10 +497,13 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         for (uniform in uniforms) {
             if (uniform != null) {
                 identifiers[uniform.identifier] = GLSLExpression(
-                        uniform.identifier.type, uniform.identifier.name)
-                println(0, "uniform " + type(uniform.type) + ' ' +
-                        identifier(uniform.type, uniform.identifier) +
-                        ';')
+                    uniform.identifier.type, uniform.identifier.name
+                )
+                println(
+                    0, "uniform " + type(uniform.type) + ' ' +
+                            identifier(uniform.type, uniform.identifier) +
+                            ';'
+                )
             }
         }
         println()
@@ -465,13 +513,18 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
-                    parameter.identifier.type, parameter.identifier.name)
+                parameter.identifier.type, parameter.identifier.name
+            )
             if (parameter.id == -1) {
-                println(0, "in " + type(parameter.type, parameter.identifier) +
-                        ';')
+                println(
+                    0, "in " + type(parameter.type, parameter.identifier) +
+                            ';'
+                )
             } else {
-                println(0, "layout(location = " + parameter.id + ") in " +
-                        type(parameter.type, parameter.identifier) + ';')
+                println(
+                    0, "layout(location = " + parameter.id + ") in " +
+                            type(parameter.type, parameter.identifier) + ';'
+                )
             }
         }
     }
@@ -483,20 +536,25 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
-                    parameter.identifier.type, parameter.identifier.name)
+                parameter.identifier.type, parameter.identifier.name
+            )
         }
     }
 
-    private fun propertyIdentifiers(properties: List<Property>,
-                                    propertyValues: Map<String, Expression>) {
+    private fun propertyIdentifiers(
+        properties: List<Property>,
+        propertyValues: Map<String, Expression>
+    ) {
         for (property in properties) {
             val value = propertyValues[property.identifier.name]
                     ?: throw ShaderGenerateException(
-                    "No value defined for property: ${property.identifier.name}")
+                        "No value defined for property: ${property.identifier.name}"
+                    )
             val valueType = value.type(context)
             if (property.type.exported != valueType) {
                 throw ShaderGenerateException(
-                        "Property declaration for ${property.identifier.name} and value type conflict: ${property.type.exported} <-> $valueType")
+                    "Property declaration for ${property.identifier.name} and value type conflict: ${property.type.exported} <-> $valueType"
+                )
             }
             identifiers[property.identifier] = value
         }
@@ -509,11 +567,15 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 continue
             }
             if (parameter.id == -1) {
-                println(0, "out " + type(parameter.type, parameter.identifier) +
-                        ';')
+                println(
+                    0, "out " + type(parameter.type, parameter.identifier) +
+                            ';'
+                )
             } else {
-                println(0, "layout(location = " + parameter.id + ") out " +
-                        type(parameter.type, parameter.identifier) + ';')
+                println(
+                    0, "layout(location = " + parameter.id + ") out " +
+                            type(parameter.type, parameter.identifier) + ';'
+                )
             }
         }
     }
@@ -532,8 +594,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         }
     }
 
-    private fun signature(signature: FunctionSignature,
-                          name: String): String {
+    private fun signature(
+        signature: FunctionSignature,
+        name: String
+    ): String {
         val str = StringBuilder(24)
         str.append(precision(signature.returnedPrecision)).append(' ')
         str.append(type(signature.returned.type))
@@ -546,15 +610,18 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             run {
                 val parameter = signature.parameters[0]
                 identifiers[parameter.identifier] = GLSLExpression(
-                        parameter.identifier.type, parameter.identifier.name)
+                    parameter.identifier.type, parameter.identifier.name
+                )
                 str.append(type(parameter.type, parameter.identifier))
             }
             for (i in 1..signature.parameters.lastIndex) {
                 val parameter = signature.parameters[1]
                 identifiers[parameter.identifier] = GLSLExpression(
-                        parameter.identifier.type, parameter.identifier.name)
+                    parameter.identifier.type, parameter.identifier.name
+                )
                 str.append(", ").append(
-                        type(parameter.type, parameter.identifier))
+                    type(parameter.type, parameter.identifier)
+                )
             }
         }
         str.append(')')
@@ -566,15 +633,19 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         statement(function.compound, 0)
     }
 
-    private fun block(expression: StatementBlock,
-                      level: Int) {
+    private fun block(
+        expression: StatementBlock,
+        level: Int
+    ) {
         for (statement in expression.statements) {
             statement(statement, level)
         }
     }
 
-    private fun statement(statement: Statement,
-                          level: Int) {
+    private fun statement(
+        statement: Statement,
+        level: Int
+    ) {
         if (statement is CompoundStatement) {
             println(level, "{")
             block(statement.block, level + 1)
@@ -591,7 +662,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             println(level, expression(statement) + ';')
         } else {
             throw IllegalArgumentException(
-                    "Unknown statement: ${statement::class}")
+                "Unknown statement: ${statement::class}"
+            )
         }
     }
 
@@ -599,8 +671,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         output.append('\n')
     }
 
-    private fun println(level: Int,
-                        str: String) {
+    private fun println(
+        level: Int,
+        str: String
+    ) {
         var indents = level
         while (indents > 0) {
             output.append("    ")
@@ -613,9 +687,11 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         private val stdFunctions: Map<FunctionExportedSignature, (Array<String>) -> String>
 
         init {
-            val implementations = ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
+            val implementations =
+                ArrayList<Pair<FunctionExportedSignature, (Array<String>) -> String>>()
             GLSLSTDLib.functions(implementations)
-            val functions = HashMap<FunctionExportedSignature, (Array<String>) -> String>()
+            val functions =
+                HashMap<FunctionExportedSignature, (Array<String>) -> String>()
             implementations.forEach { functions[it.first] = it.second }
             STDLib.functions.keys.firstOrNull {
                 !functions.containsKey(it)
@@ -625,20 +701,23 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             stdFunctions = functions.readOnly()
         }
 
-        private val stdFunctions2 = stdFunctions.map { it.key.call to it.key }.toMap()
+        private val stdFunctions2 =
+            stdFunctions.map { it.key.call to it.key }.toMap()
 
-        private fun glslFunction(name: String,
-                                 vararg args: String) =
-                "$name(${args.joinToString()})"
+        private fun glslFunction(
+            name: String,
+            vararg args: String
+        ) = "$name(${args.joinToString()})"
 
-        fun generate(version: Version,
-                     shader: CompiledShader,
-                     properties: Map<String, Expression>): GLSLProgram =
-                generator.computeAbsent(version) {
-                    ThreadLocal { GLSLGenerator(version) }
-                }.get().generate(shader, properties)
+        fun generate(
+            version: Version,
+            shader: CompiledShader,
+            properties: Map<String, Expression>
+        ): GLSLProgram = generator.computeAbsent(version) {
+            GLSLGenerator(version)
+        }.generate(shader, properties)
 
-        private val generator = ConcurrentHashMap<Version, ThreadLocal<GLSLGenerator>>()
+        private val generator by ThreadLocal { HashMap<Version, GLSLGenerator>() }
     }
 
     enum class Version {
@@ -647,17 +726,24 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     }
 }
 
-data class GLSLProgram(val vertex: String,
-                       val fragment: String)
+data class GLSLProgram(
+    val vertex: String,
+    val fragment: String
+)
 
-class GLSLExpression(val type: TypeExported,
-                     val code: String) : Expression() {
+class GLSLExpression(
+    val type: TypeExported,
+    val code: String
+) : Expression() {
     override val id: String
         get() = throw UnsupportedOperationException(
-                "Cannot serialize glsl expression")
+            "Cannot serialize glsl expression"
+        )
 
     override fun type(context: ShaderContext) = type
 
-    override fun simplify(context: ShaderContext,
-                          identifiers: Map<Identifier, Expression>) = this
+    override fun simplify(
+        context: ShaderContext,
+        identifiers: Map<Identifier, Expression>
+    ) = this
 }

@@ -19,42 +19,46 @@ package org.tobi29.scapes.engine.shader
 import org.tobi29.io.tag.*
 import org.tobi29.stdex.readOnly
 
-
-class CompiledShader(val declarations: List<DeclarationStatement>,
-                     val functions: List<CallFunction>,
-                     val shaderVertex: ShaderFunction?,
-                     val shaderFragment: ShaderFunction?,
-                     val outputs: ShaderSignature?,
-                     private val uniforms: Array<Uniform?>,
-                     val properties: List<Property>) : TagMapWrite {
+class CompiledShader(
+    val declarations: List<DeclarationStatement>,
+    val functions: List<CallFunction>,
+    val shaderVertex: ShaderFunction?,
+    val shaderFragment: ShaderFunction?,
+    val outputs: ShaderSignature?,
+    private val uniforms: Array<Uniform?>,
+    val properties: List<Property>
+) : TagMapWrite {
     val functionMap =
-            HashMap<FunctionParameterSignature, FunctionExportedSignature>()
-                    .also { functionMap ->
-                        functions.asSequence().map {
-                            Pair(it.signature.exported.call,
-                                    it.signature.exported)
-                        }.toMap(functionMap)
-                        STDLib.functions.keys.forEach {
-                            functionMap[it.call] = it
-                        }
-                    }.readOnly()
+        HashMap<FunctionParameterSignature, FunctionExportedSignature>()
+            .also { functionMap ->
+                functions.asSequence().map {
+                    Pair(
+                        it.signature.exported.call,
+                        it.signature.exported
+                    )
+                }.toMap(functionMap)
+                STDLib.functions.keys.forEach {
+                    functionMap[it.call] = it
+                }
+            }.readOnly()
 
     fun uniforms(): Array<Uniform?> {
         return uniforms.copyOf()
     }
 
     override fun write(map: ReadWriteTagMap) {
-        map["Declarations"] = declarations.asSequence().map { it.toTag() }.toTag()
+        map["Declarations"] =
+                declarations.asSequence().map { it.toTag() }.toTag()
         map["Functions"] = functions.asSequence().map { it.toTag() }.toTag()
         shaderVertex?.let { map["ShaderVertex"] = it.toTag() }
         shaderFragment?.let { map["ShaderFragment"] = it.toTag() }
         outputs?.let { map["Outputs"] = it.toTag() }
         map["Uniforms"] = TagMap {
             uniforms.withIndex().asSequence()
-                    .forEach { (i, uniform) ->
-                        if (uniform == null) return@forEach
-                        put(i.toString(), uniform.toTag())
-                    }
+                .forEach { (i, uniform) ->
+                    if (uniform == null) return@forEach
+                    put(i.toString(), uniform.toTag())
+                }
         }
         map["Properties"] = properties.asSequence().map { it.toTag() }.toTag()
     }
@@ -72,23 +76,28 @@ fun MutableTag.toCompiledShader(): CompiledShader? {
     val shaderFragment = map["ShaderFragment"]?.toShaderFunction()
     val outputs = map["Outputs"]?.toShaderSignature()
     val uniforms = map["Uniforms"]?.toMap()?.map { (id, uniform) ->
-        (id.toIntOrNull() ?: return null) to (uniform.toUniform() ?: return null)
+        (id.toIntOrNull() ?: return null) to (uniform.toUniform()
+                ?: return null)
     }?.let { uniforms ->
         val array = arrayOfNulls<Uniform>(
-                uniforms.maxBy { it.first }?.first?.let { it + 1 } ?: 0)
+            uniforms.maxBy { it.first }?.first?.let { it + 1 } ?: 0)
         uniforms.forEach { array[it.first] = it.second }
         array
     } ?: return null
     val properties = map["Properties"]?.toList()?.map {
         it.toProperty() ?: return null
     } ?: return null
-    return CompiledShader(declarations, functions, shaderVertex, shaderFragment,
-            outputs, uniforms, properties)
+    return CompiledShader(
+        declarations, functions, shaderVertex, shaderFragment,
+        outputs, uniforms, properties
+    )
 }
 
-class ShaderContext(functions: Map<FunctionParameterSignature, FunctionExportedSignature>,
-                    functionSimplifications: Map<FunctionExportedSignature, (List<Expression>) -> Expression>,
-                    properties: Map<String, Expression>) {
+class ShaderContext(
+    functions: Map<FunctionParameterSignature, FunctionExportedSignature>,
+    functionSimplifications: Map<FunctionExportedSignature, (List<Expression>) -> Expression>,
+    properties: Map<String, Expression>
+) {
     val functions = functions.readOnly()
     val functionSimplifications = functionSimplifications.readOnly()
     val properties = properties.readOnly()
