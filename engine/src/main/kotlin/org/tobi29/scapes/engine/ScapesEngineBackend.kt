@@ -53,6 +53,12 @@ expect fun allocateMemoryBufferPinned(size: Int): MemoryBufferPinned
 expect fun BytesRO.readAsMemoryBuffer(): MemoryBuffer
 expect fun BytesRO.readAsMemoryBufferPinned(): MemoryBufferPinned
 
+inline fun <B : MemoryBufferPinned, R> B.use(block: (B) -> R) = try {
+    block(this)
+} finally {
+    close()
+}
+
 interface GraphicsBackend
 
 interface GLBackend : GraphicsBackend {
