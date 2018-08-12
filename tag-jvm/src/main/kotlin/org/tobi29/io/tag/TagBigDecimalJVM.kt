@@ -23,11 +23,14 @@ import java.math.BigDecimal
 /**
  * Tag for storing a [BigDecimal]
  */
-class TagBigDecimal
-/**
- * Get the tag for the given value
- */
-    (override val value: BigDecimal) : TagDecimal()
+class TagBigDecimal(
+    override val value: BigDecimal
+) : TagDecimal() {
+    companion object {
+        @JvmStatic
+        val serialVersionUID = -5231724248071365243L
+    }
+}
 
 /**
  * Get the tag for the given value

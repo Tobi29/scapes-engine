@@ -19,7 +19,6 @@
 package org.tobi29.io.tag
 
 import org.tobi29.arrays.BytesRO
-import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ConcurrentMap
 import org.tobi29.stdex.readOnly
@@ -28,37 +27,128 @@ import org.tobi29.stdex.synchronized
 /**
  * Type shared by all tags
  */
-sealed class MutableTag {
+expect sealed class MutableTag {
     /**
      * Returns the value of the tag
      */
     abstract val value: Any
-
-    override fun equals(other: Any?) = when (other) {
-        is MutableTag -> value == other.value
-        else -> false
-    }
-
-    override fun hashCode() = value.hashCode()
-
-    override fun toString() = value.toString()
 }
 
 /**
  * Type shared by all immutable tags
  */
-sealed class Tag : MutableTag()
+expect sealed class Tag : MutableTag
 
 /**
  * Type shared by all primitive tags
  */
-sealed class TagPrimitive : Tag()
+expect sealed class TagPrimitive : Tag
 
 /**
  * Tag for storing an [Unit]
  */
-object TagUnit : TagPrimitive() {
-    override val value get() = Unit
+expect object TagUnit : TagPrimitive {
+    override val value: Unit
+}
+
+expect sealed class TagBoolean : TagPrimitive {
+    abstract override val value: Boolean
+
+    object True : TagBoolean
+
+    object False : TagBoolean
+}
+
+expect sealed class TagNumber : TagPrimitive {
+    abstract override val value: Number
+}
+
+expect abstract class TagInteger internal constructor() : TagNumber
+
+expect abstract class TagDecimal internal constructor() : TagNumber
+
+/**
+ * Tag for storing a [kotlin.Byte]
+ */
+expect class TagByte(value: Byte) : TagInteger {
+    override val value: Byte
+}
+
+/**
+ * Tag for storing a [kotlin.Short]
+ */
+expect class TagShort(value: Short) : TagInteger {
+    override val value: Short
+}
+
+/**
+ * Tag for storing an [kotlin.Int]
+ */
+expect class TagInt(value: Int) : TagInteger {
+    override val value: Int
+}
+
+/**
+ * Tag for storing a [kotlin.Long]
+ */
+expect class TagLong(value: Long) : TagInteger {
+    override val value: Long
+}
+
+/**
+ * Tag for storing a [kotlin.Float]
+ */
+expect class TagFloat(value: Float) : TagDecimal {
+    override val value: Float
+}
+
+/**
+ * Tag for storing a [kotlin.Double]
+ */
+expect class TagDouble(value: Double) : TagDecimal {
+    override val value: Double
+}
+
+/**
+ * Tag for storing a [ByteArray]
+ */
+expect class TagByteArray(value: BytesRO) : TagPrimitive {
+    constructor(value: ByteArray)
+
+    override val value: BytesRO
+}
+
+/**
+ * Tag for storing a [kotlin.String]
+ */
+expect class TagString(value: String) : TagPrimitive {
+    override val value: String
+}
+
+expect class TagMap @PublishedApi internal constructor(
+    unit: Unit,
+    value: Map<String, Tag>
+) : Tag, Map<String, Tag> {
+    override val value: Map<String, Tag>
+}
+
+expect class MutableTagMap internal constructor(
+    value: ConcurrentHashMap<String, MutableTag>
+) : MutableTag, ConcurrentMap<String, MutableTag> {
+    override val value: ConcurrentHashMap<String, MutableTag>
+}
+
+expect class TagList @PublishedApi internal constructor(
+    unit: Unit,
+    value: List<Tag>
+) : Tag, List<Tag> {
+    override val value: List<Tag>
+}
+
+expect class MutableTagList internal constructor(
+    value: MutableList<MutableTag>
+) : MutableTag, MutableList<MutableTag> {
+    override val value: MutableList<MutableTag>
 }
 
 /**
@@ -72,18 +162,6 @@ fun TagUnit(value: Unit) = TagUnit
  */
 inline fun Unit.toTag() = TagUnit(this)
 
-sealed class TagBoolean : TagPrimitive() {
-    abstract override val value: Boolean
-
-    object True : TagBoolean() {
-        override val value get() = true
-    }
-
-    object False : TagBoolean() {
-        override val value get() = false
-    }
-}
-
 /**
  * Get the tag for the given value
  */
@@ -95,37 +173,10 @@ fun TagBoolean(value: Boolean) =
  */
 inline fun Boolean.toTag() = TagBoolean(this)
 
-sealed class TagNumber : TagPrimitive() {
-    abstract override val value: Number
-
-    override fun equals(other: Any?): Boolean {
-        if (other is TagNumber) {
-            return compareNumbers(value, other.value)
-        }
-        return super.equals(other)
-    }
-
-    override fun hashCode() = toInt()
-}
-
-abstract class TagInteger internal constructor() : TagNumber()
-
-abstract class TagDecimal internal constructor() : TagNumber()
-
-/**
- * Tag for storing a [kotlin.Byte]
- */
-class TagByte(override val value: Byte) : TagInteger()
-
 /**
  * Get the tag for the given value
  */
 inline fun Byte.toTag() = TagByte(this)
-
-/**
- * Tag for storing a [kotlin.Short]
- */
-class TagShort(override val value: Short) : TagInteger()
 
 /**
  * Get the tag for the given value
@@ -133,19 +184,9 @@ class TagShort(override val value: Short) : TagInteger()
 inline fun Short.toTag() = TagShort(this)
 
 /**
- * Tag for storing an [kotlin.Int]
- */
-class TagInt(override val value: Int) : TagInteger()
-
-/**
  * Get the tag for the given value
  */
 inline fun Int.toTag() = TagInt(this)
-
-/**
- * Tag for storing a [kotlin.Long]
- */
-class TagLong(override val value: Long) : TagInteger()
 
 /**
  * Get the tag for the given value
@@ -153,62 +194,14 @@ class TagLong(override val value: Long) : TagInteger()
 inline fun Long.toTag() = TagLong(this)
 
 /**
- * Tag for storing a [kotlin.Float]
- */
-class TagFloat(override val value: Float) : TagDecimal()
-
-/**
  * Get the tag for the given value
  */
 inline fun Float.toTag() = TagFloat(this)
 
 /**
- * Tag for storing a [kotlin.Double]
- */
-class TagDouble(override val value: Double) : TagDecimal()
-
-/**
  * Get the tag for the given value
  */
 inline fun Double.toTag() = TagDouble(this)
-
-/**
- * Tag for storing a [ByteArray]
- */
-class TagByteArray(override val value: BytesRO) : TagPrimitive() {
-    constructor(value: ByteArray) : this(value.sliceOver())
-
-    override fun equals(other: Any?): Boolean {
-        if (other is TagByteArray) {
-            return value == other.value
-        } else if (other is TagList) {
-            if (value.size != other.value.size) {
-                return false
-            }
-            return value.asSequence().zip(other.value.asSequence())
-                .all { (a, b) ->
-                    compareNumbers(a, b.value)
-                }
-        } else if (other is MutableTagList) {
-            if (value.size != other.value.size) {
-                return false
-            }
-            return value.asSequence().zip(other.value.asSequence())
-                .all { (a, b) ->
-                    compareNumbers(a, b.value)
-                }
-        }
-        return false
-    }
-
-    override fun hashCode(): Int {
-        return value.hashCode()
-    }
-
-    override fun toString(): String {
-        return value.joinToString(prefix = "[", postfix = "]")
-    }
-}
 
 /**
  * Get the tag for the given value
@@ -219,11 +212,6 @@ inline fun BytesRO.toTag() = TagByteArray(this)
  * Get the tag for the given value
  */
 inline fun ByteArray.toTag() = TagByteArray(this)
-
-/**
- * Tag for storing a [kotlin.String]
- */
-class TagString(override val value: String) : TagPrimitive()
 
 /**
  * Get the tag for the given value
@@ -238,45 +226,22 @@ typealias ReadTagMutableMap = Map<String, MutableTag>
 
 typealias ReadWriteTagMutableMap = MutableMap<String, MutableTag>
 
-// Need dummy parameter to allow having a function as a "constructor"
-// We assume TagMap instances are always immutable
-@Suppress("UNUSED_PARAMETER", "EqualsOrHashCode")
-class TagMap @PublishedApi internal constructor(
-    unit: Unit,
-    override val value: Map<String, Tag>
-) : Tag(), Map<String, Tag> by value {
-    // ConcurrentHashMap checks values multiple times causing massive slowdown
-    // with deeply nested structures
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is TagMap) return value == other
-        if (value.size != other.value.size) return false
-        return value.all { (key, value) ->
-            value == other.value[key]
-        }
-    }
-}
-
 inline fun TagMap(block: MutableMap<String, Tag>.() -> Unit): TagMap =
     TagMap(Unit, ConcurrentHashMap<String, Tag>().apply(block).readOnly())
 
-fun TagMap(value: Map<String, Tag> = emptyMap()) = TagMap {
+fun TagMap(value: Map<String, Tag> = emptyMap()): TagMap = TagMap {
     putAll(value)
 }
 
-fun ReadTagMap.toTag() = TagMap(this)
+fun ReadTagMap.toTag(): TagMap = TagMap(this)
 
-class MutableTagMap internal constructor(override val value: ConcurrentHashMap<String, MutableTag>) :
-    MutableTag(), ConcurrentMap<String, MutableTag> by value
-
-fun MutableTagMap(block: MutableMap<String, MutableTag>.() -> Unit) =
+fun MutableTagMap(block: MutableMap<String, MutableTag>.() -> Unit): MutableTagMap =
     MutableTagMap(ConcurrentHashMap<String, MutableTag>().apply(block))
 
-fun MutableTagMap(value: Map<String, MutableTag> = emptyMap()) = MutableTagMap {
-    putAll(value)
-}
+fun MutableTagMap(value: Map<String, MutableTag> = emptyMap()): MutableTagMap =
+    MutableTagMap { putAll(value) }
 
-fun ReadTagMap.toMutTag() = MutableTagMap(this)
+fun ReadTagMap.toMutTag(): MutableTagMap = MutableTagMap(this)
 
 typealias ReadTagList = List<Tag>
 
@@ -286,72 +251,24 @@ typealias ReadTagMutableList = List<MutableTag>
 
 typealias ReadWriteTagMutableList = MutableList<MutableTag>
 
-// The hashCode() of the alternative checks should be identical
-// Need dummy parameter to allow having a function as a "constructor"
-@Suppress("EqualsOrHashCode", "UNUSED_PARAMETER")
-class TagList @PublishedApi internal constructor(
-    unit: Unit,
-    override val value: List<Tag>
-) : Tag(), List<Tag> by value {
-    override fun equals(other: Any?): Boolean {
-        if (other is TagList) {
-            return value == other.value
-        } else if (other is MutableTagList) {
-            return value == other.value
-        } else if (other is TagByteArray) {
-            if (value.size != other.value.size) {
-                return false
-            }
-            return value.asSequence().zip(other.value.asSequence())
-                .all { (a, b) -> compareNumbers(a.value, b) }
-        }
-        return false
-    }
-}
-
 inline fun TagList(block: MutableList<Tag>.() -> Unit): TagList =
     TagList(Unit, ArrayList<Tag>().apply(block).readOnly())
 
-fun TagList(value: List<Tag> = emptyList()) = TagList {
-    addAll(value)
-}
+fun TagList(value: List<Tag> = emptyList()): TagList =
+    TagList { addAll(value) }
 
-fun TagList(value: Sequence<Tag>) = TagList {
-    value.forEach {
-        add(it)
-    }
-}
+fun TagList(value: Sequence<Tag>): TagList =
+    TagList { value.forEach { add(it) } }
 
-fun ReadTagList.toTag() = TagList(this)
+fun ReadTagList.toTag(): TagList = TagList(this)
 
-// The hashCode() of the alternative checks should be identical
-@Suppress("EqualsOrHashCode")
-class MutableTagList internal constructor(override val value: MutableList<MutableTag>) :
-    MutableTag(), MutableList<MutableTag> by value {
-    override fun equals(other: Any?): Boolean {
-        if (other is TagList) {
-            return value == other.value
-        } else if (other is MutableTagList) {
-            return value == other.value
-        } else if (other is TagByteArray) {
-            if (value.size != other.value.size) {
-                return false
-            }
-            return value.asSequence().zip(other.value.asSequence())
-                .all { (a, b) -> compareNumbers(a.value, b) }
-        }
-        return false
-    }
-}
-
-fun MutableTagList(block: MutableList<MutableTag>.() -> Unit) =
+fun MutableTagList(block: MutableList<MutableTag>.() -> Unit): MutableTagList =
     MutableTagList(ArrayList<MutableTag>().apply(block).synchronized())
 
-fun MutableTagList(value: List<MutableTag> = emptyList()) = MutableTagList {
-    addAll(value)
-}
+fun MutableTagList(value: List<MutableTag> = emptyList()): MutableTagList =
+    MutableTagList { addAll(value) }
 
-fun List<Tag>.toMutTag() = MutableTagList(this)
+fun List<Tag>.toMutTag(): MutableTagList = MutableTagList(this)
 
 interface TagWrite {
     fun toTag(): Tag
@@ -369,7 +286,7 @@ interface TagListWrite : TagWrite {
     override fun toTag() = TagList { write(this) }
 }
 
-private fun compareNumbers(first: Any, second: Any) =
+internal fun compareNumbers(first: Any, second: Any) =
     if (first is Number && second is Number) compareNumbers(first, second)
     else false
 
@@ -385,3 +302,5 @@ private fun compareNumbersSameType(first: Number, second: Number): Boolean {
     }
     return first == second
 }
+
+internal expect fun convertNumberToType(type: Number, convert: Number): Number

@@ -50,7 +50,7 @@ inline fun TagNumber.toFloat() = value.toFloat()
 
 inline fun TagNumber.toDouble() = value.toDouble()
 
-fun MutableTag.toMap() = when (this) {
+fun MutableTag.toMap(): TagMap? = when (this) {
     is TagMap -> this
     is MutableTagMap -> toTag()
     else -> null
@@ -62,7 +62,7 @@ fun MutableTag.asMap(): ReadTagMutableMap? = when (this) {
     else -> null
 }
 
-fun MutableTag.toList() = when (this) {
+fun MutableTag.toList(): List<Tag>? = when (this) {
     is TagList -> this
     is TagByteArray -> {
         val value = value
@@ -128,6 +128,7 @@ fun MutableTag.toTag(): Tag = when (this) {
     is Tag -> this
     is MutableTagMap -> toTag()
     is MutableTagList -> toTag()
+    else -> error("Impossible")
 }
 
 fun MutableTagMap.toTag() = TagMap {

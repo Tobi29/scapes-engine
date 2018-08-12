@@ -23,11 +23,14 @@ import java.math.BigInteger
 /**
  * Tag for storing a [BigInteger]
  */
-class TagBigInteger
-/**
- * Get the tag for the given value
- */
-    (override val value: BigInteger) : TagInteger()
+class TagBigInteger(
+    override val value: BigInteger
+) : TagInteger() {
+    companion object {
+        @JvmStatic
+        val serialVersionUID = 5846298805323304222L
+    }
+}
 
 /**
  * Get the tag for the given value
