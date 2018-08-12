@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.stb.font
 
-import org.tobi29.scapes.engine.MemoryBuffer
 import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.stdex.isISOControl
@@ -37,7 +36,6 @@ class STBGlyphRenderer(
     private val tileSize: Double
     private val size: Double = size.toDouble()
     private val scale: Double
-    private val glyphBuffer: MemoryBuffer
 
     init {
         val tileBits = if (size < 16) {
@@ -61,18 +59,16 @@ class STBGlyphRenderer(
         scale = stbtt_ScaleForMappingEmToPixels(
             font.info, size.toFloat()
         ).toDouble()
-        glyphBuffer = allocateMemoryBuffer(glyphSize * glyphSize)
     }
 
     override fun pageInfo(id: Int): GlyphRenderer.GlyphPage {
-        val info = font.info!!
         val width = IntArray(pageTiles)
         val offset = id shl pageTileBits
         val xb = IntArray(1)
         val yb = IntArray(1)
         for (i in 0 until pageTiles) {
             val c = i + offset
-            stbtt_GetCodepointHMetrics(info, c, xb, yb)
+            stbtt_GetCodepointHMetrics(font.info, c, xb, yb)
             width[i] = (xb[0] * scale).roundToInt()
         }
         return GlyphRenderer.GlyphPage(width, imageSize, tiles, tileSize)
@@ -80,6 +76,7 @@ class STBGlyphRenderer(
 
     override suspend fun page(id: Int): ByteArray {
         val buffer = ByteArray(imageSize * imageSize shl 2)
+        val glyphBuffer = allocateMemoryBuffer(glyphSize * glyphSize)
         var i = 0
         val offset = id shl pageTileBits
         val xb = IntArray(1)
