@@ -16,15 +16,36 @@
 
 package org.tobi29.io.tag
 
+fun TagMap.write(writer: TagStructureWriter, key: String) {
+    if (value.isEmpty()) {
+        writer.structureEmpty(key)
+    } else {
+        writer.beginStructure(key)
+        writeTrail(writer)
+    }
+}
+
 fun TagMap.write(writer: TagStructureWriter) {
+    if (value.isEmpty()) {
+        writer.structureEmpty()
+    } else {
+        writer.beginStructure()
+        writeTrail(writer)
+    }
+}
+
+private fun TagMap.writeTrail(writer: TagStructureWriter) {
+    writeContents(writer)
+    writer.endStructure()
+}
+
+fun TagMap.writeContents(writer: TagStructureWriter) {
     for ((key, value) in this) {
         if (value is TagMap) {
             if (value.isEmpty()) {
                 writer.structureEmpty(key)
             } else {
-                writer.beginStructure(key)
-                value.write(writer)
-                writer.endStructure()
+                value.write(writer, key)
             }
         } else if (value is TagList) {
             value.write(writer, key)
@@ -39,42 +60,7 @@ fun TagMap.write(writer: TagStructureWriter) {
 fun TagList.write(writer: TagStructureWriter, key: String) {
     if (size > 0) {
         writer.beginList(key)
-        for (i in 0 until size - 1) {
-            val element = this[i]
-            if (element is TagMap) {
-                if (element.isEmpty()) {
-                    writer.structureEmpty()
-                } else {
-                    writer.beginListStructure()
-                    element.write(writer)
-                    writer.endStructure()
-                }
-            } else if (element is TagList) {
-                element.write(writer)
-            } else if (element is TagPrimitive) {
-                writer.writePrimitiveTag(element)
-            } else {
-                throw IllegalArgumentException("Invalid element: $element")
-            }
-        }
-        val element = this[size - 1]
-        if (element is TagMap) {
-            if (element.isEmpty()) {
-                writer.endListWithEmpty()
-            } else {
-                writer.beginListStructure()
-                element.write(writer)
-                writer.endListWithTerminate()
-            }
-        } else if (element is TagList) {
-            element.write(writer)
-            writer.endList()
-        } else if (element is TagPrimitive) {
-            writer.writePrimitiveTag(element)
-            writer.endList()
-        } else {
-            throw IllegalArgumentException("Invalid element: $element")
-        }
+        writeTrail(writer)
     } else {
         writer.listEmpty(key)
     }
@@ -83,43 +69,46 @@ fun TagList.write(writer: TagStructureWriter, key: String) {
 fun TagList.write(writer: TagStructureWriter) {
     if (size > 0) {
         writer.beginList()
-        for (i in 0 until size - 1) {
-            val element = this[i]
-            if (element is TagMap) {
-                if (element.isEmpty()) {
-                    writer.structureEmpty()
-                } else {
-                    writer.beginListStructure()
-                    element.write(writer)
-                    writer.endStructure()
-                }
-            } else if (element is TagList) {
-                element.write(writer)
-            } else if (element is TagPrimitive) {
-                writer.writePrimitiveTag(element)
-            } else {
-                throw IllegalArgumentException("Invalid element: $element")
-            }
-        }
-        val element = this[size - 1]
+        writeTrail(writer)
+    } else {
+        writer.listEmpty()
+    }
+}
+
+private fun TagList.writeTrail(writer: TagStructureWriter) {
+    for (i in 0 until size - 1) {
+        val element = this[i]
         if (element is TagMap) {
             if (element.isEmpty()) {
-                writer.endListWithEmpty()
+                writer.structureEmpty()
             } else {
                 writer.beginListStructure()
-                element.write(writer)
-                writer.endListWithTerminate()
+                element.writeTrail(writer)
             }
         } else if (element is TagList) {
             element.write(writer)
-            writer.endList()
         } else if (element is TagPrimitive) {
             writer.writePrimitiveTag(element)
-            writer.endList()
         } else {
             throw IllegalArgumentException("Invalid element: $element")
         }
+    }
+    val element = this[size - 1]
+    if (element is TagMap) {
+        if (element.isEmpty()) {
+            writer.endListWithEmpty()
+        } else {
+            writer.beginListStructure()
+            element.writeContents(writer)
+            writer.endListWithTerminate()
+        }
+    } else if (element is TagList) {
+        element.write(writer)
+        writer.endList()
+    } else if (element is TagPrimitive) {
+        writer.writePrimitiveTag(element)
+        writer.endList()
     } else {
-        writer.listEmpty()
+        throw IllegalArgumentException("Invalid element: $element")
     }
 }

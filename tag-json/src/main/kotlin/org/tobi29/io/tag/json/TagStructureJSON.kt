@@ -18,7 +18,7 @@ package org.tobi29.io.tag.json
 
 import org.tobi29.io.EndOfStreamException
 import org.tobi29.io.tag.TagMap
-import org.tobi29.io.tag.write
+import org.tobi29.io.tag.writeContents
 import org.tobi29.stdex.Readable
 
 fun readJSON(stream: Readable): TagMap = readJSON { stream.read() }
@@ -40,13 +40,13 @@ fun TagMap.writeJSON(stream: Appendable, pretty: Boolean = true) {
     if (pretty) {
         TagStructureWriterPrettyJSON(stream).let { writer ->
             writer.begin(this)
-            write(writer)
+            writeContents(writer)
             writer.end()
         }
     } else {
         TagStructureWriterMiniJSON(stream).let { writer ->
             writer.begin(this)
-            write(writer)
+            writeContents(writer)
             writer.end()
         }
     }

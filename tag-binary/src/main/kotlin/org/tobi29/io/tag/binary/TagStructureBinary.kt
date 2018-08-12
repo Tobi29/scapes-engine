@@ -19,7 +19,7 @@ import org.tobi29.io.*
 import org.tobi29.io.tag.TagList
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.TagString
-import org.tobi29.io.tag.write
+import org.tobi29.io.tag.writeContents
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ThreadLocal
 
@@ -53,7 +53,7 @@ fun TagMap.writeBinary(
         compressionStream
     ).let { writer ->
         writer.begin(this)
-        write(writer)
+        writeContents(writer)
         writer.end()
     }
 }
