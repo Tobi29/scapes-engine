@@ -32,7 +32,8 @@ import org.tobi29.stdex.combineToShort
 import org.tobi29.stdex.maskAt
 import org.tobi29.stdex.splitToBytes
 
-suspend inline fun decodePng(
+// FIXME: Kotlin/JS bug
+suspend /* inline */ fun decodePng(
     asset: ReadSource,
     maxLength: Int = 64 shl 20 // 64 MiB
 ): Bitmap<*, *> = asset.readAsync { decodePng(it, maxLength) }
