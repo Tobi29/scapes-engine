@@ -39,6 +39,10 @@ import org.tobi29.checksums.finishChainCrc32
 import org.tobi29.checksums.initChainCrc32
 import org.tobi29.checksums.tableCrc32
 
+private object Crc32Tables {
+    val table = tableCrc32(-0x12477ce0)
+}
+
 internal inline fun crc32(
     crc: UInt,
     buf: Nothing?,
@@ -51,6 +55,4 @@ internal fun crc32(
     buf: ByteArray,
     buf_i: Int,
     len: Int
-): UInt = computeCrc32(crc, buf, buf_i, len, table)
-
-private val table = tableCrc32(-0x12477ce0)
+): UInt = computeCrc32(crc, buf, buf_i, len, Crc32Tables.table)

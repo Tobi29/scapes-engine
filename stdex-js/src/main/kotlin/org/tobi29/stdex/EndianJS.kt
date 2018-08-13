@@ -18,7 +18,7 @@ package org.tobi29.stdex
 
 import org.khronos.webgl.*
 
-actual class ByteOrder actual private constructor(private val name: String) {
+actual class ByteOrder private actual constructor(private val name: String) {
     override fun toString(): String {
         return name
     }
@@ -33,15 +33,18 @@ actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
 
 actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
 
-actual val NATIVE_ENDIAN = run {
+@PublishedApi
+internal val NATIVE_BIG_ENDIAN = run {
     val buffer = ArrayBuffer(4)
     val buffer8 = Uint8Array(buffer)
     val buffer32 = Uint32Array(buffer)
     buffer32[0] = 0x01020304
     when (buffer8[0]) {
-        0x01.toByte() -> BIG_ENDIAN
-        0x04.toByte() -> LITTLE_ENDIAN
-        else -> throw UnsupportedOperationException(
-            "Endianness detection failed")
+        0x01.toByte() -> true
+        0x04.toByte() -> false
+        else -> throw UnsupportedOperationException("Endianness detection failed")
     }
 }
+
+actual inline val NATIVE_ENDIAN: ByteOrder
+    get() = if (NATIVE_BIG_ENDIAN) BIG_ENDIAN else LITTLE_ENDIAN

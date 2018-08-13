@@ -183,13 +183,13 @@ internal fun inflate_table(
             match = 20
         }
         codetype.LENS -> {
-            base = lbase
-            extra = lext
+            base = InfTreesTables.lbase
+            extra = InfTreesTables.lext
             match = 257
         }
         codetype.DISTS -> {
-            base = dbase
-            extra = dext
+            base = InfTreesTables.dbase
+            extra = InfTreesTables.dext
             match = 0
         }
     }
@@ -303,53 +303,56 @@ internal fun inflate_table(
     return 0
 }
 
-private val lbase = shortArrayOf( /* Length codes 257..285 base */
-    3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-    35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0
-)
-private val lext = shortArrayOf( /* Length codes 257..285 extra */
-    16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18,
-    19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 77, 202
-)
-private val dbase = shortArrayOf( /* Distance codes 0..29 base */
-    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
-    257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-    8193, 12289, 16385, 24577, 0, 0
-)
-private val dext = shortArrayOf( /* Distance codes 0..29 extra */
-    16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22,
-    23, 23, 24, 24, 25, 25, 26, 26, 27, 27,
-    28, 28, 29, 29, 64, 64
-)
-
 internal inline val lenfix: UInt get() = 0
 internal inline val distfix: UInt get() = 512
-internal val fixed = ShortArray(2 * 544).also { fixed ->
-    val lens = ShortArray(320)
-    val work = ShortArray(288)
 
-    /* literal/length table */
-    var sym = 0
-    while (sym < 144) lens[sym++] = 8
-    while (sym < 256) lens[sym++] = 9
-    while (sym < 280) lens[sym++] = 7
-    while (sym < 288) lens[sym++] = 8
-    val next = IntArray(1)
-    // lenfix = next[0]
-    assert { lenfix == next[0] }
-    val bits = IntArray(1)
-    bits[0] = 9
-    inflate_table(
-        codetype.LENS, lens, 0, 288, fixed, next, bits, work
+internal object InfTreesTables {
+    val lbase = shortArrayOf( /* Length codes 257..285 base */
+        3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+        35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0
+    )
+    val lext = shortArrayOf( /* Length codes 257..285 extra */
+        16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18,
+        19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 77, 202
+    )
+    val dbase = shortArrayOf( /* Distance codes 0..29 base */
+        1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+        257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
+        8193, 12289, 16385, 24577, 0, 0
+    )
+    val dext = shortArrayOf( /* Distance codes 0..29 extra */
+        16, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 21, 22, 22,
+        23, 23, 24, 24, 25, 25, 26, 26, 27, 27,
+        28, 28, 29, 29, 64, 64
     )
 
-    /* distance table */
-    sym = 0
-    while (sym < 32) lens[sym++] = 5
-    // distfix = next[0]
-    assert { distfix == next[0] }
-    bits[0] = 5
-    inflate_table(
-        codetype.DISTS, lens, 0, 32, fixed, next, bits, work
-    )
+    val fixed = ShortArray(2 * 544).also { fixed ->
+        val lens = ShortArray(320)
+        val work = ShortArray(288)
+
+        /* literal/length table */
+        var sym = 0
+        while (sym < 144) lens[sym++] = 8
+        while (sym < 256) lens[sym++] = 9
+        while (sym < 280) lens[sym++] = 7
+        while (sym < 288) lens[sym++] = 8
+        val next = IntArray(1)
+        // lenfix = next[0]
+        assert { lenfix == next[0] }
+        val bits = IntArray(1)
+        bits[0] = 9
+        inflate_table(
+            codetype.LENS, lens, 0, 288, fixed, next, bits, work
+        )
+
+        /* distance table */
+        sym = 0
+        while (sym < 32) lens[sym++] = 5
+        // distfix = next[0]
+        assert { distfix == next[0] }
+        bits[0] = 5
+        inflate_table(
+            codetype.DISTS, lens, 0, 32, fixed, next, bits, work
+        )
+    }
 }

@@ -33,8 +33,10 @@ internal actual fun Double.toStringExponentialImpl(
 ): String {
     @Suppress("UnsafeCastFromDynamic")
     val str: String = asDynamic().toExponential(precision)
-    singleDigitExponential.replace(str, "$1e$20$3")
+    SingleDigitExponential.singleDigitExponential.replace(str, "$1e$20$3")
     return str
 }
 
-private val singleDigitExponential = "([0-9]*)e([+-])([0-9])".toRegex()
+private object SingleDigitExponential {
+    val singleDigitExponential = "([0-9]*)e([+-])([0-9])".toRegex()
+}

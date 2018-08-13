@@ -59,7 +59,8 @@ private inline val WIN_INIT get() = MAX_MATCH
    memory checker errors from longest match routines */
 
 internal inline fun d_code(dist: Int) =
-    if (dist < 256) _dist_code[dist] else _dist_code[256 + (dist ushr 7)]
+    if (dist < 256) TreesTables._dist_code[dist]
+    else TreesTables._dist_code[256 + (dist ushr 7)]
 
 private inline fun _tr_tally_lit(
     s: deflate_state,
@@ -89,7 +90,7 @@ private inline fun _tr_tally_dist(
     pending_buf[s.l_buf + s.last_lit] = length
     s.last_lit++
     val dist = (distance - 1).toShort()
-    s.dyn_ltree[freq(_length_code[length.toUInt()].toUInt() + LITERALS + 1)]/*.freq*/++
+    s.dyn_ltree[freq(TreesTables._length_code[length.toUInt()].toUInt() + LITERALS + 1)]/*.freq*/++
     s.dyn_dtree[freq(d_code(dist.toUInt()).toUInt())]/*.freq*/++
     return s.last_lit == s.lit_bufsize - 1
 }
@@ -180,20 +181,31 @@ local const config configuration_table[2] = {
     /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
     /* 1 */ {4,    4,  8,    4, deflate_fast}}; /* max speed, no lazy matches */
 #else*/
-private val configuration_table = arrayOf(
-    /*      good lazy nice chain */
-    /* 0 */ config(0, 0, 0, 0, ::deflate_stored),  /* store only */
-    /* 1 */ config(4, 4, 8, 4, ::deflate_fast), /* max speed, no lazy matches */
-    /* 2 */ config(4, 5, 16, 8, ::deflate_fast),
-    /* 3 */ config(4, 6, 32, 32, ::deflate_fast),
+private object DeflateTables {
+    val configuration_table = arrayOf(
+        /*      good lazy nice chain */
+        /* 0 */ config(0, 0, 0, 0, ::deflate_stored),  /* store only */
+        /* 1 */
+        config(4, 4, 8, 4, ::deflate_fast), /* max speed, no lazy matches */
+        /* 2 */
+        config(4, 5, 16, 8, ::deflate_fast),
+        /* 3 */
+        config(4, 6, 32, 32, ::deflate_fast),
 
-    /* 4 */ config(4, 4, 16, 16, ::deflate_slow),  /* lazy matches */
-    /* 5 */ config(8, 16, 32, 32, ::deflate_slow),
-    /* 6 */ config(8, 16, 128, 128, ::deflate_slow),
-    /* 7 */ config(8, 32, 128, 256, ::deflate_slow),
-    /* 8 */ config(32, 128, 258, 1024, ::deflate_slow),
-    /* 9 */ config(32, 258, 258, 4096, ::deflate_slow) /* max compression */
-)
+        /* 4 */
+        config(4, 4, 16, 16, ::deflate_slow),  /* lazy matches */
+        /* 5 */
+        config(8, 16, 32, 32, ::deflate_slow),
+        /* 6 */
+        config(8, 16, 128, 128, ::deflate_slow),
+        /* 7 */
+        config(8, 32, 128, 256, ::deflate_slow),
+        /* 8 */
+        config(32, 128, 258, 1024, ::deflate_slow),
+        /* 9 */
+        config(32, 258, 258, 4096, ::deflate_slow) /* max compression */
+    )
+}
 //#endif
 
 /* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
@@ -608,6 +620,7 @@ fun deflateParams(
     if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
         return Z_STREAM_ERROR
     }
+    val configuration_table = DeflateTables.configuration_table
     val func = configuration_table[s.level].func
 
     if ((strategy != s.strategy || func != configuration_table[level].func) &&
@@ -1052,7 +1065,7 @@ fun deflate(
         val bstate = if (s.level == 0) deflate_stored(strm, s, flush)
         else if (s.strategy == Z_HUFFMAN_ONLY) deflate_huff(strm, s, flush)
         else if (s.strategy == Z_RLE) deflate_rle(strm, s, flush)
-        else configuration_table[s.level].func(strm, s, flush)
+        else DeflateTables.configuration_table[s.level].func(strm, s, flush)
 
         if (bstate == block_state.finish_started
             || bstate == block_state.finish_done) {
@@ -1289,6 +1302,7 @@ private fun lm_init(s: deflate_state) {
 
     /* Set the default configuration parameters:
      */
+    val configuration_table = DeflateTables.configuration_table
     s.max_lazy_match = configuration_table[s.level].max_lazy.toUInt()
     s.good_match = configuration_table[s.level].good_length.toUInt()
     s.nice_match = configuration_table[s.level].nice_length.toUInt()
@@ -2009,7 +2023,7 @@ private fun deflate_fast(
             check_match(s, s.strstart, s.match_start, s.match_length)
 
             bflush = _tr_tally_dist(
-                s,pending_buf, (s.strstart - s.match_start).toShort(),
+                s, pending_buf, (s.strstart - s.match_start).toShort(),
                 (s.match_length - MIN_MATCH).toByte()
             )
 
@@ -2047,7 +2061,7 @@ private fun deflate_fast(
         } else {
             /* No match, output a literal byte */
             //Tracevv((stderr, "%c", s.window[s.strstart]));
-            bflush = _tr_tally_lit(s,pending_buf, window[s.strstart])
+            bflush = _tr_tally_lit(s, pending_buf, window[s.strstart])
             s.lookahead--
             s.strstart++
         }
@@ -2138,7 +2152,7 @@ private fun deflate_slow(
             check_match(s, s.strstart - 1, s.prev_match, s.prev_length)
 
             val bflush = _tr_tally_dist(
-                s,pending_buf, (s.strstart - 1 - s.prev_match).toShort(),
+                s, pending_buf, (s.strstart - 1 - s.prev_match).toShort(),
                 (s.prev_length - MIN_MATCH).toByte()
             )
 
@@ -2166,7 +2180,7 @@ private fun deflate_slow(
              * is longer, truncate the previous match to a single literal.
              */
             //Tracevv((stderr, "%c", s.window[s.strstart - 1]));
-            val bflush = _tr_tally_lit(s,pending_buf, window[s.strstart - 1])
+            val bflush = _tr_tally_lit(s, pending_buf, window[s.strstart - 1])
             if (bflush) {
                 FLUSH_BLOCK_ONLY(strm, s, 0)
             }
@@ -2185,7 +2199,7 @@ private fun deflate_slow(
     //Assert(flush != Z_NO_FLUSH, "no flush?");
     if (s.match_available != 0) {
         //Tracevv((stderr, "%c", s.window[s.strstart - 1]));
-        _tr_tally_lit(s, pending_buf,window[s.strstart - 1])
+        _tr_tally_lit(s, pending_buf, window[s.strstart - 1])
         s.match_available = 0
     }
     s.insert = if (s.strstart < MIN_MATCH - 1) s.strstart else MIN_MATCH - 1
@@ -2257,7 +2271,8 @@ private fun deflate_rle(
             check_match(s, s.strstart, s.strstart - 1, s.match_length)
 
             bflush = _tr_tally_dist(
-                s,pending_buf, 1, (s.match_length - MIN_MATCH).toByte())
+                s, pending_buf, 1, (s.match_length - MIN_MATCH).toByte()
+            )
 
             s.lookahead -= s.match_length
             s.strstart += s.match_length
@@ -2265,7 +2280,7 @@ private fun deflate_rle(
         } else {
             /* No match, output a literal byte */
             //Tracevv((stderr, "%c", s.window[s.strstart]));
-            bflush = _tr_tally_lit(s, pending_buf,window[s.strstart])
+            bflush = _tr_tally_lit(s, pending_buf, window[s.strstart])
             s.lookahead--
             s.strstart++
         }
@@ -2307,7 +2322,7 @@ private fun deflate_huff(
         /* Output a literal byte */
         s.match_length = 0
         //Tracevv((stderr, "%c", s.window[s.strstart]));
-        val bflush = _tr_tally_lit(s, pending_buf,window[s.strstart])
+        val bflush = _tr_tally_lit(s, pending_buf, window[s.strstart])
         s.lookahead--
         s.strstart++
         if (bflush) FLUSH_BLOCK(strm, s, 0)?.let { return it }

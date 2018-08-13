@@ -16,89 +16,89 @@
 
 package org.tobi29.utils
 
-        /**
-         * Time instant using nanoseconds as unit
-         *
-         * **Note:** The value shall be consistent with unix timestamps with UTC
-         * as the timezone
-         */
+/**
+ * Time instant using nanoseconds as unit
+ *
+ * **Note:** The value shall be consistent with unix timestamps with UTC
+ * as the timezone
+ */
 typealias InstantNanos = Int128
 
-        /**
-         * Time duration using nanoseconds as unit
-         */
+/**
+ * Time duration using nanoseconds as unit
+ */
 typealias DurationNanos = Int128
 
-        /**
-         * Time duration using nanoseconds as unit
-         */
+/**
+ * Time duration using nanoseconds as unit
+ */
 typealias Duration64Nanos = Long
 
-        /**
-         * Time instant using milliseconds as unit
-         *
-         * **Note:** The value shall be consistent with unix timestamps with UTC
-         * as the timezone
-         */
+/**
+ * Time instant using milliseconds as unit
+ *
+ * **Note:** The value shall be consistent with unix timestamps with UTC
+ * as the timezone
+ */
 typealias InstantMillis = Long
 
-        /**
-         * Time duration using milliseconds as unit
-         */
+/**
+ * Time duration using milliseconds as unit
+ */
 typealias DurationMillis = Long
 
-        /**
-         * Time instant using nanoseconds as unit
-         *
-         * **Note:** The origin and exact resolution may differ based on implementation,
-         * however it should return usable values for calculating deltas in the range
-         * of about a millisecond to a few years, however absolute values have no
-         * meaning across multiple processes
-         */
+/**
+ * Time instant using nanoseconds as unit
+ *
+ * **Note:** The origin and exact resolution may differ based on implementation,
+ * however it should return usable values for calculating deltas in the range
+ * of about a millisecond to a few years, however absolute values have no
+ * meaning across multiple processes
+ */
 typealias InstantSteadyNanos = Long
 
 /**
  * Nanoseconds in a millisecond
  */
-val NANOS_PER_MILLISECOND: Int128 = (1000L * 1000L).toInt128()
+inline val NANOS_PER_MILLISECOND: Int128 get() = (1000L * 1000L).toInt128()
 
 /**
  * Nanoseconds in a second
  */
-val NANOS_PER_SECOND: Int128 = NANOS_PER_MILLISECOND * (1000L).toInt128()
+inline val NANOS_PER_SECOND: Int128 get() = NANOS_PER_MILLISECOND * (1000L).toInt128()
 
 /**
  * Nanoseconds in a minute
  */
-val NANOS_PER_MINUTE: Int128 = NANOS_PER_SECOND * (60L).toInt128()
+inline val NANOS_PER_MINUTE: Int128 get() = NANOS_PER_SECOND * (60L).toInt128()
 
 /**
  * Nanoseconds in an hour
  */
-val NANOS_PER_HOUR: Int128 = NANOS_PER_MINUTE * (60L).toInt128()
+inline val NANOS_PER_HOUR: Int128 get() = NANOS_PER_MINUTE * (60L).toInt128()
 
 /**
  * Nanoseconds in a day
  */
-val NANOS_PER_DAY: Int128 = NANOS_PER_HOUR * (24L).toInt128()
+inline val NANOS_PER_DAY: Int128 get() = NANOS_PER_HOUR * (24L).toInt128()
 
 /**
  * Convert the given time to nanoseconds
  * @receiver Nanosecond time to convert
  */
-val InstantNanos.nanos: Int128 get() = this
+inline val InstantNanos.nanos: Int128 get() = this
 
 /**
  * Convert the given time to milliseconds
  * @receiver Nanosecond time to convert
  */
-val InstantNanos.millis: Int128 get() = nanos / NANOS_PER_MILLISECOND
+inline val InstantNanos.millis: Int128 get() = nanos / NANOS_PER_MILLISECOND
 
 /**
  * Convert the given time to seconds
  * @receiver Nanosecond time to convert
  */
-val InstantNanos.seconds: Int128 get() = nanos / NANOS_PER_SECOND
+inline val InstantNanos.seconds: Int128 get() = nanos / NANOS_PER_SECOND
 
 /**
  * Object for converting timestamps of various units to nanoseconds
@@ -151,38 +151,38 @@ object Instant {
  * Convert the given time to nanoseconds
  * @receiver Nanosecond time to convert
  */
-val DurationNanos.nanos: Int128 get() = this
+inline val DurationNanos.nanos: Int128 get() = this
 
 /**
  * Convert the given time to milliseconds
  * @receiver Nanosecond time to convert
  */
-val DurationNanos.millis: Int128 get() = nanos / NANOS_PER_MILLISECOND
+inline val DurationNanos.millis: Int128 get() = nanos / NANOS_PER_MILLISECOND
 
 /**
  * Convert the given time to seconds
  * @receiver Nanosecond time to convert
  */
-val DurationNanos.seconds: Int128 get() = nanos / NANOS_PER_SECOND
+inline val DurationNanos.seconds: Int128 get() = nanos / NANOS_PER_SECOND
 */
 
 /**
  * Convert the given time to minutes
  * @receiver Nanosecond time to convert
  */
-val DurationNanos.minutes: Int128 get() = nanos / NANOS_PER_MINUTE
+inline val DurationNanos.minutes: Int128 get() = nanos / NANOS_PER_MINUTE
 
 /**
  * Convert the given time to hours
  * @receiver Nanosecond time to convert
  */
-val DurationNanos.hours: Int128 get() = nanos / NANOS_PER_HOUR
+inline val DurationNanos.hours: Int128 get() = nanos / NANOS_PER_HOUR
 
 /**
  * Convert the given time to days
  * @receiver Nanosecond time to convert
  */
-val DurationNanos.days: Int128 get() = nanos / NANOS_PER_DAY
+inline val DurationNanos.days: Int128 get() = nanos / NANOS_PER_DAY
 
 /**
  * Object for converting durations of various units to nanoseconds

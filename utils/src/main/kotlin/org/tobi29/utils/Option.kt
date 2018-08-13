@@ -66,49 +66,54 @@ inline fun <T> EitherLeft<T>.get(): T = value
  */
 inline fun <T> EitherRight<T>.get(): T = value
 
-        /**
-         * Option type, left for value, right for no value
-         * @param T Optional value type
-         */
+/**
+ * Option type, left for value, right for no value
+ * @param T Optional value type
+ */
 typealias Option<T> = Either<T, Nothing?>
 
-        /**
-         * Option type with value
-         * @param T Value type
-         */
+/**
+ * Option type with value
+ * @param T Value type
+ */
 typealias OptionSome<T> = EitherLeft<T>
 
-        /**
-         * Option type without value
-         */
+/**
+ * Option type without value
+ */
 typealias OptionNone = EitherRight<Nothing?>
 
 /**
  * Shared instance for [OptionNone]
  */
-val nil: OptionNone = EitherRight(null)
+inline val nil: OptionNone get() = Nil.nil
 
-        /**
-         * Result type, left for value, right for error
-         *
-         * **Note:** `E` should always be a subclass of [Throwable]
-         * @param T Optional value type
-         * @param E Error type
-         */
+@PublishedApi
+internal object Nil {
+    val nil = EitherRight(null)
+}
+
+/**
+ * Result type, left for value, right for error
+ *
+ * **Note:** `E` should always be a subclass of [Throwable]
+ * @param T Optional value type
+ * @param E Error type
+ */
 typealias Result<T, E> = Either<T, E>
 
-        /**
-         * Result type with value
-         * @param T Value type
-         */
+/**
+ * Result type with value
+ * @param T Value type
+ */
 typealias ResultOk<T> = EitherLeft<T>
 
-        /**
-         * Result type with error
-         *
-         * **Note:** `E` should always be a subclass of [Throwable]
-         * @param E Error type
-         */
+/**
+ * Result type with error
+ *
+ * **Note:** `E` should always be a subclass of [Throwable]
+ * @param E Error type
+ */
 typealias ResultError<E> = EitherRight<E>
 
 /**

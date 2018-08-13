@@ -18,9 +18,9 @@
 
 package org.tobi29.stdex
 
-private const val MIN_HIGH_SURROGATE = '\uD800'
-private const val MIN_LOW_SURROGATE = '\uDC00'
-private const val MIN_SUPPLEMENTARY_CODE_POINT = 0x010000
+private inline val MIN_HIGH_SURROGATE get() = '\uD800'
+private inline val MIN_LOW_SURROGATE get() = '\uDC00'
+private inline val MIN_SUPPLEMENTARY_CODE_POINT get() = 0x010000
 
 actual inline fun Char.isISOControl(): Boolean =
     toInt().isISOControl()

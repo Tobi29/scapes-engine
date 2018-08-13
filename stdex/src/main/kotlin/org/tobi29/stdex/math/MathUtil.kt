@@ -25,23 +25,23 @@ import kotlin.math.min
 /**
  * Estimate for `pi * 0.5`
  */
-const val HALF_PI = PI * 0.5
+inline val HALF_PI get() = PI * 0.5
 
 /**
  * Estimate for `pi * 2.0`
  * Equivalent to the maximum of a full circle in radians
  */
-const val TWO_PI = PI * 2.0
+inline val TWO_PI get() = PI * 2.0
 
 /**
  * Converts radians to degrees by multiplying
  */
-const val RAD_2_DEG = 180.0 / PI
+inline val RAD_2_DEG get() = 180.0 / PI
 
 /**
  * Converts degrees into radians by multiplying
  */
-const val DEG_2_RAD = PI / 180.0
+inline val DEG_2_RAD get() = PI / 180.0
 
 /**
  * Returns [value2] if [value1] is less than [value2], [value3] if [value1] is

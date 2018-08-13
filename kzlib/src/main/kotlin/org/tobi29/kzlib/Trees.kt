@@ -84,33 +84,147 @@ internal const val REPZ_3_10 = 17
 internal const val REPZ_11_138 = 18
 /* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-internal val extra_lbits = intArrayOf( /* extra bits for each length code */
-    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4,
-    5, 5, 5, 5, 0
-)
+const val DIST_CODE_LEN = 512 /* see definition of array dist_code below */
 
-internal val extra_dbits = intArrayOf( /* extra bits for each distance code */
-    0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10,
-    11, 11, 12, 12, 13, 13
-)
+private inline val LC_LENGTH get() = MAX_MATCH - MIN_MATCH + 1
 
-internal val extra_blbits = intArrayOf(/* extra bits for each bit length code */
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7
-)
+internal object TreesTables {
+    val extra_lbits = intArrayOf( /* extra bits for each length code */
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4,
+        5, 5, 5, 5, 0
+    )
 
-internal val bl_order = byteArrayOf(
-    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
-)
-/* The lengths of the bit length codes are sent in order of decreasing
- * probability, to avoid transmitting the lengths for unused bit length codes.
- */
+    val extra_dbits =
+        intArrayOf( /* extra bits for each distance code */
+            0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9,
+            10, 10, 11, 11, 12, 12, 13, 13
+        )
 
-/* ===========================================================================
- * Local data. These are initialized only once.
- */
+    val extra_blbits =
+        intArrayOf(/* extra bits for each bit length code */
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 7
+        )
 
-internal const val DIST_CODE_LEN =
-    512 /* see definition of array dist_code below */
+    val bl_order = byteArrayOf(
+        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
+    )
+    /* The lengths of the bit length codes are sent in order of decreasing
+     * probability, to avoid transmitting the lengths for unused bit length codes.
+     */
+
+    /* ===========================================================================
+     * Local data. These are initialized only once.
+     */
+
+    val static_ltree =
+        ShortArray(2 * (L_CODES + 2)).also { static_ltree ->
+            val bl_count = ShortArray(MAX_BITS + 1)
+            /* number of codes at each bit length for an optimal tree */
+
+            /* Construct the codes of the static literal tree */
+            for (bits in 0..MAX_BITS) bl_count[bits] = 0
+            var n = 0
+            while (n <= 143) {
+                static_ltree[len(n++)]/*.len*/ = 8
+                bl_count[8]++
+            }
+            while (n <= 255) {
+                static_ltree[len(n++)]/*.len*/ = 9
+                bl_count[9]++
+            }
+            while (n <= 279) {
+                static_ltree[len(n++)]/*.len*/ = 7
+                bl_count[7]++
+            }
+            while (n <= 287) {
+                static_ltree[len(n++)]/*.len*/ = 8
+                bl_count[8]++
+            }
+            /* Codes 286 and 287 do not exist, but we must include them in the
+             * tree construction to get a canonical Huffman tree (longest code
+             * all ones)
+             */
+            gen_codes(static_ltree, L_CODES + 1, bl_count)
+        }
+
+    val static_dtree = ShortArray(2 * D_CODES).also { static_dtree ->
+        /* The static distance tree is trivial: */
+        for (n in 0 until D_CODES) {
+            static_dtree[len(n)]/*.len*/ = 5
+            static_dtree[code(n)]/*.code*/ = bi_reverse(n, 5).toShort()
+        }
+    }
+
+    val _dist_code = ByteArray(DIST_CODE_LEN).also { _dist_code ->
+        /* Initialize the mapping dist (0..32K)  . dist code (0..29) */
+        var dist = 0 /* distance index */
+        for (code in 0 until 16) {
+            for (n in 0 until (1 shl extra_dbits[code])) {
+                _dist_code[dist++] = code.toByte()
+            }
+        }
+        //Assert (dist == 256, "tr_static_init: dist != 256");
+        dist = dist ushr 7 /* from now on, all distances are divided by 128 */
+        for (code in 16 until 30/*D_CODES*/) {
+            for (n in 0 until (1 shl (extra_dbits[code] - 7))) {
+                _dist_code[256 + dist++] = code.toByte()
+            }
+        }
+        //Assert (dist == 256, "tr_static_init: 256+dist != 512");
+    }
+
+    val _length_code = ByteArray(LC_LENGTH).also { _length_code ->
+        /* Initialize the mapping length (0..255)  . length code (0..28) */
+        var length = 0 /* length value */
+        for (code in 0 until LENGTH_CODES - 1) {
+            for (n in 0 until (1 shl extra_lbits[code])) {
+                _length_code[length++] = code.toByte()
+            }
+        }
+        //Assert (length == 256, "tr_static_init: length != 256");
+        /* Note that the length 255 (match length 258) can be represented
+         * in two different ways: code 284 + 5 bits or code 285, so we
+         * overwrite length_code[255] to use the best encoding:
+         */
+        _length_code[length - 1] = (LENGTH_CODES - 1).toByte()
+    }
+
+    val base_length = IntArray(LENGTH_CODES).also { base_length ->
+        var length = 0 /* length value */
+        for (code in 0 until LENGTH_CODES - 1) {
+            base_length[code] = length
+            length += 1 shl extra_lbits[code]
+        }
+    }
+
+    val base_dist = IntArray(D_CODES).also { base_dist ->
+        /* Initialize the mapping dist (0..32K)  . dist code (0..29) */
+        var dist = 0 /* distance index */
+        for (code in 0 until 16) {
+            base_dist[code] = dist
+            dist += 1 shl extra_dbits[code]
+        }
+        //Assert (dist == 256, "tr_static_init: dist != 256");
+        dist = dist ushr 7 /* from now on, all distances are divided by 128 */
+        for (code in 16 until D_CODES) {
+            base_dist[code] = dist shl 7
+            dist += 1 shl (extra_dbits[code] - 7)
+        }
+        //Assert (dist == 256, "tr_static_init: 256+dist != 512");
+    }
+
+    val static_l_desc = static_tree_desc(
+        static_ltree, extra_lbits, LITERALS + 1, L_CODES, MAX_BITS
+    )
+
+    val static_d_desc = static_tree_desc(
+        static_dtree, extra_dbits, 0, D_CODES, MAX_BITS
+    )
+
+    val static_bl_desc = static_tree_desc(
+        null, extra_blbits, 0, BL_CODES, MAX_BL_BITS
+    )
+}
 
 /* ===========================================================================
  * Local (static) routines in this file.
@@ -286,13 +400,13 @@ fun _tr_init(s: deflate_state) {
     tr_static_init()
 
     s.l_desc.dyn_tree = s.dyn_ltree
-    s.l_desc.stat_desc = static_l_desc
+    s.l_desc.stat_desc = TreesTables.static_l_desc
 
     s.d_desc.dyn_tree = s.dyn_dtree
-    s.d_desc.stat_desc = static_d_desc
+    s.d_desc.stat_desc = TreesTables.static_d_desc
 
     s.bl_desc.dyn_tree = s.bl_tree
-    s.bl_desc.stat_desc = static_bl_desc
+    s.bl_desc.stat_desc = TreesTables.static_bl_desc
 
     s.bi_buf = 0
     s.bi_valid = 0
@@ -732,6 +846,8 @@ fun send_tree(
 fun build_bl_tree(
     s: deflate_state
 ): Int {
+    val bl_order = TreesTables.bl_order
+
     /* Determine the bit length frequencies for literal and distance trees */
     scan_tree(s, s.dyn_ltree, s.l_desc.max_code)
     scan_tree(s, s.dyn_dtree, s.d_desc.max_code)
@@ -771,6 +887,8 @@ fun send_all_trees(
     dcodes: Int,
     blcodes: Int /* number of codes for each tree */
 ) {
+    val bl_order = TreesTables.bl_order
+
     //Assert (lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
     //Assert (lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES,
     //    "too many codes");
@@ -836,7 +954,7 @@ fun _tr_flush_bits(s: deflate_state) {
  */
 fun _tr_align(s: deflate_state) {
     send_bits(s, STATIC_TREES shl 1, 3)
-    send_code(s, END_BLOCK, static_ltree)
+    send_code(s, END_BLOCK, TreesTables.static_ltree)
     /*#ifdef ZLIB_DEBUG
         s .compressed_len += 10L; /* 3 for block type, 7 for EOB */
     #endif*/
@@ -919,7 +1037,7 @@ fun _tr_flush_block(
     } else if (s.strategy == Z_FIXED || static_lenb == opt_lenb) {
         //#endif
         send_bits(s, (STATIC_TREES shl 1) + last, 3)
-        compress_block(s, static_ltree, static_dtree)
+        compress_block(s, TreesTables.static_ltree, TreesTables.static_dtree)
         /*#ifdef ZLIB_DEBUG
             s .compressed_len += 3 + s .static_len;
         #endif*/
@@ -976,7 +1094,7 @@ fun _tr_tally(
         //        (ush)lc <= (ush)(MAX_MATCH-MIN_MATCH) &&
         //        (ush)d_code(dist) < (ush)D_CODES,  "_tr_tally: bad match");
 
-        s.dyn_ltree[freq(_length_code[lc.toUInt()].toUInt() + LITERALS + 1)]/*.freq*/++
+        s.dyn_ltree[freq(TreesTables._length_code[lc.toUInt()].toUInt() + LITERALS + 1)]/*.freq*/++
         s.dyn_dtree[freq(d_code(dist).toUInt())]/*.freq*/++
     }
 
@@ -1029,12 +1147,13 @@ fun compress_block(
             //Tracecv(isgraph(lc), (stderr," '%c' ", lc));
         } else {
             /* Here, lc is the match length - MIN_MATCH */
-            var code = _length_code[lc].toUInt() /* the code to send */
+            var code =
+                TreesTables._length_code[lc].toUInt() /* the code to send */
             send_code(s, code + LITERALS + 1, ltree) /* send the length code */
             var extra =
-                extra_lbits[code] /* number of extra bits to send */
+                TreesTables.extra_lbits[code] /* number of extra bits to send */
             if (extra != 0) {
-                lc -= base_length[code]
+                lc -= TreesTables.base_length[code]
                 send_bits(s, lc, extra)       /* send the extra length bits */
             }
             dist-- /* dist is now the match distance - 1 */
@@ -1042,9 +1161,9 @@ fun compress_block(
             //Assert (code < D_CODES, "bad d_code");
 
             send_code(s, code, dtree) /* send the distance code */
-            extra = extra_dbits[code]
+            extra = TreesTables.extra_dbits[code]
             if (extra != 0) {
-                dist -= base_dist[code]
+                dist -= TreesTables.base_dist[code]
                 send_bits(s, dist, extra)   /* send the extra distance bits */
             }
         } /* literal or match pair ? */
@@ -1157,109 +1276,3 @@ fun bi_windup(
         s .bits_sent = (s .bits_sent+7) & ~7;
     #endif*/
 }
-
-private val static_ltree = ShortArray(2 * (L_CODES + 2)).also { static_ltree ->
-    val bl_count = ShortArray(MAX_BITS + 1)
-    /* number of codes at each bit length for an optimal tree */
-
-    /* Construct the codes of the static literal tree */
-    for (bits in 0..MAX_BITS) bl_count[bits] = 0
-    var n = 0
-    while (n <= 143) {
-        static_ltree[len(n++)]/*.len*/ = 8
-        bl_count[8]++
-    }
-    while (n <= 255) {
-        static_ltree[len(n++)]/*.len*/ = 9
-        bl_count[9]++
-    }
-    while (n <= 279) {
-        static_ltree[len(n++)]/*.len*/ = 7
-        bl_count[7]++
-    }
-    while (n <= 287) {
-        static_ltree[len(n++)]/*.len*/ = 8
-        bl_count[8]++
-    }
-    /* Codes 286 and 287 do not exist, but we must include them in the
-     * tree construction to get a canonical Huffman tree (longest code
-     * all ones)
-     */
-    gen_codes(static_ltree, L_CODES + 1, bl_count)
-}
-
-private val static_dtree = ShortArray(2 * D_CODES).also { static_dtree ->
-    /* The static distance tree is trivial: */
-    for (n in 0 until D_CODES) {
-        static_dtree[len(n)]/*.len*/ = 5
-        static_dtree[code(n)]/*.code*/ = bi_reverse(n, 5).toShort()
-    }
-}
-
-internal val _dist_code = ByteArray(DIST_CODE_LEN).also { _dist_code ->
-    /* Initialize the mapping dist (0..32K)  . dist code (0..29) */
-    var dist = 0 /* distance index */
-    for (code in 0 until 16) {
-        for (n in 0 until (1 shl extra_dbits[code])) {
-            _dist_code[dist++] = code.toByte()
-        }
-    }
-    //Assert (dist == 256, "tr_static_init: dist != 256");
-    dist = dist ushr 7 /* from now on, all distances are divided by 128 */
-    for (code in 16 until 30/*D_CODES*/) {
-        for (n in 0 until (1 shl (extra_dbits[code] - 7))) {
-            _dist_code[256 + dist++] = code.toByte()
-        }
-    }
-    //Assert (dist == 256, "tr_static_init: 256+dist != 512");
-}
-
-private inline val LC_LENGTH get() = MAX_MATCH - MIN_MATCH + 1
-internal val _length_code = ByteArray(LC_LENGTH).also { _length_code ->
-    /* Initialize the mapping length (0..255)  . length code (0..28) */
-    var length = 0 /* length value */
-    for (code in 0 until LENGTH_CODES - 1) {
-        for (n in 0 until (1 shl extra_lbits[code])) {
-            _length_code[length++] = code.toByte()
-        }
-    }
-    //Assert (length == 256, "tr_static_init: length != 256");
-    /* Note that the length 255 (match length 258) can be represented
-     * in two different ways: code 284 + 5 bits or code 285, so we
-     * overwrite length_code[255] to use the best encoding:
-     */
-    _length_code[length - 1] = (LENGTH_CODES - 1).toByte()
-}
-
-private val base_length = IntArray(LENGTH_CODES).also { base_length ->
-    var length = 0 /* length value */
-    for (code in 0 until LENGTH_CODES - 1) {
-        base_length[code] = length
-        length += 1 shl extra_lbits[code]
-    }
-}
-
-private val base_dist = IntArray(D_CODES).also { base_dist ->
-    /* Initialize the mapping dist (0..32K)  . dist code (0..29) */
-    var dist = 0 /* distance index */
-    for (code in 0 until 16) {
-        base_dist[code] = dist
-        dist += 1 shl extra_dbits[code]
-    }
-    //Assert (dist == 256, "tr_static_init: dist != 256");
-    dist = dist ushr 7 /* from now on, all distances are divided by 128 */
-    for (code in 16 until D_CODES) {
-        base_dist[code] = dist shl 7
-        dist += 1 shl (extra_dbits[code] - 7)
-    }
-    //Assert (dist == 256, "tr_static_init: 256+dist != 512");
-}
-
-private val static_l_desc =
-    static_tree_desc(static_ltree, extra_lbits, LITERALS + 1, L_CODES, MAX_BITS)
-
-private val static_d_desc =
-    static_tree_desc(static_dtree, extra_dbits, 0, D_CODES, MAX_BITS)
-
-private val static_bl_desc =
-    static_tree_desc(null, extra_blbits, 0, BL_CODES, MAX_BL_BITS)

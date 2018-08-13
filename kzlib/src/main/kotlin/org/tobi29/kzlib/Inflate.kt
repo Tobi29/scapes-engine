@@ -38,6 +38,12 @@ import org.tobi29.stdex.copy
 import org.tobi29.stdex.splitToBytes
 import kotlin.experimental.and
 
+private object InflateTables {
+    val order = shortArrayOf( /* permutation of code lengths */
+        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
+    )
+}
+
 //local unsigned syncsearch OF((unsigned FAR *have, const unsigned char FAR *buf,
 //unsigned len));
 
@@ -174,10 +180,10 @@ fun inflatePrime(
    may not be thread-safe.
  */
 private fun fixedtables(state: inflate_state) {
-    state.lencode = fixed
+    state.lencode = InfTreesTables.fixed
     state.lencode_i = lenfix
     state.lenbits = 9
-    state.distcode = fixed
+    state.distcode = InfTreesTables.fixed
     state.distcode_i = distfix
     state.distbits = 5
 }
@@ -439,6 +445,7 @@ do {
  */
 
 fun inflate(strm: z_stream, state: inflate_state, flush: Int): Int {
+    val order = InflateTables.order
     val hbuf = ByteArray(4) /* buffer for gzip header crc calculation */
     val next_ref = IntArray(1)
     val lenbits_ref = IntArray(1)
@@ -1818,7 +1825,3 @@ fun inflateCodesUsed(
     if (inflateStateCheck(strm, state)) return -1L
     return state.next.toULong()
 }
-
-private val order = shortArrayOf( /* permutation of code lengths */
-    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
-)

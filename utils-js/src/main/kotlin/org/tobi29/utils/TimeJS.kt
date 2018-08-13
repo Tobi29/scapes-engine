@@ -16,7 +16,8 @@
 
 package org.tobi29.utils
 
-actual val systemClock = object : Clock {
+@PublishedApi
+internal object JSClock : Clock {
     override fun timeMillis(): InstantMillis =
         Date.now().toLong()
 
@@ -24,10 +25,15 @@ actual val systemClock = object : Clock {
         (Date.now() * 1000000.0).toInt128()
 }
 
-actual val steadyClock = object : SteadyClock {
+@PublishedApi
+internal object JSSteadyClock : SteadyClock {
     override fun timeSteadyNanos(): InstantSteadyNanos =
         (performance.now() * 1000000.0).toLong()
 }
+
+actual inline val systemClock: Clock get() = JSClock
+
+actual inline val steadyClock: SteadyClock get() = JSSteadyClock
 
 private external val performance: Performance
 
