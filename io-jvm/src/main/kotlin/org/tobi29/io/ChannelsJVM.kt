@@ -15,6 +15,8 @@
  */
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import java.nio.ByteBuffer
 
 actual typealias Channel = java.nio.channels.Channel
@@ -60,7 +62,7 @@ interface JavaReadableByteChannel : JavaChannel, ReadableByteChannel {
 
     override fun close() = super.close()
 
-    override fun read(buffer: ByteView): Int =
+    override fun read(buffer: Bytes): Int =
             buffer.mutateAsByteBuffer { java.read(it) }
 }
 
@@ -100,7 +102,7 @@ interface JavaWritableByteChannel : JavaChannel, WritableByteChannel {
 
     override fun close() = super.close()
 
-    override fun write(buffer: ByteViewRO): Int =
+    override fun write(buffer: BytesRO): Int =
             buffer.readAsByteBuffer().let { java.write(it) }
 }
 

@@ -19,8 +19,6 @@
 package org.tobi29.graphics
 
 import org.tobi29.arrays.*
-import org.tobi29.io.ByteView
-import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 import org.tobi29.math.vector.Vector2i
 
@@ -89,14 +87,14 @@ inline fun <F : ColorFormatInt> Ints2ByteArrayBitmap(
 // TODO: Remove after 0.0.14
 
 @Deprecated("Use new array wrappers")
-typealias IntByteViewBitmap<F> = Bitmap<Int2ByteArrayRO<ByteViewRO>, F>
+typealias IntByteViewBitmap<F> = Bitmap<Int2ByteArrayRO<BytesRO>, F>
 
 @Deprecated("Use new array wrappers")
-typealias MutableIntByteViewBitmap<F> = Bitmap<Int2ByteArray<ByteView>, F>
+typealias MutableIntByteViewBitmap<F> = Bitmap<Int2ByteArray<Bytes>, F>
 
 @Deprecated("Use new array wrappers")
 inline fun <F : ColorFormatInt> IntByteViewBitmap(
-    data: ByteViewRO, width: Int, height: Int, format: F
+    data: BytesRO, width: Int, height: Int, format: F
 ): IntByteViewBitmap<F> = BitmapC(
     Int2ByteArrayRO(data, width, height),
     format
@@ -112,7 +110,7 @@ inline fun <F : ColorFormatInt> MutableIntByteViewBitmap(
 
 @Deprecated("Use new array wrappers")
 inline fun <F : ColorFormatInt> MutableIntByteViewBitmap(
-    data: ByteView, width: Int, height: Int, format: F
+    data: Bytes, width: Int, height: Int, format: F
 ): MutableIntByteViewBitmap<F> = BitmapC(
     Int2ByteArray(data, width, height),
     format

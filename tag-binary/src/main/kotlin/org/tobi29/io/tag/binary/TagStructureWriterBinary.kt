@@ -59,7 +59,7 @@ class TagStructureWriterBinary(
             stream.put(HEADER_MAGIC.view)
             stream.put(HEADER_VERSION)
             stream.put(compression)
-            stream.putInt(compressionStream.remaining())
+            stream.putInt(compressionStream.remaining)
             compressionStream.process { stream.put(it) }
             compressionStream.reset()
         }

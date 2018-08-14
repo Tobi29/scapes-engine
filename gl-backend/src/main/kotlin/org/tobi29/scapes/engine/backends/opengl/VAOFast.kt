@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
@@ -117,7 +117,7 @@ internal class VAOFast(
 
     override fun buffer(
         gl: GL,
-        buffer: ByteViewRO
+        buffer: BytesRO
     ) {
         vbo.replaceBuffer(gl, buffer)
         length = buffer.size / stride

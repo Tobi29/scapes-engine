@@ -16,19 +16,19 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
-import org.tobi29.scapes.engine.ScapesEngine
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
-import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import org.tobi29.arrays.BytesRO
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.ReadableAudioStream
 import org.tobi29.codec.toPCM16
-import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.io.ByteViewE
-import org.tobi29.io.ByteViewRO
 import org.tobi29.io.IOException
 import org.tobi29.io.MemoryViewStream
+import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
+import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import org.tobi29.scapes.engine.sound.AudioFormat
 
-internal class OpenALAudioData(data: ByteViewRO,
+internal class OpenALAudioData(data: BytesRO,
                                channels: Int,
                                rate: Int,
                                openAL: OpenAL) {

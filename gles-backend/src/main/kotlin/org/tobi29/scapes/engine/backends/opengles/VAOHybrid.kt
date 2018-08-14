@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
 import org.tobi29.scapes.engine.graphics.RenderType
@@ -123,13 +123,13 @@ internal class VAOHybrid(
         vbo2.reset()
     }
 
-    override fun buffer(gl: GL, buffer: ByteViewRO) {
+    override fun buffer(gl: GL, buffer: BytesRO) {
         vbo1.replaceBuffer(gl, buffer)
     }
 
     override val stride get() = vbo1.stride()
 
-    override fun bufferStream(gl: GL, buffer: ByteViewRO) {
+    override fun bufferStream(gl: GL, buffer: BytesRO) {
         vbo2.replaceBuffer(gl, buffer)
     }
 

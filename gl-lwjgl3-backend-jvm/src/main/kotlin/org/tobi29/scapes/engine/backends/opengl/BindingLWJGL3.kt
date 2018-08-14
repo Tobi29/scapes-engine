@@ -19,6 +19,8 @@
 package org.tobi29.scapes.engine.backends.opengl
 
 import org.lwjgl.opengl.*
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.*
 
 actual inline fun GLHandle.byteView(capacity: Int): ByteViewE =
@@ -68,7 +70,7 @@ actual inline fun GLHandle.glTexImage2D(
     border: Int,
     format: GLEnum,
     type: GLEnum,
-    pixels: ByteViewRO?
+    pixels: BytesRO?
 ) = GL11.glTexImage2D(
     target, level, internalformat, width, height, border,
     format, type, pixels?.readAsNativeByteBuffer()
@@ -134,14 +136,14 @@ actual inline fun GLHandle.glBufferData(
 
 actual inline fun GLHandle.glBufferData(
     target: GLEnum,
-    data: ByteViewRO,
+    data: BytesRO,
     usage: Int
 ) = GL15.glBufferData(target, data.readAsNativeByteBuffer(), usage)
 
 actual inline fun GLHandle.glBufferSubData(
     target: GLEnum,
     offset: Int,
-    data: ByteViewRO
+    data: BytesRO
 ) = GL15.glBufferSubData(
     target, offset.toLong() and 0xFFFFFFFF, data.readAsNativeByteBuffer()
 )
@@ -217,7 +219,7 @@ actual inline fun GLHandle.glReadPixels(
     height: Int,
     format: Int,
     type: Int,
-    pixels: ByteView
+    pixels: Bytes
 ) = pixels.mutateAsNativeByteBuffer {
     GL11.glReadPixels(x, y, width, height, format, type, it)
 }
@@ -236,7 +238,7 @@ actual inline fun GLHandle.glTexSubImage2D(
     height: Int,
     format: Int,
     type: Int,
-    pixels: ByteViewRO
+    pixels: BytesRO
 ) = GL11.glTexSubImage2D(
     target, level, xoffset, yoffset, width, height,
     format, type, pixels.readAsNativeByteBuffer()
@@ -247,7 +249,7 @@ actual inline fun GLHandle.glGetTexImage(
     level: Int,
     format: Int,
     type: Int,
-    pixels: ByteView
+    pixels: Bytes
 ) = pixels.mutateAsNativeByteBuffer {
     GL11.glGetTexImage(tex, level, format, type, it)
 }

@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.graphics.generateMipMapsNullable
 import org.tobi29.io.ByteViewE
-import org.tobi29.io.ByteViewRO
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.atomic.AtomicBoolean
@@ -27,7 +27,7 @@ internal open class TextureGL(
     protected val glh: GLHandle,
     width: Int,
     height: Int,
-    buffer: ByteViewRO?,
+    buffer: BytesRO?,
     protected val mipmaps: Int,
     minFilter: TextureFilter,
     magFilter: TextureFilter,
@@ -154,16 +154,16 @@ internal open class TextureGL(
         dirtyFilter.set(true)
     }
 
-    override fun buffer(i: Int): ByteViewRO? {
+    override fun buffer(i: Int): BytesRO? {
         return buffer.buffers[i]
     }
 
-    override fun setBuffer(buffer: ByteViewRO?) {
+    override fun setBuffer(buffer: BytesRO?) {
         setBuffer(buffer, this.buffer.width, this.buffer.height)
     }
 
     override fun setBuffer(
-        buffer: ByteViewRO?,
+        buffer: BytesRO?,
         width: Int,
         height: Int
     ) {
@@ -248,7 +248,7 @@ internal open class TextureGL(
     }
 
     private fun buffer(
-        buffer: ByteViewRO?,
+        buffer: BytesRO?,
         width: Int,
         height: Int
     ): TextureBuffer {

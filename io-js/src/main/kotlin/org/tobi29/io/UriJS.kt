@@ -16,23 +16,23 @@
 
 package org.tobi29.io
 
-import org.tobi29.utils.toString
 import org.tobi29.stdex.alphabetLatinLowercase
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.digitsArabic
+import org.tobi29.utils.toString
 
 actual sealed class Uri(actual val fragment: String?)
 
 actual sealed class UriAbsolute(
-        actual val scheme: String,
-        fragment: String?
+    actual val scheme: String,
+    fragment: String?
 ) : Uri(fragment)
 
 actual sealed class UriHierarchical(
-        scheme: String,
-        path: String?,
-        actual val query: String?,
-        fragment: String?
+    scheme: String,
+    path: String?,
+    actual val query: String?,
+    fragment: String?
 ) : UriAbsolute(scheme, fragment) {
     init {
         scheme.uriSchemeVerify()
@@ -44,15 +44,15 @@ actual sealed class UriHierarchical(
 }
 
 actual class UriHierarchicalAbsolute actual constructor(
-        scheme: String,
-        actual override val path: String,
-        query: String?,
-        fragment: String?
+    scheme: String,
+    actual override val path: String,
+    query: String?,
+    fragment: String?
 ) : UriHierarchical(scheme, path, query, fragment) {
     actual override fun toString(): String =
-            "$scheme:${path.uriEscapePath()
-            }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
-            }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
+        "$scheme:${path.uriEscapePath()
+        }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
+        }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
 
     actual override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -73,33 +73,33 @@ actual class UriHierarchicalAbsolute actual constructor(
 }
 
 actual class UriHierarchicalNet(
+    scheme: String,
+    actual val userInfo: String?,
+    actual val host: String?,
+    private val portStr: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+) : UriHierarchical(scheme, path, query, fragment) {
+    actual constructor(
         scheme: String,
-        actual val userInfo: String?,
-        actual val host: String?,
-        private val portStr: String?,
+        userInfo: String?,
+        host: String?,
+        port: Int?,
         path: String?,
         query: String?,
         fragment: String?
-) : UriHierarchical(scheme, path, query, fragment) {
-    actual constructor(
-            scheme: String,
-            userInfo: String?,
-            host: String?,
-            port: Int?,
-            path: String?,
-            query: String?,
-            fragment: String?
     ) : this(scheme, userInfo, host, port?.toString(), path, query, fragment)
 
     actual val port: Int? get() = portStr?.toInt()?.takeIf { it in 0x0 until 0xFFFF }
 
     actual override fun toString(): String =
-            "$scheme://${userInfo?.uriEscapeUserInfo()?.let { "$it@" } ?: ""
-            }${host?.uriEscapeHost() ?: ""
-            }${portStr?.let { ":$it" } ?: ""
-            }${path?.uriEscapePath() ?: ""
-            }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
-            }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
+        "$scheme://${userInfo?.uriEscapeUserInfo()?.let { "$it@" } ?: ""
+        }${host?.uriEscapeHost() ?: ""
+        }${portStr?.let { ":$it" } ?: ""
+        }${path?.uriEscapePath() ?: ""
+        }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
+        }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
 
     actual override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -124,13 +124,13 @@ actual class UriHierarchicalNet(
 }
 
 actual class UriOpaque actual constructor(
-        scheme: String,
-        actual val opaque: String,
-        fragment: String?
+    scheme: String,
+    actual val opaque: String,
+    fragment: String?
 ) : UriAbsolute(scheme, fragment) {
     actual override fun toString(): String =
-            "$scheme:${opaque.uriEscapeOpaque()
-            }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
+        "$scheme:${opaque.uriEscapeOpaque()
+        }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
 
     actual override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -147,18 +147,18 @@ actual class UriOpaque actual constructor(
 }
 
 actual class UriRelative actual constructor(
-        actual val path: String,
-        actual val query: String?,
-        fragment: String?
+    actual val path: String,
+    actual val query: String?,
+    fragment: String?
 ) : Uri(fragment) {
     init {
         path.uriPathRelativeVerify()
     }
 
     actual override fun toString(): String =
-            "${path.uriEscapePath()
-            }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
-            }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
+        "${path.uriEscapePath()
+        }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
+        }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
 
     actual override fun equals(other: Any?): Boolean {
         if (other === this) return true
@@ -177,24 +177,34 @@ actual class UriRelative actual constructor(
 }
 
 actual fun Uri(str: String): Uri {
-    uriParseHierarchicalNet.matchEntire(str)?.let { match ->
-        return UriHierarchicalNet(match.groups[1]?.value!!,
+    UriParseRegex.run {
+        uriParseHierarchicalNet.matchEntire(str)?.let { match ->
+            return UriHierarchicalNet(
+                match.groups[1]?.value!!,
                 match.groups[4]?.value, match.groups[5]?.value,
                 match.groups[7]?.value?.toIntOrNull(), match.groups[8]?.value,
-                match.groups[10]?.value, match.groups[12]?.value)
-    }
-    uriParseHierarchicalAbsolute.matchEntire(str)?.let { match ->
-        return UriHierarchicalAbsolute(match.groups[1]?.value!!,
+                match.groups[10]?.value, match.groups[12]?.value
+            )
+        }
+        uriParseHierarchicalAbsolute.matchEntire(str)?.let { match ->
+            return UriHierarchicalAbsolute(
+                match.groups[1]?.value!!,
                 match.groups[2]?.value!!, match.groups[4]?.value,
-                match.groups[6]?.value)
-    }
-    uriParseOpaque.matchEntire(str)?.let { match ->
-        return UriOpaque(match.groups[1]?.value!!,
-                match.groups[2]?.value!!, match.groups[4]?.value)
-    }
-    uriParseRelative.matchEntire(str)?.let { match ->
-        return UriRelative(match.groups[1]?.value!!,
-                match.groups[3]?.value, match.groups[5]?.value)
+                match.groups[6]?.value
+            )
+        }
+        uriParseOpaque.matchEntire(str)?.let { match ->
+            return UriOpaque(
+                match.groups[1]?.value!!,
+                match.groups[2]?.value!!, match.groups[4]?.value
+            )
+        }
+        uriParseRelative.matchEntire(str)?.let { match ->
+            return UriRelative(
+                match.groups[1]?.value!!,
+                match.groups[3]?.value, match.groups[5]?.value
+            )
+        }
     }
     throw IllegalArgumentException("Invalid url: $str")
 }
@@ -209,23 +219,26 @@ private const val uriOpaque = """([^/#][^#]*)"""
 private const val uriRelativePath = """([^/?#][^?#]*)"""
 private const val uriFragment = """#(.*)"""
 
-private val uriParseHierarchicalAbsolute =
+private object UriParseRegex {
+    val uriParseHierarchicalAbsolute =
         "$uriScheme:$uriPath($uriQuery)?($uriFragment)?".toRegex()
-// Scheme : Path : ?Query : Query : #Fragment : Fragment
-private val uriParseHierarchicalNet =
+    // Scheme : Path : ?Query : Query : #Fragment : Fragment
+    val uriParseHierarchicalNet =
         "$uriScheme://(($uriUserInfo)?$uriHost($uriPort)?)?$uriPath?($uriQuery)?($uriFragment)?".toRegex()
-// Scheme : UserInfo@Host:Port : UserInfo@ : UserInfo : Host : :Port : Port : Path : ?Query : Query : #Fragment : Fragment
-private val uriParseOpaque =
+    // Scheme : UserInfo@Host:Port : UserInfo@ : UserInfo : Host : :Port : Port : Path : ?Query : Query : #Fragment : Fragment
+    val uriParseOpaque =
         "$uriScheme:$uriOpaque($uriFragment)?".toRegex()
-// Scheme : Opaque : #Fragment : Fragment
-private val uriParseRelative =
+    // Scheme : Opaque : #Fragment : Fragment
+    val uriParseRelative =
         "$uriRelativePath($uriQuery)?($uriFragment)?".toRegex()
-// Path : ?Query : Query : #Fragment : Fragment
+    // Path : ?Query : Query : #Fragment : Fragment
+}
 
 private fun String.uriSchemeVerify() {
-    toLowerCase().find { it !in "$alphabetLatinLowercase$digitsArabic+.-" }?.let {
-        throw IllegalArgumentException("Invalid character in scheme: $it")
-    }
+    toLowerCase().find { it !in "$alphabetLatinLowercase$digitsArabic+.-" }
+        ?.let {
+            throw IllegalArgumentException("Invalid character in scheme: $it")
+        }
 }
 
 private fun String.uriPathAbsoluteVerify() {
@@ -237,39 +250,44 @@ private fun String.uriPathRelativeVerify() {
 }
 
 private fun String.uriEscapeUserInfo() = uriEscape(
-        ::uriRequireEscapeUserInfo)
+    ::uriRequireEscapeUserInfo
+)
 
 private fun uriRequireEscapeUserInfo(char: Char): Boolean =
-        uriRequireEscapeBase(char) || char in ";,:@?/"
+    uriRequireEscapeBase(char) || char in ";,:@?/"
 
 private fun String.uriEscapeHost() = uriEscape(
-        ::uriRequireEscapeHost)
+    ::uriRequireEscapeHost
+)
 
 private fun uriRequireEscapeHost(char: Char): Boolean =
-        uriRequireEscapeBase(char) || char in ";,:@?/"
+    uriRequireEscapeBase(char) || char in ";,:@?/"
 
 private fun String.uriEscapePath() = uriEscape(
-        ::uriRequireEscapePath)
+    ::uriRequireEscapePath
+)
 
 private fun uriRequireEscapePath(char: Char): Boolean =
-        uriRequireEscapeBase(char) || char in "?"
+    uriRequireEscapeBase(char) || char in "?"
 
 private fun String.uriEscapeQuery() = uriEscape(
-        ::uriRequireEscapeQuery)
+    ::uriRequireEscapeQuery
+)
 
 private fun uriRequireEscapeQuery(char: Char): Boolean =
-        uriRequireEscapeBase(char) || char in ";/?:@&=+,\$"
+    uriRequireEscapeBase(char) || char in ";/?:@&=+,\$"
 
 private fun String.uriEscapeOpaque() = uriEscape(
-        ::uriRequireEscapeOpaque)
+    ::uriRequireEscapeOpaque
+)
 
 private fun uriRequireEscapeOpaque(char: Char): Boolean =
-        uriRequireEscapeBase(char) || char in "?"
+    uriRequireEscapeBase(char) || char in "?"
 
 private fun String.uriEscapeBase() = uriEscape(::uriRequireEscapeBase)
 
 private fun uriRequireEscapeBase(char: Char): Boolean =
-        char.toInt() < 0x1F || char in " <>#%\"{}|\\^[]`"
+    char.toInt() < 0x1F || char in " <>#%\"{}|\\^[]`"
 
 private inline fun String.uriEscape(require: (Char) -> Boolean): String {
     val output = StringBuilder(length)

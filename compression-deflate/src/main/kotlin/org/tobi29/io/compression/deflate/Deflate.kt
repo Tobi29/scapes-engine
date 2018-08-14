@@ -18,6 +18,7 @@
 
 package org.tobi29.io.compression.deflate
 
+import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.HeapBytes
 import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
@@ -59,7 +60,7 @@ fun deflate(
     level: Int = -1,
     inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
     outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
-): ByteView {
+): Bytes {
     val stream = MemoryViewStreamDefault()
     deflate(input, stream, level, inputBuffer, outputBuffer)
     stream.flip()
@@ -80,7 +81,7 @@ fun inflate(
     input: ReadableByteStream,
     inputBuffer: HeapBytes = ByteArray(16384).sliceOver(),
     outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
-): ByteView {
+): Bytes {
     val stream = MemoryViewStreamDefault()
     inflate(input, stream, inputBuffer, outputBuffer)
     stream.flip()

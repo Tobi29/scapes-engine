@@ -118,7 +118,7 @@ abstract class StandardPathEnvironment : PathEnvironment {
  * Sane default path environment supporting absolute paths as well as `.` and `..` as used in unix paths
  */
 abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
-        FilePathEnvironment {
+    FilePathEnvironment {
     override fun String.normalize(): String {
         val path = sanitize()
         val root = path.startsWith(separator)
@@ -162,9 +162,12 @@ abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
         val common = findCommonRoot(base, destination)
         val componentsBase = base.components
         val componentsDestination = destination.components
-        val backtrack = (common.size until componentsBase.size).asSequence().map { ".." }
-        val destinationRelative = componentsDestination.subList(common.size,
-                componentsDestination.size).asSequence()
+        val backtrack =
+            (common.size until componentsBase.size).asSequence().map { ".." }
+        val destinationRelative = componentsDestination.subList(
+            common.size,
+            componentsDestination.size
+        ).asSequence()
         return (backtrack + destinationRelative).joinToString(separator)
     }
 
@@ -194,8 +197,10 @@ abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
             }
         }
 
-    private fun findCommonRoot(first: String,
-                               second: String): List<String> {
+    private fun findCommonRoot(
+        first: String,
+        second: String
+    ): List<String> {
         val rootFirst = first.isAbsolute
         val rootSecond = second.isAbsolute
         if (rootFirst != rootSecond) {

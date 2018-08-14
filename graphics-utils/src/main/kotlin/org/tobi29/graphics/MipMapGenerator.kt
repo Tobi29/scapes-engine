@@ -15,13 +15,13 @@
  */
 package org.tobi29.graphics
 
-import org.tobi29.io.ByteView
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import kotlin.math.max
 import kotlin.math.min
 
 /**
- * Creates an array of [ByteView]s containing mipmap
+ * Creates an array of [Bytes]s containing mipmap
  * textures from the given source texture
  * @param buffer View containing texture data in RGBA format
  * @param bufferProvider Provider for buffer allocations
@@ -29,10 +29,10 @@ import kotlin.math.min
  * @param height Height of source texture in pixels
  * @param mipmaps Amount of mipmap levels, resulting array will be n + 1 in size
  * @param alpha Whether or not to allow transparent borders or harsh ones
- * @return An array of [ByteView]s containing the mipmap textures
+ * @return An array of [Bytes]s containing the mipmap textures
  */
-inline fun <reified B : ByteView> generateMipMapsNullable(
-        buffer: ByteViewRO?,
+inline fun <reified B : Bytes> generateMipMapsNullable(
+        buffer: BytesRO?,
         noinline bufferProvider: (Int) -> B,
         width: Int,
         height: Int,
@@ -57,7 +57,7 @@ inline fun <reified B : ByteView> generateMipMapsNullable(
 }
 
 /**
- * Creates an array of [ByteView] containing mipmap
+ * Creates an array of [Bytes] containing mipmap
  * textures from the given source texture
  * @param buffer View containing texture data in RGBA format
  * @param bufferProvider Provider for buffer allocations
@@ -65,10 +65,10 @@ inline fun <reified B : ByteView> generateMipMapsNullable(
  * @param height Height of source texture in pixels
  * @param mipmaps Amount of mipmap levels, resulting array will be n + 1 in size
  * @param alpha Whether or not to allow transparent borders or harsh ones
- * @return An array of [ByteView] containing the mipmap textures
+ * @return An array of [Bytes] containing the mipmap textures
  */
-inline fun <reified B : ByteView> generateMipMaps(
-        buffer: ByteViewRO,
+inline fun <reified B : Bytes> generateMipMaps(
+        buffer: BytesRO,
         noinline bufferProvider: (Int) -> B,
         width: Int,
         height: Int,
@@ -87,19 +87,19 @@ inline fun <reified B : ByteView> generateMipMaps(
  * @param width Width of source texture in pixels
  * @param height Height of source texture in pixels
  * @param scaleBits Scale for the mipmap texture given as bit-shift value
- * @param lower Optional [ByteView] to fetch data from when the source has invisible pixels
+ * @param lower Optional [Bytes] to fetch data from when the source has invisible pixels
  * @param lowerScaleBits Scale of the lower texture in comparison to the mipmap texture as bit-shift value
  * @param alpha Whether or not to allow transparent borders or harsh ones
- * @return A [ByteView] containing the mipmap texture
+ * @return A [Bytes] containing the mipmap texture
  */
-fun <B : ByteView> generateMipMap(
-        buffer: ByteViewRO,
+fun <B : Bytes> generateMipMap(
+        buffer: BytesRO,
         bufferProvider: (Int) -> B,
         width: Int,
         height: Int,
         scaleBits: Int,
         alpha: Boolean,
-        lower: ByteView? = null,
+        lower: Bytes? = null,
         lowerScaleBits: Int = 0
 ): B {
     val scale = 1 shl scaleBits

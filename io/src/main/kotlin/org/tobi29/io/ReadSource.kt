@@ -16,6 +16,8 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.BytesRO
+
 interface ReadSourceT<out T : ReadableByteChannel> {
     fun toUri(): Uri? = null
 
@@ -28,7 +30,7 @@ interface ReadSourceT<out T : ReadableByteChannel> {
             reader(BufferedReadChannelStream(it))
         }
 
-    suspend fun data(): ByteViewRO = readAsync { it.asByteView() }
+    suspend fun data(): BytesRO = readAsync { it.asByteView() }
 }
 
 typealias ReadSource = ReadSourceT<ReadableByteChannel>
@@ -40,7 +42,7 @@ interface ReadSourceLocalT<out T : ReadableByteChannel> : ReadSourceT<T> {
 
     override suspend fun data() = dataNow()
 
-    fun dataNow(): ByteViewRO = readNow { it.asByteView() }
+    fun dataNow(): BytesRO = readNow { it.asByteView() }
 }
 
 typealias ReadSourceLocal = ReadSourceLocalT<ReadableByteChannel>

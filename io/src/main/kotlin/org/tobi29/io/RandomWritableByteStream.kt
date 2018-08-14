@@ -16,20 +16,32 @@
 
 package org.tobi29.io
 
+import org.tobi29.stdex.JsName
+
 /**
  * [WritableByteStream] supporting arbitrary seeking
  */
 interface RandomWritableByteStream : WritableByteStream {
+    var position: Int
+
+    // TODO: Remove after 0.0.14
+
     /**
      * Returns current position of the stream
      * @return Current position of the stream
      */
-    fun position(): Int
+    @JsName("positionFun")
+    @Deprecated("Use property", ReplaceWith("position"))
+    fun position(): Int = position
 
     /**
      * Set current position of the stream
      * @param pos New position
      * @throws IllegalArgumentException When an invalid position was given
      */
-    fun position(pos: Int)
+    @JsName("positionFunSet")
+    @Deprecated("Use property")
+    fun position(pos: Int) {
+        position = pos
+    }
 }

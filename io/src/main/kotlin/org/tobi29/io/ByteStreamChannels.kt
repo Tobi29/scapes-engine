@@ -16,12 +16,14 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.toIntClamped
 
 class WritableByteStreamChannel(
     private val stream: WritableByteStream
 ) : WritableByteChannel {
-    override fun write(buffer: ByteViewRO): Int {
+    override fun write(buffer: BytesRO): Int {
         stream.put(buffer)
         return buffer.size
     }
@@ -33,7 +35,7 @@ class WritableByteStreamChannel(
 class ReadableByteStreamChannel(
     private val stream: ReadableByteStream
 ) : ReadableByteChannel {
-    override fun read(buffer: ByteView) = stream.getSome(buffer)
+    override fun read(buffer: Bytes) = stream.getSome(buffer)
 
     override fun isOpen() = true
     override fun close() {}
@@ -42,14 +44,14 @@ class ReadableByteStreamChannel(
 class RandomReadableByteStreamChannel(
     private val stream: RandomReadableByteStream
 ) : SeekableReadByteChannel {
-    override fun read(buffer: ByteView) = stream.getSome(buffer)
+    override fun read(buffer: Bytes) = stream.getSome(buffer)
 
-    override fun position() = stream.position().toLong()
-
-    override fun position(newPosition: Long) =
-        stream.position(newPosition.toIntClamped())
-
-    override fun size() = stream.limit().toLong()
+    override var position: Long
+        get() = stream.position.toLong()
+        set(value) {
+            stream.position = value.toIntClamped()
+        }
+    override val size: Long get() = stream.limit.toLong()
 
     override fun isOpen() = true
     override fun close() {}

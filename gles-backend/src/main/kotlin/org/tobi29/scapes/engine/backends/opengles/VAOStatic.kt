@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
-import org.tobi29.io.ByteView
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelIndexed
 import org.tobi29.scapes.engine.graphics.RenderType
@@ -31,7 +31,7 @@ internal class VAOStatic(
     private val renderType: RenderType
 ) : VAO(vbo.glh),
     ModelIndexed {
-    private var data: ByteView? = null
+    private var data: Bytes? = null
     private var indexID = GLVBO_EMPTY
     private var arrayID = GLVAO_EMPTY
 
@@ -137,7 +137,7 @@ internal class VAOStatic(
 
     override fun buffer(
         gl: GL,
-        buffer: ByteViewRO
+        buffer: BytesRO
     ) {
         vbo.replaceBuffer(gl, buffer)
     }
@@ -146,7 +146,7 @@ internal class VAOStatic(
 
     override fun bufferIndices(
         gl: GL,
-        buffer: ByteViewRO
+        buffer: BytesRO
     ) {
         ensureStored(gl)
         glh.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)

@@ -17,9 +17,9 @@
 package org.tobi29.scapes.engine.graphics
 
 import kotlinx.coroutines.experimental.Deferred
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.asBytesRO
 import org.tobi29.graphics.*
-import org.tobi29.io.ByteViewRO
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
 import org.tobi29.io.tag.binary.readBinary
@@ -97,7 +97,7 @@ interface GraphicsObjectSupplier {
     fun createTexture(
         width: Int,
         height: Int,
-        buffer: ByteViewRO,
+        buffer: BytesRO,
         mipmaps: Int = 0,
         minFilter: TextureFilter = TextureFilter.NEAREST,
         magFilter: TextureFilter = TextureFilter.NEAREST,

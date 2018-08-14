@@ -46,9 +46,7 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) :
     }
 
     @Throws(IOException::class)
-    override fun available(): Int {
-        return stream.available()
-    }
+    override fun available(): Int = stream.available
 }
 
 class ByteStreamOutputStream(private val stream: WritableByteStream) :

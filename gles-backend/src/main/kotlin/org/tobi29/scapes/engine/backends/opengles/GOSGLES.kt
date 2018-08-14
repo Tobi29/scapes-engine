@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.scapes.engine.shader.CompiledShader
@@ -34,7 +34,7 @@ abstract class GOSGLES(override val container: Container) :
     override fun createTexture(
         width: Int,
         height: Int,
-        buffer: ByteViewRO,
+        buffer: BytesRO,
         mipmaps: Int,
         minFilter: TextureFilter,
         magFilter: TextureFilter,

@@ -16,8 +16,8 @@
 
 package org.tobi29.io
 
-import org.tobi29.utils.MutableString
 import org.tobi29.stdex.Readable
+import org.tobi29.utils.MutableString
 import kotlin.math.min
 
 /**
@@ -29,7 +29,7 @@ import kotlin.math.min
  * @throws EndOfStreamException When stream ends prematurely
  */
 fun Readable.readLine(ln: String = "\n"): String =
-        readLineTry(ln) ?: throw EndOfStreamException()
+    readLineTry(ln) ?: throw EndOfStreamException()
 
 /**
  * Reads a complete line and writes it to [output] dropping [ln] in
@@ -43,8 +43,7 @@ fun Readable.readLine(ln: String = "\n"): String =
  * @throws IOException Read implementation may throw on errors
  * @throws EndOfStreamException When stream ends prematurely
  */
-fun Readable.readLine(output: Appendable,
-                      ln: String = "\n") {
+fun Readable.readLine(output: Appendable, ln: String = "\n") {
     if (!readLineTry(output, ln)) throw EndOfStreamException()
 }
 
@@ -73,8 +72,7 @@ fun Readable.readLineTry(ln: String = "\n"): String? {
  * @returns `true` on success or `false` if the stream ended before reaching [ln]
  * @throws IOException Read implementation may throw on errors
  */
-fun Readable.readLineTry(output: Appendable,
-                         ln: String = "\n"): Boolean {
+fun Readable.readLineTry(output: Appendable, ln: String = "\n"): Boolean {
     if (ln.isEmpty())
         throw IllegalArgumentException("Newline string cannot be empty")
     val lnchar = ln.last()
@@ -123,11 +121,11 @@ fun Readable.readLineTry(output: Appendable,
  * @return An iterator for reading all lines from the receiver
  */
 fun Readable.readLines(ln: String = "\n"): Iterator<String> =
-        ReadableLineIterator(this, ln)
+    ReadableLineIterator(this, ln)
 
 private class ReadableLineIterator(
-        private val readable: Readable,
-        private val ln: String = "\n"
+    private val readable: Readable,
+    private val ln: String = "\n"
 ) : Iterator<String> {
     private val builder = MutableString(256)
     private var current: String? = null
@@ -149,8 +147,7 @@ private class ReadableLineIterator(
     }
 }
 
-private fun Readable.readLineTry(output: Appendable,
-                                 ln: Char): Boolean {
+private fun Readable.readLineTry(output: Appendable, ln: Char): Boolean {
     while (true) {
         val char = readTry().let {
             if (it < 0) return false

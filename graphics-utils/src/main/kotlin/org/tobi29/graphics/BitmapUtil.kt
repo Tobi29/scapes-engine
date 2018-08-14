@@ -19,8 +19,6 @@
 package org.tobi29.graphics
 
 import org.tobi29.arrays.*
-import org.tobi29.io.ByteView
-import org.tobi29.io.ByteViewRO
 import org.tobi29.io.DefaultMemoryViewProvider
 import org.tobi29.io.view
 import org.tobi29.stdex.JvmName
@@ -58,7 +56,7 @@ inline fun <F : ColorFormat<*>> Bitmap<*, F>.get(
     y: Int,
     width: Int,
     height: Int,
-    bufferProvider: (Int) -> ByteView
+    bufferProvider: (Int) -> Bytes
 ): Bitmap<*, F> =
     when (format) {
         is ColorFormatInt -> cast<IntsRO2, ColorFormatInt>()!!
@@ -135,7 +133,7 @@ fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
     y: Int,
     width: Int,
     height: Int,
-    buffer: ByteView
+    buffer: Bytes
 ) {
     val data = data
     when (data) {
@@ -213,7 +211,7 @@ fun <D : Ints2, F : ColorFormatInt> Bitmap<D, F>.set(
     y: Int,
     width: Int,
     height: Int,
-    buffer: ByteViewRO
+    buffer: BytesRO
 ) {
     val data = data
     if (data is Ints2Ints<*>) {
@@ -364,7 +362,7 @@ fun copy(
 fun flipVertical(
     width: Int,
     height: Int,
-    buffer: ByteView
+    buffer: Bytes
 ) {
     val scanline = width shl 2
     val limit = scanline * height
@@ -382,7 +380,7 @@ fun flipVertical(
 }
 
 fun Bitmap<*, *>.asBytesRORGBABitmap(): Ints2BytesROBitmap<RGBA> {
-    cast<Ints2BytesRO<ByteViewRO>, RGBA>()?.let { return it }
+    cast<Ints2BytesRO<BytesRO>, RGBA>()?.let { return it }
     return toByteArrayRGBABitmap()
 }
 
@@ -420,7 +418,7 @@ inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
 
 @Deprecated("Use new array wrappers", ReplaceWith("asBytesRORGBABitmap()"))
 fun Bitmap<*, *>.asByteViewRGBABitmap(): IntByteViewBitmap<RGBA> {
-    cast<Int2ByteArrayRO<ByteViewRO>, RGBA>()?.let { return it }
+    cast<Int2ByteArrayRO<BytesRO>, RGBA>()?.let { return it }
     return toByteViewRGBABitmap()
 }
 

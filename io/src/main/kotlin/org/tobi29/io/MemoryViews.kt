@@ -34,27 +34,24 @@ interface MemorySegmentLE : MemorySegmentE {
     override val isBigEndian: Boolean get() = false
 }
 
-typealias ByteViewRO = BytesRO
-typealias ByteView = Bytes
-
-interface ByteViewERO : ByteViewRO, ShortViewERO, MemorySegmentE {
+interface ByteViewERO : BytesRO, ShortViewERO, MemorySegmentE {
     override fun slice(index: Int): ByteViewERO
 
     override fun slice(index: Int, size: Int): ByteViewERO
 
     override fun getShorts(index: Int, shortView: ShortView) {
-        if (shortView is ByteView) return getBytes(index, shortView)
+        if (shortView is Bytes) return getBytes(index, shortView)
         super.getShorts(index, shortView)
     }
 }
 
-interface ByteViewE : ByteViewERO, ByteView, ShortViewE, MemorySegmentE {
+interface ByteViewE : ByteViewERO, Bytes, ShortViewE, MemorySegmentE {
     override fun slice(index: Int): ByteViewE
 
     override fun slice(index: Int, size: Int): ByteViewE
 
     override fun setShorts(index: Int, shortView: ShortView) {
-        if (shortView is ByteView) return setBytes(index, shortView)
+        if (shortView is Bytes) return setBytes(index, shortView)
         super.setShorts(index, shortView)
     }
 }
@@ -425,7 +422,7 @@ typealias DoubleViewLE = LongViewLE
 val ByteArray.view: HeapBytes
     get() = HeapBytes(this, 0, size)
 
-val BytesRO.view: ByteViewRO
+val BytesRO.view: BytesRO
     get() = when (this) {
         is HeapBytes -> HeapBytes(array, offset, size)
         else -> ByteArraySliceViewRO(this)
@@ -445,7 +442,7 @@ open class ByteArraySliceViewRO(
     override fun getByte(index: Int): Byte = slice[index]
 }
 
-val Bytes.view: ByteView
+val Bytes.view: Bytes
     get() = when (this) {
         is HeapBytes -> HeapBytes(array, offset, size)
         else -> ByteArraySliceView(this)
@@ -467,7 +464,7 @@ open class ByteArraySliceView(
     override fun setByte(index: Int, value: Byte) = slice.set(index, value)
 }
 
-fun ByteViewRO.readAsByteArray(): ByteArray = when (this) {
+fun BytesRO.readAsByteArray(): ByteArray = when (this) {
     is HeapBytes ->
         if (size == array.size && offset == 0) array else {
             ByteArray(size).also { copy(array, it, size, offset) }
@@ -475,7 +472,7 @@ fun ByteViewRO.readAsByteArray(): ByteArray = when (this) {
     else -> ByteArray(size) { getByte(it) }
 }
 
-fun ByteViewRO.asByteArray(): ByteArray = when (this) {
+fun BytesRO.asByteArray(): ByteArray = when (this) {
     is HeapBytes -> ByteArray(size).also {
         copy(array, it, size, offset)
     }
@@ -487,7 +484,7 @@ inline fun HeapBytes.index(
     dataLength: Int = 1
 ): Int = index(offset, size, index, dataLength)
 
-expect val ByteViewRO.ro: ByteViewRO
+expect val BytesRO.ro: BytesRO
 expect val ByteViewERO.ro: ByteViewERO
 expect val ByteViewBERO.ro: ByteViewBERO
 expect val ByteViewLERO.ro: ByteViewLERO
@@ -506,3 +503,11 @@ expect val LongViewRO.ro: LongViewRO
 expect val LongViewERO.ro: LongViewERO
 expect val LongViewBERO.ro: LongViewBERO
 expect val LongViewLERO.ro: LongViewLERO
+
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use BytesRO", ReplaceWith("BytesRO", "org.tobi29.arrays.BytesRO"))
+typealias ByteViewRO = BytesRO
+
+@Deprecated("Use Bytes", ReplaceWith("Bytes", "org.tobi29.arrays.Bytes"))
+typealias ByteView = Bytes

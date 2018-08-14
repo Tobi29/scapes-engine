@@ -16,12 +16,13 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.toIntClamped
 import org.tobi29.stdex.utf8ToString
 
 inline fun ReadableByteStream.process(
     bufferSize: Int = 1024,
-    sink: (ByteViewRO) -> Unit
+    sink: (BytesRO) -> Unit
 ) {
     val buffer = ByteArray(bufferSize).view
     while (true) {

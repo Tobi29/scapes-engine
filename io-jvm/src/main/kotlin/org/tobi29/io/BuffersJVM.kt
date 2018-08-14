@@ -18,6 +18,8 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.HeapBytes
 import org.tobi29.stdex.BIG_ENDIAN
 import org.tobi29.stdex.LITTLE_ENDIAN
@@ -60,7 +62,7 @@ inline fun ByteBuffer.fill(supplier: () -> Byte): ByteBuffer {
     return this
 }
 
-inline fun <R> ByteView.mutateAsByteBuffer(block: (ByteBuffer) -> R): R {
+inline fun <R> Bytes.mutateAsByteBuffer(block: (ByteBuffer) -> R): R {
     var buffer = asByteBuffer()
     val view = if (buffer == null) {
         buffer = ByteBuffer(size)
@@ -76,7 +78,7 @@ inline fun <R> ByteView.mutateAsByteBuffer(block: (ByteBuffer) -> R): R {
     }
 }
 
-fun ByteViewRO.readAsByteBuffer(): ByteBuffer =
+fun BytesRO.readAsByteBuffer(): ByteBuffer =
         asByteBuffer() ?: ByteBuffer(size).also { buffer ->
             if (this is MemorySegmentE) {
                 buffer.order(if (isBigEndian) BIG_ENDIAN else LITTLE_ENDIAN)
@@ -84,7 +86,7 @@ fun ByteViewRO.readAsByteBuffer(): ByteBuffer =
             getBytes(0, buffer.viewE)
         }
 
-fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
+fun BytesRO.asByteBuffer(): ByteBuffer? = when (this) {
     is ByteBufferView -> byteBuffer.slice().order(byteBuffer.order())
     is HeapBytes -> array.asByteBuffer(offset, size).slice().also {
         if (this is MemorySegmentE) {
@@ -94,7 +96,7 @@ fun ByteViewRO.asByteBuffer(): ByteBuffer? = when (this) {
     else -> null
 }
 
-inline fun <R> ByteView.mutateAsNativeByteBuffer(block: (ByteBuffer) -> R): R {
+inline fun <R> Bytes.mutateAsNativeByteBuffer(block: (ByteBuffer) -> R): R {
     var buffer = asNativeByteBuffer()
     val view = if (buffer == null) {
         buffer = ByteBufferNative(size)
@@ -110,7 +112,7 @@ inline fun <R> ByteView.mutateAsNativeByteBuffer(block: (ByteBuffer) -> R): R {
     }
 }
 
-fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
+fun BytesRO.readAsNativeByteBuffer(): ByteBuffer =
     asNativeByteBuffer()?.let {
         if (!it.isDirect) {
             val buffer = ByteBuffer.allocateDirect(it.remaining())
@@ -126,7 +128,7 @@ fun ByteViewRO.readAsNativeByteBuffer(): ByteBuffer =
         getBytes(0, buffer.viewE)
     }
 
-fun ByteViewRO.asNativeByteBuffer(): ByteBuffer? = when (this) {
+fun BytesRO.asNativeByteBuffer(): ByteBuffer? = when (this) {
     is ByteBufferView ->
         if (byteBuffer.isDirect) byteBuffer.slice().order(byteBuffer.order())
         else null

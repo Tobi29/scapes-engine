@@ -19,20 +19,19 @@ package org.tobi29.io.filesystem
 import org.tobi29.io.JavaByteChannel
 
 fun java.nio.channels.FileChannel.toChannel(): FileChannel =
-        object : JavaFileChannel {
-            override val java = this@toChannel
-        }
+    object : JavaFileChannel {
+        override val java = this@toChannel
+    }
 
 interface JavaFileChannel : JavaByteChannel, FileChannel {
     override val java: java.nio.channels.FileChannel
 
-    override fun position() = java.position()
-
-    override fun position(newPosition: Long) {
-        java.position(newPosition)
-    }
-
-    override fun size() = java.size()
+    override var position: Long
+        get() = java.position()
+        set(value) {
+            java.position(value)
+        }
+    override val size: Long get() = java.size()
 
     override fun truncate(size: Long) {
         java.truncate(size)

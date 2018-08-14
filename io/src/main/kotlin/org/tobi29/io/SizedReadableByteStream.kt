@@ -16,38 +16,57 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+import org.tobi29.stdex.JsName
+
 /**
  * [ReadableByteStream] exposing how much data is left in the stream
  */
 interface SizedReadableByteStream : ReadableByteStream {
     /**
-     * Returns amount of bytes left in the stream, may not change arbitrarily
-     * @return Amount of bytes left in the stream
+     * Amount of bytes left in the stream
      */
-    fun remaining(): Int
+    val remaining: Int
 
     /**
-     * Returns `true` if there are remaining bytes and reading at least a
+     * `true` if there are remaining bytes and reading at least a
      * single byte will guaranteed not throw because of the stream ending
-     * @return `true` if there are remaining bytes
      */
-    fun hasRemaining(): Boolean = remaining() > 0
+    val hasRemaining: Boolean get() = remaining > 0
 
     /**
      * Skips through the entire stream
      * @throws IOException When an IO error occurs
      */
     fun consume() {
-        while (hasRemaining()) {
-            skip(remaining())
+        while (hasRemaining) {
+            skip(remaining)
         }
     }
 
-    override fun getSome(buffer: ByteView): Int =
-            remaining().let {
-                if (it <= 0) -1
-                else buffer.size.coerceAtMost(it).also { size ->
-                    get(buffer.slice(0, size))
-                }
+    override fun getSome(buffer: Bytes): Int =
+        remaining.let {
+            if (it <= 0) -1
+            else buffer.size.coerceAtMost(it).also { size ->
+                get(buffer.slice(0, size))
             }
+        }
+
+    // TODO: Remove after 0.0.14
+
+    /**
+     * Returns amount of bytes left in the stream, may not change arbitrarily
+     * @return Amount of bytes left in the stream
+     */
+    @JsName("remainingFun")
+    @Deprecated("Use property", ReplaceWith("remaining"))
+    fun remaining(): Int = remaining
+
+    /**
+     * `true` if there are remaining bytes and reading at least a
+     * single byte will guaranteed not throw because of the stream ending
+     */
+    @JsName("hasRemainingFun")
+    @Deprecated("Use property", ReplaceWith("hasRemaining"))
+    fun hasRemaining(): Boolean = hasRemaining
 }

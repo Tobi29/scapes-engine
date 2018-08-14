@@ -15,25 +15,29 @@
  */
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+
 class LimitedBufferStream(
     private val stream: ReadableByteStream,
-    private var remaining: Int
+    remaining: Int
 ) : SizedReadableByteStream {
-    override fun available(): Int {
-        return stream.available().coerceAtMost(remaining)
-    }
+    override var remaining: Int = remaining
+        private set
+
+    override val available: Int
+        get() = stream.available.coerceAtMost(remaining)
 
     override fun skip(length: Int) {
         check(length)
         stream.skip(length)
     }
 
-    override fun get(buffer: ByteView) {
+    override fun get(buffer: Bytes) {
         check(buffer.size)
         stream.get(buffer)
     }
 
-    override fun getSome(buffer: ByteView): Int {
+    override fun getSome(buffer: Bytes): Int {
         if (remaining <= 0) return -1
         return buffer.size.coerceAtMost(remaining).let {
             stream.getSome(buffer.slice(0, it)).also {
@@ -84,13 +88,5 @@ class LimitedBufferStream(
             throw EndOfStreamException()
         }
         remaining -= len
-    }
-
-    override fun remaining(): Int {
-        return remaining
-    }
-
-    override fun hasRemaining(): Boolean {
-        return remaining > 0
     }
 }

@@ -142,7 +142,7 @@ class ByteBufferViewBE(
     }
 
     override fun setBytes(index: Int,
-                          slice: ByteViewRO) {
+                          slice: BytesRO) {
         when (slice) {
             is HeapBytes -> {
                 val position = buffer.position()
@@ -225,7 +225,7 @@ class ByteBufferViewLE(
     }
 
     override fun setBytes(index: Int,
-                          slice: ByteViewRO) {
+                          slice: BytesRO) {
         when (slice) {
             is HeapBytes -> {
                 val position = buffer.position()

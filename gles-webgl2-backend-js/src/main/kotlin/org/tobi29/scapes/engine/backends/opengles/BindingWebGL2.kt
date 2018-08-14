@@ -19,6 +19,8 @@
 package org.tobi29.scapes.engine.backends.opengles
 
 import org.khronos.webgl.*
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.*
 import org.tobi29.stdex.*
 import org.khronos.webgl.WebGLRenderingContext as WGL1
@@ -71,7 +73,7 @@ actual inline fun GLESHandle.glTexImage2D(
     border: Int,
     format: GLEnum,
     type: GLEnum,
-    pixels: ByteViewRO?
+    pixels: BytesRO?
 ) {
     wgl.texImage2D(
         target, level, internalformat, width, height, border,
@@ -139,14 +141,14 @@ actual inline fun GLESHandle.glBufferData(
 
 actual inline fun GLESHandle.glBufferData(
     target: GLEnum,
-    data: ByteViewRO,
+    data: BytesRO,
     usage: Int
 ) = wgl.bufferData(target, data.asDataView(), usage)
 
 actual inline fun GLESHandle.glBufferSubData(
     target: GLEnum,
     offset: Int,
-    data: ByteViewRO
+    data: BytesRO
 ) = wgl.bufferSubData(target, offset, data.asDataView())
 
 actual inline fun GLESHandle.glVertexAttribDivisor(
@@ -214,7 +216,7 @@ actual inline fun GLESHandle.glReadPixels(
     height: Int,
     format: Int,
     type: Int,
-    pixels: ByteView
+    pixels: Bytes
 ) = wgl.readPixels(x, y, width, height, format, type, pixels.asDataView())
 
 actual inline fun GLESHandle.glBlendFunc(
@@ -231,7 +233,7 @@ actual inline fun GLESHandle.glTexSubImage2D(
     height: Int,
     format: Int,
     type: Int,
-    pixels: ByteViewRO
+    pixels: BytesRO
 ) {
     wgl.texSubImage2D(
         target, level, xoffset, yoffset, width, height,

@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
-import org.tobi29.io.ByteViewRO
 import org.tobi29.math.FastMath
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelAttribute
@@ -34,7 +34,7 @@ internal class VBO(
 ) {
     private val stride: Int
     private val attributes = ArrayList<ModelAttributeData>()
-    private var data: ByteViewRO? = null
+    private var data: BytesRO? = null
     private var vertexID = GLVBO_EMPTY
     private var stored = false
 
@@ -66,7 +66,7 @@ internal class VBO(
         return stride
     }
 
-    fun replaceBuffer(gl: GL, buffer: ByteViewRO) {
+    fun replaceBuffer(gl: GL, buffer: BytesRO) {
         gl.check()
         data = buffer
         if (!stored) return

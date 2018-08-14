@@ -20,44 +20,45 @@ import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.DataView
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.HeapBytes
 import org.tobi29.stdex.BIG_ENDIAN
 import org.tobi29.stdex.NATIVE_ENDIAN
 import org.tobi29.stdex.asTypedArray
 
-fun ByteViewRO.asDataView(): DataView? = asInt8Array()?.let {
+fun BytesRO.asDataView(): DataView? = asInt8Array()?.let {
     DataView(it.buffer, it.byteOffset, it.byteLength)
 }
 
-fun ByteViewRO.asInt8Array(): Int8Array? = when (this) {
+fun BytesRO.asInt8Array(): Int8Array? = when (this) {
     is HeapBytes -> array.asTypedArray().subarray(offset,
             offset + size)
     else -> null
 }
 
-fun ByteViewRO.asUint8Array(): Uint8Array? = asInt8Array()?.let {
+fun BytesRO.asUint8Array(): Uint8Array? = asInt8Array()?.let {
     Uint8Array(it.buffer, it.byteOffset, it.byteLength)
 }
 
-fun ByteViewRO.readAsArrayBuffer(): ArrayBuffer =
+fun BytesRO.readAsArrayBuffer(): ArrayBuffer =
         readAsInt8Array().let { array ->
             if (array.byteOffset == 0 && array.byteLength == array.buffer.byteLength) array.buffer
             else ArrayBuffer(array.byteLength).also { Int8Array(it).set(array) }
         }
 
-fun ByteViewRO.readAsDataView(): DataView =
+fun BytesRO.readAsDataView(): DataView =
         asDataView() ?: ByteArray(size).also {
             getBytes(0, it.view)
         }.asTypedArray().let {
             DataView(it.buffer, it.byteOffset, it.byteLength)
         }
 
-fun ByteViewRO.readAsInt8Array(): Int8Array =
+fun BytesRO.readAsInt8Array(): Int8Array =
         asInt8Array() ?: ByteArray(size).also {
             getBytes(0, it.view)
         }.asTypedArray()
 
-fun ByteViewRO.readAsUint8Array(): Uint8Array = readAsInt8Array().let {
+fun BytesRO.readAsUint8Array(): Uint8Array = readAsInt8Array().let {
     Uint8Array(it.buffer, it.byteOffset, it.byteLength)
 }
 

@@ -18,6 +18,8 @@ package org.tobi29.io
 
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.asArray
 import org.tobi29.utils.Result
 import org.tobi29.utils.ResultError
@@ -101,7 +103,7 @@ class UriPath(private val uri: Uri) : Path {
         return object : ReadableByteChannel {
             private var stream: MemoryViewReadableStream<*>? = null
 
-            override fun read(buffer: ByteView): Int {
+            override fun read(buffer: Bytes): Int {
                 while (true) {
                     stream?.let { return it.getSome(buffer) }
                     stream = MemoryViewReadableStream(
@@ -182,7 +184,7 @@ suspend fun <R> Blob.useUri(block: suspend (Uri) -> R): R {
     }
 }
 
-suspend fun <R> ByteViewRO.useUri(block: suspend (Uri) -> R): R =
+suspend fun <R> BytesRO.useUri(block: suspend (Uri) -> R): R =
     File(arrayOf(readAsInt8Array()), "").useUri(block)
 
 suspend fun <R> ReadSource.useUri(block: suspend (Uri) -> R): R =

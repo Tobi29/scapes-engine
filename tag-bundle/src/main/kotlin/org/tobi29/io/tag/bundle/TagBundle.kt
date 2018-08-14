@@ -16,13 +16,17 @@
 
 package org.tobi29.io.tag.bundle
 
-import org.tobi29.io.*
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
+import org.tobi29.io.UnixPathEnvironment
+import org.tobi29.io.ro
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.toByteArray
 import org.tobi29.io.tag.toMap
+import org.tobi29.io.view
 
 class TagBundle(private val map: TagMap) {
-    fun resolve(path: String): ByteViewRO? {
+    fun resolve(path: String): BytesRO? {
         val segments = UnixPathEnvironment.run { path.components }
         if (segments.isEmpty()) {
             return null
@@ -42,7 +46,7 @@ class TagBundle(private val map: TagMap) {
         return this["Contents"]?.toMap()
     }
 
-    private fun TagMap.toFile(): ByteView? {
+    private fun TagMap.toFile(): Bytes? {
         if (this["Type"].toString() != "File") {
             return null
         }

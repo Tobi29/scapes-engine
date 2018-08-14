@@ -16,11 +16,12 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.BytesRO
 
 interface ModelHybrid : Model {
     fun strideStream(): Int
 
     fun bufferStream(gl: GL,
-                     buffer: ByteViewRO)
+                     buffer: BytesRO
+    )
 }

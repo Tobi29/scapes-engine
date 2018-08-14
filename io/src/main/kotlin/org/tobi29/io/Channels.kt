@@ -16,6 +16,9 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
+import org.tobi29.stdex.JsName
 import org.tobi29.stdex.toIntClamped
 
 expect interface Channel : Closeable {
@@ -30,7 +33,7 @@ expect interface Channel : Closeable {
 expect interface InterruptibleChannel : Channel
 
 interface ReadableByteChannel : Channel {
-    fun read(buffer: ByteView): Int
+    fun read(buffer: Bytes): Int
 
     fun skip(length: Long): Long {
         val buffer = ByteArray(length.coerceAtMost(4096).toInt()).view
@@ -54,46 +57,60 @@ interface ReadableByteChannel : Channel {
 
 fun ReadableByteChannel.read(stream: MemoryViewStream<*>): Int =
     read(stream.bufferSlice()).also {
-        if (it > 0) stream.position(stream.position() + it)
+        if (it > 0) stream.position += it
     }
 
 interface WritableByteChannel : Channel {
-    fun write(buffer: ByteViewRO): Int
+    fun write(buffer: BytesRO): Int
 }
 
 fun WritableByteChannel.write(stream: MemoryViewStream<*>): Int =
     write(stream.bufferSlice()).also {
-        if (it > 0) stream.position(stream.position() + it)
+        if (it > 0) stream.position += it
     }
 
 interface ByteChannel : ReadableByteChannel, WritableByteChannel
 
 interface SeekableChannel : Channel {
-    /**
-     * @throws IOException
-     */
-    fun position(): Long
+    var position: Long
+    val size: Long
+    val remaining: Long get() = size - position
+
+    // TODO: Remove after 0.0.14
 
     /**
      * @throws IOException
      */
-    fun position(newPosition: Long)
+    @JsName("positionFun")
+    @Deprecated("Use property", ReplaceWith("position"))
+    fun position(): Long = position
 
     /**
      * @throws IOException
      */
-    fun size(): Long
+    @JsName("positionFunSet")
+    @Deprecated("Use property")
+    fun position(newPosition: Long) {
+        position = newPosition
+    }
 
     /**
      * @throws IOException
      */
-    fun remaining(): Long = size() - position()
+    @JsName("sizeFun")
+    @Deprecated("Use property", ReplaceWith("size"))
+    fun size(): Long = size
+
+    /**
+     * @throws IOException
+     */
+    @JsName("remainingFun")
+    @Deprecated("Use property", ReplaceWith("remaining"))
+    fun remaining(): Long = remaining
 }
 
 interface SeekableReadByteChannel : SeekableChannel, ReadableByteChannel {
-    override fun skip(length: Long) = length.also {
-        position(position() + length)
-    }
+    override fun skip(length: Long) = length.also { position += length }
 }
 
 interface SeekableWriteByteChannel : SeekableChannel, WritableByteChannel {
@@ -105,5 +122,7 @@ interface SeekableWriteByteChannel : SeekableChannel, WritableByteChannel {
 
 interface SeekableByteChannel : ByteChannel, SeekableReadByteChannel,
     SeekableWriteByteChannel {
-    override fun remaining(): Long = super<SeekableReadByteChannel>.remaining()
+    override val remaining: Long
+        get() =
+            super<SeekableReadByteChannel>.remaining
 }

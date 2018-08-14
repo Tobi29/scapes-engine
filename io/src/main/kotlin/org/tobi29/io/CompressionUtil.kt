@@ -16,6 +16,7 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
 import org.tobi29.stdex.Throws
 
 // TODO: Remove after 0.0.14
@@ -27,7 +28,7 @@ object CompressionUtil {
     fun compress(
         input: ReadableByteStream,
         level: Int = -1
-    ): ByteView {
+    ): Bytes {
         val stream = MemoryViewStreamDefault()
         compress(input, stream, level)
         stream.flip()
@@ -44,7 +45,7 @@ object CompressionUtil {
     }
 
     @Throws(IOException::class)
-    fun decompress(input: ReadableByteStream): ByteView {
+    fun decompress(input: ReadableByteStream): Bytes {
         val stream = MemoryViewStreamDefault()
         decompress(input, stream)
         stream.flip()

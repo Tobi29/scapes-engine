@@ -18,7 +18,9 @@
 
 package org.tobi29.io
 
-actual inline val ByteViewRO.ro: ByteViewRO get() = this
+import org.tobi29.arrays.BytesRO
+
+actual inline val BytesRO.ro: BytesRO get() = this
 actual inline val ByteViewERO.ro: ByteViewERO get() = this
 actual inline val ByteViewBERO.ro: ByteViewBERO get() = this
 actual inline val ByteViewLERO.ro: ByteViewLERO get() = this

@@ -18,9 +18,9 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
-import org.tobi29.io.ByteView
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
-import org.tobi29.io.ByteViewRO
 
 expect fun GLHandle.byteView(capacity: Int): ByteViewE
 
@@ -58,7 +58,7 @@ expect fun GLHandle.glTexImage2D(
     border: Int,
     format: GLEnum,
     type: GLEnum,
-    pixels: ByteViewRO?
+    pixels: BytesRO?
 )
 
 expect fun GLHandle.glFramebufferTexture2D(
@@ -114,14 +114,14 @@ expect fun GLHandle.glBufferData(
 
 expect fun GLHandle.glBufferData(
     target: GLEnum,
-    data: ByteViewRO,
+    data: BytesRO,
     usage: Int
 )
 
 expect fun GLHandle.glBufferSubData(
     target: GLEnum,
     offset: Int,
-    data: ByteViewRO
+    data: BytesRO
 )
 
 expect fun GLHandle.glVertexAttribDivisor(
@@ -189,7 +189,7 @@ expect fun GLHandle.glReadPixels(
     height: Int,
     format: GLEnum,
     type: GLEnum,
-    pixels: ByteView
+    pixels: Bytes
 )
 
 expect fun GLHandle.glBlendFunc(
@@ -206,7 +206,7 @@ expect fun GLHandle.glTexSubImage2D(
     height: Int,
     format: GLEnum,
     type: GLEnum,
-    pixels: ByteViewRO
+    pixels: BytesRO
 )
 
 expect fun GLHandle.glGetTexImage(
@@ -214,7 +214,7 @@ expect fun GLHandle.glGetTexImage(
     level: Int,
     format: Int,
     type: Int,
-    pixels: ByteView
+    pixels: Bytes
 )
 
 expect fun GLHandle.glGetError(): GLEnum

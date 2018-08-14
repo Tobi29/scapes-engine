@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.BytesRO
 
 interface Model : GraphicsObject {
     fun markAsDisposed()
@@ -38,7 +38,8 @@ interface Model : GraphicsObject {
                         count: Int): Boolean
 
     fun buffer(gl: GL,
-               buffer: ByteViewRO)
+               buffer: BytesRO
+    )
 
     val stride: Int
 
@@ -47,5 +48,5 @@ interface Model : GraphicsObject {
 
 interface ModelIndexed : Model {
     fun bufferIndices(gl: GL,
-                      buffer: ByteViewRO)
+                      buffer: BytesRO)
 }

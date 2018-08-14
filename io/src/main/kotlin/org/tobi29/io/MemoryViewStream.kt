@@ -16,6 +16,8 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.stdex.assert
 
 typealias MemoryViewProvider<B> = (Int) -> B
@@ -27,6 +29,14 @@ interface MemoryStream : RandomWritableByteStream, RandomReadableByteStream {
     fun flip()
     fun rewind()
     fun reset()
+
+    // TODO: Remove after 0.0.14
+
+    override fun position(): Int =
+        super<RandomReadableByteStream>.position()
+
+    override fun position(pos: Int) =
+        super<RandomReadableByteStream>.position(pos)
 }
 
 fun MemoryViewStreamDefault(
@@ -40,36 +50,85 @@ fun MemoryViewStreamDefault(
 ): MemoryViewStream<HeapViewByteBE> =
     MemoryViewStream(DefaultMemoryViewProvider, growth, buffer)
 
-class MemoryViewReadableStream<out B : ByteViewERO>(
-    private val mbuffer: B
+sealed class MemoryViewReadableStream<out B : ByteViewERO>(
+    protected var _position: Int,
+    protected var _limit: Int
 ) : RandomReadableByteStream {
-    private var position: Int = 0
-    private var limit: Int = mbuffer.size
+    protected abstract val mbuffer: B
 
-    fun buffer(): B {
-        return mbuffer
-    }
+    fun buffer(): B = mbuffer
 
-    fun bufferSlice(): B {
-        @Suppress("UNCHECKED_CAST")
-        return mbuffer.slice(position, limit - position) as B
-    }
-
-    override fun position(): Int {
-        return position
-    }
-
-    override fun position(pos: Int) {
-        if (pos < 0 || pos > limit)
-            throw IllegalArgumentException("Invalid position")
-        ensure(pos - position)
-        position = pos
-    }
+    abstract fun bufferSlice(): B
 
     fun ensure(len: Int) = ensureTry(len) ?: throw EndOfStreamException()
 
-    fun ensureTry(len: Int): Boolean? {
-        val used = position
+    abstract fun ensureTry(len: Int): Boolean?
+
+    override fun getTry(): Int {
+        ensureTry(1) ?: return -1
+        return mbuffer.getByte(_position).also { _position++ }.toInt() and 0xFF
+    }
+
+    override fun get(): Byte {
+        ensure(1)
+        return mbuffer.getByte(_position).also { _position++ }
+    }
+
+    override fun getShort(): Short {
+        ensure(2)
+        return mbuffer.getShort(_position).also { _position += 2 }
+    }
+
+    override fun getInt(): Int {
+        ensure(4)
+        return mbuffer.getInt(_position).also { _position += 4 }
+    }
+
+    override fun getLong(): Long {
+        ensure(8)
+        return mbuffer.getLong(_position).also { _position += 8 }
+    }
+
+    override fun getFloat(): Float {
+        ensure(4)
+        return mbuffer.getFloat(_position).also { _position += 4 }
+    }
+
+    override fun getDouble(): Double {
+        ensure(8)
+        return mbuffer.getDouble(_position).also { _position += 8 }
+    }
+
+    override fun get(buffer: Bytes) {
+        ensure(buffer.size)
+        mbuffer.getBytes(_position, buffer)
+        _position += buffer.size
+    }
+}
+
+fun <B : ByteViewERO> MemoryViewReadableStream(
+    mbuffer: B
+): MemoryViewReadableStream<B> = MemoryViewReadableStreamImpl(mbuffer)
+
+private class MemoryViewReadableStreamImpl<out B : ByteViewERO>(
+    override val mbuffer: B
+) : MemoryViewReadableStream<B>(0, mbuffer.size) {
+    override var position: Int
+        get() = _position
+        set (value) {
+            if (value < 0 || value > _limit)
+                throw IllegalArgumentException("Invalid position")
+            ensure(value - _position)
+            _position = value
+        }
+    override var limit: Int
+        get() = _limit
+        set (value) {
+            _limit = if (value < -1) mbuffer.size else value
+        }
+
+    override fun ensureTry(len: Int): Boolean? {
+        val used = _position
         val size = mbuffer.size
         if (len <= size - used) {
             return true
@@ -77,184 +136,133 @@ class MemoryViewReadableStream<out B : ByteViewERO>(
         return null
     }
 
-    override fun limit(): Int {
-        return limit
-    }
-
-    override fun limit(limit: Int) {
-        this.limit = if (limit < -1) mbuffer.size else limit
-    }
-
-    override fun remaining(): Int {
-        return limit - position
-    }
-
-    override fun getTry(): Int {
-        ensureTry(1) ?: return -1
-        return mbuffer.getByte(position).also { position++ }.toInt() and 0xFF
-    }
-
-    override fun get(): Byte {
-        ensure(1)
-        return mbuffer.getByte(position).also { position++ }
-    }
-
-    override fun getShort(): Short {
-        ensure(2)
-        return mbuffer.getShort(position).also { position += 2 }
-    }
-
-    override fun getInt(): Int {
-        ensure(4)
-        return mbuffer.getInt(position).also { position += 4 }
-    }
-
-    override fun getLong(): Long {
-        ensure(8)
-        return mbuffer.getLong(position).also { position += 8 }
-    }
-
-    override fun getFloat(): Float {
-        ensure(4)
-        return mbuffer.getFloat(position).also { position += 4 }
-    }
-
-    override fun getDouble(): Double {
-        ensure(8)
-        return mbuffer.getDouble(position).also { position += 8 }
-    }
-
-    override fun get(buffer: ByteView) {
-        ensure(buffer.size)
-        mbuffer.getBytes(position, buffer)
-        position += buffer.size
+    override fun bufferSlice(): B {
+        @Suppress("UNCHECKED_CAST")
+        return mbuffer.slice(_position, _limit - _position) as B
     }
 }
 
 class MemoryViewStream<out B : ByteViewE>(
     private val bufferProvider: MemoryViewProvider<B>?,
     private val growth: (Int) -> Int = { it + 8192 },
-    private var mbuffer: B
-) : MemoryStream {
+    mbuffer: B
+) : MemoryViewReadableStream<B>(0, -1), MemoryStream {
+    private var _mbuffer = mbuffer
+    override val mbuffer get() = _mbuffer
+
+    override var position: Int
+        get() = _position
+        set (value) {
+            @Suppress("ConvertTwoComparisonsToRangeCheck") // Very readable
+            if (value < 0 || (value > _limit && _limit >= 0))
+                throw IllegalArgumentException("Invalid position")
+            ensure(value - _position)
+            _position = value
+        }
+    override var limit: Int
+        get() = if (_limit < 0) Int.MAX_VALUE else _limit
+        set (value) {
+            _limit = if (value < -1) -1 else value
+        }
+
     constructor(
         bufferProvider: MemoryViewProvider<B>,
         growth: (Int) -> Int = { (it shl 1).coerceAtLeast(8192) }
     ) : this(bufferProvider, growth, bufferProvider(growth(0)))
 
     constructor(buffer: B) : this(null, mbuffer = buffer) {
-        limit(buffer.size)
+        _limit = buffer.size
     }
 
-    private var position: Int = 0
-    private var limit: Int = -1
-
-    fun buffer(): B {
-        return mbuffer
-    }
-
-    fun bufferSlice(): B {
-        if (limit >= 0) ensure(limit - position)
+    override fun bufferSlice(): B {
+        if (_limit >= 0) ensure(_limit - _position)
         @Suppress("UNCHECKED_CAST")
         return mbuffer.slice(
-            position,
-            (if (limit < 0) mbuffer.size else limit) - position
+            _position,
+            (if (_limit < 0) mbuffer.size else _limit) - _position
         ) as B
     }
 
     override fun flip() {
-        limit = position
-        position = 0
+        _limit = _position
+        _position = 0
     }
 
     override fun rewind() {
-        position = 0
+        _position = 0
     }
 
     fun compact() {
-        val limit = limit
+        val limit = _limit
         if (limit < 0) throw IllegalStateException(
             "Cannot compact without limit"
         )
         val end = limit.coerceAtMost(mbuffer.size)
-        val remaining = end - position
-        mbuffer.setBytes(0, mbuffer.slice(position, remaining))
-        position = remaining
+        val remaining = end - _position
+        mbuffer.setBytes(0, mbuffer.slice(_position, remaining))
+        _position = remaining
         if (limit > end) {
             ensure(limit - end)
-            repeat(limit - end) { mbuffer.setByte(position++, 0) }
+            repeat(limit - end) { mbuffer.setByte(_position++, 0) }
         }
-        this.limit = -1
+        _limit = -1
     }
 
     override fun reset() {
-        position = 0
-        limit = -1
-    }
-
-    override fun position(): Int {
-        return position
-    }
-
-    override fun position(pos: Int) {
-        @Suppress("ConvertTwoComparisonsToRangeCheck") // Very readable
-        if (pos < 0 || (pos > limit && limit >= 0))
-            throw IllegalArgumentException("Invalid position")
-        ensure(pos - position)
-        position = pos
+        _position = 0
+        _limit = -1
     }
 
     override fun put(value: Byte) {
         ensure(1)
-        mbuffer.setByte(position, value)
-        position++
+        mbuffer.setByte(_position, value)
+        _position++
     }
 
     override fun putShort(value: Short) {
         ensure(2)
-        mbuffer.setShort(position, value)
-        position += 2
+        mbuffer.setShort(_position, value)
+        _position += 2
     }
 
     override fun putInt(value: Int) {
         ensure(4)
-        mbuffer.setInt(position, value)
-        position += 4
+        mbuffer.setInt(_position, value)
+        _position += 4
     }
 
     override fun putLong(value: Long) {
         ensure(8)
-        mbuffer.setLong(position, value)
-        position += 8
+        mbuffer.setLong(_position, value)
+        _position += 8
     }
 
     override fun putFloat(value: Float) {
         ensure(4)
-        mbuffer.setFloat(position, value)
-        position += 4
+        mbuffer.setFloat(_position, value)
+        _position += 4
     }
 
     override fun putDouble(value: Double) {
         ensure(8)
-        mbuffer.setDouble(position, value)
-        position += 8
+        mbuffer.setDouble(_position, value)
+        _position += 8
     }
 
-    override fun put(buffer: ByteViewRO) {
+    override fun put(buffer: BytesRO) {
         ensure(buffer.size)
-        mbuffer.setBytes(position, buffer)
-        position += buffer.size
+        mbuffer.setBytes(_position, buffer)
+        _position += buffer.size
     }
 
-    fun ensure(len: Int) = ensureTry(len) ?: throw EndOfStreamException()
-
-    fun ensureTry(len: Int): Boolean? {
-        val used = position
+    override fun ensureTry(len: Int): Boolean? {
+        val used = _position
         var size = mbuffer.size
         if (len <= size - used) return true
         do {
             size = growth(size)
         } while (len > size - used)
-        if (limit >= 0) size = size.coerceAtMost(limit)
+        if (_limit >= 0) size = size.coerceAtMost(_limit)
         if (len > size - used) return null
         grow(size)
         return true
@@ -272,59 +280,6 @@ class MemoryViewStream<out B : ByteViewE>(
         val newBuffer = bufferProvider(size)
         assert { newBuffer.size == size }
         newBuffer.setBytes(0, mbuffer)
-        mbuffer = newBuffer
-    }
-
-    override fun limit(): Int {
-        return limit
-    }
-
-    override fun limit(limit: Int) {
-        this.limit = if (limit < -1) -1 else limit
-    }
-
-    override fun remaining(): Int {
-        return (if (limit < 0) Int.MAX_VALUE else limit) - position
-    }
-
-    override fun getTry(): Int {
-        ensureTry(1) ?: return -1
-        return mbuffer.getByte(position).also { position++ }.toInt() and 0xFF
-    }
-
-    override fun get(): Byte {
-        ensure(1)
-        return mbuffer.getByte(position).also { position++ }
-    }
-
-    override fun getShort(): Short {
-        ensure(2)
-        return mbuffer.getShort(position).also { position += 2 }
-    }
-
-    override fun getInt(): Int {
-        ensure(4)
-        return mbuffer.getInt(position).also { position += 4 }
-    }
-
-    override fun getLong(): Long {
-        ensure(8)
-        return mbuffer.getLong(position).also { position += 8 }
-    }
-
-    override fun getFloat(): Float {
-        ensure(4)
-        return mbuffer.getFloat(position).also { position += 4 }
-    }
-
-    override fun getDouble(): Double {
-        ensure(8)
-        return mbuffer.getDouble(position).also { position += 8 }
-    }
-
-    override fun get(buffer: ByteView) {
-        ensure(buffer.size)
-        mbuffer.getBytes(position, buffer)
-        position += buffer.size
+        _mbuffer = newBuffer
     }
 }

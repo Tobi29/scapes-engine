@@ -15,11 +15,11 @@
  */
 package org.tobi29.scapes.engine.backends.opengl
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Ints2BytesBitmap
 import org.tobi29.graphics.RGBA
 import org.tobi29.graphics.flipVertical
-import org.tobi29.io.ByteViewRO
 import org.tobi29.scapes.engine.graphics.BlendingMode
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsException
@@ -245,7 +245,7 @@ class GLImpl(private val glh: GLHandle) : GL(glh) {
         y: Int,
         width: Int,
         height: Int,
-        buffer: ByteViewRO
+        buffer: BytesRO
     ) {
         glh.glTexSubImage2D(
             GL_TEXTURE_2D, 0, x, y, width, height, GL_RGBA,
@@ -258,7 +258,7 @@ class GLImpl(private val glh: GLHandle) : GL(glh) {
         y: Int,
         width: Int,
         height: Int,
-        vararg buffers: ByteViewRO
+        vararg buffers: BytesRO
     ) {
         glh.glTexSubImage2D(
             GL_TEXTURE_2D, 0, x, y, width, height,

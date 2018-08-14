@@ -16,6 +16,7 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
 import org.tobi29.stdex.*
 import kotlin.experimental.and
 
@@ -25,10 +26,9 @@ import kotlin.experimental.and
  */
 interface ReadableByteStream : Readable {
     /**
-     * Returns the amount of bytes available to be read from the stream without
-     * blocking
+     * Amount of bytes available to be read from the stream without blocking
      */
-    fun available(): Int
+    val available: Int
 
     /**
      * Skip the given amount of bytes in the stream
@@ -58,7 +58,7 @@ interface ReadableByteStream : Readable {
      * @param buffer Buffer to write to
      * @throws IOException When an IO error occurs
      */
-    fun get(buffer: ByteView) {
+    fun get(buffer: Bytes) {
         var position = 0
         repeat(buffer.size) {
             buffer.setByte(position++, get())
@@ -71,7 +71,7 @@ interface ReadableByteStream : Readable {
      * @throws IOException When an IO error occurs
      * @return The amount of bytes read or -1 on end of stream
      */
-    fun getSome(buffer: ByteView): Int
+    fun getSome(buffer: Bytes): Int
 
     /**
      * Reads a byte
@@ -243,6 +243,16 @@ interface ReadableByteStream : Readable {
     }
 
     override fun readTry(): Int = decodeUtf8(this::getTry)
+
+    // TODO: Remove after 0.0.14
+
+    /**
+     * Returns the amount of bytes available to be read from the stream without
+     * blocking
+     */
+    @JsName("availableFun")
+    @Deprecated("Use property", ReplaceWith("available"))
+    fun available(): Int = available
 }
 
 inline fun decodeUtf8(input: () -> Int): Int {

@@ -38,7 +38,7 @@ class PacketBundleChannel(
     private val deflater = DeflateHandle(1)
     private val inflater = InflateHandle()
     private var output: HeapViewByteBE? = null
-    private var input = MemoryViewStreamDefault().apply { limit(4) }
+    private var input = MemoryViewStreamDefault().apply { limit = 4 }
     private var hasInput: Boolean = false
     private var hasBundle: Boolean = false
 
@@ -51,7 +51,7 @@ class PacketBundleChannel(
         get() = byteBufferStreamOut
 
     fun bundleSize(): Int {
-        return dataStreamOut.position()
+        return dataStreamOut.position
     }
 
     val outputFlushed get() = queue.isEmpty && output == null
@@ -62,7 +62,7 @@ class PacketBundleChannel(
         byteBufferStreamOut.reset()
         deflater.process(dataStreamOut, byteBufferStreamOut)
         byteBufferStreamOut.flip()
-        val size = byteBufferStreamOut.remaining()
+        val size = byteBufferStreamOut.remaining
         if (size > BUNDLE_MAX_SIZE) {
             throw IOException("Bundle size too large: " + size)
         }
@@ -148,16 +148,16 @@ class PacketBundleChannel(
 
     private fun fetch(): Boolean {
         assert { !hasBundle }
-        if (input.hasRemaining()) {
+        if (input.hasRemaining) {
             val read = channelRead.read(input)
             if (read < 0) return true
         }
-        if (input.hasRemaining()) return false
+        if (input.hasRemaining) return false
         input.flip()
         if (!hasInput) {
-            if (input.remaining() != BUNDLE_HEADER_SIZE) {
+            if (input.remaining != BUNDLE_HEADER_SIZE) {
                 throw IOException(
-                    "Invalid bundle header size: " + input.remaining()
+                    "Invalid bundle header size: " + input.remaining
                 )
             }
             val limit = input.getInt()
@@ -165,7 +165,7 @@ class PacketBundleChannel(
                 throw IOException("Bundle size too large: " + limit)
             }
             input.reset()
-            input.limit(limit)
+            input.limit = limit
             hasInput = true
             return false
         }
@@ -174,7 +174,7 @@ class PacketBundleChannel(
         byteBufferStreamOut.flip()
         hasInput = false
         input.reset()
-        input.limit(BUNDLE_HEADER_SIZE)
+        input.limit = BUNDLE_HEADER_SIZE
         hasBundle = true
         return false
     }

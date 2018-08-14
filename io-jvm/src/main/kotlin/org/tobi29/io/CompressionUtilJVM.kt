@@ -30,11 +30,11 @@ actual class ZDeflater actual constructor(
     private var input = MemoryViewStreamDefault()
 
     actual override fun input(buffer: ReadableByteStream): Boolean {
-        input.limit(input.position() + this.buffer)
+        input.limit = input.position + this.buffer
         val read = buffer.getSome(input.bufferSlice())
         if (read < 0) return false
-        input.position(input.position() + read)
-        input.buffer().slice(0, input.position()).let {
+        input.position += +read
+        input.buffer().slice(0, input.position).let {
             deflater.setInput(it.array, it.offset, it.size)
         }
         return true
@@ -76,11 +76,11 @@ actual class ZInflater actual constructor(
     private var input = MemoryViewStreamDefault()
 
     actual override fun input(buffer: ReadableByteStream): Boolean {
-        input.limit(input.position() + this.buffer)
+        input.limit = input.position + this.buffer
         val read = buffer.getSome(input.bufferSlice())
         if (read < 0) return false
-        input.position(input.position() + read)
-        input.buffer().slice(0, input.position()).let {
+        input.position += read
+        input.buffer().slice(0, input.position).let {
             inflater.setInput(it.array, it.offset, it.size)
         }
         return true

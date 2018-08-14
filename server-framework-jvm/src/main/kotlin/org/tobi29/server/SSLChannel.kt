@@ -18,6 +18,8 @@ package org.tobi29.server
 import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.*
 import org.tobi29.stdex.Throws
 import org.tobi29.stdex.assert
@@ -28,14 +30,15 @@ import java.util.*
 import javax.net.ssl.*
 import kotlin.coroutines.experimental.CoroutineContext
 
-class SSLChannel(address: RemoteAddress,
-                 private val channelRead: ReadableByteChannel,
-                 private val channelWrite: WritableByteChannel,
-                 taskExecutor: CoroutineContext,
-                 ssl: SSLHandle,
-                 engine: SSLEngine
+class SSLChannel(
+    address: RemoteAddress,
+    private val channelRead: ReadableByteChannel,
+    private val channelWrite: WritableByteChannel,
+    taskExecutor: CoroutineContext,
+    ssl: SSLHandle,
+    engine: SSLEngine
 ) : SSLLayer(address, taskExecutor, ssl, engine),
-        ByteChannel {
+    ByteChannel {
     private val inRate = AtomicInt()
     private val outRate = AtomicInt()
 
@@ -44,7 +47,7 @@ class SSLChannel(address: RemoteAddress,
     val inputRate get() = inRate.getAndSet(0)
 
     @Throws(IOException::class)
-    override fun read(buffer: ByteView): Int {
+    override fun read(buffer: Bytes): Int {
         var currentBuffer = buffer
         while (currentBuffer.size > 0) {
             var read = dataSSL()
@@ -61,7 +64,7 @@ class SSLChannel(address: RemoteAddress,
                     }
                 }
             }
-            val len = read.remaining().coerceAtMost(currentBuffer.size)
+            val len = read.remaining.coerceAtMost(currentBuffer.size)
             read.get(currentBuffer.slice(0, len))
             currentBuffer = currentBuffer.slice(len)
         }
@@ -70,7 +73,7 @@ class SSLChannel(address: RemoteAddress,
     }
 
     @Throws(IOException::class)
-    override fun write(buffer: ByteViewRO): Int {
+    override fun write(buffer: BytesRO): Int {
         var currentBuffer = buffer
         while (currentBuffer.size > 0 && process()) {
             val wrote = writeSSL(currentBuffer)
@@ -87,14 +90,14 @@ class SSLChannel(address: RemoteAddress,
     override fun close() {
     }
 
-    override fun fill(buffer: ByteView): Int {
+    override fun fill(buffer: Bytes): Int {
         val read = channelRead.read(buffer)
         if (read < 0) return read
         inRate.getAndAdd(read)
         return read
     }
 
-    override fun flush(buffer: ByteView): Int {
+    override fun flush(buffer: Bytes): Int {
         val wrote = channelWrite.write(buffer)
         if (wrote < 0) return wrote
         outRate.getAndAdd(wrote)
@@ -102,15 +105,17 @@ class SSLChannel(address: RemoteAddress,
     }
 }
 
-abstract class SSLLayer(private val address: RemoteAddress,
-                        private val taskExecutor: CoroutineContext,
-                        private val ssl: SSLHandle,
-                        private val engine: SSLEngine) {
+abstract class SSLLayer(
+    private val address: RemoteAddress,
+    private val taskExecutor: CoroutineContext,
+    private val ssl: SSLHandle,
+    private val engine: SSLEngine
+) {
     private val taskCounter = AtomicInt()
     private val verified = AtomicBoolean()
     private val readBuffer = MemoryViewStreamDefault()
-    private val readData = MemoryViewStreamDefault().apply { limit(0) }
-    private val writeBuffer = MemoryViewStreamDefault().apply { limit(0) }
+    private val readData = MemoryViewStreamDefault().apply { limit = 0 }
+    private val writeBuffer = MemoryViewStreamDefault().apply { limit = 0 }
     private var verifyException: IOException? = null
     private var close = false
     private var state = State.HANDSHAKE
@@ -129,15 +134,15 @@ abstract class SSLLayer(private val address: RemoteAddress,
             if (taskCounter.get() > 0) {
                 return false
             }
-            if (writeBuffer.hasRemaining()) {
+            if (writeBuffer.hasRemaining) {
                 val wrote = flush(writeBuffer.bufferSlice())
                 if (wrote < 0) {
                     engine.closeOutbound()
                     state = State.CLOSED
                     return false
                 }
-                writeBuffer.position(writeBuffer.position() + wrote)
-                if (writeBuffer.hasRemaining()) {
+                writeBuffer.position += wrote
+                if (writeBuffer.hasRemaining) {
                     return false
                 }
             }
@@ -179,7 +184,7 @@ abstract class SSLLayer(private val address: RemoteAddress,
                 }
             }
             if (state == State.CLOSED) {
-                assert { !writeBuffer.hasRemaining() }
+                assert { !writeBuffer.hasRemaining }
                 return false
             }
             throw IllegalStateException("Process fallthrough")
@@ -187,7 +192,7 @@ abstract class SSLLayer(private val address: RemoteAddress,
     }
 
     protected fun dataSSL(): RandomReadableByteStream? {
-        if (readData.hasRemaining()) {
+        if (readData.hasRemaining) {
             return readData
         }
         return null
@@ -195,7 +200,7 @@ abstract class SSLLayer(private val address: RemoteAddress,
 
     protected fun readSSL() {
         readData.reset()
-        readBuffer.limit(readBuffer.position() + 8192)
+        readBuffer.limit = readBuffer.position + 8192
         val read = fill(readBuffer.bufferSlice())
         if (read < 0) {
             engine.closeInbound()
@@ -206,12 +211,13 @@ abstract class SSLLayer(private val address: RemoteAddress,
         readBuffer.flip()
         loop@ do {
             val bufferRead = readBuffer.bufferSlice().readAsByteBuffer()
-            val result = readData.bufferSlice().mutateAsByteBuffer { bufferData ->
-                engine.unwrap(bufferRead, bufferData).also {
-                    readBuffer.skip(bufferRead.position())
-                    readData.skip(bufferData.position())
+            val result =
+                readData.bufferSlice().mutateAsByteBuffer { bufferData ->
+                    engine.unwrap(bufferRead, bufferData).also {
+                        readBuffer.skip(bufferRead.position())
+                        readData.skip(bufferData.position())
+                    }
                 }
-            }
             when (result.status) {
                 SSLEngineResult.Status.OK -> {
                     readBuffer.compact()
@@ -221,7 +227,7 @@ abstract class SSLLayer(private val address: RemoteAddress,
                 SSLEngineResult.Status.BUFFER_OVERFLOW -> readData.grow()
                 SSLEngineResult.Status.BUFFER_UNDERFLOW -> {
                     readBuffer.compact()
-                    if (!readBuffer.hasRemaining()) {
+                    if (!readBuffer.hasRemaining) {
                         readBuffer.grow()
                     }
                     break@loop
@@ -233,33 +239,35 @@ abstract class SSLLayer(private val address: RemoteAddress,
                     break@loop
                 }
                 else -> throw IllegalStateException(
-                        "Invalid SSL status: " + result.status)
+                    "Invalid SSL status: " + result.status
+                )
             }
-        } while (readBuffer.hasRemaining())
-        readData.limit(0)
+        } while (readBuffer.hasRemaining)
+        readData.limit = 0
         return
     }
 
-    protected fun writeSSL(buffer: ByteViewRO? = null): Int {
-        if (writeBuffer.hasRemaining()) {
+    protected fun writeSSL(buffer: BytesRO? = null): Int {
+        if (writeBuffer.hasRemaining) {
             return 0
         }
         while (true) {
             writeBuffer.reset()
             var wrote = 0
-            val result = writeBuffer.bufferSlice().mutateAsByteBuffer { bufferWrite ->
-                if (buffer == null) {
-                    engine.wrap(emptyArray(), bufferWrite).also {
-                        writeBuffer.skip(bufferWrite.position())
-                    }
-                } else {
-                    val byteBuffer = buffer.readAsByteBuffer()
-                    engine.wrap(byteBuffer, bufferWrite).also {
-                        writeBuffer.skip(bufferWrite.position())
-                        wrote = byteBuffer.position()
+            val result =
+                writeBuffer.bufferSlice().mutateAsByteBuffer { bufferWrite ->
+                    if (buffer == null) {
+                        engine.wrap(emptyArray(), bufferWrite).also {
+                            writeBuffer.skip(bufferWrite.position())
+                        }
+                    } else {
+                        val byteBuffer = buffer.readAsByteBuffer()
+                        engine.wrap(byteBuffer, bufferWrite).also {
+                            writeBuffer.skip(bufferWrite.position())
+                            wrote = byteBuffer.position()
+                        }
                     }
                 }
-            }
             when (result.status) {
                 SSLEngineResult.Status.OK -> {
                     writeBuffer.flip()
@@ -267,7 +275,8 @@ abstract class SSLLayer(private val address: RemoteAddress,
                 }
                 SSLEngineResult.Status.BUFFER_OVERFLOW -> writeBuffer.grow()
                 SSLEngineResult.Status.BUFFER_UNDERFLOW -> throw SSLException(
-                        "Buffer underflow occurred after a wrap. I don't think we should ever get here.")
+                    "Buffer underflow occurred after a wrap. I don't think we should ever get here."
+                )
                 SSLEngineResult.Status.CLOSED -> {
                     engine.closeOutbound()
                     state = State.CLOSING
@@ -275,14 +284,15 @@ abstract class SSLLayer(private val address: RemoteAddress,
                     return -1
                 }
                 else -> throw IllegalStateException(
-                        "Invalid SSL status: " + result.status)
+                    "Invalid SSL status: " + result.status
+                )
             }
         }
     }
 
-    protected abstract fun fill(buffer: ByteView): Int
+    protected abstract fun fill(buffer: Bytes): Int
 
-    protected abstract fun flush(buffer: ByteView): Int
+    protected abstract fun flush(buffer: Bytes): Int
 
     private fun handshake(): Boolean {
         try {
@@ -304,7 +314,8 @@ abstract class SSLLayer(private val address: RemoteAddress,
                     }
                 }
                 else -> throw IllegalStateException(
-                        "Invalid SSL status: " + engine.handshakeStatus)
+                    "Invalid SSL status: " + engine.handshakeStatus
+                )
             }
             return false
         } catch (e: SSLHandshakeException) {
@@ -346,8 +357,8 @@ abstract class SSLLayer(private val address: RemoteAddress,
 }
 
 class SSLCertificateException(
-        cause: Exception,
-        val certificates: Array<X509Certificate>
+    cause: Exception,
+    val certificates: Array<X509Certificate>
 ) : SSLHandshakeException(cause.message)
 
 inline suspend fun SSLChannel.finishAsync() {

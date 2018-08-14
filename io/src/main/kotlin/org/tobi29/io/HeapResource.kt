@@ -16,8 +16,10 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.BytesRO
+
 data class HeapResource(
-    private val data: ByteViewRO? = null
+    private val data: BytesRO? = null
 ) : ReadSourceLocalT<SeekableReadByteChannel> {
     override fun channel() = dataNow().viewBE.let(::MemoryViewReadableStream)
         .let(::RandomReadableByteStreamChannel)

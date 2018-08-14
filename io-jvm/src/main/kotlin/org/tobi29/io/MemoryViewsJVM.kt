@@ -16,15 +16,17 @@
 
 package org.tobi29.io
 
-actual val ByteViewRO.ro: ByteViewRO
+import org.tobi29.arrays.BytesRO
+
+actual val BytesRO.ro: BytesRO
     get() = when (this) {
         is ByteViewRORO -> this
         else -> ByteViewRORO(this)
     }
 
 private class ByteViewRORO(
-    private val handle: ByteViewRO
-) : ByteViewRO by handle
+    private val handle: BytesRO
+) : BytesRO by handle
 
 actual val ByteViewERO.ro: ByteViewERO
     get() = when (this) {

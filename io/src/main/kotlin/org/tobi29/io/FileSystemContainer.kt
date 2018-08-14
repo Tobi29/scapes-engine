@@ -21,8 +21,7 @@ import org.tobi29.stdex.ConcurrentHashMap
 class FileSystemContainer : Path {
     private val fileSystems = ConcurrentHashMap<String, Path>()
 
-    fun registerFileSystem(id: String,
-                           path: Path) {
+    fun registerFileSystem(id: String, path: Path) {
         fileSystems.put(id, path)
     }
 
@@ -43,7 +42,7 @@ class FileSystemContainer : Path {
         }
 
     override fun channel() =
-            throw IOException("File system container cannot have data")
+        throw IOException("File system container cannot have data")
 
     private fun fileSystem(id: String): Path {
         val fileSystem = fileSystems[id] ?: throw IllegalArgumentException(

@@ -18,9 +18,9 @@
 
 package org.tobi29.scapes.engine.tilemaps
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.asBytesRO
 import org.tobi29.graphics.*
-import org.tobi29.io.ByteViewRO
 import org.tobi29.math.margin
 import org.tobi29.math.max
 import org.tobi29.math.vector.MutableVector2i
@@ -108,7 +108,7 @@ internal class TileAnimation(
     private val height: Int
 ) {
     private val newFrame = AtomicInt(-1)
-    private val frames: Array<Pair<Double, ByteViewRO>>
+    private val frames: Array<Pair<Double, BytesRO>>
     private var spin = 0.0
 
     init {

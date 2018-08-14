@@ -20,6 +20,8 @@ package org.tobi29.scapes.engine.backends.opengles
 
 import org.lwjgl.opengles.GLES20
 import org.lwjgl.opengles.GLES30
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io.*
 
 actual inline fun GLESHandle.byteView(capacity: Int): ByteViewE =
@@ -69,7 +71,7 @@ actual inline fun GLESHandle.glTexImage2D(
     border: Int,
     format: GLEnum,
     type: GLEnum,
-    pixels: ByteViewRO?
+    pixels: BytesRO?
 ) = GLES20.glTexImage2D(
     target, level, internalformat, width, height, border,
     format, type, pixels?.readAsNativeByteBuffer()
@@ -135,14 +137,14 @@ actual inline fun GLESHandle.glBufferData(
 
 actual inline fun GLESHandle.glBufferData(
     target: Int,
-    data: ByteViewRO,
+    data: BytesRO,
     usage: Int
 ) = GLES20.glBufferData(target, data.readAsNativeByteBuffer(), usage)
 
 actual inline fun GLESHandle.glBufferSubData(
     target: Int,
     offset: Int,
-    data: ByteViewRO
+    data: BytesRO
 ) = GLES20.glBufferSubData(
     target, offset.toLong() and 0xFFFFFFFF, data.readAsNativeByteBuffer()
 )
@@ -214,7 +216,7 @@ actual inline fun GLESHandle.glReadPixels(
     height: Int,
     format: Int,
     type: Int,
-    pixels: ByteView
+    pixels: Bytes
 ) = pixels.mutateAsNativeByteBuffer {
     GLES20.glReadPixels(x, y, width, height, format, type, it)
 }
@@ -233,7 +235,7 @@ actual inline fun GLESHandle.glTexSubImage2D(
     height: Int,
     format: Int,
     type: Int,
-    pixels: ByteViewRO
+    pixels: BytesRO
 ) = GLES20.glTexSubImage2D(
     target, level, xoffset, yoffset, width, height,
     format, type, pixels.readAsNativeByteBuffer()

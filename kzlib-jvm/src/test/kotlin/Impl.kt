@@ -16,6 +16,7 @@
 
 package org.tobi29.kzlib
 
+import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
 
@@ -166,7 +167,7 @@ private inline fun z_stream.bufferOutput(
 fun deflate(
     input: ReadableByteStream,
     level: Int = -1
-): ByteView = DeflateHandle(level).use { it.deflate(input) }
+): Bytes = DeflateHandle(level).use { it.deflate(input) }
 
 fun deflate(
     input: ReadableByteStream,
@@ -177,7 +178,7 @@ fun deflate(
 fun DeflateHandle.deflate(
     input: ReadableByteStream,
     level: Int = -1
-): ByteView {
+): Bytes {
     val stream = MemoryViewStreamDefault()
     deflate(input, stream)
     stream.flip()
@@ -186,7 +187,7 @@ fun DeflateHandle.deflate(
 
 fun inflate(
     input: ReadableByteStream
-): ByteView = InflateHandle().use { it.inflate(input) }
+): Bytes = InflateHandle().use { it.inflate(input) }
 
 fun inflate(
     input: ReadableByteStream,
@@ -195,7 +196,7 @@ fun inflate(
 
 fun InflateHandle.inflate(
     input: ReadableByteStream
-): ByteView {
+): Bytes {
     val stream = MemoryViewStreamDefault()
     inflate(input, stream)
     stream.flip()

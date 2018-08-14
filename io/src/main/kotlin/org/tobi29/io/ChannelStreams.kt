@@ -16,49 +16,46 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
 
 class BufferedReadChannelStream(
     private val channel: ReadableByteChannel,
-    buffer: ByteViewE = ByteArray(
-        8192
-    ).viewBE
+    buffer: ByteViewE = ByteArray(8192).viewBE
 ) : ReadableByteStream {
-    private val mbuffer = MemoryViewStream(buffer).apply { limit(0) }
+    private val mbuffer = MemoryViewStream(buffer).apply { limit = 0 }
 
-    override fun available(): Int {
-        return mbuffer.remaining()
-    }
+    override val available: Int get() = mbuffer.remaining
 
     override fun skip(length: Int) {
-        var skip = (length - mbuffer.remaining()).toLong()
+        var skip = (length - mbuffer.remaining).toLong()
         if (skip < 0) {
-            mbuffer.position(mbuffer.position() + length)
+            mbuffer.position += length
         } else {
-            mbuffer.position(mbuffer.limit())
+            mbuffer.position = mbuffer.limit
             while (skip > 0) {
                 skip = channel.skip(skip)
             }
         }
     }
 
-    override fun get(buffer: ByteView) {
+    override fun get(buffer: Bytes) {
         if (ensure(buffer.size)) {
             mbuffer.get(buffer)
         } else {
-            val flushed = mbuffer.remaining()
+            val flushed = mbuffer.remaining
             if (flushed > 0) mbuffer.get(buffer.slice(0, flushed))
             val read = channel.read(buffer.slice(flushed))
             if (read < 0 && flushed <= 0) throw EndOfStreamException()
         }
     }
 
-    override fun getSome(buffer: ByteView): Int =
-        if (mbuffer.remaining() >= buffer.size) {
+    override fun getSome(buffer: Bytes): Int =
+        if (mbuffer.remaining >= buffer.size) {
             mbuffer.get(buffer)
             buffer.size
         } else {
-            val flushed = mbuffer.remaining()
+            val flushed = mbuffer.remaining
             if (flushed > 0) mbuffer.get(buffer.slice(0, flushed))
             val read = channel.read(buffer.slice(flushed))
             if (read < 0) {
@@ -108,10 +105,10 @@ class BufferedReadChannelStream(
         if (len == 0) return true
         if (len > mbuffer.buffer().size) return false
         mbuffer.compact()
-        while (mbuffer.position() < len) {
+        while (mbuffer.position < len) {
             val read = channel.read(mbuffer.bufferSlice())
             if (read < 0) return null
-            mbuffer.position(mbuffer.position() + read)
+            mbuffer.position += read
         }
         mbuffer.flip()
         return true
@@ -121,9 +118,9 @@ class BufferedReadChannelStream(
 class BufferedWriteChannelStream(
     private val channel: WritableByteChannel
 ) : WritableByteStream {
-    private val mbuffer = MemoryViewStreamDefault().apply { limit(8192) }
+    private val mbuffer = MemoryViewStreamDefault().apply { limit = 8192 }
 
-    override fun put(buffer: ByteViewRO) {
+    override fun put(buffer: BytesRO) {
         if (ensure(buffer.size)) {
             mbuffer.put(buffer)
         } else {
@@ -169,16 +166,16 @@ class BufferedWriteChannelStream(
     }
 
     private fun ensure(len: Int): Boolean {
-        if (len > mbuffer.limit()) {
+        if (len > mbuffer.limit) {
             return false
         }
-        if (mbuffer.remaining() < len) {
+        if (mbuffer.remaining < len) {
             flush()
         }
         return true
     }
 
-    private fun write(buffer: ByteViewRO) {
+    private fun write(buffer: BytesRO) {
         var currentBuffer = buffer
         while (currentBuffer.size > 0) {
             val wrote = channel.write(currentBuffer)
@@ -188,6 +185,9 @@ class BufferedWriteChannelStream(
     }
 }
 
+// TODO: Remove after 0.0.14
+
+@Deprecated("Removed without replacement")
 class DirectWriteChannelStream(
     private val channel: WritableByteChannel
 ) : WritableByteStream {
@@ -202,7 +202,7 @@ class DirectWriteChannelStream(
         write(buffer)
     }
 
-    private fun write(buffer: ByteViewRO) {
+    private fun write(buffer: BytesRO) {
         var currentBuffer = buffer
         while (currentBuffer.size > 0) {
             val wrote = channel.write(currentBuffer)

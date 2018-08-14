@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.backends.lwjgl3.openal
 
 import org.lwjgl.openal.*
-import org.tobi29.io.ByteViewRO
+import org.tobi29.arrays.BytesRO
 import org.tobi29.io._rewind
 import org.tobi29.io.readAsNativeByteBuffer
 import org.tobi29.logging.KLogging
@@ -244,7 +244,7 @@ class LWJGL3OpenAL : OpenAL {
     override fun storeBuffer(
         id: Int,
         format: AudioFormat,
-        buffer: ByteViewRO,
+        buffer: BytesRO,
         rate: Int
     ) {
         AL10.alBufferData(

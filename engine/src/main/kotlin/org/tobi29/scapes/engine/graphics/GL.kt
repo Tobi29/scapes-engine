@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.graphics
 
+import org.tobi29.arrays.BytesRO
 import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Cam
-import org.tobi29.io.ByteViewRO
 import org.tobi29.io.view
 import org.tobi29.math.matrix.Matrix4f
 import org.tobi29.stdex.assert
@@ -164,7 +164,7 @@ abstract class GL(
         y: Int,
         width: Int,
         height: Int,
-        buffer: ByteViewRO
+        buffer: BytesRO
     )
 
     abstract fun replaceTextureMipMap(
@@ -172,7 +172,7 @@ abstract class GL(
         y: Int,
         width: Int,
         height: Int,
-        vararg buffers: ByteViewRO
+        vararg buffers: BytesRO
     )
 
     abstract fun activeTexture(i: Int)

@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
+@file:Suppress("NOTHING_TO_INLINE")
+
 package org.tobi29.io
 
-import org.tobi29.arrays.HeapBytes
-import org.tobi29.arrays.index
-import org.tobi29.arrays.prepareSlice
+import org.tobi29.arrays.*
 
 expect sealed class HeapViewByte : HeapBytes, HeapView {
     // FIXME: Kotlin/Native bug
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(array: ByteArray, offset: Int, size: Int)
 
-    override abstract fun slice(index: Int): HeapViewByte
+    abstract override fun slice(index: Int): HeapViewByte
 
-    override abstract fun slice(index: Int, size: Int): HeapViewByte
+    abstract override fun slice(index: Int, size: Int): HeapViewByte
 }
 
 expect class HeapViewByteBE : HeapViewByte, ByteViewBE {
@@ -50,71 +50,63 @@ expect class HeapViewByteLE : HeapViewByte, ByteViewLE {
     override fun slice(index: Int, size: Int): HeapViewByteLE
 }
 
-val ByteViewRO.viewBE: ByteViewBERO
+val BytesRO.viewBE: ByteViewBERO
     get() = when (this) {
         is ByteViewBERO -> this
         is HeapBytes -> HeapViewByteBE(array, offset, size)
-        else -> object : ByteViewBERO,
-                ByteViewRO by this {
+        else -> object : ByteViewBERO, BytesRO by this {
             override fun slice(index: Int) = slice(index, size - index)
 
-            override fun slice(index: Int,
-                               size: Int): ByteViewBERO =
-                    this@viewBE.slice(index, size).let {
-                        if (it === this@viewBE) this
-                        else it.viewBE
-                    }
+            override fun slice(index: Int, size: Int): ByteViewBERO =
+                this@viewBE.slice(index, size).let {
+                    if (it === this@viewBE) this
+                    else it.viewBE
+                }
         }
     }
 
-val ByteView.viewBE: ByteViewBE
+val Bytes.viewBE: ByteViewBE
     get() = when (this) {
         is ByteViewBE -> this
         is HeapBytes -> HeapViewByteBE(array, offset, size)
-        else -> object : ByteViewBE,
-                ByteView by this {
+        else -> object : ByteViewBE, Bytes by this {
             override fun slice(index: Int) = slice(index, size - index)
 
-            override fun slice(index: Int,
-                               size: Int): ByteViewBE =
-                    this@viewBE.slice(index, size).let {
-                        if (it === this@viewBE) this
-                        else it.viewBE
-                    }
+            override fun slice(index: Int, size: Int): ByteViewBE =
+                this@viewBE.slice(index, size).let {
+                    if (it === this@viewBE) this
+                    else it.viewBE
+                }
         }
     }
 
-val ByteViewRO.viewLE: ByteViewLERO
+val BytesRO.viewLE: ByteViewLERO
     get() = when (this) {
         is ByteViewLERO -> this
         is HeapBytes -> HeapViewByteLE(array, offset, size)
-        else -> object : ByteViewLERO,
-                ByteViewRO by this {
+        else -> object : ByteViewLERO, BytesRO by this {
             override fun slice(index: Int) = slice(index, size - index)
 
-            override fun slice(index: Int,
-                               size: Int): ByteViewLERO =
-                    this@viewLE.slice(index, size).let {
-                        if (it === this@viewLE) this
-                        else it.viewLE
-                    }
+            override fun slice(index: Int, size: Int): ByteViewLERO =
+                this@viewLE.slice(index, size).let {
+                    if (it === this@viewLE) this
+                    else it.viewLE
+                }
         }
     }
 
-val ByteView.viewLE: ByteViewLE
+val Bytes.viewLE: ByteViewLE
     get() = when (this) {
         is ByteViewLE -> this
         is HeapBytes -> HeapViewByteLE(array, offset, size)
-        else -> object : ByteViewLE,
-                ByteView by this {
+        else -> object : ByteViewLE, Bytes by this {
             override fun slice(index: Int) = slice(index, size - index)
 
-            override fun slice(index: Int,
-                               size: Int): ByteViewLE =
-                    this@viewLE.slice(index, size).let {
-                        if (it === this@viewLE) this
-                        else it.viewLE
-                    }
+            override fun slice(index: Int, size: Int): ByteViewLE =
+                this@viewLE.slice(index, size).let {
+                    if (it === this@viewLE) this
+                    else it.viewLE
+                }
         }
     }
 
@@ -123,44 +115,46 @@ interface HeapView : ByteViewE {
 }
 
 inline fun ByteViewERO.equivalentFor(byteArray: ByteArray): HeapViewByte =
-        if (isBigEndian) byteArray.viewBE
-        else byteArray.viewLE
+    if (isBigEndian) byteArray.viewBE
+    else byteArray.viewLE
 
 inline fun HeapViewByte.equivalentFor(byteArray: ByteArray): HeapViewByte =
-        when (this) {
-            is HeapViewByteBE -> equivalentFor(byteArray)
-            is HeapViewByteLE -> equivalentFor(byteArray)
-            else -> throw IllegalArgumentException(
-                    "Memory view has no endianness")
-        }
+    when (this) {
+        is HeapViewByteBE -> equivalentFor(byteArray)
+        is HeapViewByteLE -> equivalentFor(byteArray)
+        else -> throw IllegalArgumentException(
+            "Memory view has no endianness"
+        )
+    }
 
 inline fun HeapViewByteBE.equivalentFor(byteArray: ByteArray): HeapViewByteBE =
-        byteArray.viewBE
+    byteArray.viewBE
 
 inline val ByteArray.viewBE: HeapViewByteBE
     get() = HeapViewByteBE(this, 0, size)
 
 inline fun HeapViewByteLE.equivalentFor(byteArray: ByteArray): HeapViewByteLE =
-        byteArray.viewLE
+    byteArray.viewLE
 
 inline val ByteArray.viewLE: HeapViewByteLE
     get() = HeapViewByteLE(this, 0, size)
 
 inline fun <A, R : HeapView> R.prepareSlice(
-        array: A,
-        index: Int,
-        size: Int,
-        supplier: (A, Int, Int) -> R
+    array: A,
+    index: Int,
+    size: Int,
+    supplier: (A, Int, Int) -> R
 ): R = prepareSlice(index, size) { offset, size ->
     supplier(array, offset, size)
 }
 
 inline fun <R : HeapView> R.prepareSlice(
-        index: Int,
-        size: Int,
-        supplier: (Int, Int) -> R
+    index: Int,
+    size: Int,
+    supplier: (Int, Int) -> R
 ): R = prepareSlice(this.offset, this.size, index, size, supplier)
 
-inline fun HeapView.index(index: Int,
-                          size: Int = 1): Int =
-        index(offset, this.size, index, size)
+inline fun HeapView.index(
+    index: Int,
+    size: Int = 1
+): Int = index(offset, this.size, index, size)
