@@ -28,7 +28,7 @@ import org.tobi29.contentinfo.mimeType
 import org.tobi29.io.*
 import org.tobi29.logging.KLogging
 import org.tobi29.math.vector.Vector3d
-import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.AudioController
@@ -39,41 +39,49 @@ import org.tobi29.stdex.assert
 import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(
-        private val engine: ScapesEngine,
-        private val asset: ReadSource,
-        private val channel: String,
-        private val pos: Vector3d,
-        private val velocity: Vector3d,
-        private val state: Boolean,
-        private val hasPosition: Boolean,
-        private val controller: OpenALAudioController
+    private val asset: ReadSource,
+    private val channel: String,
+    private val pos: Vector3d,
+    private val velocity: Vector3d,
+    private val state: Boolean,
+    private val hasPosition: Boolean,
+    private val controller: OpenALAudioController
 ) : OpenALAudio,
-        AudioController by controller {
-    private val streamBuffer = MemoryViewStream<ByteViewE>(
-            { engine.container.allocateNative(it) })
+    AudioController by controller {
+    private val streamBuffer =
+        MemoryViewStream<ByteViewE>({ allocateMemoryBuffer(it) })
     private var source = -1
     private var queued = 0
-    private var decodeActor: Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>>? = null
+    private var decodeActor: Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>>? =
+        null
 
-    constructor(engine: ScapesEngine,
-                asset: ReadSource,
-                channel: String,
-                pos: Vector3d,
-                velocity: Vector3d,
-                state: Boolean,
-                hasPosition: Boolean,
-                pitch: Double,
-                gain: Double,
-                referenceDistance: Double,
-                rolloffFactor: Double
-    ) : this(engine, asset, channel, pos, velocity, state, hasPosition,
-            OpenALAudioController(pitch, gain, referenceDistance,
-                    rolloffFactor))
+    constructor(
+        asset: ReadSource,
+        channel: String,
+        pos: Vector3d,
+        velocity: Vector3d,
+        state: Boolean,
+        hasPosition: Boolean,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ) : this(
+        asset,
+        channel,
+        pos,
+        velocity,
+        state,
+        hasPosition,
+        OpenALAudioController(pitch, gain, referenceDistance, rolloffFactor)
+    )
 
-    override fun poll(sounds: OpenALSoundSystem,
-                      openAL: OpenAL,
-                      listenerPosition: Vector3d,
-                      delta: Double): Boolean {
+    override fun poll(
+        sounds: OpenALSoundSystem,
+        openAL: OpenAL,
+        listenerPosition: Vector3d,
+        delta: Double
+    ): Boolean {
         if (source == -1) {
             source = openAL.createSource()
             if (source == -1) {
@@ -129,12 +137,14 @@ internal class OpenALStreamAudio(
     }
 
     override fun isPlaying(channel: VolumeChannel) =
-            VolumeChannelEnvironment.run {
-                this@OpenALStreamAudio.channel in channel
-            }
+        VolumeChannelEnvironment.run {
+            this@OpenALStreamAudio.channel in channel
+        }
 
-    override fun stop(sounds: OpenALSoundSystem,
-                      openAL: OpenAL) {
+    override fun stop(
+        sounds: OpenALSoundSystem,
+        openAL: OpenAL
+    ) {
         if (source != -1) {
             openAL.stop(source)
             var queued = openAL.getBuffersQueued(source)
@@ -154,31 +164,39 @@ internal class OpenALStreamAudio(
         decodeActor = null
     }
 
-    private fun store(openAL: OpenAL,
-                      buffer: AudioBuffer,
-                      audioBuffer: Int) {
+    private fun store(
+        openAL: OpenAL,
+        buffer: AudioBuffer,
+        audioBuffer: Int
+    ) {
         buffer.toPCM16 { streamBuffer.putShort(it) }
         streamBuffer.flip()
-        openAL.storeBuffer(audioBuffer,
-                if (buffer.channels() > 1) AudioFormat.STEREO
-                else AudioFormat.MONO, streamBuffer.bufferSlice(),
-                buffer.rate())
+        openAL.storeBuffer(
+            audioBuffer,
+            if (buffer.channels() > 1) AudioFormat.STEREO
+            else AudioFormat.MONO, streamBuffer.bufferSlice(),
+            buffer.rate()
+        )
         streamBuffer.reset()
     }
 
     companion object : KLogging()
 }
 
-fun decodeActor(context: CoroutineContext,
-                asset: ReadSource,
-                state: Boolean): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>> {
+fun decodeActor(
+    context: CoroutineContext,
+    asset: ReadSource,
+    state: Boolean
+): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>> {
     val output = Channel<AudioBuffer>()
     val actor = actor<AudioBuffer>(context, 1) {
         try {
             do {
                 asset.channel().use { dataChannel ->
-                    AudioStream.create(dataChannel,
-                            asset.mimeType()).use { stream ->
+                    AudioStream.create(
+                        dataChannel,
+                        asset.mimeType()
+                    ).use { stream ->
                         loop@ while (true) {
                             val buffer = channel.receive()
                             while (true) {

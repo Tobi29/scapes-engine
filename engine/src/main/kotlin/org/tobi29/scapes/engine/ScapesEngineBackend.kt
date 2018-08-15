@@ -29,14 +29,20 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.dummy.DummySoundSystem
 
 interface ScapesEngineBackend {
-    fun allocateNative(size: Int): ByteViewE =
-        allocateMemoryBuffer(size)
-
     suspend fun loadFont(asset: ReadSource): Font =
         DummyFont
 
     fun createSoundSystem(engine: ScapesEngine): SoundSystem =
         DummySoundSystem(engine)
+
+    // TODO: Remove after 0.0.14
+
+    @Deprecated(
+        "Use allocateMemoryBuffer",
+        ReplaceWith("allocateMemoryBuffer(size")
+    )
+    fun allocateNative(size: Int): ByteViewE =
+        allocateMemoryBuffer(size)
 }
 
 expect sealed class MemoryBuffer : ByteViewE

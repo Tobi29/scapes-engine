@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.backends.opengles
 
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
+import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelIndexed
 import org.tobi29.scapes.engine.graphics.RenderType
@@ -41,7 +42,7 @@ internal class VAOStatic(
         } else if (renderType == RenderType.LINES && length % 2 != 0) {
             throw IllegalArgumentException("Length not multiply of 2")
         }
-        val indexBuffer = vbo.glh.container.allocateNative(length shl 1)
+        val indexBuffer = allocateMemoryBuffer(length shl 1)
         for (i in 0 until length) {
             indexBuffer.setShort(i shl 1, index[i].toShort())
         }

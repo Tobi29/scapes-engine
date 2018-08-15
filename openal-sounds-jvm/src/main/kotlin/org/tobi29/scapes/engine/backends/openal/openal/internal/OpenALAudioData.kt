@@ -23,25 +23,31 @@ import org.tobi29.codec.toPCM16
 import org.tobi29.io.ByteViewE
 import org.tobi29.io.IOException
 import org.tobi29.io.MemoryViewStream
-import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.AudioFormat
 
-internal class OpenALAudioData(data: BytesRO,
-                               channels: Int,
-                               rate: Int,
-                               openAL: OpenAL) {
+internal class OpenALAudioData(
+    data: BytesRO,
+    channels: Int,
+    rate: Int,
+    openAL: OpenAL
+) {
     private val buffer: Int = openAL.createBuffer()
 
     init {
-        openAL.storeBuffer(buffer,
-                if (channels > 1) AudioFormat.STEREO else AudioFormat.MONO,
-                data, rate)
+        openAL.storeBuffer(
+            buffer,
+            if (channels > 1) AudioFormat.STEREO else AudioFormat.MONO,
+            data, rate
+        )
     }
 
-    fun dispose(soundSystem: OpenALSoundSystem,
-                openAL: OpenAL) {
+    fun dispose(
+        soundSystem: OpenALSoundSystem,
+        openAL: OpenAL
+    ) {
         soundSystem.removeBufferFromSources(openAL, buffer)
         openAL.deleteBuffer(buffer)
     }
@@ -49,48 +55,47 @@ internal class OpenALAudioData(data: BytesRO,
     fun buffer(): Int {
         return buffer
     }
+}
 
-    companion object {
-        fun read(engine: ScapesEngine,
-                 input: ReadableAudioStream): Triple<ByteViewE, Int, Int> {
-            val output = MemoryViewStream({
-                engine.container.allocateNative(it)
-            }, { (it shl 1).coerceAtLeast(409600) })
-            val buffer = AudioBuffer(4096)
-            var channels = -1
-            var rate = -1
-            var valid = true
-            while (valid) {
-                while (!buffer.isDone) {
-                    if (input.get(buffer) == ReadableAudioStream.Result.EOS) {
-                        valid = false
-                        break
-                    }
-                }
-                if (!buffer.isDone) {
-                    break
-                }
-                if (channels == -1) {
-                    channels = buffer.channels()
-                } else {
-                    if (channels != buffer.channels()) {
-                        throw IOException(
-                                "Number of channels changed in audio file, this is not supported for non-streams")
-                    }
-                }
-                if (rate == -1) {
-                    rate = buffer.rate()
-                } else {
-                    if (rate != buffer.rate()) {
-                        throw IOException(
-                                "Sample rate changed in audio file, this is not supported for non-streams")
-                    }
-                }
-                buffer.toPCM16 { output.putShort(it) }
-                buffer.clear()
+fun readAudioData(input: ReadableAudioStream): Triple<ByteViewE, Int, Int> {
+    val output = MemoryViewStream({
+        allocateMemoryBuffer(it)
+    }, { (it shl 1).coerceAtLeast(409600) })
+    val buffer = AudioBuffer(4096)
+    var channels = -1
+    var rate = -1
+    var valid = true
+    while (valid) {
+        while (!buffer.isDone) {
+            if (input.get(buffer) == ReadableAudioStream.Result.EOS) {
+                valid = false
+                break
             }
-            output.flip()
-            return Triple(output.bufferSlice(), channels, rate)
         }
+        if (!buffer.isDone) {
+            break
+        }
+        if (channels == -1) {
+            channels = buffer.channels()
+        } else {
+            if (channels != buffer.channels()) {
+                throw IOException(
+                    "Number of channels changed in audio file, this is not supported for non-streams"
+                )
+            }
+        }
+        if (rate == -1) {
+            rate = buffer.rate()
+        } else {
+            if (rate != buffer.rate()) {
+                throw IOException(
+                    "Sample rate changed in audio file, this is not supported for non-streams"
+                )
+            }
+        }
+        buffer.toPCM16 { output.putShort(it) }
+        buffer.clear()
     }
+    output.flip()
+    return Triple(output.bufferSlice(), channels, rate)
 }

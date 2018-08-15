@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.backends.opengl
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
 import org.tobi29.math.FastMath
+import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelAttribute
 import org.tobi29.scapes.engine.graphics.VertexType
@@ -52,7 +53,7 @@ internal class VBO(
             stride += (size - 1 or 0x03) + 1
         }
         this.stride = stride
-        val vertexBuffer = glh.container.allocateNative(length * stride)
+        val vertexBuffer = allocateMemoryBuffer(length * stride)
         attributes.forEach { addToBuffer(it, length, vertexBuffer) }
         data = vertexBuffer
     }

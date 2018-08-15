@@ -208,9 +208,8 @@ class OpenALSoundSystem(
         queue {
             audios.add(
                 OpenALStreamAudio(
-                    engine, asset, channel, Vector3d.ZERO,
-                    Vector3d.ZERO, state, false, pitch, gain, referenceDistance,
-                    rolloffFactor
+                    asset, channel, Vector3d.ZERO, Vector3d.ZERO,
+                    state, false, pitch, gain, referenceDistance, rolloffFactor
                 )
             )
         }
@@ -230,9 +229,8 @@ class OpenALSoundSystem(
         queue {
             audios.add(
                 OpenALStreamAudio(
-                    engine, asset, channel, position,
-                    velocity, state, true, pitch, gain, referenceDistance,
-                    rolloffFactor
+                    asset, channel, position, velocity,
+                    state, true, pitch, gain, referenceDistance, rolloffFactor
                 )
             )
         }
@@ -365,12 +363,8 @@ class OpenALSoundSystem(
             cache[asset] = EitherLeft(async(engine.taskExecutor) {
                 try {
                     asset.channel().use { channel ->
-                        AudioStream.create(
-                            channel,
-                            asset.mimeType()
-                        ).use { stream ->
-                            OpenALAudioData.read(engine, stream)
-                        }
+                        AudioStream.create(channel, asset.mimeType())
+                            .use { readAudioData(it) }
                     }
                 } catch (e: Exception) {
                     logger.error(e) { "Failed decoding sound effect" }
