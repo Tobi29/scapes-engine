@@ -18,25 +18,13 @@ package org.tobi29.application
 
 import org.tobi29.args.*
 import org.tobi29.stdex.printerrln
-import org.tobi29.utils.Version
-
-interface Named {
-    val execName: String
-    val fullName: String get() = execName
-    val name: String get() = fullName.replace(" ", "")
-}
-
-interface Identified {
-    val id: String
-}
-
-interface Versioned {
-    val version: Version
-}
+import org.tobi29.utils.Identified
+import org.tobi29.utils.Named
+import org.tobi29.utils.Versioned
 
 abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
     protected val cli = CommandConfigBuilder()
-    val commandConfig by lazy { CommandConfig(execName, cli) }
+    val commandConfig: CommandConfig get() = CommandConfig(executableName, cli)
 
     abstract suspend fun execute(commandLine: CommandLine): StatusCode
 
@@ -99,3 +87,23 @@ abstract class Application : BareApplication() {
         return null
     }
 }
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use interface from utils",
+    ReplaceWith("Named", "org.tobi29.utils.Named")
+)
+typealias Named = Named
+
+@Deprecated(
+    "Use interface from utils",
+    ReplaceWith("Identified", "org.tobi29.utils.Identified")
+)
+typealias Identified = Identified
+
+@Deprecated(
+    "Use interface from utils",
+    ReplaceWith("Versioned", "org.tobi29.utils.Versioned")
+)
+typealias Versioned = Versioned
