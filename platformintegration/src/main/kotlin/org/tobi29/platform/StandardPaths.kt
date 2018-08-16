@@ -18,6 +18,46 @@ package org.tobi29.platform
 
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.exists
+import org.tobi29.utils.Identified
+import org.tobi29.utils.Named
+
+/**
+ * Home directory of the user, might not be accessible
+ */
+expect val homeDir: FilePath
+
+/**
+ * Directory for storing configuration files
+ * @note Might have to be created
+ * @note Might be same as [dataHome]
+ */
+expect fun <M> M.configHome(): FilePath where M : Identified, M : Named
+
+/**
+ * Directories for retrieving configuration files
+ * @note Might be same as [dataDirectories]
+ */
+expect fun <M> M.configDirectories(): List<FilePath> where M : Identified, M : Named
+
+/**
+ * Directory for storing data files
+ * @note Might have to be created
+ * @note Might be same as [configHome]
+ */
+expect fun <M> M.dataHome(): FilePath where M : Identified, M : Named
+
+/**
+ * Directories for retrieving data files
+ * @note Might be same as [configDirectories]
+ */
+expect fun <M> M.dataDirectories(): List<FilePath> where M : Identified, M : Named
+
+/**
+ * Directory for storing cache files
+ * @note Might have to be created
+ * @note Might be located at `[dataHome]/Cache`
+ */
+expect fun <M> M.cacheHome(): FilePath where M : Identified, M : Named
 
 /**
  * Searches through the given paths, resolves [path] against them and returns
@@ -35,14 +75,16 @@ fun Iterable<FilePath>.locate(path: FilePath): FilePath? = asSequence()
  * @param path The path to resolve with
  * @return An existing path or `null` if nothing was found
  */
-fun locateConfig(path: FilePath): FilePath? = configDirs.locate(path)
+fun <M> M.locateConfig(path: FilePath): FilePath? where M : Identified, M : Named =
+    configDirectories().locate(path)
 
 /**
  * Resolves the given [path] onto the config home directory
  * @param path The path to resolve with
  * @return The given [path]  resolved onto [configHome]
  */
-fun writeConfig(path: FilePath): FilePath = configHome.resolve(path)
+fun <M> M.writeConfig(path: FilePath): FilePath where M : Identified, M : Named =
+    configHome().resolve(path)
 
 /**
  * Searches through data directories for the given [path] and returns the
@@ -50,101 +92,13 @@ fun writeConfig(path: FilePath): FilePath = configHome.resolve(path)
  * @param path The path to resolve with
  * @return An existing path or `null` if nothing was found
  */
-fun locateData(path: FilePath): FilePath? = dataDirs.locate(path)
+fun <M> M.locateData(path: FilePath): FilePath? where M : Identified, M : Named =
+    dataDirectories().locate(path)
 
 /**
  * Resolves the given [path] onto the data home directory
  * @param path The path to resolve with
  * @return The given [path]  resolved onto [dataHome]
  */
-fun writeData(path: FilePath): FilePath = dataHome.resolve(path)
-
-/**
- * Home directory of the user, might not be accessible
- */
-expect val homeDir: FilePath
-
-/**
- * Writable directory for storing config files, may be same as [dataHome]
- *
- * **Note:** This might be a system-wide directory, so you should *always*
- * resolve [appIDForConfig] with this
- */
-expect val configHome: FilePath
-
-/**
- * List of directories that might contain config files, ordered by highest
- * priority first, with first directory being always [configHome]
- *
- * **Note:** This might be a system-wide directory, so you should *always*
- * resolve [appIDForConfig] with this
- *
- * **Note:** It is discouraged to write to any of these and instead use
- * [configHome] for that
- */
-expect val configDirs: List<FilePath>
-
-/**
- * Writable directory for storing data files, may be same as [configHome]
- *
- * **Note:** This might be a system-wide directory, so you should *always*
- * resolve [appIDForData] with this
- */
-expect val dataHome: FilePath
-
-/**
- * List of directories that might contain data files, ordered by highest
- * priority first, with first directory being always [dataDirs]
- *
- * **Note:** This might be a system-wide directory, so you should *always*
- * resolve [appIDForData] with this
- *
- * **Note:** It is discouraged to write to any of these and instead use
- * [dataHome] for that
- */
-expect val dataDirs: List<FilePath>
-
-/**
- * Writable directory for storing cache files, may be located inside [dataHome]
- * with a name like `Cache`
- *
- * **Note:** This might be a system-wide directory, so you should *always*
- * resolve [appIDForCache] with this
- */
-expect val cacheHome: FilePath
-
-/**
- * Returns a path to be resolved against [configHome] or one of [configDirs]
- * to retrieve an application specific directory
- * @param id Reverse domain id of the running application
- * @param name Name of the running application
- * @return A relative path, possibly empty
- */
-expect fun appIDForConfig(
-    id: String,
-    name: String
-): FilePath
-
-/**
- * Returns a path to be resolved against [dataHome] or one of [dataDirs]
- * to retrieve an application specific directory
- * @param id Reverse domain id of the running application
- * @param name Name of the running application
- * @return A relative path, possibly empty
- */
-expect fun appIDForData(
-    id: String,
-    name: String
-): FilePath
-
-/**
- * Returns a path to be resolved against [cacheHome]
- * to retrieve an application specific directory
- * @param id Reverse domain id of the running application
- * @param name Name of the running application
- * @return A relative path, possibly empty
- */
-expect fun appIDForCache(
-    id: String,
-    name: String
-): FilePath
+fun <M> M.writeData(path: FilePath): FilePath where M : Identified, M : Named =
+    dataHome().resolve(path)

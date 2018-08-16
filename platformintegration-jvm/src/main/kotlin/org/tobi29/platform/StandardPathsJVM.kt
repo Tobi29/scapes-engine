@@ -19,6 +19,8 @@ package org.tobi29.platform
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.path
 import org.tobi29.stdex.Volatile
+import org.tobi29.utils.Identified
+import org.tobi29.utils.Named
 import java.io.File
 
 private val impl: StandardPathsImpl by lazy {
@@ -36,26 +38,21 @@ private val impl: StandardPathsImpl by lazy {
 private var androidApplicationContext: AndroidPathsImpl.Context? = null
 
 actual val homeDir: FilePath get() = impl.homeDir
-actual val configHome: FilePath get() = impl.configHome
-actual val configDirs: List<FilePath> get() = impl.configDirs
-actual val dataHome: FilePath get() = impl.dataHome
-actual val dataDirs: List<FilePath> get() = impl.dataDirs
-actual val cacheHome: FilePath get() = impl.cacheHome
 
-actual fun appIDForConfig(
-    id: String,
-    name: String
-): FilePath = impl.appIDForConfig(id, name)
+actual fun <M> M.configHome(): FilePath where M : Identified, M : Named =
+    impl.run { configHome() }
 
-actual fun appIDForData(
-    id: String,
-    name: String
-): FilePath = impl.appIDForData(id, name)
+actual fun <M> M.configDirectories(): List<FilePath> where M : Identified, M : Named =
+    impl.run { configDirectories() }
 
-actual fun appIDForCache(
-    id: String,
-    name: String
-): FilePath = impl.appIDForCache(id, name)
+actual fun <M> M.dataHome(): FilePath where M : Identified, M : Named =
+    impl.run { dataHome() }
+
+actual fun <M> M.dataDirectories(): List<FilePath> where M : Identified, M : Named =
+    impl.run { dataDirectories() }
+
+actual fun <M> M.cacheHome(): FilePath where M : Identified, M : Named =
+    impl.run { cacheHome() }
 
 fun installAndroidContext(handle: Any) {
     if (androidApplicationContext != null) return
@@ -71,103 +68,75 @@ fun uninstallAndroidContext() {
 
 private interface StandardPathsImpl {
     val homeDir: FilePath
-    val configHome: FilePath
-    val configDirs: List<FilePath>
-    val dataHome: FilePath
-    val dataDirs: List<FilePath>
-    val cacheHome: FilePath
+        get() = path(System.getProperty("user.home"))
 
-    fun appIDForConfig(
-        id: String,
-        name: String
-    ): FilePath
+    fun <M> M.configHome(): FilePath where M : Identified, M : Named =
+        dataHome()
 
-    fun appIDForData(
-        id: String,
-        name: String
-    ): FilePath
+    fun <M> M.configDirectories(): List<FilePath> where M : Identified, M : Named =
+        listOf(configHome())
 
-    fun appIDForCache(
-        id: String,
-        name: String
-    ): FilePath
+    fun <M> M.dataHome(): FilePath where M : Identified, M : Named
+
+    fun <M> M.dataDirectories(): List<FilePath> where M : Identified, M : Named =
+        listOf(dataHome())
+
+    fun <M> M.cacheHome(): FilePath where M : Identified, M : Named =
+        dataHome().resolve("Cache")
 }
 
 private class XDGPathsImpl : StandardPathsImpl {
-    override val homeDir = XDGBaseDirs().HOME_DIR
-    override val configHome = XDGBaseDirs().CONFIG_HOME
-    override val configDirs = XDGBaseDirs().CONFIG_DIRS
-    override val dataHome = XDGBaseDirs().DATA_HOME
-    override val dataDirs = XDGBaseDirs().DATA_DIRS
-    override val cacheHome = XDGBaseDirs().CACHE_HOME
+    override val homeDir: FilePath
+        get() = XDGBaseDirs().HOME_DIR
 
-    override fun appIDForConfig(
-        id: String,
-        name: String
-    ) = path(name.toLowerCase().replace(' ', '-'))
+    override fun <M> M.configHome(): FilePath where M : Identified, M : Named =
+        forApplication(XDGBaseDirs().CONFIG_HOME)
 
-    override fun appIDForData(
-        id: String,
-        name: String
-    ) = path(name.toLowerCase().replace(' ', '-'))
+    override fun <M> M.configDirectories(): List<FilePath> where M : Identified, M : Named =
+        forApplication(XDGBaseDirs().CONFIG_DIRS)
 
-    override fun appIDForCache(
-        id: String,
-        name: String
-    ) = path(name.toLowerCase().replace(' ', '-'))
+    override fun <M> M.dataHome(): FilePath where M : Identified, M : Named =
+        forApplication(XDGBaseDirs().DATA_HOME)
+
+    override fun <M> M.dataDirectories(): List<FilePath> where M : Identified, M : Named =
+        forApplication(XDGBaseDirs().DATA_DIRS)
+
+    override fun <M> M.cacheHome(): FilePath where M : Identified, M : Named =
+        forApplication(XDGBaseDirs().CACHE_HOME)
+
+    private fun Named.directoryFor() =
+        name.toLowerCase().replace(' ', '-')
+
+    private fun Named.forApplication(path: FilePath) =
+        path.resolve(directoryFor())
+
+    // FIXME: Wrong inspection
+    @Suppress("ReplaceSingleLineLet")
+    private fun Named.forApplication(paths: Iterable<FilePath>) =
+        directoryFor().let { d -> paths.map { it.resolve(d) } }
 }
 
 private class MacOSPathsImpl : StandardPathsImpl {
-    override val homeDir = path(System.getProperty("user.home"))
-    override val configHome = homeDir.resolve("Library/Preferences")
-    override val configDirs = listOf(configHome)
-    override val dataHome = homeDir.resolve("Library")
-    override val dataDirs = listOf(dataHome)
-    override val cacheHome = homeDir.resolve("Library/Caches")
+    // TODO: Can we do better here?
 
-    override fun appIDForConfig(
-        id: String,
-        name: String
-    ) = path(id)
+    override fun <M> M.configHome(): FilePath where M : Identified, M : Named =
+        homeDir.resolve("Library/Preferences").resolve(id)
 
-    override fun appIDForData(
-        id: String,
-        name: String
-    ) = path(name)
+    override fun <M> M.dataHome(): FilePath where M : Identified, M : Named =
+        homeDir.resolve("Library").resolve(name)
 
-    override fun appIDForCache(
-        id: String,
-        name: String
-    ) = path(id)
+    override fun <M> M.cacheHome(): FilePath where M : Identified, M : Named =
+        homeDir.resolve("Library/Caches").resolve(id)
 }
 
 private class WindowsPathsImpl : StandardPathsImpl {
-    override val homeDir = path(System.getProperty("user.home"))
-    override val configHome = path(
-        EnvironmentVariable["APPDATA"]
-                ?: throw IllegalStateException(
-                    "Platform does not expose \$APPDATA environment variable"
-                )
-    )
-    override val configDirs = listOf(configHome)
-    override val dataHome = configHome
-    override val dataDirs = configDirs
-    override val cacheHome = configHome
-
-    override fun appIDForConfig(
-        id: String,
-        name: String
-    ) = path(name)
-
-    override fun appIDForData(
-        id: String,
-        name: String
-    ) = path(name)
-
-    override fun appIDForCache(
-        id: String,
-        name: String
-    ) = path(name).resolve("Cache")
+    override fun <M> M.dataHome(): FilePath where M : Identified, M : Named =
+        path(
+            EnvironmentVariable["APPDATA"]
+                    ?: throw IllegalStateException(
+                        "Platform does not expose \$APPDATA environment variable"
+                    )
+        ).resolve(name)
 }
 
 private class AndroidPathsImpl : StandardPathsImpl {
@@ -175,27 +144,14 @@ private class AndroidPathsImpl : StandardPathsImpl {
         get() = androidApplicationContext
                 ?: error("Context was not install, consider calling 'installAndroidContext' or using the Android APIs directly")
 
-    override val homeDir get() = path(Environment.getExternalStorageDirectory())
-    override val configHome get() = path(context.getFilesDir())
-    override val configDirs get() = listOf(configHome)
-    override val dataHome get() = path(context.getFilesDir())
-    override val dataDirs get() = listOf(dataHome)
-    override val cacheHome get() = path(context.getCacheDir())
+    override val homeDir: FilePath
+        get() = path(Environment.getExternalStorageDirectory())
 
-    override fun appIDForConfig(
-        id: String,
-        name: String
-    ) = path("")
+    override fun <M> M.dataHome(): FilePath where M : Identified, M : Named =
+        path(context.getFilesDir())
 
-    override fun appIDForData(
-        id: String,
-        name: String
-    ) = path("")
-
-    override fun appIDForCache(
-        id: String,
-        name: String
-    ) = path("")
+    override fun <M> M.cacheHome(): FilePath where M : Identified, M : Named =
+        path(context.getCacheDir())
 
     class Context(private val handle: Any) {
         fun getFilesDir(): File =
