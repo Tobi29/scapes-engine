@@ -110,7 +110,7 @@ fun isHidden(
 inline fun isNotHidden(
     path: FilePath,
     vararg options: LinkOption
-): Boolean = isHidden(path, *options)
+): Boolean = !isHidden(path, *options)
 
 fun fileUID(
     path: FilePath,
