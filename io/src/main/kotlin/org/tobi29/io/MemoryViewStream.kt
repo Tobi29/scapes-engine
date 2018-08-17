@@ -60,12 +60,14 @@ sealed class MemoryViewReadableStream<out B : ByteViewERO>(
 
     abstract fun bufferSlice(): B
 
-    fun ensure(len: Int) = ensureTry(len) ?: throw EndOfStreamException()
+    fun ensure(len: Int) {
+        if (!ensureTry(len)) throw EndOfStreamException()
+    }
 
-    abstract fun ensureTry(len: Int): Boolean?
+    abstract fun ensureTry(len: Int): Boolean
 
     override fun getTry(): Int {
-        ensureTry(1) ?: return -1
+        if (!ensureTry(1)) return -1
         return mbuffer.getByte(_position).also { _position++ }.toInt() and 0xFF
     }
 
@@ -124,16 +126,16 @@ private class MemoryViewReadableStreamImpl<out B : ByteViewERO>(
     override var limit: Int
         get() = _limit
         set (value) {
+            if (value > mbuffer.size)
+                throw IllegalArgumentException("Invalid limit")
             _limit = if (value < -1) mbuffer.size else value
         }
 
-    override fun ensureTry(len: Int): Boolean? {
-        val used = _position
-        val size = mbuffer.size
-        if (len <= size - used) {
-            return true
-        }
-        return null
+    override fun ensureTry(len: Int): Boolean {
+        val position = _position
+        val limit = _limit
+        if (limit >= 0 && len > limit - position) return false
+        return true
     }
 
     override fun bufferSlice(): B {
@@ -255,16 +257,19 @@ class MemoryViewStream<out B : ByteViewE>(
         _position += buffer.size
     }
 
-    override fun ensureTry(len: Int): Boolean? {
-        val used = _position
+    override fun ensureTry(len: Int): Boolean {
+        val position = _position
+        val limit = _limit
+        if (limit >= 0 && len > limit - position) return false
         var size = mbuffer.size
-        if (len <= size - used) return true
-        do {
-            size = growth(size)
-        } while (len > size - used)
-        if (_limit >= 0) size = size.coerceAtMost(_limit)
-        if (len > size - used) return null
-        grow(size)
+        if (len > size - position) {
+            do {
+                size = growth(size)
+            } while (len > size - position)
+            if (limit >= 0) size = size.coerceAtMost(limit)
+            if (len > size - position) return false
+            grow(size)
+        }
         return true
     }
 
