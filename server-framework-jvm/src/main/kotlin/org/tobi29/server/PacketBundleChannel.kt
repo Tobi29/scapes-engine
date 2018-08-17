@@ -61,6 +61,7 @@ class PacketBundleChannel(
         dataStreamOut.flip()
         byteBufferStreamOut.reset()
         deflater.process(dataStreamOut, byteBufferStreamOut)
+        deflater.reset()
         byteBufferStreamOut.flip()
         val size = byteBufferStreamOut.remaining
         if (size > BUNDLE_MAX_SIZE) {
@@ -171,6 +172,7 @@ class PacketBundleChannel(
         }
         byteBufferStreamOut.reset()
         inflater.process(input, byteBufferStreamOut)
+        inflater.reset()
         byteBufferStreamOut.flip()
         hasInput = false
         input.reset()
