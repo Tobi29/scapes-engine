@@ -34,6 +34,8 @@ class PacketBundleChannel(
         growth = { it + 102400 })
     private val byteBufferStreamOut = MemoryViewStreamDefault(
         growth = { it + 102400 })
+    private val compressStreamOut = MemoryViewStreamDefault(
+        growth = { it + 102400 })
     private val queue = Channel<HeapViewByteBE>(Channel.UNLIMITED)
     private val deflater = DeflateHandle(1)
     private val inflater = InflateHandle()
@@ -59,17 +61,17 @@ class PacketBundleChannel(
     @Throws(IOException::class)
     fun queueBundle() {
         dataStreamOut.flip()
-        byteBufferStreamOut.reset()
-        deflater.process(dataStreamOut, byteBufferStreamOut)
+        compressStreamOut.reset()
+        deflater.process(dataStreamOut, compressStreamOut)
         deflater.reset()
-        byteBufferStreamOut.flip()
-        val size = byteBufferStreamOut.remaining
+        compressStreamOut.flip()
+        val size = compressStreamOut.remaining
         if (size > BUNDLE_MAX_SIZE) {
             throw IOException("Bundle size too large: " + size)
         }
         val bundle = buffer(BUNDLE_HEADER_SIZE + size)
         bundle.setInt(0, size)
-        bundle.setBytes(BUNDLE_HEADER_SIZE, byteBufferStreamOut.bufferSlice())
+        bundle.setBytes(BUNDLE_HEADER_SIZE, compressStreamOut.bufferSlice())
         if (!queue.offer(bundle)) throw IOException("Send buffer full")
         dataStreamOut.reset()
     }
