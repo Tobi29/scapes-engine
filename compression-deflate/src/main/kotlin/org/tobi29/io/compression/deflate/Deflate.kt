@@ -104,11 +104,14 @@ fun FilterHandle.process(
     outputBuffer: HeapBytes = ByteArray(16384).sliceOver()
 ) {
     val callback: (HeapBytes) -> Unit = { output.put(it) }
+    var noInput = true
     while (true) {
         val read = input.getSome(inputBuffer)
         if (read < 0) break
+        noInput = false
         if (!process(inputBuffer.slice(0, read), outputBuffer, callback)) break
     }
+    if (noInput) input(ByteArray(0).sliceOver())
     processFinish(outputBuffer, callback)
 }
 
