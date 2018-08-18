@@ -138,6 +138,7 @@ inline fun FilterHandle.processFinish(
         val size = processFinish(outputBuffer)
         val bytes = filteredBytes(size)
         if (bytes != 0) output(outputBuffer.slice(0, bytes))
+        else if (size == 0) throw EndOfStreamException()
         if (size < 0) return
     }
 }
