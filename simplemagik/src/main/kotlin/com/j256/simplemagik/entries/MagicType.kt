@@ -17,10 +17,16 @@
 package com.j256.simplemagik.entries
 
 import com.j256.simplemagik.types.*
+import com.j256.simplemagik.types.write
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 
+typealias MatcherConstructor = (String, String?, Long?, Boolean) -> MagicMatcher
 
 private val typeMap =
-    HashMap<String, (String, String?, Long?, Boolean) -> MagicMatcher>().apply {
+    HashMap<String, MatcherConstructor>().apply {
         /** Single byte value.  */
         register("byte", ::ByteType)
         /** 2 byte short integer in native-endian byte order.  */
@@ -129,13 +135,63 @@ private val typeMap =
     }
 
 @Suppress("NOTHING_TO_INLINE")
-private inline fun MutableMap<String, (String, String?, Long?, Boolean) -> MagicMatcher>.register(
+private inline fun MutableMap<String, MatcherConstructor>.register(
     name: String,
-    noinline matcher: (String, String?, Long?, Boolean) -> MagicMatcher
+    noinline matcher: MatcherConstructor
 ) = put(name, matcher)
 
 /**
  * Find the associated matcher to the string.
  */
-internal fun matcherfromString(typeString: String): ((String, String?, Long?, Boolean) -> MagicMatcher)? =
+internal fun matcherfromString(typeString: String): MatcherConstructor? =
     typeMap[typeString]
+
+internal fun MagicMatcher.write(stream: WritableByteStream) {
+    when (this) {
+        is BigEndianString16Type -> stream.put(0).also { write(stream) }
+        is ByteType -> stream.put(1).also { write(stream) }
+        is DateType -> stream.put(2).also { write(stream) }
+        is DefaultType -> stream.put(3).also { write(stream) }
+        is DoubleType -> stream.put(4).also { write(stream) }
+        is FloatType -> stream.put(5).also { write(stream) }
+        is Id3LengthType -> stream.put(6).also { write(stream) }
+        is IndirectType -> stream.put(7).also { write(stream) }
+        is IntType -> stream.put(8).also { write(stream) }
+        is LittleEndianString16Type -> stream.put(9).also { write(stream) }
+        is LongDateType -> stream.put(10).also { write(stream) }
+        is LongType -> stream.put(11).also { write(stream) }
+        is NameType -> stream.put(12).also { write(stream) }
+        is PStringType -> stream.put(13).also { write(stream) }
+        is RegexType -> stream.put(14).also { write(stream) }
+        is SearchType -> stream.put(15).also { write(stream) }
+        is ShortType -> stream.put(16).also { write(stream) }
+        is StringType -> stream.put(17).also { write(stream) }
+        is UnknownType -> stream.put(18).also { write(stream) }
+        is UseType -> stream.put(19).also { write(stream) }
+    }
+}
+
+internal fun readMagicMatcher(stream: MemoryViewReadableStream<HeapViewByteBE>): MagicMatcher =
+    when (stream.get()) {
+        0.toByte() -> readBigEndianString16Type(stream)
+        1.toByte() -> readByteType(stream)
+        2.toByte() -> readDateType(stream)
+        3.toByte() -> readDefaultType(stream)
+        4.toByte() -> readDoubleType(stream)
+        5.toByte() -> readFloatType(stream)
+        6.toByte() -> readId3LengthType(stream)
+        7.toByte() -> readIndirectType(stream)
+        8.toByte() -> readIntType(stream)
+        9.toByte() -> readLittleEndianString16Type(stream)
+        10.toByte() -> readLongDateType(stream)
+        11.toByte() -> readLongType(stream)
+        12.toByte() -> readNameType(stream)
+        13.toByte() -> readPStringType(stream)
+        14.toByte() -> readRegexType(stream)
+        15.toByte() -> readSearchType(stream)
+        16.toByte() -> readShortType(stream)
+        17.toByte() -> readStringType(stream)
+        18.toByte() -> readUnknownType(stream)
+        19.toByte() -> readUseType(stream)
+        else -> throw IOException("Invalid magic matcher id")
+    }

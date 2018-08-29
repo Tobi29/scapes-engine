@@ -55,6 +55,8 @@ ianaDbGen "text" "Text"
 ianaDbGen "video" "Video"
 
 echo "-- Generating embedded magic database"
+SIMPLEMAGIK_CLASSPATH="$("$ENGINE_HOME/gradlew" ":simplemagik-jvm:build" ":simplemagik-jvm:printClasspath" -q)"
 zcat "$CODEGEN_HOME/magic.gz" \
-    | "$CODEGEN_HOME/StripMagic.kts" \
-    | "$CODEGEN_HOME/GenStringDataJVM.kts" "com.j256.simplemagik" "magic" > "$ENGINE_HOME/simplemagik-jvm/src/main/kotlin/com/j256/simplemagik/MagicDbJVM.kt"
+    | java -cp "$SIMPLEMAGIK_CLASSPATH" "com.j256.simplemagik.MagicCompiler" \
+    | tee >("$CODEGEN_HOME/GenBinaryDataJVM.kts" "com.j256.simplemagik" "magic" > "$ENGINE_HOME/simplemagik-jvm/src/main/kotlin/com/j256/simplemagik/MagicDbJVM.kt") \
+    | cat > "$ENGINE_HOME/simplemagik-jvm/src/main/resources/com/j256/simplemagik/magic"

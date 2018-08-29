@@ -18,6 +18,9 @@ package com.j256.simplemagik.types
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 
 object UnknownType : MagicMatcher {
     override fun isMatch(
@@ -28,3 +31,10 @@ object UnknownType : MagicMatcher {
 
 val unknownType: (String, String?, Long?, Boolean) -> UnknownType =
     { _, _, _, _ -> UnknownType }
+
+internal fun UnknownType.write(stream: WritableByteStream) {
+}
+
+internal fun readUnknownType(stream: MemoryViewReadableStream<HeapViewByteBE>): UnknownType {
+    return UnknownType
+}

@@ -18,10 +18,11 @@ package com.j256.simplemagik.types
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 
 object IndirectType : MagicMatcher {
-    override val isIndirect: Boolean get() = true
-
     override fun isMatch(
         bytes: BytesRO,
         required: Boolean
@@ -37,3 +38,10 @@ fun IndirectType(
     andValue: Long?,
     unsignedType: Boolean
 ): IndirectType = IndirectType
+
+internal fun IndirectType.write(stream: WritableByteStream) {
+}
+
+internal fun readIndirectType(stream: MemoryViewReadableStream<HeapViewByteBE>): IndirectType {
+    return IndirectType
+}

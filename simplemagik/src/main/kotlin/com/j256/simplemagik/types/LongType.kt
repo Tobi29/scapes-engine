@@ -20,9 +20,18 @@ import com.j256.simplemagik.endian.EndianType
 import com.j256.simplemagik.endian.convert
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
+import com.j256.simplemagik.entries.getCompactLong
+import com.j256.simplemagik.entries.putCompactLong
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 import org.tobi29.stdex.combineToLong
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 import org.tobi29.stdex.splitToBytes
+import kotlin.experimental.or
 
 data class LongType(
     val comparison: Pair<Long, TestOperator>?,
@@ -102,3 +111,40 @@ fun LongTypeNE(
 ): LongType = LongType(
     typeStr, testStr, andValue, unsignedType, EndianType.NATIVE
 )
+
+internal fun LongType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, comparison != null)
+            .setAt(1, unsignedType)
+            .let {
+                if (comparison == null) it
+                else it or (comparison.second.id shl 2).toByte()
+            } or (endianType.id shl 5).toByte()
+    )
+    stream.putCompactLong(andValue)
+    if (comparison != null) {
+        stream.putCompactLong(comparison.first)
+    }
+}
+
+internal fun readLongType(stream: MemoryViewReadableStream<HeapViewByteBE>): LongType {
+    val flags = stream.get()
+    val comparisonHas = flags.maskAt(0)
+    val unsignedType = flags.maskAt(1)
+    val andValue = stream.getCompactLong()
+    val comparison = if (comparisonHas) {
+        val first = stream.getCompactLong()
+        val second = TestOperator.of((flags.toInt() ushr 2) and 7)
+                ?: throw IOException("Invalid test operator")
+        first to second
+    } else null
+    val endianType = EndianType.of((flags.toInt() ushr 5) and 3)
+            ?: throw IOException("Invalid endian type")
+    return LongType(
+        comparison,
+        andValue,
+        unsignedType,
+        endianType
+    )
+}

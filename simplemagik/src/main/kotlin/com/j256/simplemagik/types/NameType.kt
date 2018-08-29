@@ -16,11 +16,46 @@
 
 package com.j256.simplemagik.types
 
-// TODO: Implement
+import com.j256.simplemagik.entries.MagicFormatter
+import com.j256.simplemagik.entries.MagicMatcher
+import com.j256.simplemagik.entries.getCompactString
+import com.j256.simplemagik.entries.putCompactString
+import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+
+data class NameType(
+    val name: String
+) : MagicMatcher {
+    override fun isMatch(
+        bytes: BytesRO,
+        required: Boolean
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        0 to { sb, formatter ->
+            formatter.format(sb, "")
+        }
+}
 
 fun NameType(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): UnknownType = UnknownType
+): NameType =
+    if (testStr == null) {
+        throw IllegalArgumentException("No test string for name")
+    } else {
+        NameType(testStr)
+    }
+
+internal fun NameType.write(stream: WritableByteStream) {
+    stream.putCompactString(name)
+}
+
+internal fun readNameType(stream: MemoryViewReadableStream<HeapViewByteBE>): NameType {
+    val name = stream.getCompactString()
+    return NameType(
+        name
+    )
+}

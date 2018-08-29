@@ -18,9 +18,10 @@ package com.j256.simplemagik.entries
 
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
-import org.tobi29.stdex.combineToShort
-import org.tobi29.stdex.toString
-import org.tobi29.stdex.utf8ToString
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.*
 import org.tobi29.utils.toStringDecimal
 import org.tobi29.utils.toStringExponential
 
@@ -29,16 +30,16 @@ import org.tobi29.utils.toStringExponential
  *
  * @author graywatson
  */
-internal class PercentExpression(expression: String) {
-    private val alternativeForm: Boolean
-    private val zeroPrefix: Boolean
-    private val plusPrefix: Boolean
-    private val spacePrefix: Boolean
-    private val leftAdjust: Boolean
-    private val totalWidth: Int
-    private val patternChar: Char
-    private val dotPrecision: Int
-
+internal class PercentExpression(
+    val alternativeForm: Boolean,
+    val zeroPrefix: Boolean,
+    val plusPrefix: Boolean,
+    val spacePrefix: Boolean,
+    val leftAdjust: Boolean,
+    val totalWidth: Int,
+    val patternChar: Char,
+    val dotPrecision: Int
+) {
     override fun toString(): String = buildString {
         append('%')
         if (alternativeForm) append('#')
@@ -49,25 +50,6 @@ internal class PercentExpression(expression: String) {
         if (totalWidth != -1) append(totalWidth)
         if (dotPrecision != -1) append(dotPrecision)
         append(patternChar)
-    }
-
-    init {
-        val matcher = FORMAT_PATTERN.matchEntire(expression)
-        if (matcher == null || matcher.groups[6] == null
-            || matcher.groupValues[6].length != 1) {
-            throw IllegalArgumentException("Invalid format expression: $expression")
-        } else {
-            val flags = matcher.groupValues[1]
-            alternativeForm = flags.contains('#')
-            zeroPrefix = flags.contains('0')
-            plusPrefix = flags.contains('+')
-            spacePrefix = !plusPrefix && flags.contains(' ')
-            leftAdjust = flags.contains('-')
-            totalWidth = matcher.groupValues[2].toIntOrNull() ?: -1
-            dotPrecision = matcher.groupValues[4].toIntOrNull() ?: -1
-            // 5 is ignored
-            patternChar = matcher.groupValues[6][0]
-        }
     }
 
     fun append(extractedValue: Any, sb: Appendable) {
@@ -179,7 +161,7 @@ internal class PercentExpression(expression: String) {
                 appendValue(sb, sign, null, strValue, true)
                 return
             }
-        // case 'i' : same as d above
+            // case 'i' : same as d above
             'o' ->
                 // octal
                 if (extractedValue is Number) {
@@ -197,8 +179,8 @@ internal class PercentExpression(expression: String) {
                     appendValue(sb, sign, prefix, strValue, true)
                     return
                 }
-        // case 's' : same as b above
-        // case 'u' : same as d above
+            // case 's' : same as b above
+            // case 'u' : same as d above
             'x' -> if (extractedValue is Number) {
                 appendHex(sb, false, extractedValue)
                 return
@@ -337,5 +319,72 @@ internal class PercentExpression(expression: String) {
     }
 }
 
+internal fun PercentExpression(
+    expression: String
+): PercentExpression {
+    val matcher = FORMAT_PATTERN.matchEntire(expression)
+    if (matcher == null || matcher.groups[6] == null
+        || matcher.groupValues[6].length != 1) {
+        throw IllegalArgumentException("Invalid format expression: $expression")
+    } else {
+        val flags = matcher.groupValues[1]
+        val alternativeForm = flags.contains('#')
+        val zeroPrefix = flags.contains('0')
+        val plusPrefix = flags.contains('+')
+        val spacePrefix = !plusPrefix && flags.contains(' ')
+        val leftAdjust = flags.contains('-')
+        val totalWidth = matcher.groupValues[2].toIntOrNull() ?: -1
+        val dotPrecision = matcher.groupValues[4].toIntOrNull() ?: -1
+        // 5 is ignored
+        val patternChar = matcher.groupValues[6][0]
+        return PercentExpression(
+            alternativeForm,
+            zeroPrefix,
+            plusPrefix,
+            spacePrefix,
+            leftAdjust,
+            totalWidth,
+            patternChar,
+            dotPrecision
+        )
+    }
+}
+
 private val FORMAT_PATTERN =
     "%([0#+ -]*)([0-9]*)(\\.([0-9]+))?([$PATTERN_MODIFIERS]*)([$FINAL_PATTERN_CHARS])".toRegex()
+
+internal fun PercentExpression.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, alternativeForm)
+            .setAt(1, zeroPrefix)
+            .setAt(2, plusPrefix)
+            .setAt(3, spacePrefix)
+            .setAt(4, leftAdjust)
+    )
+    stream.putCompactInt(totalWidth)
+    stream.putCompactShort(patternChar.toShort())
+    stream.putCompactInt(dotPrecision)
+}
+
+internal fun readPercentExpression(stream: MemoryViewReadableStream<HeapViewByteBE>): PercentExpression {
+    val flags = stream.get()
+    val alternativeForm = flags.maskAt(0)
+    val zeroPrefix = flags.maskAt(1)
+    val plusPrefix = flags.maskAt(2)
+    val spacePrefix = flags.maskAt(3)
+    val leftAdjust = flags.maskAt(4)
+    val totalWidth = stream.getCompactInt()
+    val patternChar = stream.getCompactShort().toChar()
+    val dotPrecision: Int = stream.getCompactInt()
+    return PercentExpression(
+        alternativeForm,
+        zeroPrefix,
+        plusPrefix,
+        spacePrefix,
+        leftAdjust,
+        totalWidth,
+        patternChar,
+        dotPrecision
+    )
+}

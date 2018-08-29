@@ -17,6 +17,11 @@
 package com.j256.simplemagik.entries
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 
 /**
  * Formatter that handles the C %0.2f type formats appropriately. I would have used the [java.util.Formatter] but
@@ -24,66 +29,11 @@ import org.tobi29.arrays.BytesRO
  *
  * @author graywatson
  */
-class MagicFormatter
-/**
- * This takes a format string, breaks it up into prefix, %-thang, and suffix.
- */
-    (formatString: String) {
-
-    private var prefix: String?
-    private var percentExpression: PercentExpression?
-    private var suffix: String?
-
-    init {
-        val matcher = FORMAT_PATTERN.matchEntire(formatString)
-        if (matcher == null) {
-            // may never get here
-            prefix = formatString
-            percentExpression = null
-            suffix = null
-        } else {
-
-            val prefixMatch = matcher.groups[1]
-            val percentMatch = matcher.groups[2]
-            val suffixMatch = matcher.groups[3]
-
-            if (percentMatch != null && percentMatch.value == "%%") {
-                // we go recursive trying to find the first true % pattern
-                // TODO: This looks wrong
-                val formatter =
-                    MagicFormatter(suffixMatch!!.value)
-                val sb = StringBuilder()
-                if (prefixMatch != null) {
-                    sb.append(prefixMatch)
-                }
-                sb.append('%')
-                formatter.prefix?.let { sb.append(it) }
-                prefix = sb.toString()
-                percentExpression = formatter.percentExpression
-                suffix = formatter.suffix
-            } else {
-
-                if (prefixMatch == null || prefixMatch.value.isEmpty()) {
-                    prefix = null
-                } else {
-                    prefix = prefixMatch.value
-                }
-                if (percentMatch == null || percentMatch.value.isEmpty()) {
-                    percentExpression = null
-                } else {
-                    percentExpression =
-                            PercentExpression(
-                                percentMatch.value
-                            )
-                }
-                if (suffixMatch == null || suffixMatch.value.length == 0) {
-                    suffix = null
-                } else {
-                    suffix = suffixMatch.value.replace("%%", "%")
-                }
-            }
-        }
-    }
+class MagicFormatter internal constructor(
+    val prefix: String?,
+    internal val percentExpression: PercentExpression?,
+    val suffix: String?
+) {
 
     /**
      * Formats the extracted value assigned and returns the associated string
@@ -130,9 +80,109 @@ class MagicFormatter
     }
 }
 
+internal fun MagicFormatter(
+    formatString: String
+): MagicFormatter {
+    val matcher = FORMAT_PATTERN.matchEntire(formatString)
+    val prefix: String?
+    val percentExpression: PercentExpression?
+    val suffix: String?
+    if (matcher == null) {
+        // may never get here
+        prefix = formatString
+        percentExpression = null
+        suffix = null
+    } else {
+
+        val prefixMatch = matcher.groups[1]
+        val percentMatch = matcher.groups[2]
+        val suffixMatch = matcher.groups[3]
+
+        if (percentMatch != null && percentMatch.value == "%%") {
+            // we go recursive trying to find the first true % pattern
+            // TODO: This looks wrong
+            val formatter =
+                MagicFormatter(suffixMatch!!.value)
+            val sb = StringBuilder()
+            if (prefixMatch != null) {
+                sb.append(prefixMatch)
+            }
+            sb.append('%')
+            formatter.prefix?.let { sb.append(it) }
+            prefix = sb.toString()
+            percentExpression = formatter.percentExpression
+            suffix = formatter.suffix
+        } else {
+
+            if (prefixMatch == null || prefixMatch.value.isEmpty()) {
+                prefix = null
+            } else {
+                prefix = prefixMatch.value
+            }
+            if (percentMatch == null || percentMatch.value.isEmpty()) {
+                percentExpression = null
+            } else {
+                percentExpression =
+                        PercentExpression(
+                            percentMatch.value
+                        )
+            }
+            if (suffixMatch == null || suffixMatch.value.length == 0) {
+                suffix = null
+            } else {
+                suffix = suffixMatch.value.replace("%%", "%")
+            }
+        }
+    }
+    return MagicFormatter(
+        prefix,
+        percentExpression,
+        suffix
+    )
+}
+
 internal const val FINAL_PATTERN_CHARS = "%bcdeEfFgGiosuxX"
 internal const val PATTERN_MODIFIERS = "lqh"
 
 // NOTE: the backspace is taken care of by checking the format string prefix above
 private val FORMAT_PATTERN =
     "([^%]*)(%[-+0-9# .$PATTERN_MODIFIERS]*[$FINAL_PATTERN_CHARS])?(.*)".toRegex()
+
+internal fun MagicFormatter.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, prefix != null)
+            .setAt(1, percentExpression != null)
+            .setAt(2, suffix != null)
+    )
+    if (prefix != null) {
+        stream.putCompactString(prefix)
+    }
+    if (percentExpression != null) {
+        percentExpression.write(stream)
+    }
+    if (suffix != null) {
+        stream.putCompactString(suffix)
+    }
+}
+
+internal fun readMagicFormatter(stream: MemoryViewReadableStream<HeapViewByteBE>): MagicFormatter {
+    val flags = stream.get()
+    val prefixHas = flags.maskAt(0)
+    val percentExpressionHas = flags.maskAt(1)
+    val suffixHas = flags.maskAt(2)
+    val prefix = if (prefixHas) {
+        stream.getCompactString()
+    } else null
+    val percentExpression = if (percentExpressionHas) {
+        readPercentExpression(stream)
+    } else null
+    val suffix = if (suffixHas) {
+        stream.getCompactString()
+    } else null
+    return MagicFormatter(
+        prefix,
+        percentExpression,
+        suffix
+    )
+}

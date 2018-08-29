@@ -24,18 +24,29 @@ import org.tobi29.stdex.*
  * @author graywatson
  */
 enum class EndianType(
+    internal val id: Int,
     resolved: EndianType? = null
 ) {
     /** big endian, also called network byte order (motorola 68k)  */
-    BIG,
+    BIG(1),
     /** little endian (x86)  */
-    LITTLE,
+    LITTLE(2),
     /** old PDP11 byte order  */
-    MIDDLE,
+    MIDDLE(3),
     /** uses the byte order of the current system  */
-    NATIVE(if (NATIVE_ENDIAN == BIG_ENDIAN) BIG else LITTLE);
+    NATIVE(0, if (NATIVE_ENDIAN == BIG_ENDIAN) BIG else LITTLE);
 
     val resolved: EndianType = resolved ?: this
+
+    companion object {
+        internal fun of(id: Int): EndianType? = when (id) {
+            0 -> EndianType.NATIVE
+            1 -> EndianType.BIG
+            2 -> EndianType.LITTLE
+            3 -> EndianType.MIDDLE
+            else -> null
+        }
+    }
 } // end
 
 fun Short.convert(endianType: EndianType): Short = when (endianType.resolved) {

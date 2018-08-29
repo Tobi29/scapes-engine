@@ -19,9 +19,12 @@ package com.j256.simplemagik.types
 /**
  * Internal class that provides information about a particular test.
  */
-enum class StringOperator(internal val prefixChar: Char) {
+enum class StringOperator(
+    internal val prefixChar: Char,
+    internal val id: Int
+) {
 
-    EQUALS('=') {
+    EQUALS('=', 0) {
         override fun doTest(
             extractedChar: Char,
             testChar: Char,
@@ -30,7 +33,7 @@ enum class StringOperator(internal val prefixChar: Char) {
             return extractedChar == testChar
         }
     },
-    NOT_EQUALS('!') {
+    NOT_EQUALS('!', 1) {
         override fun doTest(
             extractedChar: Char,
             testChar: Char,
@@ -39,7 +42,7 @@ enum class StringOperator(internal val prefixChar: Char) {
             return extractedChar != testChar
         }
     },
-    GREATER_THAN('>') {
+    GREATER_THAN('>', 2) {
         override fun doTest(
             extractedChar: Char,
             testChar: Char,
@@ -52,7 +55,7 @@ enum class StringOperator(internal val prefixChar: Char) {
             }
         }
     },
-    LESS_THAN('<') {
+    LESS_THAN('<', 3) {
         override fun doTest(
             extractedChar: Char,
             testChar: Char,
@@ -90,6 +93,14 @@ enum class StringOperator(internal val prefixChar: Char) {
                 }
             }
             return null
+        }
+
+        internal fun of(id: Int): StringOperator? = when (id) {
+            0 -> EQUALS
+            1 -> NOT_EQUALS
+            2 -> GREATER_THAN
+            3 -> LESS_THAN
+            else -> null
         }
     }
 }

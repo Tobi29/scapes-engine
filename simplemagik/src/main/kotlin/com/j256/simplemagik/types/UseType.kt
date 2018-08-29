@@ -16,11 +16,46 @@
 
 package com.j256.simplemagik.types
 
-// TODO: Implement
+import com.j256.simplemagik.entries.MagicFormatter
+import com.j256.simplemagik.entries.MagicMatcher
+import com.j256.simplemagik.entries.getCompactString
+import com.j256.simplemagik.entries.putCompactString
+import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+
+data class UseType(
+    val name: String
+) : MagicMatcher {
+    override fun isMatch(
+        bytes: BytesRO,
+        required: Boolean
+    ): Pair<Int, (Appendable, MagicFormatter) -> Unit>? =
+        0 to { sb, formatter ->
+            formatter.format(sb, "")
+        }
+}
 
 fun UseType(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     unsignedType: Boolean
-): UnknownType = UnknownType
+): UseType =
+    if (testStr == null) {
+        throw IllegalArgumentException("No test string for use")
+    } else {
+        UseType(testStr)
+    }
+
+internal fun UseType.write(stream: WritableByteStream) {
+    stream.putCompactString(name)
+}
+
+internal fun readUseType(stream: MemoryViewReadableStream<HeapViewByteBE>): UseType {
+    val name = stream.getCompactString()
+    return UseType(
+        name
+    )
+}

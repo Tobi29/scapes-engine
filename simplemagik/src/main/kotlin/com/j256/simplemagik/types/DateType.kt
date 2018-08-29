@@ -18,14 +18,19 @@ package com.j256.simplemagik.types
 
 import com.j256.simplemagik.endian.EndianType
 import com.j256.simplemagik.endian.convert
-import com.j256.simplemagik.entries.MagicFormatter
-import com.j256.simplemagik.entries.MagicMatcher
-import com.j256.simplemagik.entries.toIntChecked
+import com.j256.simplemagik.entries.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.chrono.*
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 import org.tobi29.stdex.splitToBytes
 import org.tobi29.utils.toInt128
+import kotlin.experimental.or
 
 data class DateType(
     val comparison: Pair<Int, TestOperator>?,
@@ -152,3 +157,40 @@ fun DateTypeLocalNE(
 ): DateType = DateType(
     typeStr, testStr, andValue, unsignedType, true, EndianType.NATIVE
 )
+
+internal fun DateType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, comparison != null)
+            .setAt(1, local)
+            .let {
+                if (comparison == null) it
+                else it or (comparison.second.id shl 2).toByte()
+            } or (endianType.id shl 5).toByte()
+    )
+    stream.putCompactInt(andValue)
+    if (comparison != null) {
+        stream.putCompactInt(comparison.first)
+    }
+}
+
+internal fun readDateType(stream: MemoryViewReadableStream<HeapViewByteBE>): DateType {
+    val flags = stream.get()
+    val comparisonHas = flags.maskAt(0)
+    val local = flags.maskAt(1)
+    val andValue = stream.getCompactInt()
+    val comparison = if (comparisonHas) {
+        val first = stream.getCompactInt()
+        val second = TestOperator.of((flags.toInt() ushr 2) and 7)
+                ?: throw IOException("Invalid test operator")
+        first to second
+    } else null
+    val endianType = EndianType.of((flags.toInt() ushr 5) and 3)
+            ?: throw IOException("Invalid endian type")
+    return DateType(
+        comparison,
+        andValue,
+        local,
+        endianType
+    )
+}

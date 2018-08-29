@@ -21,8 +21,15 @@ import com.j256.simplemagik.endian.convert
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 import org.tobi29.stdex.combineToInt
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 import org.tobi29.stdex.splitToBytes
+import kotlin.experimental.or
 
 data class FloatType(
     val comparison: Pair<Float, TestOperator>?,
@@ -98,3 +105,34 @@ fun FloatTypeNE(
 ): FloatType = FloatType(
     typeStr, testStr, andValue, EndianType.NATIVE
 )
+
+internal fun FloatType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, comparison != null)
+            .let {
+                if (comparison == null) it
+                else it or (comparison.second.id shl 2).toByte()
+            } or (endianType.id shl 5).toByte()
+    )
+    if (comparison != null) {
+        stream.putFloat(comparison.first)
+    }
+}
+
+internal fun readFloatType(stream: MemoryViewReadableStream<HeapViewByteBE>): FloatType {
+    val flags = stream.get()
+    val comparisonHas = flags.maskAt(0)
+    val comparison = if (comparisonHas) {
+        val first = stream.getFloat()
+        val second = TestOperator.of((flags.toInt() ushr 2) and 7)
+                ?: throw IOException("Invalid test operator")
+        first to second
+    } else null
+    val endianType = EndianType.of((flags.toInt() ushr 5) and 3)
+            ?: throw IOException("Invalid endian type")
+    return FloatType(
+        comparison,
+        endianType
+    )
+}

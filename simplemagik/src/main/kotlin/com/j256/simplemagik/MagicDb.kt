@@ -16,4 +16,4 @@
 
 package com.j256.simplemagik
 
-internal expect val magic: Sequence<String>
+internal expect val magic: ByteArray

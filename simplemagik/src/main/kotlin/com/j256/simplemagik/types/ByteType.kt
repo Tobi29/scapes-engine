@@ -20,7 +20,14 @@ import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import com.j256.simplemagik.entries.toByteChecked
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 import kotlin.experimental.and
+import kotlin.experimental.or
 
 data class ByteType(
     val comparison: Pair<Byte, TestOperator>?,
@@ -68,3 +75,37 @@ internal fun Short.toIntSigned(unsignedType: Boolean): Int =
 
 internal fun Int.toLongSigned(unsignedType: Boolean): Long =
     toLong().let { if (unsignedType) it and 0xFFFFFFFF else it }
+
+internal fun ByteType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, comparison != null)
+            .setAt(1, unsignedType)
+            .let {
+                if (comparison == null) it
+                else it or (comparison.second.id shl 2).toByte()
+            }
+    )
+    stream.put(andValue)
+    if (comparison != null) {
+        stream.put(comparison.first)
+    }
+}
+
+internal fun readByteType(stream: MemoryViewReadableStream<HeapViewByteBE>): ByteType {
+    val flags = stream.get()
+    val comparisonHas = flags.maskAt(0)
+    val unsignedType = flags.maskAt(1)
+    val andValue = stream.get()
+    val comparison = if (comparisonHas) {
+        val first = stream.get()
+        val second = TestOperator.of((flags.toInt() ushr 2) and 7)
+                ?: throw IOException("Invalid test operator")
+        first to second
+    } else null
+    return ByteType(
+        comparison,
+        andValue,
+        unsignedType
+    )
+}

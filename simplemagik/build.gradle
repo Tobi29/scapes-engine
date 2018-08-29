@@ -19,6 +19,7 @@ apply from: "$rootDir/resources/modulekotlin.gradle"
 dependencies {
     compile project(":stdex")
     compile project(":arrays")
+    compile project(":io")
     compile project(":logging")
     compile project(":chrono")
     compile project(":utils")

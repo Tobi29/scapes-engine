@@ -23,6 +23,8 @@ import com.j256.simplemagik.types.TestOperator
 import com.j256.simplemagik.types.UnknownType
 import com.j256.simplemagik.types.unknownType
 
+private const val MAX_LEVELS = 20
+
 // special lines, others are put into the extensionMap
 private const val MIME_TYPE_LINE = "!:mime"
 private const val OPTIONAL_LINE = "!:optional"
@@ -30,15 +32,102 @@ private const val OPTIONAL_LINE = "!:optional"
 private val OFFSET_PATTERN =
     """\((&)?([0-9a-fA-Fx]+)\.?([bsilBSILm]?)([*+\-]?)([0-9a-fA-Fx]*)\)""".toRegex()
 
+private class MagicEntryBuilder(
+    val level: Int,
+    val name: String?,
+    val matcher: MagicMatcher,
+    val offset: Int,
+    val offsetInfo: OffsetInfo?,
+    val addOffset: Boolean,
+    val formatSpacePrefix: Boolean,
+    val clearFormat: Boolean,
+    val formatter: MagicFormatter?
+) {
+    var mimeType: String? = null
+    var isOptional = false
+    val children = ArrayList<MagicEntryBuilder>()
+}
+
+private fun MagicEntryBuilder.toMagicEntry(): MagicEntry = MagicEntry(
+    level,
+    name,
+    mimeType,
+    matcher,
+    offset,
+    offsetInfo,
+    addOffset,
+    formatSpacePrefix,
+    clearFormat,
+    isOptional,
+    formatter,
+    children.map { it.toMagicEntry() }
+)
+
+/**
+ * Read the entries so later we can find matches with them.
+ */
+fun readMagicEntries(
+    lineReader: Iterator<String>,
+    errorCallBack: ErrorCallBack?
+): List<MagicEntry> {
+    val entries = ArrayList<MagicEntryBuilder>()
+    val levelParents = arrayOfNulls<MagicEntryBuilder>(MAX_LEVELS)
+    var previousEntry: MagicEntryBuilder? = null
+    val parts = Array(4) { "" }
+    for (line in lineReader) {
+        if (line.isBlank() || line[0] == '#') continue
+
+        val entry: MagicEntryBuilder?
+        try {
+            // we need the previous entry because of mime-type, etc. which augment the previous line
+            entry = parseMagicLine(
+                previousEntry, line, errorCallBack, parts
+            )
+            if (entry == null) continue
+        } catch (e: IllegalArgumentException) {
+            errorCallBack?.invoke(line, e.message, e)
+            continue
+        }
+
+        val level = entry.level
+        if (previousEntry == null && level != 0) {
+            errorCallBack?.invoke(
+                line,
+                "first entry of the file but the level $level should be 0",
+                null
+            )
+            continue
+        }
+
+        if (level == 0) {
+            // top level entry
+            entries.add(entry)
+        } else if (levelParents[level - 1] == null) {
+            errorCallBack?.invoke(
+                line,
+                "entry has level " + level + " but no parent entry with level " + (level - 1),
+                null
+            )
+            continue
+        } else {
+            // we are a child of the one above us
+            levelParents[level - 1]!!.children.add(entry)
+        }
+        levelParents[level] = entry
+        previousEntry = entry
+    }
+    return entries.map { it.toMagicEntry() }
+}
+
 /**
  * Parse a line from the magic configuration file into an entry.
  */
-internal fun parseMagicLine(
-    previous: MagicEntry?,
+private fun parseMagicLine(
+    previous: MagicEntryBuilder?,
     line: String,
     errorCallBack: ErrorCallBack?,
     parts: Array<String>
-): MagicEntry? {
+): MagicEntryBuilder? {
     if (line.startsWith("!:")) {
         if (previous != null) {
             // we ignore it if there is no previous entry to add it to
@@ -143,7 +232,7 @@ internal fun parseMagicLine(
         // process the test-string
         val testStr = parts[2].takeUnless { it == "x" }
 
-        val formatter: Lazy<MagicFormatter>?
+        val formatter: MagicFormatter?
         val name: String?
         var formatSpacePrefix = true
         var clearFormat = false
@@ -164,7 +253,7 @@ internal fun parseMagicLine(
                 format = format.substring(2)
                 clearFormat = true
             }
-            formatter = lazy { MagicFormatter(format) }
+            formatter = MagicFormatter(format)
 
             val trimmedFormat = format.trim { it <= ' ' }
             var spaceIndex = trimmedFormat.indexOf(' ')
@@ -179,29 +268,29 @@ internal fun parseMagicLine(
                 name = trimmedFormat
             }
         }
-        return MagicEntry(
-            name,
+        return MagicEntryBuilder(
             level,
-            addOffset,
+            name,
+            matcher(typeStr, testStr, andValue, unsignedType),
             offset,
             offsetInfo,
-            matcher(typeStr, testStr, andValue, unsignedType),
+            addOffset,
             formatSpacePrefix,
             clearFormat,
             formatter
         )
     } catch (e: Exception) {
         errorCallBack?.invoke(line, null, e)
-        return MagicEntry(
-            null,
+        return MagicEntryBuilder(
             level,
-            addOffset,
+            null,
+            UnknownType,
             offset,
             offsetInfo,
-            UnknownType,
+            addOffset,
             false,
             false,
-            lazy { MagicFormatter("") }
+            MagicFormatter("")
         )
     }
 }
@@ -291,7 +380,7 @@ private fun splitLine(
 }
 
 private fun handleSpecial(
-    previous: MagicEntry?,
+    previous: MagicEntryBuilder?,
     line: String,
     errorCallBack: ErrorCallBack?
 ) {
@@ -423,51 +512,51 @@ private fun parseOffset(
     var isId3 = false
     val size: Int
     when (ch) {
-    // little-endian byte
+        // little-endian byte
         'b' -> {
             // endian doesn't really matter for 1 byte
             endianType = EndianType.LITTLE
             size = 1
         }
-    // little-endian short
+        // little-endian short
         's' -> {
             endianType = EndianType.LITTLE
             size = 2
         }
-    // little-endian integer
+        // little-endian integer
         'i' -> {
             endianType = EndianType.LITTLE
             size = 4
             isId3 = true
         }
-    // little-endian long (4 byte)
+        // little-endian long (4 byte)
         'l' -> {
             endianType = EndianType.LITTLE
             size = 4
         }
-    // big-endian byte
+        // big-endian byte
         'B' -> {
             // endian doesn't really matter for 1 byte
             endianType = EndianType.BIG
             size = 1
         }
-    // big-endian short
+        // big-endian short
         'S' -> {
             endianType = EndianType.BIG
             size = 2
         }
-    // big-endian integer
+        // big-endian integer
         'I' -> {
             endianType = EndianType.BIG
             size = 4
             isId3 = true
         }
-    // big-endian long (4 byte)
+        // big-endian long (4 byte)
         'L' -> {
             endianType = EndianType.BIG
             size = 4
         }
-    // big-endian integer
+        // big-endian integer
         'm' -> {
             endianType = EndianType.MIDDLE
             size = 4

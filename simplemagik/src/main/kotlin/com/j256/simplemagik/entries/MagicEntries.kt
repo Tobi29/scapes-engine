@@ -17,7 +17,6 @@
 package com.j256.simplemagik.entries
 
 import com.j256.simplemagik.ContentInfo
-import com.j256.simplemagik.ErrorCallBack
 import org.tobi29.arrays.BytesRO
 import org.tobi29.logging.KLogging
 
@@ -26,82 +25,30 @@ import org.tobi29.logging.KLogging
  *
  * @author graywatson
  */
-internal class MagicEntries {
-
-    private val entryList = ArrayList<MagicEntry>()
+internal class MagicEntries(
+    private var entries: List<MagicEntry>,
+    private val names: Map<String, MagicEntry>
+) {
     private val firstByteEntryLists =
         Array(FIRST_BYTE_LIST_SIZE) { ArrayList<MagicEntry>() }
-
-    /**
-     * Read the entries so later we can find matches with them.
-     */
-    fun readEntries(
-        lineReader: Iterator<String>,
-        errorCallBack: ErrorCallBack?
-    ) {
-        val levelParents = arrayOfNulls<MagicEntry>(MAX_LEVELS)
-        var previousEntry: MagicEntry? = null
-        val parts = Array(4) { "" }
-        for (line in lineReader) {
-            // We already strip those out ahead
-            // skip blanks and comments
-            // if (line.isBlank() || line[0] == '#') continue
-
-            val entry: MagicEntry?
-            try {
-                // we need the previous entry because of mime-type, etc. which augment the previous line
-                entry = parseMagicLine(
-                    previousEntry, line, errorCallBack, parts
-                )
-                if (entry == null) continue
-            } catch (e: IllegalArgumentException) {
-                errorCallBack?.invoke(line, e.message, e)
-                continue
-            }
-
-            val level = entry.level
-            if (previousEntry == null && level != 0) {
-                errorCallBack?.invoke(
-                    line,
-                    "first entry of the file but the level $level should be 0",
-                    null
-                )
-                continue
-            }
-
-            if (level == 0) {
-                // top level entry
-                entryList.add(entry)
-            } else if (levelParents[level - 1] == null) {
-                errorCallBack?.invoke(
-                    line,
-                    "entry has level " + level + " but no parent entry with level " + (level - 1),
-                    null
-                )
-                continue
-            } else {
-                // we are a child of the one above us
-                levelParents[level - 1]!!.addChild(entry)
-            }
-            levelParents[level] = entry
-            previousEntry = entry
-        }
-    }
 
     /**
      * Optimize the magic entries by removing the first-bytes information into their own lists
      */
     fun optimizeFirstBytes() {
         // now we post process the entries and remove the first byte ones we can optimize
-        val iterator = entryList.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
+        val newEntries = ArrayList<MagicEntry>(entries.size)
+        for (entry in entries) {
             val startingBytes = entry.startsWithByte
-            if (startingBytes == null || startingBytes.isEmpty()) continue
+            if (startingBytes == null || startingBytes.isEmpty()) {
+                newEntries.add(entry)
+                continue
+            }
             val index = startingBytes[0].toInt() and 0xFF
             firstByteEntryLists[index].add(entry)
-            iterator.remove()
         }
+        newEntries.trimToSize()
+        entries = newEntries
     }
 
     /**
@@ -124,7 +71,7 @@ internal class MagicEntries {
                 findMatch(bytes.slice(dataFast.offset), dataFast)
             else ContentInfo(dataFast)
 
-        val data = findMatch(bytes, indirect, entryList)
+        val data = findMatch(bytes, indirect, entries)
         if (data != null)
             return if (data.indirect)
                 findMatch(bytes.slice(data.offset), data)
@@ -141,7 +88,7 @@ internal class MagicEntries {
         var partialMatchInfo: MagicEntry.ContentData? = null
         for (entry in entryList) {
             val info = entry.matchBytes(
-                bytes, indirect
+                bytes, names, indirect
             )?.takeIf { it.name != null } ?: continue
             if (info.indirect) {
                 logger.trace { "found indirect match $entry" }
@@ -173,5 +120,4 @@ internal class MagicEntries {
     companion object : KLogging()
 }
 
-private const val MAX_LEVELS = 20
 private const val FIRST_BYTE_LIST_SIZE = 256

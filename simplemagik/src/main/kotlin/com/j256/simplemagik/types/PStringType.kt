@@ -16,11 +16,17 @@
 
 package com.j256.simplemagik.types
 
-import com.j256.simplemagik.entries.MagicFormatter
-import com.j256.simplemagik.entries.MagicMatcher
+import com.j256.simplemagik.entries.*
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.combineToShort
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
+import kotlin.experimental.or
 
 data class PStringType(
     val comparison: StringComparison?,
@@ -97,4 +103,53 @@ fun PStringType(
         true
     }
     return PStringType(comparison, lengthType, lengthIncludesLength)
+}
+
+internal fun PStringType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, comparison != null)
+            .setAt(6, lengthIncludesLength)
+            .let {
+                if (comparison == null) it
+                else it.setAt(1, comparison.compactWhiteSpace)
+                    .setAt(2, comparison.optionalWhiteSpace)
+                    .setAt(3, comparison.caseInsensitiveLower)
+                    .setAt(4, comparison.caseInsensitiveUpper) or
+                        (comparison.operator.id shl 5).toByte()
+            }
+    )
+    stream.putCompactInt(lengthType)
+    if (comparison != null) {
+        stream.putCompactString(comparison.pattern)
+    }
+}
+
+internal fun readPStringType(stream: MemoryViewReadableStream<HeapViewByteBE>): PStringType {
+    val flags = stream.get()
+    val comparisonHas = flags.maskAt(0)
+    val lengthType = stream.getCompactInt()
+    val lengthIncludesLength = flags.maskAt(6)
+    val comparison = if (comparisonHas) {
+        val pattern = stream.getCompactString()
+        val operator = StringOperator.of((flags.toInt() ushr 2) and 7)
+                ?: throw IOException("Invalid string operator")
+        val compactWhiteSpace = flags.maskAt(1)
+        val optionalWhiteSpace = flags.maskAt(2)
+        val caseInsensitiveLower = flags.maskAt(3)
+        val caseInsensitiveUpper = flags.maskAt(4)
+        StringComparison(
+            pattern,
+            operator,
+            compactWhiteSpace,
+            optionalWhiteSpace,
+            caseInsensitiveLower,
+            caseInsensitiveUpper
+        )
+    } else null
+    return PStringType(
+        comparison,
+        lengthType,
+        lengthIncludesLength
+    )
 }

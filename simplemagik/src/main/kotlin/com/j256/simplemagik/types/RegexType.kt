@@ -16,11 +16,14 @@
 
 package com.j256.simplemagik.types
 
-import com.j256.simplemagik.entries.MagicFormatter
-import com.j256.simplemagik.entries.MagicMatcher
-import com.j256.simplemagik.entries.unescapeString
+import com.j256.simplemagik.entries.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 import org.tobi29.stdex.utf8ToArray
 import org.tobi29.stdex.utf8ToString
 
@@ -79,6 +82,33 @@ fun RegexType(
     return RegexType(
         regex.toRegex(options),
         maxOffset ?: 8 * 1024,
+        updateOffsetStart,
+        lines
+    )
+}
+
+internal fun RegexType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            .setAt(0, updateOffsetStart)
+            .setAt(1, lines)
+            .setAt(2, RegexOption.IGNORE_CASE in pattern.options)
+    )
+    stream.putCompactString(pattern.pattern)
+    stream.putCompactInt(maxOffset)
+}
+
+internal fun readRegexType(stream: MemoryViewReadableStream<HeapViewByteBE>): RegexType {
+    val flags = stream.get()
+    val options = HashSet<RegexOption>()
+    if (flags.maskAt(2)) options.add(RegexOption.IGNORE_CASE)
+    val pattern = stream.getCompactString().toRegex(options)
+    val maxOffset = stream.getCompactInt()
+    val updateOffsetStart = flags.maskAt(0)
+    val lines = flags.maskAt(1)
+    return RegexType(
+        pattern,
+        maxOffset,
         updateOffsetStart,
         lines
     )

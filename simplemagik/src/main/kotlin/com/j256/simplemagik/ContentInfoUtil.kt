@@ -17,7 +17,11 @@
 package com.j256.simplemagik
 
 import com.j256.simplemagik.entries.MagicEntries
+import com.j256.simplemagik.entries.MagicEntry
+import com.j256.simplemagik.entries.readMagicEntry
 import org.tobi29.arrays.sliceOver
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.viewBE
 import org.tobi29.logging.KLogging
 
 /**
@@ -48,27 +52,19 @@ import org.tobi29.logging.KLogging
 class ContentInfoUtil
 /**
  * Construct a magic utility using the magic file entries from a reader.
- *
- * @param lines
- * Iterator returning all lines of the magic database
- * @param errorCallBack
- * Call back which shows any problems with the magic entries loaded.
- * @throws IOException
- * If there was a problem reading the magic entries from the reader.
+ * @param data Binary magic data
  */(
-    lines: Iterator<String> = magic.iterator(),
-    errorCallBack: ErrorCallBack? = { error, description, e ->
-        if (e == null)
-            logger.debug { "Magic error: $error $description" }
-        else
-            logger.debug(e) { "Magic error: $error $description" }
-    }
+    data: ByteArray = magic
 ) {
-    private val magicEntries: MagicEntries =
-        MagicEntries().apply {
-            readEntries(lines, errorCallBack)
-            optimizeFirstBytes()
-        }
+    private val magicEntries: MagicEntries = run {
+        val stream = MemoryViewReadableStream(data.viewBE)
+        val entries = ArrayList<MagicEntry>()
+        val names = HashMap<String, MagicEntry>()
+        while (stream.hasRemaining) entries.add(readMagicEntry(stream, names))
+        val magicEntries = MagicEntries(entries, names)
+        magicEntries.optimizeFirstBytes()
+        magicEntries
+    }
 
     /**
      * Return the content type from the associated bytes or null if none of the magic entries matched.

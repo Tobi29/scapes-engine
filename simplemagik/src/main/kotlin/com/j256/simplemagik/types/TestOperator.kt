@@ -24,14 +24,17 @@ import kotlin.experimental.inv
 /**
  * Operators for tests. If no operator character then equals is assumed.
  */
-enum class TestOperator(private val prefixChar: Char) {
-    EQUALS('='),
-    NOT_EQUALS('!'),
-    GREATER_THAN('>'),
-    LESS_THAN('<'),
-    AND_ALL_SET('&'),
-    AND_ALL_CLEARED('^'),
-    NEGATE('~');
+enum class TestOperator(
+    private val prefixChar: Char,
+    internal val id: Int
+) {
+    EQUALS('=', 0),
+    NOT_EQUALS('!', 1),
+    GREATER_THAN('>', 2),
+    LESS_THAN('<', 3),
+    AND_ALL_SET('&', 4),
+    AND_ALL_CLEARED('^', 5),
+    NEGATE('~', 6);
 
     companion object {
         inline val DEFAULT_OPERATOR get() = EQUALS
@@ -49,6 +52,17 @@ enum class TestOperator(private val prefixChar: Char) {
                 }
             }
             return null
+        }
+
+        internal fun of(id: Int): TestOperator? = when (id) {
+            0 -> EQUALS
+            1 -> NOT_EQUALS
+            2 -> GREATER_THAN
+            3 -> LESS_THAN
+            4 -> AND_ALL_SET
+            5 -> AND_ALL_CLEARED
+            6 -> NEGATE
+            else -> null
         }
     }
 }

@@ -16,6 +16,14 @@
 
 package com.j256.simplemagik.entries
 
+import org.tobi29.arrays.sliceOver
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.utf8ToArray
+import org.tobi29.stdex.utf8ToString
+import kotlin.experimental.and
+
 internal fun unescapeString(pattern: String): String {
     val index = pattern.indexOf('\\')
     if (index < 0) {
@@ -152,4 +160,87 @@ private fun digit(char: Char, radix: Int) = when (char) {
     in 'a'..'z' -> (char - 'a' + 10).let { if (it < radix) it else -1 }
     in 'A'..'Z' -> (char - 'a' + 10).let { if (it < radix) it else -1 }
     else -> -1
+}
+
+internal fun WritableByteStream.putCompactShort(value: Short) = when (value) {
+    in 0..0xFE -> {
+        put(value.toByte())
+    }
+    else -> {
+        put(0xFF.toByte())
+        putShort(value)
+    }
+}
+
+internal fun WritableByteStream.putCompactInt(value: Int) = when (value) {
+    in 0..0xFD -> {
+        put(value.toByte())
+    }
+    in 0xFE..0xFFFF -> {
+        put(0xFE.toByte())
+        putShort(value.toShort())
+    }
+    else -> {
+        put(0xFF.toByte())
+        putInt(value)
+    }
+}
+
+internal fun WritableByteStream.putCompactLong(value: Long) = when (value) {
+    in 0L..0xFCL -> {
+        put(value.toByte())
+    }
+    in 0xFDL..0xFFFFL -> {
+        put(0xFD.toByte())
+        putShort(value.toShort())
+    }
+    in 0x10000L..0xFFFFFFFFL -> {
+        put(0xFE.toByte())
+        putInt(value.toInt())
+    }
+    else -> {
+        put(0xFF.toByte())
+        putLong(value)
+    }
+}
+
+internal fun WritableByteStream.putCompactString(value: String) {
+    val array = value.utf8ToArray()
+    putCompactInt(array.size)
+    put(array.sliceOver())
+}
+
+internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactShort(): Short {
+    val prefix = get()
+    return when (prefix) {
+        0xFF.toByte() -> getShort()
+        else -> prefix.toShort() and 0xFF
+    }
+}
+
+internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactInt(): Int {
+    val prefix = get()
+    return when (prefix) {
+        0xFE.toByte() -> getShort().toInt() and 0xFFFF
+        0xFF.toByte() -> getInt()
+        else -> prefix.toInt() and 0xFF
+    }
+}
+
+internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactLong(): Long {
+    val prefix = get()
+    return when (prefix) {
+        0xFD.toByte() -> getShort().toLong() and 0xFFFFL
+        0xFE.toByte() -> getInt().toLong() and 0xFFFFFFFFL
+        0xFF.toByte() -> getLong()
+        else -> prefix.toLong() and 0xFFL
+    }
+}
+
+internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactString(): String {
+    val size = getCompactInt()
+    val position = position
+    skip(size)
+    val buffer = buffer()
+    return buffer.array.utf8ToString(position + buffer.offset, size)
 }

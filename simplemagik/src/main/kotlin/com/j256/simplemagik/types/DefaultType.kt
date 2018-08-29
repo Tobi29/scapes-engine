@@ -19,6 +19,9 @@ package com.j256.simplemagik.types
 import com.j256.simplemagik.entries.MagicFormatter
 import com.j256.simplemagik.entries.MagicMatcher
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
 
 object DefaultType : MagicMatcher {
     override fun isMatch(
@@ -36,3 +39,10 @@ fun DefaultType(
     andValue: Long?,
     unsignedType: Boolean
 ): DefaultType = DefaultType
+
+internal fun DefaultType.write(stream: WritableByteStream) {
+}
+
+internal fun readDefaultType(stream: MemoryViewReadableStream<HeapViewByteBE>): DefaultType {
+    return DefaultType
+}

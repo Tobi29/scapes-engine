@@ -16,10 +16,15 @@
 
 package com.j256.simplemagik.types
 
-import com.j256.simplemagik.entries.MagicFormatter
-import com.j256.simplemagik.entries.MagicMatcher
-import com.j256.simplemagik.entries.decodeInt
+import com.j256.simplemagik.entries.*
 import org.tobi29.arrays.BytesRO
+import org.tobi29.io.HeapViewByteBE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewReadableStream
+import org.tobi29.io.WritableByteStream
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
+import kotlin.experimental.or
 
 data class SearchType(
     val comparison: StringComparison,
@@ -82,4 +87,46 @@ internal fun splitType(typeStr: String): Triple<String, Int?, String?> {
 
     }
     return Triple(split[0], maxOffset, flags)
+}
+
+internal fun SearchType.write(stream: WritableByteStream) {
+    stream.put(
+        0.toByte()
+            // Keep pattern for better compression
+            .let {
+                it.setAt(1, comparison.compactWhiteSpace)
+                    .setAt(2, comparison.optionalWhiteSpace)
+                    .setAt(3, comparison.caseInsensitiveLower)
+                    .setAt(4, comparison.caseInsensitiveUpper) or
+                        (comparison.operator.id shl 5).toByte()
+            }
+    )
+    stream.putCompactString(comparison.pattern)
+    stream.putCompactInt(maxOffset)
+}
+
+internal fun readSearchType(stream: MemoryViewReadableStream<HeapViewByteBE>): SearchType {
+    val flags = stream.get()
+    val comparison = run {
+        val pattern = stream.getCompactString()
+        val operator = StringOperator.of((flags.toInt() ushr 2) and 7)
+                ?: throw IOException("Invalid string operator")
+        val compactWhiteSpace = flags.maskAt(1)
+        val optionalWhiteSpace = flags.maskAt(2)
+        val caseInsensitiveLower = flags.maskAt(3)
+        val caseInsensitiveUpper = flags.maskAt(4)
+        StringComparison(
+            pattern,
+            operator,
+            compactWhiteSpace,
+            optionalWhiteSpace,
+            caseInsensitiveLower,
+            caseInsensitiveUpper
+        )
+    }
+    val maxOffset = stream.getCompactInt()
+    return SearchType(
+        comparison,
+        maxOffset
+    )
 }
