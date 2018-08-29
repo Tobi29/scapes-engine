@@ -20,7 +20,6 @@ import org.antlr.v4.runtime.*
 import org.antlr.v4.runtime.misc.ParseCancellationException
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.shader.*
-import org.tobi29.scapes.engine.shader.CallFunction
 
 internal fun externalDeclaration(
         context: ScapesShaderParser.TranslationUnitContext,
@@ -108,8 +107,8 @@ internal fun externalDeclaration(
         }
         current = current.translationUnit()
     }
-    profilerSection("Pack program data") {
-        return ShaderProgram(declarations, functions, shaders,
+    return profilerSection("Pack program data") {
+        ShaderProgram(declarations, functions, shaders,
                 outputSignature, uniforms, properties)
     }
 }

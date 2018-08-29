@@ -112,10 +112,9 @@ class GraphicsSystem(
                 val state = engine.state
                 executeDispatched(gl)
                 gl.setViewport(0, 0, gl.contentWidth, gl.contentHeight)
-                profilerSection("State") {
-                    if (state?.renderState(gl, delta, fboSizeDirty) != true)
-                        return@synchronized false
-                }
+                if (profilerSection("State") {
+                        state?.renderState(gl, delta, fboSizeDirty)
+                    } != true) return@synchronized false
                 fpsDebug.setValue(1.0 / delta)
                 textureDebug.setValue(gos.textureTracker.count())
                 vaoDebug.setValue(gos.vaoTracker.count())
