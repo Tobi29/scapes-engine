@@ -19,6 +19,7 @@ apply from: "$rootDir/resources/modulekotlinjvm.gradle"
 dependencies {
     expectedBy project(":profiler")
     compile project(":stdex-jvm")
+    compile project(":coroutines-jvm")
     compile project(":logging-jvm")
     compile project(":utils-jvm")
 }

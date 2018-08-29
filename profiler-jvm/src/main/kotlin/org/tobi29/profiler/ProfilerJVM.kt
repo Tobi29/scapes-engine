@@ -16,12 +16,15 @@
 
 package org.tobi29.profiler
 
+import kotlinx.coroutines.experimental.ThreadContextElement
+import kotlinx.coroutines.experimental.withContext
 import org.tobi29.logging.KLogging
 import org.tobi29.profiler.spi.ProfilerDispatcherProvider
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.spiLoad
 import kotlin.collections.set
+import kotlin.coroutines.experimental.CoroutineContext
 
 actual class Profiler {
     private val instance by ThreadLocal {
@@ -50,4 +53,37 @@ private object Dispatchers : KLogging() {
         ), { e ->
             logger.warn(e) { "Service configuration error" }
         }).mapNotNull { it.dispatcher() }.readOnly()
+}
+
+// TODO: Experimental
+suspend fun <R> profilerSectionSuspend(
+    name: String, receiver: suspend () -> R
+): R = withContext(newProfilerContext(name)) {
+    receiver()
+}
+
+@PublishedApi
+internal fun newProfilerContext(name: String): CoroutineContext =
+    ProfilerNodeContext(name)
+
+private class ProfilerNodeContext(
+    private val name: String
+) : ThreadContextElement<ProfilerHandle> {
+    companion object Key : CoroutineContext.Key<ProfilerNodeContext>
+
+    override val key: CoroutineContext.Key<ProfilerNodeContext> get() = Key
+
+    override fun updateThreadContext(
+        context: CoroutineContext
+    ): ProfilerHandle = profilerHandle!!.apply {
+        println("${Thread.currentThread().name}: Entered $name")
+        enterNode(name)
+    }
+
+    override fun restoreThreadContext(
+        context: CoroutineContext, oldState: ProfilerHandle
+    ) {
+        println("${Thread.currentThread().name}: Exited $name")
+        oldState.exitNode(name)
+    }
 }
