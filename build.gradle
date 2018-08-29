@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.2.60"
+    def kotlinVersion = "1.2.61"
     def dokkaVersion = "0.9.17"
 
     repositories {
@@ -46,12 +46,12 @@ allprojects {
 }
 
 ext {
-    kotlinVersion = "1.2.60"
+    kotlinVersion = "1.2.61"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
 
-    kotlinxCoroutinesVersion = "0.24.0"
+    kotlinxCoroutinesVersion = "0.25.0"
     kotlinxCoroutines = { module ->
         "org.jetbrains.kotlinx:$module-common:$kotlinxCoroutinesVersion"
     }
@@ -69,7 +69,7 @@ ext {
     spek = { module -> "org.spekframework.spek2:$module:$spekVersion" }
     spekJVM = { module -> spek("$module-jvm") }
 
-    lwjglVersion = "3.1.6"
+    lwjglVersion = "3.2.0"
     lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 
     webKTBindingsVersion = "0.0.5"
@@ -77,7 +77,7 @@ ext {
         "com.github.Tobi29.WebKTBindings:$module:$webKTBindingsVersion"
     }
 
-    junitJupiterVersion = "5.1.1"
+    junitJupiterVersion = "5.2.0"
     junitJupiterJVM =
             { module -> "org.junit.jupiter:$module:$junitJupiterVersion" }
 
@@ -87,14 +87,14 @@ ext {
     antlrVersion = "4.7.1"
     antlrJVM = { module -> "org.antlr:$module:$antlrVersion" }
 
-    mariaDBJavaClientVersion = "1.7.3"
+    mariaDBJavaClientVersion = "1.7.4"
     mariaDBJavaClientJVM =
             { module -> "org.mariadb.jdbc:$module:$mariaDBJavaClientVersion" }
 
-    sqliteJDBCVersion = "3.21.0.1"
+    sqliteJDBCVersion = "3.23.1"
     sqliteJDBCJVM = { module -> "org.xerial:$module:$sqliteJDBCVersion" }
 
-    sqljetVersion = "1.1.10"
+    sqljetVersion = "1.1.11"
     sqljetJVM = { module -> "org.tmatesoft.sqljet:$module:$sqljetVersion" }
 
     jlayerVersion = "1.0.1"
@@ -107,7 +107,4 @@ ext {
 
     jorbisVersion = "0.0.17"
     jorbisJVM = { module -> "org.jcraft:$module:$jorbisVersion" }
-
-    lwjglVersion = "3.1.6"
-    lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 }
