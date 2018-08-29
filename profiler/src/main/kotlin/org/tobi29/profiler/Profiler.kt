@@ -91,15 +91,16 @@ class Node(name: Lazy<String>, val parent: Node? = null) {
 internal val profilerHandle: ProfilerHandle?
     get() = profiler?.current()
 
-inline fun <R> profilerSection(name: String, receiver: () -> R): R =
-    profilerHandle.let { handle ->
-        handle?.enterNode(name)
-        try {
-            receiver()
-        } finally {
-            handle?.exitNode(name)
-        }
+inline fun <R> profilerSection(
+    name: String, crossinline receiver: () -> R
+): R = profilerHandle.let { handle ->
+    handle?.enterNode(name)
+    try {
+        receiver()
+    } finally {
+        handle?.exitNode(name)
     }
+}
 
 interface ProfilerDispatcher {
     fun enterNode(name: String)
