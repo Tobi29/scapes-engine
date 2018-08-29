@@ -286,12 +286,12 @@ expect fun stbtt_IsGlyphEmpty(
 expect fun stbtt_GetCodepointShape(
     info: STBTTFontinfo,
     unicode_codepoint: Int
-): STBTTVertexBuffer
+): STBTTVertexBuffer?
 
 expect fun stbtt_GetGlyphShape(
     info: STBTTFontinfo,
     glyph_index: Int
-): STBTTVertexBuffer
+): STBTTVertexBuffer?
 
 expect fun stbtt_FreeShape(
     info: STBTTFontinfo,
