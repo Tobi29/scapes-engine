@@ -98,3 +98,21 @@ inline fun Byte.toggleAt(index: Int): Byte = toggle(bitMaskB(index))
 inline fun Int.toggleAt(index: Int): Int = toggle(bitMaskI(index))
 
 inline fun Long.toggleAt(index: Int): Long = toggle(bitMaskL(index))
+
+inline fun Byte.set(mask: Byte, value: Boolean): Byte =
+    if (value) set(mask) else unset(mask)
+
+inline fun Int.set(mask: Int, value: Boolean): Int =
+    if (value) set(mask) else unset(mask)
+
+inline fun Long.set(mask: Long, value: Boolean): Long =
+    if (value) set(mask) else unset(mask)
+
+inline fun Byte.setAt(index: Int, value: Boolean): Byte =
+    if (value) setAt(index) else unsetAt(index)
+
+inline fun Int.setAt(index: Int, value: Boolean): Int =
+    if (value) setAt(index) else unsetAt(index)
+
+inline fun Long.setAt(index: Int, value: Boolean): Long =
+    if (value) setAt(index) else unsetAt(index)
