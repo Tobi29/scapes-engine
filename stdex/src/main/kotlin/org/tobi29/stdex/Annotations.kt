@@ -18,28 +18,12 @@ package org.tobi29.stdex
 
 import kotlin.reflect.KClass
 
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.CONSTRUCTOR)
-expect annotation class JvmOverloads()
+// Common annotations
 
-@Target(
-    AnnotationTarget.FUNCTION,
-    AnnotationTarget.PROPERTY,
-    AnnotationTarget.PROPERTY_GETTER,
-    AnnotationTarget.PROPERTY_SETTER
-)
-expect annotation class JvmStatic()
-
-@Target(
-    AnnotationTarget.FUNCTION,
-    AnnotationTarget.PROPERTY_GETTER,
-    AnnotationTarget.PROPERTY_SETTER,
-    AnnotationTarget.FILE
-)
-expect annotation class JvmName(val name: String)
-
-@Target(AnnotationTarget.FILE)
-expect annotation class JvmMultifileClass()
-
+/**
+ * Function might throw any of [exceptionClasses] in valid execution of the
+ * program
+ */
 @Target(
     AnnotationTarget.FUNCTION,
     AnnotationTarget.PROPERTY_GETTER,
@@ -50,12 +34,117 @@ expect annotation class Throws(
     vararg val exceptionClasses: KClass<out Throwable>
 )
 
-@Target(AnnotationTarget.FIELD)
-expect annotation class JvmField()
-
-@Target(AnnotationTarget.FIELD)
+/**
+ * Field should be accessible from multiple threads without further
+ * synchronization by providing sufficient memory barriers for accesses
+ */
+@Target(
+    AnnotationTarget.FIELD
+)
 expect annotation class Volatile()
 
+/**
+ * Small inlined function, which should never be referenced directly after
+ * compilation by the binary
+ *
+ * **Note:** Should have `@Suppress("NOTHING_TO_INLINE")` as needed
+ *
+ * **Note:** If possible might imply something comparable to
+ * `kotlin.internal.InlineOnly` in the future
+ */
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class InlineUtility
+
+/**
+ * Similar to [InlineUtility] but implies that the bulk of the implementation
+ * is provided by the platform
+ *
+ * **Note:** Should have `@Suppress("NOTHING_TO_INLINE")` as needed
+ *
+ * **Note:** If possible might imply something comparable to
+ * `kotlin.internal.InlineOnly` in the future
+ */
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class PlatformProvidedImplementation
+
+/**
+ * Constant property, consider using `const` modifier in the future depending
+ * in its specification
+ */
+@Target(
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+@Retention(AnnotationRetention.SOURCE)
+annotation class Constant
+
+// JVM specific annotations
+
+/**
+ * Cross-platform version of `kotlin.jvm.JvmOverloads`
+ */
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.CONSTRUCTOR
+)
+expect annotation class JvmOverloads()
+
+/**
+ * Cross-platform version of `kotlin.jvm.JvmStatic`
+ */
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER
+)
+expect annotation class JvmStatic()
+
+/**
+ * Cross-platform version of `kotlin.jvm.JvmName`
+ */
+@Target(
+    AnnotationTarget.FUNCTION,
+    AnnotationTarget.PROPERTY_GETTER,
+    AnnotationTarget.PROPERTY_SETTER,
+    AnnotationTarget.FILE
+)
+expect annotation class JvmName(val name: String)
+
+/**
+ * Cross-platform version of `kotlin.jvm.JvmMultifileClass`
+ */
+@Target(
+    AnnotationTarget.FILE
+)
+expect annotation class JvmMultifileClass()
+
+/**
+ * Cross-platform version of `kotlin.jvm.JvmField`
+ */
+@Target(
+    AnnotationTarget.FIELD
+)
+expect annotation class JvmField()
+
+// JS specific annotations
+
+/**
+ * Cross-platform version of `kotlin.js.JsField`
+ */
 @Target(
     AnnotationTarget.CLASS,
     AnnotationTarget.FUNCTION,
@@ -65,4 +154,3 @@ expect annotation class Volatile()
     AnnotationTarget.PROPERTY_SETTER
 )
 expect annotation class JsName(val name: String)
-
