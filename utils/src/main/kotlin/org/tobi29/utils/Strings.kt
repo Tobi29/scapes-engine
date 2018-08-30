@@ -16,6 +16,8 @@
 
 package org.tobi29.utils
 
+import org.tobi29.stdex.JvmName
+
 /**
  * Creates a hash from the given [String]
  * @receiver String to create the hash from
@@ -65,6 +67,7 @@ fun Iterable<Pair<String, String>>.toRegexReplace() =
  * Assembles a sequence of regex replace operations into a function
  * @return Callable function applying all the replacements on a given string
  */
+@JvmName("toRegexReplaceRegex")
 fun Iterable<Pair<Regex, String>>.toRegexReplace(): (String) -> String =
     { initialStr ->
         fold(initialStr) { str, (regex, replace) ->
