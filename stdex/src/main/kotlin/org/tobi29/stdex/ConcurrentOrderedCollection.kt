@@ -31,31 +31,44 @@ class ConcurrentOrderedCollection<T>(
     private val comparator: Comparator<T> = DummyComparator()
 ) : AbstractCollection<T>(), MutableCollection<T> {
     private val uidCounter = AtomicLong(Long.MIN_VALUE)
-    private val set = ConcurrentSortedSet<Entry>()
+    private val set = ConcurrentSortedSet<Entry<T>>()
 
     override val size get() = set.size
 
     override fun isEmpty() = set.isEmpty()
 
-    override fun add(element: T) = set.add(Entry(element))
+    override fun add(element: T) =
+        set.add(Entry(element, nextUid(), comparator))
 
     override fun addAll(elements: Collection<T>) = elements.any { add(it) }
 
     override fun clear() = set.clear()
 
-    override fun iterator() = set.iterator().let { iterator ->
-        object : MutableIterator<T> {
-            override fun remove() = iterator.remove()
-            override fun hasNext() = iterator.hasNext()
-            override fun next() = iterator.next().value
+    override fun iterator(): MutableIterator<T> =
+        IteratorImpl(set.iterator())
+
+    override fun remove(element: T): Boolean {
+        val iterator = iterator()
+        while (iterator.hasNext()) {
+            if (iterator.next() == element) {
+                iterator.remove()
+                return true
+            }
         }
+        return false
     }
 
-    override fun remove(element: T) =
-        set.remove(Entry(element, 0))
-
-    override fun removeAll(elements: Collection<T>) =
-        elements.any { remove(it) }
+    override fun removeAll(elements: Collection<T>): Boolean {
+        val iterator = iterator()
+        var modified = false
+        while (iterator.hasNext()) {
+            if (iterator.next() in elements) {
+                iterator.remove()
+                modified = true
+            }
+        }
+        return modified
+    }
 
     override fun retainAll(elements: Collection<T>): Boolean {
         val iterator = iterator()
@@ -70,7 +83,7 @@ class ConcurrentOrderedCollection<T>(
     }
 
     override fun contains(element: T): Boolean =
-        set.contains(Entry(element, 0L))
+        any { it == element }
 
     override fun containsAll(elements: Collection<T>) =
         elements.all { contains(it) }
@@ -89,36 +102,42 @@ class ConcurrentOrderedCollection<T>(
 
     override fun toString() = joinToString(prefix = "[", postfix = "]")
 
-    private inner class Entry(
+    private fun nextUid() = uidCounter.incrementAndGet()
+
+    private class DummyComparator<T> : Comparator<T> {
+        override fun compare(a: T, b: T) = 0
+    }
+
+    private class Entry<T>(
         val value: T,
-        private val uid: Long = nextUid()
-    ) : Comparable<Entry> {
-        override fun compareTo(other: Entry) =
+        private val uid: Long,
+        private val comparator: Comparator<T>
+    ) : Comparable<Entry<T>> {
+        override fun compareTo(other: Entry<T>) =
             comparator.compare(value, other.value).let {
-                if (uid == 0L || other.uid == 0L) it
-                else if (uid > other.uid) 1
-                else if (uid < other.uid) -1
-                else it
+                when {
+                    it != 0 -> it
+                    uid > other.uid -> 1
+                    uid < other.uid -> -1
+                    else -> 0
+                }
             }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
-            if (other == null || other !is ConcurrentOrderedCollection<*>.Entry)
+            if (other == null || other !is Entry<*>)
                 return false
-            return value == other.value && (uid == other.uid || uid == 0L || other.uid == 0L)
+            return uid == other.uid && value == other.value
         }
 
         override fun hashCode(): Int = value?.hashCode() ?: 0
     }
 
-    private fun nextUid(): Long {
-        while (true) {
-            val uid = uidCounter.incrementAndGet()
-            if (uid != 0L) return uid
-        }
+    private class IteratorImpl<T>(
+        val iterator: MutableIterator<Entry<T>>
+    ) : MutableIterator<T> {
+        override fun remove() = iterator.remove()
+        override fun hasNext() = iterator.hasNext()
+        override fun next() = iterator.next().value
     }
-}
-
-private class DummyComparator<T> : Comparator<T> {
-    override fun compare(a: T, b: T) = 0
 }
