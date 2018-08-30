@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.tobi29.stdex
+package org.tobi29.utils
 
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
 
-object StringUtilTests : Spek({
+object StringsTests : Spek({
     describe("doing a batch string replace on a string") {
         listOf(
             "ABC" to "123",
@@ -38,7 +38,7 @@ object StringUtilTests : Spek({
                 }
             }
         }
-        sequenceOf(
+        listOf(
             "[0-8]+" to "A",
             "[0-9]+" to "B"
         ).toRegexReplace().let { replacements ->
