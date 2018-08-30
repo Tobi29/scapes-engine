@@ -81,13 +81,9 @@ class ConcurrentOrderedCollection<T>(
         elements.all { contains(it) }
 
     override fun equals(other: Any?): Boolean {
-        if (other !is ConcurrentOrderedCollection<*>) {
-            return false
-        }
-        return other === this || size == other.size &&
-                set.zip(other.set).all { (a, b) ->
-                    a.value == b.value
-                }
+        if (other === this) return true
+        if (other !is Set<*>) return false
+        return size == other.size && containsAll(other)
     }
 
     override fun hashCode() = set.sumBy { (it.value?.hashCode() ?: 0) }
