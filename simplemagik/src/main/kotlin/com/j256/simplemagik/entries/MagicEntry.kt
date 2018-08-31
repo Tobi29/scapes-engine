@@ -294,9 +294,12 @@ internal fun readMagicEntry(
         stream.buffer().slice(stream.position, childrenBufferSize)
     )
     stream.skip(childrenBufferSize)
-    val children = ArrayList<MagicEntry>()
-    while (childrenStream.hasRemaining) {
-        children.add(readMagicEntry(childrenStream, names, level + 1))
+    val children = lazy {
+        ArrayList<MagicEntry>().apply {
+            while (childrenStream.hasRemaining) {
+                add(readMagicEntry(childrenStream, names, level + 1))
+            }
+        }
     }
     val entry = MagicEntry(
         level,
