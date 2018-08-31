@@ -23,10 +23,7 @@ import com.j256.simplemagik.types.NameType
 import com.j256.simplemagik.types.UseType
 import com.j256.simplemagik.types.parseId3
 import org.tobi29.arrays.BytesRO
-import org.tobi29.io.HeapViewByteBE
-import org.tobi29.io.IOException
-import org.tobi29.io.MemoryViewReadableStream
-import org.tobi29.io.WritableByteStream
+import org.tobi29.io.*
 import org.tobi29.logging.KLogging
 import org.tobi29.stdex.*
 import kotlin.experimental.or
@@ -49,10 +46,38 @@ data class MagicEntry(
     val clearFormat: Boolean,
     val isOptional: Boolean,
     val formatter: MagicFormatter?,
-    val children: List<MagicEntry>
+    val children: Lazy<List<MagicEntry>>
 ) {
     internal val startsWithByte: ByteArray?
         get() = if (offset != 0) null else matcher.startingBytes
+
+    constructor(
+        level: Int,
+        name: String?,
+        mimeType: String?,
+        matcher: MagicMatcher,
+        offset: Int,
+        offsetInfo: OffsetInfo?,
+        addOffset: Boolean,
+        formatSpacePrefix: Boolean,
+        clearFormat: Boolean,
+        isOptional: Boolean,
+        formatter: MagicFormatter?,
+        children: List<MagicEntry>
+    ) : this(
+        level,
+        name,
+        mimeType,
+        matcher,
+        offset,
+        offsetInfo,
+        addOffset,
+        formatSpacePrefix,
+        clearFormat,
+        isOptional,
+        formatter,
+        lazy { children }
+    )
 
     /**
      * Main processing method which can go recursive.
@@ -97,6 +122,7 @@ data class MagicEntry(
         if (matcher is UseType) return (names[matcher.name]
                 ?: error("Unknown name: ${matcher.name}"))
             .matchBytes(bytes, names, indirect, contentData, prevOffset, level)
+        val children = children.value
         if (matcher is IndirectType) contentData.indirect = true
         if (children.isEmpty()) contentData.offset = offset
         logger.trace { "matched data: $this: $contentData" }
@@ -225,10 +251,14 @@ internal fun MagicEntry.write(stream: WritableByteStream) {
     if (formatter != null) {
         formatter.write(stream)
     }
-    stream.putCompactInt(children.size)
-    for (child in children) {
-        child.write(stream)
+    val childrenStream = MemoryViewStreamDefault()
+    for (child in children.value) {
+        child.write(childrenStream)
     }
+    childrenStream.flip()
+    val childrenBuffer = childrenStream.bufferSlice()
+    stream.putCompactInt(childrenBuffer.size)
+    stream.put(childrenBuffer)
 }
 
 internal fun readMagicEntry(
@@ -259,8 +289,15 @@ internal fun readMagicEntry(
     val formatter = if (formatterHas) {
         readMagicFormatter(stream)
     } else null
-    val children = (0 until stream.getCompactInt())
-        .map { readMagicEntry(stream, names, level + 1) }
+    val childrenBufferSize = stream.getCompactInt()
+    val childrenStream = MemoryViewReadableStream(
+        stream.buffer().slice(stream.position, childrenBufferSize)
+    )
+    stream.skip(childrenBufferSize)
+    val children = ArrayList<MagicEntry>()
+    while (childrenStream.hasRemaining) {
+        children.add(readMagicEntry(childrenStream, names, level + 1))
+    }
     val entry = MagicEntry(
         level,
         name,
