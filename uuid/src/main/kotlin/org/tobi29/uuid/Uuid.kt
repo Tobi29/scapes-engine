@@ -24,8 +24,8 @@ expect class Uuid(
     mostSignificantBits: Long,
     leastSignificantBits: Long
 ) {
-    open fun getMostSignificantBits(): Long
-    open fun getLeastSignificantBits(): Long
+    fun getMostSignificantBits(): Long
+    fun getLeastSignificantBits(): Long
 }
 
 expect fun randomUuid(): Uuid

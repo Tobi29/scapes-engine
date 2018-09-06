@@ -41,8 +41,8 @@ actual class Uuid actual constructor(
     private val mostSignificantBits: Long,
     private val leastSignificantBits: Long
 ) {
-    actual open fun getMostSignificantBits() = mostSignificantBits
-    actual open fun getLeastSignificantBits() = leastSignificantBits
+    actual fun getMostSignificantBits() = mostSignificantBits
+    actual fun getLeastSignificantBits() = leastSignificantBits
 
     override fun toString(): String =
         "${(mostSignificantBits ushr 32
