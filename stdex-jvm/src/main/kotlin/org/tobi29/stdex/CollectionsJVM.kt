@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 import java.util.concurrent.ConcurrentSkipListMap
@@ -182,29 +180,45 @@ actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractMutableSet<T>(),
     override fun toString() = set.toString()
 }
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Collection<T>.readOnly(): Collection<T> =
     java.util.Collections.unmodifiableCollection(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> List<T>.readOnly(): List<T> =
     java.util.Collections.unmodifiableList(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Set<T>.readOnly(): Set<T> =
     java.util.Collections.unmodifiableSet(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> =
     java.util.Collections.unmodifiableMap(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Collection<T>.synchronized(): Collection<T> =
     java.util.Collections.synchronizedCollection(this)
 
 @JvmName("synchronizedMut")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> =
     java.util.Collections.synchronizedCollection(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> List<T>.synchronized(): List<T> =
     java.util.Collections.synchronizedList(this)
 
 @JvmName("synchronizedMut")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
     java.util.Collections.synchronizedList(this)
 
@@ -212,16 +226,24 @@ actual inline fun <T> Set<T>.synchronized(): Set<T> =
     java.util.Collections.synchronizedSet(this)
 
 @JvmName("synchronizedMut")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> =
     java.util.Collections.synchronizedSet(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> =
     java.util.Collections.synchronizedMap(this)
 
 @JvmName("synchronizedMut")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
     java.util.Collections.synchronizedMap(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
     java.util.EnumMap<E, V>(E::class.java)
 
@@ -239,8 +261,7 @@ actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
     putIfAbsent(key, value)
 
 actual inline fun <K, V : Any> MutableMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V
+    key: K, block: (K, V?) -> V
 ): V {
     return if (this is ConcurrentMap) {
         this.computeAlways(key, block)
@@ -253,8 +274,7 @@ actual inline fun <K, V : Any> MutableMap<K, V>.computeAlways(
 }
 
 actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V
+    key: K, block: (K, V?) -> V
 ): V {
     while (true) {
         var old = this[key]
@@ -279,8 +299,7 @@ actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
 
 @JvmName("computeAlwaysNullable")
 actual inline fun <K, V> MutableMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V?
+    key: K, block: (K, V?) -> V?
 ): V? {
     return if (this is ConcurrentMap) {
         this.computeAlways(key, block)
@@ -298,8 +317,7 @@ actual inline fun <K, V> MutableMap<K, V>.computeAlways(
 
 @JvmName("computeAlwaysNullable")
 actual inline fun <K, V> ConcurrentMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V?
+    key: K, block: (K, V?) -> V?
 ): V? {
     while (true) {
         var old = this[key]
@@ -329,8 +347,7 @@ actual inline fun <K, V> ConcurrentMap<K, V>.computeAlways(
 }
 
 actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V
+    key: K, block: (K) -> V
 ): V {
     return if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
@@ -343,8 +360,7 @@ actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
 }
 
 actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V
+    key: K, block: (K) -> V
 ): V {
     this[key]?.let { return it }
     val new = block(key)
@@ -353,8 +369,7 @@ actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
 
 @JvmName("computeAbsentNullable")
 actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V?
+    key: K, block: (K) -> V?
 ): V? {
     return if (this is ConcurrentMap) {
         // Should we try to eliminate the second inline of block?
@@ -368,16 +383,15 @@ actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
 
 @JvmName("computeAbsentNullable")
 actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V?
+    key: K, block: (K) -> V?
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
     return putAbsent(key, new) ?: new
 }
 
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> MutableMap<K, V>.removeEqual(
-    key: K,
-    value: V
+    key: K, value: V
 ): Boolean = remove(key, value)

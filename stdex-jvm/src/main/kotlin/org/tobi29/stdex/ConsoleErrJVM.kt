@@ -14,108 +14,148 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Int) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Long) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Byte) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Short) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Char) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Boolean) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Float) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: Double) {
     System.err.print(message)
 }
 
 /** Prints the given message to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerr(message: CharArray) {
     System.err.print(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Int) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Long) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Byte) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Short) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Char) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Boolean) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Float) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: Double) {
     System.err.println(message)
 }
 
 /** Prints the given message and newline to the standard error stream. */
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 inline fun printerrln(message: CharArray) {
     System.err.println(message)
 }
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun printerr(message: Any?) {
     System.err.print(message)
 }
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun printerrln(message: Any?) {
     System.err.println(message)
 }
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun printerrln() {
     System.err.println()
 }

@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: BooleanArray,
     dest: BooleanArray,
@@ -28,6 +28,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: ByteArray,
     dest: ByteArray,
@@ -37,6 +39,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: ShortArray,
     dest: ShortArray,
@@ -46,6 +50,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: IntArray,
     dest: IntArray,
@@ -55,6 +61,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: LongArray,
     dest: LongArray,
@@ -64,6 +72,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: FloatArray,
     dest: FloatArray,
@@ -73,6 +83,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: DoubleArray,
     dest: DoubleArray,
@@ -82,6 +94,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: CharArray,
     dest: CharArray,
@@ -91,6 +105,8 @@ internal actual inline fun copyArray(
 ) = System.arraycopy(src, offsetSrc, dest, offsetDest, length)
 
 @PublishedApi
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun <T> copyArray(
     src: Array<out T>,
     dest: Array<in T>,

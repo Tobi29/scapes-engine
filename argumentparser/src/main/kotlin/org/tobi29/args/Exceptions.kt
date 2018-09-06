@@ -16,6 +16,7 @@
 
 package org.tobi29.args
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.Either
 import org.tobi29.utils.EitherLeft
 import org.tobi29.utils.EitherRight
@@ -140,7 +141,7 @@ class InvalidOptionArgumentException(
     val option: CommandOption,
     val value: List<String>,
     message: String =
-    "Invalid option for ${option.simpleName} ${value.joinToString(" ")}"
+        "Invalid option for ${option.simpleName} ${value.joinToString(" ")}"
 ) : InvalidCommandLineException(tokens, commandLine, message)
 
 @Suppress("UNCHECKED_CAST")
@@ -188,12 +189,13 @@ fun <E : InvalidTokensException> E.attach(
     else -> throw IllegalArgumentException("Invalid exception: $this")
 }
 
-inline fun <R> withArgs(
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun <R> withTokens(
     tokens: Iterable<String>? = null,
     block: () -> R
-): R =
-    try {
-        block()
-    } catch (e: InvalidTokensException) {
-        throw e.attach(tokens?.toList())
-    }
+): R = try {
+    block()
+} catch (e: InvalidTokensException) {
+    throw e.attach(tokens?.toList())
+}

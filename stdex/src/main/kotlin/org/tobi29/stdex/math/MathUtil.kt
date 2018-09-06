@@ -18,6 +18,8 @@
 
 package org.tobi29.stdex.math
 
+import org.tobi29.stdex.Constant
+import org.tobi29.stdex.InlineUtility
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -25,23 +27,31 @@ import kotlin.math.min
 /**
  * Estimate for `pi * 0.5`
  */
-inline val HALF_PI get() = PI * 0.5
+@Constant
+inline val HALF_PI
+    get() = PI * 0.5
 
 /**
  * Estimate for `pi * 2.0`
  * Equivalent to the maximum of a full circle in radians
  */
-inline val TWO_PI get() = PI * 2.0
+@Constant
+inline val TWO_PI
+    get() = PI * 2.0
 
 /**
  * Converts radians to degrees by multiplying
  */
-inline val RAD_2_DEG get() = 180.0 / PI
+@Constant
+inline val RAD_2_DEG
+    get() = 180.0 / PI
 
 /**
  * Converts degrees into radians by multiplying
  */
-inline val DEG_2_RAD get() = PI / 180.0
+@Constant
+inline val DEG_2_RAD
+    get() = PI / 180.0
 
 /**
  * Returns [value2] if [value1] is less than [value2], [value3] if [value1] is
@@ -51,6 +61,8 @@ inline val DEG_2_RAD get() = PI / 180.0
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun clamp(value1: Int, value2: Int, value3: Int): Int =
     max(value2, min(value3, value1))
 
@@ -62,6 +74,8 @@ inline fun clamp(value1: Int, value2: Int, value3: Int): Int =
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun clamp(value1: Long, value2: Long, value3: Long): Long =
     max(value2, min(value3, value1))
 
@@ -73,6 +87,8 @@ inline fun clamp(value1: Long, value2: Long, value3: Long): Long =
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun clamp(value1: Float, value2: Float, value3: Float): Float =
     max(value2, min(value3, value1))
 
@@ -84,6 +100,8 @@ inline fun clamp(value1: Float, value2: Float, value3: Float): Float =
  * @param value3 The maximum value
  * @return [value1] forced into range between [value2] and [value3]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun clamp(value1: Double, value2: Double, value3: Double): Double =
     max(value2, min(value3, value1))
 
@@ -96,6 +114,8 @@ inline fun clamp(value1: Double, value2: Double, value3: Double): Double =
  * @param ratio The ratio, should be in range `0.0` to `1.0`
  * @return [value1] and [value2] mixed together
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun mix(value1: Float, value2: Float, ratio: Float): Float =
     (1.0f - ratio) * value1 + ratio * value2
 
@@ -109,6 +129,8 @@ inline fun mix(value1: Float, value2: Float, ratio: Float): Float =
  * @param ratio The ratio, should be in range `0.0` to `1.0`
  * @return [value1] and [value2] mixed together
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun mix(value1: Double, value2: Double, ratio: Double): Double =
     (1.0 - ratio) * value1 + ratio * value2
 
@@ -117,6 +139,8 @@ inline fun mix(value1: Double, value2: Double, ratio: Double): Double =
  * @param value The value
  * @return Square value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqr(value: Int): Int = value * value
 
 /**
@@ -124,6 +148,8 @@ inline fun sqr(value: Int): Int = value * value
  * @param value The value
  * @return Square value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqr(value: Long): Long = value * value
 
 /**
@@ -131,6 +157,8 @@ inline fun sqr(value: Long): Long = value * value
  * @param value The value
  * @return Square value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqr(value: Float): Float = value * value
 
 /**
@@ -138,6 +166,8 @@ inline fun sqr(value: Float): Float = value * value
  * @param value The value
  * @return Square value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqr(value: Double): Double = value * value
 
 /**
@@ -145,6 +175,8 @@ inline fun sqr(value: Double): Double = value * value
  * @param value The value
  * @return Square value of [value], negative if [value] is negative
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqrNoAbs(value: Int): Int {
     val sqr = sqr(value)
     return if (value < 0) -sqr else sqr
@@ -155,6 +187,8 @@ inline fun sqrNoAbs(value: Int): Int {
  * @param value The value
  * @return Square value of [value], negative if [value] is negative
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqrNoAbs(value: Long): Long {
     val sqr = sqr(value)
     return if (value < 0) -sqr else sqr
@@ -165,6 +199,8 @@ inline fun sqrNoAbs(value: Long): Long {
  * @param value The value
  * @return Square value of [value], negative if [value] is negative
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqrNoAbs(value: Double): Double {
     val sqr = sqr(value)
     return if (value < 0) -sqr else sqr
@@ -175,6 +211,8 @@ inline fun sqrNoAbs(value: Double): Double {
  * @param value The value
  * @return Square value of [value], negative if [value] is negative
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun sqrNoAbs(value: Float): Float {
     val sqr = sqr(value)
     return if (value < 0) -sqr else sqr
@@ -185,6 +223,8 @@ inline fun sqrNoAbs(value: Float): Float {
  * @param value The value
  * @return Square value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun cbe(value: Int): Int = value * value * value
 
 /**
@@ -192,6 +232,8 @@ inline fun cbe(value: Int): Int = value * value * value
  * @param value The value
  * @return Cube value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun cbe(value: Long): Long = value * value * value
 
 /**
@@ -199,6 +241,8 @@ inline fun cbe(value: Long): Long = value * value * value
  * @param value The value
  * @return Cube value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun cbe(value: Float): Float = value * value * value
 
 /**
@@ -206,6 +250,8 @@ inline fun cbe(value: Float): Float = value * value * value
  * @param value The value
  * @return Cube value of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun cbe(value: Double): Double = value * value * value
 
 /**
@@ -213,6 +259,8 @@ inline fun cbe(value: Double): Double = value * value * value
  * @param value The value
  * @return Returns the logarithm with base 2 of [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun lb(value: Int): Int {
     if (value == 0) {
         throw IllegalArgumentException("Calling lb on 0 is not allowed")
@@ -227,6 +275,8 @@ inline fun lb(value: Int): Int {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline infix fun Float.remP(value: Float): Float {
     val mod = this % value
     return if (mod < 0.0f) {
@@ -243,6 +293,8 @@ inline infix fun Float.remP(value: Float): Float {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline infix fun Double.remP(value: Double): Double {
     val mod = this % value
     return if (mod < 0.0) {
@@ -259,6 +311,8 @@ inline infix fun Double.remP(value: Double): Double {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline infix fun Int.remP(value: Int): Int {
     val mod = this % value
     return if (mod < 0) {
@@ -275,6 +329,8 @@ inline infix fun Int.remP(value: Int): Int {
  * @receiver The dividend
  * @return Returns the modulus of the given number and [value]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline infix fun Long.remP(value: Long): Long {
     val mod = this % value
     return if (mod < 0L) {
@@ -365,22 +421,30 @@ expect fun clz(value: Int): Int
  * Converts the [Float] from degrees into radians
  * @return Value of the [Float] in radians
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Float.toRad(): Float = this * DEG_2_RAD.toFloat()
 
 /**
  * Converts the [Double] from degrees into radians
  * @return Value of the [Double] in radians
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Double.toRad(): Double = this * DEG_2_RAD
 
 /**
  * Converts the [Float] from radians into degrees
  * @return Value of the [Float] in degrees
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Float.toDeg(): Float = this * RAD_2_DEG.toFloat()
 
 /**
  * Converts the [Double] from radians into degrees
  * @return Value of the [Double] in degrees
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Double.toDeg(): Double = this * RAD_2_DEG

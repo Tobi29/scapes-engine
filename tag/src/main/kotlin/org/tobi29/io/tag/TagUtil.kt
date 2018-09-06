@@ -14,40 +14,67 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.io.tag
 
 import org.tobi29.arrays.readAsByteArray
 import org.tobi29.arrays.toByteArray
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.computeAlways
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toBoolean() = value as? Boolean
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toNumber() = value as? Number
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toByte() = toNumber()?.toByte()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toShort() = toNumber()?.toShort()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toInt() = toNumber()?.toInt()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toLong() = toNumber()?.toLong()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toFloat() = toNumber()?.toFloat()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun MutableTag.toDouble() = toNumber()?.toDouble()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun TagNumber.toByte() = value.toByte()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun TagNumber.toShort() = value.toShort()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun TagNumber.toInt() = value.toInt()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun TagNumber.toLong() = value.toLong()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun TagNumber.toFloat() = value.toFloat()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun TagNumber.toDouble() = value.toDouble()
 
 fun MutableTag.toMap(): TagMap? = when (this) {
@@ -100,8 +127,12 @@ fun Sequence<MutableTag>.toTag() = TagList {
     this@toTag.forEach { add(it.toTag()) }
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun ReadTagMutableMap.map(key: String) = this[key]?.asMap()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun ReadWriteTagMutableMap.mapMut(key: String): MutableTagMap {
     return computeAlways(key) { _, value ->
         when (value) {
@@ -112,8 +143,12 @@ inline fun ReadWriteTagMutableMap.mapMut(key: String): MutableTagMap {
     } as MutableTagMap
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun ReadTagMutableMap.list(key: String) = this[key]?.asList()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun ReadWriteTagMutableMap.listMut(key: String): MutableTagList {
     return computeAlways(key) { _, value ->
         when (value) {
@@ -144,6 +179,8 @@ fun MutableTagList.toTag() = TagList {
 }
 
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Tag) = TagList {
     elements.forEach { add(it) }
 }

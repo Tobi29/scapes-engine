@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 /**
@@ -28,6 +26,8 @@ package org.tobi29.stdex
  * @receiver Array to read from
  * @return A string containing the encoded characters
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun ByteArray.utf8ToString(
     offset: Int = 0,
     size: Int = this.size - offset
@@ -40,6 +40,8 @@ inline fun ByteArray.utf8ToString(
  * @param size Maximum amount of bytes to write or `-1` to write everything or throw
  * @receiver The string to encode
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun String.utf8ToArray(
     destination: ByteArray? = null,
     offset: Int = 0,
@@ -70,6 +72,8 @@ fun CharSequence.utf8ToArray(
  * @receiver String to read from
  * @return A new string containing the copied characters
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun String.copyToArray(
     destination: CharArray = CharArray(length),
     offset: Int = 0,
@@ -251,20 +255,20 @@ fun CharSequence.toReadable(): Readable = object : Readable {
 }
 
 @PublishedApi
-expect internal fun ByteArray.utf8ToStringImpl(
+internal expect fun ByteArray.utf8ToStringImpl(
     offset: Int,
     size: Int
 ): String
 
 @PublishedApi
-expect internal fun String.utf8ToArrayImpl(
+internal expect fun String.utf8ToArrayImpl(
     destination: ByteArray?,
     offset: Int,
     size: Int
 ): ByteArray
 
 @PublishedApi
-expect internal fun String.copyToArrayImpl(
+internal expect fun String.copyToArrayImpl(
     destination: CharArray,
     offset: Int,
     startIndex: Int,

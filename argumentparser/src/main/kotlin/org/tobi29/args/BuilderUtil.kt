@@ -14,18 +14,29 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.args
 
+import org.tobi29.stdex.InlineUtility
+
+/**
+ * Type usable for using builder extension functions, can also be used for
+ * parser configuration directly
+ */
 typealias CommandConfigBuilder = MutableCollection<CommandElement>
 
+/**
+ * Creates a new [CommandConfigBuilder] using a [HashSet]
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun CommandConfigBuilder(): CommandConfigBuilder = HashSet()
 
 /**
  * Add a new element
  * @param element The element to add
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <E : CommandElement> CommandConfigBuilder.commandElement(
     element: E
 ): E = element.also { add(it) }
@@ -38,6 +49,8 @@ inline fun <E : CommandElement> CommandConfigBuilder.commandElement(
  * @param description Description used for printing usage
  * @param abortParse Abort parsing of all further tokens when this matches
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun CommandConfigBuilder.commandOption(
     shortNames: Set<Char>,
     longNames: Set<String>,
@@ -58,6 +71,8 @@ inline fun CommandConfigBuilder.commandOption(
  * @param description Description used for printing usage
  * @param abortParse Abort parsing of all further tokens when this matches
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun CommandConfigBuilder.commandFlag(
     shortNames: Set<Char>,
     longNames: Set<String>,
@@ -75,6 +90,8 @@ inline fun CommandConfigBuilder.commandFlag(
  * @param name Name of the argument
  * @param count Range of valid number of arguments
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun CommandConfigBuilder.commandArgument(
     name: String,
     count: IntRange = 0..1,

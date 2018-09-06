@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.utils
+
+import org.tobi29.stdex.InlineUtility
 
 /**
  * Find the first element of correct type and casts it
@@ -24,6 +24,8 @@ package org.tobi29.utils
  * @receiver The elements to search in
  * @return The first casted element or `null`
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <reified T : Any> Iterable<*>.findMap(): T? {
     return find { it is T } as? T
 }
@@ -32,6 +34,8 @@ inline fun <reified T : Any> Iterable<*>.findMap(): T? {
  * Returns `true` if and only if the collection contains
  * [element] and nothing else.
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> Iterable<T>.exact(element: T): Boolean =
     iterator().exact(element)
 
@@ -107,6 +111,8 @@ operator fun <T, U> Iterable<T>.times(
  * @return A copy of the original map, with the replaced value
  * @see replace
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <K, V> Map<K, V>.substitute(
     key: K,
     transform: (V?) -> V
@@ -129,6 +135,8 @@ inline fun <K, V> Map<K, V>.substitute(
  * @return A copy of the original map, possibly with the replaced value
  * @see substitute
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <K, V : Any> Map<K, V>.replace(
     key: K,
     transform: (V) -> V
@@ -146,6 +154,8 @@ inline fun <K, V : Any> Map<K, V>.replace(
  * @param size The size of each list
  * @receiver The elements to use
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <reified T> Iterable<T>.permutations(size: Int): Iterator<List<T>> =
     toList().toTypedArray().permutations(size)
 
@@ -155,12 +165,16 @@ inline fun <reified T> Iterable<T>.permutations(size: Int): Iterator<List<T>> =
  *
  * @receiver The elements for each index in the resulting lists to use
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <reified T> Iterable<Iterable<T>>.permutations(): Iterator<List<T>> =
     map { it.toList().toTypedArray() }.toTypedArray().permutations()
 
 /**
  * Asserts each element as non-null and returns a casted collection
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> Set<T?>.verifyNotNull(): Set<T> {
     iterator().verifyNotNull()
     @Suppress("UNCHECKED_CAST")
@@ -170,6 +184,8 @@ inline fun <T> Set<T?>.verifyNotNull(): Set<T> {
 /**
  * Asserts each element as non-null and returns a casted collection
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> List<T?>.verifyNotNull(): List<T> {
     iterator().verifyNotNull()
     @Suppress("UNCHECKED_CAST")
@@ -179,6 +195,8 @@ inline fun <T> List<T?>.verifyNotNull(): List<T> {
 /**
  * Asserts each element as non-null and returns a casted collection
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> Iterable<T?>.verifyNotNull(): Iterable<T> {
     iterator().verifyNotNull()
     @Suppress("UNCHECKED_CAST")

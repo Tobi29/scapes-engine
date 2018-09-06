@@ -18,10 +18,9 @@
 // Generation script can be found in `resources/codegen/GenArrays.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.arrays
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.copy
 
 /**
@@ -73,7 +72,7 @@ interface Elements<T> : ElementsRO<T> {
         prepareSlice(index, size, this, ::ElementsSlice)
 
 
-    fun setElements(index: Int, slice: ElementsRO<out T>) =
+    fun setElements(index: Int, slice: ElementsRO<T>) =
         slice.getElements(0, slice(index, slice.size))
 }
 
@@ -198,7 +197,7 @@ open class HeapElements<T>(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun setElements(index: Int, slice: ElementsRO<out T>) {
+    final override fun setElements(index: Int, slice: ElementsRO<T>) {
         if (slice !is HeapElements) return super.setElements(index, slice)
 
         if (index < 0 || index + slice.size > size)
@@ -233,6 +232,8 @@ open class HeapElements<T>(
  * @receiver The array to create a slice of
  * @return A slice from the given array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> Array<T>.sliceOver(
     index: Int = 0,
     size: Int = this.size - index

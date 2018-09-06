@@ -34,6 +34,7 @@
 
 package org.tobi29.kzlib
 
+import org.tobi29.stdex.Constant
 import org.tobi29.stdex.combineToShort
 import org.tobi29.stdex.splitToBytes
 import kotlin.experimental.inv
@@ -69,24 +70,38 @@ import kotlin.experimental.or
  * Constants
  */
 
-internal const val MAX_BL_BITS = 7
+@Constant
+internal inline val MAX_BL_BITS
+    get() = 7
 /* Bit length codes must not exceed MAX_BL_BITS bits */
 
-internal const val END_BLOCK = 256
+@Constant
+internal inline val END_BLOCK
+    get() = 256
 /* end of block literal code */
 
-internal const val REP_3_6 = 16
+@Constant
+internal inline val REP_3_6
+    get() = 16
 /* repeat previous bit length 3-6 times (2 bits of repeat count) */
 
-internal const val REPZ_3_10 = 17
+@Constant
+internal inline val REPZ_3_10
+    get() = 17
 /* repeat a zero length 3-10 times  (3 bits of repeat count) */
 
-internal const val REPZ_11_138 = 18
+@Constant
+internal inline val REPZ_11_138
+    get() = 18
 /* repeat a zero length 11-138 times  (7 bits of repeat count) */
 
-const val DIST_CODE_LEN = 512 /* see definition of array dist_code below */
+@Constant
+inline val DIST_CODE_LEN
+    get() = 512 /* see definition of array dist_code below */
 
-private inline val LC_LENGTH get() = MAX_MATCH - MIN_MATCH + 1
+@Constant
+private inline val LC_LENGTH
+    get() = MAX_MATCH - MIN_MATCH + 1
 
 internal object TreesTables {
     val extra_lbits = intArrayOf( /* extra bits for each length code */

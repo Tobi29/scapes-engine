@@ -16,10 +16,7 @@
 
 package org.tobi29.base64
 
-import org.tobi29.stdex.Readable
-import org.tobi29.stdex.alphabetLatinLowercase
-import org.tobi29.stdex.alphabetLatinUppercase
-import org.tobi29.stdex.digitsArabic
+import org.tobi29.stdex.*
 
 fun Appendable.appendBase64(
     array: ByteArray,
@@ -120,7 +117,9 @@ fun CharSequence.fromBase64(
 inline fun Readable.fromBase64(output: (Byte) -> Unit): Base64Result =
     decodeBase64({ readTry() }, output)
 
-const val BASE64_DATA_END = Int.MIN_VALUE
+@Constant
+inline val BASE64_DATA_END
+    get() = Int.MIN_VALUE
 
 /**
  * Encodes data in base64

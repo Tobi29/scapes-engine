@@ -28,10 +28,10 @@ import kotlin.reflect.KProperty
  * @return An object for property delegation
  */
 inline fun <T> property(crossinline get: () -> T) =
-        object : ReadOnlyProperty<Any?, T> {
-            override fun getValue(thisRef: Any?,
-                                  property: KProperty<*>) = get()
-        }
+    object : ReadOnlyProperty<Any?, T> {
+        override fun getValue(thisRef: Any?, property: KProperty<*>) =
+            get()
+    }
 
 /**
  * Simple delegated property that calls the given get and set
@@ -40,16 +40,17 @@ inline fun <T> property(crossinline get: () -> T) =
  * @param set The setter implementation
  * @return An object for property delegation
  */
-inline fun <T> property(crossinline get: () -> T,
-                        crossinline set: (T) -> Unit) =
-        object : ReadWriteProperty<Any?, T> {
-            override fun getValue(thisRef: Any?,
-                                  property: KProperty<*>) = get()
+inline fun <T> property(
+    crossinline get: () -> T,
+    crossinline set: (T) -> Unit
+) =
+    object : ReadWriteProperty<Any?, T> {
+        override fun getValue(thisRef: Any?, property: KProperty<*>) =
+            get()
 
-            override fun setValue(thisRef: Any?,
-                                  property: KProperty<*>,
-                                  value: T) = set(value)
-        }
+        override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) =
+            set(value)
+    }
 
 /**
  * Alternative implementation of [Lazy] allowing reinitializing the value over
@@ -57,7 +58,8 @@ inline fun <T> property(crossinline get: () -> T,
  */
 class MutableLazy<T> : Lazy<T> {
     private val initializer = AtomicReference<(() -> T)?>(null)
-    @Volatile private var _value: Any?
+    @Volatile
+    private var _value: Any?
 
     /**
      * Constructs a lazy value with the given initializer
@@ -82,8 +84,10 @@ class MutableLazy<T> : Lazy<T> {
                     value = _value
                     if (value === Uninitialized) {
                         value = (initializer.getAndSet(
-                                null) ?: throw IllegalStateException(
-                                "No initializer and no value"))()
+                            null
+                        ) ?: throw IllegalStateException(
+                            "No initializer and no value"
+                        ))()
                         _value = value
                     }
                 }
@@ -121,36 +125,38 @@ class MutableLazy<T> : Lazy<T> {
     private object Uninitialized
 }
 
-fun <T> mutableLazy(initializer: () -> T) = MutableLazy(initializer)
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> mutableLazy(noinline initializer: () -> T) =
+    MutableLazy(initializer)
 
-fun <T> mutableLazy(value: T) = MutableLazy(value)
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> mutableLazy(value: T) =
+    MutableLazy(value)
 
-inline fun <R1, R2, V> access(property: ReadWriteProperty<R2, V>,
-                              crossinline map: R1.() -> R2) = property.let { p ->
+inline fun <R1, R2, V> access(
+    property: ReadWriteProperty<R2, V>,
+    crossinline map: R1.() -> R2
+) = property.let { p ->
     object : ReadWriteProperty<R1, V> {
         private fun m(thisRef: R1) = map(thisRef)
 
-        override fun getValue(thisRef: R1,
-                              property: KProperty<*>) =
-                p.getValue(m(thisRef), property)
+        override fun getValue(thisRef: R1, property: KProperty<*>) =
+            p.getValue(m(thisRef), property)
 
-        override fun setValue(thisRef: R1,
-                              property: KProperty<*>,
-                              value: V) {
+        override fun setValue(thisRef: R1, property: KProperty<*>, value: V) {
             p.setValue(m(thisRef), property, value)
         }
     }
 }
 
 fun <R, V> access(accessor: R.() -> ReadWriteProperty<Any?, V>) =
-        object : ReadWriteProperty<R, V> {
-            override fun getValue(thisRef: R,
-                                  property: KProperty<*>) =
-                    accessor(thisRef).getValue(thisRef, property)
+    object : ReadWriteProperty<R, V> {
+        override fun getValue(thisRef: R, property: KProperty<*>) =
+            accessor(thisRef).getValue(thisRef, property)
 
-            override fun setValue(thisRef: R,
-                                  property: KProperty<*>,
-                                  value: V) {
-                accessor(thisRef).setValue(thisRef, property, value)
-            }
+        override fun setValue(thisRef: R, property: KProperty<*>, value: V) {
+            accessor(thisRef).setValue(thisRef, property, value)
         }
+    }

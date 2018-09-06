@@ -18,10 +18,9 @@
 // Generation script can be found in `resources/codegen/GenArrays.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.arrays
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.copy
 import org.tobi29.stdex.primitiveHashCode
 
@@ -236,6 +235,8 @@ open class HeapFloats(
  * @receiver The array to create a slice of
  * @return A slice from the given array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun FloatArray.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
@@ -616,6 +617,8 @@ inline fun FloatArray2.shift(
  * @param height Height of the wrapper
  * @return Wrapper around a new array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun FloatArray2(width: Int, height: Int) =
     FloatArray2(width, height, FloatArray(width * height))
 
@@ -626,5 +629,7 @@ inline fun FloatArray2(width: Int, height: Int) =
  * @param depth Depth of the wrapper
  * @return Wrapper around a new array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun FloatArray3(width: Int, height: Int, depth: Int) =
     FloatArray3(width, height, depth, FloatArray(width * height * depth))

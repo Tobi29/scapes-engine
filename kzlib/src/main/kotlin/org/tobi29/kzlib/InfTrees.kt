@@ -32,9 +32,12 @@
 
 package org.tobi29.kzlib
 
+import org.tobi29.stdex.Constant
 import org.tobi29.stdex.assert
 
-private inline val MAXBITS get() = MAX_BITS
+@Constant
+private inline val MAXBITS
+    get() = MAX_BITS
 
 /*
    Build a set of tables to decode the provided canonical Huffman code.
@@ -303,8 +306,13 @@ internal fun inflate_table(
     return 0
 }
 
-internal inline val lenfix: UInt get() = 0
-internal inline val distfix: UInt get() = 512
+@Constant
+internal inline val lenfix: UInt
+    get() = 0
+
+@Constant
+internal inline val distfix: UInt
+    get() = 512
 
 internal object InfTreesTables {
     val lbase = shortArrayOf( /* Length codes 257..285 base */

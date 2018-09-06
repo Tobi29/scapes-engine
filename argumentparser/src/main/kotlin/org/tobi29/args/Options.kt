@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.args
 
 import org.tobi29.arrays.Array2
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.formatTable
 
 /**
@@ -66,6 +65,8 @@ data class CommandOption(
  * @param description Description used for printing usage
  * @param abortParse Abort parsing of all further tokens when this matches
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun CommandFlag(
     shortNames: Set<Char>,
     longNames: Set<String>,

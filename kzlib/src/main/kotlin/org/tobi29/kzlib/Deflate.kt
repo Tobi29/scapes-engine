@@ -34,6 +34,7 @@
 
 package org.tobi29.kzlib
 
+import org.tobi29.stdex.Constant
 import org.tobi29.stdex.copy
 import org.tobi29.stdex.splitToBytes
 import org.tobi29.stdex.splitToShorts
@@ -44,7 +45,9 @@ internal inline fun put_byte(s: deflate_state, c: Byte) {
     s.pending_buf!![s.pending++] = c
 }
 
-internal inline val MIN_LOOKAHEAD get() = (MAX_MATCH + MIN_MATCH + 1)
+@Constant
+internal inline val MIN_LOOKAHEAD
+    get() = (MAX_MATCH + MIN_MATCH + 1)
 /* Minimum amount of lookahead, except at the end of the input file.
  * See deflate.c for comments about the MIN_MATCH+1.
  */
@@ -54,7 +57,9 @@ private inline fun MAX_DIST(s: deflate_state) = s.w_size - MIN_LOOKAHEAD
  * distances are limited to MAX_DIST instead of WSIZE.
  */
 
-private inline val WIN_INIT get() = MAX_MATCH
+@Constant
+private inline val WIN_INIT
+    get() = MAX_MATCH
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
@@ -154,11 +159,15 @@ typealias compress_func = (z_stream, deflate_state, Int) -> block_state
  * Local data
  */
 
-private const val NIL: Short = 0
+@Constant
+private val NIL: Short
+    get() = 0
 /* Tail of hash chains */
 
 //#ifndef TOO_FAR
-private inline val TOO_FAR get() = 4096
+@Constant
+private inline val TOO_FAR
+    get() = 4096
 //#endif
 /* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 
@@ -1761,7 +1770,9 @@ private inline fun FLUSH_BLOCK(
 }
 
 /* Maximum stored block length in deflate format (not including header). */
-private inline val MAX_STORED get() = 65535
+@Constant
+private inline val MAX_STORED
+    get() = 65535
 
 /* Minimum of a and b. */
 // #define MIN(a, b) ((a) > (b) ? (b) : (a))

@@ -16,8 +16,6 @@
 
 // Based on println implementation for Kotlin/JS
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 private abstract class BaseOutputErr {
@@ -79,6 +77,8 @@ private var outputErr = run {
     else BufferedOutputToConsoleErr()
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 private inline fun String(value: Any?): String =
     @Suppress("UnsafeCastFromDynamic")
     js("String")(value)

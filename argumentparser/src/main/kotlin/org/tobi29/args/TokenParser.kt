@@ -316,7 +316,7 @@ class TokenParser(command: CommandConfig) {
 fun CommandConfig.parseTokens(
     tokens: Iterable<String>
 ): Pair<List<CommandConfig>, List<TokenParser.Token>> =
-    withArgs(tokens) {
+    withTokens(tokens) {
         TokenParser(this).let { parser ->
             tokens.forEach { parser.append(it) }
             parser.finish()

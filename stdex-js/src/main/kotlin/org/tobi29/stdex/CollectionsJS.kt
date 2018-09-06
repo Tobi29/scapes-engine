@@ -107,60 +107,91 @@ actual class ConcurrentHashSet<E> : MutableSet<E> {
     override fun toString() = map.keys.toString()
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Collection<T>.readOnly(): Collection<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> List<T>.readOnly(): List<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Set<T>.readOnly(): Set<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> Map<K, V>.readOnly(): Map<K, V> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Collection<T>.synchronized(): Collection<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> List<T>.synchronized(): List<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Set<T>.synchronized(): Set<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> MutableSet<T>.synchronized(): MutableSet<T> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> Map<K, V>.synchronized(): Map<K, V> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
     this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
     HashMap()
 
-actual fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
     this[key]?.let { return it }
     put(key, value)
     return null
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? {
     this[key]?.let { return it }
     put(key, value)
     return null
 }
 
-actual fun <K, V : Any> MutableMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun <K, V : Any> MutableMap<K, V>.computeAlways(
+    key: K, block: (K, V?) -> V
 ): V {
     val old = this[key]
     val new = block(key, old)
@@ -168,9 +199,10 @@ actual fun <K, V : Any> MutableMap<K, V>.computeAlways(
     return new
 }
 
-actual fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
+    key: K, block: (K, V?) -> V
 ): V {
     val old = this[key]
     val new = block(key, old)
@@ -178,10 +210,10 @@ actual fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
     return new
 }
 
-@JsName("computeAlwaysNullable")
-actual fun <K, V> MutableMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V?
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun <K, V> MutableMap<K, V>.computeAlways(
+    key: K, block: (K, V?) -> V?
 ): V? {
     val old = this[key]
     val new = block(key, old)
@@ -193,10 +225,10 @@ actual fun <K, V> MutableMap<K, V>.computeAlways(
     return new
 }
 
-@JsName("computeAlwaysNullableConcurrent")
-actual fun <K, V> ConcurrentMap<K, V>.computeAlways(
-    key: K,
-    block: (K, V?) -> V?
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun <K, V> ConcurrentMap<K, V>.computeAlways(
+    key: K, block: (K, V?) -> V?
 ): V? {
     val old = this[key]
     val new = block(key, old)
@@ -208,50 +240,51 @@ actual fun <K, V> ConcurrentMap<K, V>.computeAlways(
     return new
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V
+    key: K, block: (K) -> V
 ): V {
     this[key]?.let { return it }
     val new = block(key)
     return putAbsent(key, new) ?: new
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V
+    key: K, block: (K) -> V
 ): V {
     this[key]?.let { return it }
     val new = block(key)
     return putAbsent(key, new) ?: new
 }
 
-@JsName("computeAbsentNullable")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V?
+    key: K, block: (K) -> V?
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
     return putAbsent(key, new) ?: new
 }
 
-@JsName("computeAbsentNullableConcurrent")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
-    key: K,
-    block: (K) -> V?
+    key: K, block: (K) -> V?
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
     return putAbsent(key, new) ?: new
 }
 
-@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <K, V> MutableMap<K, V>.removeEqual(
-    key: K,
-    value: V
-): Boolean =
-    if (this[key] == value) {
-        remove(key)
-        true
-    } else false
+    key: K, value: V
+): Boolean = if (this[key] == value) {
+    remove(key)
+    true
+} else false

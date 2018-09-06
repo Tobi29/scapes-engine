@@ -14,25 +14,33 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.checksums
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.stdex.Constant
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.splitToShorts
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> initChainAdler32(
     output: (Short, Short) -> R
 ): R = output(1, 0)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> initChainAdler32(
     adler: Int,
     output: (Short, Short) -> R
 ): R = adler.splitToShorts { b, a -> output(a, b) }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun finishChainAdler32(a: Short, b: Short): Int = combineToInt(b, a)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> chainAdler32(
     a: Short,
     b: Short,
@@ -47,6 +55,8 @@ inline fun <R> chainAdler32(
     )
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> chainAdler32Fast(
     a: Int,
     b: Int,
@@ -56,10 +66,14 @@ inline fun <R> chainAdler32Fast(
     output(it, b + it)
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     data: Byte
 ): Int = computeAdler32(0, data)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     adler: Int,
     data: Byte
@@ -67,6 +81,8 @@ inline fun computeAdler32(
     chainAdler32(a, b, data, ::finishChainAdler32)
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> chainAdler32(
     a: Short,
     b: Short,
@@ -100,15 +116,21 @@ inline fun <R> chainAdler32(
     return output(ca.toShort(), cb.toShort())
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     data: ByteArray
 ): Int = computeAdler32(0, data)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     adler: Int,
     data: ByteArray
 ): Int = computeAdler32(adler, data, 0, data.size)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     adler: Int,
     data: ByteArray,
@@ -142,10 +164,14 @@ inline fun <R> chainAdler32(
     return output(ca.toShort(), cb.toShort())
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     data: BytesRO
 ): Int = computeAdler32(0, data)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeAdler32(
     adler: Int,
     data: BytesRO
@@ -153,7 +179,14 @@ inline fun computeAdler32(
     chainAdler32(a, b, data, ::finishChainAdler32)
 }
 
-const val ADLER32_BASE = 65521
+@Constant
+inline val ADLER32_BASE
+    get() = 65521
+
 // TODO: What would be highest safe value?
-//const val ADLER32_MAX_FAST = 5552
-const val ADLER32_MAX_FAST = 2000
+// @Constant
+// inline val ADLER32_MAX_FAST
+//     get() = 5552
+@Constant
+inline val ADLER32_MAX_FAST
+    get() = 2000

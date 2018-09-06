@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.io.tag
 
 import org.tobi29.arrays.BytesRO
-import org.tobi29.stdex.ConcurrentHashMap
-import org.tobi29.stdex.ConcurrentMap
-import org.tobi29.stdex.readOnly
-import org.tobi29.stdex.synchronized
+import org.tobi29.stdex.*
 
 /**
  * Type shared by all tags
@@ -154,68 +149,93 @@ expect class MutableTagList internal constructor(
 /**
  * Get the tag for the given value
  */
-@Suppress("UNUSED_PARAMETER")
-fun TagUnit(value: Unit) = TagUnit
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UNUSED_PARAMETER")
+inline fun TagUnit(value: Unit) = TagUnit
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Unit.toTag() = TagUnit(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 fun TagBoolean(value: Boolean) =
     if (value) TagBoolean.True else TagBoolean.False
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Boolean.toTag() = TagBoolean(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Byte.toTag() = TagByte(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Short.toTag() = TagShort(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.toTag() = TagInt(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Long.toTag() = TagLong(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Float.toTag() = TagFloat(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Double.toTag() = TagDouble(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun BytesRO.toTag() = TagByteArray(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun ByteArray.toTag() = TagByteArray(this)
 
 /**
  * Get the tag for the given value
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun String.toTag() = TagString(this)
 
 typealias ReadTagMap = Map<String, Tag>

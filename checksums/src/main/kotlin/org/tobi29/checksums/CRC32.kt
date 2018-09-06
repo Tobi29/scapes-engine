@@ -14,27 +14,36 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.checksums
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.stdex.InlineUtility
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun initChainCrc32(crc: Int = 0): Int = crc.inv()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.finishChainCrc32(): Int = initChainCrc32(this)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun chainCrc32(
     crc: Int,
     data: Byte,
     table: IntArray
 ): Int = table[(crc xor data.toInt()) and 0xFF] xor (crc ushr 8)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     data: Byte,
     table: IntArray
 ): Int = computeCrc32(0, data, table)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     crc: Int,
     data: Byte,
@@ -43,12 +52,16 @@ inline fun computeCrc32(
     chainCrc32(it, data, table)
 }.finishChainCrc32()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun chainCrc32(
     crc: Int,
     data: ByteArray,
     table: IntArray
 ): Int = chainCrc32(crc, data, 0, data.size, table)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun chainCrc32(
     crc: Int,
     data: ByteArray,
@@ -63,17 +76,23 @@ inline fun chainCrc32(
     return c
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     data: ByteArray,
     table: IntArray
 ): Int = computeCrc32(0, data, table)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     crc: Int,
     data: ByteArray,
     table: IntArray
 ): Int = computeCrc32(crc, data, 0, data.size, table)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     crc: Int,
     data: ByteArray,
@@ -84,17 +103,23 @@ inline fun computeCrc32(
     chainCrc32(it, data, offset, size, table)
 }.finishChainCrc32()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun chainCrc32(
     crc: Int,
     data: BytesRO,
     table: IntArray
 ): Int = data.fold(crc) { c, d -> chainCrc32(c, d, table) }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     data: BytesRO,
     table: IntArray
 ): Int = computeCrc32(0, data, table)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun computeCrc32(
     crc: Int,
     data: BytesRO,

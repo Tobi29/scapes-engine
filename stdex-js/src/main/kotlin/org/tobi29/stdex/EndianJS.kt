@@ -29,9 +29,15 @@ actual class ByteOrder private actual constructor(private val name: String) {
     }
 }
 
-actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val BIG_ENDIAN: ByteOrder
+    get() = ByteOrder.BIG_ENDIAN
 
-actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val LITTLE_ENDIAN: ByteOrder
+    get() = ByteOrder.LITTLE_ENDIAN
 
 @PublishedApi
 internal val NATIVE_BIG_ENDIAN = run {
@@ -46,5 +52,7 @@ internal val NATIVE_BIG_ENDIAN = run {
     }
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline val NATIVE_ENDIAN: ByteOrder
     get() = if (NATIVE_BIG_ENDIAN) BIG_ENDIAN else LITTLE_ENDIAN

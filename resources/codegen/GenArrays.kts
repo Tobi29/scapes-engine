@@ -1,3 +1,19 @@
+/*
+ * Copyright 2012-2018 Tobi29
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #!/usr/bin/kotlinc -script
 /*
  * Copyright 2012-2018 Tobi29
@@ -158,10 +174,9 @@ print(
 // Generation script can be found in `resources/codegen/GenArrays.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.arrays
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.copy
 ${if (!isReference) "import org.tobi29.stdex.primitiveHashCode\n"
     else ""}
@@ -218,7 +233,7 @@ interface ${specialize(elements)} : ${specialize(elementsRO)} {
 
 ${if (!isReference) """    fun set$type(index: Int, value: $type) = set(index, value)
 """ else ""}
-    fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specializeOut(
+    fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specialize(
         elementsRO
     )}) =
         slice.get${if (isReference) "Element" else type}s(0, slice(index, slice.size))
@@ -351,7 +366,7 @@ open class Heap${specialize(elements)}(
         copy(array, slice.array, slice.size, index + this.offset, slice.offset)
     }
 
-    final override fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specializeOut(
+    final override fun set${if (isReference) "Element" else type}s(index: Int, slice: ${specialize(
         elementsRO
     )}) {
         if (slice !is Heap${specializeName(
@@ -390,6 +405,8 @@ open class Heap${specialize(elements)}(
  * @receiver The array to create a slice of
  * @return A slice from the given array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline $genericFun ${specialize("Array")}.sliceOver(
     index: Int = 0,
     size: Int = this.size - index
@@ -827,6 +844,8 @@ inline $genericFunReified array3OfNulls(
  * @param height Height of the wrapper
  * @return Wrapper around a new array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline $genericFunReified ${specializeName("Array2")}(width: Int, height: Int) =
     ${specializeName("Array2")}(width, height, ${specialize("Array")}(width * height))
 
@@ -837,6 +856,8 @@ inline $genericFunReified ${specializeName("Array2")}(width: Int, height: Int) =
  * @param depth Depth of the wrapper
  * @return Wrapper around a new array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline $genericFunReified ${specializeName("Array3")}(width: Int, height: Int, depth: Int) =
     ${specializeName("Array3")}(width, height, depth, ${specialize("Array")}(width * height * depth))
 """

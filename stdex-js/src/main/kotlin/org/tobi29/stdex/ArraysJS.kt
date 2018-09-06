@@ -14,79 +14,106 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 import org.khronos.webgl.*
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun ByteArray.asTypedArray(): Int8Array = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun ShortArray.asTypedArray(): Int16Array = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun CharArray.asTypedArray(): Uint16Array = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun IntArray.asTypedArray(): Int32Array = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun FloatArray.asTypedArray(): Float32Array = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun DoubleArray.asTypedArray(): Float64Array = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun ByteArray.asUnsignedTypedArray(): Uint8Array =
     asTypedArray().asUint8Array()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun ShortArray.asUnsignedTypedArray(): Uint16Array =
     asTypedArray().asUint8Array()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun IntArray.asUnsignedTypedArray(): Uint32Array =
     asTypedArray().asUint32Array()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int8Array.asUint8Array(): Uint8Array =
     Uint8Array(buffer, byteOffset, length)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Uint8Array.asInt8Array(): Int8Array =
     Int8Array(buffer, byteOffset, length)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int16Array.asUint8Array(): Uint16Array =
     Uint16Array(buffer, byteOffset, length)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Uint16Array.asInt16Array(): Int16Array =
     Int16Array(buffer, byteOffset, length)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int32Array.asUint32Array(): Uint32Array =
     Uint32Array(buffer, byteOffset, length)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Uint32Array.asInt32Array(): Int32Array =
     Int32Array(buffer, byteOffset, length)
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun Int8Array.asArray(): ByteArray = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun Int16Array.asArray(): ShortArray = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun Uint16Array.asArray(): CharArray = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun Int32Array.asArray(): IntArray = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun Float32Array.asArray(): FloatArray = asDynamic()
 
-@Suppress("UnsafeCastFromDynamic")
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 inline fun Float64Array.asArray(): DoubleArray = asDynamic()
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: BooleanArray,
     dest: BooleanArray,
@@ -96,6 +123,8 @@ internal actual inline fun copyArray(
 ) = copyElements(src, dest, length, offsetSrc, offsetDest)
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: ByteArray,
     dest: ByteArray,
@@ -111,6 +140,8 @@ internal actual inline fun copyArray(
 }
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: ShortArray,
     dest: ShortArray,
@@ -126,6 +157,8 @@ internal actual inline fun copyArray(
 }
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: IntArray,
     dest: IntArray,
@@ -141,6 +174,8 @@ internal actual inline fun copyArray(
 }
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: LongArray,
     dest: LongArray,
@@ -150,6 +185,8 @@ internal actual inline fun copyArray(
 ) = copyElements(src, dest, length, offsetSrc, offsetDest)
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: FloatArray,
     dest: FloatArray,
@@ -165,6 +202,8 @@ internal actual inline fun copyArray(
 }
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: DoubleArray,
     dest: DoubleArray,
@@ -180,6 +219,8 @@ internal actual inline fun copyArray(
 }
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun copyArray(
     src: CharArray,
     dest: CharArray,
@@ -195,6 +236,8 @@ internal actual inline fun copyArray(
 }
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal actual inline fun <T> copyArray(
     src: Array<out T>,
     dest: Array<in T>,
@@ -204,6 +247,8 @@ internal actual inline fun <T> copyArray(
 ) = copyElements(src, dest, length, offsetSrc, offsetDest)
 
 @PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 internal inline fun checkBounds(
     sizeSrc: Int,
     sizeDest: Int,
@@ -217,8 +262,8 @@ internal inline fun checkBounds(
         throw IndexOutOfBoundsException("Invalid copy bounds")
 }
 
-@Suppress("UnsafeCastFromDynamic")
 @PublishedApi
+@Suppress("UnsafeCastFromDynamic")
 internal fun copyElements(
     src: dynamic,
     dest: dynamic,

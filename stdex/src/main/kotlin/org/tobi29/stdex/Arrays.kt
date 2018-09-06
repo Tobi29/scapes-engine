@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 /**
@@ -24,6 +22,8 @@ package org.tobi29.stdex
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> copy(
     src: Array<out T>,
     dest: Array<in T>,
@@ -36,6 +36,8 @@ inline fun <T> copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: BooleanArray,
     dest: BooleanArray,
@@ -48,6 +50,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: ByteArray,
     dest: ByteArray,
@@ -60,6 +64,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: ShortArray,
     dest: ShortArray,
@@ -72,6 +78,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: IntArray,
     dest: IntArray,
@@ -84,6 +92,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: LongArray,
     dest: LongArray,
@@ -96,6 +106,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: FloatArray,
     dest: FloatArray,
@@ -108,6 +120,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: DoubleArray,
     dest: DoubleArray,
@@ -120,6 +134,8 @@ inline fun copy(
  * @param dest The array to copy to
  * @param length The amount of elements to copy
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: CharArray,
     dest: CharArray,
@@ -134,6 +150,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <T> copy(
     src: Array<out T>,
     dest: Array<in T>,
@@ -150,6 +168,8 @@ inline fun <T> copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: BooleanArray,
     dest: BooleanArray,
@@ -166,6 +186,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: ByteArray,
     dest: ByteArray,
@@ -182,6 +204,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: ShortArray,
     dest: ShortArray,
@@ -198,6 +222,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: IntArray,
     dest: IntArray,
@@ -214,6 +240,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: LongArray,
     dest: LongArray,
@@ -230,6 +258,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: FloatArray,
     dest: FloatArray,
@@ -246,6 +276,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: DoubleArray,
     dest: DoubleArray,
@@ -262,6 +294,8 @@ inline fun copy(
  * @param offsetSrc Offset in the source array
  * @param offsetDest Offset in the destination array
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun copy(
     src: CharArray,
     dest: CharArray,

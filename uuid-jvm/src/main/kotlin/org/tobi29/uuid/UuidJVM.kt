@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.uuid
 
-actual fun String.toUuid(): Uuid? = try {
+import org.tobi29.stdex.PlatformProvidedImplementation
+
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun String.toUuid(): Uuid? = try {
     Uuid.fromString(this)
 } catch (e: IllegalArgumentException) {
     null
@@ -26,4 +28,6 @@ actual fun String.toUuid(): Uuid? = try {
 
 actual typealias Uuid = java.util.UUID
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun randomUuid(): Uuid = java.util.UUID.randomUUID()

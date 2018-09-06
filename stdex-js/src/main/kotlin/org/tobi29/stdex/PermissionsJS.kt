@@ -16,4 +16,7 @@
 
 package org.tobi29.stdex
 
-actual fun checkPermission(permission: String) {}
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun checkPermission(permission: String) {
+}

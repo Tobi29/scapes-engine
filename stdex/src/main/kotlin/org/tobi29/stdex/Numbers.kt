@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 expect fun Int.toString(radix: Int): String
@@ -54,10 +52,14 @@ fun Long.toStringCaseSensitive(radix: Int): String {
     return String(str, i, str.size - i)
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun String.toIntCaseSensitive(radix: Int): Int =
     toIntCaseSensitiveOrNull(radix)
             ?: throw NumberFormatException("Invalid number: $this")
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun String.toLongCaseSensitive(radix: Int): Long =
     toLongCaseSensitiveOrNull(radix)
             ?: throw NumberFormatException("Invalid number: $this")
@@ -169,6 +171,8 @@ fun String.toLongCaseSensitiveOrNull(radix: Int): Long? {
  * @receiver Number to split
  * @return Return value of [output]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> Short.splitToBytes(output: (Byte, Byte) -> R): R =
     toInt().let { s ->
         output(
@@ -183,6 +187,8 @@ inline fun <R> Short.splitToBytes(output: (Byte, Byte) -> R): R =
  * @param b0 2nd byte (if big-endian)
  * @return Combined number
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun combineToShort(b1: Byte, b0: Byte): Short =
     ((b1.toInt() and 0xFF shl 8) or
             (b0.toInt() and 0xFF shl 0)).toShort()
@@ -194,6 +200,8 @@ inline fun combineToShort(b1: Byte, b0: Byte): Short =
  * @receiver Number to split
  * @return Return value of [output]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> Int.splitToBytes(output: (Byte, Byte, Byte, Byte) -> R): R =
     let { i ->
         output(
@@ -211,6 +219,8 @@ inline fun <R> Int.splitToBytes(output: (Byte, Byte, Byte, Byte) -> R): R =
  * @receiver Number to split
  * @return Return value of [output]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> Int.splitToShorts(output: (Short, Short) -> R): R =
     let { l ->
         output(
@@ -227,6 +237,8 @@ inline fun <R> Int.splitToShorts(output: (Short, Short) -> R): R =
  * @param b0 4th byte (if big-endian)
  * @return Combined number
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun combineToInt(b3: Byte, b2: Byte, b1: Byte, b0: Byte): Int =
     (b3.toInt() and 0xFF shl 24) or
             (b2.toInt() and 0xFF shl 16) or
@@ -239,6 +251,8 @@ inline fun combineToInt(b3: Byte, b2: Byte, b1: Byte, b0: Byte): Int =
  * @param s0 2nd short (if big-endian)
  * @return Combined number
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun combineToInt(s1: Short, s0: Short): Int =
     (s1.toInt() and 0xFFFF shl 16) or
             (s0.toInt() and 0xFFFF shl 0)
@@ -250,6 +264,7 @@ inline fun combineToInt(s1: Short, s0: Short): Int =
  * @receiver Number to split
  * @return Return value of [output]
  */
+@InlineUtility
 inline fun <R> Long.splitToBytes(output: (Byte, Byte, Byte, Byte, Byte, Byte, Byte, Byte) -> R): R =
     let { l ->
         output(
@@ -271,6 +286,8 @@ inline fun <R> Long.splitToBytes(output: (Byte, Byte, Byte, Byte, Byte, Byte, By
  * @receiver Number to split
  * @return Return value of [output]
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <R> Long.splitToShorts(output: (Short, Short, Short, Short) -> R): R =
     let { l ->
         output(
@@ -302,6 +319,8 @@ expect inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R
  * @param b0 8th byte (if big-endian)
  * @return Combined number
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun combineToLong(
     b7: Byte,
     b6: Byte,
@@ -329,6 +348,8 @@ inline fun combineToLong(
  * @param s0 4th short (if big-endian)
  * @return Combined number
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun combineToLong(s3: Short, s2: Short, s1: Short, s0: Short): Long =
     (s3.toLong() and 0xFFFF shl 48) or
             (s2.toLong() and 0xFFFF shl 32) or
@@ -343,20 +364,36 @@ inline fun combineToLong(s3: Short, s2: Short, s1: Short, s0: Short): Long =
  */
 expect fun combineToLong(i1: Int, i0: Int): Long
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Boolean.primitiveHashCode(): Int = if (this) 1231 else 1237
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Byte.primitiveHashCode(): Int = this.toInt()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Short.primitiveHashCode(): Int = this.toInt()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Char.primitiveHashCode(): Int = this.toInt()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.primitiveHashCode(): Int = this
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Float.primitiveHashCode(): Int = toBits()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Long.primitiveHashCode(): Int = (this xor this.ushr(32)).toInt()
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Double.primitiveHashCode(): Int = toBits().primitiveHashCode()
 
 private fun checkRadix(radix: Int) {

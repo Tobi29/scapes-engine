@@ -18,8 +18,6 @@
 // Generation script can be found in `resources/codegen/GenNumberConversions.kts`.
 // Run `resources/codegen/codegen.sh` to update sources.
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
 /**
@@ -28,6 +26,8 @@ package org.tobi29.stdex
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Byte.toByteClamped(): Byte = this
 
 /**
@@ -36,6 +36,8 @@ inline fun Byte.toByteClamped(): Byte = this
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Byte.toShortClamped(): Short = toShort()
 
 /**
@@ -44,6 +46,8 @@ inline fun Byte.toShortClamped(): Short = toShort()
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Byte.toIntClamped(): Int = toInt()
 
 /**
@@ -52,6 +56,8 @@ inline fun Byte.toIntClamped(): Int = toInt()
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Byte.toLongClamped(): Long = toLong()
 
 /**
@@ -60,6 +66,8 @@ inline fun Byte.toLongClamped(): Long = toLong()
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Short.toByteClamped(): Byte = when {
     this <= Byte.MIN_VALUE.toShort() -> Byte.MIN_VALUE
     this >= Byte.MAX_VALUE.toShort() -> Byte.MAX_VALUE
@@ -72,6 +80,8 @@ inline fun Short.toByteClamped(): Byte = when {
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Short.toShortClamped(): Short = this
 
 /**
@@ -80,6 +90,8 @@ inline fun Short.toShortClamped(): Short = this
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Short.toIntClamped(): Int = toInt()
 
 /**
@@ -88,6 +100,8 @@ inline fun Short.toIntClamped(): Int = toInt()
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Short.toLongClamped(): Long = toLong()
 
 /**
@@ -96,6 +110,8 @@ inline fun Short.toLongClamped(): Long = toLong()
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.toByteClamped(): Byte = when {
     this <= Byte.MIN_VALUE.toInt() -> Byte.MIN_VALUE
     this >= Byte.MAX_VALUE.toInt() -> Byte.MAX_VALUE
@@ -108,6 +124,8 @@ inline fun Int.toByteClamped(): Byte = when {
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.toShortClamped(): Short = when {
     this <= Short.MIN_VALUE.toInt() -> Short.MIN_VALUE
     this >= Short.MAX_VALUE.toInt() -> Short.MAX_VALUE
@@ -120,6 +138,8 @@ inline fun Int.toShortClamped(): Short = when {
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.toIntClamped(): Int = this
 
 /**
@@ -128,6 +148,8 @@ inline fun Int.toIntClamped(): Int = this
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Int.toLongClamped(): Long = toLong()
 
 /**
@@ -136,6 +158,8 @@ inline fun Int.toLongClamped(): Long = toLong()
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Long.toByteClamped(): Byte = when {
     this <= Byte.MIN_VALUE.toLong() -> Byte.MIN_VALUE
     this >= Byte.MAX_VALUE.toLong() -> Byte.MAX_VALUE
@@ -148,6 +172,8 @@ inline fun Long.toByteClamped(): Byte = when {
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Long.toShortClamped(): Short = when {
     this <= Short.MIN_VALUE.toLong() -> Short.MIN_VALUE
     this >= Short.MAX_VALUE.toLong() -> Short.MAX_VALUE
@@ -160,6 +186,8 @@ inline fun Long.toShortClamped(): Short = when {
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Long.toIntClamped(): Int = when {
     this <= Int.MIN_VALUE.toLong() -> Int.MIN_VALUE
     this >= Int.MAX_VALUE.toLong() -> Int.MAX_VALUE
@@ -172,4 +200,6 @@ inline fun Long.toIntClamped(): Int = when {
  * @receiver Number to convert
  * @return Number as new type
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Long.toLongClamped(): Long = this

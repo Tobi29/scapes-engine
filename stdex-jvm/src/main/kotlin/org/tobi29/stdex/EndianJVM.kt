@@ -18,8 +18,17 @@ package org.tobi29.stdex
 
 actual typealias ByteOrder = java.nio.ByteOrder
 
-actual inline val BIG_ENDIAN: ByteOrder get() = ByteOrder.BIG_ENDIAN
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
+actual inline val BIG_ENDIAN: ByteOrder
+    get() = ByteOrder.BIG_ENDIAN
 
-actual inline val LITTLE_ENDIAN: ByteOrder get() = ByteOrder.LITTLE_ENDIAN
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
+actual inline val LITTLE_ENDIAN: ByteOrder
+    get() = ByteOrder.LITTLE_ENDIAN
 
-actual inline val NATIVE_ENDIAN: ByteOrder get() = ByteOrder.nativeOrder()
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
+actual inline val NATIVE_ENDIAN: ByteOrder
+    get() = ByteOrder.nativeOrder()

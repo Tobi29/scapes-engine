@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
-        /**
-         * 32-bit codepoint
-         *
-         * Values in range 0x0..0xFFFF match those of [Char]
-         */
+/**
+ * 32-bit codepoint
+ *
+ * Values in range 0x0..0xFFFF match those of [Char]
+ */
 typealias Codepoint = Int
 
 /**
@@ -43,8 +41,15 @@ const val digitsArabic = "0123456789"
 /**
  * Converts a single (non-surrogate) character to a codepoint
  */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun Char.toCP(): Codepoint = toInt()
 
+/**
+ * Converts a codepoint to a string containing one or two characters
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 fun Codepoint.toCPString(): String =
     if (isBmpCodepoint()) "${toChar()}"
     else "${highSurrogate()}${lowSurrogate()}"

@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual val ANDROID_API_LEVEL = run {
     try {
         Class.forName("android.os.Build\$VERSION")
@@ -27,10 +27,27 @@ actual val ANDROID_API_LEVEL = run {
     }
 }
 
-actual inline val IS_JVM get() = true
-actual inline val IS_ANDROID get() = ANDROID_API_LEVEL != null
-actual inline val IS_JS get() = false
-actual inline val IS_NATIVE get() = false
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val IS_JVM
+    get() = true
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val IS_ANDROID
+    get() = ANDROID_API_LEVEL != null
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val IS_JS
+    get() = false
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val IS_NATIVE
+    get() = false
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun isAndroidAPI(level: Int) =
     ANDROID_API_LEVEL ?: Int.MAX_VALUE >= level

@@ -14,31 +14,52 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.stdex
 
-private inline val MIN_HIGH_SURROGATE get() = '\uD800'
-private inline val MIN_LOW_SURROGATE get() = '\uDC00'
-private inline val MIN_SUPPLEMENTARY_CODE_POINT get() = 0x010000
+@PublishedApi
+@Constant
+internal inline val MIN_HIGH_SURROGATE
+    get() = '\uD800'
 
+@PublishedApi
+@Constant
+internal inline val MIN_LOW_SURROGATE
+    get() = '\uDC00'
+
+@PublishedApi
+@Constant
+internal inline val MIN_SUPPLEMENTARY_CODE_POINT
+    get() = 0x010000
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun Char.isISOControl(): Boolean =
     toInt().isISOControl()
 
-actual fun Codepoint.isISOControl(): Boolean =
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun Codepoint.isISOControl(): Boolean =
     this <= 0x9F && (this >= 0x7F || (this.ushr(5) == 0))
 
-actual fun Codepoint.isBmpCodepoint(): Boolean =
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun Codepoint.isBmpCodepoint(): Boolean =
     this in 0 until MIN_SUPPLEMENTARY_CODE_POINT
 
-actual fun Codepoint.highSurrogate(): Char =
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun Codepoint.highSurrogate(): Char =
     ((this ushr 10) + MIN_HIGH_SURROGATE.toInt()
             - (MIN_SUPPLEMENTARY_CODE_POINT ushr 10)).toChar()
 
-actual fun Codepoint.lowSurrogate(): Char =
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun Codepoint.lowSurrogate(): Char =
     ((this and 0x3ff) + MIN_LOW_SURROGATE.toInt()).toChar()
 
-actual fun surrogateCodepoint(high: Char, low: Char): Codepoint =
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun surrogateCodepoint(high: Char, low: Char): Codepoint =
     (((high - MIN_HIGH_SURROGATE) shl 10)
             + (low - MIN_LOW_SURROGATE)
             + MIN_SUPPLEMENTARY_CODE_POINT)

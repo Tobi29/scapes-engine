@@ -34,10 +34,7 @@
 
 package org.tobi29.kzlib
 
-import org.tobi29.stdex.combineToInt
-import org.tobi29.stdex.combineToShort
-import org.tobi29.stdex.copy
-import org.tobi29.stdex.splitToBytes
+import org.tobi29.stdex.*
 
 /*
      The application must update next_in and avail_in when avail_in has dropped
@@ -70,51 +67,137 @@ import org.tobi29.stdex.splitToBytes
 
 /* constants */
 
-inline val Z_NO_FLUSH get() = 0
-inline val Z_PARTIAL_FLUSH get() = 1
-inline val Z_SYNC_FLUSH get() = 2
-inline val Z_FULL_FLUSH get() = 3
-inline val Z_FINISH get() = 4
-inline val Z_BLOCK get() = 5
-inline val Z_TREES get() = 6
+@Constant
+inline val Z_NO_FLUSH
+    get() = 0
+
+@Constant
+inline val Z_PARTIAL_FLUSH
+    get() = 1
+
+@Constant
+inline val Z_SYNC_FLUSH
+    get() = 2
+
+@Constant
+inline val Z_FULL_FLUSH
+    get() = 3
+
+@Constant
+inline val Z_FINISH
+    get() = 4
+
+@Constant
+inline val Z_BLOCK
+    get() = 5
+
+@Constant
+inline val Z_TREES
+    get() = 6
 /* Allowed flush values; see deflate() and inflate() below for details */
 
-inline val Z_OK get() = 0
-inline val Z_STREAM_END get() = 1
-inline val Z_NEED_DICT get() = 2
-inline val Z_ERRNO get() = -1
-inline val Z_STREAM_ERROR get() = -2
-inline val Z_DATA_ERROR get() = -3
-inline val Z_MEM_ERROR get() = -4
-inline val Z_BUF_ERROR get() = -5
-inline val Z_VERSION_ERROR get() = -6
+@Constant
+inline val Z_OK
+    get() = 0
+
+@Constant
+inline val Z_STREAM_END
+    get() = 1
+
+@Constant
+inline val Z_NEED_DICT
+    get() = 2
+
+@Constant
+inline val Z_ERRNO
+    get() = -1
+
+@Constant
+inline val Z_STREAM_ERROR
+    get() = -2
+
+@Constant
+inline val Z_DATA_ERROR
+    get() = -3
+
+@Constant
+inline val Z_MEM_ERROR
+    get() = -4
+
+@Constant
+inline val Z_BUF_ERROR
+    get() = -5
+
+@Constant
+inline val Z_VERSION_ERROR
+    get() = -6
 /* Return codes for the compression/decompression functions. Negative values
  * are errors, positive values are used for special but normal events.
  */
 
-inline val Z_NO_COMPRESSION get() = 0
-inline val Z_BEST_SPEED get() = 1
-inline val Z_BEST_COMPRESSION get() = 9
-inline val Z_DEFAULT_COMPRESSION get() = -1
+@Constant
+inline val Z_NO_COMPRESSION
+    get() = 0
+
+@Constant
+inline val Z_BEST_SPEED
+    get() = 1
+
+@Constant
+inline val Z_BEST_COMPRESSION
+    get() = 9
+
+@Constant
+inline val Z_DEFAULT_COMPRESSION
+    get() = -1
 /* compression levels */
 
-inline val Z_FILTERED get() = 1
-inline val Z_HUFFMAN_ONLY get() = 2
-inline val Z_RLE get() = 3
-inline val Z_FIXED get() = 4
-inline val Z_DEFAULT_STRATEGY get() = 0
+@Constant
+inline val Z_FILTERED
+    get() = 1
+
+@Constant
+inline val Z_HUFFMAN_ONLY
+    get() = 2
+
+@Constant
+inline val Z_RLE
+    get() = 3
+
+@Constant
+inline val Z_FIXED
+    get() = 4
+
+@Constant
+inline val Z_DEFAULT_STRATEGY
+    get() = 0
 /* compression strategy; see deflateInit2() below for details */
 
-inline val Z_BINARY get() = 0
-inline val Z_TEXT get() = 1
-inline val Z_ASCII get() = Z_TEXT   /* for compatibility with 1.2.2 and earlier */
-inline val Z_UNKNOWN get() = 2
+@Constant
+inline val Z_BINARY
+    get() = 0
+
+@Constant
+inline val Z_TEXT
+    get() = 1
+
+@Constant
+inline val Z_ASCII
+    get() = Z_TEXT   /* for compatibility with 1.2.2 and earlier */
+
+@Constant
+inline val Z_UNKNOWN
+    get() = 2
 /* Possible values of the data_type field for deflate() */
 
-inline val Z_DEFLATED get() = 8
+@Constant
+inline val Z_DEFLATED
+    get() = 8
 /* The deflate compression method (the only one supported in this version) */
 
-inline val Z_NULL get() = null  /* for initializing zalloc, zfree, opaque */
+@Constant
+inline val Z_NULL
+    get() = null  /* for initializing zalloc, zfree, opaque */
 
 class z_stream {
     var next_in: ByteArray? = null /* next input byte */
@@ -555,63 +638,127 @@ internal inline val MAX_MEM_LEVEL get() = 9
 internal inline val MAX_WBITS
     get() = 15
 
-inline val DEF_WBITS get() = MAX_WBITS
+@Constant
+inline val DEF_WBITS
+    get() = MAX_WBITS
 /* default windowBits for decompression. MAX_WBITS is for compression only */
 
-
-inline val DEF_MEM_LEVEL get() = 8
+@Constant
+inline val DEF_MEM_LEVEL
+    get() = 8
 /* default memLevel */
 
-internal inline val STORED_BLOCK get() = 0
-internal inline val STATIC_TREES get() = 1
-internal inline val DYN_TREES get() = 2
+@Constant
+internal inline val STORED_BLOCK
+    get() = 0
+
+@Constant
+internal inline val STATIC_TREES
+    get() = 1
+
+@Constant
+internal inline val DYN_TREES
+    get() = 2
 /* The three kinds of block type */
 
-internal inline val MIN_MATCH get() = 3
-internal inline val MAX_MATCH get() = 258
+@Constant
+internal inline val MIN_MATCH
+    get() = 3
+
+@Constant
+internal inline val MAX_MATCH
+    get() = 258
 /* The minimum and maximum match lengths */
 
-internal const val PRESET_DICT =
-    0x20 /* preset dictionary flag in zlib header */
+@Constant
+internal inline val PRESET_DICT
+    get() = 0x20 /* preset dictionary flag in zlib header */
 
-internal inline val ENOUGH_LENS get() = 852
-internal inline val ENOUGH_DISTS get() = 592
-internal inline val ENOUGH get() = ENOUGH_LENS + ENOUGH_DISTS
+@Constant
+internal inline val ENOUGH_LENS
+    get() = 852
 
-internal inline val LENGTH_CODES get() = 29
+@Constant
+internal inline val ENOUGH_DISTS
+    get() = 592
+
+@Constant
+internal inline val ENOUGH
+    get() = ENOUGH_LENS + ENOUGH_DISTS
+
+@Constant
+internal inline val LENGTH_CODES
+    get() = 29
 /* number of length codes, not counting the special END_BLOCK code */
 
-internal inline val LITERALS get() = 256
+@Constant
+internal inline val LITERALS
+    get() = 256
 /* number of literal bytes 0..255 */
 
-internal inline val L_CODES get() = LITERALS + 1 + LENGTH_CODES
+@Constant
+internal inline val L_CODES
+    get() = LITERALS + 1 + LENGTH_CODES
 /* number of Literal or Length codes, including the END_BLOCK code */
 
-internal inline val D_CODES get() = 30
+@Constant
+internal inline val D_CODES
+    get() = 30
 /* number of distance codes */
 
-internal inline val BL_CODES get() = 19
+@Constant
+internal inline val BL_CODES
+    get() = 19
 /* number of codes used to transfer the bit lengths */
 
-internal inline val HEAP_SIZE get() = 2 * L_CODES + 1
+@Constant
+internal inline val HEAP_SIZE
+    get() = 2 * L_CODES + 1
 /* maximum heap size */
 
-internal inline val MAX_BITS get() = 15
+@Constant
+internal inline val MAX_BITS
+    get() = 15
 /* All codes must not exceed MAX_BITS bits */
 
-internal inline val Buf_size get() = 16
+@Constant
+internal inline val Buf_size
+    get() = 16
 /* size of bit buffer in bi_buf */
 
-internal inline val INIT_STATE get() = 42 /* zlib header -> BUSY_STATE */
+@Constant
+internal inline val INIT_STATE
+    get() = 42 /* zlib header -> BUSY_STATE */
+
 //#ifdef GZIP
-internal inline val GZIP_STATE get() = 57 /* gzip header -> BUSY_STATE | EXTRA_STATE */
+@Constant
+internal inline val GZIP_STATE
+    get() = 57 /* gzip header -> BUSY_STATE | EXTRA_STATE */
 //#endif
-internal inline val EXTRA_STATE get() = 69 /* gzip extra block -> NAME_STATE */
-internal inline val NAME_STATE get() = 73 /* gzip file name -> COMMENT_STATE */
-internal inline val COMMENT_STATE get() = 91 /* gzip comment -> HCRC_STATE */
-internal inline val HCRC_STATE get() = 103 /* gzip header CRC -> BUSY_STATE */
-internal inline val BUSY_STATE get() = 113 /* deflate -> FINISH_STATE */
-internal inline val FINISH_STATE get() = 666 /* stream complete */
+
+@Constant
+internal inline val EXTRA_STATE
+    get() = 69 /* gzip extra block -> NAME_STATE */
+
+@Constant
+internal inline val NAME_STATE
+    get() = 73 /* gzip file name -> COMMENT_STATE */
+
+@Constant
+internal inline val COMMENT_STATE
+    get() = 91 /* gzip comment -> HCRC_STATE */
+
+@Constant
+internal inline val HCRC_STATE
+    get() = 103 /* gzip header CRC -> BUSY_STATE */
+
+@Constant
+internal inline val BUSY_STATE
+    get() = 113 /* deflate -> FINISH_STATE */
+
+@Constant
+internal inline val FINISH_STATE
+    get() = 666 /* stream complete */
 
 internal inline fun Byte.toUInt(): UInt = toInt() and 0xFF
 internal inline fun Byte.toULong(): ULong = toLong() and 0xFF

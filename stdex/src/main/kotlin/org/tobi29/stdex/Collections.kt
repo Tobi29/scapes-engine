@@ -69,7 +69,7 @@ expect class ConcurrentSortedSet<T : Comparable<T>>() : MutableSet<T>
  * @receiver The collection
  * @return A read only view of the collection
  */
-expect inline fun <T> Collection<T>.readOnly(): Collection<T>
+expect fun <T> Collection<T>.readOnly(): Collection<T>
 
 /**
  * Returns an unmodifiable version of the given list
@@ -77,7 +77,7 @@ expect inline fun <T> Collection<T>.readOnly(): Collection<T>
  * @receiver The list
  * @return A read only view of the list
  */
-expect inline fun <T> List<T>.readOnly(): List<T>
+expect fun <T> List<T>.readOnly(): List<T>
 
 /**
  * Returns an unmodifiable version of the given set
@@ -85,7 +85,7 @@ expect inline fun <T> List<T>.readOnly(): List<T>
  * @receiver The set
  * @return A read only view of the set
  */
-expect inline fun <T> Set<T>.readOnly(): Set<T>
+expect fun <T> Set<T>.readOnly(): Set<T>
 
 /**
  * Returns an unmodifiable version of the given map
@@ -94,7 +94,7 @@ expect inline fun <T> Set<T>.readOnly(): Set<T>
  * @receiver The map
  * @return A read only view of the map
  */
-expect inline fun <K, V> Map<K, V>.readOnly(): Map<K, V>
+expect fun <K, V> Map<K, V>.readOnly(): Map<K, V>
 
 /**
  * Returns a synchronized version of the given collection
@@ -102,7 +102,7 @@ expect inline fun <K, V> Map<K, V>.readOnly(): Map<K, V>
  * @receiver The collection
  * @return A synchronized view of the collection
  */
-expect inline fun <T> Collection<T>.synchronized(): Collection<T>
+expect fun <T> Collection<T>.synchronized(): Collection<T>
 
 /**
  * Returns a synchronized version of the given collection
@@ -110,7 +110,7 @@ expect inline fun <T> Collection<T>.synchronized(): Collection<T>
  * @receiver The collection
  * @return A synchronized view of the collection
  */
-expect inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T>
+expect fun <T> MutableCollection<T>.synchronized(): MutableCollection<T>
 
 /**
  * Returns a synchronized version of the given list
@@ -118,7 +118,7 @@ expect inline fun <T> MutableCollection<T>.synchronized(): MutableCollection<T>
  * @receiver The list
  * @return A synchronized view of the list
  */
-expect inline fun <T> List<T>.synchronized(): List<T>
+expect fun <T> List<T>.synchronized(): List<T>
 
 /**
  * Returns a synchronized version of the given list
@@ -126,7 +126,7 @@ expect inline fun <T> List<T>.synchronized(): List<T>
  * @receiver The list
  * @return A synchronized view of the list
  */
-expect inline fun <T> MutableList<T>.synchronized(): MutableList<T>
+expect fun <T> MutableList<T>.synchronized(): MutableList<T>
 
 /**
  * Returns a synchronized version of the given set
@@ -134,7 +134,7 @@ expect inline fun <T> MutableList<T>.synchronized(): MutableList<T>
  * @receiver The set
  * @return A synchronized view of the set
  */
-expect inline fun <T> Set<T>.synchronized(): Set<T>
+expect fun <T> Set<T>.synchronized(): Set<T>
 
 /**
  * Returns a synchronized version of the given set
@@ -142,7 +142,7 @@ expect inline fun <T> Set<T>.synchronized(): Set<T>
  * @receiver The set
  * @return A synchronized view of the set
  */
-expect inline fun <T> MutableSet<T>.synchronized(): MutableSet<T>
+expect fun <T> MutableSet<T>.synchronized(): MutableSet<T>
 
 /**
  * Returns a synchronized version of the given map
@@ -151,7 +151,7 @@ expect inline fun <T> MutableSet<T>.synchronized(): MutableSet<T>
  * @receiver The map
  * @return A synchronized view of the map
  */
-expect inline fun <K, V> Map<K, V>.synchronized(): Map<K, V>
+expect fun <K, V> Map<K, V>.synchronized(): Map<K, V>
 
 /**
  * Returns a synchronized version of the given map
@@ -160,7 +160,7 @@ expect inline fun <K, V> Map<K, V>.synchronized(): Map<K, V>
  * @receiver The map
  * @return A synchronized view of the map
  */
-expect inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V>
+expect fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V>
 
 /**
  * Returns a map using the given enum as keys
@@ -176,18 +176,13 @@ expect inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V>
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-expect fun <K, V> MutableMap<K, V>.putAbsent(
-    key: K, value: V
-): V?
+expect fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V?
 
 /**
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-expect fun <K, V> ConcurrentMap<K, V>.putAbsent(
-    key: K,
-    value: V
-): V?
+expect fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V?
 
 /**
  * Fetch the value for the [key] and remap it using [block]

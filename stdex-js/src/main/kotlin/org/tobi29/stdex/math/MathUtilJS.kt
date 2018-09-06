@@ -18,11 +18,16 @@
 
 package org.tobi29.stdex.math
 
+import org.tobi29.stdex.InlineUtility
 import kotlin.math.ln
 import kotlin.math.pow
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun cbrt(value: Float) = value.pow(1.0f / 3.0f)
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun cbrt(value: Double) = value.pow(1.0 / 3.0)
 
 actual fun Float.floorToInt(): Int = toInt().let { int ->
@@ -65,6 +70,8 @@ actual fun Double.ceilToLong(): Long = toLong().let { int ->
         || int == Long.MAX_VALUE) int else int + 1L
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual fun clz(value: Int) = clzImpl(value)
 
 @Suppress("UnsafeCastFromDynamic")

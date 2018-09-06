@@ -18,7 +18,8 @@
 
 package org.tobi29.stdex
 
-
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun Int.toString(radix: Int): String {
     if (radix !in 1..36)
         throw IllegalArgumentException("Invalid radix: $radix")
@@ -26,6 +27,8 @@ actual inline fun Int.toString(radix: Int): String {
     return asDynamic().toString(radix)
 }
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun Long.toString(radix: Int): String {
     if (radix !in 1L..36L)
         throw IllegalArgumentException("Invalid radix: $radix")
@@ -35,13 +38,15 @@ actual inline fun Long.toString(radix: Int): String {
 
 // Dirty hack, but should be reasonably stable
 
-@Suppress("UnsafeCastFromDynamic")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R {
     val l: Kotlin.Long = asDynamic()
     return output(l.getHighBits(), l.getLowBits())
 }
 
-@Suppress("UnsafeCastFromDynamic")
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")
 actual inline fun combineToLong(i1: Int, i0: Int): Long =
     Kotlin.Long(i0, i1).asDynamic()
 

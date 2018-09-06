@@ -18,6 +18,8 @@
 
 package org.tobi29.stdex
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun Int.toString(radix: Int): String {
     if (radix !in 1..36)
         throw IllegalArgumentException("Invalid radix: $radix")
@@ -25,12 +27,16 @@ actual inline fun Int.toString(radix: Int): String {
     return java.lang.Integer.toString(this, radix)
 }
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun Long.toString(radix: Int): String {
     if (radix !in 1L..36L)
         throw IllegalArgumentException("Invalid radix: $radix")
     return java.lang.Long.toString(this, radix)
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
     let { l ->
         output(
@@ -39,6 +45,8 @@ actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
         )
     }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual fun combineToLong(i1: Int, i0: Int): Long =
     (i1.toLong() and 0xFFFFFFFF shl 32) or
             (i0.toLong() and 0xFFFFFFFF shl 0)

@@ -14,90 +14,118 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.io.tag
+
+import org.tobi29.stdex.InlineUtility
 
 // Unit
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Unit) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Boolean
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Boolean) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Byte
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Byte) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Short
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Short) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Int
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Int) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Long
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Long) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Float
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Float) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Double
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Double) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // ByteArray
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: ByteArray) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // String
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: String) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // ReadTagMap
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: ReadTagMap) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // ReadTagList
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: ReadTagList) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // Sequence<Tag>
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: Sequence<Tag>) = TagList {
     elements.forEach { add(it.toTag()) }
 }
 
 // TagWrite
 /** Returns a new read-only [TagList] of given element */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun tagListOf(vararg elements: TagWrite) = TagList {
     elements.forEach { add(it.toTag()) }
 }

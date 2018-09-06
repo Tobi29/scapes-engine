@@ -16,6 +16,7 @@
 
 package org.tobi29.args
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.assert
 
 /**
@@ -44,7 +45,10 @@ data class CommandLine(
  * Returns `true` if the command line resulted from an aborted parse
  * @return `true` or `false`
  */
-inline val CommandLine.isAborted get() = trail != null
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline val CommandLine.isAborted
+    get() = trail != null
 
 /**
  * Assembles the given parsed tokens for easy access
@@ -139,6 +143,6 @@ fun CommandLine.validate(tokens: Iterable<TokenParser.Token>) {
 fun CommandConfig.parseCommandLine(args: Iterable<String>): CommandLine =
     parseTokens(args).let { (subcommand, tokens) ->
         tokens.assemble(subcommand).also { commandLine ->
-            withArgs(args) { commandLine.validate(tokens) }
+            withTokens(args) { commandLine.validate(tokens) }
         }
     }
