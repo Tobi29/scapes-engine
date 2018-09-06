@@ -22,31 +22,53 @@ import org.tobi29.utils.Identified
 import org.tobi29.utils.Named
 import org.tobi29.utils.Versioned
 
+/**
+ * Base class for application objects handling basic needs such as command line
+ * parsing and status code on exit
+ *
+ * **Note:** Consider using [Application] if possible instead
+ */
 abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
     protected val cli = CommandConfigBuilder()
     val commandConfig: CommandConfig get() = CommandConfig(executableName, cli)
 
+    /**
+     * Should be overridden for application code
+     * @throws InvalidTokensException causes help to be printed before exiting
+     */
     abstract suspend fun execute(commandLine: CommandLine): StatusCode
 
-    override suspend fun execute(args: Array<String>): StatusCode {
-        val commandLine = try {
-            commandConfig.parseCommandLine(args.asIterable())
-        } catch (e: InvalidTokensException) {
-            return handleCommandLineError(e)
-        }
-        handleEarly(commandLine)?.let { return it }
-        return execute(commandLine)
+    final override suspend fun execute(args: Array<String>): StatusCode = try {
+        val commandLine = commandConfig.parseCommandLine(args.asIterable())
+        handleEarly(commandLine) ?: execute(commandLine)
+    } catch (e: InvalidTokensException) {
+        handleCommandLineError(e)
     }
 
+    /**
+     * Called after catching an [InvalidTokensException]
+     */
     protected open fun handleCommandLineError(e: InvalidTokensException): StatusCode {
         return 255
     }
 
+    /**
+     * Called right before calling [execute]
+     *
+     *@return `null` will cause normal execution of [execute] otherwise exits
+     */
     protected open fun handleEarly(commandLine: CommandLine): StatusCode? {
         return null
     }
 }
 
+/**
+ * Base class for application objects handling basic needs such as command line
+ * parsing, status code on exit and help and version display
+ *
+ * Subclasses should implement the metadata properties as well as the [execute]
+ * method to run the application code
+ */
 abstract class Application : BareApplication() {
     private val helpOption = cli.commandFlag(
         setOf('h'), setOf("help"),
