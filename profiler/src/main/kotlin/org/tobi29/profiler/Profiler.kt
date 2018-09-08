@@ -77,7 +77,7 @@ class Node(name: Lazy<String>, val parent: Node? = null) {
     constructor(
         name: String,
         parent: Node? = null
-    ) : this(lazy { name }, parent)
+    ) : this(lazyOf(name), parent)
 
     val name by name
     internal val _children = ConcurrentHashMap<String, Node>()

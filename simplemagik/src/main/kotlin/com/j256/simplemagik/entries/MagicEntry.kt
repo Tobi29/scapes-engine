@@ -76,7 +76,7 @@ data class MagicEntry(
         clearFormat,
         isOptional,
         formatter,
-        lazy { children }
+        lazyOf(children)
     )
 
     /**
