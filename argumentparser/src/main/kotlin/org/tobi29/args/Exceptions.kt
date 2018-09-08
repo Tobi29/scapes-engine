@@ -77,54 +77,21 @@ sealed class InvalidTokenException(
     message: String
 ) : InvalidCommandLineException(tokens, commandLine, message)
 
-sealed class InvalidParameterException(
+sealed class InvalidTokenParameterException(
     tokens: List<String>? = null,
     commandLine: CommandLine,
     override val token: TokenParser.Token.Parameter,
     message: String
-) : InvalidTokenException(tokens, commandLine, token, message)
+) : InvalidTokenException(tokens, commandLine, token, message) {
+    val option get(): CommandOption = token.option
+}
 
-sealed class InvalidArgumentException(
+sealed class InvalidTokenArgumentException(
     tokens: List<String>? = null,
     commandLine: CommandLine,
     override val token: TokenParser.Token.Argument,
     message: String
-) : InvalidTokenException(tokens, commandLine, token, message)
-
-class MissingOptionArgumentException(
-    tokens: List<String>? = null,
-    commandLine: CommandLine,
-    token: TokenParser.Token.Parameter,
-    message: String = "Not enough values supplied for ${token.option.simpleName}"
-) : InvalidParameterException(tokens, commandLine, token, message) {
-    val option get(): CommandOption = token.option
-    val amount get(): Int = option.args.size - token.value.size
-}
-
-class ExtraOptionArgumentException(
-    tokens: List<String>? = null,
-    commandLine: CommandLine,
-    token: TokenParser.Token.Parameter,
-    message: String = "Too many values supplied for ${token.option.simpleName}"
-) : InvalidParameterException(tokens, commandLine, token, message) {
-    val option get(): CommandOption = token.option
-    val amount get(): Int = token.value.size - option.args.size
-}
-
-class MissingArgumentException(
-    tokens: List<String>? = null,
-    commandLine: CommandLine,
-    val argument: CommandArgument,
-    val amount: Int,
-    message: String = "Not enough values supplied for ${argument.name}"
-) : InvalidCommandLineException(tokens, commandLine, message)
-
-class ExtraArgumentException(
-    tokens: List<String>? = null,
-    commandLine: CommandLine,
-    token: TokenParser.Token.Argument,
-    message: String = "Too many values supplied for ${token.argument.name}"
-) : InvalidArgumentException(tokens, commandLine, token, message) {
+) : InvalidTokenException(tokens, commandLine, token, message) {
     val argument get(): CommandArgument = token.argument
 }
 
@@ -135,14 +102,59 @@ class MissingOptionException(
     message: String = "No value given for ${option.simpleName}"
 ) : InvalidCommandLineException(tokens, commandLine, message)
 
+class MissingOptionArgumentException(
+    tokens: List<String>? = null,
+    commandLine: CommandLine,
+    token: TokenParser.Token.Parameter,
+    message: String = "Not enough values supplied for ${token.option.simpleName}"
+) : InvalidTokenParameterException(tokens, commandLine, token, message) {
+    val amount get(): Int = option.args.size - token.value.size
+}
+
+class ExtraOptionArgumentException(
+    tokens: List<String>? = null,
+    commandLine: CommandLine,
+    token: TokenParser.Token.Parameter,
+    message: String = "Too many values supplied for ${token.option.simpleName}"
+) : InvalidTokenParameterException(tokens, commandLine, token, message) {
+    val amount get(): Int = token.value.size - option.args.size
+}
+
 class InvalidOptionArgumentException(
     tokens: List<String>? = null,
     commandLine: CommandLine,
-    val option: CommandOption,
-    val value: List<String>,
-    message: String =
-        "Invalid option for ${option.simpleName} ${value.joinToString(" ")}"
+    token: TokenParser.Token.Parameter,
+    reason: String? = null,
+    message: String = "Invalid option for ${token.option.simpleName
+    }: ${token.value.joinToString(" ")}${
+    if (reason != null) " ($reason)" else ""}\""
+) : InvalidTokenParameterException(tokens, commandLine, token, message)
+
+class MissingArgumentException(
+    tokens: List<String>? = null,
+    commandLine: CommandLine,
+    val argument: CommandArgument,
+    val amount: Int = 1,
+    message: String = "Not enough values supplied for ${argument.name}"
 ) : InvalidCommandLineException(tokens, commandLine, message)
+
+class ExtraArgumentException(
+    tokens: List<String>? = null,
+    commandLine: CommandLine,
+    token: TokenParser.Token.Argument,
+    val amount: Int = 1,
+    message: String = "Too many values supplied for ${token.argument.name}"
+) : InvalidTokenArgumentException(tokens, commandLine, token, message)
+
+class InvalidArgumentException(
+    tokens: List<String>? = null,
+    commandLine: CommandLine,
+    token: TokenParser.Token.Argument,
+    reason: String? = null,
+    message: String = "Invalid argument for ${token.argument.name
+    }: ${token.value}${
+    if (reason != null) " ($reason)" else ""}"
+) : InvalidTokenArgumentException(tokens, commandLine, token, message)
 
 @Suppress("UNCHECKED_CAST")
 fun <E : InvalidTokensException> E.attach(
@@ -162,6 +174,10 @@ fun <E : InvalidTokensException> E.attach(
         StrayArgumentException(
             tokens, argument, message!!
         ) as E
+    is MissingOptionException ->
+        MissingOptionException(
+            tokens, commandLine, option, message!!
+        ) as E
     is MissingOptionArgumentException ->
         MissingOptionArgumentException(
             tokens, commandLine, token, message!!
@@ -170,21 +186,21 @@ fun <E : InvalidTokensException> E.attach(
         ExtraOptionArgumentException(
             tokens, commandLine, token, message!!
         ) as E
+    is InvalidOptionArgumentException ->
+        InvalidOptionArgumentException(
+            tokens, commandLine, token, null, message!!
+        ) as E
     is MissingArgumentException ->
         MissingArgumentException(
             tokens, commandLine, argument, amount, message!!
         ) as E
     is ExtraArgumentException ->
         ExtraArgumentException(
-            tokens, commandLine, token, message!!
+            tokens, commandLine, token, amount, message!!
         ) as E
-    is MissingOptionException ->
-        MissingOptionException(
-            tokens, commandLine, option, message!!
-        ) as E
-    is InvalidOptionArgumentException ->
-        InvalidOptionArgumentException(
-            tokens, commandLine, option, value, message!!
+    is InvalidArgumentException ->
+        InvalidArgumentException(
+            tokens, commandLine, token, null, message!!
         ) as E
     else -> throw IllegalArgumentException("Invalid exception: $this")
 }

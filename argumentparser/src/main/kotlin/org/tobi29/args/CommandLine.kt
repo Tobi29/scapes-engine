@@ -17,6 +17,7 @@
 package org.tobi29.args
 
 import org.tobi29.stdex.InlineUtility
+import org.tobi29.stdex.JvmName
 import org.tobi29.stdex.assert
 
 /**
@@ -28,17 +29,49 @@ data class CommandLine(
      */
     val command: List<CommandConfig>,
     /**
-     * The string parameters from the options
+     * The parameter tokens from the options
      */
-    val parameters: Map<CommandOption, List<List<String>>>,
+    val parameterTokens: Map<CommandOption, List<TokenParser.Token.Parameter>>,
     /**
-     * The arguments in order they appeared in
+     * The argument tokens in order they appeared in
      */
-    val arguments: Map<CommandArgument, List<String>>,
+    val argumentTokens: Map<CommandArgument, List<TokenParser.Token.Argument>>,
     /**
      * Trail tokens after parsing aborted, `null` if no abort occurred
      */
     val trail: List<String>?
+) {
+    /**
+     * The parameters from the options
+     */
+    val parameters: Map<CommandOption, List<List<String>>> =
+        parameterTokens.mapValues { (_, value) -> value.map { it.value } }
+
+    /**
+     * The arguments in order they appeared in
+     */
+    val arguments: Map<CommandArgument, List<String>> =
+        argumentTokens.mapValues { (_, value) -> value.map { it.value } }
+}
+
+/**
+ * Constructs a command line using bare minimum information, useful for tests
+ */
+@JvmName("CommandLineStrings")
+fun CommandLine(
+    command: List<CommandConfig>,
+    parameters: Map<CommandOption, List<List<String>>>,
+    arguments: Map<CommandArgument, List<String>>,
+    trail: List<String>?
+): CommandLine = CommandLine(
+    command,
+    parameters.mapValues { (key, value) ->
+        value.map { TokenParser.Token.Parameter(key, it) }
+    },
+    arguments.mapValues { (key, value) ->
+        value.map { TokenParser.Token.Argument(key, it) }
+    },
+    trail
 )
 
 /**
@@ -57,11 +90,9 @@ inline val CommandLine.isAborted
  */
 fun Iterable<TokenParser.Token>.assemble(command: List<CommandConfig> = emptyList()): CommandLine {
     val parameters = filterIsInstance<TokenParser.Token.Parameter>()
-        .groupBy { it.option }.asSequence()
-        .map { Pair(it.key, it.value.map { it.value }) }.toMap()
+        .groupBy { it.option }
     val arguments = filterIsInstance<TokenParser.Token.Argument>()
-        .groupBy { it.argument }.asSequence()
-        .map { Pair(it.key, it.value.map { it.value }) }.toMap()
+        .groupBy { it.argument }
     val trail = if (none {
             when (it) {
                 is TokenParser.Token.Parameter -> it.option.abortParse
@@ -114,7 +145,8 @@ fun CommandLine.validate(tokens: Iterable<TokenParser.Token>) {
                 null, this,
                 argumentTokens.filter {
                     it.argument == argument
-                }.drop(argument.count.last).first()
+                }.drop(argument.count.last).first(),
+                values.size - argument.count.last
             )
     }
 

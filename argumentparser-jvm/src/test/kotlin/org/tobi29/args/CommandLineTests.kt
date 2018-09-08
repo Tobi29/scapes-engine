@@ -225,7 +225,7 @@ object CommandLineTests : Spek({
                 ) to CommandLine(
                     listOf(command),
                     mapOf(
-                        abortFlag to listOf(emptyList())
+                        abortFlag to listOf(emptyList<String>())
                     ),
                     mapOf(),
                     listOf("-a", "-b", "-c")
@@ -247,7 +247,7 @@ object CommandLineTests : Spek({
                 ) to CommandLine(
                     listOf(command),
                     mapOf(
-                        abortFlag to listOf(emptyList())
+                        abortFlag to listOf(emptyList<String>())
                     ),
                     mapOf(),
                     listOf("-a", "-b", "-c")
@@ -390,7 +390,7 @@ object CommandLineTests : Spek({
                 ) to CommandLine(
                     listOf(command2),
                     mapOf(
-                        abortFlag to listOf(emptyList())
+                        abortFlag to listOf(emptyList<String>())
                     ),
                     mapOf(),
                     emptyList()
@@ -445,7 +445,7 @@ object CommandLineTests : Spek({
                 expected = emptyList<TokenParser.Token>() to CommandLine(
                     listOf(command2),
                     mapOf(),
-                    mapOf(),
+                    mapOf<CommandArgument, List<String>>(),
                     null
                 )
             )
