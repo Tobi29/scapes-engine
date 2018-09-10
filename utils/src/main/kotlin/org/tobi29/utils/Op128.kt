@@ -17,7 +17,7 @@
 package org.tobi29.utils
 
 import org.tobi29.stdex.assert
-import org.tobi29.stdex.math.clz
+import org.tobi29.stdex.clz
 import org.tobi29.stdex.toString
 
 // Min and max unsigned numbers
@@ -470,17 +470,10 @@ private fun sdivImplAMinValue(
 internal fun clzImpl(
     ah: Long,
     al: Long
-): Int =
-    clzImpl(ah).let {
-        if (it < 64) it
-        else it + clzImpl(al)
-    }
-
-internal fun clzImpl(value: Long) =
-    (value ushr 32).toInt().let {
-        if (it == 0) clz(value.toInt()) + 32
-        else clz(it)
-    }
+): Int = clz(ah).let {
+    if (it < 64) it
+    else it + clz(al)
+}
 
 @Suppress("NAME_SHADOWING")
 internal fun stringImpl(
