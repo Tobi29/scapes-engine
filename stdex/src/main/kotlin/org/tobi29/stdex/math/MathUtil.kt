@@ -20,6 +20,7 @@ package org.tobi29.stdex.math
 
 import org.tobi29.stdex.Constant
 import org.tobi29.stdex.InlineUtility
+import org.tobi29.stdex.clz
 import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
@@ -269,6 +270,20 @@ inline fun lb(value: Int): Int {
 }
 
 /**
+ * Computes the logarithm with base 2 of [value]
+ * @param value The value
+ * @return Returns the logarithm with base 2 of [value]
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun lb(value: Long): Long {
+    if (value == 0L) {
+        throw IllegalArgumentException("Calling lb on 0 is not allowed")
+    }
+    return (31 - clz(value)).toLong()
+}
+
+/**
  * Computes the modulus of the given number and [value]
  * Unlike the normal modulo operator this always returns a positive value
  * @param value The divisor
@@ -411,13 +426,6 @@ expect fun Double.ceilToInt(): Int
 expect fun Double.ceilToLong(): Long
 
 /**
- * Counts the amount of leading zeros
- * @param value The value
- * @return The amount of leading zeros in range 0..32
- */
-expect fun clz(value: Int): Int
-
-/**
  * Converts the [Float] from degrees into radians
  * @return Value of the [Float] in radians
  */
@@ -448,3 +456,8 @@ inline fun Float.toDeg(): Float = this * RAD_2_DEG.toFloat()
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 inline fun Double.toDeg(): Double = this * RAD_2_DEG
+
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use function from stdex package")
+inline fun clz(value: Int): Int = clz(value)

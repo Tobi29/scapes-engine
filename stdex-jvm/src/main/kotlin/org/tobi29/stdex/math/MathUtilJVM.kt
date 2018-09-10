@@ -17,7 +17,6 @@
 package org.tobi29.stdex.math
 
 import org.tobi29.stdex.InlineUtility
-import org.tobi29.stdex.PlatformProvidedImplementation
 import kotlin.math.pow
 
 @InlineUtility
@@ -67,7 +66,3 @@ actual fun Double.ceilToLong(): Long = toLong().let { int ->
     if (this <= 0.0 || int.toDouble() == this
         || int == Long.MAX_VALUE) int else int + 1L
 }
-
-@PlatformProvidedImplementation
-@Suppress("NOTHING_TO_INLINE")
-actual fun clz(value: Int) = Integer.numberOfLeadingZeros(value)

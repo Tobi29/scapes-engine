@@ -19,7 +19,6 @@
 package org.tobi29.stdex.math
 
 import org.tobi29.stdex.InlineUtility
-import kotlin.math.ln
 import kotlin.math.pow
 
 @InlineUtility
@@ -68,21 +67,4 @@ actual fun Double.ceilToInt(): Int = toInt().let { int ->
 actual fun Double.ceilToLong(): Long = toLong().let { int ->
     if (this <= 0.0 || int.toDouble() == this
         || int == Long.MAX_VALUE) int else int + 1L
-}
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual fun clz(value: Int) = clzImpl(value)
-
-@Suppress("UnsafeCastFromDynamic")
-private val clzImpl: (Int) -> Int = if (Math.clz !== undefined) Math.clz
-else { value: Int ->
-    if (value == 0) 32
-    else (ln((value ushr 0).toDouble()) * Math.LOG2E)
-        .floorToInt().let { it: Int -> 31 - it }
-}
-
-private external object Math {
-    val LOG2E: Double
-    val clz: ((Int) -> Int)?
 }

@@ -34,19 +34,3 @@ actual inline fun Long.toString(radix: Int): String {
         throw IllegalArgumentException("Invalid radix: $radix")
     return java.lang.Long.toString(this, radix)
 }
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
-    let { l ->
-        output(
-            (l ushr 32).toInt(),
-            (l ushr 0).toInt()
-        )
-    }
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual fun combineToLong(i1: Int, i0: Int): Long =
-    (i1.toLong() and 0xFFFFFFFF shl 32) or
-            (i0.toLong() and 0xFFFFFFFF shl 0)
