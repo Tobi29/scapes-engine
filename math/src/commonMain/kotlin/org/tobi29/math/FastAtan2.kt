@@ -19,13 +19,20 @@
  */
 package org.tobi29.math
 
+import org.tobi29.stdex.Constant
 import kotlin.math.PI
 import kotlin.math.atan
 
 object FastAtan2 {
-    private const val SIZE = 1024
-    private const val STRETCH = PI.toFloat()
-    private const val EZIS = -SIZE
+    @Constant
+    private inline val SIZE
+        get() = 1024
+    @Constant
+    private inline val STRETCH
+        get() = PI.toFloat()
+    @Constant
+    private inline val EZIS
+        get() = -SIZE
     private val ATAN2_TABLE_PPY = FloatArray(SIZE + 1)
     private val ATAN2_TABLE_PPX = FloatArray(SIZE + 1)
     private val ATAN2_TABLE_PNY = FloatArray(SIZE + 1)

@@ -23,6 +23,7 @@
  */
 package org.jbox2d.common
 
+import org.tobi29.stdex.Constant
 import kotlin.math.PI
 
 /**
@@ -31,147 +32,205 @@ import kotlin.math.PI
  */
 object Settings {
     /** A "close to zero" float epsilon value for use  */
-    const val EPSILON = 1.1920928955078125E-7
+    @Constant
+    inline val EPSILON
+        get() = 1.1920928955078125E-7
 
     // Collision
 
     /**
      * The maximum number of contact points between two convex shapes.
      */
-    const val maxManifoldPoints = 2
+    @Constant
+    inline val maxManifoldPoints
+        get() = 2
 
     /**
      * The maximum number of vertices on a convex polygon.
      */
-    const val maxPolygonVertices = 8
+    @Constant
+    inline val maxPolygonVertices
+        get() = 8
 
     /**
      * This is used to fatten AABBs in the dynamic tree. This allows proxies to move by a small amount
      * without triggering a tree adjustment. This is in meters.
      */
-    const val aabbExtension = 0.1
+    @Constant
+    inline val aabbExtension
+        get() = 0.1
 
     /**
      * This is used to fatten AABBs in the dynamic tree. This is used to predict the future position
      * based on the current displacement. This is a dimensionless multiplier.
      */
-    const val aabbMultiplier = 2.0
+    @Constant
+    inline val aabbMultiplier
+        get() = 2.0
 
     /**
      * A small length used as a collision and constraint tolerance. Usually it is chosen to be
      * numerically significant, but visually insignificant.
      */
-    const val linearSlop = 0.005
+    @Constant
+    inline val linearSlop
+        get() = 0.005
 
     /**
      * A small angle used as a collision and constraint tolerance. Usually it is chosen to be
      * numerically significant, but visually insignificant.
      */
-    const val angularSlop = 2.0 / 180.0 * PI
+    @Constant
+    inline val angularSlop
+        get() = 2.0 / 180.0 * PI
 
     /**
      * The radius of the polygon/edge shape skin. This should not be modified. Making this smaller
      * means polygons will have and insufficient for continuous collision. Making it larger may create
      * artifacts for vertex collision.
      */
-    const val polygonRadius = 2.0 * linearSlop
+    @Constant
+    inline val polygonRadius
+        get() = 2.0 * linearSlop
 
     /** Maximum number of sub-steps per contact in continuous physics simulation.  */
-    const val maxSubSteps = 8
+    @Constant
+    inline val maxSubSteps
+        get() = 8
 
     // Dynamics
 
     /**
      * Maximum number of contacts to be handled to solve a TOI island.
      */
-    const val maxTOIContacts = 32
+    @Constant
+    inline val maxTOIContacts
+        get() = 32
 
     /**
      * A velocity threshold for elastic collisions. Any collision with a relative linear velocity
      * below this threshold will be treated as inelastic.
      */
-    const val velocityThreshold = 1.0
+    @Constant
+    inline val velocityThreshold
+        get() = 1.0
 
     /**
      * The maximum linear position correction used when solving constraints. This helps to prevent
      * overshoot.
      */
-    const val maxLinearCorrection = 0.2
+    @Constant
+    inline val maxLinearCorrection
+        get() = 0.2
 
     /**
      * The maximum angular position correction used when solving constraints. This helps to prevent
      * overshoot.
      */
-    const val maxAngularCorrection = 8.0 / 180.0 * PI
+    @Constant
+    inline val maxAngularCorrection
+        get() = 8.0 / 180.0 * PI
 
     /**
      * The maximum linear velocity of a body. This limit is very large and is used to prevent
      * numerical problems. You shouldn't need to adjust this.
      */
-    const val maxTranslation = 2.0
-    const val maxTranslationSquared = maxTranslation * maxTranslation
+    @Constant
+    inline val maxTranslation
+        get() = 2.0
+    @Constant
+    inline val maxTranslationSquared
+        get() = maxTranslation * maxTranslation
 
     /**
      * The maximum angular velocity of a body. This limit is very large and is used to prevent
      * numerical problems. You shouldn't need to adjust this.
      */
-    const val maxRotation = 0.5 * PI
-    const val maxRotationSquared = maxRotation * maxRotation
+    @Constant
+    inline val maxRotation
+        get() = 0.5 * PI
+    @Constant
+    inline val maxRotationSquared
+        get() = maxRotation * maxRotation
 
     /**
      * This scale factor controls how fast overlap is resolved. Ideally this would be 1 so that
      * overlap is removed in one time step. However using values close to 1 often lead to overshoot.
      */
-    const val baumgarte = 0.2
-    const val toiBaugarte = 0.75
+    @Constant
+    inline val baumgarte
+        get() = 0.2
+    @Constant
+    inline val toiBaugarte
+        get() = 0.75
 
     // Sleep
 
     /**
      * The time that a body must be still before it will go to sleep.
      */
-    const val timeToSleep = 0.5
+    @Constant
+    inline val timeToSleep
+        get() = 0.5
 
     /**
      * A body cannot sleep if its linear velocity is above this tolerance.
      */
-    const val linearSleepTolerance = 0.01
+    @Constant
+    inline val linearSleepTolerance
+        get() = 0.01
 
     /**
      * A body cannot sleep if its angular velocity is above this tolerance.
      */
-    const val angularSleepTolerance = 2.0 / 180.0 * PI
+    @Constant
+    inline val angularSleepTolerance
+        get() = 2.0 / 180.0 * PI
 
     // Particle
 
     /**
      * A symbolic constant that stands for particle allocation error.
      */
-    const val invalidParticleIndex = -1
+    @Constant
+    inline val invalidParticleIndex
+        get() = -1
 
     /**
      * The standard distance between particles, divided by the particle radius.
      */
-    const val particleStride = 0.75
+    @Constant
+    inline val particleStride
+        get() = 0.75
 
     /**
      * The minimum particle weight that produces pressure.
      */
-    const val minParticleWeight = 1.0
+    @Constant
+    inline val minParticleWeight
+        get() = 1.0
 
     /**
      * The upper limit for particle weight used in pressure calculation.
      */
-    const val maxParticleWeight = 5.0
+    @Constant
+    inline val maxParticleWeight
+        get() = 5.0
 
     /**
      * The maximum distance between particles in a triad, divided by the particle radius.
      */
-    const val maxTriadDistance = 2
-    const val maxTriadDistanceSquared = maxTriadDistance * maxTriadDistance
+    @Constant
+    inline val maxTriadDistance
+        get() = 2
+    @Constant
+    inline val maxTriadDistanceSquared
+        get() = maxTriadDistance * maxTriadDistance
 
     /**
      * The initial size of particle data buffers.
      */
-    const val minParticleBufferCapacity = 256
+    @Constant
+    inline val minParticleBufferCapacity
+        get() = 256
 }
