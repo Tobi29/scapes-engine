@@ -14,8 +14,50 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":engine")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":arrays")
+                implementation project(":math")
+                implementation project(":tag")
+                implementation project(":utils")
+                implementation project(":graphics-utils")
+                implementation project(":io")
+                implementation project(":logging")
+                implementation project(":engine")
+                implementation project(":shader-compiler")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation rootProject.kotlinJS("kotlin-stdlib")
+                implementation rootProject.webKTBindingsJS("gamepad")
+                implementation rootProject.webKTBindingsJS("webaudio")
+                implementation rootProject.webKTBindingsJS("webgl2")
+                implementation project(":coroutines")
+            }
+        }
+        "jvm-lwjgl3Main" {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+                implementation rootProject.lwjglJVM("lwjgl")
+                implementation rootProject.lwjglJVM("lwjgl-opengles")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.js, "js")
+        fromPreset(presets.jvm, "jvm-lwjgl3")
+    }
 }

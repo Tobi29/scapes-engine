@@ -14,184 +14,79 @@
  * limitations under the License.
  */
 
-// STDEx
+// FIXME: enableFeaturePreview("GRADLE_METADATA")
+enableFeaturePreview("STABLE_PUBLISHING")
+
+// Tier 0
 include "stdex"
-include "stdex-js"
-include "stdex-jvm"
 
-// Logging
-include "logging"
-include "logging-js"
-include "logging-jvm"
-
-// Tag
-include "tag"
-include "tag-js"
-include "tag-jvm"
-include "tag-binary"
-include "tag-binary-js"
-include "tag-binary-jvm"
-include "tag-bundle"
-include "tag-bundle-js"
-include "tag-bundle-jvm"
-include "tag-json"
-include "tag-json-js"
-include "tag-json-jvm"
-
-// Uuid
-include "uuid"
-include "uuid-js"
-include "uuid-jvm"
-
-// Arrays
+// Tier 1
 include "arrays"
-include "arrays-js"
-include "arrays-jvm"
-
-// Argument Parser
-include "argumentparser"
-include "argumentparser-js"
-include "argumentparser-jvm"
-
-// Base64
-include "base64"
-include "base64-js"
-include "base64-jvm"
-
-// Checksums
-include "checksums"
-include "checksums-js"
-include "checksums-jvm"
-
-// Utils
-include "utils"
-include "utils-js"
-include "utils-jvm"
-include "mbeans-cpu-reader-jvm"
-
-// Coroutines
-include "coroutines"
-include "coroutines-js"
-include "coroutines-jvm"
-
-// IO
-include "io"
-include "io-js"
-include "io-jvm"
-include "filesystem"
-include "filesystem-jvm"
-include "filesystem-nio-jvm"
-include "filesystem-io-jvm"
-
-// Compression
-include "compression-deflate"
-include "compression-deflate-js"
-include "compression-deflate-jvm"
-
-// Kzlib
-include "kzlib"
-include "kzlib-js"
-include "kzlib-jvm"
-
-// Content Info
-include "contentinfo"
-include "contentinfo-js"
-include "contentinfo-jvm"
-
-// SimpleMagik
-include "simplemagik"
-include "simplemagik-jvm"
-
-// Math
 include "math"
-include "math-js"
-include "math-jvm"
+include "profiler"
+include "tag"
+include "utils"
+include "uuid"
 
-// Graphics Utils
-include "graphics-utils"
-include "graphics-utils-js"
-include "graphics-utils-jvm"
-
-// Generation Utils
-include "generation-utils"
-include "generation-utils-js"
-include "generation-utils-jvm"
-
-// Chrono
+// Tier 2
+include "argumentparser"
+include "base64"
+include "checksums"
 include "chrono"
-include "chrono-js"
-include "chrono-jvm"
-
-// Platform Integration
-include "platformintegration"
-include "platformintegration-jvm"
-
-// Application Framework
-include "application-framework"
-include "application-framework-jvm"
-
-// SWT Utils
-include "swt-utils-jvm"
-
-// Server Framework
-include "server-framework"
-include "server-framework-js"
-include "server-framework-jvm"
-
-// Codec
-include "codec-jvm"
-include "codec-mp3-jvm"
-include "codec-ogg-jvm"
-include "codec-wav-jvm"
-
-// SQL Framework
-include "sql-framework-jvm"
-include "mariadb-jvm"
-include "sqlite-jvm"
-include "sqljet-jvm"
-
-// Tile Maps
+include "compression-deflate"
+include "contentinfo"
+include "coroutines"
+include "graphics-utils"
+include "io"
+include "logging"
+include "tag-binary"
+include "tag-bundle"
+include "tag-json"
 include "tilemaps"
-include "tilemaps-js"
-include "tilemaps-jvm"
-include "tilemaps-renderer"
-include "tilemaps-renderer-js"
-include "tilemaps-renderer-jvm"
-include "libtiled-jvm"
 
-// JBox2D
+// Tier 3
+include "application-framework"
+include "filesystem"
+include "filesystem-io"
+include "filesystem-nio"
+include "platformintegration"
+
+// Tier 4
+include "codec"
+include "codec-mp3"
+include "codec-ogg"
+include "codec-wav"
+include "generation-utils"
+include "server-framework"
+include "shader-clike"
+include "shader-compiler"
 include "jbox2d"
-include "jbox2d-js"
-include "jbox2d-jvm"
+include "libtiled"
+
+// Sql
+include "sql-framework"
+include "mariadb"
+include "sqlite"
+include "sqljet"
 
 // Engine
 include "engine"
-include "engine-js"
-include "engine-jvm"
-include "shader-clike"
-include "shader-clike-jvm"
-include "shader-compiler"
-include "shader-compiler-js"
-include "shader-compiler-jvm"
-include "shader-parser-jvm"
-
-// Backend
+include "tilemaps-renderer"
 include "gl-backend"
 include "gles-backend"
 include "glfw-backend"
+
+// Misc
+include "mbeans-cpu-reader"
+include "swt-utils"
+
+// Internal
+include "kzlib"
+include "simplemagik"
+include "openal-sounds"
+include "lwjgl3-backend"
 include "stb-truetype-font"
-include "gles-webgl2-backend-js"
-include "openal-sounds-jvm"
-include "lwjgl3-backend-jvm"
-include "glfw-lwjgl3-backend-jvm"
-include "gl-lwjgl3-backend-jvm"
-include "gles-lwjgl3-backend-jvm"
-include "stb-truetype-lwjgl3-font-jvm"
+include "shader-parser-jvm"
 
-// Profiler
-include "profiler"
-include "profiler-js"
-include "profiler-jvm"
-
-// Test Assertions
-include "test-assertions-jvm"
+// Testing
+include "test-assertions"

@@ -14,16 +14,47 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":base64")
-    compile project(":graphics-utils")
-    compile project(":io")
-    compile project(":profiler")
-    compile project(":logging")
-    compile project(":shader-compiler")
-    compile project(":tag-binary")
-    compile project(":coroutines")
-    compile project(":utils")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":arrays")
+                implementation project(":tag")
+                implementation project(":utils")
+                implementation project(":base64")
+                implementation project(":coroutines")
+                implementation project(":graphics-utils")
+                implementation project(":io")
+                implementation project(":logging")
+                implementation project(":math")
+                implementation project(":profiler")
+                implementation project(":shader-compiler")
+                implementation project(":tag-binary")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation rootProject.kotlinJS("kotlin-stdlib")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.js, "js")
+        fromPreset(presets.jvm, "jvm")
+    }
 }

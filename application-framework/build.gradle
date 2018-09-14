@@ -14,9 +14,32 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":argumentparser")
-    compile project(":utils")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":argumentparser")
+                implementation project(":utils")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+                implementation project(":coroutines")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.jvm, "jvm")
+    }
 }

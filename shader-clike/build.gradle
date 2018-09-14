@@ -14,9 +14,34 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":profiler")
-    compile project(":shader-compiler")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":tag")
+                implementation project(":utils")
+                implementation project(":profiler")
+                implementation project(":shader-compiler")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+                implementation project(":shader-parser-jvm")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.jvm, "jvm")
+    }
 }

@@ -14,13 +14,43 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":stdex")
-    compile project(":arrays")
-    compile project(":io")
-    compile project(":logging")
-    compile project(":chrono")
-    compile project(":utils")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":arrays")
+                implementation project(":io")
+                implementation project(":logging")
+                implementation project(":chrono")
+                implementation project(":utils")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.jvm, "jvm")
+    }
+}
+
+task jvmPrintClasspath {
+    def target = kotlin.targets.jvm
+    doLast {
+        println(files(configurations.getByName(
+                target.compilations.main.runtimeDependencyConfigurationName).files,
+                tasks.getByName(target.artifactsTaskName).outputs).asPath)
+    }
 }

@@ -15,11 +15,14 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.2.61"
+    def kotlinVersion = "1.3.20-dev-88"
     def dokkaVersion = "0.9.17"
 
     repositories {
         jcenter()
+        maven {
+            url "https://dl.bintray.com/kotlin/kotlin-dev"
+        }
     }
 
     dependencies {
@@ -34,6 +37,9 @@ allprojects {
     repositories {
         jcenter()
         maven {
+            url "https://dl.bintray.com/kotlin/kotlin-dev"
+        }
+        maven {
             url "https://dl.bintray.com/spekframework/spek-dev"
         }
         maven {
@@ -43,10 +49,22 @@ allprojects {
             url "https://jitpack.io"
         }
     }
+
+    afterEvaluate {
+        def kotlin = extensions.findByName("kotlin")
+        if (kotlin != null) {
+            kotlin.sourceSets.each {
+                it.languageSettings {
+                    languageVersion = "1.2"
+                    apiVersion = "1.2"
+                }
+            }
+        }
+    }
 }
 
 ext {
-    kotlinVersion = "1.2.61"
+    kotlinVersion = "1.2.70"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }

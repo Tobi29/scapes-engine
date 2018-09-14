@@ -14,9 +14,39 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":utils")
-    compile rootProject.ext.kotlinxCoroutines("kotlinx-coroutines-core")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                api rootProject.kotlinxCoroutines("kotlinx-coroutines-core")
+                implementation project(":stdex")
+                implementation project(":utils")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation rootProject.kotlinJS("kotlin-stdlib")
+                api rootProject.kotlinxCoroutinesJS("kotlinx-coroutines-core")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+                api rootProject.kotlinxCoroutinesJVM("kotlinx-coroutines-core")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.js, "js")
+        fromPreset(presets.jvm, "jvm")
+    }
 }

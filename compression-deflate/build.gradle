@@ -14,8 +14,39 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":io")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":arrays")
+                implementation project(":io")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+                implementation project(":utils")
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation rootProject.kotlinJS("kotlin-stdlib")
+                implementation project(":kzlib")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.js, "js")
+        fromPreset(presets.jvm, "jvm")
+    }
 }

@@ -14,9 +14,17 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulejava.gradle"
+
+apply plugin: "maven-publish"
+apply plugin: "java"
 apply plugin: "antlr"
 apply plugin: "idea"
+
+sourceCompatibility = 1.7
+
+configurations {
+    sources
+}
 
 dependencies {
     compile rootProject.ext.antlrJVM("antlr4-runtime")
@@ -26,6 +34,32 @@ dependencies {
 
 configurations.compile.exclude group: "org.antlr", module: "antlr4"
 configurations.runtime.exclude group: "org.antlr", module: "antlr4"
+
+task sourcesJar(type: Jar) {
+    classifier = "sources"
+    dependsOn configurations.sources
+    from {
+        configurations.sources.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+    sources sourcesJar
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+        }
+    }
+}
 
 task antlrJS(type: AntlrTask) {
     def cmd = new ArrayList<String>()

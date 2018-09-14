@@ -14,9 +14,44 @@
  * limitations under the License.
  */
 
-apply from: "$rootDir/resources/modulekotlin.gradle"
+apply plugin: "maven-publish"
+apply plugin: "kotlin-multiplatform"
 
-dependencies {
-    compile project(":engine")
-    compile project(":platformintegration")
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation rootProject.kotlin("kotlin-stdlib")
+                implementation project(":stdex")
+                implementation project(":arrays")
+                implementation project(":coroutines")
+                implementation project(":math")
+                implementation project(":tag")
+                implementation project(":utils")
+                implementation project(":io")
+                implementation project(":logging")
+                implementation project(":profiler")
+                implementation project(":filesystem")
+                implementation project(":platformintegration")
+                implementation project(":engine")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation project(":test-assertions")
+            }
+        }
+        "jvm-lwjgl3Main" {
+            dependencies {
+                implementation rootProject.kotlinJVM("kotlin-stdlib")
+                implementation rootProject.lwjglJVM("lwjgl")
+                implementation rootProject.lwjglJVM("lwjgl-glfw")
+                implementation rootProject.lwjglJVM("lwjgl-tinyfd")
+                implementation project(":lwjgl3-backend")
+            }
+        }
+    }
+    targets {
+        fromPreset(presets.jvm, "jvm-lwjgl3")
+    }
 }
