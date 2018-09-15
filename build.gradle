@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.3.20-dev-88"
+    def kotlinVersion = "1.3.20-dev-110"
     def dokkaVersion = "0.9.17"
 
     repositories {
@@ -53,8 +53,8 @@ allprojects {
     afterEvaluate {
         def kotlin = extensions.findByName("kotlin")
         if (kotlin != null) {
-            kotlin.sourceSets.each {
-                it.languageSettings {
+            kotlin.sourceSets.each { sourceSet ->
+                sourceSet.languageSettings {
                     languageVersion = "1.2"
                     apiVersion = "1.2"
                 }
@@ -73,11 +73,11 @@ ext {
     kotlinxCoroutines = { module ->
         "org.jetbrains.kotlinx:$module-common:$kotlinxCoroutinesVersion"
     }
-    kotlinxCoroutinesJVM = {
-        module -> "org.jetbrains.kotlinx:$module:$kotlinxCoroutinesVersion"
+    kotlinxCoroutinesJVM = { module ->
+        "org.jetbrains.kotlinx:$module:$kotlinxCoroutinesVersion"
     }
-    kotlinxCoroutinesJS = {
-        module -> "org.jetbrains.kotlinx:$module-js:$kotlinxCoroutinesVersion"
+    kotlinxCoroutinesJS = { module ->
+        "org.jetbrains.kotlinx:$module-js:$kotlinxCoroutinesVersion"
     }
 
     slf4jVersion = "1.7.25"
@@ -119,8 +119,8 @@ ext {
     jlayerJVM = { module -> "javazoom:$module:$jlayerVersion" }
 
     concentusVersion = "fdf276ed6b"
-    concentusJVM = {
-        module -> "com.github.lostromb.concentus:$module:$concentusVersion"
+    concentusJVM = { module ->
+        "com.github.lostromb.concentus:$module:$concentusVersion"
     }
 
     jorbisVersion = "0.0.17"
