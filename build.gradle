@@ -60,6 +60,14 @@ allprojects {
                 }
             }
         }
+
+        tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile) {
+            compileTask ->
+                compileTask.kotlinOptions.metaInfo = true
+                compileTask.kotlinOptions.sourceMap = true
+                compileTask.kotlinOptions.sourceMapEmbedSources = "always"
+                compileTask.kotlinOptions.moduleKind = "umd"
+        }
     }
 }
 
