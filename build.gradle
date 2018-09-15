@@ -59,6 +59,45 @@ allprojects {
                     apiVersion = "1.2"
                 }
             }
+
+            // Clean, nice, future proof code:
+            def lwjgl3Modules = ["gl-backend", "gles-backend", "glfw-backend",
+                    "lwjgl3-backend", "stb-truetype-font"]
+
+            kotlin.targets.each { target ->
+                def publication = publishing.publications.getByName(target.name)
+                publication.pom.withXml {
+                    def root = asNode()
+                    def dependencies = root.get("dependencies")[0]
+                    if (dependencies == null) {
+                        dependencies = root.appendNode("dependencies")
+                    }
+                    publication.pom.runtimeDependencies
+                            .each { mavenDependency ->
+                        def groupId = mavenDependency.groupId
+                        if (groupId != group) {
+                            return
+                        }
+                        def artifactId = mavenDependency.artifactId
+                        def suffix = target.name
+                        if (suffix == "jvm-lwjgl3") {
+                            suffix = "jvm"
+                        }
+                        if (suffix == "jvm" &&
+                                lwjgl3Modules.contains(artifactId)) {
+                            suffix = "jvm-lwjgl3"
+                        }
+                        def dependency = dependencies.
+                                appendNode("dependency")
+                        dependency.appendNode("groupId", groupId)
+                        dependency.
+                                appendNode("artifactId", "$artifactId-$suffix")
+                        dependency.
+                                appendNode("version", mavenDependency.version)
+                        dependency.appendNode("scope", "runtime")
+                    }
+                }
+            }
         }
 
         tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile) {
