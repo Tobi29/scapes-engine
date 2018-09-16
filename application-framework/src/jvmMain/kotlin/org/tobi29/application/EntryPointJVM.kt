@@ -21,6 +21,6 @@ import kotlin.system.exitProcess
 
 actual abstract class EntryPoint actual constructor() : Program
 
-fun EntryPoint.executeMain(args: Array<String>) {
-    exitProcess(runBlocking { execute(args) })
+fun EntryPoint.executeMain(arguments: Array<String>) {
+    exitProcess(runBlocking { execute(arguments) })
 }

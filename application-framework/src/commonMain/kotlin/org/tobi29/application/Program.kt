@@ -19,5 +19,5 @@ package org.tobi29.application
 typealias StatusCode = Int
 
 interface Program {
-    suspend fun execute(args: Array<String>): StatusCode
+    suspend fun execute(arguments: Array<String>): StatusCode
 }

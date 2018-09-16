@@ -38,9 +38,11 @@ abstract class BareApplication : EntryPoint(), Identified, Named, Versioned {
      */
     abstract suspend fun execute(commandLine: CommandLine): StatusCode
 
-    final override suspend fun execute(args: Array<String>): StatusCode = try {
-        val commandLine = commandConfig.parseCommandLine(args.asIterable())
-        withTokens(args.asIterable()) {
+    final override suspend fun execute(
+        arguments: Array<String>
+    ): StatusCode = try {
+        val commandLine = commandConfig.parseCommandLine(arguments.asIterable())
+        withTokens(arguments.asIterable()) {
             handleEarly(commandLine) ?: execute(commandLine)
         }
     } catch (e: InvalidTokensException) {
