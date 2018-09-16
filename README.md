@@ -67,7 +67,7 @@ build.
 Random extensions to the Kotlin stdlib to make multiplatform code easier.
 
 ### Artifacts
-  * stdex
+  * stdex-metadata
   * stdex-js
   * stdex-jvm
 
@@ -75,7 +75,7 @@ Random extensions to the Kotlin stdlib to make multiplatform code easier.
 Basic logging facade, backing into a platform specific implementaion.
 
 ### Artifacts
-  * logging
+  * logging-metadata
   * logging-js
   * logging-jvm
 
@@ -87,16 +87,16 @@ Tag structure classes as a universal JSON-like memory structure for
 dynamic hierarchical data.
 
 ### Artifacts
-  * tag
+  * tag-metadata
   * tag-js
   * tag-jvm
-  * tag-binary
+  * tag-binary-metadata
   * tag-binary-js
   * tag-binary-jvm
-  * tag-bundle
+  * tag-bundle-metadata
   * tag-bundle-js
   * tag-bundle-jvm
-  * tag-json
+  * tag-json-metadata
   * tag-json-js
   * tag-json-jvm
 
@@ -104,7 +104,7 @@ dynamic hierarchical data.
 A cross-platform Uuid class.
 
 ### Artifacts
-  * uuid
+  * uuid-metadata
   * uuid-js
   * uuid-jvm
 
@@ -114,7 +114,7 @@ very generic parameter types (whilst avoiding the more complex collections
 from Kotlin).
 
 ### Artifacts
-  * arrays
+  * arrays-metadata
   * arrays-js
   * arrays-jvm
 
@@ -127,7 +127,7 @@ Allows building metadata once and parsing commands using that on threads
 in parallel multiple times.
 
 ### Artifacts
-  * argumentparser
+  * argumentparser-metadata
   * argumentparser-js
   * argumentparser-jvm
 
@@ -136,7 +136,7 @@ Simple base 64 encoder and decoder with very flexible input and output
 handling.
 
 ### Artifacts
-  * base64
+  * base64-metadata
   * base64-js
   * base64-jvm
 
@@ -147,7 +147,7 @@ The JVM version uses the `MessageDigest` class wherever appropriate in order to
 keep things lightweight.
 
 ### Artifacts
-  * checksums
+  * checksums-metadata
   * checksums-js
   * checksums-jvm
 
@@ -159,7 +159,7 @@ Depends on various libraries that provide features available in Java 8 to
 allow easier Android support.
 
 ### Artifacts
-  * utils
+  * utils-metadata
   * utils-js
   * utils-jvm
 
@@ -170,7 +170,7 @@ In particular useful to write cross-platform code that takes advantage of
 threads on the JVM but relies on coroutines on JS.
 
 ### Artifacts
-  * coroutines
+  * coroutines-metadata
   * coroutines-js
   * coroutines-jvm
 
@@ -186,10 +186,10 @@ Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
 Android or other platforms lacking support for `java.nio.file`.
 
 ### Artifacts
-  * io
+  * io-metadata
   * io-js
   * io-jvm
-  * filesystem
+  * filesystem-metadata
   * filesystem-jvm
   * filesystem-nio-jvm (not recommended on Android)
   * filesystem-io-jvm (only recommended on Android)
@@ -199,7 +199,7 @@ Utilities for inspecting file contents, such as guessing the
 MIME types (aka Media Types) of some data.
 
 ### Artifacts
-  * contentinfo
+  * contentinfo-metadata
   * contentinfo-js
   * contentinfo-jvm
 
@@ -212,7 +212,7 @@ useful for game development, as well as a cross platform alternative to
 `java.util.Random`.
 
 ### Artifacts
-  * math
+  * math-metadata
   * math-js
   * math-jvm
 
@@ -223,7 +223,7 @@ Contains a PNG decoder and encoder function and a simple
 Image class to pass around images and do copy paste operations on them.
 
 ### Artifacts
-  * graphics-utils
+  * graphics-utils-metadata
   * graphics-utils-js
   * graphics-utils-jvm
 
@@ -232,7 +232,7 @@ Various utilities for procedural generation, such as Perlin and OpenSimplex
 noise, noise transformations and maze generators
 
 ### Artifacts
-  * generation-utils
+  * generation-utils-metadata
   * generation-utils-js
   * generation-utils-jvm
 
@@ -240,7 +240,7 @@ noise, noise transformations and maze generators
 Basic calendar classes and convertion from time instants to dates and time.
 
 ### Artifacts
-  * chrono
+  * chrono-metadata
   * chrono-js
   * chrono-jvm
 
@@ -251,7 +251,7 @@ Includes cross-platform functions for retrieving platform info,
 environment variables and standard paths.
 
 ### Artifacts
-  * platformintegration
+  * platformintegration-metadata
   * platformintegration-jvm
 
 ## Application Framework
@@ -262,7 +262,8 @@ Automatically provides infrastructure for command line parsing, exit codes
 and program metadata.
 
 ### Artifacts
-  * application-framework
+  * application-framework-metadata
+  * application-framework-js
   * application-framework-jvm
 
 ## SWT Utils
@@ -279,6 +280,8 @@ Various utilities for non-blocking protocol implementations and
 encryption using SSL/TLS.
 
 ### Artifacts
+  * server-framework-metadata
+  * server-framework-js
   * server-framework-jvm
 
 ## Codec
@@ -286,7 +289,7 @@ Audio decoding library that can use mime-types to identify the format
 and load an appropriate decoder through an SPI.
 
 ### Artifacts
-  * codec-jvm
+  * codec-jvm-metadata
   * codec-mp3-jvm
   * codec-ogg-jvm (Includes both Vorbis and Opus support)
   * codec-wav-jvm
@@ -315,7 +318,7 @@ A JVM-only parser for [Tiled](https://mapeditor.org) maps can be found in
 the LibTiled artifact, which in turn is loosely based on their old Java library.
 
 ### Artifacts
-  * tilemaps
+  * tilemaps-metadata
   * tilemaps-js
   * tilemaps-jvm
   * libtiled-jvm
@@ -327,7 +330,7 @@ Straps together a backend and various utilities to allow cross-platform
 development of games or more sophisticated engines
 
 ### Artifacts
-  * engine
+  * engine-metadata
   * engine-js
   * gles-webgl2-backend-js (Backend supporting WebGL 2 and WebAudio)
   * engine-jvm
@@ -342,7 +345,7 @@ Tracing profiler facade to allow cross platform code to take advantage
 of platform specific trace apis (e.g. Android).
 
 ### Artifacts
-  * profiler
+  * profiler-metadata
   * profiler-js
   * profiler-jvm
 
