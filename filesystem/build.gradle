@@ -45,6 +45,12 @@ kotlin {
     }
 }
 
+jvmTest {
+    useJUnitPlatform {
+        includeEngines "spek2"
+    }
+}
+
 tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinCompile) { compileTask ->
     compileTask.kotlinOptions.freeCompilerArgs += "-Xallow-kotlin-package"
 }

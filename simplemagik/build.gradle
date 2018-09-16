@@ -46,6 +46,12 @@ kotlin {
     }
 }
 
+jvmTest {
+    useJUnitPlatform {
+        includeEngines "spek2"
+    }
+}
+
 task jvmPrintClasspath {
     def target = kotlin.targets.jvm
     doLast {

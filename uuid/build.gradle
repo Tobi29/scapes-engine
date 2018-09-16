@@ -48,3 +48,9 @@ kotlin {
         fromPreset(presets.jvm, "jvm")
     }
 }
+
+jvmTest {
+    useJUnitPlatform {
+        includeEngines "spek2"
+    }
+}

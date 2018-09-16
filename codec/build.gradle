@@ -46,3 +46,9 @@ kotlin {
     }
 }
 
+jvmTest {
+    useJUnitPlatform {
+        includeEngines "spek2"
+    }
+}
+
