@@ -48,9 +48,11 @@ A Kotlin/Native based port seems feasible as well by now, but requires quite a
 bit more work.
 
 ### Kotlin/Native
-Many modules run on Kotlin/Native by now, however things are still very fast
-moving and unstable. Currently the last showstopper that needs to be overcome
-is `kotlinx.coroutines` support.
+The engine has been successfully compiled and run using Kotlin/Native by
+implementing the backend modules used for the jvm as well, with a reasonable
+amount of modules working.
+Once the transition to the new multiplatform is complete first code pushes
+should be possible.
 
 ## Build
 The project uses Gradle to build all modules.
@@ -289,7 +291,7 @@ Audio decoding library that can use mime-types to identify the format
 and load an appropriate decoder through an SPI.
 
 ### Artifacts
-  * codec-jvm-metadata
+  * codec-metadata
   * codec-mp3-jvm
   * codec-ogg-jvm (Includes both Vorbis and Opus support)
   * codec-wav-jvm
@@ -329,13 +331,21 @@ General purpose engine foundation
 Straps together a backend and various utilities to allow cross-platform
 development of games or more sophisticated engines
 
+On Kotlin/JVM at least either `gl-backend-jvm-lwjgl3` or
+`gles-backend-jvm-lwjgl3` should be used together with `glfw-backend-jvm-lwjgl3`
+in order to start the engine.
+
+On Kotlin/JS `gles-backend-js` provides everything needed for starting
+the engine in an HTML 5 canvas.
+
 ### Artifacts
   * engine-metadata
   * engine-js
-  * gles-webgl2-backend-js (Backend supporting WebGL 2 and WebAudio)
+  * gles-backend-js (Backend supporting WebGL 2 and WebAudio)
   * engine-jvm
-  * glfw-backend-jvm (Backend supporting OpenGL 3.3, OpenGLES 3.0 using LWJGL
-    for bindings)
+  * gl-backend-jvm-lwjgl3 (OpenGL 3.3 using LWJGL 3 for bindings)
+  * gles-backend-jvm-lwjgl3 (OpenGL ES 3.0 using LWJGL 3 for bindings)
+  * glfw-backend-jvm-lwjgl3 (GLFW and OpenAL Soft using LWJGL 3 for bindings)
 
 ### Dependencies
   * [LWJGL](http://lwjgl.org)
