@@ -76,7 +76,7 @@ actual class ConcurrentSortedSet<T : Comparable<T>> : AbstractMutableSet<T>(),
             for (j in 0 until i) {
                 newList.add(list[j])
             }
-            for (j in i until list.size) {
+            for (j in i + 1 until list.size) {
                 newList.add(list[j])
             }
             list = newList
