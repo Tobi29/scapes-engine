@@ -16,6 +16,9 @@
 
 package org.tobi29.utils
 
+import org.w3c.dom.Window
+import kotlin.browser.window
+
 @PublishedApi
 internal object JSClock : Clock {
     override fun timeMillis(): InstantMillis =
@@ -28,17 +31,55 @@ internal object JSClock : Clock {
 @PublishedApi
 internal object JSSteadyClock : SteadyClock {
     override fun timeSteadyNanos(): InstantSteadyNanos =
-        (performance.now() * 1000000.0).toLong()
+        timeSteadyNanosImpl()
+}
+
+private val timeSteadyNanosImpl: () -> InstantSteadyNanos = run {
+    if (window.performanceNowSupported) {
+        val performance = window.performance
+        return@run {
+            (performance.now() * 1000000.0).toLong()
+        }
+    }
+    if (window.processHrtimeSupported) {
+        val process = window.process
+        return@run {
+            val time = process.hrtime()
+            time[0] * 1000000000L + time[1]
+        }
+    }
+    console.warn(
+        "Neither `performance.now()` nor `process.hrtime()` are available, ${""
+        }`steadyClock` may not be monotonic or might be inaccurate due to ${""
+        }using `Date.now()` as fallback."
+    )
+    return@run {
+        (Date.now() * 1000000.0).toLong()
+    }
 }
 
 actual inline val systemClock: Clock get() = JSClock
 
 actual inline val steadyClock: SteadyClock get() = JSSteadyClock
 
-private external val performance: Performance
+private inline val Window.performanceSupported: Boolean
+    get() = performance.asDynamic() != undefined
 
-private abstract external class Performance {
-    fun now(): Double
+private inline val Window.performanceNowSupported: Boolean
+    get() = performanceSupported && performance.asDynamic().now != undefined
+
+private inline val Window.processSupported: Boolean
+    get() = process.asDynamic() != undefined
+
+private inline val Window.processHrtimeSupported: Boolean
+    get() = processSupported && process.asDynamic().hrtime != undefined
+
+@Suppress("UnsafeCastFromDynamic")
+private inline val Window.process: Process
+    get() = asDynamic().process
+
+private external interface Process {
+    fun hrtime(time: Array<Int> = definedExternally): Array<Int>
 }
 
 private external class Date {
