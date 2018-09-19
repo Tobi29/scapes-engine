@@ -32,7 +32,15 @@ class ConcurrentOrderedCollection<T>(
     override fun add(element: T) =
         set.add(Entry(element, nextUid(), comparator))
 
-    override fun addAll(elements: Collection<T>) = elements.any { add(it) }
+    override fun addAll(elements: Collection<T>): Boolean {
+        var modified = false
+        for (element in elements) {
+            if (add(element)) {
+                modified = true
+            }
+        }
+        return modified
+    }
 
     override fun clear() = set.clear()
 
