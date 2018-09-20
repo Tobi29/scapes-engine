@@ -28,8 +28,8 @@ infix fun <T : Comparable<T>> ClosedRange<T>.shouldContainAll(elements: Iterable
 infix fun <T : Comparable<T>> ClosedRange<T>.shouldNotContain(element: T) =
     asserter.assertNotContains(this, element)
 
-infix fun <T : Comparable<T>> ClosedRange<T>.shouldNotContainAll(elements: Iterable<T>) =
-    asserter.assertNotContainsAll(this, elements)
+infix fun <T : Comparable<T>> ClosedRange<T>.shouldNotContainAny(elements: Iterable<T>) =
+    asserter.assertNotContainsAny(this, elements)
 
 fun <T : Comparable<T>> Asserter.assertContains(
     range: ClosedRange<T>,
@@ -67,7 +67,7 @@ fun <T : Comparable<T>> Asserter.assertNotContains(
     }, !range.contains(element))
 }
 
-fun <T : Comparable<T>> Asserter.assertNotContainsAll(
+fun <T : Comparable<T>> Asserter.assertNotContainsAny(
     range: ClosedRange<T>,
     elements: Iterable<T>,
     message: String? = null

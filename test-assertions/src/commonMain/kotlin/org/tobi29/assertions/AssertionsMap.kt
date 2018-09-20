@@ -28,8 +28,8 @@ infix fun <K, V> Map<K, V>.shouldContainKeyAll(keys: Iterable<K>) =
 infix fun <K, V> Map<K, V>.shouldNotContainKey(key: K) =
     asserter.assertNotContainsKey(this, key)
 
-infix fun <K, V> Map<K, V>.shouldNotContainKeyAll(keys: Iterable<K>) =
-    asserter.assertNotContainsKeyAll(this, keys)
+infix fun <K, V> Map<K, V>.shouldNotContainKeyAny(keys: Iterable<K>) =
+    asserter.assertNotContainsKeyAny(this, keys)
 
 infix fun <K, V> Map<K, V>.shouldContainValue(value: V) =
     asserter.assertContainsValue(this, value)
@@ -40,8 +40,8 @@ infix fun <K, V> Map<K, V>.shouldContainValueAll(values: Iterable<V>) =
 infix fun <K, V> Map<K, V>.shouldNotContainValue(value: V) =
     asserter.assertNotContainsValue(this, value)
 
-infix fun <K, V> Map<K, V>.shouldNotContainValueAll(values: Iterable<V>) =
-    asserter.assertNotContainsValueAll(this, values)
+infix fun <K, V> Map<K, V>.shouldNotContainValueAny(values: Iterable<V>) =
+    asserter.assertNotContainsValueAny(this, values)
 
 fun <K, V> Asserter.assertContainsKey(
     map: Map<K, V>,
@@ -79,7 +79,7 @@ fun <K, V> Asserter.assertNotContainsKey(
     }, !map.containsKey(key))
 }
 
-fun <K, V> Asserter.assertNotContainsKeyAll(
+fun <K, V> Asserter.assertNotContainsKeyAny(
     map: Map<K, V>,
     keys: Iterable<K>,
     message: String? = null
@@ -127,7 +127,7 @@ fun <K, V> Asserter.assertNotContainsValue(
     }, !map.containsValue(value))
 }
 
-fun <K, V> Asserter.assertNotContainsValueAll(
+fun <K, V> Asserter.assertNotContainsValueAny(
     map: Map<K, V>,
     values: Iterable<V>,
     message: String? = null

@@ -16,9 +16,9 @@
 
 package org.tobi29.assertions.suites
 
-import org.spekframework.spek2.style.specification.Suite
+import org.spekframework.spek2.style.gherkin.FeatureBody
 
-fun Suite.implySetBehaviour(
+fun FeatureBody.implySetBehaviour(
     constructor: () -> MutableSet<String>
 ) {
     implyCollectionBehaviour(constructor)

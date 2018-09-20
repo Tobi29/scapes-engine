@@ -31,8 +31,8 @@ infix fun <E> Collection<E>.shouldContainAll(elements: Collection<E>) =
 infix fun <E> Collection<E>.shouldNotContain(element: E) =
     asserter.assertNotContains(this, element)
 
-infix fun <E> Collection<E>.shouldNotContainAll(elements: Iterable<E>) =
-    asserter.assertNotContainsAll(this, elements)
+infix fun <E> Collection<E>.shouldNotContainAny(elements: Iterable<E>) =
+    asserter.assertNotContainsAny(this, elements)
 
 fun <E> Asserter.assertContains(
     collection: Collection<E>,
@@ -82,7 +82,7 @@ fun <E> Asserter.assertNotContains(
     }, !collection.contains(element))
 }
 
-fun <E> Asserter.assertNotContainsAll(
+fun <E> Asserter.assertNotContainsAny(
     collection: Collection<E>,
     elements: Iterable<E>,
     message: String? = null

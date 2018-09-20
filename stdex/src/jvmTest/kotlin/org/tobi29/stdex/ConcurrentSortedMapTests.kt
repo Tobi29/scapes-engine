@@ -17,11 +17,11 @@
 package org.tobi29.stdex
 
 import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
+import org.spekframework.spek2.style.gherkin.Feature
 import org.tobi29.assertions.suites.implyMapBehaviour
 
 object ConcurrentSortedMapTests : Spek({
-    describe("a concurrent sorted map") {
+    Feature("a concurrent sorted map") {
         implyMapBehaviour { ConcurrentSortedMap() }
     }
 })

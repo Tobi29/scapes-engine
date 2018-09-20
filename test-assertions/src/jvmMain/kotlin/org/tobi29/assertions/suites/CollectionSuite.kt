@@ -16,10 +16,10 @@
 
 package org.tobi29.assertions.suites
 
-import org.spekframework.spek2.style.specification.Suite
+import org.spekframework.spek2.style.gherkin.FeatureBody
 import org.tobi29.assertions.*
 
-fun Suite.implyCollectionBehaviour(
+fun FeatureBody.implyCollectionBehaviour(
     constructor: () -> MutableCollection<String>
 ) {
     val makeEmpty = { constructor() }
@@ -31,67 +31,83 @@ fun Suite.implyCollectionBehaviour(
             add("D")
         }
     }
-    val inputsAny = listOf(makeEmpty, makeBasic)
-    inputsAny.forEachResult { collection ->
+    val inputsAny by memoized { listOf(makeEmpty, makeBasic) }
+    Scenario("adding one element to a collection") {
         val add = "C"
-        describe("after adding \"$add\" to $collection") {
+        inputsAny.forEachResult { collection ->
             val initialSize = collection.size
-            val modified = collection.add(add)
-            val expectedSize =
-                (if (modified) initialSize + 1 else initialSize)..
-                        (initialSize + 1)
-            it("should contain \"$add\"") {
+            var modified = false
+            Given("the collection $collection") {}
+            When("adding \"$add\" to the collection") {
+                modified = collection.add(add)
+            }
+            Then("should contain \"$add\"") {
                 collection shouldContain add
             }
-            it("should have a size in range $expectedSize") {
+            And("should have an expected size") {
+                val expectedSize =
+                    (if (modified) initialSize + 1 else initialSize)..
+                            (initialSize + 1)
                 expectedSize shouldContain collection.size
             }
         }
     }
-    inputsAny.forEachResult { collection ->
+    Scenario("adding elements to a collection") {
         val add = listOf("C", "D", "E")
-        describe("after adding \"$add\" to $collection") {
+        inputsAny.forEachResult { collection ->
             val initialSize = collection.size
-            val modified = collection.addAll(add)
-            val expectedSize =
-                (if (modified) initialSize + 1 else initialSize)..
-                        (initialSize + add.size)
-            it("should contain \"$add\"") {
+            var modified = false
+            Given("the collection $collection") {}
+            When("adding \"$add\" to the collection") {
+                modified = collection.addAll(add)
+            }
+            Then("should contain \"$add\"") {
                 collection shouldContainAll add
             }
-            it("should have a size in range $expectedSize") {
+            And("should have an expected size") {
+                val expectedSize =
+                    (if (modified) initialSize + 1 else initialSize)..
+                            (initialSize + add.size)
                 expectedSize shouldContain collection.size
             }
         }
     }
-    inputsAny.forEachResult { collection ->
+    Scenario("removing one element from a collection") {
         val remove = "C"
-        describe("after removing \"$remove\" from $collection") {
+        inputsAny.forEachResult { collection ->
             val initialSize = collection.size
-            val modified = collection.remove(remove)
-            val expectedSize =
-                (initialSize - 1)..
-                        (if (modified) initialSize - 1 else initialSize)
-            it("should contain \"$remove\"") {
+            var modified = false
+            Given("the collection $collection") {}
+            When("removing \"$remove\" from the collection") {
+                modified = collection.remove(remove)
+            }
+            Then("should not contain \"$remove\"") {
                 collection shouldNotContain remove
             }
-            it("should have a size in range $expectedSize") {
+            And("should have an expected size") {
+                val expectedSize =
+                    (initialSize - 1)..
+                            (if (modified) initialSize - 1 else initialSize)
                 expectedSize shouldContain collection.size
             }
         }
     }
-    inputsAny.forEachResult { collection ->
+    Scenario("removing elements from a collection") {
         val remove = listOf("C", "D", "E")
-        describe("after removing \"$remove\" from $collection") {
+        inputsAny.forEachResult { collection ->
             val initialSize = collection.size
-            val modified = collection.removeAll(remove)
-            val expectedSize =
-                (initialSize - remove.size)..
-                        (if (modified) initialSize - 1 else initialSize)
-            it("should contain \"$remove\"") {
-                collection shouldNotContainAll remove
+            var modified = false
+            Given("the collection $collection") {}
+            When("removing \"$remove\" from the collection") {
+                modified = collection.removeAll(remove)
             }
-            it("should have a size in range $expectedSize") {
+            Then("should not contain \"$remove\"") {
+                collection shouldNotContainAny remove
+            }
+            And("should have an expected size") {
+                val expectedSize =
+                    (initialSize - remove.size)..
+                            (if (modified) initialSize - 1 else initialSize)
                 expectedSize shouldContain collection.size
             }
         }

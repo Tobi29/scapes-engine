@@ -16,10 +16,10 @@
 
 package org.tobi29.assertions.suites
 
-import org.spekframework.spek2.style.specification.Suite
+import org.spekframework.spek2.style.gherkin.FeatureBody
 import org.tobi29.assertions.*
 
-fun Suite.implyMapBehaviour(
+fun FeatureBody.implyMapBehaviour(
     constructor: () -> MutableMap<String, String>
 ) {
     val makeEmpty = { constructor() }
@@ -31,51 +31,62 @@ fun Suite.implyMapBehaviour(
             this["D"] = "4"
         }
     }
-    val inputsAny = listOf(makeEmpty, makeBasic)
-    inputsAny.forEachResult { map ->
+    val inputsAny by memoized { listOf(makeEmpty, makeBasic) }
+    Scenario("adding one entry to a map") {
         val add = "C" to "3"
-        describe("after adding \"$add\" to $map") {
+        inputsAny.forEachResult { map ->
             val initialSize = map.size
-            val modified = map.put(add.first, add.second) == null
-            val expectedSize =
-                (if (modified) initialSize + 1 else initialSize)..
-                        (initialSize + 1)
-            it("should contain key \"${add.first}\"") {
+            var modified = false
+            Given("the map $map") {}
+            When("adding \"$add\" to the map") {
+                modified = map.put(add.first, add.second) == null
+            }
+            Then("should contain key \"${add.first}\"") {
                 map shouldContainKey add.first
             }
-            it("should have a size in range $expectedSize") {
+            And("should have an expected size") {
+                val expectedSize =
+                    (if (modified) initialSize + 1 else initialSize)..
+                            (initialSize + 1)
                 expectedSize shouldContain map.size
             }
         }
     }
-    inputsAny.forEachResult { map ->
-        val add = listOf("C" to "3", "D" to "4", "E" to "5")
-        describe("after adding \"$add\" to $map") {
+    Scenario("adding entries to a map") {
+        inputsAny.forEachResult { map ->
+            val add = listOf("C" to "3", "D" to "4", "E" to "5")
             val initialSize = map.size
-            map.putAll(add)
-            val expectedSize =
-                (initialSize)..
-                        (initialSize + add.size)
-            it("should contain keys \"${add.map { it.first }}\"") {
+            Given("the map $map") {}
+            When("adding \"$add\" to the map") {
+                map.putAll(add)
+            }
+            Then("should contain keys \"${add.map { it.first }}\"") {
                 map shouldContainKeyAll add.map { it.first }
             }
-            it("should have a size in range $expectedSize") {
+            And("should have an expected size") {
+                val expectedSize =
+                    (initialSize)..
+                            (initialSize + add.size)
                 expectedSize shouldContain map.size
             }
         }
     }
-    inputsAny.forEachResult { map ->
-        val remove = "C"
-        describe("after removing \"$remove\" from $map") {
+    Scenario("removing one entry from a map") {
+        inputsAny.forEachResult { map ->
+            val remove = "C"
             val initialSize = map.size
-            val modified = map.remove(remove) != null
-            val expectedSize =
-                (initialSize - 1)..
-                        (if (modified) initialSize - 1 else initialSize)
-            it("should contain key \"$remove\"") {
+            var modified = false
+            Given("the map $map") {}
+            When("removing \"$remove\" from the map") {
+                modified = map.remove(remove) != null
+            }
+            Then("should contain key \"$remove\"") {
                 map shouldNotContainKey remove
             }
-            it("should have a size in range $expectedSize") {
+            And("should have an expected size") {
+                val expectedSize =
+                    (initialSize - 1)..
+                            (if (modified) initialSize - 1 else initialSize)
                 expectedSize shouldContain map.size
             }
         }

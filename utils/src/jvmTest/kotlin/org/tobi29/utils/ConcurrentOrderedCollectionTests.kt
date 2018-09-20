@@ -17,11 +17,11 @@
 package org.tobi29.utils
 
 import org.spekframework.spek2.Spek
-import org.spekframework.spek2.style.specification.describe
+import org.spekframework.spek2.style.gherkin.Feature
 import org.tobi29.assertions.suites.implyCollectionBehaviour
 
 object ConcurrentOrderedCollectionTests : Spek({
-    describe("a concurrent ordered collection") {
+    Feature("a concurrent ordered collection") {
         implyCollectionBehaviour { ConcurrentOrderedCollection() }
     }
 })
