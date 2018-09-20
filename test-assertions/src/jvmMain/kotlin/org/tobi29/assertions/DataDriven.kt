@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
-
 package org.tobi29.assertions
 
 import org.spekframework.spek2.style.specification.Suite
+import org.tobi29.stdex.InlineUtility
 
 data class Data1<I1, Expected>(
     val i1: I1,
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, Expected> data(
     i1: I1,
     expected: Expected
@@ -60,6 +61,8 @@ data class Data2<I1, I2, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, Expected> data(
     i1: I1, i2: I2,
     expected: Expected
@@ -96,6 +99,8 @@ data class Data3<I1, I2, I3, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, Expected> data(
     i1: I1, i2: I2, i3: I3,
     expected: Expected
@@ -133,6 +138,8 @@ data class Data4<I1, I2, I3, I4, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, I4, Expected> data(
     i1: I1, i2: I2, i3: I3, i4: I4,
     expected: Expected
@@ -171,6 +178,8 @@ data class Data5<I1, I2, I3, I4, I5, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, I4, I5, Expected> data(
     i1: I1, i2: I2, i3: I3, i4: I4, i5: I5,
     expected: Expected
@@ -210,6 +219,8 @@ data class Data6<I1, I2, I3, I4, I5, I6, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, I4, I5, I6, Expected> data(
     i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6,
     expected: Expected
@@ -250,6 +261,8 @@ data class Data7<I1, I2, I3, I4, I5, I6, I7, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, I4, I5, I6, I7, Expected> data(
     i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6, i7: I7,
     expected: Expected
@@ -291,6 +304,8 @@ data class Data8<I1, I2, I3, I4, I5, I6, I7, I8, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, I4, I5, I6, I7, I8, Expected> data(
     i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6, i7: I7, i8: I8,
     expected: Expected
@@ -333,6 +348,8 @@ data class Data9<I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected>(
     val expected: Expected
 )
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 inline fun <I1, I2, I3, I4, I5, I6, I7, I8, I9, Expected> data(
     i1: I1, i2: I2, i3: I3, i4: I4, i5: I5, i6: I6, i7: I7, i8: I8, i9: I9,
     expected: Expected
