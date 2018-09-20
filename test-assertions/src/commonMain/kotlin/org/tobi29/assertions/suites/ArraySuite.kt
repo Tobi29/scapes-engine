@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package org.tobi29.assertions
+package org.tobi29.assertions.suites
 
 import org.tobi29.arrays.sliceOver
 import org.tobi29.math.Random
 import kotlin.coroutines.experimental.buildSequence
 
-fun byteArrays(
+fun createByteArrays(
     amount: Int = 64,
     sizeBits: Int = 4,
     seed: Long = 0L
-): Sequence<ByteArray> {
-    return buildSequence {
-        val random = Random(seed)
-        for (it in 0 until amount) {
-            val array = ByteArray(it shl sizeBits)
-            random.nextBytes(array.sliceOver())
-            yield(array)
-        }
+): Sequence<ByteArray> = buildSequence {
+    val random = Random(seed)
+    for (it in 0 until amount) {
+        val array = ByteArray(it shl sizeBits)
+        random.nextBytes(array.sliceOver())
+        yield(array)
     }
 }

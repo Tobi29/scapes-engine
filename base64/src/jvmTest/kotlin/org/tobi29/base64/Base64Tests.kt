@@ -18,16 +18,16 @@ package org.tobi29.base64
 
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
+import org.tobi29.assertions.suites.createByteArrays
 import java.util.*
 
 object Base64Tests : Spek({
     describe("base64 encoding and decoding") {
         data(
             { a -> "encoding ${a.joinToString()} in base64" },
-            *byteArrays().map {
+            *createByteArrays().map {
                 data(it, Base64.getEncoder().encodeToString(it))
             }.toList().toTypedArray()
         ) { a, expected ->
@@ -38,7 +38,7 @@ object Base64Tests : Spek({
         }
         data(
             { a -> "decoding $a from base64" },
-            *byteArrays().map {
+            *createByteArrays().map {
                 data(Base64.getEncoder().encodeToString(it), it)
             }.toList().toTypedArray()
         ) { a, expected ->

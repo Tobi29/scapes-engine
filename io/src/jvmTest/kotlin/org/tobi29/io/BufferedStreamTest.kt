@@ -18,14 +18,14 @@ package org.tobi29.io
 
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.shouldEqual
+import org.tobi29.assertions.suites.createByteArrays
 
 object BufferedStreamTests : Spek({
     for (size in (0..15).map { 1 shl 16 }) {
         describe("writing to and reading from a buffered stream with buffer size $size") {
             val buffer = MemoryViewStreamDefault()
-            val arrays = byteArrays(16, 8)
+            val arrays = createByteArrays(16, 8)
             buffer.reset()
             BufferedWriteChannelStream(
                 WritableByteStreamChannel(buffer)

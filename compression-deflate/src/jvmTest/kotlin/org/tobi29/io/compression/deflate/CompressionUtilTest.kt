@@ -21,9 +21,9 @@ import org.spekframework.spek2.style.specification.describe
 import org.tobi29.arrays.fromHexadecimal
 import org.tobi29.arrays.readAsByteArray
 import org.tobi29.arrays.toHexadecimal
-import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.data
 import org.tobi29.assertions.shouldEqual
+import org.tobi29.assertions.suites.createByteArrays
 import org.tobi29.io.*
 import org.tobi29.utils.toArray
 import java.util.zip.DeflaterOutputStream
@@ -55,7 +55,7 @@ object DeflateTests : Spek({
     }
 })
 
-private val randomTests = byteArrays(32, 8).map {
+private val randomTests = createByteArrays(32, 8).map {
     data(
         it.toHexadecimal(),
         deflateJvm(MemoryViewReadableStream(it.viewBE))

@@ -18,13 +18,13 @@ package org.tobi29.arrays
 
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
-import org.tobi29.assertions.byteArrays
 import org.tobi29.assertions.shouldEqual
+import org.tobi29.assertions.suites.createByteArrays
 
 object ArrayUtilTests : Spek({
     describe("toHexadecimal and fromHexadecimal") {
         describe("encoding, decoding and encoding again") {
-            for (array in byteArrays()) {
+            for (array in createByteArrays()) {
                 val hex = array.toHexadecimal()
                 val bytes = hex.fromHexadecimal()
                 val hex2 = bytes.toHexadecimal()
@@ -38,7 +38,7 @@ object ArrayUtilTests : Spek({
         }
         for (group in 1..15) {
             describe("encoding, decoding and encoding again, grouped by $group") {
-                for (array in byteArrays()) {
+                for (array in createByteArrays()) {
                     val hex = array.toHexadecimal()
                     val bytes = hex.fromHexadecimal()
                     val hex2 = bytes.toHexadecimal()
