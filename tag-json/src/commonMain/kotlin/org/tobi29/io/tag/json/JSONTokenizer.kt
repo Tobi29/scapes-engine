@@ -187,7 +187,7 @@ inline fun readJSON(
                         )
                     } else when (c1) {
                         '"' -> output.append('"')
-                        '\\' -> output.append('"')
+                        '\\' -> output.append('\\')
                         '/' -> output.append('/')
                         'b' -> output.append('\b')
                         'f' -> output.append('\u000c')
