@@ -22,6 +22,18 @@ kotlin {
         commonMain {
             dependencies {
                 implementation rootProject.kotlin("kotlin-stdlib")
+                implementation rootProject.kotlin("kotlin-test")
+                implementation project(":stdex")
+                implementation project(":arrays")
+                implementation project(":math")
+                implementation project(":tag")
+                api rootProject.spek("spek-dsl")
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation rootProject.kotlinJS("kotlin-stdlib")
+                implementation rootProject.kotlinJS("kotlin-test")
             }
         }
         jvmMain {
@@ -42,7 +54,7 @@ dependencies {
     jvmApi(rootProject.spekJVM("spek-dsl")) {
         exclude group: "org.jetbrains.kotlin"
     }
-    jvmRuntimeOnly(rootProject.spek("spek-runner-junit5")) {
+    jvmRuntimeOnly(rootProject.spekBase("spek-runner-junit5")) {
         exclude group: "org.jetbrains.kotlin"
     }
 }
