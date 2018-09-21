@@ -234,7 +234,7 @@ actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
 ): V {
     this[key]?.let { return it }
     val new = block(key)
-    return putAbsent(key, new) ?: new
+    return putIfAbsent(key, new) ?: new
 }
 
 @InlineUtility
@@ -244,7 +244,7 @@ actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
 ): V {
     this[key]?.let { return it }
     val new = block(key)
-    return putAbsent(key, new) ?: new
+    return putIfAbsent(key, new) ?: new
 }
 
 @InlineUtility
@@ -254,7 +254,7 @@ actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
-    return putAbsent(key, new) ?: new
+    return putIfAbsent(key, new) ?: new
 }
 
 @InlineUtility
@@ -264,7 +264,7 @@ actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
-    return putAbsent(key, new) ?: new
+    return putIfAbsent(key, new) ?: new
 }
 
 @InlineUtility

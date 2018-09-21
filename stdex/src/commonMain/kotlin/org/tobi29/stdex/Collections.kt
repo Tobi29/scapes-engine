@@ -176,24 +176,15 @@ expect inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V>
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
+fun <K, V> MutableMap<K, V>.putIfAbsent(key: K, value: V): V? {
     return if (this is ConcurrentMap) {
-        this.putAbsent(key, value)
+        this.putIfAbsent(key, value)
     } else {
         this[key]?.let { return it }
         put(key, value)
         null
     }
 }
-
-/**
- * Adds the given [value] if [key] was not already in the map
- * @return The value that was already mapped or `null` if [value] got added
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
-    putIfAbsent(key, value)
 
 /**
  * Fetch the value for the [key] and remap it using [block]
@@ -274,3 +265,19 @@ expect inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
 expect fun <K, V> MutableMap<K, V>.removeEqual(
     key: K, value: V
 ): Boolean
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use putIfAbsent",
+    ReplaceWith("putIfAbsent(key, value)", "org.tobi29.stdex.putIfAbsent")
+)
+inline fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? =
+    putIfAbsent(key, value)
+
+@Deprecated(
+    "Use putIfAbsent",
+    ReplaceWith("putIfAbsent(key, value)")
+)
+inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
+    putIfAbsent(key, value)

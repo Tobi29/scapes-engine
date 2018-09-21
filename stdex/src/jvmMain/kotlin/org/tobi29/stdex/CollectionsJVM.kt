@@ -268,7 +268,7 @@ actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAlways(
         while (true) {
             val new = block(key, old)
             if (old == null) {
-                old = putAbsent(key, new)
+                old = putIfAbsent(key, new)
                 return if (old == null) {
                     new
                 } else {
@@ -317,7 +317,7 @@ actual inline fun <K, V> ConcurrentMap<K, V>.computeAlways(
                 break
             }
             if (old == null) {
-                old = putAbsent(key, new)
+                old = putIfAbsent(key, new)
                 return if (old == null) {
                     new
                 } else {
@@ -342,7 +342,7 @@ actual inline fun <K, V : Any> MutableMap<K, V>.computeAbsent(
     } else {
         this[key]?.let { return it }
         val new = block(key)
-        putAbsent(key, new) ?: new
+        putIfAbsent(key, new) ?: new
     }
 }
 
@@ -351,7 +351,7 @@ actual inline fun <K, V : Any> ConcurrentMap<K, V>.computeAbsent(
 ): V {
     this[key]?.let { return it }
     val new = block(key)
-    return putAbsent(key, new) ?: new
+    return putIfAbsent(key, new) ?: new
 }
 
 @JvmName("computeAbsentNullable")
@@ -364,7 +364,7 @@ actual inline fun <K, V> MutableMap<K, V>.computeAbsent(
     } else {
         this[key]?.let { return it }
         val new = block(key) ?: return null
-        putAbsent(key, new) ?: new
+        putIfAbsent(key, new) ?: new
     }
 }
 
@@ -374,7 +374,7 @@ actual inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
 ): V? {
     this[key]?.let { return it }
     val new = block(key) ?: return null
-    return putAbsent(key, new) ?: new
+    return putIfAbsent(key, new) ?: new
 }
 
 @PlatformProvidedImplementation

@@ -18,7 +18,6 @@ package org.tobi29.utils
 
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.checkPermission
-import org.tobi29.stdex.putAbsent
 import org.tobi29.stdex.readOnly
 
 interface ComponentHolder<T : Any> {
@@ -68,7 +67,7 @@ class ComponentStorage<T : Any>(
 
         components as ConcurrentHashMap<ComponentType<H, C, T>, C>
 
-        if (components.putAbsent(type, component) != null) {
+        if (components.putIfAbsent(type, component) != null) {
             throw IllegalStateException("Component already registered")
         }
         if (component is ComponentRegisteredHolder<*>) {
@@ -90,7 +89,7 @@ class ComponentStorage<T : Any>(
         components[type]?.let { return it }
 
         return type.create(holder).also { verifyAdd(type) }.also { component ->
-            if (components.putAbsent(type, component) == null) {
+            if (components.putIfAbsent(type, component) == null) {
                 if (component is ComponentRegisteredHolder<*>) {
                     component as ComponentRegisteredHolder<H>
                     component.init(holder)
