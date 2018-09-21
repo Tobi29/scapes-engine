@@ -97,8 +97,11 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
             true
         } else false
 
-    override fun putIfAbsent(key: K, value: V): V? =
-        putAbsent(key, value)
+    override fun putIfAbsent(key: K, value: V): V? {
+        this[key]?.let { return it }
+        put(key, value)
+        return null
+    }
 
     override fun remove(key: K): V? {
         val i = binarySearchKey(key)

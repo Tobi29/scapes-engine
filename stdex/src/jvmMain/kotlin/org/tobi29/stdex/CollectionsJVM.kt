@@ -247,19 +247,6 @@ actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
 actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
     java.util.EnumMap<E, V>(E::class.java)
 
-actual fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
-    return if (this is ConcurrentMap) {
-        this.putAbsent(key, value)
-    } else {
-        this[key]?.let { return it }
-        put(key, value)
-        null
-    }
-}
-
-actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
-    putIfAbsent(key, value)
-
 actual inline fun <K, V : Any> MutableMap<K, V>.computeAlways(
     key: K, block: (K, V?) -> V
 ): V {

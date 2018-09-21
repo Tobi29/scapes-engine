@@ -62,8 +62,11 @@ actual class ConcurrentHashMap<K, V> : HashMap<K, V>(),
             true
         } else false
 
-    override fun putIfAbsent(key: K, value: V): V? =
-        putIfAbsent(key, value)
+    override fun putIfAbsent(key: K, value: V): V? {
+        this[key]?.let { return it }
+        put(key, value)
+        return null
+    }
 
     override fun remove(key: K, value: V): Boolean =
         if (this[key] == value) {
@@ -171,22 +174,6 @@ actual inline fun <K, V> MutableMap<K, V>.synchronized(): MutableMap<K, V> =
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V> =
     HashMap()
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
-    this[key]?.let { return it }
-    put(key, value)
-    return null
-}
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? {
-    this[key]?.let { return it }
-    put(key, value)
-    return null
-}
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")

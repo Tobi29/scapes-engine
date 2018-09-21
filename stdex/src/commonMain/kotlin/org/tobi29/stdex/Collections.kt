@@ -176,13 +176,24 @@ expect inline fun <reified E : Enum<E>, V> EnumMap(): MutableMap<E, V>
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-expect fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V?
+fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? {
+    return if (this is ConcurrentMap) {
+        this.putAbsent(key, value)
+    } else {
+        this[key]?.let { return it }
+        put(key, value)
+        null
+    }
+}
 
 /**
  * Adds the given [value] if [key] was not already in the map
  * @return The value that was already mapped or `null` if [value] got added
  */
-expect fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V?
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
+    putIfAbsent(key, value)
 
 /**
  * Fetch the value for the [key] and remap it using [block]
