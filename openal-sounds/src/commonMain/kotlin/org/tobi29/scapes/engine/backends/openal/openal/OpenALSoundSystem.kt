@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal
 
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
 import org.tobi29.coroutines.Timer
@@ -41,7 +41,7 @@ import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.volume
 import org.tobi29.stdex.ConcurrentHashSet
 import org.tobi29.utils.*
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToLong
 
 private typealias AudioData = Triple<ByteViewERO, Int, Int>

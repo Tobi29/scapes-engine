@@ -16,14 +16,14 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import org.tobi29.stdex.Volatile
 import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentLifecycle
 import org.tobi29.utils.ComponentRegisteredHolder
-import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.coroutines.experimental.EmptyCoroutineContext
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 
 abstract class ComponentCoroutineScope<in H : ComponentHolder<out Any>> :
     ComponentRegisteredHolder<H>, CoroutineScope {

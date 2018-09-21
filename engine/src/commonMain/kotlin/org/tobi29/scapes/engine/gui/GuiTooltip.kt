@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.yield
 import org.tobi29.coroutines.JobHandle
 import org.tobi29.coroutines.launchOrStop
 import org.tobi29.math.vector.Vector2d

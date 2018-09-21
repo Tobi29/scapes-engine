@@ -16,7 +16,7 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import org.tobi29.coroutines.launchResponsive
 import org.tobi29.io.IOException
 import org.tobi29.logging.KLogger
@@ -24,7 +24,7 @@ import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentRegistered
 import org.tobi29.utils.ComponentTypeRegisteredUniversal
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Class for processing non-blocking connections asynchronously with possibly

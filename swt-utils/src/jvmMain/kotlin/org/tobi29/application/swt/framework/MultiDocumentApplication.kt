@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Shell
 import org.tobi29.application.swt.widgets.Dialogs
 import org.tobi29.application.swt.widgets.SmartMenuBar
 import org.tobi29.stdex.assert
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 abstract class MultiDocumentApplication : GuiApplication {
     internal val composites = HashMap<Document, DocumentComposite>()

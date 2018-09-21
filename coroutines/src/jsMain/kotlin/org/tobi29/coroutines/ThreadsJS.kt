@@ -16,10 +16,10 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Dispatchers
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.tobi29.utils.Duration64Nanos
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 actual fun CoroutineScope.newResponsiveContext(
     context: CoroutineContext

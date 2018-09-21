@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.sync.Mutex
-import kotlinx.coroutines.experimental.sync.withLock
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.tobi29.coroutines.*
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
@@ -35,12 +35,12 @@ import org.tobi29.stdex.atomic.AtomicDouble
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
-import org.tobi29.utils.*
+import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentLifecycle
-import kotlin.collections.component1
-import kotlin.collections.component2
-import kotlin.collections.set
-import kotlin.coroutines.experimental.CoroutineContext
+import org.tobi29.utils.ComponentStorage
+import org.tobi29.utils.ComponentTypeRegistered
+import org.tobi29.utils.EventDispatcher
+import kotlin.coroutines.CoroutineContext
 
 actual class ScapesEngine actual constructor(
     actual val container: Container,

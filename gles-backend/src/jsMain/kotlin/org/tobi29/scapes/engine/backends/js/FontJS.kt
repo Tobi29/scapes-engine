@@ -28,8 +28,10 @@ import org.w3c.dom.Document
 import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.EventTarget
 import kotlin.browser.document
-import kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED
-import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.js.Promise
 import kotlin.math.roundToInt
 
@@ -77,7 +79,7 @@ class JSFont(private val font: Pair<String, FontFace>) : Font {
                 family,
                 "url($uri)",
                 object {})
-            return suspendCoroutineOrReturn { cont ->
+            return suspendCoroutineUninterceptedOrReturn { cont ->
                 face.load().then({
                     cont.resume(
                         JSFont(

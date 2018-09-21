@@ -16,8 +16,8 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import org.tobi29.coroutines.Timer
 import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues

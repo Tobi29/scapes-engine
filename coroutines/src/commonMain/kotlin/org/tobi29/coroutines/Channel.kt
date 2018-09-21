@@ -16,7 +16,7 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.channels.Channel
 
 // TODO: Remove after 0.0.14
 
@@ -24,44 +24,44 @@ import kotlinx.coroutines.experimental.channels.Channel
     "Use kotlinx.coroutines version",
     ReplaceWith(
         "Channel<E>",
-        "kotlinx.coroutines.experimental.channels.Channel"
+        "kotlinx.coroutines.channels.Channel"
     )
 )
-typealias Channel<E> = kotlinx.coroutines.experimental.channels.Channel<E>
+typealias Channel<E> = kotlinx.coroutines.channels.Channel<E>
 
 @Deprecated(
     "Use kotlinx.coroutines version",
     ReplaceWith(
         "Channel<E>",
-        "kotlinx.coroutines.experimental.channels.Channel"
+        "kotlinx.coroutines.channels.Channel"
     )
 )
-typealias UnboundChannel<E> = kotlinx.coroutines.experimental.channels.Channel<E>
+typealias UnboundChannel<E> = kotlinx.coroutines.channels.Channel<E>
 
 @Deprecated(
     "Use kotlinx.coroutines version",
     ReplaceWith(
         "Channel<E>(Channel.UNLIMITED)",
-        "kotlinx.coroutines.experimental.channels.Channel"
+        "kotlinx.coroutines.channels.Channel"
     )
 )
 inline fun <E> LinkedListChannel() =
-    kotlinx.coroutines.experimental.channels.Channel<E>(Channel.UNLIMITED)
+    kotlinx.coroutines.channels.Channel<E>(Channel.UNLIMITED)
 
 @Deprecated(
     "Use kotlinx.coroutines version",
     ReplaceWith(
         "ClosedSendChannelException",
-        "kotlinx.coroutines.experimental.channels.ClosedSendChannelException"
+        "kotlinx.coroutines.channels.ClosedSendChannelException"
     )
 )
-typealias ClosedSendChannelException = kotlinx.coroutines.experimental.channels.ClosedSendChannelException
+typealias ClosedSendChannelException = kotlinx.coroutines.channels.ClosedSendChannelException
 
 @Deprecated(
     "Use kotlinx.coroutines version",
     ReplaceWith(
         "ClosedReceiveChannelException",
-        "kotlinx.coroutines.experimental.channels.ClosedReceiveChannelException"
+        "kotlinx.coroutines.channels.ClosedReceiveChannelException"
     )
 )
-typealias ClosedReceiveChannelException = kotlinx.coroutines.experimental.channels.ClosedReceiveChannelException
+typealias ClosedReceiveChannelException = kotlinx.coroutines.channels.ClosedReceiveChannelException

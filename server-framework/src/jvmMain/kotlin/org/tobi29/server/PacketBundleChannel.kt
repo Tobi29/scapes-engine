@@ -15,8 +15,8 @@
  */
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.yield
 import org.tobi29.io.*
 import org.tobi29.io.compression.deflate.DeflateHandle
 import org.tobi29.io.compression.deflate.InflateHandle

@@ -16,15 +16,15 @@
 
 package org.tobi29.profiler
 
-import kotlinx.coroutines.experimental.ThreadContextElement
-import kotlinx.coroutines.experimental.withContext
+import kotlinx.coroutines.ThreadContextElement
+import kotlinx.coroutines.withContext
 import org.tobi29.logging.KLogger
 import org.tobi29.profiler.spi.ProfilerDispatcherProvider
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.spiLoad
 import kotlin.collections.set
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 actual class Profiler {
     private val instance by ThreadLocal {

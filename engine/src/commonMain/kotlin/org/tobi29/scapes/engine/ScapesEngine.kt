@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.CoroutineDispatcher
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Runnable
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Runnable
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
@@ -30,7 +30,7 @@ import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.utils.*
 import org.tobi29.utils.ComponentLifecycle
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 expect class ScapesEngine(
     container: Container,

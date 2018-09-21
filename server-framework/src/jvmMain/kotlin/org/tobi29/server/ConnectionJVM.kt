@@ -15,7 +15,7 @@
  */
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.yield
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicLong
 import org.tobi29.io.IOException

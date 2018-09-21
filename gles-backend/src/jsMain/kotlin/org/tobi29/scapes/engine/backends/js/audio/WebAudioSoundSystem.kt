@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.js.audio
 
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import org.tobi29.coroutines.Timer
 import org.tobi29.coroutines.awaitEvent
 import org.tobi29.coroutines.loopUntilCancel

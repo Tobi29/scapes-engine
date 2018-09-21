@@ -15,8 +15,8 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.math.vector.times
@@ -35,7 +35,7 @@ import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.utils.ConcurrentOrderedCollection
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.ListenerRegistrar
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 abstract class GuiComponent(
     val engine: ScapesEngine,

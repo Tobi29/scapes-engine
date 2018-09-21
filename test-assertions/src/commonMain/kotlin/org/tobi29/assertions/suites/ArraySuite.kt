@@ -18,13 +18,12 @@ package org.tobi29.assertions.suites
 
 import org.tobi29.arrays.sliceOver
 import org.tobi29.math.Random
-import kotlin.coroutines.experimental.buildSequence
 
 fun createByteArrays(
     amount: Int = 64,
     sizeBits: Int = 4,
     seed: Long = 0L
-): Sequence<ByteArray> = buildSequence {
+): Sequence<ByteArray> = sequence {
     val random = Random(seed)
     for (it in 0 until amount) {
         val array = ByteArray(it shl sizeBits)

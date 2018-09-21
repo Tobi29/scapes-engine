@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.actor
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.yield
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.AudioStream
 import org.tobi29.codec.ReadableAudioStream

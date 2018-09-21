@@ -19,8 +19,6 @@ package org.tobi29.io.filesystem
 import org.tobi29.io.AutoCloseable
 import org.tobi29.io.IOException
 import org.tobi29.utils.findMap
-import kotlin.coroutines.experimental.SequenceBuilder
-import kotlin.coroutines.experimental.buildIterator
 
 fun walk(
         path: FilePath,
@@ -33,11 +31,11 @@ fun FileWalker.iterator(path: FilePath): FileTreeIterator =
         buildFileTreeIterator(streams) { walk(this@iterator, path) }
 
 class FileWalker(
-        internal val onEnter: suspend SequenceBuilder<FilePath>.(FilePath) -> Boolean =
+        internal val onEnter: suspend SequenceScope<FilePath>.(FilePath) -> Boolean =
         { true },
-        internal val onEntry: suspend SequenceBuilder<FilePath>.(FilePath) -> Unit =
+        internal val onEntry: suspend SequenceScope<FilePath>.(FilePath) -> Unit =
         { yield(it) },
-        internal val onLeave: suspend SequenceBuilder<FilePath>.(FilePath) -> Unit =
+        internal val onLeave: suspend SequenceScope<FilePath>.(FilePath) -> Unit =
         {},
         internal val options: Array<out LinkOption> = emptyArray()
 ) {
@@ -60,7 +58,7 @@ class FileWalker(
     internal val parents = HashSet<Any>()
 }
 
-suspend fun SequenceBuilder<FilePath>.walk(
+suspend fun SequenceScope<FilePath>.walk(
         walker: FileWalker,
         path: FilePath
 ) {
@@ -115,8 +113,8 @@ enum class FileTreeOrder {
 }
 
 private fun buildFileTreeIterator(streams: MutableList<out AutoCloseable>,
-                                  block: suspend SequenceBuilder<FilePath>.() -> Unit): FileTreeIterator {
-    val iterator = buildIterator { block() }
+                                  block: suspend SequenceScope<FilePath>.() -> Unit): FileTreeIterator {
+    val iterator = iterator<FilePath> { block() }
     return object : FileTreeIterator,
             Iterator<FilePath> by iterator {
         override fun close() {
@@ -131,8 +129,8 @@ private fun buildFileTreeIterator(streams: MutableList<out AutoCloseable>,
 }
 
 private fun buildFileTreeIterator(close: () -> Unit,
-                                  block: suspend SequenceBuilder<FilePath>.() -> Unit): FileTreeIterator {
-    val iterator = buildIterator { block() }
+                                  block: suspend SequenceScope<FilePath>.() -> Unit): FileTreeIterator {
+    val iterator = iterator<FilePath> { block() }
     return object : FileTreeIterator,
             Iterator<FilePath> by iterator {
         override fun close() {

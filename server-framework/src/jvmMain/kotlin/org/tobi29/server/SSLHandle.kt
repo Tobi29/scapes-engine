@@ -28,7 +28,7 @@ import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.*
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class SSLHandle(keyManagers: Array<KeyManager>?,
                 trustManagers: Array<TrustManager>?,

@@ -31,7 +31,7 @@ import org.tobi29.utils.nil
 typealias TaskChannel<T> = Channel<Option<T>>
 
 inline fun <T> TaskChannel(): TaskChannel<T> =
-    kotlinx.coroutines.experimental.channels.Channel(Channel.UNLIMITED)
+    kotlinx.coroutines.channels.Channel(Channel.UNLIMITED)
 
 /**
  * Adds an element to the end of the queue.

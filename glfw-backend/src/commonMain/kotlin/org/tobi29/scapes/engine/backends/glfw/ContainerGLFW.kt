@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.glfw
 
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import org.tobi29.coroutines.*
 import org.tobi29.io.AutoCloseable
 import org.tobi29.io.tag.ReadTagMutableMap
@@ -41,7 +41,7 @@ import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.math.clamp
 import org.tobi29.utils.InstantSteadyNanos
 import org.tobi29.utils.steadyClock
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 import kotlin.math.roundToInt
 

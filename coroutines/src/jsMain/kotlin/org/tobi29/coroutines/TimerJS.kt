@@ -18,7 +18,7 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.delay
 import org.tobi29.stdex.PlatformProvidedImplementation
 
 @PlatformProvidedImplementation

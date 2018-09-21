@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.Deferred
 import org.tobi29.graphics.png.decodePng
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.stdex.ConcurrentHashMap

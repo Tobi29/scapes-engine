@@ -15,9 +15,9 @@
  */
 package org.tobi29.application.swt.framework
 
-import kotlinx.coroutines.experimental.CoroutineDispatcher
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.Runnable
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Runnable
 import org.eclipse.swt.SWT
 import org.eclipse.swt.program.Program
 import org.eclipse.swt.widgets.Display
@@ -32,7 +32,7 @@ import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.createTempFile
 import org.tobi29.io.filesystem.write
 import org.tobi29.utils.sleepAtLeast
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 import kotlin.system.exitProcess
 
 abstract class GuiApplication(

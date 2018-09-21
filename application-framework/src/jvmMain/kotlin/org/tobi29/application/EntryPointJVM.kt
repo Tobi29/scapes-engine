@@ -16,7 +16,7 @@
 
 package org.tobi29.application
 
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.runBlocking
 import kotlin.system.exitProcess
 
 actual abstract class EntryPoint actual constructor() : Program

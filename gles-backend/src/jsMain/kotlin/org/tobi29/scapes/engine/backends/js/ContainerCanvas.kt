@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.js
 
-import kotlinx.coroutines.experimental.awaitAnimationFrame
+import kotlinx.coroutines.awaitAnimationFrame
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController

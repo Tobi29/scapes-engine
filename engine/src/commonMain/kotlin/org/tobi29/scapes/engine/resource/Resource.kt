@@ -18,8 +18,8 @@
 
 package org.tobi29.scapes.engine.resource
 
-import kotlinx.coroutines.experimental.CompletableDeferred
-import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 import org.tobi29.coroutines.tryGet
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
@@ -48,7 +48,7 @@ inline fun <T> Deferred<T>.onLoaded(crossinline handler: (T) -> Unit) {
 
 @Deprecated(
     "Use Deferred",
-    ReplaceWith("Deferred", "kotlinx.coroutines.experimental.Deferred")
+    ReplaceWith("Deferred", "kotlinx.coroutines.Deferred")
 )
 typealias Resource<T> = Deferred<T>
 
@@ -62,7 +62,7 @@ suspend inline fun <T> Resource<T>.getAsync(): T = await()
     "Use Deferred",
     ReplaceWith(
         "CompletableDeferred(resource)",
-        "kotlinx.coroutines.experimental.CompletableDeferred"
+        "kotlinx.coroutines.CompletableDeferred"
     )
 )
 inline fun <T : Any> Resource(resource: T): Resource<T> =
@@ -70,7 +70,7 @@ inline fun <T : Any> Resource(resource: T): Resource<T> =
 
 @Deprecated(
     "Use Deferred",
-    ReplaceWith("Deferred", "kotlinx.coroutines.experimental.Deferred")
+    ReplaceWith("Deferred", "kotlinx.coroutines.Deferred")
 )
 typealias DeferredResource<T> = Deferred<T>
 

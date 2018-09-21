@@ -16,8 +16,8 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.Channel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
@@ -29,7 +29,7 @@ import org.tobi29.stdex.atomic.AtomicLong
 import org.tobi29.utils.systemClock
 import java.nio.channels.ClosedSelectorException
 import java.nio.channels.Selector
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Class for processing non-blocking connections

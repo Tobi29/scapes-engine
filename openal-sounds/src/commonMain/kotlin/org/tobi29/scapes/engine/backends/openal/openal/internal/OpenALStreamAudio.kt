@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.SendChannel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.toPCM16
 import org.tobi29.io.ByteViewE

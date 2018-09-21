@@ -16,10 +16,10 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual

@@ -16,9 +16,9 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.asCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import org.tobi29.stdex.atomic.AtomicInt
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledExecutorService
     "Use Dispatchers.Default",
     ReplaceWith(
         "Dispatchers.Default",
-        "kotlinx.coroutines.experimental.Dispatchers"
+        "kotlinx.coroutines.Dispatchers"
     )
 )
 val defaultBackgroundExecutor

@@ -21,12 +21,11 @@ import com.j256.simplemagik.entries.write
 import org.tobi29.io.OutputStreamByteStream
 import org.tobi29.stdex.JvmStatic
 import org.tobi29.stdex.printerrln
-import kotlin.coroutines.experimental.buildIterator
 
 object MagicCompiler {
     @JvmStatic
     fun main(args: Array<String>) {
-        val entries = readMagicEntries(buildIterator {
+        val entries = readMagicEntries(iterator {
             while (true) {
                 yield(readLine() ?: break)
             }

@@ -16,11 +16,12 @@
 
 package org.tobi29.scapes.engine.resource
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.suspendCancellableCoroutine
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.tobi29.coroutines.TaskLock
+import kotlin.coroutines.resume
 
 class ResourceLoader(private val taskExecutor: CoroutineScope) {
     private val tasks = TaskLock()

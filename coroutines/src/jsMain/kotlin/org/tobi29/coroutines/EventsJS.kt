@@ -18,11 +18,12 @@ package org.tobi29.coroutines
 
 import org.w3c.dom.events.Event
 import org.w3c.dom.events.EventTarget
-import kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED
-import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
 
 suspend inline fun <reified E : Event> EventTarget.awaitEvent(type: String): E =
-    suspendCoroutineOrReturn { cont ->
+    suspendCoroutineUninterceptedOrReturn { cont ->
         addEventListener(type, { event: Event ->
             @Suppress("UnsafeCastFromDynamic")
             cont.resume(event.asDynamic())

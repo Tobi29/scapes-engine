@@ -16,11 +16,11 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.UnknownHostException
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Resolves the [hostname]

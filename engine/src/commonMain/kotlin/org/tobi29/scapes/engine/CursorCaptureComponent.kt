@@ -16,12 +16,12 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.CoroutineScope
 import org.tobi29.coroutines.ComponentJobHandle
 import org.tobi29.coroutines.Timer
 import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.utils.ComponentTypeRegistered
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class CursorCaptureComponent : ComponentJobHandle<ScapesEngine>(),
     ComponentStep {

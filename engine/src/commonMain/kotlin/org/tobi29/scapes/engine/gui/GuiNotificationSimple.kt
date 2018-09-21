@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.Deferred
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.graphics.GL

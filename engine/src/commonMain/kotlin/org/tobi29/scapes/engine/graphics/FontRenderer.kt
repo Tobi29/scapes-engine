@@ -15,7 +15,7 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.launch
 import org.tobi29.arrays.sliceOver
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.ScapesEngine

@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.backends.js
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.backends.js.input.DOMControllerDesktop
 import org.tobi29.scapes.engine.backends.js.input.DOMControllerTouch

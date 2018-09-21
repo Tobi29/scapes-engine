@@ -32,8 +32,10 @@ import org.w3c.xhr.ARRAYBUFFER
 import org.w3c.xhr.ProgressEvent
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
-import kotlin.coroutines.experimental.intrinsics.COROUTINE_SUSPENDED
-import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 class UriPath(private val uri: Uri) : Path {
     private var requested = false
@@ -75,15 +77,13 @@ class UriPath(private val uri: Uri) : Path {
     override suspend fun <R> readAsync(reader: suspend (ReadableByteStream) -> R): R {
         request()
         return reader(
-            MemoryViewReadableStream(suspendCoroutineOrReturn { cont ->
-                content?.let { return@suspendCoroutineOrReturn it.unwrap() }
+            MemoryViewReadableStream(suspendCoroutineUninterceptedOrReturn { cont ->
+                content?.let { return@suspendCoroutineUninterceptedOrReturn it.unwrap() }
                 queue!!.add {
                     val content = content
                     when (content) {
                         is ResultOk -> cont.resume(content.value)
-                        is ResultError -> cont.resumeWithException(
-                            content.value
-                        )
+                        is ResultError -> cont.resumeWithException(content.value)
                     }
                 }
                 COROUTINE_SUSPENDED

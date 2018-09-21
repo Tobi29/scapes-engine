@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.launch
 import org.tobi29.scapes.engine.graphics.busyPipeline
 import org.tobi29.stdex.atomic.AtomicReference
 

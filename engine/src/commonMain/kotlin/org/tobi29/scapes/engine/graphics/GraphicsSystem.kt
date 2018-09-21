@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import org.tobi29.arrays.sliceOver
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
@@ -27,7 +27,7 @@ import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.stdex.concurrent.ReentrantLock
 import org.tobi29.stdex.concurrent.withLock
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class GraphicsSystem(
     val engine: ScapesEngine,

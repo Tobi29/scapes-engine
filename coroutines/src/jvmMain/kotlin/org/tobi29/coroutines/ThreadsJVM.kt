@@ -16,16 +16,16 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.ActorScope
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.SendChannel
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.ActorScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.SendChannel
 import org.tobi29.utils.Duration64Nanos
 import org.tobi29.utils.sleepNanos
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 actual fun CoroutineScope.newResponsiveContext(
     context: CoroutineContext
@@ -105,7 +105,7 @@ fun launchThread(
 ): ThreadJob {
     val context = newSingleThreadContext(name)
     val thread = runBlocking(context) { Thread.currentThread() }
-    val job = launch(context, block = block)
+    val job = GlobalScope.launch(context, block = block)
     job.invokeOnCompletion { context.close() }
     return object : ThreadJob,
         Job by job {

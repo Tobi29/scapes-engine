@@ -16,8 +16,8 @@
 
 package org.tobi29.application
 
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 actual abstract class EntryPoint actual constructor() : Program
 

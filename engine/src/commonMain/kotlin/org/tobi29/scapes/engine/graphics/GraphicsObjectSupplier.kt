@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.Deferred
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.asBytesRO
 import org.tobi29.arrays.sliceOver
