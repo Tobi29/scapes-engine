@@ -40,43 +40,6 @@ internal object RandomJS : Random {
     override fun nextDouble() = Math.random()
 }
 
-// Mimics `java.util.Random` to allow consistent seeded RNG (especially useful
-// for cross-platform games)
-internal class RandomJSJVM(seed: Long) : Random {
-    private var seed = seed xor 0x5DEECE66DL and 0xFFFFFFFFFFFFL
-
-    private fun next(bits: Int): Int {
-        seed = seed * 0x5DEECE66DL + 0xBL and 0xFFFFFFFFFFFFL
-        return seed.ushr(48 - bits).toInt()
-    }
-
-    override fun nextInt() = next(32)
-
-    override fun nextInt(bound: Int): Int {
-        if (bound <= 0) throw IllegalArgumentException("Invalid bound: $bound")
-        val modulus = bound - 1
-
-        // Fast path for power-of-2 bounds
-        if (bound and modulus == 0) {
-            return (bound * next(31).toLong() shr 31).toInt()
-        }
-
-        while (true) {
-            val random = next(31)
-            val ffs = random % bound
-            if (random - ffs + modulus >= 0) {
-                return ffs
-            }
-        }
-    }
-
-    override fun nextFloat() =
-        next(24).toFloat() / (1 shl 24)
-
-    override fun nextDouble() =
-        ((next(26).toLong() shl 27) + next(27)).toDouble() / (1L shl 53)
-}
-
 internal object SecureRandomCrypto : SecureRandom {
     private val buffer = ArrayBuffer(4)
     private val byte = Int8Array(buffer, 0, 1)
@@ -113,18 +76,11 @@ internal object SecureRandomCrypto : SecureRandom {
 
 actual inline fun Random(): Random = threadLocalRandom()
 
-actual fun Random(seed: Long): Random = RandomJSJVM(seed)
-
 actual fun threadLocalRandom(): Random = RandomJS
 
 actual fun SecureRandom(
     highQuality: Boolean
 ): SecureRandom = SecureRandomCrypto
-
-// FIXME: These cause errors on runtime somehow
-private const val MULTIPLIER = 0x5DEECE66DL
-private const val OFFSET = 0xBL
-private const val MASK = 0xFFFFFFFFFFFFL
 
 private external object Math {
     fun random(): Double

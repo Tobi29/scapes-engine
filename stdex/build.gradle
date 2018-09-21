@@ -29,10 +29,20 @@ kotlin {
                 implementation project(":test-assertions")
             }
         }
+        commonImplementationMain {
+            dependsOn commonMain
+        }
+        commonImplementationTest {
+            dependsOn commonTest
+        }
         jsMain {
+            dependsOn commonImplementationMain
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
             }
+        }
+        jsTest {
+            dependsOn commonImplementationTest
         }
         jvmMain {
             dependencies {

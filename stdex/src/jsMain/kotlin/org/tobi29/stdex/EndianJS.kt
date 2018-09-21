@@ -18,27 +18,6 @@ package org.tobi29.stdex
 
 import org.khronos.webgl.*
 
-actual class ByteOrder private actual constructor(private val name: String) {
-    override fun toString(): String {
-        return name
-    }
-
-    companion object {
-        val BIG_ENDIAN = ByteOrder("BIG_ENDIAN")
-        val LITTLE_ENDIAN = ByteOrder("LITTLE_ENDIAN")
-    }
-}
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline val BIG_ENDIAN: ByteOrder
-    get() = ByteOrder.BIG_ENDIAN
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline val LITTLE_ENDIAN: ByteOrder
-    get() = ByteOrder.LITTLE_ENDIAN
-
 @PublishedApi
 internal val NATIVE_BIG_ENDIAN = run {
     val buffer = ArrayBuffer(4)

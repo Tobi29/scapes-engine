@@ -33,11 +33,23 @@ kotlin {
                 implementation project(":utils")
             }
         }
-        jsMain {
+        commonKzlibMain {
+            dependsOn commonMain
             dependencies {
-                implementation rootProject.kotlinJS("kotlin-stdlib")
                 implementation project(":kzlib")
             }
+        }
+        commonKzlibTest {
+            dependsOn commonTest
+        }
+        jsMain {
+            dependsOn commonKzlibMain
+            dependencies {
+                implementation rootProject.kotlinJS("kotlin-stdlib")
+            }
+        }
+        jsTest {
+            dependsOn commonKzlibTest
         }
         jvmMain {
             dependencies {

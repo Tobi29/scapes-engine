@@ -32,10 +32,20 @@ kotlin {
                 implementation project(":test-assertions")
             }
         }
+        commonRandomMain {
+            dependsOn commonMain
+        }
+        commonRandomTest {
+            dependsOn commonTest
+        }
         jsMain {
+            dependsOn commonRandomMain
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
             }
+        }
+        jsTest {
+            dependsOn commonRandomTest
         }
         jvmMain {
             dependencies {

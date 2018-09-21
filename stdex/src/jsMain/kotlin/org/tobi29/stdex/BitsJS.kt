@@ -19,26 +19,6 @@ package org.tobi29.stdex
 import org.tobi29.stdex.math.floorToInt
 import kotlin.math.ln
 
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline infix fun Int.lrot(other: Int): Int =
-    (this shl other) or (this ushr -other)
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline infix fun Int.rrot(other: Int): Int =
-    (this ushr other) or (this shl -other)
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline infix fun Long.lrot(other: Int): Long =
-    (this shl other) or (this ushr -other)
-
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline infix fun Long.rrot(other: Int): Long =
-    (this ushr other) or (this shl -other)
-
 actual fun clz(value: Int) = clzImpl(value)
 
 actual fun ctz(value: Int) =

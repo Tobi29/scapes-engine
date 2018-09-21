@@ -18,10 +18,19 @@ package org.tobi29.stdex
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-actual inline val IS_JS
-    get() = true
+actual inline val ANDROID_API_LEVEL
+    get(): Int? = null
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-actual inline val IS_NATIVE
+actual inline val IS_JVM
     get() = false
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val IS_ANDROID
+    get() = false
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline fun isAndroidAPI(level: Int) = false

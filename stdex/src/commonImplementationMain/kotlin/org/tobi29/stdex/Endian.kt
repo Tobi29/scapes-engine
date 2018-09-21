@@ -16,12 +16,23 @@
 
 package org.tobi29.stdex
 
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline val IS_JS
-    get() = true
+actual class ByteOrder private actual constructor(private val name: String) {
+    override fun toString(): String {
+        return name
+    }
+
+    companion object {
+        val BIG_ENDIAN = ByteOrder("BIG_ENDIAN")
+        val LITTLE_ENDIAN = ByteOrder("LITTLE_ENDIAN")
+    }
+}
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-actual inline val IS_NATIVE
-    get() = false
+actual inline val BIG_ENDIAN: ByteOrder
+    get() = ByteOrder.BIG_ENDIAN
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+actual inline val LITTLE_ENDIAN: ByteOrder
+    get() = ByteOrder.LITTLE_ENDIAN
