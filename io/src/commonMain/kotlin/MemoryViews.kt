@@ -458,34 +458,3 @@ expect val LongViewRO.ro: LongViewRO
 expect val LongViewERO.ro: LongViewERO
 expect val LongViewBERO.ro: LongViewBERO
 expect val LongViewLERO.ro: LongViewLERO
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Use BytesRO", ReplaceWith("BytesRO", "org.tobi29.arrays.BytesRO"))
-typealias ByteViewRO = BytesRO
-
-@Deprecated("Use Bytes", ReplaceWith("Bytes", "org.tobi29.arrays.Bytes"))
-typealias ByteView = Bytes
-
-@Deprecated("Use BytesRO", ReplaceWith("BytesRO", "org.tobi29.arrays.BytesRO"))
-typealias ByteArraySliceViewRO = BytesRO
-
-@Deprecated("Use Bytes", ReplaceWith("Bytes", "org.tobi29.arrays.Bytes"))
-typealias ByteArraySliceView = Bytes
-
-@Deprecated(
-    "Use sliceOver",
-    ReplaceWith("sliceOver()", "org.tobi29.arrays.sliceOver")
-)
-inline val ByteArray.view: HeapBytes
-    get() = sliceOver()
-
-@Deprecated("Redundant", ReplaceWith("this"))
-inline val BytesRO.view: BytesRO
-    get() = this
-
-@Deprecated("Redundant", ReplaceWith("this"))
-inline val Bytes.view: Bytes
-    get() = this
-
-

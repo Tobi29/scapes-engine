@@ -16,8 +16,6 @@
 
 package org.tobi29.io
 
-import org.tobi29.stdex.JsName
-
 /**
  * [SizedReadableByteStream] supporting arbitrary seeking
  */
@@ -30,45 +28,5 @@ interface RandomReadableByteStream : SizedReadableByteStream {
 
     override fun skip(length: Int) {
         position += length
-    }
-
-    // TODO: Remove after 0.0.14
-
-    /**
-     * Returns current position of the stream
-     * @return Current position of the stream
-     */
-    @JsName("positionFun")
-    @Deprecated("Use property", ReplaceWith("position"))
-    fun position(): Int = position
-
-    /**
-     * Set current position of the stream
-     * @param pos New position
-     * @throws IllegalArgumentException When an invalid position was given
-     */
-    @JsName("positionFunSet")
-    @Deprecated("Use property")
-    fun position(pos: Int) {
-        position = pos
-    }
-
-    /**
-     * Returns current limit of the stream
-     * @return Current limit of the stream
-     */
-    @JsName("limitFun")
-    @Deprecated("Use property", ReplaceWith("limit"))
-    fun limit(): Int = limit
-
-    /**
-     * Set current limit of the stream
-     * @param limit New position
-     * @throws IllegalArgumentException When an invalid limit was given
-     */
-    @JsName("limitFunSet")
-    @Deprecated("Use property")
-    fun limit(limit: Int) {
-        this.limit = limit
     }
 }

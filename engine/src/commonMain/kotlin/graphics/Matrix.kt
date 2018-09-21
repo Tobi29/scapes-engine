@@ -87,30 +87,4 @@ class Matrix {
         modelViewMatrix.rotateAccurateRad(angle, x, y, z)
         normalMatrix.rotateAccurateRad(angle, x, y, z)
     }
-
-    // TODO: Remove after 0.0.14
-
-    @Deprecated(
-        "Use modelViewProjectionMatrix",
-        ReplaceWith("modelViewProjectionMatrix")
-    )
-    fun modelViewProjection(): MutableMatrix4f {
-        return modelViewProjectionMatrix
-    }
-
-    @Deprecated(
-        "Use modelViewMatrix",
-        ReplaceWith("modelViewMatrix")
-    )
-    fun modelView(): MutableMatrix4f {
-        return modelViewMatrix
-    }
-
-    @Deprecated(
-        "Use normalMatrix",
-        ReplaceWith("normalMatrix")
-    )
-    fun normal(): MutableMatrix3f {
-        return normalMatrix
-    }
 }

@@ -371,23 +371,3 @@ inline fun CommandLine.requireLong(option: CommandOption): Long =
 // FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun CommandLine.requireDouble(option: CommandOption): Double =
     requireSafe(option) { it.toDouble() }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Manually use requireSafe")
-inline fun <R> CommandLine.requireInt(
-    option: CommandOption,
-    block: (Int) -> R
-): R = requireSafe(option) { block(it.toInt()) }
-
-@Deprecated("Manually use requireSafe")
-inline fun <R> CommandLine.requireLong(
-    option: CommandOption,
-    block: (Long) -> R
-): R = requireSafe(option) { block(it.toLong()) }
-
-@Deprecated("Manually use requireSafe")
-inline fun <R> CommandLine.requireDouble(
-    option: CommandOption,
-    block: (Double) -> R
-): R = requireSafe(option) { block(it.toDouble()) }

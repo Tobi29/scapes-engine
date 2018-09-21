@@ -113,23 +113,3 @@ abstract class Application : BareApplication() {
         return null
     }
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use interface from utils",
-    ReplaceWith("Named", "org.tobi29.utils.Named")
-)
-typealias Named = Named
-
-@Deprecated(
-    "Use interface from utils",
-    ReplaceWith("Identified", "org.tobi29.utils.Identified")
-)
-typealias Identified = Identified
-
-@Deprecated(
-    "Use interface from utils",
-    ReplaceWith("Versioned", "org.tobi29.utils.Versioned")
-)
-typealias Versioned = Versioned

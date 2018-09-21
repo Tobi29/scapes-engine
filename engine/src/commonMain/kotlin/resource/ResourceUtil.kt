@@ -18,7 +18,6 @@ package org.tobi29.scapes.engine.resource
 
 import kotlinx.coroutines.Deferred
 import org.tobi29.arrays.readAsByteArray
-import org.tobi29.coroutines.map
 import org.tobi29.io.ReadSource
 import org.tobi29.stdex.utf8ToString
 
@@ -28,20 +27,3 @@ fun ResourceLoader.loadString(source: ReadSource): Deferred<String> =
             array.utf8ToString(offset, size)
         }
     }
-
-// TODO: Remove after 0.0.14
-
-/**
- * Transforms a resource by calling [transform] on completion
- *
- * **Note:** Just like with [Deferred.map] [transform] should be
- * lock-free and fast, exceptions however are caught and passed to the given
- * deferred value
- * @param transform Synchronous mapping to desired value
- * @receiver Resource to map
- * @return A resource available as soon as the given one is available
- */
-@Deprecated("Use Deferred")
-inline fun <T : Any, R : Any> Resource<T>.map(
-    crossinline transform: (T) -> R
-): Resource<R> = DeferredResource(get().map(transform))

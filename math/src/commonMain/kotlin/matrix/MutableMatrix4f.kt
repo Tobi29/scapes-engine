@@ -364,12 +364,6 @@ class MutableMatrix4f(
     }
 
     override fun hashCode(): Int = array.hashCode()
-
-    // TODO: Remove after 0.0.14
-
-    @Deprecated("Use array.array", ReplaceWith("array.array"))
-    inline val values: FloatArray
-        get() = array.array
 }
 
 inline fun <R> matrix4fMultiply(
@@ -434,11 +428,3 @@ inline var MutableMatrix4f.zw: Float
 inline var MutableMatrix4f.ww: Float
     get() = get(3, 3)
     set(value) = set(3, 3, value)
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use MutableMatrix4f",
-    ReplaceWith("MutableMatrix4f", "org.tobi29.math.matrix.MutableMatrix4f")
-)
-typealias Matrix4f = MutableMatrix4f

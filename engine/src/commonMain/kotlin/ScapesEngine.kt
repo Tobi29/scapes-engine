@@ -36,7 +36,6 @@ import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.*
-import org.tobi29.utils.ComponentLifecycle
 import kotlin.coroutines.CoroutineContext
 
 class ScapesEngine(
@@ -242,14 +241,3 @@ internal expect fun ScapesEngine.initEngineLate()
 interface ComponentStep {
     fun step(delta: Double) {}
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use version from utils module",
-    ReplaceWith(
-        "ComponentLifecycle<ScapesEngine>",
-        "org.tobi29.utils.ComponentLifecycle"
-    )
-)
-typealias ComponentLifecycle = ComponentLifecycle<ScapesEngine>

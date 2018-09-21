@@ -100,12 +100,3 @@ inline fun cosTable(value: Float): Float =
 @Suppress("NOTHING_TO_INLINE")
 inline fun cosTable(value: Double): Double =
     SinTable.cos(value)
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use SinTable",
-    ReplaceWith("SinTable", "org.tobi29.math.SinTable")
-)
-inline val FastSin
-    get() = SinTable

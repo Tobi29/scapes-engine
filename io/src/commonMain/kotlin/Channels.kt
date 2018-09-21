@@ -19,7 +19,6 @@ package org.tobi29.io
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.sliceOver
-import org.tobi29.stdex.JsName
 import org.tobi29.stdex.toIntClamped
 
 expect interface Channel : Closeable {
@@ -76,38 +75,6 @@ interface SeekableChannel : Channel {
     var position: Long
     val size: Long
     val remaining: Long get() = size - position
-
-    // TODO: Remove after 0.0.14
-
-    /**
-     * @throws IOException
-     */
-    @JsName("positionFun")
-    @Deprecated("Use property", ReplaceWith("position"))
-    fun position(): Long = position
-
-    /**
-     * @throws IOException
-     */
-    @JsName("positionFunSet")
-    @Deprecated("Use property")
-    fun position(newPosition: Long) {
-        position = newPosition
-    }
-
-    /**
-     * @throws IOException
-     */
-    @JsName("sizeFun")
-    @Deprecated("Use property", ReplaceWith("size"))
-    fun size(): Long = size
-
-    /**
-     * @throws IOException
-     */
-    @JsName("remainingFun")
-    @Deprecated("Use property", ReplaceWith("remaining"))
-    fun remaining(): Long = remaining
 }
 
 interface SeekableReadByteChannel : SeekableChannel, ReadableByteChannel {

@@ -43,7 +43,7 @@ object FileCache {
                     streamOut.put(it)
                 }
                 streamOut.flush()
-                channel.position(0)
+                channel.position = 0
                 val checksum = ctx.finish()
                 createDirectories(root)
                 val name = checksum.toHexadecimal()

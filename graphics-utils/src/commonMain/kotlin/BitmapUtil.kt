@@ -135,29 +135,29 @@ fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
     buffer: Bytes
 ) {
     val data = data
-    when (data) {
-        is Int2ByteArrayRO<*> -> {
+    if (data is Ints2Ints<*>) {
+        val array = data.array
+        if (array is IntsBytes<*>) {
             copy(
                 x, y,
                 this.width, this.height,
-                data.array,
+                array.array,
                 0, 0,
                 width, height,
                 buffer,
                 width, height
             )
+            return
         }
-        else -> {
-            var i = 0
-            for (yy in y until y + height) {
-                for (xx in x until x + width) {
-                    this[xx, yy].splitToBytes { b3, b2, b1, b0 ->
-                        buffer[i++] = b3
-                        buffer[i++] = b2
-                        buffer[i++] = b1
-                        buffer[i++] = b0
-                    }
-                }
+    }
+    var i = 0
+    for (yy in y until y + height) {
+        for (xx in x until x + width) {
+            this[xx, yy].splitToBytes { b3, b2, b1, b0 ->
+                buffer[i++] = b3
+                buffer[i++] = b2
+                buffer[i++] = b1
+                buffer[i++] = b0
             }
         }
     }
@@ -227,18 +227,6 @@ fun <D : Ints2, F : ColorFormatInt> Bitmap<D, F>.set(
             )
             return
         }
-    }
-    if (data is Int2ByteArray<*>) {
-        copy(
-            0, 0,
-            width, height,
-            buffer,
-            x, y,
-            this.width, this.height,
-            data.array,
-            width, height
-        )
-        return
     }
     var i = 0
     for (yy in y until y + height) {
@@ -391,46 +379,6 @@ fun Bitmap<*, *>.toByteArrayRGBABitmap(): Ints2ByteArrayBitmap<RGBA> =
 @JvmName("toByteArrayRGBABitmapIntsRO2RGBA")
 fun Bitmap<IntsRO2, RGBA>.toByteArrayRGBABitmap(): Ints2ByteArrayBitmap<RGBA> {
     val image = Ints2ByteArrayBitmap(width, height, RGBA)
-    for (y in 0 until height) {
-        for (x in 0 until width) {
-            image[x, y] = this[x, y]
-        }
-    }
-    return image
-}
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Use new array wrappers")
-@JvmName("flipVerticalOld")
-inline fun MutableIntByteViewBitmap<*>.flipVertical() {
-    flipVertical(width, height, data.array)
-}
-
-@Deprecated("Use new array wrappers")
-@JvmName("getIntOld")
-inline fun <D : IntsRO2, F : ColorFormatInt> Bitmap<D, F>.get(
-    x: Int,
-    y: Int,
-    image: MutableIntByteViewBitmap<F>
-) = get(x, y, image.width, image.height, image.data.array)
-
-@Deprecated("Use new array wrappers", ReplaceWith("asBytesRORGBABitmap()"))
-fun Bitmap<*, *>.asByteViewRGBABitmap(): IntByteViewBitmap<RGBA> {
-    cast<Int2ByteArrayRO<BytesRO>, RGBA>()?.let { return it }
-    return toByteViewRGBABitmap()
-}
-
-@Deprecated("Use new array wrappers", ReplaceWith("toByteArrayRGBABitmap()"))
-fun Bitmap<*, *>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> =
-    when (format) {
-        RGBA -> cast(RGBA)!!.toByteViewRGBABitmap()
-    }
-
-@Deprecated("Use new array wrappers", ReplaceWith("toByteArrayRGBABitmap()"))
-@JvmName("toByteViewRGBABitmapIntsRO2RGBA")
-fun Bitmap<IntsRO2, RGBA>.toByteViewRGBABitmap(): MutableIntByteViewBitmap<RGBA> {
-    val image = MutableIntByteViewBitmap(width, height, RGBA)
     for (y in 0 until height) {
         for (x in 0 until width) {
             image[x, y] = this[x, y]

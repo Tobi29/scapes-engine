@@ -108,12 +108,6 @@ class MutableMatrix2d(
     }
 
     override fun hashCode(): Int = array.hashCode()
-
-    // TODO: Remove after 0.0.14
-
-    @Deprecated("Use array.array", ReplaceWith("array.array"))
-    inline val values: DoubleArray
-        get() = array.array
 }
 
 inline fun <R> matrix2dMultiply(
@@ -138,11 +132,3 @@ inline var MutableMatrix2d.xy: Double
 inline var MutableMatrix2d.yy: Double
     get() = get(1, 1)
     set(value) = set(1, 1, value)
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use MutableMatrix2d",
-    ReplaceWith("MutableMatrix2d", "org.tobi29.math.matrix.MutableMatrix2d")
-)
-typealias Matrix2d = MutableMatrix2d

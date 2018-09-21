@@ -16,7 +16,10 @@
 
 package org.tobi29.coroutines
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.atomic.AtomicReference
@@ -69,30 +72,6 @@ class JobHandle(private val scope: CoroutineScope) : CoroutineScope by scope {
     private fun cleanInactive() {
         if (_job.get()?.isActive != true) _job.set(null)
     }
-
-    // TODO: Remove after 0.0.14
-
-    @Deprecated(
-        "onCompletion parameter is deprecated in kotlinx.coroutines",
-        level = DeprecationLevel.ERROR
-    )
-    fun launch(
-        context: CoroutineContext = EmptyCoroutineContext,
-        start: CoroutineStart = CoroutineStart.DEFAULT,
-        onCompletion: CompletionHandler? = null,
-        block: suspend CoroutineScope.() -> Unit
-    ): Job? = error("No longer available")
-
-    @Deprecated(
-        "onCompletion parameter is deprecated in kotlinx.coroutines",
-        level = DeprecationLevel.ERROR
-    )
-    fun launchLater(
-        context: CoroutineContext = EmptyCoroutineContext,
-        start: CoroutineStart = CoroutineStart.DEFAULT,
-        onCompletion: CompletionHandler? = null,
-        block: suspend CoroutineScope.() -> Unit
-    ): Pair<Job, () -> Unit>? = error("No longer available")
 }
 
 @InlineUtility
@@ -108,17 +87,3 @@ inline fun JobHandle.launchOrStop(
         context, start, block
     ) else null
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "onCompletion parameter is deprecated in kotlinx.coroutines",
-    level = DeprecationLevel.ERROR
-)
-inline fun JobHandle.launchOrStop(
-    state: Boolean,
-    context: CoroutineContext = EmptyCoroutineContext,
-    start: CoroutineStart = CoroutineStart.DEFAULT,
-    noinline onCompletion: CompletionHandler? = null,
-    noinline block: suspend CoroutineScope.() -> Unit
-): Job? = error("No longer available")

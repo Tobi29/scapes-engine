@@ -19,10 +19,6 @@
 package org.tobi29.coroutines
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.ActorScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.channels.SendChannel
 import org.tobi29.utils.Duration64Nanos
 import org.tobi29.utils.sleepNanos
 import java.util.concurrent.Executors
@@ -51,87 +47,5 @@ actual class ResponsiveCoroutineScope actual constructor(
     actual suspend inline fun delayResponsiveNanos(time: Duration64Nanos) {
         sleepNanos(time)
         yield()
-    }
-}
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Use launchResponsive or similar")
-fun CoroutineScope.launchThread(
-    name: String,
-    block: suspend CoroutineScope.() -> Unit
-): ThreadJob {
-    val context = newSingleThreadContext(name)
-    val thread = runBlocking(context) { Thread.currentThread() }
-    val job = launch(context, block = block)
-    job.invokeOnCompletion { context.close() }
-    return object : ThreadJob,
-        Job by job {
-        override val thread = thread
-    }
-}
-
-@Deprecated("Use launchResponsive or similar")
-fun <E> CoroutineScope.actorThread(
-    name: String,
-    capacity: Int = 0,
-    block: suspend ActorScope<E>.() -> Unit
-): ActorThreadJob<E> {
-    val channel = Channel<E>(capacity)
-    val job = launchThread(name) {
-        val scope = object : ActorScope<E>,
-            CoroutineScope by this,
-            ReceiveChannel<E> by channel {
-            override val channel get() = channel
-        }
-        block(scope)
-    }
-    return object : ActorThreadJob<E>,
-        ThreadJob by job,
-        SendChannel<E> by channel {
-    }
-}
-
-@Deprecated("Use launchResponsive or similar")
-interface ThreadJob : Job {
-    val thread: Thread
-}
-
-@Deprecated("Use launchResponsive or similar")
-interface ActorThreadJob<in E> : SendChannel<E>, ThreadJob
-
-@Deprecated("Use with CoroutineScope")
-fun launchThread(
-    name: String,
-    block: suspend CoroutineScope.() -> Unit
-): ThreadJob {
-    val context = newSingleThreadContext(name)
-    val thread = runBlocking(context) { Thread.currentThread() }
-    val job = GlobalScope.launch(context, block = block)
-    job.invokeOnCompletion { context.close() }
-    return object : ThreadJob,
-        Job by job {
-        override val thread = thread
-    }
-}
-
-@Deprecated("Use with CoroutineScope")
-fun <E> actorThread(
-    name: String,
-    capacity: Int = 0,
-    block: suspend ActorScope<E>.() -> Unit
-): ActorThreadJob<E> {
-    val channel = Channel<E>(capacity)
-    val job = launchThread(name) {
-        val scope = object : ActorScope<E>,
-            CoroutineScope by this,
-            ReceiveChannel<E> by channel {
-            override val channel get() = channel
-        }
-        block(scope)
-    }
-    return object : ActorThreadJob<E>,
-        ThreadJob by job,
-        SendChannel<E> by channel {
     }
 }

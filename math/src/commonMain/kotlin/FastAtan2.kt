@@ -115,12 +115,3 @@ class Atan2LUT(
         }
     }
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use Atan2Table",
-    ReplaceWith("Atan2Table", "org.tobi29.math.Atan2Table")
-)
-inline val FastAtan2
-    get() = Atan2Table

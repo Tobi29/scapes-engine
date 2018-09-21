@@ -24,7 +24,6 @@ kotlin {
                 implementation rootProject.kotlin("kotlin-stdlib")
                 implementation project(":stdex")
                 implementation project(":arrays")
-                implementation project(":checksums")
                 implementation project(":tag")
                 implementation project(":utils")
             }
@@ -44,7 +43,6 @@ kotlin {
             dependsOn commonUriMain
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
-                implementation project(":kzlib")
             }
         }
         jsTest {

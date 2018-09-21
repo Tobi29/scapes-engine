@@ -480,8 +480,3 @@ inline fun Float.toDeg(): Float = this * RAD_2_DEG.toFloat()
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 inline fun Double.toDeg(): Double = this * RAD_2_DEG
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Use function from stdex package")
-inline fun clz(value: Int): Int = clz(value)

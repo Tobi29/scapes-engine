@@ -469,19 +469,3 @@ fun Float.toHalfFloatShort(): Short {
         value - 102
     )).ushr(126 - value)).toShort()
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use atan2Table",
-    ReplaceWith("atan2Table(value1, value2)", "org.tobi29.math.atan2Table")
-)
-inline fun atan2Fast(value1: Float, value2: Float): Float =
-    atan2Table(value1, value2)
-
-@Deprecated(
-    "Use atan2Table",
-    ReplaceWith("atan2Table(value1, value2)", "org.tobi29.math.atan2Table")
-)
-inline fun atan2Fast(value1: Double, value2: Double): Double =
-    atan2Table(value1, value2)

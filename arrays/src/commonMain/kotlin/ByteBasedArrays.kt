@@ -18,7 +18,6 @@
 
 package org.tobi29.arrays
 
-import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.splitToBytes
 
 expect open class IntsBytesRO<out D : BytesRO>(
@@ -111,7 +110,6 @@ fun Ints2IntsRO<*>.asFastBytesRO(): BytesRO? {
 
 fun IntsRO2.asFastBytesRO(): BytesRO? {
     if (this is Ints2IntsRO<*>) return asBytesRO()
-    if (this is Int2ByteArrayRO<*>) return array
     return null
 }
 
@@ -133,45 +131,6 @@ class ByteInt2ArrayRO<out D : IntsRO2>(
                 3 -> b0
                 else -> error("Impossible")
             }
-        }
-    }
-}
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Use new wrapper classes")
-open class Int2ByteArrayRO<out D : BytesRO>(
-    val array: D,
-    final override val width: Int,
-    final override val height: Int
-) : IntsRO2 {
-    final override fun get(index1: Int, index2: Int): Int {
-        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
-            throw IndexOutOfBoundsException("$index1 $index2")
-        }
-        val i = (index2 * width + index1) shl 2
-        return combineToInt(
-            array[i + 0], array[i + 1], array[i + 2], array[i + 3]
-        )
-    }
-}
-
-@Deprecated("Use new wrapper classes")
-class Int2ByteArray<out D : Bytes>(
-    array: D,
-    width: Int,
-    height: Int
-) : Int2ByteArrayRO<D>(array, width, height), Ints2 {
-    override fun set(index1: Int, index2: Int, value: Int) {
-        if (index1 < 0 || index2 < 0 || index1 >= width || index2 >= height) {
-            throw IndexOutOfBoundsException("$index1 $index2")
-        }
-        val i = (index2 * width + index1) shl 2
-        value.splitToBytes { b3, b2, b1, b0 ->
-            array[i + 0] = b3
-            array[i + 1] = b2
-            array[i + 2] = b1
-            array[i + 3] = b0
         }
     }
 }

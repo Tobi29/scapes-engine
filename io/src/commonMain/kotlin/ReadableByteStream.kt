@@ -244,16 +244,6 @@ interface ReadableByteStream : Readable {
     }
 
     override fun readTry(): Int = decodeUtf8(this::getTry)
-
-    // TODO: Remove after 0.0.14
-
-    /**
-     * Returns the amount of bytes available to be read from the stream without
-     * blocking
-     */
-    @JsName("availableFun")
-    @Deprecated("Use property", ReplaceWith("available"))
-    fun available(): Int = available
 }
 
 inline fun decodeUtf8(input: () -> Int): Int {

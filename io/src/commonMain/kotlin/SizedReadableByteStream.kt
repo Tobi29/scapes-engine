@@ -17,7 +17,6 @@
 package org.tobi29.io
 
 import org.tobi29.arrays.Bytes
-import org.tobi29.stdex.JsName
 
 /**
  * [ReadableByteStream] exposing how much data is left in the stream
@@ -51,22 +50,4 @@ interface SizedReadableByteStream : ReadableByteStream {
                 get(buffer.slice(0, size))
             }
         }
-
-    // TODO: Remove after 0.0.14
-
-    /**
-     * Returns amount of bytes left in the stream, may not change arbitrarily
-     * @return Amount of bytes left in the stream
-     */
-    @JsName("remainingFun")
-    @Deprecated("Use property", ReplaceWith("remaining"))
-    fun remaining(): Int = remaining
-
-    /**
-     * `true` if there are remaining bytes and reading at least a
-     * single byte will guaranteed not throw because of the stream ending
-     */
-    @JsName("hasRemainingFun")
-    @Deprecated("Use property", ReplaceWith("hasRemaining"))
-    fun hasRemaining(): Boolean = hasRemaining
 }

@@ -18,7 +18,6 @@
 
 package org.tobi29.scapes.engine.resource
 
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import org.tobi29.coroutines.tryGet
 import kotlin.properties.ReadOnlyProperty
@@ -43,37 +42,3 @@ fun <T : Any> Deferred<T>.asProperty(fail: () -> Throwable) =
 inline fun <T> Deferred<T>.onLoaded(crossinline handler: (T) -> Unit) {
     invokeOnCompletion { handler(getCompleted()) }
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use Deferred",
-    ReplaceWith("Deferred", "kotlinx.coroutines.Deferred")
-)
-typealias Resource<T> = Deferred<T>
-
-@Deprecated("Use Deferred", ReplaceWith("this"))
-inline fun <T> Resource<T>.get(): Deferred<T> = this
-
-@Deprecated("Use Deferred", ReplaceWith("await()"))
-suspend inline fun <T> Resource<T>.getAsync(): T = await()
-
-@Deprecated(
-    "Use Deferred",
-    ReplaceWith(
-        "CompletableDeferred(resource)",
-        "kotlinx.coroutines.CompletableDeferred"
-    )
-)
-inline fun <T : Any> Resource(resource: T): Resource<T> =
-    CompletableDeferred(resource)
-
-@Deprecated(
-    "Use Deferred",
-    ReplaceWith("Deferred", "kotlinx.coroutines.Deferred")
-)
-typealias DeferredResource<T> = Deferred<T>
-
-@Deprecated("Use Deferred", ReplaceWith("loaded"))
-inline fun <T> DeferredResource(loaded: Deferred<T>): DeferredResource<T> =
-    loaded

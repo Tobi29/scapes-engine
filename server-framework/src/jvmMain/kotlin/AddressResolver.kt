@@ -61,39 +61,3 @@ suspend inline fun resolve(
 suspend fun RemoteAddress.resolve(
     context: CoroutineContext = Dispatchers.IO
 ): InetSocketAddress? = resolve(address, port, context)
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Use suspending functions")
-fun resolve(
-    hostname: String,
-    taskExecutor: CoroutineContext,
-    callback: (InetAddress?) -> Unit
-) {
-    GlobalScope.launch(taskExecutor + CoroutineName("Resolve-Address")) {
-        try {
-            val address = InetAddress.getByName(hostname)
-            callback(address)
-        } catch (e: UnknownHostException) {
-            callback(null)
-        }
-    }
-}
-
-@Deprecated("Use suspending functions")
-inline fun resolve(
-    hostname: String,
-    port: Int,
-    taskExecutor: CoroutineContext,
-    crossinline callback: (InetSocketAddress?) -> Unit
-) =
-    resolve(hostname, taskExecutor) {
-        callback(it?.let { InetSocketAddress(it, port) })
-    }
-
-@Deprecated("Use suspending functions")
-inline fun RemoteAddress.resolve(
-    taskExecutor: CoroutineContext,
-    crossinline callback: (InetSocketAddress?) -> Unit
-) =
-    resolve(address, port, taskExecutor, callback)

@@ -275,19 +275,3 @@ expect inline fun <K, V> ConcurrentMap<K, V>.computeAbsent(
 expect fun <K, V> MutableMap<K, V>.removeEqual(
     key: K, value: V
 ): Boolean
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use putIfAbsent",
-    ReplaceWith("putIfAbsent(key, value)", "org.tobi29.stdex.putIfAbsent")
-)
-inline fun <K, V> MutableMap<K, V>.putAbsent(key: K, value: V): V? =
-    putIfAbsent(key, value)
-
-@Deprecated(
-    "Use putIfAbsent",
-    ReplaceWith("putIfAbsent(key, value)")
-)
-inline fun <K, V> ConcurrentMap<K, V>.putAbsent(key: K, value: V): V? =
-    putIfAbsent(key, value)

@@ -32,15 +32,6 @@ interface ScapesEngineBackend {
 
     fun createSoundSystem(engine: ScapesEngine): SoundSystem =
         DummySoundSystem(engine)
-
-    // TODO: Remove after 0.0.14
-
-    @Deprecated(
-        "Use allocateMemoryBuffer",
-        ReplaceWith("allocateMemoryBuffer(size)")
-    )
-    fun allocateNative(size: Int): ByteViewE =
-        allocateMemoryBuffer(size)
 }
 
 expect sealed class MemoryBuffer : ByteViewE

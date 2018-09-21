@@ -265,41 +265,6 @@ expect fun SecureRandom(
 ): SecureRandom
 
 /**
- * Returns a value in range `[Byte.MIN_VALUE]..[Byte.MAX_VALUE]`
- */
-@Deprecated("Use method")
-fun Random.nextByte() = nextInt(256).toByte()
-
-/**
- * Returns a value in range `[Short.MIN_VALUE]..[Short.MAX_VALUE]`
- */
-@Deprecated("Use method")
-fun Random.nextShort() = nextInt(65536).toShort()
-
-/**
- * Fills the given array with random byte values
- * @param array the array to fill
- * @param offset first index to fill
- * @param size how many values to insert
- */
-@Deprecated("Use method")
-fun Random.nextBytes(
-    array: ByteArray,
-    offset: Int = 0,
-    size: Int = array.size - offset
-): ByteArray {
-    var i = 0
-    while (i < size) {
-        var r = nextInt()
-        repeat((size - i).coerceAtMost(4)) {
-            array[i++] = r.toByte()
-            r = r shr 4
-        }
-    }
-    return array
-}
-
-/**
  * Calls [block] and closes the given random
  */
 inline fun <R> SecureRandom.use(block: (SecureRandom) -> R): R = try {

@@ -23,7 +23,8 @@ import org.tobi29.utils.Option
 import org.tobi29.utils.OptionSome
 import org.tobi29.utils.nil
 
-// FIXME: Compiler crash when using non-deprecated versions
+// FIXME: Compiler crash when using type directly
+private typealias Channel<E> = kotlinx.coroutines.channels.Channel<E>
 
 /**
  * A queue of tasks or [nil] indicating the end of a batch.

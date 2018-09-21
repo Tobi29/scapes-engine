@@ -29,14 +29,6 @@ interface MemoryStream : RandomWritableByteStream, RandomReadableByteStream {
     fun flip()
     fun rewind()
     fun reset()
-
-    // TODO: Remove after 0.0.14
-
-    override fun position(): Int =
-        super<RandomReadableByteStream>.position()
-
-    override fun position(pos: Int) =
-        super<RandomReadableByteStream>.position(pos)
 }
 
 fun MemoryViewStreamDefault(

@@ -185,30 +185,3 @@ class BufferedWriteChannelStream(
         }
     }
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated("Removed without replacement")
-class DirectWriteChannelStream(
-    private val channel: WritableByteChannel
-) : WritableByteStream {
-    private val single = ByteArray(1).sliceOver()
-
-    override fun put(value: Byte) {
-        single[0] = value
-        write(single)
-    }
-
-    override fun put(buffer: BytesRO) {
-        write(buffer)
-    }
-
-    private fun write(buffer: BytesRO) {
-        var currentBuffer = buffer
-        while (currentBuffer.size > 0) {
-            val wrote = channel.write(currentBuffer)
-            if (wrote < 0) throw EndOfStreamException()
-            currentBuffer = currentBuffer.slice(wrote)
-        }
-    }
-}

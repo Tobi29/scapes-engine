@@ -54,13 +54,3 @@ class AsinLUT(bits: Int) {
 
     fun acos(value: Double): Double = HALF_PI - asin(value)
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use AsinTable",
-    ReplaceWith("AsinTable", "org.tobi29.math.AsinTable")
-)
-inline val FastAsin
-    get() = AsinTable
-

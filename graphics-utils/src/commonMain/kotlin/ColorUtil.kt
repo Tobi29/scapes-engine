@@ -79,26 +79,3 @@ inline fun <R> hsvToRgb(
     }
     return output(r, g, b)
 }
-
-// TODO: Remove after 0.0.14
-
-@Deprecated(
-    "Use hsvToRgb",
-    ReplaceWith("hsvToRgb", "org.tobi29.graphics.hsvToRgb")
-)
-inline fun hsvToRGB(color: Vector3d): Vector3d =
-    hsvToRgb(color)
-
-@Deprecated(
-    "Use hsvToRgb",
-    ReplaceWith("hsvToRgb", "org.tobi29.graphics.hsvToRgb")
-)
-inline fun hsvToRGB(h: Double, s: Double, v: Double): Vector3d =
-    hsvToRgb(h, s, v)
-
-@Deprecated(
-    "Use hsvToRgb",
-    ReplaceWith("hsvToRgb", "org.tobi29.graphics.hsvToRgb")
-)
-inline fun hsvToRGB(h: Double, s: Double, v: Double, o: MutableVector3d) =
-    hsvToRgb(h, s, v, o)
