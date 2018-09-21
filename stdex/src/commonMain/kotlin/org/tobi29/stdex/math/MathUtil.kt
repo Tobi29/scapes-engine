@@ -374,56 +374,80 @@ expect fun cbrt(value: Double): Double
  * @receiver value The value
  * @return Next integer below the given value
  */
-expect fun Float.floorToInt(): Int
+fun Float.floorToInt(): Int = toInt().let { int ->
+    if (this >= 0.0f || int.toFloat() == this
+        || int == Int.MIN_VALUE) int else int - 1
+}
 
 /**
  * Returns the next integer below the given value
  * @receiver The value
  * @return Next integer below the given value
  */
-expect fun Float.floorToLong(): Long
+fun Float.floorToLong(): Long = toLong().let { int ->
+    if (this >= 0.0f || int.toFloat() == this
+        || int == Long.MIN_VALUE) int else int - 1L
+}
 
 /**
  * Returns the next integer below the given value
  * @receiver value The value
  * @return Next integer below the given value
  */
-expect fun Double.floorToInt(): Int
+fun Double.floorToInt(): Int = toInt().let { int ->
+    if (this >= 0.0 || int.toDouble() == this
+        || int == Int.MIN_VALUE) int else int - 1
+}
 
 /**
  * Returns the next integer below the given value
  * @receiver The value
  * @return Next integer below the given value
  */
-expect fun Double.floorToLong(): Long
+fun Double.floorToLong(): Long = toLong().let { int ->
+    if (this >= 0.0 || int.toDouble() == this
+        || int == Long.MIN_VALUE) int else int - 1L
+}
 
 /**
  * Returns the next integer above the given value
  * @receiver value The value
  * @return Next integer above the given value
  */
-expect fun Float.ceilToInt(): Int
+fun Float.ceilToInt(): Int = toInt().let { int ->
+    if (this <= 0.0 || int.toFloat() == this
+        || int == Int.MAX_VALUE) int else int + 1
+}
 
 /**
  * Returns the next integer above the given value
  * @receiver The value
  * @return Next integer above the given value
  */
-expect fun Float.ceilToLong(): Long
+fun Float.ceilToLong(): Long = toLong().let { int ->
+    if (this <= 0.0 || int.toFloat() == this
+        || int == Long.MAX_VALUE) int else int + 1L
+}
 
 /**
  * Returns the next integer above the given value
  * @receiver value The value
  * @return Next integer above the given value
  */
-expect fun Double.ceilToInt(): Int
+fun Double.ceilToInt(): Int = toInt().let { int ->
+    if (this <= 0.0 || int.toDouble() == this
+        || int == Int.MAX_VALUE) int else int + 1
+}
 
 /**
  * Returns the next integer above the given value
  * @receiver The value
  * @return Next integer above the given value
  */
-expect fun Double.ceilToLong(): Long
+fun Double.ceilToLong(): Long = toLong().let { int ->
+    if (this <= 0.0 || int.toDouble() == this
+        || int == Long.MAX_VALUE) int else int + 1L
+}
 
 /**
  * Converts the [Float] from degrees into radians
