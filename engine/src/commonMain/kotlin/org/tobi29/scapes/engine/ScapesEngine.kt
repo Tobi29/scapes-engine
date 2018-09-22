@@ -29,6 +29,7 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.utils.*
+import org.tobi29.utils.ComponentLifecycle
 import kotlin.coroutines.experimental.CoroutineContext
 
 expect class ScapesEngine(
@@ -71,11 +72,17 @@ expect class ScapesEngine(
     }
 }
 
-interface ComponentLifecycle : ComponentRegisteredHolder<ScapesEngine> {
-    fun start() {}
-    fun halt() {}
-}
-
 interface ComponentStep {
     fun step(delta: Double) {}
 }
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use version from utils module",
+    ReplaceWith(
+        "ComponentLifecycle<ScapesEngine>",
+        "org.tobi29.utils.ComponentLifecycle"
+    )
+)
+typealias ComponentLifecycle = ComponentLifecycle<ScapesEngine>

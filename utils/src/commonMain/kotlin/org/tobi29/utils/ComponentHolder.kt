@@ -171,6 +171,12 @@ interface ComponentRegistered :
     ComponentRegisteredHolder<ComponentHolder<out Any>> {
 }
 
+interface ComponentLifecycle<in H : ComponentHolder<out Any>> :
+    ComponentRegisteredHolder<H> {
+    fun start() {}
+    fun halt() {}
+}
+
 typealias ComponentTypeUniversal<C> =
         ComponentType<ComponentHolder<out C>, C, C>
 
