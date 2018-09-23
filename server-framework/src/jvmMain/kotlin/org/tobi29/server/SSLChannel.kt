@@ -15,9 +15,7 @@
  */
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.CoroutineName
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.experimental.*
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io.*
@@ -37,8 +35,7 @@ class SSLChannel(
     taskExecutor: CoroutineContext,
     ssl: SSLHandle,
     engine: SSLEngine
-) : SSLLayer(address, taskExecutor, ssl, engine),
-    ByteChannel {
+) : SSLLayer(address, taskExecutor, ssl, engine), ByteChannel {
     private val inRate = AtomicInt()
     private val outRate = AtomicInt()
 
@@ -86,10 +83,6 @@ class SSLChannel(
         return buffer.size - currentBuffer.size
     }
 
-    @Throws(IOException::class)
-    override fun close() {
-    }
-
     override fun fill(buffer: Bytes): Int {
         val read = channelRead.read(buffer)
         if (read < 0) return read
@@ -107,15 +100,17 @@ class SSLChannel(
 
 abstract class SSLLayer(
     private val address: RemoteAddress,
-    private val taskExecutor: CoroutineContext,
+    taskExecutor: CoroutineContext,
     private val ssl: SSLHandle,
     private val engine: SSLEngine
-) {
+) : AutoCloseable {
     private val taskCounter = AtomicInt()
     private val verified = AtomicBoolean()
     private val readBuffer = MemoryViewStreamDefault()
     private val readData = MemoryViewStreamDefault().apply { limit = 0 }
     private val writeBuffer = MemoryViewStreamDefault().apply { limit = 0 }
+    private val job = Job()
+    private val coroutineScope = CoroutineScope(job + taskExecutor)
     private var verifyException: IOException? = null
     private var close = false
     private var state = State.HANDSHAKE
@@ -124,6 +119,11 @@ abstract class SSLLayer(
 
     fun requestClose() {
         close = true
+    }
+
+    @Throws(IOException::class)
+    override fun close() {
+        job.cancel()
     }
 
     fun process(): Boolean {
@@ -149,7 +149,7 @@ abstract class SSLLayer(
             if (state == State.HANDSHAKE) {
                 if (handshake()) {
                     state = State.VERIFY
-                    launch(taskExecutor + CoroutineName("SSL-Verify")) {
+                    coroutineScope.launch(CoroutineName("SSL-Verify")) {
                         try {
                             verifySSL()
                         } finally {
@@ -304,7 +304,7 @@ abstract class SSLLayer(
                     val task = engine.delegatedTask
                     if (task != null) {
                         taskCounter.incrementAndGet()
-                        launch(taskExecutor + CoroutineName("SSLEngine-Task")) {
+                        coroutineScope.launch(CoroutineName("SSLEngine-Task")) {
                             try {
                                 task.run()
                             } finally {
@@ -361,11 +361,11 @@ class SSLCertificateException(
     val certificates: Array<X509Certificate>
 ) : SSLHandshakeException(cause.message)
 
-inline suspend fun SSLChannel.finishAsync() {
+suspend inline fun SSLChannel.finishAsync() {
     (this as SSLLayer).finishAsync()
 }
 
-inline suspend fun SSLLayer.finishAsync() {
+suspend inline fun SSLLayer.finishAsync() {
     requestClose()
     while (isOpen()) {
         process()

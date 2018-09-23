@@ -15,7 +15,6 @@
  */
 package org.tobi29.application.swt.framework
 
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.Runnable
 import org.eclipse.swt.SWT
@@ -24,19 +23,20 @@ import org.eclipse.swt.widgets.Display
 import org.eclipse.swt.widgets.Shell
 import org.tobi29.application.Application
 import org.tobi29.application.StatusCode
-import org.tobi29.args.CommandLine
+import org.tobi29.application.swt.platform.*
 import org.tobi29.application.swt.widgets.Dialogs
+import org.tobi29.args.CommandLine
+import org.tobi29.coroutines.defaultBackgroundExecutor
 import org.tobi29.io.*
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.createTempFile
 import org.tobi29.io.filesystem.write
 import org.tobi29.utils.sleepAtLeast
-import org.tobi29.application.swt.platform.*
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.system.exitProcess
 
 abstract class GuiApplication(
-        val taskExecutor: CoroutineContext = CommonPool
+        val taskExecutor: CoroutineContext = defaultBackgroundExecutor
 ) : Application() {
     val display: Display by lazy {
         Display.setAppName(name)

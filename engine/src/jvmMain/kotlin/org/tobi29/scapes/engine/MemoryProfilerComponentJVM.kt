@@ -36,7 +36,7 @@ class MemoryProfilerComponent(
         val usedMemoryDebug = debugValues["Runtime-Memory-Used"]
         val heapMemoryDebug = debugValues["Runtime-Memory-Heap"]
         val maxMemoryDebug = debugValues["Runtime-Memory-Max"]
-        job = launch(holder) {
+        job = holder.launch(holder.taskExecutor) {
             Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
                 usedMemoryDebug.setValue(
                     (runtime.totalMemory() - runtime.freeMemory()) / 1048576)

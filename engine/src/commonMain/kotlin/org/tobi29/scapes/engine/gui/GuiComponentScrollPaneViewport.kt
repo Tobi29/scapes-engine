@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.coroutines.JobHandle
+import org.tobi29.coroutines.launchOrStop
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector2i
 import org.tobi29.math.vector.Vector3d
@@ -59,7 +59,7 @@ class GuiComponentScrollPaneViewport(
     private var size = Vector2d.ZERO
     internal var max = Vector2d.ZERO
         private set
-    private var updateJob: Job? = null
+    private var updateJob = JobHandle(engine)
     var scrollX = 0.0
     var scrollY = 0.0
 
@@ -129,17 +129,13 @@ class GuiComponentScrollPaneViewport(
     }
 
     override fun updateVisible() {
-        synchronized(this) {
-            updateJob?.cancel()
-            if (!isVisible) return@synchronized
-            updateJob = launch(renderExecutor) {
-                while (true) {
-                    yield() // Wait for next frame
-                    size()?.let { size ->
-                        val layout = layoutManager(size)
-                        layout.layout()
-                        setMax(layout.size(), size)
-                    }
+        updateJob.launchOrStop(isVisible, renderExecutor) {
+            while (true) {
+                yield() // Wait for next frame
+                size()?.let { size ->
+                    val layout = layoutManager(size)
+                    layout.layout()
+                    setMax(layout.size(), size)
                 }
             }
         }

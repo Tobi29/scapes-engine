@@ -360,7 +360,7 @@ class OpenALSoundSystem(
     ): Option<OpenALAudioData?> {
         val entry = cache[asset]
         return if (entry == null) {
-            cache[asset] = EitherLeft(async(engine.taskExecutor) {
+            cache[asset] = EitherLeft(engine.async(engine.taskExecutor) {
                 try {
                     asset.channel().use { channel ->
                         AudioStream.create(channel, asset.mimeType())

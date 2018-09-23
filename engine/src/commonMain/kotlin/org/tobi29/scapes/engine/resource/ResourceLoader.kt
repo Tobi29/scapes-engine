@@ -16,18 +16,18 @@
 
 package org.tobi29.scapes.engine.resource
 
+import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.suspendCancellableCoroutine
 import org.tobi29.coroutines.TaskLock
-import kotlin.coroutines.experimental.CoroutineContext
 
-class ResourceLoader(private val taskExecutor: CoroutineContext) {
+class ResourceLoader(private val taskExecutor: CoroutineScope) {
     private val tasks = TaskLock()
 
     fun <T : Any> load(supplier: suspend () -> T): Deferred<T> {
         tasks.increment()
-        return async(taskExecutor) {
+        return taskExecutor.async {
             try {
                 supplier()
             } finally {

@@ -16,52 +16,29 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.CoroutineScope
+import org.tobi29.coroutines.ComponentJobHandle
 import org.tobi29.coroutines.Timer
 import org.tobi29.coroutines.loopUntilCancel
-import org.tobi29.stdex.Volatile
-import org.tobi29.utils.ComponentRegisteredHolder
 import org.tobi29.utils.ComponentTypeRegistered
+import kotlin.coroutines.experimental.CoroutineContext
 
-class CursorCaptureComponent : ComponentRegisteredHolder<ScapesEngine>,
+class CursorCaptureComponent : ComponentJobHandle<ScapesEngine>(),
     ComponentLifecycle, ComponentStep {
-    @Volatile
-    private var engine: ScapesEngine? = null
-    private var job: Job? = null
     private var cursorCaptured = false
 
-    override fun init(holder: ScapesEngine) {
-        engine = holder
-        start()
-    }
+    override fun coroutineContextFor(holder: ScapesEngine): CoroutineContext =
+        holder.coroutineContext
 
-    override fun start() {
-        synchronized(this) {
-            engine?.let { engine ->
-                job = launch(engine) {
-                    Timer().apply { init() }
-                        .loopUntilCancel(Timer.toDiff(10.0)) {
-                            val cursorCapture = engine.isMouseGrabbed
-                            if (cursorCapture != cursorCaptured) {
-                                cursorCaptured = cursorCapture
-                                engine.container.cursorCapture(cursorCapture)
-                            }
-                        }
+    override suspend fun CoroutineScope.runJobTask(holder: ScapesEngine) {
+        Timer().apply { init() }
+            .loopUntilCancel(Timer.toDiff(10.0)) {
+                val cursorCapture = holder.isMouseGrabbed
+                if (cursorCapture != cursorCaptured) {
+                    cursorCaptured = cursorCapture
+                    holder.container.cursorCapture(cursorCapture)
                 }
             }
-        }
-    }
-
-    override fun halt() {
-        synchronized(this) {
-            job?.cancel()
-        }
-    }
-
-    override fun dispose(holder: ScapesEngine) {
-        halt()
-        engine = null
     }
 
     companion object {

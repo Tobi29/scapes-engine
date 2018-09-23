@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui.debug
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
+import org.tobi29.coroutines.JobHandle
 import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.launchOrStop
 import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.profiler.*
 import org.tobi29.scapes.engine.gui.*
@@ -29,7 +29,7 @@ class GuiWidgetProfiler(
     private val profilerNotEnabled: GuiComponentText
     private var elements: List<Element> = emptyList()
     private var node: Node? = profiler?.root
-    private var updateJob: Job? = null
+    private var updateJob = JobHandle(engine)
 
     init {
         val slab = addVert(2.0, 2.0, -1.0, 20.0) { GuiComponentGroupSlab(it) }
@@ -105,14 +105,10 @@ class GuiWidgetProfiler(
     }
 
     override fun updateVisible() {
-        synchronized(this) {
-            updateJob?.cancel()
-            if (!isVisible) return@synchronized
-            updateJob = launch(taskExecutor) {
-                Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
-                    for (component in elements) {
-                        component.update()
-                    }
+        updateJob.launchOrStop(isVisible, renderExecutor) {
+            Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
+                for (component in elements) {
+                    component.update()
                 }
             }
         }

@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
@@ -37,7 +38,7 @@ expect class ScapesEngine(
     defaultGuiStyle: (ScapesEngine) -> GuiStyle,
     taskExecutor: CoroutineContext,
     configMap: MutableTagMap
-) : CoroutineDispatcher, ComponentHolder<Any> {
+) : CoroutineDispatcher, CoroutineScope, ComponentHolder<Any> {
     override val componentStorage: ComponentStorage<Any>
     val taskExecutor: CoroutineContext
     val files: FileSystemContainer

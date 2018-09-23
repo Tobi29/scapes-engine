@@ -32,8 +32,7 @@ import kotlin.coroutines.experimental.CoroutineContext
 class GraphicsSystem(
     val engine: ScapesEngine,
     private val gos: GraphicsObjectSupplier
-) : CoroutineDispatcher(),
-    GraphicsObjectSupplier by gos {
+) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
     private lateinit var fpsDebug: GuiWidgetDebugValues.Element
     private lateinit var widthDebug: GuiWidgetDebugValues.Element
     private lateinit var heightDebug: GuiWidgetDebugValues.Element

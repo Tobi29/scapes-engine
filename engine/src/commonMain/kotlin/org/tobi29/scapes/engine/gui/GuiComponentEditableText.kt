@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.coroutines.JobHandle
+import org.tobi29.coroutines.launchOrStop
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.stdex.math.clamp
@@ -37,7 +37,7 @@ class GuiComponentEditableText(
     private var vaoCursor: List<Pair<Model, Texture>>? = null
     private var vaoSelection: List<Pair<Model, Texture>>? = null
     private var focused = false
-    private var updateJob: Job? = null
+    private var updateJob = JobHandle(engine)
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
@@ -110,14 +110,10 @@ class GuiComponentEditableText(
     }
 
     override fun updateVisible() {
-        synchronized(this) {
-            updateJob?.cancel()
-            if (!isVisible) return@synchronized
-            updateJob = launch(renderExecutor) {
-                while (true) {
-                    yield() // Wait for next frame
-                    update()
-                }
+        updateJob.launchOrStop(isVisible, renderExecutor) {
+            while (true) {
+                yield() // Wait for next frame
+                update()
             }
         }
     }

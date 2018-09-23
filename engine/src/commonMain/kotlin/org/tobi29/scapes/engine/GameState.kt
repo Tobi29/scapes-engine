@@ -16,25 +16,45 @@
 
 package org.tobi29.scapes.engine
 
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Pipeline
 import org.tobi29.scapes.engine.graphics.SHADER_TEXTURED
 import org.tobi29.scapes.engine.graphics.loadShader
+import org.tobi29.stdex.Volatile
 import org.tobi29.stdex.atomic.AtomicBoolean
+import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.EmptyCoroutineContext
 
-abstract class GameState(val engine: ScapesEngine) {
+abstract class GameState(val engine: ScapesEngine) : CoroutineScope {
     open val tps: Double get() = 60.0
     private val newPipeline =
         Channel<Pair<Boolean, (GL) -> suspend () -> (Double) -> Unit>>(Channel.UNLIMITED)
     private var newPipelineLoaded: (() -> (() -> Unit)?)? = null
     private val dirtyPipeline = AtomicBoolean(false)
     private var pipeline: Pipeline? = null
+    @Volatile
+    private var job: Job? = null
+    override val coroutineContext: CoroutineContext
+        // FIXME: How to handle null properly?
+        get() = engine.taskExecutor + (job ?: EmptyCoroutineContext)
 
-    open fun dispose() {}
+    fun disposeState() {
+        dispose()
+        job?.cancel()
+    }
 
-    abstract fun init()
+    fun initState() {
+        job = Job()
+        init()
+    }
+
+    protected open fun dispose() {}
+
+    protected abstract fun init()
 
     abstract val isMouseGrabbed: Boolean
 
@@ -50,7 +70,7 @@ abstract class GameState(val engine: ScapesEngine) {
         var pipeline = pipeline ?: return false
         if (dirtyPipeline.getAndSet(false) || updateSize) {
             pipeline = pipeline.rebuild(gl)
-            launch(engine.graphics) {
+            engine.launch(engine.graphics) {
                 pipeline.finish()
             }
             this.pipeline = pipeline
@@ -62,7 +82,7 @@ abstract class GameState(val engine: ScapesEngine) {
     private fun finishPipeline(gl: GL, pipeline: Pipeline) {
         var loaded: (() -> Unit)? = null
         newPipelineLoaded = { loaded }
-        launch(engine.graphics) {
+        engine.launch(engine.graphics) {
             pipeline.finish()
             loaded = { this@GameState.pipeline = pipeline }
         }

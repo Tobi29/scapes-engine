@@ -168,7 +168,7 @@ class FontRenderer(
                 TextureFilter.LINEAR,
                 TextureWrap.CLAMP, TextureWrap.CLAMP
             )
-            launch(engine.taskExecutor) {
+            engine.launch {
                 texture.setBuffer(renderer.page(id).view, imageSize, imageSize)
             }
             if (pages.size <= id) {

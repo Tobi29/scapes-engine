@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.gui
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.coroutines.JobHandle
+import org.tobi29.coroutines.launchOrStop
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.stdex.atomic.AtomicReference
 
@@ -27,21 +27,17 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
         AtomicReference<Pair<GuiComponent, GuiCursor>?>(null)
     private var lastTooltip: Pair<GuiComponent, GuiCursor>? = null
     private var currentPane: Pair<GuiComponent, () -> Unit>? = null
-    private var updateJob: Job? = null
+    private var updateJob = JobHandle(engine)
 
     fun setTooltip(component: Pair<GuiComponent, GuiCursor>?) {
         currentTooltip.set(component)
     }
 
     override fun updateVisible() {
-        synchronized(this) {
-            updateJob?.cancel()
-            if (!isVisible) return@synchronized
-            updateJob = launch(renderExecutor) {
-                while (true) {
-                    yield() // Wait for next frame
-                    update()
-                }
+        updateJob.launchOrStop(isVisible, renderExecutor) {
+            while (true) {
+                yield() // Wait for next frame
+                update()
             }
         }
     }

@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.gui.debug
 
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
+import org.tobi29.coroutines.JobHandle
 import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.launchOrStop
 import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.stdex.ConcurrentHashMap
@@ -32,7 +32,7 @@ open class GuiWidgetDebugValues(
         10.0, 10.0,
         -1.0, -1.0
     ) { GuiComponentScrollPane(it, 20) }.viewport
-    private var updateJob: Job? = null
+    private var updateJob = JobHandle(engine)
 
     operator fun get(key: String): Element {
         return synchronized(this) {
@@ -62,14 +62,10 @@ open class GuiWidgetDebugValues(
     }
 
     override fun updateVisible() {
-        synchronized(this) {
-            updateJob?.cancel()
-            if (!isVisible) return@synchronized
-            updateJob = launch(taskExecutor) {
-                Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
-                    for (component in elements.values) {
-                        component.update()
-                    }
+        updateJob.launchOrStop(isVisible, renderExecutor) {
+            Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
+                for (component in elements.values) {
+                    component.update()
                 }
             }
         }

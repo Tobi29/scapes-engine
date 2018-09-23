@@ -44,7 +44,7 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
     private val cache = HashMap<ReadSource, Deferred<AudioBuffer>>()
     private val context = createAudioContext()
     private val config = engine[ScapesEngineConfig.COMPONENT]
-    private val updateJob = launch(engine.taskExecutor) {
+    private val updateJob = engine.launch {
         while (true) {
             Timer().apply { init() }.loopUntilCancel(
                 Timer.toDiff(10.0)
@@ -78,7 +78,7 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
         referenceDistance: Double,
         rolloffFactor: Double
     ) {
-        launch(engine.taskExecutor) {
+        engine.launch(engine.taskExecutor) {
             asset.useUri { uri ->
                 val element = Audio(uri.toString())
                 element.volume = gain
@@ -139,7 +139,7 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
         rolloffFactor: Double
     ) {
         val buffer = cachedDecode(asset)
-        launch(engine.taskExecutor) {
+        engine.launch(engine.taskExecutor) {
             val node = context.createBufferSource()
             node.buffer = buffer.await()
             node.playbackRate.value = pitch
@@ -223,7 +223,7 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
 
     private fun cachedDecode(asset: ReadSource): Deferred<AudioBuffer> =
         cache.computeAbsent(asset) {
-            async(engine.taskExecutor) {
+            engine.async(engine.taskExecutor) {
                 // We need to copy the buffer either way to avoid it getting
                 // detached
                 val data = asset.data().readAsInt8Array()

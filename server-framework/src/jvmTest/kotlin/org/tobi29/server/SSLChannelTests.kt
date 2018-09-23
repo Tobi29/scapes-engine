@@ -16,13 +16,13 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.yield
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
+import org.tobi29.coroutines.defaultBackgroundExecutor
 import org.tobi29.io.*
 import org.tobi29.stdex.atomic.AtomicLong
 import java.nio.channels.Pipe
@@ -35,7 +35,7 @@ object SSLChannelTests : Spek({
         val sslServer = SSLHandle(getKeyManagers())
         val sslClient = SSLHandle.insecure()
         describe("writing data through a pipe") {
-            val taskExecutor = CommonPool
+            val taskExecutor = defaultBackgroundExecutor
 
             val success = AtomicLong(0L)
 
@@ -70,85 +70,89 @@ object SSLChannelTests : Spek({
                 ), taskExecutor, false
             )
 
-            val job1 = launch(taskExecutor) {
-                val bufferSend = ByteBuffer(1024).apply { fill { 42 }._flip() }
-                val bufferReceive = ByteBuffer(1024)
-                while (bufferSend.hasRemaining()) {
-                    channelLeft.write(bufferSend)
-                    yield()
-                }
-                while (bufferReceive.hasRemaining()) {
-                    channelLeft.read(bufferReceive)
-                    yield()
-                }
-                bufferReceive._flip()
-                while (bufferReceive.hasRemaining()) {
-                    if (bufferReceive.get() != 43.toByte()) {
-                        throw AssertionError("Invalid received byte")
-                    }
-                }
-                bufferSend._clear()._limit(123)
-                bufferSend.fill { 44 }._flip()
-                while (bufferSend.hasRemaining()) {
-                    channelLeft.write(bufferSend)
-                    yield()
-                }
-                bufferReceive._clear()._limit(123)
-                while (bufferReceive.hasRemaining()) {
-                    channelLeft.read(bufferReceive)
-                    yield()
-                }
-                bufferReceive._flip()
-                while (bufferReceive.hasRemaining()) {
-                    if (bufferReceive.get() != 45.toByte()) {
-                        throw AssertionError("Invalid received byte")
-                    }
-                }
-                channelLeft.finishAsync()
-
-                success.getAndIncrement()
-            }
-
-            val job2 = launch(taskExecutor) {
-                val bufferSend = ByteBuffer(1024).apply { fill { 43 }._flip() }
-                while (bufferSend.hasRemaining()) {
-                    channelRight.write(bufferSend)
-                    yield()
-                }
-                val bufferReceive = ByteBuffer(1024)
-                while (bufferReceive.hasRemaining()) {
-                    channelRight.read(bufferReceive)
-                    yield()
-                }
-                bufferReceive._flip()
-                while (bufferReceive.hasRemaining()) {
-                    if (bufferReceive.get() != 42.toByte()) {
-                        throw AssertionError("Invalid received byte")
-                    }
-                }
-                bufferSend._clear()._limit(123)
-                bufferSend.fill { 45 }._flip()
-                while (bufferSend.hasRemaining()) {
-                    channelRight.write(bufferSend)
-                    yield()
-                }
-                bufferReceive._clear()._limit(123)
-                while (bufferReceive.hasRemaining()) {
-                    channelRight.read(bufferReceive)
-                    yield()
-                }
-                bufferReceive._flip()
-                while (bufferReceive.hasRemaining()) {
-                    if (bufferReceive.get() != 44.toByte()) {
-                        throw AssertionError("Invalid received byte")
-                    }
-                }
-                channelRight.finishAsync()
-
-                success.getAndIncrement()
-            }
-
             runBlocking {
+                val job1 = launch(taskExecutor) {
+                    val bufferSend =
+                        ByteBuffer(1024).apply { fill { 42 }._flip() }
+                    val bufferReceive = ByteBuffer(1024)
+                    while (bufferSend.hasRemaining()) {
+                        channelLeft.write(bufferSend)
+                        yield()
+                    }
+                    while (bufferReceive.hasRemaining()) {
+                        channelLeft.read(bufferReceive)
+                        yield()
+                    }
+                    bufferReceive._flip()
+                    while (bufferReceive.hasRemaining()) {
+                        if (bufferReceive.get() != 43.toByte()) {
+                            throw AssertionError("Invalid received byte")
+                        }
+                    }
+                    bufferSend._clear()._limit(123)
+                    bufferSend.fill { 44 }._flip()
+                    while (bufferSend.hasRemaining()) {
+                        channelLeft.write(bufferSend)
+                        yield()
+                    }
+                    bufferReceive._clear()._limit(123)
+                    while (bufferReceive.hasRemaining()) {
+                        channelLeft.read(bufferReceive)
+                        yield()
+                    }
+                    bufferReceive._flip()
+                    while (bufferReceive.hasRemaining()) {
+                        if (bufferReceive.get() != 45.toByte()) {
+                            throw AssertionError("Invalid received byte")
+                        }
+                    }
+                    channelLeft.finishAsync()
+                    channelLeft.close()
+
+                    success.getAndIncrement()
+                }
+
+                val job2 = launch(taskExecutor) {
+                    val bufferSend =
+                        ByteBuffer(1024).apply { fill { 43 }._flip() }
+                    while (bufferSend.hasRemaining()) {
+                        channelRight.write(bufferSend)
+                        yield()
+                    }
+                    val bufferReceive = ByteBuffer(1024)
+                    while (bufferReceive.hasRemaining()) {
+                        channelRight.read(bufferReceive)
+                        yield()
+                    }
+                    bufferReceive._flip()
+                    while (bufferReceive.hasRemaining()) {
+                        if (bufferReceive.get() != 42.toByte()) {
+                            throw AssertionError("Invalid received byte")
+                        }
+                    }
+                    bufferSend._clear()._limit(123)
+                    bufferSend.fill { 45 }._flip()
+                    while (bufferSend.hasRemaining()) {
+                        channelRight.write(bufferSend)
+                        yield()
+                    }
+                    bufferReceive._clear()._limit(123)
+                    while (bufferReceive.hasRemaining()) {
+                        channelRight.read(bufferReceive)
+                        yield()
+                    }
+                    bufferReceive._flip()
+                    while (bufferReceive.hasRemaining()) {
+                        if (bufferReceive.get() != 44.toByte()) {
+                            throw AssertionError("Invalid received byte")
+                        }
+                    }
+                    channelRight.finishAsync()
+                    channelRight.close()
+
+                    success.getAndIncrement()
+                }
+
                 job1.join()
                 job2.join()
             }

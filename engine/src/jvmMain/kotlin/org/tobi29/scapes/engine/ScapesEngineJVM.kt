@@ -17,7 +17,6 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.sync.Mutex
 import org.tobi29.coroutines.*
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
@@ -30,10 +29,16 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.stdex.atomic.AtomicDouble
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
-import org.tobi29.utils.*
+import org.tobi29.utils.ComponentHolder
+import org.tobi29.utils.ComponentStorage
+import org.tobi29.utils.ComponentTypeRegistered
+import org.tobi29.utils.EventDispatcher
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.coroutines.experimental.CoroutineContext
 
 actual class ScapesEngine actual constructor(
@@ -41,18 +46,20 @@ actual class ScapesEngine actual constructor(
     defaultGuiStyle: (ScapesEngine) -> GuiStyle,
     actual val taskExecutor: CoroutineContext,
     configMap: MutableTagMap
-) : CoroutineDispatcher(),
-    ComponentHolder<Any> {
+) : CoroutineDispatcher(), CoroutineScope,ComponentHolder<Any> {
     actual override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
+    private val job = Job()
+    override val coroutineContext: CoroutineContext get() = this + job
+
     private val tpsDebug: GuiWidgetDebugValues.Element
     private val newState = AtomicReference<GameState>()
-    private val updateJob = AtomicReference<Pair<Job, AtomicBoolean>?>(null)
+    private val updateJob = JobHandle(this)
     private var _state: GameState? = null
     actual val state: GameState? get() = _state
     actual val files = FileSystemContainer()
     actual val events = EventDispatcher()
-    actual val resources = ResourceLoader(taskExecutor)
+    actual val resources = ResourceLoader(CoroutineScope(taskExecutor + job))
     actual val graphics: GraphicsSystem
     actual val sounds: SoundSystem
     actual val guiStyle: GuiStyle
@@ -150,46 +157,44 @@ actual class ScapesEngine actual constructor(
     }
 
     actual fun start() {
-        val stop = AtomicBoolean(false)
-        val mutex = Mutex(true)
-        var startTps = 1.0
-        val job = launch(taskExecutor + CoroutineName("Engine-State")) {
-            mutex.lock()
+        val startTps = AtomicDouble(1.0)
+        updateJob.launchLater(taskExecutor) {
             launchThread("Engine-State") {
-                var tps = startTps
+                var tps = startTps.get()
                 val timer = Timer()
                 timer.init()
-                while (!stop.get()) {
-                    val tickDiff = timer.cap(Timer.toDiff(tps), ::sleepNanos)
-                    tpsDebug.setValue(Timer.toTps(tickDiff))
-                    val delta = Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
-                    tps = step(delta)
+                try {
+                    while (true) {
+                        val tickDiff =
+                            timer.cap(Timer.toDiff(tps), { delayNanos(it) })
+                        tpsDebug.setValue(Timer.toTps(tickDiff))
+                        val delta =
+                            Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
+                        tps = withContext(NonCancellable) { step(delta) }
+                    }
+                } finally {
+                    components.asSequence()
+                        .filterIsInstance<ComponentLifecycle>()
+                        .forEach { it.halt() }
                 }
-                components.asSequence().filterIsInstance<ComponentLifecycle>()
-                    .forEach { it.halt() }
             }.join()
-        } to stop
-        if (updateJob.compareAndSet(null, job)) {
+        }?.let { (_, launch) ->
             components.asSequence().filterIsInstance<ComponentLifecycle>()
                 .forEach { it.start() }
-            startTps = step(0.0001)
-            mutex.unlock()
-        } else job.first.cancel()
+            startTps.set(step(0.0001))
+            launch()
+        }
     }
 
     actual suspend fun halt() {
-        updateJob.get()?.let { job ->
-            job.second.set(true)
-            job.first.join()
-            updateJob.compareAndSet(job, null)
-        }
+        updateJob.job?.cancelAndJoin()
     }
 
     actual suspend fun dispose() {
         halt()
         synchronized(this) {
             logger.info { "Disposing last state" }
-            state?.dispose()
+            state?.disposeState()
             _state = null
             logger.info { "Disposing GUI" }
             guiStack.clear()
@@ -198,6 +203,7 @@ actual class ScapesEngine actual constructor(
             logger.info { "Disposing components" }
             clearComponents()
             logger.info { "Stopped Scapes-Engine" }
+            job.cancel()
         }
     }
 
@@ -214,9 +220,9 @@ actual class ScapesEngine actual constructor(
         val newState = newState.getAndSet(null)
         if (newState != null) {
             synchronized(graphics) {
-                state?.dispose()
+                state?.disposeState()
                 _state = newState
-                newState.init()
+                newState.initState()
             }
             currentState = newState
         }
