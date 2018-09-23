@@ -16,10 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.glfw
 
-import kotlinx.coroutines.experimental.CoroutineDispatcher
-import kotlinx.coroutines.experimental.Runnable
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.yield
+import kotlinx.coroutines.experimental.*
 import org.tobi29.coroutines.*
 import org.tobi29.io.AutoCloseable
 import org.tobi29.io.tag.ReadTagMutableMap
@@ -52,9 +49,12 @@ class ContainerGLFW(
     private val title: String,
     private val emulateTouch: Boolean = false,
     private val density: Double = if (emulateTouch) 1.0 / 3.0 else 1.0
-) : CoroutineDispatcher(), Container, ScapesEngineBackend by backend {
+) : CoroutineDispatcher(), CoroutineScope, Container, AutoCloseable,
+    ScapesEngineBackend by backend {
     @PublishedApi
     internal val tasks = TaskChannel<Runnable>()
+    private val job = Job()
+    override val coroutineContext: CoroutineContext get() = this + job
     override var containerWidth = 0
         private set
     override var containerHeight = 0
@@ -132,7 +132,7 @@ class ContainerGLFW(
     }
 
     override fun cursorCapture(value: Boolean) {
-        launch(this) {
+        launch {
             val cursorCapture = !emulateTouch && value
             if (cursorCapture != cursorCaptured) {
                 cursorCaptured = cursorCapture
@@ -165,7 +165,7 @@ class ContainerGLFW(
     }
 
     override fun clipboardCopy(value: String) {
-        launch(this) {
+        launch {
             glfwSetClipboardString(
                 window,
                 value
@@ -174,11 +174,12 @@ class ContainerGLFW(
     }
 
     override fun clipboardPaste(callback: (String) -> Unit) {
-        launch(this) {
+        launch {
             callback(
                 glfwGetClipboardString(
                     window
-                ) ?: "")
+                ) ?: ""
+            )
         }
     }
 
@@ -187,7 +188,7 @@ class ContainerGLFW(
         title: String,
         message: String
     ) {
-        launch(this) {
+        launch {
             message(
                 this@ContainerGLFW,
                 messageType,
@@ -202,7 +203,7 @@ class ContainerGLFW(
         text: GuiController.TextFieldData,
         multiline: Boolean
     ) {
-        launch(this) {
+        launch {
             dialog(
                 this@ContainerGLFW,
                 title,
@@ -216,6 +217,11 @@ class ContainerGLFW(
 
     @PublishedApi
     internal fun createRunState(engine: ScapesEngine) = RunState(engine)
+
+    override fun close() {
+        job.cancel()
+        glfwTerminate()
+    }
 
     @PublishedApi
     internal inner class RunState(
@@ -488,7 +494,6 @@ class ContainerGLFW(
         override fun close() {
             disposeWindow(window)
             glfwSetMonitorCallback(null)
-            glfwTerminate()
             controllers.dispose()
             windowSizeFun.close()
             windowCloseFun.close()

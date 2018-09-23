@@ -16,14 +16,14 @@
 
 package org.tobi29.application
 
-import kotlinx.coroutines.experimental.DefaultDispatcher
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 
 actual abstract class EntryPoint actual constructor() : Program
 
 fun EntryPoint.executeMain() {
     val argv = process?.argv
-    launch(DefaultDispatcher) {
+    GlobalScope.launch {
         val statusCode = execute(
             argv?.takeIf { it.size > 2 }
                 ?.sliceArray(2..argv.lastIndex)

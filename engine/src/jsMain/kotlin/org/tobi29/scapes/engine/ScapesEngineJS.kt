@@ -32,10 +32,11 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.stdex.atomic.AtomicDouble
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
-import org.tobi29.utils.ComponentHolder
-import org.tobi29.utils.ComponentStorage
-import org.tobi29.utils.ComponentTypeRegistered
-import org.tobi29.utils.EventDispatcher
+import org.tobi29.utils.*
+import org.tobi29.utils.ComponentLifecycle
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.coroutines.experimental.CoroutineContext
 
 actual class ScapesEngine actual constructor(
@@ -149,11 +150,11 @@ actual class ScapesEngine actual constructor(
                 }
             } finally {
                 components.asSequence()
-                    .filterIsInstance<ComponentLifecycle>()
+                    .filterIsInstance<ComponentLifecycle<*>>()
                     .forEach { it.halt() }
             }
         }?.let { (_, launch) ->
-            components.asSequence().filterIsInstance<ComponentLifecycle>()
+            components.asSequence().filterIsInstance<ComponentLifecycle<*>>()
                 .forEach { it.start() }
             startTps.set(step(0.0001))
             launch()

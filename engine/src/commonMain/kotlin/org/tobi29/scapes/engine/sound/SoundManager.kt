@@ -16,11 +16,11 @@
 
 package org.tobi29.scapes.engine.sound
 
-import org.tobi29.scapes.engine.ComponentLifecycle
 import org.tobi29.scapes.engine.ScapesEngine
+import org.tobi29.utils.ComponentLifecycle
 import org.tobi29.utils.ComponentTypeRegistered
 
-interface SoundManager : ComponentLifecycle {
+interface SoundManager : ComponentLifecycle<ScapesEngine> {
     companion object {
         val COMPONENT =
             ComponentTypeRegistered<ScapesEngine, SoundManager, Any>()
@@ -29,7 +29,7 @@ interface SoundManager : ComponentLifecycle {
 
 class DefaultSoundManager(
     private val sounds: SoundSystem
-) : ComponentLifecycle {
+) : ComponentLifecycle<ScapesEngine> {
     override fun start() {
         sounds.enable()
     }

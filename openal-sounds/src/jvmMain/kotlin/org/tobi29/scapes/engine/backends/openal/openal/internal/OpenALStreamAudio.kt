@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.SendChannel
 import kotlinx.coroutines.experimental.channels.actor
@@ -36,7 +37,6 @@ import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.stdex.assert
-import kotlin.coroutines.experimental.CoroutineContext
 
 internal class OpenALStreamAudio(
     private val asset: ReadSource,
@@ -93,7 +93,7 @@ internal class OpenALStreamAudio(
             openAL.setVelocity(source, velocity)
             openAL.setReferenceDistance(source, 1.0)
             openAL.setMaxDistance(source, Double.POSITIVE_INFINITY)
-            decodeActor = decodeActor(sounds, asset, state)
+            decodeActor = sounds.decodeActor(asset, state)
         }
         val (decode, buffers) = decodeActor ?: return true
         if (buffers.isClosedForReceive) return true
@@ -183,13 +183,12 @@ internal class OpenALStreamAudio(
     companion object : KLogging()
 }
 
-fun decodeActor(
-    context: CoroutineContext,
+private fun CoroutineScope.decodeActor(
     asset: ReadSource,
     state: Boolean
 ): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>> {
     val output = Channel<AudioBuffer>()
-    val actor = actor<AudioBuffer>(context, 1) {
+    val actor = actor<AudioBuffer>(capacity = 1) {
         try {
             do {
                 asset.channel().use { dataChannel ->

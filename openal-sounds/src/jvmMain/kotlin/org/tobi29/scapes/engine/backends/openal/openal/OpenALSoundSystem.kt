@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.backends.openal.openal
 
 import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.LinkedListChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
 import org.tobi29.coroutines.ThreadJob
@@ -52,12 +52,13 @@ class OpenALSoundSystem(
     openAL: OpenAL,
     maxSources: Int,
     latency: Double
-) : CoroutineDispatcher(),
-    SoundSystem {
+) : CoroutineDispatcher(), CoroutineScope, SoundSystem {
     val speedOfSound = 343.3
     private val cache =
         HashMap<ReadSource, Either<Deferred<AudioData?>, OpenALAudioData>?>()
-    private val queue = LinkedListChannel<(OpenAL) -> Unit>()
+    private val queue = Channel<(OpenAL) -> Unit>(Channel.UNLIMITED)
+    private val job = Job()
+    override val coroutineContext: CoroutineContext get() = this + job
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
     private var updateJob: ThreadJob? = null
@@ -68,7 +69,7 @@ class OpenALSoundSystem(
     private var listenerVelocity = Vector3d.ZERO
 
     init {
-        updateJob = launchThread("Engine-Sounds") {
+        updateJob = engine.launchThread("Engine-Sounds") {
             try {
                 start(openAL)
                 try {
@@ -89,6 +90,7 @@ class OpenALSoundSystem(
                         active = tick(openAL, tickDiff)
                     }
                 } finally {
+                    job.cancel()
                     audios.forEach {
                         it.stop(this@OpenALSoundSystem, openAL)
                     }

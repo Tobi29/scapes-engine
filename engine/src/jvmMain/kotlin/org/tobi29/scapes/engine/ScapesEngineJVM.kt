@@ -33,6 +33,7 @@ import org.tobi29.stdex.atomic.AtomicDouble
 import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.ComponentHolder
+import org.tobi29.utils.ComponentLifecycle
 import org.tobi29.utils.ComponentStorage
 import org.tobi29.utils.ComponentTypeRegistered
 import org.tobi29.utils.EventDispatcher
@@ -174,12 +175,12 @@ actual class ScapesEngine actual constructor(
                     }
                 } finally {
                     components.asSequence()
-                        .filterIsInstance<ComponentLifecycle>()
+                        .filterIsInstance<ComponentLifecycle<*>>()
                         .forEach { it.halt() }
                 }
             }.join()
         }?.let { (_, launch) ->
-            components.asSequence().filterIsInstance<ComponentLifecycle>()
+            components.asSequence().filterIsInstance<ComponentLifecycle<*>>()
                 .forEach { it.start() }
             startTps.set(step(0.0001))
             launch()

@@ -17,6 +17,7 @@
 package org.tobi29.server
 
 import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.coroutines.launchThread
@@ -63,7 +64,8 @@ class ConnectionManager(
         val worker = ConnectionWorker(this, maxWorkerSleep)
         val stop = AtomicBoolean(false)
         val w = Triple(worker,
-            launchThread("Connection-Worker") {
+            // TODO: Use proper scope?
+            GlobalScope.launchThread("Connection-Worker") {
                 try {
                     worker.run(stop)
                 } finally {

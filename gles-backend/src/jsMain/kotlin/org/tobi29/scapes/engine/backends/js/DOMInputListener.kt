@@ -180,7 +180,7 @@ class DOMInputListener(private val engine: ScapesEngine) {
             window.addEventListener(it, gamepaddisconnectedListener)
         }
         pollJob?.cancel()
-        pollJob = launch(engine.graphics) {
+        pollJob = engine.launch(engine.graphics) {
             while (true) {
                 val gamepadArray = window.navigator.getGamepads()
                         ?: break // Not supported
