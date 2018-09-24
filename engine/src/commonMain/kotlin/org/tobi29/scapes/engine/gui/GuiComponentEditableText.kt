@@ -20,6 +20,7 @@ import org.tobi29.coroutines.JobHandle
 import org.tobi29.coroutines.launchOrStop
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.math.clamp
 import kotlin.math.min
 
@@ -63,8 +64,8 @@ class GuiComponentEditableText(
     val isActive: Boolean get() = active()
 
     var text: String
-        get() = synchronized(data) { data.text.toString() }
-        set(value) = synchronized(data) {
+        get() = data.lock.withLock { data.text.toString() }
+        set(value) = data.lock.withLock {
             if (data.text.toString() != text) {
                 data.text.clear()
                 data.text.append(text)
@@ -79,7 +80,7 @@ class GuiComponentEditableText(
         var text = ""
         var selectionStart = 0
         var selectionEnd = 0
-        synchronized(data) {
+        data.lock.withLock {
             text = data.text.toString()
             selectionStart = clamp(data.selectionStart, -1, text.length)
             selectionEnd = clamp(data.selectionEnd, 0, text.length)
@@ -131,7 +132,7 @@ class GuiComponentEditableText(
         }
         if (data.dirty.getAndSet(false)) {
             size()?.let { size ->
-                synchronized(data) {
+                data.lock.withLock {
                     if (data.text.length > maxLength) {
                         data.text.delete(maxLength, data.text.length)
                         data.cursor = min(data.cursor, maxLength)

@@ -21,6 +21,7 @@ import org.tobi29.coroutines.launchOrStop
 import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.profiler.*
 import org.tobi29.scapes.engine.gui.*
+import org.tobi29.stdex.concurrent.withLock
 
 class GuiWidgetProfiler(
     parent: GuiLayoutData
@@ -73,7 +74,7 @@ class GuiWidgetProfiler(
     }
 
     fun nodes() {
-        synchronized(this) {
+        lock.withLock {
             val node = node
             for (element in this.elements) {
                 element.remove()
@@ -81,7 +82,7 @@ class GuiWidgetProfiler(
             val elements = ArrayList<Element>()
             if (node == null) {
                 profilerNotEnabled.visible = true
-                return@synchronized
+                return
             }
             profilerNotEnabled.visible = false
             elements.add(scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
@@ -98,7 +99,7 @@ class GuiWidgetProfiler(
     }
 
     fun nodes(node: Node) {
-        synchronized(this) {
+        lock.withLock {
             this.node = node
             nodes()
         }

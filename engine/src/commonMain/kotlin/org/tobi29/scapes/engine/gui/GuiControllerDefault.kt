@@ -19,6 +19,7 @@ package org.tobi29.scapes.engine.gui
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.isISOControl
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.listenAlive
@@ -46,7 +47,7 @@ abstract class GuiControllerDefault(
             val container = engine.container
             val shift = event.state.isDown(ControllerKey.KEY_SHIFT_LEFT) ||
                     event.state.isDown(ControllerKey.KEY_SHIFT_RIGHT)
-            synchronized(data) {
+            data.lock.withLock {
                 if (event.state is ControllerDesktopState
                     && event.state.isModifierDown) {
                     when (event.key) {
@@ -59,7 +60,7 @@ abstract class GuiControllerDefault(
                         }
                         ControllerKey.KEY_V -> {
                             container.clipboardPaste { paste ->
-                                synchronized(data) {
+                                data.lock.withLock {
                                     data.paste(
                                         if (multiline) paste
                                         else paste.replace("\n", "")
@@ -109,7 +110,7 @@ abstract class GuiControllerDefault(
                 currentTextField.compareAndSet(current, null)
                 return@listenAlive
             }
-            synchronized(data) {
+            data.lock.withLock {
                 val character = event.character
                 if (!character.isISOControl()) {
                     data.insert(character)

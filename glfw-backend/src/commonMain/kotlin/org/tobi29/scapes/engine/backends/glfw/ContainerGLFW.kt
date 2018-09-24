@@ -36,6 +36,8 @@ import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.stdex.ConcurrentHashMap
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.math.clamp
 import org.tobi29.utils.InstantSteadyNanos
 import org.tobi29.utils.steadyClock
@@ -346,12 +348,13 @@ class ContainerGLFW(
             val controllerEmulateTouch = object : ControllerTouch() {
                 override val lastActive get() = controllerDesktop.lastActive
 
+                private val lock = ReentrantLock()
                 private var tracker: ControllerTracker.Tracker? = null
 
                 override val name = "Extra real touchscreen"
 
                 override fun fingers(): Sequence<ControllerTracker.Tracker> {
-                    synchronized(this) {
+                    lock.withLock {
                         val tracker = tracker
                         if (tracker != null) {
                             if (controllerDesktop.isDown(

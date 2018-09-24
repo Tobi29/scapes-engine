@@ -24,6 +24,8 @@ import org.tobi29.scapes.engine.gui.GlyphRenderer
 import org.tobi29.scapes.engine.gui.GuiRenderBatch
 import org.tobi29.scapes.engine.gui.GuiUtils
 import org.tobi29.stdex.computeAbsent
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.copy
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -32,6 +34,7 @@ class FontRenderer(
     private val engine: ScapesEngine,
     private val font: Font
 ) {
+    private val lock = ReentrantLock()
     private val pageCache = HashMap<Int, GlyphPages>()
 
     fun render(
@@ -86,9 +89,9 @@ class FontRenderer(
         end: Int
     ): TextInfo {
         if (text == null || start == -1) return EMPTY_TEXT_INFO
-        return synchronized(this) {
+        return lock.withLock {
             val size = output.size(height)
-            if (size <= 0) return@synchronized EMPTY_TEXT_INFO
+            if (size <= 0) return EMPTY_TEXT_INFO
             val pages = pageCache.computeAbsent(size) {
                 GlyphPages(font.createGlyphRenderer(size))
             }

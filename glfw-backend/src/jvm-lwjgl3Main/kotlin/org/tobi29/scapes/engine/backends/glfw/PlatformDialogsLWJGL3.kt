@@ -31,6 +31,7 @@ import org.tobi29.platform.launchProcess
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
 import org.tobi29.scapes.engine.gui.GuiController
+import org.tobi29.stdex.concurrent.withLock
 
 actual fun openFileDialog(
     window: ContainerGLFW,
@@ -104,7 +105,7 @@ actual fun dialog(
             title, "",
             text.text
         )?.let { editText ->
-            synchronized(text) {
+            text.lock.withLock {
                 if (text.text.isNotEmpty()) {
                     text.text.delete(0, Int.MAX_VALUE)
                 }

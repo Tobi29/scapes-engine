@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.stdex.atomic.AtomicBoolean
+import org.tobi29.stdex.concurrent.ReentrantLock
 import org.tobi29.utils.MutableString
 
 abstract class GuiController(protected val engine: ScapesEngine) {
@@ -38,6 +39,7 @@ abstract class GuiController(protected val engine: ScapesEngine) {
     open fun disabled() {}
 
     class TextFieldData {
+        val lock = ReentrantLock()
         val dirty = AtomicBoolean(false)
         var text = MutableString(100)
         var cursor = 0

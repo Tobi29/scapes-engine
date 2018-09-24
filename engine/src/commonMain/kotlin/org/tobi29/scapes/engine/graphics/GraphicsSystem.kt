@@ -27,12 +27,15 @@ import org.tobi29.logging.KLogging
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import kotlin.coroutines.experimental.CoroutineContext
 
 class GraphicsSystem(
     val engine: ScapesEngine,
     private val gos: GraphicsObjectSupplier
 ) : CoroutineDispatcher(), GraphicsObjectSupplier by gos {
+    internal val lock = ReentrantLock()
     private lateinit var fpsDebug: GuiWidgetDebugValues.Element
     private lateinit var widthDebug: GuiWidgetDebugValues.Element
     private lateinit var heightDebug: GuiWidgetDebugValues.Element
@@ -63,7 +66,7 @@ class GraphicsSystem(
     }
 
     fun dispose(gl: GL) {
-        synchronized(this) {
+        lock.withLock {
             gos.vaoTracker.disposeAll(gl)
             gos.textureTracker.disposeAll(gl)
             gos.fboTracker.disposeAll(gl)
@@ -83,7 +86,7 @@ class GraphicsSystem(
         containerWidth: Int,
         containerHeight: Int
     ): Boolean {
-        return synchronized(this) {
+        return lock.withLock {
             try {
                 gl.checkError("Pre-Render")
                 gl.step(delta)
@@ -113,7 +116,7 @@ class GraphicsSystem(
                 gl.setViewport(0, 0, gl.contentWidth, gl.contentHeight)
                 if (profilerSection("State") {
                         state?.renderState(gl, delta, fboSizeDirty)
-                    } != true) return@synchronized false
+                    } != true) return false
                 fpsDebug.setValue(1.0 / delta)
                 textureDebug.setValue(gos.textureTracker.count())
                 vaoDebug.setValue(gos.vaoTracker.count())

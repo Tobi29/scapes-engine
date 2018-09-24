@@ -17,6 +17,8 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.sync.Mutex
+import kotlinx.coroutines.experimental.sync.withLock
 import org.tobi29.coroutines.*
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
@@ -31,6 +33,7 @@ import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.stdex.atomic.AtomicDouble
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.*
 import org.tobi29.utils.ComponentLifecycle
@@ -45,6 +48,7 @@ actual class ScapesEngine actual constructor(
     actual val taskExecutor: CoroutineContext,
     configMap: MutableTagMap
 ) : CoroutineDispatcher(), CoroutineScope, ComponentHolder<Any> {
+    private val mutex = Mutex()
     actual override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
     private val job = Job()
@@ -167,7 +171,7 @@ actual class ScapesEngine actual constructor(
 
     actual suspend fun dispose() {
         halt()
-        synchronized(this) {
+        mutex.withLock {
             logger.info { "Disposing last state" }
             state?.disposeState()
             _state = null
@@ -194,7 +198,7 @@ actual class ScapesEngine actual constructor(
         var currentState = state
         val newState = newState.getAndSet(null)
         if (newState != null) {
-            synchronized(graphics) {
+            graphics.lock.withLock {
                 state?.disposeState()
                 _state = newState
                 newState.initState()

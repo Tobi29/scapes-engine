@@ -17,6 +17,8 @@
 package org.tobi29.stdex
 
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import kotlin.properties.ReadOnlyProperty
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
@@ -58,6 +60,7 @@ inline fun <T> property(
  */
 class MutableLazy<T> : Lazy<T> {
     private val initializer = AtomicReference<(() -> T)?>(null)
+    private val lock = ReentrantLock()
     @Volatile
     private var _value: Any?
 
@@ -80,7 +83,7 @@ class MutableLazy<T> : Lazy<T> {
         get() {
             var value = _value
             if (value === Uninitialized) {
-                synchronized(initializer) {
+                lock.withLock {
                     value = _value
                     if (value === Uninitialized) {
                         value = (initializer.getAndSet(
@@ -96,7 +99,7 @@ class MutableLazy<T> : Lazy<T> {
             return value as T
         }
         set(value) {
-            synchronized(initializer) {
+            lock.withLock {
                 this.initializer.set(null)
                 _value = value
             }
@@ -106,7 +109,7 @@ class MutableLazy<T> : Lazy<T> {
      * Drop the value and set a new initializer
      */
     fun set(initializer: () -> T) {
-        synchronized(this.initializer) {
+        lock.withLock {
             this.initializer.set(initializer)
             _value = Uninitialized
         }

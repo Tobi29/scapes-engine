@@ -23,6 +23,7 @@ import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.createVCI
 import org.tobi29.stdex.assert
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.math.ceilToInt
 import org.tobi29.stdex.math.clamp
 import kotlin.math.pow
@@ -57,7 +58,7 @@ class GuiComponentGraph(
         val color = FloatArray(w * (i.size shl 2))
         val limit = w - 1
         val index = IntArray(w * (limit shl 1))
-        synchronized(this) {
+        lock.withLock {
             if (data.height != w) {
                 data = FloatArray2(i.size, w)
             }
@@ -97,7 +98,7 @@ class GuiComponentGraph(
     }
 
     fun addStamp(value: Double, graph: Int) {
-        synchronized(this) {
+        lock.withLock {
             if (data.height > 0) {
                 val index = i[graph] % data.height
                 data[graph, index] = (1.0 - value.pow(0.25)).toFloat()

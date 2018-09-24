@@ -50,13 +50,11 @@ internal class DOMControllerDesktop : ControllerDesktop() {
         events: EventDispatcher
     ) {
         lastActiveMut.set(steadyClock.timeSteadyNanos())
-        synchronized(this) {
-            when (action) {
-                ControllerButtons.Action.PRESS -> pressedMut.add(key)
-                ControllerButtons.Action.RELEASE -> pressedMut.remove(key)
-            }
-            events.fire(ControllerButtons.PressEvent(now(), key, action))
+        when (action) {
+            ControllerButtons.Action.PRESS -> pressedMut.add(key)
+            ControllerButtons.Action.RELEASE -> pressedMut.remove(key)
         }
+        events.fire(ControllerButtons.PressEvent(now(), key, action))
     }
 
     internal fun addTypeEvent(

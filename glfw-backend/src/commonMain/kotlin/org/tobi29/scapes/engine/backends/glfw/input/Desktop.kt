@@ -22,11 +22,14 @@ import org.tobi29.platform.Platform
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.stdex.ConcurrentHashSet
 import org.tobi29.stdex.atomic.AtomicLong
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.steadyClock
 
 internal class GLFWControllerDesktop : ControllerDesktop() {
+    private val lock = ReentrantLock()
     private val pressedMut = ConcurrentHashSet<ControllerKey>()
     override val pressed = pressedMut.readOnly()
     override var x = 0.0
@@ -61,7 +64,7 @@ internal class GLFWControllerDesktop : ControllerDesktop() {
         events: EventDispatcher
     ) {
         lastActiveMut.set(steadyClock.timeSteadyNanos())
-        synchronized(this) {
+        lock.withLock {
             when (action) {
                 ControllerButtons.Action.PRESS -> pressedMut.add(key)
                 ControllerButtons.Action.RELEASE -> pressedMut.remove(key)
@@ -116,7 +119,7 @@ internal class GLFWControllerDesktop : ControllerDesktop() {
     }
 
     internal fun clearStates() {
-        synchronized(this) {
+        lock.withLock {
             pressedMut.clear()
         }
     }

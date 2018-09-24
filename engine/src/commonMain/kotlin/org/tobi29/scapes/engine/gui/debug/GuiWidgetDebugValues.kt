@@ -23,6 +23,7 @@ import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.withLock
 
 open class GuiWidgetDebugValues(
     parent: GuiLayoutData
@@ -35,7 +36,7 @@ open class GuiWidgetDebugValues(
     private var updateJob = JobHandle(engine)
 
     operator fun get(key: String): Element {
-        return synchronized(this) {
+        return lock.withLock {
             var element: Element? = elements[key]
             if (element == null) {
                 element = scrollPane.addVert(0.0, 0.0, -1.0, 20.0) {
@@ -43,12 +44,12 @@ open class GuiWidgetDebugValues(
                 }
                 elements.put(key, element)
             }
-            return@synchronized element
+            element
         }
     }
 
     fun clear() {
-        synchronized(this) {
+        lock.withLock {
             val iterator = elements.entries.iterator()
             while (iterator.hasNext()) {
                 scrollPane.remove(iterator.next().value)

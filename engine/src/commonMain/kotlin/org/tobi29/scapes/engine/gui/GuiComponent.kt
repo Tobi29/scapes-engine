@@ -28,6 +28,8 @@ import org.tobi29.stdex.ConcurrentHashSet
 import org.tobi29.stdex.Volatile
 import org.tobi29.stdex.atomic.AtomicInt
 import org.tobi29.stdex.computeAbsent
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.utils.ConcurrentOrderedCollection
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.ListenerRegistrar
@@ -46,6 +48,7 @@ abstract class GuiComponent(
         ConcurrentOrderedCollection(naturalOrder<GuiComponent>())
     private val guiEvents =
         ConcurrentHashMap<GuiEvent<*>, MutableSet<(GuiComponentEvent) -> Unit>>()
+    protected val lock = ReentrantLock()
     protected val taskExecutor: CoroutineContext get() = engine.taskExecutor
     protected val renderExecutor: CoroutineContext get() = engine.graphics
     @Suppress("LeakingThis")
@@ -54,7 +57,7 @@ abstract class GuiComponent(
     var visible: Boolean
         get() = _visible
         set(value) {
-            synchronized(this) {
+            lock.withLock {
                 if (_visible != value) {
                     _visible = value
                     updateVisiblePropagate()
@@ -299,7 +302,7 @@ abstract class GuiComponent(
     }
 
     internal fun added() {
-        synchronized(this) {
+        lock.withLock {
             if (added) return
             added = true
             events.enable()
@@ -322,7 +325,7 @@ abstract class GuiComponent(
     }
 
     internal fun removed() {
-        synchronized(this) {
+        lock.withLock {
             if (!added) return
             added = false
             gui.deselect(this)

@@ -23,6 +23,8 @@ import org.tobi29.scapes.engine.input.ControllerKey
 import org.tobi29.scapes.engine.input.now
 import org.tobi29.stdex.ConcurrentHashSet
 import org.tobi29.stdex.atomic.AtomicLong
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.steadyClock
@@ -31,6 +33,7 @@ internal open class GLFWControllerJoystick(
     final override val name: String,
     axisCount: Int
 ) : ControllerJoystick() {
+    private val lock = ReentrantLock()
     private val pressedMut = ConcurrentHashSet<ControllerKey>()
     final override val pressed = pressedMut.readOnly()
     final override val axes = DoubleArray(axisCount).sliceOver()
@@ -45,7 +48,7 @@ internal open class GLFWControllerJoystick(
         events: EventDispatcher
     ) {
         if (axis < 0) return
-        synchronized(this) {
+        lock.withLock {
             when {
                 value >= 0.5 -> ControllerKey.axis(axis)?.let {
                     setButton(it, true, events)
@@ -79,7 +82,7 @@ internal open class GLFWControllerJoystick(
         value: Boolean,
         events: EventDispatcher
     ) {
-        synchronized(this) {
+        lock.withLock {
             if (value) {
                 if (pressedMut.add(key)) {
                     lastActiveMut.set(steadyClock.timeSteadyNanos())

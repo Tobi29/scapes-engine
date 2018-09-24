@@ -25,6 +25,8 @@ import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentRegistered
@@ -36,6 +38,7 @@ abstract class InputManager<M : InputMode>(
     private val configMap: MutableTagMap,
     private val inputModeDummy: M
 ) : ComponentRegistered, ComponentStep {
+    private val lock = ReentrantLock()
     private val inputModesMut =
         ConcurrentHashMap<Controller, (MutableTagMap) -> M>()
     var inputModes = emptyList<M>()
@@ -90,19 +93,17 @@ abstract class InputManager<M : InputMode>(
 
     protected abstract fun inputModeChanged(inputMode: M)
 
-    private fun changeInput(inputMode: M?) {
+    private fun changeInput(inputMode: M?) = lock.withLock {
         logger.info {
             inputMode?.let { "Setting input mode to $it" }
                     ?: "Disabling input mode"
         }
         val newInputMode = inputMode ?: inputModeDummy
-        synchronized(inputModesMut) {
-            inputModeMut.get().disabled()
-            inputModeMut.set(newInputMode)
-            engine.guiController = newInputMode.guiController()
-            newInputMode.let { inputModeChanged(it) }
-            newInputMode.enabled()
-        }
+        inputModeMut.get().disabled()
+        inputModeMut.set(newInputMode)
+        engine.guiController = newInputMode.guiController()
+        newInputMode.let { inputModeChanged(it) }
+        newInputMode.enabled()
     }
 
     companion object : KLogging()

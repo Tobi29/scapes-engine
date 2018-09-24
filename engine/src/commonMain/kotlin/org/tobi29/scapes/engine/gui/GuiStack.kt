@@ -23,22 +23,25 @@ import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.Shader
 import org.tobi29.scapes.engine.graphics.push
 import org.tobi29.stdex.ConcurrentSortedMap
+import org.tobi29.stdex.concurrent.ReentrantLock
+import org.tobi29.stdex.concurrent.withLock
 
 class GuiStack {
+    private val lock = ReentrantLock()
     private val guis = ConcurrentSortedMap<String, Gui>()
     private val keys = HashMap<Gui, String>()
     var focus: Gui? = null
         private set
 
     fun add(id: String, add: Gui) {
-        synchronized(this) {
+        lock.withLock {
             addUnfocused(id, add)
             focus = add
         }
     }
 
     fun addUnfocused(id: String, add: Gui) {
-        synchronized(this) {
+        lock.withLock {
             val previous = guis.put(id, add)
             if (previous != null) {
                 removed(previous)
@@ -52,18 +55,18 @@ class GuiStack {
 
     operator fun contains(id: String): Boolean = guis.containsKey(id)
 
-    fun remove(id: String): Gui? = synchronized(this) {
-        val previous = guis.remove(id) ?: return@synchronized null
+    fun remove(id: String): Gui? = lock.withLock {
+        val previous = guis.remove(id) ?: return null
         removed(previous)
         previous
     }
 
-    fun remove(gui: Gui): Boolean = synchronized(this) {
+    fun remove(gui: Gui): Boolean = lock.withLock {
         if (!guis.values.remove(gui)) {
-            return@synchronized false
+            return false
         }
         removed(gui)
-        return@synchronized true
+        true
     }
 
     fun clear() {
@@ -72,17 +75,15 @@ class GuiStack {
         }
     }
 
-    fun swap(remove: Gui, add: Gui): Boolean {
-        return synchronized(this) {
-            val id = keys[remove] ?: return@synchronized false
-            guis.put(id, add)
-            keys.put(add, id)
-            if (removed(remove)) {
-                focus = add
-            }
-            add.added()
-            return@synchronized true
+    fun swap(remove: Gui, add: Gui): Boolean = lock.withLock {
+        val id = keys[remove] ?: return false
+        guis.put(id, add)
+        keys.put(add, id)
+        if (removed(remove)) {
+            focus = add
         }
+        add.added()
+        true
     }
 
     private fun removed(gui: Gui): Boolean {
