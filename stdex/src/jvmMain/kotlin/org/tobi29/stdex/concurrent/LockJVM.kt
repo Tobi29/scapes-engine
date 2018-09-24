@@ -14,15 +14,32 @@
  * limitations under the License.
  */
 
-package org.tobi29.coroutines
+package org.tobi29.stdex.concurrent
 
 import org.tobi29.stdex.assert
-import org.tobi29.utils.Duration64Nanos
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater
 import java.util.concurrent.locks.ReentrantLock
 
-actual class StampLock {
+actual class ReentrantLock : Lock {
+    private val lock = ReentrantLock()
+
+    override val isHeld get() = lock.isHeldByCurrentThread
+
+    override fun lock() =
+        lock.lock()
+
+    override fun tryLock(): Boolean =
+        lock.tryLock()
+
+    override fun tryLock(timeout: Long): Boolean =
+        lock.tryLock(timeout, TimeUnit.NANOSECONDS)
+
+    override fun unlock() =
+        lock.unlock()
+}
+
+actual class StampLock : Lock {
     @PublishedApi
     internal val counterCurrent
         get() = counterFU.get(this)
@@ -33,9 +50,9 @@ actual class StampLock {
 
     private val writeLock = ReentrantLock()
 
-    actual val isHeld get() = writeLock.isHeldByCurrentThread
+    override val isHeld get() = writeLock.isHeldByCurrentThread
 
-    actual fun lock() {
+    override fun lock() {
         writeLock.lock()
         if (writeLock.holdCount == 1) {
             counterFU.incrementAndGet(this)
@@ -43,7 +60,7 @@ actual class StampLock {
         assert { counterCurrent and 1 != 0 }
     }
 
-    actual fun tryLock(): Boolean =
+    override fun tryLock(): Boolean =
         if (writeLock.tryLock()) {
             if (writeLock.holdCount == 1) {
                 counterFU.incrementAndGet(this)
@@ -52,7 +69,7 @@ actual class StampLock {
             true
         } else false
 
-    actual fun tryLock(timeout: Duration64Nanos): Boolean =
+    override fun tryLock(timeout: Long): Boolean =
         if (writeLock.tryLock(timeout, TimeUnit.NANOSECONDS)) {
             if (writeLock.holdCount == 1) {
                 counterFU.incrementAndGet(this)
@@ -61,7 +78,7 @@ actual class StampLock {
             true
         } else false
 
-    actual fun unlock() {
+    override fun unlock() {
         assert { counterCurrent and 1 != 0 }
         if (writeLock.holdCount == 1) {
             counterFU.incrementAndGet(this)
@@ -108,11 +125,4 @@ actual inline fun <R> StampLock.read(crossinline block: () -> R): R {
         }
         force = true
     }
-}
-
-actual inline fun <R> StampLock.write(block: () -> R): R = try {
-    lock()
-    block()
-} finally {
-    unlock()
 }

@@ -16,51 +16,23 @@
 
 package org.tobi29.coroutines
 
-import org.tobi29.utils.Duration64Nanos
+import org.tobi29.stdex.concurrent.read
+import org.tobi29.stdex.concurrent.withLock
 
-/**
- * Simple stamp lock optimized using Kotlin's inline modifier
- * Writes are always synchronized, whilst reads can happen in parallel as long
- * as there is no write going on at the same time
- */
-expect class StampLock() {
-    /**
-     * Returns `true` in case a write lock is held
-     * @return `true` in case a write lock is held
-     */
-    val isHeld: Boolean
+@Deprecated(
+    "Use version from stdex",
+    ReplaceWith("StampLock", "org.tobi29.stdex.concurrent.StampLock")
+)
+typealias StampLock = org.tobi29.stdex.concurrent.StampLock
 
-    /**
-     * Acquires a write lock
-     */
-    fun lock()
+@Deprecated(
+    "Use version from stdex",
+    ReplaceWith("read(block)", "org.tobi29.stdex.concurrent.read")
+)
+inline fun <R> StampLock.read(crossinline block: () -> R): R = read(block)
 
-    /**
-     * Tries to aquire a write lock
-     */
-    fun tryLock(): Boolean
-
-    /**
-     * Tries to aquire a write lock with given timeout
-     */
-    fun tryLock(timeout: Duration64Nanos): Boolean
-
-    /**
-     * Releases a write lock
-     */
-    fun unlock()
-}
-
-/**
- * Acquire read access of the lock, calling [block] one or two times
- * @param block Code block to execute, might be called twice
- * @return The return value of the last call to [block]
- */
-expect inline fun <R> StampLock.read(crossinline block: () -> R): R
-
-/**
- * Acquire write access, calling [block] once
- * @param block Code to execute
- * @return The return value of [block]
- */
-expect inline fun <R> StampLock.write(block: () -> R): R
+@Deprecated(
+    "Use version from stdex",
+    ReplaceWith("withLock(block)", "org.tobi29.stdex.concurrent.withLock")
+)
+inline fun <R> StampLock.write(block: () -> R): R = withLock(block)

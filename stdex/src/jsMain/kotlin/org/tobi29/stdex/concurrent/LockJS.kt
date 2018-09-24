@@ -14,43 +14,34 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+package org.tobi29.stdex.concurrent
 
-package org.tobi29.coroutines
-
-import org.tobi29.utils.Duration64Nanos
-
-actual class StampLock {
+actual class ReentrantLock : Lock {
     private var held = 0
 
-    actual val isHeld get() = held > 0
+    override val isHeld get() = held > 0
 
-    actual fun lock() {
+    override fun lock() {
         if (held == Int.MAX_VALUE) error("Lock overflowed")
         held++
     }
 
-    actual inline fun tryLock(): Boolean {
+    override fun tryLock(): Boolean {
         lock()
         return true
     }
 
-    actual inline fun tryLock(timeout: Duration64Nanos): Boolean {
+    override fun tryLock(timeout: Long): Boolean {
         lock()
         return true
     }
 
-    actual fun unlock() {
+    override fun unlock() {
         if (held == 0) error("Lock underflowed")
         held--
     }
 }
 
-actual inline fun <R> StampLock.read(crossinline block: () -> R): R = block()
+actual typealias StampLock = ReentrantLock
 
-actual inline fun <R> StampLock.write(block: () -> R): R = try {
-    lock()
-    block()
-} finally {
-    unlock()
-}
+actual inline fun <R> StampLock.read(crossinline block: () -> R): R = block()
