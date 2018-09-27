@@ -46,7 +46,10 @@ kotlin {
         }
     }
     targets {
+        // Kotlin/JS
         fromPreset(presets.js, "js")
+
+        // Kotlin/JVM
         fromPreset(presets.jvm, "jvm")
     }
 }

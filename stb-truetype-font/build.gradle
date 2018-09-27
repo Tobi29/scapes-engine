@@ -42,6 +42,7 @@ kotlin {
         }
     }
     targets {
+        // Kotlin/JVM (LWJGL 3)
         fromPreset(presets.jvm, "jvm-lwjgl3")
     }
 }
