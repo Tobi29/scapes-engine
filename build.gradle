@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.3.0-rc-57"
+    def kotlinVersion = "1.3.0-rc-146"
     def dokkaVersion = "0.9.17"
 
     repositories {
@@ -59,47 +59,8 @@ allprojects {
                     apiVersion = "1.2"
                 }
             }
-
-            // Clean, nice, future proof code:
-            def lwjgl3Modules = ["gl-backend", "gles-backend", "glfw-backend",
-                    "lwjgl3-backend", "stb-truetype-font"]
-
-            kotlin.targets.each { target ->
-                def publication = publishing.publications.getByName(target.name)
-                publication.pom.withXml {
-                    def root = asNode()
-                    def dependencies = root.get("dependencies")[0]
-                    if (dependencies == null) {
-                        dependencies = root.appendNode("dependencies")
-                    }
-                    publication.pom.runtimeDependencies
-                            .each { mavenDependency ->
-                        def groupId = mavenDependency.groupId
-                        if (groupId != group) {
-                            return
-                        }
-                        def artifactId = mavenDependency.artifactId
-                        def suffix = target.name
-                        if (suffix == "jvm-lwjgl3") {
-                            suffix = "jvm"
-                        }
-                        if (suffix == "jvm" &&
-                                lwjgl3Modules.contains(artifactId)) {
-                            suffix = "jvm-lwjgl3"
-                        }
-                        def dependency = dependencies.
-                                appendNode("dependency")
-                        dependency.appendNode("groupId", groupId)
-                        dependency.
-                                appendNode("artifactId", "$artifactId-$suffix")
-                        dependency.
-                                appendNode("version", mavenDependency.version)
-                        dependency.appendNode("scope", "runtime")
-                    }
-                }
-            }
         }
-
+        
         tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile) {
             compileTask ->
                 compileTask.kotlinOptions.metaInfo = true
@@ -111,21 +72,18 @@ allprojects {
 }
 
 ext {
-    kotlinVersion = "1.2.70"
+    kotlinVersion = "1.2.71"
     kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
     kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
 
-    kotlinxCoroutinesVersion = "0.26.1"
-    kotlinxCoroutines = { module ->
-        "org.jetbrains.kotlinx:$module-common:$kotlinxCoroutinesVersion"
-    }
-    kotlinxCoroutinesJVM = { module ->
+    kotlinxCoroutinesVersion = "0.26.1-eap13"
+    kotlinxCoroutinesBase = { module ->
         "org.jetbrains.kotlinx:$module:$kotlinxCoroutinesVersion"
     }
-    kotlinxCoroutinesJS = { module ->
-        "org.jetbrains.kotlinx:$module-js:$kotlinxCoroutinesVersion"
-    }
+    kotlinxCoroutines = { module -> kotlinxCoroutinesBase("$module-common") }
+    kotlinxCoroutinesJVM = { module -> kotlinxCoroutinesBase("$module") }
+    kotlinxCoroutinesJS = { module -> kotlinxCoroutinesBase("$module-js") }
 
     slf4jVersion = "1.7.25"
     slf4jJVM = { module -> "org.slf4j:$module:$slf4jVersion" }

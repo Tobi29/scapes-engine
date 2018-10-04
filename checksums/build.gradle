@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-apply plugin: "maven-publish"
 apply plugin: "kotlin-multiplatform"
+apply plugin: "maven-publish"
 
 kotlin {
     sourceSets {
