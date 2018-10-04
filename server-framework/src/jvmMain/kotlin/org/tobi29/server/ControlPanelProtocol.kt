@@ -15,7 +15,7 @@
  */
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.channels.LinkedListChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.io.IOException
 import org.tobi29.io.tag.*
@@ -58,9 +58,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
 
     private var idStr: String? = null
-    private val queue = LinkedListChannel<TagMap>()
-    private val openHooks = LinkedListChannel<() -> Unit>()
-    private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, LinkedListChannel<(TagMap) -> Unit>>>()
+    private val queue = Channel<TagMap>(Channel.UNLIMITED)
+    private val openHooks = Channel<() -> Unit>(Channel.UNLIMITED)
+    private val commands = ConcurrentHashMap<String, Pair<MutableList<(TagMap) -> Unit>, Channel<(TagMap) -> Unit>>>()
     private var pingWait = 0L
     var ping = 0L
         private set
@@ -168,7 +168,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     fun addCommand(command: String,
                    consumer: (TagMap) -> Unit) {
         val list = commands.computeAbsent(command) {
-            Pair(ArrayList(), LinkedListChannel())
+            Pair(ArrayList(), Channel(Channel.UNLIMITED))
         }
         synchronized(list.first) {
             list.first.add(consumer)
@@ -193,7 +193,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
     fun commandHook(command: String,
                     runnable: (TagMap) -> Unit) {
         val list = commands.computeAbsent(command) {
-            Pair(ArrayList(), LinkedListChannel())
+            Pair(ArrayList(), Channel(Channel.UNLIMITED))
         }
         list.second.offer(runnable)
     }

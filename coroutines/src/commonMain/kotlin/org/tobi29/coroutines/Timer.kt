@@ -17,9 +17,7 @@
 package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.NonCancellable
-import kotlinx.coroutines.experimental.delay
 import kotlinx.coroutines.experimental.withContext
-import org.tobi29.stdex.toIntClamped
 import org.tobi29.utils.SteadyClock
 import org.tobi29.utils.steadyClock
 import kotlin.math.roundToLong
@@ -150,7 +148,7 @@ suspend inline fun Timer.loopUntilCancel(
     logSkip: (Long) -> Unit,
     noinline step: suspend (Double) -> Unit
 ) = loopUntilCancel(
-    maxDiff, { delay((it / 1000000L).toIntClamped()) },
+    maxDiff, { delayNanos(it) },
     minSkipDelay, logSkip, step
 )
 

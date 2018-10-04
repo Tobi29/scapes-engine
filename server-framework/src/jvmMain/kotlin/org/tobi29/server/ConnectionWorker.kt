@@ -17,7 +17,7 @@
 package org.tobi29.server
 
 import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.channels.LinkedListChannel
+import kotlinx.coroutines.experimental.channels.Channel
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
@@ -43,7 +43,7 @@ class ConnectionWorker(
         val connection: ConnectionManager,
         private val maxWorkerSleep: Long
 ) : CoroutineDispatcher(), AutoCloseable {
-    private val connectionQueue = LinkedListChannel<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>()
+    private val connectionQueue = Channel<Pair<Long, suspend CoroutineScope.(Connection) -> Unit>>(Channel.UNLIMITED)
     private val connections = ArrayList<ConnectionHandle>()
     private val queue = TaskChannel<() -> Unit>()
     val selector: Selector = Selector.open()
@@ -74,6 +74,7 @@ class ConnectionWorker(
      *
      * **Note:** Should never be called twice or concurrently
      */
+    // TODO: Stop using GlobalScope
     fun run(stop: AtomicBoolean) {
         while (!stop.get()) {
             queue.processCurrent()
@@ -88,13 +89,13 @@ class ConnectionWorker(
                         AtomicLong(systemClock.timeMillis() + initialTimeout)
                     }
                     val connection = Connection(requestClose, timeout)
-                    val job = launch(this) {
+                    val job = GlobalScope.launch(this) {
                         coroutine(connection)
                     }
                     val close = ConnectionHandle(job, requestClose)
                     connections.add(close)
                     if (timeout != null) {
-                        launch(this) {
+                        GlobalScope.launch(this) {
                             while (job.isActive) {
                                 if (systemClock.timeMillis() > timeout.get()) {
                                     job.cancel(CancellationException("Timeout"))

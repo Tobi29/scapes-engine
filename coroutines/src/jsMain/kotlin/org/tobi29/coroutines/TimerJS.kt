@@ -20,9 +20,8 @@ package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.delay
 import org.tobi29.stdex.PlatformProvidedImplementation
-import org.tobi29.stdex.toIntClamped
 
 @PlatformProvidedImplementation
 @Suppress("NOTHING_TO_INLINE")
 actual suspend inline fun delayNanos(time: Long) =
-    delay((time / 1000000L).toIntClamped())
+    delay(time / 1000000L)
