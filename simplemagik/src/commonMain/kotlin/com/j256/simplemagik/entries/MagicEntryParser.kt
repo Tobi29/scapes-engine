@@ -19,6 +19,7 @@ package com.j256.simplemagik.entries
 import com.j256.simplemagik.ErrorCallBack
 import com.j256.simplemagik.endian.EndianType
 import com.j256.simplemagik.entries.MagicEntry.OffsetInfo
+import com.j256.simplemagik.types.StrengthOperator
 import com.j256.simplemagik.types.TestOperator
 import com.j256.simplemagik.types.UnknownType
 import com.j256.simplemagik.types.unknownType
@@ -27,6 +28,7 @@ private const val MAX_LEVELS = 20
 
 // special lines, others are put into the extensionMap
 private const val MIME_TYPE_LINE = "!:mime"
+private const val STRENGTH_LINE = "!:strength"
 private const val OPTIONAL_LINE = "!:optional"
 
 private val OFFSET_PATTERN =
@@ -43,8 +45,8 @@ internal class MagicEntryBuilder(
     val clearFormat: Boolean,
     val formatter: MagicFormatter?
 ) {
-    var strength: Int = 2 * MULT
     var mimeType: String? = null
+    var strength: Pair<StrengthOperator, Int>? = null
     var isOptional = false
     val children = ArrayList<MagicEntryBuilder>()
 }
@@ -74,6 +76,7 @@ fun readMagicEntries(
     val entries = ArrayList<MagicEntryBuilder>()
     val levelParents = arrayOfNulls<MagicEntryBuilder>(MAX_LEVELS)
     var previousEntry: MagicEntryBuilder? = null
+    var rootEntry: MagicEntryBuilder? = null
     val parts = Array(4) { "" }
     for (line in lineReader) {
         if (line.isBlank() || line[0] == '#') continue
@@ -82,7 +85,7 @@ fun readMagicEntries(
         try {
             // we need the previous entry because of mime-type, etc. which augment the previous line
             entry = parseMagicLine(
-                previousEntry, line, errorCallBack, parts
+                previousEntry, rootEntry, line, errorCallBack, parts
             )
             if (entry == null) continue
         } catch (e: IllegalArgumentException) {
@@ -103,6 +106,7 @@ fun readMagicEntries(
         if (level == 0) {
             // top level entry
             entries.add(entry)
+            rootEntry = entry
         } else if (levelParents[level - 1] == null) {
             errorCallBack?.invoke(
                 line,
@@ -126,6 +130,7 @@ fun readMagicEntries(
  */
 private fun parseMagicLine(
     previous: MagicEntryBuilder?,
+    root: MagicEntryBuilder?,
     line: String,
     errorCallBack: ErrorCallBack?,
     parts: Array<String>
@@ -133,7 +138,7 @@ private fun parseMagicLine(
     if (line.startsWith("!:")) {
         if (previous != null) {
             // we ignore it if there is no previous entry to add it to
-            handleSpecial(previous, line, errorCallBack)
+            handleSpecial(previous, root, line, errorCallBack)
         }
         return null
     }
@@ -383,6 +388,7 @@ private fun splitLine(
 
 private fun handleSpecial(
     previous: MagicEntryBuilder?,
+    root: MagicEntryBuilder?,
     line: String,
     errorCallBack: ErrorCallBack?
 ) {
@@ -419,6 +425,36 @@ private fun handleSpecial(
 
     if (key == MIME_TYPE_LINE) {
         previous!!.mimeType = value
+    } else if (key == STRENGTH_LINE) {
+        val value2: String
+        if (value.length == 1) {
+            startPos = findNonWhitespace(line, index)
+            if (startPos < 0) {
+                errorCallBack?.invoke(line, "strength value missing", null)
+                return
+            }
+            // find whitespace after value, if any
+            index = findWhitespaceWithoutEscape(line, startPos)
+            if (index < 0) {
+                index = line.length
+            }
+            value2 = line.substring(startPos, index)
+        } else {
+            value2 = line.substring(startPos + 1, index)
+        }
+        if (root!!.strength == null) {
+            val valueInt = decodeInt(value2)
+            val operator = StrengthOperator.of(value[0])
+            if (operator == null) {
+                errorCallBack?.invoke(
+                    line, "invalid strength operator: $value", null
+                )
+            } else {
+                root.strength = operator to valueInt
+            }
+        } else {
+            errorCallBack?.invoke(line, "duplicate strength line", null)
+        }
     } else {
         // unknown extension key
     }

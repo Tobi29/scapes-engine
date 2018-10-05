@@ -20,43 +20,98 @@ import com.j256.simplemagik.types.*
 import org.tobi29.stdex.Constant
 import kotlin.math.max
 
-// TODO: Strength line
-
 @Constant
 internal inline val MULT
     get() = 10
 
 internal fun MagicEntryBuilder.computeStrength(): Int {
-    var strength = strength
+    var value = 2 * MULT
     when (matcher) {
         is ByteType ->
-            strength += 1 * MULT
+            value += matcher.comparison?.second.updateStrength(1 * MULT)
         is ShortType ->
-            strength += 2 * MULT
-        is IntType, is FloatType, is DateType, is Id3LengthType ->
-            strength += 4 * MULT
-        is LongType, is DoubleType, is LongDateType ->
-            strength += 8 * MULT
+            value += matcher.comparison?.second.updateStrength(2 * MULT)
+        is IntType ->
+            value += matcher.comparison?.second.updateStrength(4 * MULT)
+        is FloatType ->
+            value += matcher.comparison?.second.updateStrength(4 * MULT)
+        is DateType ->
+            value += matcher.comparison?.second.updateStrength(4 * MULT)
+        is Id3LengthType ->
+            value += matcher.comparison?.second.updateStrength(4 * MULT)
+        is LongType ->
+            value += matcher.comparison?.second.updateStrength(8 * MULT)
+        is DoubleType ->
+            value += matcher.comparison?.second.updateStrength(8 * MULT)
+        is LongDateType ->
+            value += matcher.comparison?.second.updateStrength(8 * MULT)
         is StringType ->
-            strength += (matcher.comparison?.pattern?.size ?: 0) * MULT
+            value = matcher.comparison.updateStrength(value)
         is PStringType ->
-            strength += (matcher.comparison?.pattern?.size ?: 0) * MULT
+            value = matcher.comparison.updateStrength(value)
         is BigEndianString16Type ->
-            strength += (matcher.comparison?.pattern?.length ?: 0) * MULT
+            value = matcher.comparison.updateStrength(value)
         is LittleEndianString16Type ->
-            strength += (matcher.comparison?.pattern?.length ?: 0) * MULT
+            value = matcher.comparison.updateStrength(value)
         is SearchType ->
-            strength += matcher.comparison.pattern.size.let {
+            value += matcher.comparison.pattern.size.let {
                 it * max(MULT / it, 1)
             }
         is RegexType ->
-            strength += matcher.pattern.pattern.length.let {
+            value += matcher.pattern.pattern.length.let {
                 it * max(MULT / it, 1)
             }
         is IndirectType, is NameType, is UseType -> {
         }
         is DefaultType -> return 0
     }
-    // TODO: Operator strengths
-    return strength
+    return strength(value)
+}
+
+private fun TestOperator?.updateStrength(strength: Int): Int {
+    var value = strength
+    if (this == null) value = 0
+    else {
+        when (this) {
+            TestOperator.NOT_EQUALS -> value = 0
+            TestOperator.EQUALS -> value += MULT
+            TestOperator.LESS_THAN,
+            TestOperator.GREATER_THAN -> value -= 2 * MULT
+            TestOperator.AND_ALL_SET,
+            TestOperator.AND_ALL_CLEARED -> value -= MULT
+            TestOperator.NEGATE -> {
+            }
+        }
+    }
+    return value
+}
+
+private fun StringComparison?.updateStrength(strength: Int): Int {
+    var value = strength
+    if (this == null) value = 0
+    else {
+        value += pattern.size * MULT
+        when (operator) {
+            StringOperator.NOT_EQUALS -> value = 0
+            StringOperator.EQUALS -> value += MULT
+            StringOperator.LESS_THAN,
+            StringOperator.GREATER_THAN -> value -= 2 * MULT
+        }
+    }
+    return value
+}
+
+private fun StringComparison16?.updateStrength(strength: Int): Int {
+    var value = strength
+    if (this == null) value = 0
+    else {
+        value += pattern.length * MULT
+        when (operator) {
+            StringOperator.NOT_EQUALS -> value = 0
+            StringOperator.EQUALS -> value += MULT
+            StringOperator.LESS_THAN,
+            StringOperator.GREATER_THAN -> value -= 2 * MULT
+        }
+    }
+    return value
 }
