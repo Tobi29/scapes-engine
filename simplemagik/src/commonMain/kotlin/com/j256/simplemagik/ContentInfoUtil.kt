@@ -62,7 +62,6 @@ class ContentInfoUtil
         val names = HashMap<String, MagicEntry>()
         while (stream.hasRemaining) entries.add(readMagicEntry(stream, names))
         val magicEntries = MagicEntries(entries, names)
-        magicEntries.optimizeFirstBytes()
         magicEntries
     }
 

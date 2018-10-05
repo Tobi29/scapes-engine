@@ -26,29 +26,23 @@ import org.tobi29.logging.KLogging
  * @author graywatson
  */
 internal class MagicEntries(
-    private var entries: List<MagicEntry>,
+    entries: List<MagicEntry>,
     private val names: Map<String, MagicEntry>
 ) {
     private val firstByteEntryLists =
-        Array(FIRST_BYTE_LIST_SIZE) { ArrayList<MagicEntry>() }
+        Array(FIRST_BYTE_LIST_SIZE) { ArrayList<MagicEntry>(entries.size) }
 
-    /**
-     * Optimize the magic entries by removing the first-bytes information into their own lists
-     */
-    fun optimizeFirstBytes() {
-        // now we post process the entries and remove the first byte ones we can optimize
-        val newEntries = ArrayList<MagicEntry>(entries.size)
+    init {
         for (entry in entries) {
             val startingBytes = entry.startsWithByte
             if (startingBytes == null || startingBytes.isEmpty()) {
-                newEntries.add(entry)
+                firstByteEntryLists.forEach { it.add(entry) }
                 continue
             }
             val index = startingBytes[0].toInt() and 0xFF
             firstByteEntryLists[index].add(entry)
         }
-        newEntries.trimToSize()
-        entries = newEntries
+        firstByteEntryLists.forEach { it.trimToSize() }
     }
 
     /**
@@ -70,12 +64,6 @@ internal class MagicEntries(
             return if (dataFast.indirect)
                 findMatch(bytes.slice(dataFast.offset), dataFast)
             else ContentInfo(dataFast)
-
-        val data = findMatch(bytes, indirect, entries)
-        if (data != null)
-            return if (data.indirect)
-                findMatch(bytes.slice(data.offset), data)
-            else ContentInfo(data)
 
         return null
     }

@@ -25,7 +25,7 @@ import org.tobi29.io.WritableByteStream
 import org.tobi29.stdex.combineToShort
 import org.tobi29.stdex.maskAt
 import org.tobi29.stdex.setAt
-import org.tobi29.stdex.utf8ToArray
+import org.tobi29.stdex.utf8ToString
 import kotlin.experimental.or
 
 data class StringType(
@@ -52,7 +52,7 @@ data class StringType(
 
     override val startingBytes: ByteArray?
         get() = if (comparison == null || comparison.operator != StringOperator.EQUALS) null
-        else comparison.pattern.utf8ToArray()
+        else comparison.pattern
 }
 
 fun StringType(
@@ -126,6 +126,46 @@ internal fun parseStringTestStrFlags(
 }
 
 data class StringComparison(
+    val pattern: ByteArray,
+    val operator: StringOperator,
+    val compactWhiteSpace: Boolean,
+    val optionalWhiteSpace: Boolean,
+    val caseInsensitiveLower: Boolean,
+    val caseInsensitiveUpper: Boolean
+) {
+    override fun toString(): String =
+        "StringComparison(pattern=${pattern.utf8ToString()}, " +
+                "operator=$operator, compactWhiteSpace=$compactWhiteSpace, " +
+                "optionalWhiteSpace=$optionalWhiteSpace, " +
+                "caseInsensitiveLower=$caseInsensitiveLower, " +
+                "caseInsensitiveUpper=$caseInsensitiveUpper)"
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is StringComparison) return false
+
+        if (!pattern.contentEquals(other.pattern)) return false
+        if (operator != other.operator) return false
+        if (compactWhiteSpace != other.compactWhiteSpace) return false
+        if (optionalWhiteSpace != other.optionalWhiteSpace) return false
+        if (caseInsensitiveLower != other.caseInsensitiveLower) return false
+        if (caseInsensitiveUpper != other.caseInsensitiveUpper) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = pattern.contentHashCode()
+        result = 31 * result + operator.hashCode()
+        result = 31 * result + compactWhiteSpace.hashCode()
+        result = 31 * result + optionalWhiteSpace.hashCode()
+        result = 31 * result + caseInsensitiveLower.hashCode()
+        result = 31 * result + caseInsensitiveUpper.hashCode()
+        return result
+    }
+}
+
+data class StringComparison16(
     val pattern: String,
     val operator: StringOperator,
     val compactWhiteSpace: Boolean,
@@ -134,9 +174,15 @@ data class StringComparison(
     val caseInsensitiveUpper: Boolean
 )
 
+internal fun StringComparison.toUtf16(): StringComparison16 =
+    StringComparison16(
+        pattern.utf8ToString(), operator, compactWhiteSpace, optionalWhiteSpace,
+        caseInsensitiveLower, caseInsensitiveUpper
+    )
+
 internal fun findOffsetMatchUtf8(
     operator: StringOperator,
-    pattern: String,
+    pattern: ByteArray,
     compactWhiteSpace: Boolean,
     optionalWhiteSpace: Boolean,
     caseInsensitiveLower: Boolean,
@@ -144,12 +190,12 @@ internal fun findOffsetMatchUtf8(
     bytes: BytesRO
 ): Int? = findOffsetMatch(
     operator,
-    pattern,
+    { pattern[it].toChar() }, pattern.size,
     compactWhiteSpace,
     optionalWhiteSpace,
     caseInsensitiveLower,
     caseInsensitiveUpper,
-    { (bytes[it].toInt() and 0xFF).toChar() },
+    { bytes[it].toChar() },
     bytes.size
 )
 
@@ -163,7 +209,7 @@ internal fun findOffsetMatchUtf16BE(
     bytes: BytesRO
 ): Int? = findOffsetMatch(
     operator,
-    pattern,
+    { pattern[it] }, pattern.length,
     compactWhiteSpace,
     optionalWhiteSpace,
     caseInsensitiveLower,
@@ -182,7 +228,7 @@ internal fun findOffsetMatchUtf16LE(
     bytes: BytesRO
 ): Int? = findOffsetMatch(
     operator,
-    pattern,
+    { pattern[it] }, pattern.length,
     compactWhiteSpace,
     optionalWhiteSpace,
     caseInsensitiveLower,
@@ -193,7 +239,8 @@ internal fun findOffsetMatchUtf16LE(
 
 internal inline fun findOffsetMatch(
     operator: StringOperator,
-    pattern: String,
+    pattern: (Int) -> Char,
+    patternSize: Int,
     compactWhiteSpace: Boolean,
     optionalWhiteSpace: Boolean,
     caseInsensitiveLower: Boolean,
@@ -203,9 +250,9 @@ internal inline fun findOffsetMatch(
 ): Int? {
     var targetPos = 0
     var lastMagicCompactWhitespace = false
-    for (magicPos in 0 until pattern.length) {
-        val magicCh = pattern[magicPos]
-        val lastChar = magicPos == pattern.length - 1
+    for (magicPos in 0 until patternSize) {
+        val magicCh = pattern(magicPos)
+        val lastChar = magicPos == patternSize - 1
         // did we reach the end?
         if (targetPos >= size) {
             return null
@@ -272,7 +319,7 @@ internal fun StringType.write(stream: WritableByteStream) {
             }
     )
     if (comparison != null) {
-        stream.putCompactString(comparison.pattern)
+        stream.putCompactByteArray(comparison.pattern)
     }
 }
 
@@ -280,8 +327,8 @@ internal fun readStringType(stream: MemoryViewReadableStream<HeapViewByteBE>): S
     val flags = stream.get()
     val comparisonHas = flags.maskAt(0)
     val comparison = if (comparisonHas) {
-        val pattern = stream.getCompactString()
-        val operator = StringOperator.of((flags.toInt() ushr 2) and 7)
+        val pattern = stream.getCompactByteArray()
+        val operator = StringOperator.of((flags.toInt() ushr 5) and 3)
                 ?: throw IOException("Invalid string operator")
         val compactWhiteSpace = flags.maskAt(1)
         val optionalWhiteSpace = flags.maskAt(2)
@@ -296,7 +343,5 @@ internal fun readStringType(stream: MemoryViewReadableStream<HeapViewByteBE>): S
             caseInsensitiveUpper
         )
     } else null
-    return StringType(
-        comparison
-    )
+    return StringType(comparison)
 }

@@ -109,7 +109,7 @@ internal fun PStringType.write(stream: WritableByteStream) {
     stream.put(
         0.toByte()
             .setAt(0, comparison != null)
-            .setAt(6, lengthIncludesLength)
+            .setAt(7, lengthIncludesLength)
             .let {
                 if (comparison == null) it
                 else it.setAt(1, comparison.compactWhiteSpace)
@@ -121,7 +121,7 @@ internal fun PStringType.write(stream: WritableByteStream) {
     )
     stream.putCompactInt(lengthType)
     if (comparison != null) {
-        stream.putCompactString(comparison.pattern)
+        stream.putCompactByteArray(comparison.pattern)
     }
 }
 
@@ -129,10 +129,10 @@ internal fun readPStringType(stream: MemoryViewReadableStream<HeapViewByteBE>): 
     val flags = stream.get()
     val comparisonHas = flags.maskAt(0)
     val lengthType = stream.getCompactInt()
-    val lengthIncludesLength = flags.maskAt(6)
+    val lengthIncludesLength = flags.maskAt(7)
     val comparison = if (comparisonHas) {
-        val pattern = stream.getCompactString()
-        val operator = StringOperator.of((flags.toInt() ushr 2) and 7)
+        val pattern = stream.getCompactByteArray()
+        val operator = StringOperator.of((flags.toInt() ushr 5) and 3)
                 ?: throw IOException("Invalid string operator")
         val compactWhiteSpace = flags.maskAt(1)
         val optionalWhiteSpace = flags.maskAt(2)

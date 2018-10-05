@@ -32,7 +32,7 @@ private const val OPTIONAL_LINE = "!:optional"
 private val OFFSET_PATTERN =
     """\((&)?([0-9a-fA-Fx]+)\.?([bsilBSILm]?)([*+\-]?)([0-9a-fA-Fx]*)\)""".toRegex()
 
-private class MagicEntryBuilder(
+internal class MagicEntryBuilder(
     val level: Int,
     val name: String?,
     val matcher: MagicMatcher,
@@ -43,6 +43,7 @@ private class MagicEntryBuilder(
     val clearFormat: Boolean,
     val formatter: MagicFormatter?
 ) {
+    var strength: Int = 2 * MULT
     var mimeType: String? = null
     var isOptional = false
     val children = ArrayList<MagicEntryBuilder>()
@@ -116,6 +117,7 @@ fun readMagicEntries(
         levelParents[level] = entry
         previousEntry = entry
     }
+    entries.sortByDescending { it.computeStrength() }
     return entries.map { it.toMagicEntry() }
 }
 

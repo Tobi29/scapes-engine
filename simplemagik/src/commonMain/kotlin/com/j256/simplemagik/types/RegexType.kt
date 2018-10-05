@@ -77,7 +77,7 @@ fun RegexType(
             }
         }
     }
-    val regex = unescapeString(testStr)
+    val regex = unescapeString(testStr).utf8ToString()
     if (lines) lines = false // TODO
     return RegexType(
         regex.toRegex(options),

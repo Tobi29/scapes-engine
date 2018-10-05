@@ -101,15 +101,15 @@ internal fun SearchType.write(stream: WritableByteStream) {
                         (comparison.operator.id shl 5).toByte()
             }
     )
-    stream.putCompactString(comparison.pattern)
+    stream.putCompactByteArray(comparison.pattern)
     stream.putCompactInt(maxOffset)
 }
 
 internal fun readSearchType(stream: MemoryViewReadableStream<HeapViewByteBE>): SearchType {
     val flags = stream.get()
     val comparison = run {
-        val pattern = stream.getCompactString()
-        val operator = StringOperator.of((flags.toInt() ushr 2) and 7)
+        val pattern = stream.getCompactByteArray()
+        val operator = StringOperator.of((flags.toInt() ushr 5) and 3)
                 ?: throw IOException("Invalid string operator")
         val compactWhiteSpace = flags.maskAt(1)
         val optionalWhiteSpace = flags.maskAt(2)

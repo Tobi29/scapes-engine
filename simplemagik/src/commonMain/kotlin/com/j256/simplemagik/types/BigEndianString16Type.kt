@@ -30,7 +30,7 @@ import org.tobi29.stdex.setAt
 import kotlin.experimental.or
 
 data class BigEndianString16Type(
-    val comparison: StringComparison?
+    val comparison: StringComparison16?
 ) : MagicMatcher {
     override fun isMatch(
         bytes: BytesRO,
@@ -58,7 +58,7 @@ fun BigEndianString16Type(
     andValue: Long?,
     unsignedType: Boolean
 ): BigEndianString16Type =
-    BigEndianString16Type(parseStringTestStr(typeStr, testStr))
+    BigEndianString16Type(parseStringTestStr(typeStr, testStr)?.toUtf16())
 
 internal fun BigEndianString16Type.write(stream: WritableByteStream) {
     stream.put(
@@ -83,13 +83,13 @@ internal fun readBigEndianString16Type(stream: MemoryViewReadableStream<HeapView
     val comparisonHas = flags.maskAt(0)
     val comparison = if (comparisonHas) {
         val pattern = stream.getCompactString()
-        val operator = StringOperator.of((flags.toInt() ushr 2) and 7)
+        val operator = StringOperator.of((flags.toInt() ushr 5) and 3)
                 ?: throw IOException("Invalid string operator")
         val compactWhiteSpace = flags.maskAt(1)
         val optionalWhiteSpace = flags.maskAt(2)
         val caseInsensitiveLower = flags.maskAt(3)
         val caseInsensitiveUpper = flags.maskAt(4)
-        StringComparison(
+        StringComparison16(
             pattern,
             operator,
             compactWhiteSpace,

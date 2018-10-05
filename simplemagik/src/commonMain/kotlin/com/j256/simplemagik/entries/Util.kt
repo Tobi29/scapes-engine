@@ -17,47 +17,50 @@
 package com.j256.simplemagik.entries
 
 import org.tobi29.arrays.sliceOver
-import org.tobi29.io.HeapViewByteBE
-import org.tobi29.io.MemoryViewReadableStream
-import org.tobi29.io.WritableByteStream
+import org.tobi29.io.*
 import org.tobi29.stdex.utf8ToArray
 import org.tobi29.stdex.utf8ToString
 import kotlin.experimental.and
 
-internal fun unescapeString(pattern: String): String {
-    val index = pattern.indexOf('\\')
+internal fun unescapeString(pattern: String): ByteArray =
+    unescapeString(pattern.utf8ToArray())
+
+internal fun unescapeString(pattern: ByteArray): ByteArray {
+    val index = pattern.indexOf('\\'.toByte())
     if (index < 0) {
         return pattern
     }
 
-    val sb = StringBuilder()
+    val sb = MemoryViewStreamDefault()
     var pos = 0
-    while (pos < pattern.length) {
+    while (pos < pattern.size) {
         var ch = pattern[pos]
-        if (ch != '\\') {
-            sb.append(ch)
+        if (ch != '\\'.toByte()) {
+            sb.put(ch)
             pos++
             continue
         }
-        if (pos + 1 >= pattern.length) {
+        if (pos + 1 >= pattern.size) {
             // we'll end the pattern with a '\\' char
-            sb.append(ch)
+            sb.put(ch)
             break
         }
         ch = pattern[++pos]
         when (ch) {
-            'a' -> sb.append(0x07.toChar())
-            'b' -> sb.append('\b')
-            'f' -> sb.append(0x0C.toChar())
-            'n' -> sb.append('\n')
-            'r' -> sb.append('\r')
-            't' -> sb.append('\t')
-            '\\', '\'', '"', '?', ' ' -> sb.append(ch)
-            '0', '1', '2', '3', '4', '5', '6', '7' -> {
+            'a'.toByte() -> sb.put(0x07)
+            'b'.toByte() -> sb.put('\b'.toByte())
+            'f'.toByte() -> sb.put(0x0C)
+            'n'.toByte() -> sb.put('\n'.toByte())
+            'r'.toByte() -> sb.put('\r'.toByte())
+            't'.toByte() -> sb.put('\t'.toByte())
+            '\\'.toByte(), '\''.toByte(), '"'.toByte(), '?'.toByte(),
+            ' '.toByte() -> sb.put(ch)
+            '0'.toByte(), '1'.toByte(), '2'.toByte(), '3'.toByte(),
+            '4'.toByte(), '5'.toByte(), '6'.toByte(), '7'.toByte() -> {
                 // \o or \oo or \ooo ... where o is an octal digit
                 var octal = digit(ch, 8)
                 var i = 1
-                while (i <= 2 && pos + 1 < pattern.length) {
+                while (i <= 2 && pos + 1 < pattern.size) {
                     ch = pattern[pos + 1]
                     val digit = digit(ch, 8)
                     if (digit >= 0) {
@@ -70,32 +73,33 @@ internal fun unescapeString(pattern: String): String {
                 }
                 sb.append((octal and 0xff).toChar())
             }
-            'x' -> {
+            'x'.toByte() -> {
                 // \xD9
                 pattern.decodeHexChar(pos) { char, len ->
-                    sb.append(char)
+                    sb.put(char)
                     pos += len
                 }
             }
-            else -> sb.append(ch)
+            else -> sb.put(ch)
         }
         pos++
     }
-    return sb.toString()
+    sb.flip()
+    return sb.asByteArray()
 }
 
-private inline fun <R> String.decodeHexChar(
+private inline fun <R> ByteArray.decodeHexChar(
     pos: Int,
-    output: (Char, Int) -> R
+    output: (Byte, Int) -> R
 ): R {
-    if (pos + 2 < length) {
-        substring(pos + 1, pos + 3).toShortOrNull(16)?.let { hex ->
-            if (hex >= 0) return output(hex.toChar(), 2)
+    if (pos + 2 < size) {
+        utf8ToString(pos + 1, 2).toShortOrNull(16)?.let { hex ->
+            if (hex >= 0) return output(hex.toByte(), 2)
         }
     }
-    if (pos + 1 < length) {
-        substring(pos + 1, pos + 1).toShortOrNull(16)?.let { hex ->
-            if (hex >= 0) return output(hex.toChar(), 1)
+    if (pos + 1 < size) {
+        utf8ToString(pos + 1, 1).toShortOrNull(16)?.let { hex ->
+            if (hex >= 0) return output(hex.toByte(), 1)
         }
     }
     return output(this[pos], 0)
@@ -155,10 +159,13 @@ internal fun decodeLong(str: String): Long {
     }
 }
 
-private fun digit(char: Char, radix: Int) = when (char) {
-    in '0'..'9' -> (char - '0').let { if (it < radix) it else -1 }
-    in 'a'..'z' -> (char - 'a' + 10).let { if (it < radix) it else -1 }
-    in 'A'..'Z' -> (char - 'a' + 10).let { if (it < radix) it else -1 }
+private fun digit(char: Byte, radix: Int) = when (char) {
+    in '0'.toByte()..'9'.toByte() ->
+        (char - '0'.toByte()).let { if (it < radix) it else -1 }
+    in 'a'.toByte()..'z'.toByte() ->
+        (char - 'a'.toByte() + 10).let { if (it < radix) it else -1 }
+    in 'A'.toByte()..'Z'.toByte() ->
+        (char - 'a'.toByte() + 10).let { if (it < radix) it else -1 }
     else -> -1
 }
 
@@ -204,10 +211,13 @@ internal fun WritableByteStream.putCompactLong(value: Long) = when (value) {
     }
 }
 
+internal fun WritableByteStream.putCompactByteArray(value: ByteArray) {
+    putCompactInt(value.size)
+    put(value.sliceOver())
+}
+
 internal fun WritableByteStream.putCompactString(value: String) {
-    val array = value.utf8ToArray()
-    putCompactInt(array.size)
-    put(array.sliceOver())
+    putCompactByteArray(value.utf8ToArray())
 }
 
 internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactShort(): Short {
@@ -237,10 +247,28 @@ internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactLong(): Long {
     }
 }
 
+internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactByteArray(): ByteArray {
+    val size = getCompactInt()
+    val position = position
+    skip(size)
+    val buffer = buffer()
+    val start = position + buffer.offset
+    return buffer.array.sliceArray(start until start + size)
+}
+
 internal fun MemoryViewReadableStream<HeapViewByteBE>.getCompactString(): String {
     val size = getCompactInt()
     val position = position
     skip(size)
     val buffer = buffer()
-    return buffer.array.utf8ToString(position + buffer.offset, size)
+    val start = position + buffer.offset
+    return buffer.array.utf8ToString(start, size)
+}
+
+internal fun ByteArray.trim(): ByteArray {
+    var start = 0
+    while (start < size && this[start].toChar().isWhitespace()) start++
+    var end = size - 1
+    while (end > start && this[end].toChar().isWhitespace()) end--
+    return sliceArray(start..end)
 }
