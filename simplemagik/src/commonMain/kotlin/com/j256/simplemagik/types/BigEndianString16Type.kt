@@ -52,6 +52,7 @@ data class BigEndianString16Type(
         }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun BigEndianString16Type(
     typeStr: String,
     testStr: String?,

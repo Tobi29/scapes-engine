@@ -39,12 +39,13 @@ data class LongType(
     val unsignedType: Boolean,
     val endianType: EndianType
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null && andValue == (-1).toLong())
-            comparison.first.convert(endianType)
-                .splitToBytes { v7, v6, v5, v4, v3, v2, v1, v0 ->
-                    byteArrayOf(v7, v6, v5, v4, v3, v2, v1, v0)
-                } else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.isBitwise != true
+                || comparison.second.compare(
+            value, (comparison.first.convert(endianType) and andValue)
+                .splitToBytes { b, _, _, _, _, _, _, _ -> b },
+            unsignedType
+        )
 
     override fun isMatch(
         bytes: BytesRO,
@@ -54,7 +55,7 @@ data class LongType(
             (combineToLong(
                 bytes[0], bytes[1], bytes[2], bytes[3],
                 bytes[4], bytes[5], bytes[6], bytes[7]
-            ) and andValue).convert(endianType).let { extracted ->
+            ).convert(endianType) and andValue).let { extracted ->
                 if (comparison == null || comparison.second.compare(
                         extracted, comparison.first, unsignedType
                     )) 8 to
@@ -66,6 +67,7 @@ data class LongType(
             } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun LongType(
     typeStr: String,
     testStr: String?,

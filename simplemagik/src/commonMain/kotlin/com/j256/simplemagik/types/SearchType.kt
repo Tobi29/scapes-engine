@@ -55,6 +55,7 @@ data class SearchType(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun SearchType(
     typeStr: String,
     testStr: String?,

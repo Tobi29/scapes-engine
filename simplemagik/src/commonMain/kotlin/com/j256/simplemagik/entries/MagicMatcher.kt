@@ -19,7 +19,7 @@ package com.j256.simplemagik.entries
 import org.tobi29.arrays.BytesRO
 
 interface MagicMatcher {
-    val startingBytes: ByteArray? get() = null
+    fun canStartWithByte(value: Byte): Boolean = true
 
     fun isMatch(
         bytes: BytesRO,

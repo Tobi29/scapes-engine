@@ -52,6 +52,7 @@ data class LittleEndianString16Type(
         }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun LittleEndianString16Type(
     typeStr: String,
     testStr: String?,

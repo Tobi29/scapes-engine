@@ -19,6 +19,7 @@ package com.j256.simplemagik.entries
 import com.j256.simplemagik.ContentInfo
 import org.tobi29.arrays.BytesRO
 import org.tobi29.logging.KLogging
+import org.tobi29.stdex.maskAt
 
 /**
  * Class which encompasses a set of entries and allows us to optimize their use.
@@ -29,20 +30,14 @@ internal class MagicEntries(
     entries: List<MagicEntry>,
     private val names: Map<String, MagicEntry>
 ) {
-    private val firstByteEntryLists =
-        Array(FIRST_BYTE_LIST_SIZE) { ArrayList<MagicEntry>(entries.size) }
-
-    init {
-        for (entry in entries) {
-            val startingBytes = entry.startsWithByte
-            if (startingBytes == null || startingBytes.isEmpty()) {
-                firstByteEntryLists.forEach { it.add(entry) }
-                continue
-            }
-            val index = startingBytes[0].toInt() and 0xFF
-            firstByteEntryLists[index].add(entry)
+    private val entries = Array(entries.size) { i ->
+        val entry = entries[i]
+        val possible = LongArray(4)
+        for (j in 0 until 256) {
+            if (!entry.canStartWithByte(j.toByte())) continue
+            possible[j ushr 6] = possible[j ushr 6] or (1L shl (j and 63))
         }
-        firstByteEntryLists.forEach { it.trimToSize() }
+        possible to entry
     }
 
     /**
@@ -59,7 +54,7 @@ internal class MagicEntries(
         if (bytes.size == 0) return ContentInfo.EMPTY_INFO
 
         val index = bytes[0].toInt() and 0xFF
-        val dataFast = findMatch(bytes, indirect, firstByteEntryLists[index])
+        val dataFast = findMatch(bytes, indirect, index)
         if (dataFast != null)
             return if (dataFast.indirect)
                 findMatch(bytes.slice(dataFast.offset), dataFast)
@@ -71,10 +66,11 @@ internal class MagicEntries(
     private fun findMatch(
         bytes: BytesRO,
         indirect: MagicEntry.ContentData?,
-        entryList: List<MagicEntry>
+        index: Int
     ): MagicEntry.ContentData? {
         var partialMatchInfo: MagicEntry.ContentData? = null
-        for (entry in entryList) {
+        for ((possible, entry) in entries) {
+            if (!possible[index ushr 6].maskAt(index)) continue
             val info = entry.matchBytes(
                 bytes, names, indirect
             )?.takeIf { it.name != null } ?: continue
@@ -107,5 +103,3 @@ internal class MagicEntries(
 
     companion object : KLogging()
 }
-
-private const val FIRST_BYTE_LIST_SIZE = 256

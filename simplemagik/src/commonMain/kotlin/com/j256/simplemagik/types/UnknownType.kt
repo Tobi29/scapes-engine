@@ -23,6 +23,8 @@ import org.tobi29.io.MemoryViewReadableStream
 import org.tobi29.io.WritableByteStream
 
 object UnknownType : MagicMatcher {
+    override fun canStartWithByte(value: Byte): Boolean = false
+
     override fun isMatch(
         bytes: BytesRO,
         required: Boolean

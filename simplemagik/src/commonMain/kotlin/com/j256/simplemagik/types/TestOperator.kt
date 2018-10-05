@@ -67,6 +67,13 @@ enum class TestOperator(
     }
 }
 
+val TestOperator.isBitwise: Boolean
+    get() = when (this) {
+        TestOperator.GREATER_THAN,
+        TestOperator.LESS_THAN -> false
+        else -> true
+    }
+
 fun TestOperator.compare(x: Byte, y: Byte): Boolean = when (this) {
     TestOperator.EQUALS -> x == y
     TestOperator.NOT_EQUALS -> x != y

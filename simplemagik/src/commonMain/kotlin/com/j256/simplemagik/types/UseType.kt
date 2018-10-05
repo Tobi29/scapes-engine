@@ -37,6 +37,7 @@ data class UseType(
         }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun UseType(
     typeStr: String,
     testStr: String?,

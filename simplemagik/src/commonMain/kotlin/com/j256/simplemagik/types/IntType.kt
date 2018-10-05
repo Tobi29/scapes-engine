@@ -36,12 +36,13 @@ data class IntType(
     val unsignedType: Boolean,
     val endianType: EndianType
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null && andValue == -1)
-            comparison.first.convert(endianType)
-                .splitToBytes { v3, v2, v1, v0 ->
-                    byteArrayOf(v3, v2, v1, v0)
-                } else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.isBitwise != true
+                || comparison.second.compare(
+            value, (comparison.first.convert(endianType) and andValue)
+                .splitToBytes { b, _, _, _ -> b },
+            unsignedType
+        )
 
     override fun isMatch(
         bytes: BytesRO,
@@ -50,7 +51,7 @@ data class IntType(
         if (bytes.size >= 4)
             (combineToInt(
                 bytes[0], bytes[1], bytes[2], bytes[3]
-            ) and andValue).convert(endianType).let { extracted ->
+            ).convert(endianType) and andValue).let { extracted ->
                 if (comparison == null || comparison.second.compare(
                         extracted, comparison.first, unsignedType
                     )) 4 to
@@ -62,6 +63,7 @@ data class IntType(
             } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun IntType(
     typeStr: String,
     testStr: String?,

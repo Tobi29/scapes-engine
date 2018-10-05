@@ -37,12 +37,13 @@ data class ShortType(
     val unsignedType: Boolean,
     val endianType: EndianType
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null && andValue == (-1).toShort())
-            comparison.first.convert(endianType)
-                .splitToBytes { v1, v0 ->
-                    byteArrayOf(v1, v0)
-                } else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.isBitwise != true
+                || comparison.second.compare(
+            value, (comparison.first.convert(endianType) and andValue)
+                .splitToBytes { b, _ -> b },
+            unsignedType
+        )
 
     override fun isMatch(
         bytes: BytesRO,
@@ -51,7 +52,7 @@ data class ShortType(
         if (bytes.size >= 2)
             (combineToShort(
                 bytes[0], bytes[1]
-            ) and andValue).convert(endianType).let { extracted ->
+            ).convert(endianType) and andValue).let { extracted ->
                 if (comparison == null || comparison.second.compare(
                         extracted, comparison.first, unsignedType
                     )) 2 to
@@ -63,6 +64,7 @@ data class ShortType(
             } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun ShortType(
     typeStr: String,
     testStr: String?,

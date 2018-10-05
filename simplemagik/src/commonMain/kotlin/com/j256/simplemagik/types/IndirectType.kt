@@ -32,6 +32,7 @@ object IndirectType : MagicMatcher {
         }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun IndirectType(
     typeStr: String,
     testStr: String?,
@@ -39,9 +40,11 @@ fun IndirectType(
     unsignedType: Boolean
 ): IndirectType = IndirectType
 
+@Suppress("UNUSED_PARAMETER", "unused")
 internal fun IndirectType.write(stream: WritableByteStream) {
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun readIndirectType(stream: MemoryViewReadableStream<HeapViewByteBE>): IndirectType {
     return IndirectType
 }

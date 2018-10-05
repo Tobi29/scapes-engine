@@ -33,6 +33,7 @@ object DefaultType : MagicMatcher {
         }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun DefaultType(
     typeStr: String,
     testStr: String?,
@@ -40,9 +41,11 @@ fun DefaultType(
     unsignedType: Boolean
 ): DefaultType = DefaultType
 
+@Suppress("UNUSED_PARAMETER", "unused")
 internal fun DefaultType.write(stream: WritableByteStream) {
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun readDefaultType(stream: MemoryViewReadableStream<HeapViewByteBE>): DefaultType {
     return DefaultType
 }

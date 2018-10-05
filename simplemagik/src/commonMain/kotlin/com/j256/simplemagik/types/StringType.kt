@@ -31,6 +31,10 @@ import kotlin.experimental.or
 data class StringType(
     val comparison: StringComparison?
 ) : MagicMatcher {
+    override fun canStartWithByte(value: Byte): Boolean = comparison == null
+            || comparison.operator != StringOperator.EQUALS
+            || comparison.pattern.isNotEmpty() && comparison.pattern[0] == value
+
     override fun isMatch(
         bytes: BytesRO,
         required: Boolean
@@ -49,12 +53,9 @@ data class StringType(
                 formatter.formatUtf8(sb, bytes)
             }
         }
-
-    override val startingBytes: ByteArray?
-        get() = if (comparison == null || comparison.operator != StringOperator.EQUALS) null
-        else comparison.pattern
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun StringType(
     typeStr: String,
     testStr: String?,

@@ -24,8 +24,7 @@ import org.tobi29.stdex.maskAt
 import org.tobi29.stdex.setAt
 
 /**
- * Formatter that handles the C %0.2f type formats appropriately. I would have used the [java.util.Formatter] but
- * you can't pre-parse those for some stupid reason. Also, I needed this to be compatible with the printf(3) C formats.
+ * Formatter that handles the C %0.2f type formats appropriately.
  *
  * @author graywatson
  */
@@ -113,32 +112,27 @@ internal fun MagicFormatter(
             percentExpression = formatter.percentExpression
             suffix = formatter.suffix
         } else {
-
-            if (prefixMatch == null || prefixMatch.value.isEmpty()) {
-                prefix = null
-            } else {
-                prefix = prefixMatch.value
-            }
-            if (percentMatch == null || percentMatch.value.isEmpty()) {
-                percentExpression = null
-            } else {
-                percentExpression =
-                        PercentExpression(
-                            percentMatch.value
-                        )
-            }
-            if (suffixMatch == null || suffixMatch.value.length == 0) {
-                suffix = null
-            } else {
-                suffix = suffixMatch.value.replace("%%", "%")
-            }
+            prefix =
+                    if (prefixMatch == null || prefixMatch.value.isEmpty()) {
+                        null
+                    } else {
+                        prefixMatch.value
+                    }
+            percentExpression =
+                    if (percentMatch == null || percentMatch.value.isEmpty()) {
+                        null
+                    } else {
+                        PercentExpression(percentMatch.value)
+                    }
+            suffix =
+                    if (suffixMatch == null || suffixMatch.value.isEmpty()) {
+                        null
+                    } else {
+                        suffixMatch.value.replace("%%", "%")
+                    }
         }
     }
-    return MagicFormatter(
-        prefix,
-        percentExpression,
-        suffix
-    )
+    return MagicFormatter(prefix, percentExpression, suffix)
 }
 
 internal const val FINAL_PATTERN_CHARS = "%bcdeEfFgGiosuxX"

@@ -35,12 +35,12 @@ data class FloatType(
     val comparison: Pair<Float, TestOperator>?,
     val endianType: EndianType
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null)
-            comparison.first.convert(endianType).toRawBits()
-                .splitToBytes { v3, v2, v1, v0 ->
-                    byteArrayOf(v3, v2, v1, v0)
-                } else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.isBitwise != true
+                || comparison.second.compare(
+            value, comparison.first.convert(endianType).toRawBits()
+                .splitToBytes { b, _, _, _ -> b }
+        )
 
     override fun isMatch(
         bytes: BytesRO,
@@ -61,6 +61,7 @@ data class FloatType(
             } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun FloatType(
     typeStr: String,
     testStr: String?,
@@ -70,6 +71,7 @@ fun FloatType(
     a.toFloat() to b
 }, endianType)
 
+@Suppress("UNUSED_PARAMETER")
 fun FloatTypeBE(
     typeStr: String,
     testStr: String?,
@@ -79,6 +81,7 @@ fun FloatTypeBE(
     typeStr, testStr, andValue, EndianType.BIG
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun FloatTypeLE(
     typeStr: String,
     testStr: String?,
@@ -88,6 +91,7 @@ fun FloatTypeLE(
     typeStr, testStr, andValue, EndianType.LITTLE
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun FloatTypeME(
     typeStr: String,
     testStr: String?,
@@ -97,6 +101,7 @@ fun FloatTypeME(
     typeStr, testStr, andValue, EndianType.MIDDLE
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun FloatTypeNE(
     typeStr: String,
     testStr: String?,

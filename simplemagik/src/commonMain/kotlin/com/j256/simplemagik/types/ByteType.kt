@@ -34,10 +34,11 @@ data class ByteType(
     val andValue: Byte,
     val unsignedType: Boolean
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null && andValue == (-1).toByte())
-            byteArrayOf(comparison.first)
-        else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.compare(
+            value and andValue,
+            comparison.first, unsignedType
+        ) ?: true
 
     override fun isMatch(
         bytes: BytesRO,
@@ -56,6 +57,7 @@ data class ByteType(
             } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun ByteType(
     typeStr: String,
     testStr: String?,

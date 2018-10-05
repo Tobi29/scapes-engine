@@ -82,6 +82,7 @@ data class PStringType(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun PStringType(
     typeStr: String,
     testStr: String?,

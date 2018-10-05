@@ -35,12 +35,12 @@ data class DoubleType(
     val comparison: Pair<Double, TestOperator>?,
     val endianType: EndianType
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null)
-            comparison.first.convert(endianType).toRawBits()
-                .splitToBytes { v7, v6, v5, v4, v3, v2, v1, v0 ->
-                    byteArrayOf(v7, v6, v5, v4, v3, v2, v1, v0)
-                } else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.isBitwise != true
+                || comparison.second.compare(
+            value, comparison.first.convert(endianType).toRawBits()
+                .splitToBytes { b, _, _, _, _, _, _, _ -> b }
+        )
 
     override fun isMatch(
         bytes: BytesRO,
@@ -62,15 +62,17 @@ data class DoubleType(
             } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun DoubleType(
     typeStr: String,
     testStr: String?,
     andValue: Long?,
     endianType: EndianType
 ): DoubleType = DoubleType(decodeComparisonDecimal(testStr)?.let { (a, b) ->
-    a.toDouble() to b
+    a to b
 }, endianType)
 
+@Suppress("UNUSED_PARAMETER")
 fun DoubleTypeBE(
     typeStr: String,
     testStr: String?,
@@ -80,6 +82,7 @@ fun DoubleTypeBE(
     typeStr, testStr, andValue, EndianType.BIG
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun DoubleTypeLE(
     typeStr: String,
     testStr: String?,
@@ -89,6 +92,7 @@ fun DoubleTypeLE(
     typeStr, testStr, andValue, EndianType.LITTLE
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun DoubleTypeME(
     typeStr: String,
     testStr: String?,
@@ -98,6 +102,7 @@ fun DoubleTypeME(
     typeStr, testStr, andValue, EndianType.MIDDLE
 )
 
+@Suppress("UNUSED_PARAMETER")
 fun DoubleTypeNE(
     typeStr: String,
     testStr: String?,

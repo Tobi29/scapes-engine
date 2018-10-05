@@ -38,12 +38,12 @@ data class DateType(
     val local: Boolean,
     val endianType: EndianType
 ) : MagicMatcher {
-    override val startingBytes
-        get() = if (comparison != null && andValue == -1)
-            comparison.first.convert(endianType)
-                .splitToBytes { v3, v2, v1, v0 ->
-                    byteArrayOf(v3, v2, v1, v0)
-                } else null
+    override fun canStartWithByte(value: Byte): Boolean =
+        comparison?.second?.isBitwise != true
+                || comparison.second.compare(
+            value, (comparison.first.convert(endianType) and andValue)
+                .splitToBytes { b, _, _, _ -> b }
+        )
 
     override fun isMatch(
         bytes: BytesRO,
@@ -52,7 +52,7 @@ data class DateType(
         if (bytes.size >= 4)
             (combineToInt(
                 bytes[0], bytes[1], bytes[2], bytes[3]
-            ) and andValue).convert(endianType).let { extracted ->
+            ).convert(endianType) and andValue).let { extracted ->
                 if (comparison == null || comparison.second.compare(
                         extracted, comparison.first
                     )) 4 to
@@ -73,6 +73,7 @@ data class DateType(
         get() = if (local) timeZoneLocal else timeZoneUtc
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun DateType(
     typeStr: String,
     testStr: String?,

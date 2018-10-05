@@ -42,7 +42,7 @@ data class Id3LengthType(
         if (bytes.size >= 4) {
             (combineToInt(
                 bytes[0], bytes[1], bytes[2], bytes[3]
-            ) and andValue).convert(endianType).parseId3().let { extracted ->
+            ).convert(endianType).parseId3() and andValue).let { extracted ->
                 if (comparison == null || comparison.second.compare(
                         extracted, comparison.first, unsignedType
                     )) 4 to
@@ -55,6 +55,7 @@ data class Id3LengthType(
         } else null
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun Id3LengthType(
     typeStr: String,
     testStr: String?,

@@ -37,6 +37,7 @@ data class NameType(
         }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun NameType(
     typeStr: String,
     testStr: String?,

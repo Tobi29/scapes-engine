@@ -57,6 +57,7 @@ data class RegexType(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 fun RegexType(
     typeStr: String,
     testStr: String?,
