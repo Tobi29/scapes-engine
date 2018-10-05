@@ -257,18 +257,25 @@ internal inline fun findOffsetMatch(
         if (targetPos >= size) {
             return null
         }
-        var targetCh = input(targetPos++)
+        var targetCh = input(targetPos)
 
         // if it matches, we can continue
         if (operator.doTest(targetCh, magicCh, lastChar)) {
             if (compactWhiteSpace) {
                 lastMagicCompactWhitespace = magicCh.isWhitespace()
             }
+            // matches
+            targetPos++
+            continue
+        }
+
+        if (optionalWhiteSpace && magicCh.isWhitespace()) {
+            // optional
             continue
         }
 
         // if it doesn't match, maybe the target is a whitespace
-        if ((lastMagicCompactWhitespace || optionalWhiteSpace) && targetCh.isWhitespace()) {
+        if (lastMagicCompactWhitespace && targetCh.isWhitespace()) {
             do {
                 if (targetPos >= size) {
                     break
@@ -281,6 +288,8 @@ internal inline fun findOffsetMatch(
                 if (compactWhiteSpace) {
                     lastMagicCompactWhitespace = magicCh.isWhitespace()
                 }
+                // matches
+                targetPos++
                 continue
             }
             // if it doesn't match, check the case insensitive
@@ -289,6 +298,7 @@ internal inline fun findOffsetMatch(
         if (caseInsensitiveLower) {
             if (operator.doTest(targetCh.toLowerCase(), magicCh, lastChar)) {
                 // matches
+                targetPos++
                 continue
             }
         }
@@ -296,6 +306,7 @@ internal inline fun findOffsetMatch(
         if (caseInsensitiveUpper) {
             if (operator.doTest(targetCh.toUpperCase(), magicCh, lastChar)) {
                 // matches
+                targetPos++
                 continue
             }
         }
