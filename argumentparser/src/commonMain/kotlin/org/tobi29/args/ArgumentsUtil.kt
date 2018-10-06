@@ -34,7 +34,7 @@ inline fun CommandLine.getToken(argument: CommandArgument): TokenParser.Token.Ar
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingArgumentException::class)
+// FIXME @Throws(MissingArgumentException::class)
 inline fun CommandLine.requireToken(argument: CommandArgument): TokenParser.Token.Argument =
     getToken(argument)
             ?: throw MissingArgumentException(null, this, argument)
@@ -55,7 +55,7 @@ inline fun CommandLine.get(argument: CommandArgument): String? =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingArgumentException::class)
+// FIXME @Throws(MissingArgumentException::class)
 inline fun <R> CommandLine.getSafe(
     argument: CommandArgument,
     block: (String?) -> R?
@@ -73,7 +73,7 @@ inline fun <R> CommandLine.getSafe(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingArgumentException::class)
+// FIXME @Throws(MissingArgumentException::class)
 inline fun CommandLine.require(argument: CommandArgument): String =
     get(argument)
             ?: throw MissingArgumentException(null, this, argument)
@@ -86,7 +86,7 @@ inline fun CommandLine.require(argument: CommandArgument): String =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingArgumentException::class)
+// FIXME @Throws(MissingArgumentException::class)
 inline fun <R> CommandLine.require(
     argument: CommandArgument,
     block: (String) -> R
@@ -103,7 +103,7 @@ inline fun <R> CommandLine.require(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingArgumentException::class)
+// FIXME @Throws(MissingArgumentException::class)
 inline fun <R : Any> CommandLine.requireOrNull(
     argument: CommandArgument,
     block: (String?) -> R?
@@ -119,7 +119,7 @@ inline fun <R : Any> CommandLine.requireOrNull(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class, MissingArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class, MissingArgumentException::class)
 inline fun <R> CommandLine.requireSafe(
     argument: CommandArgument,
     block: (String) -> R
@@ -140,7 +140,7 @@ inline fun <R> CommandLine.requireSafe(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class, MissingArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class, MissingArgumentException::class)
 inline fun <R : Any> CommandLine.requireSafeOrNull(
     argument: CommandArgument,
     block: (String?) -> R?
@@ -176,7 +176,7 @@ inline fun CommandLine.getBoolean(argument: CommandArgument): Boolean {
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class)
 inline fun CommandLine.getInt(argument: CommandArgument) =
     getSafe(argument) { it?.toInt() }
 
@@ -188,7 +188,7 @@ inline fun CommandLine.getInt(argument: CommandArgument) =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class)
 inline fun CommandLine.getLong(argument: CommandArgument) =
     getSafe(argument) { it?.toLong() }
 
@@ -200,7 +200,7 @@ inline fun CommandLine.getLong(argument: CommandArgument) =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class)
 inline fun CommandLine.getDouble(argument: CommandArgument) =
     getSafe(argument) { it?.toDouble() }
 
@@ -212,7 +212,7 @@ inline fun CommandLine.getDouble(argument: CommandArgument) =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class, MissingArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class, MissingArgumentException::class)
 inline fun CommandLine.requireInt(argument: CommandArgument): Int =
     requireSafe(argument) { it.toInt() }
 
@@ -224,7 +224,7 @@ inline fun CommandLine.requireInt(argument: CommandArgument): Int =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class, MissingArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class, MissingArgumentException::class)
 inline fun CommandLine.requireLong(argument: CommandArgument): Long =
     requireSafe(argument) { it.toLong() }
 
@@ -236,6 +236,6 @@ inline fun CommandLine.requireLong(argument: CommandArgument): Long =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidArgumentException::class, MissingArgumentException::class)
+// FIXME @Throws(InvalidArgumentException::class, MissingArgumentException::class)
 inline fun CommandLine.requireDouble(argument: CommandArgument): Double =
     requireSafe(argument) { it.toDouble() }

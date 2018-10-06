@@ -58,7 +58,7 @@ class PacketBundleChannel(
 
     val outputFlushed get() = queue.isEmpty && output == null
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun queueBundle() {
         dataStreamOut.flip()
         compressStreamOut.reset()
@@ -76,7 +76,7 @@ class PacketBundleChannel(
         dataStreamOut.reset()
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun process(): FetchResult {
         var timeout = 0
         while (timeout < 2) {
@@ -119,7 +119,7 @@ class PacketBundleChannel(
         }
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun close() {
         channelRead.close()
         channelWrite.close()
@@ -195,7 +195,7 @@ class PacketBundleChannel(
     }
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 suspend fun PacketBundleChannel.receive(): Boolean {
     while (true) {
         when (process()) {
@@ -206,14 +206,14 @@ suspend fun PacketBundleChannel.receive(): Boolean {
     }
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 suspend fun PacketBundleChannel.receiveOrThrow() {
     if (receive()) {
         throw IOException("Connection closed")
     }
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 suspend fun PacketBundleChannel.flushAsync() {
     try {
         while (!outputFlushed) {
@@ -226,7 +226,7 @@ suspend fun PacketBundleChannel.flushAsync() {
     }
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 suspend fun PacketBundleChannel.finishAsync() {
     while (!receive()) {
     }

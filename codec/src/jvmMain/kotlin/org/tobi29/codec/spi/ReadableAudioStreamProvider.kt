@@ -24,6 +24,6 @@ import org.tobi29.stdex.Throws
 interface ReadableAudioStreamProvider {
     fun accepts(mime: String): Boolean
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     operator fun get(channel: ReadableByteChannel): ReadableAudioStream
 }

@@ -79,7 +79,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
 
     open fun ListenerRegistrar.listeners() {}
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     suspend fun runClient(connection: Connection,
                           client: String,
                           authentication: (String, Int, ByteArray) -> Cipher) {
@@ -94,7 +94,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     suspend fun runClientAsym(connection: Connection,
                               client: String,
                               authentication: (String, Int) -> Cipher) {
@@ -109,7 +109,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     suspend fun runServer(connection: Connection,
                           authentication: (String, Int, ByteArray) -> Cipher?) {
         try {
@@ -122,7 +122,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     suspend fun runServerAsym(connection: Connection,
                               authentication: (String, Int) -> Cipher?) {
         try {

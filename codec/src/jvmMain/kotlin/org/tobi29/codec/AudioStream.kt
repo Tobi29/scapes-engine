@@ -28,7 +28,7 @@ import org.tobi29.utils.spiLoadFirst
 object AudioStream : KLogging() {
     private val CODECS = ConcurrentHashMap<String, ReadableAudioStreamProvider>()
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun create(channel: ReadableByteChannel,
                mime: String): ReadableAudioStream {
         val codec = AudioStream[mime]

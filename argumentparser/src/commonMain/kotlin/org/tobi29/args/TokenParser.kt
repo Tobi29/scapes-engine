@@ -54,7 +54,7 @@ class TokenParser(command: CommandConfig) {
      * Finishes the parsing and returns a list of parsed tokens
      * @throws InvalidTokensException The parser finished on an invalid token
      */
-    @Throws(InvalidTokensException::class)
+    // FIXME @Throws(InvalidTokensException::class)
     fun finish(): Pair<List<CommandConfig>, List<Token>> {
         currentOption?.let { option ->
             appendToken(Token.Parameter(option, currentArgs.toList()))
@@ -70,7 +70,7 @@ class TokenParser(command: CommandConfig) {
      * @param token The token to parse
      * @throws InvalidTokensException The token is invalid
      */
-    @Throws(InvalidTokensException::class)
+    // FIXME @Throws(InvalidTokensException::class)
     fun append(token: String) {
         val length = token.length
 
@@ -312,7 +312,7 @@ class TokenParser(command: CommandConfig) {
  * @throws InvalidTokensException When a token is invalid
  * @return A list of parameters, flags and arguments
  */
-@Throws(InvalidTokensException::class)
+// FIXME @Throws(InvalidTokensException::class)
 fun CommandConfig.parseTokens(
     tokens: Iterable<String>
 ): Pair<List<CommandConfig>, List<TokenParser.Token>> =

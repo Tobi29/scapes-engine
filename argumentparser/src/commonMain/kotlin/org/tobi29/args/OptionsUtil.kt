@@ -34,7 +34,7 @@ inline fun CommandLine.getToken(option: CommandOption): TokenParser.Token.Parame
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun CommandLine.requireToken(option: CommandOption): TokenParser.Token.Parameter =
     getToken(option)
             ?: throw MissingOptionException(null, this, option)
@@ -57,7 +57,7 @@ inline fun CommandLine.getList(option: CommandOption): List<String>? =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun <R> CommandLine.getListSafe(
     option: CommandOption,
     block: (List<String>?) -> R?
@@ -75,7 +75,7 @@ inline fun <R> CommandLine.getListSafe(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun CommandLine.requireList(option: CommandOption): List<String> =
     requireList(option) { it }
 
@@ -87,7 +87,7 @@ inline fun CommandLine.requireList(option: CommandOption): List<String> =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun <R> CommandLine.requireList(
     option: CommandOption,
     block: (List<String>) -> R
@@ -104,7 +104,7 @@ inline fun <R> CommandLine.requireList(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun <R : Any> CommandLine.requireListOrNull(
     option: CommandOption,
     block: (List<String>?) -> R?
@@ -120,7 +120,7 @@ inline fun <R : Any> CommandLine.requireListOrNull(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun <R> CommandLine.requireListSafe(
     option: CommandOption,
     block: (List<String>) -> R
@@ -141,7 +141,7 @@ inline fun <R> CommandLine.requireListSafe(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun <R : Any> CommandLine.requireListSafeOrNull(
     option: CommandOption,
     block: (List<String>?) -> R?
@@ -189,7 +189,7 @@ inline fun <R> CommandLine.getWithToken(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun <R> CommandLine.getSafe(
     option: CommandOption,
     block: (String?) -> R?
@@ -207,7 +207,7 @@ inline fun <R> CommandLine.getSafe(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun CommandLine.require(option: CommandOption): String =
     require(option) { it }
 
@@ -219,7 +219,7 @@ inline fun CommandLine.require(option: CommandOption): String =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun <R> CommandLine.require(
     option: CommandOption,
     block: (String) -> R
@@ -237,7 +237,7 @@ inline fun <R> CommandLine.require(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(MissingOptionException::class)
+// FIXME @Throws(MissingOptionException::class)
 inline fun <R : Any> CommandLine.requireOrNull(
     option: CommandOption,
     block: (String?) -> R?
@@ -253,7 +253,7 @@ inline fun <R : Any> CommandLine.requireOrNull(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun <R> CommandLine.requireSafe(
     option: CommandOption,
     block: (String) -> R
@@ -272,7 +272,7 @@ inline fun <R> CommandLine.requireSafe(
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun <R : Any> CommandLine.requireSafeOrNull(
     option: CommandOption,
     block: (String?) -> R?
@@ -308,7 +308,7 @@ inline fun CommandLine.getBoolean(option: CommandOption): Boolean {
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class)
 inline fun CommandLine.getInt(option: CommandOption) =
     getSafe(option) { it?.toInt() }
 
@@ -320,7 +320,7 @@ inline fun CommandLine.getInt(option: CommandOption) =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class)
 inline fun CommandLine.getLong(option: CommandOption) =
     getSafe(option) { it?.toLong() }
 
@@ -332,7 +332,7 @@ inline fun CommandLine.getLong(option: CommandOption) =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class)
 inline fun CommandLine.getDouble(option: CommandOption) =
     getSafe(option) { it?.toDouble() }
 
@@ -344,7 +344,7 @@ inline fun CommandLine.getDouble(option: CommandOption) =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun CommandLine.requireInt(option: CommandOption): Int =
     requireSafe(option) { it.toInt() }
 
@@ -356,7 +356,7 @@ inline fun CommandLine.requireInt(option: CommandOption): Int =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun CommandLine.requireLong(option: CommandOption): Long =
     requireSafe(option) { it.toLong() }
 
@@ -368,7 +368,7 @@ inline fun CommandLine.requireLong(option: CommandOption): Long =
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+// FIXME @Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
 inline fun CommandLine.requireDouble(option: CommandOption): Double =
     requireSafe(option) { it.toDouble() }
 

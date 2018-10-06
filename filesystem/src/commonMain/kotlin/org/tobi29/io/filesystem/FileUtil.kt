@@ -25,14 +25,14 @@ import org.tobi29.utils.findMap
 
 expect fun path(path: String): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun channel(
     path: FilePath,
     options: Array<out OpenOption> = emptyArray(),
     attributes: Array<out FileAttribute> = emptyArray()
 ): FileChannel
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun <R> read(
     path: FilePath,
     read: (ReadableByteStream) -> R
@@ -40,7 +40,7 @@ fun <R> read(
     read(BufferedReadChannelStream(it))
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun <R> write(
     path: FilePath,
     write: (WritableByteStream) -> R
@@ -121,104 +121,104 @@ fun fileUID(
     null
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun deleteDir(path: FilePath) {
     walk(path, order = FileTreeOrder.POST_ORDER).use {
         it.forEach { delete(it) }
     }
 }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun list(path: FilePath): List<FilePath> =
     directoryStream(path).use { it.asSequence().toList() }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun <R> list(
     path: FilePath,
     consumer: Sequence<FilePath>.() -> R
 ): R = directoryStream(path).use { consumer(it.asSequence()) }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun listRecursive(path: FilePath): List<FilePath> =
     walk(path).use { it.asSequence().toList() }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun <R> listRecursive(
     path: FilePath,
     consumer: Sequence<FilePath>.() -> R
 ): R = walk(path).use { consumer(it.asSequence()) }
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun createFile(
     path: FilePath,
     vararg attributes: FileAttribute
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun createDirectory(
     path: FilePath,
     vararg attributes: FileAttribute
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun createDirectories(
     path: FilePath,
     vararg attributes: FileAttribute
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun delete(path: FilePath)
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun deleteIfExists(path: FilePath): Boolean
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun metadata(
     path: FilePath,
     vararg options: LinkOption
 ): Array<FileMetadata>
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun attributes(
     path: FilePath,
     vararg options: LinkOption
 ): Array<FileAttribute>
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun createTempFile(
     prefix: String,
     suffix: String,
     vararg attributes: FileAttribute
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun createTempDir(
     prefix: String,
     vararg attributes: FileAttribute
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun copy(
     source: FilePath,
     target: FilePath
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun move(
     source: FilePath,
     target: FilePath
 ): FilePath
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun directoryStream(path: FilePath): DirectoryStream
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun setLastModifiedTime(
     path: FilePath,
     value: InstantNanos
 )
 
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 expect fun getLastModifiedTime(path: FilePath): InstantNanos
 
 interface DirectoryStream : Iterator<FilePath>,

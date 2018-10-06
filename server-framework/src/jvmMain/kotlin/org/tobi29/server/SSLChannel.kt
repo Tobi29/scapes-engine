@@ -43,7 +43,7 @@ class SSLChannel(
 
     val inputRate get() = inRate.getAndSet(0)
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun read(buffer: Bytes): Int {
         var currentBuffer = buffer
         while (currentBuffer.size > 0) {
@@ -69,7 +69,7 @@ class SSLChannel(
         return if (len > 0 || isOpen()) len else -1
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun write(buffer: BytesRO): Int {
         var currentBuffer = buffer
         while (currentBuffer.size > 0 && process()) {
@@ -121,7 +121,7 @@ abstract class SSLLayer(
         close = true
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun close() {
         job.cancel()
     }

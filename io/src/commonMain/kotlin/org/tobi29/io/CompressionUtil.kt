@@ -24,7 +24,7 @@ import org.tobi29.stdex.Throws
 @Deprecated("Use compression-deflate module")
 object CompressionUtil {
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun compress(
         input: ReadableByteStream,
         level: Int = -1
@@ -35,7 +35,7 @@ object CompressionUtil {
         return stream.bufferSlice()
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun compress(
         input: ReadableByteStream,
         output: WritableByteStream,
@@ -44,7 +44,7 @@ object CompressionUtil {
         ZDeflater(level, 8192).use { filter -> filter(input, output, filter) }
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun decompress(input: ReadableByteStream): Bytes {
         val stream = MemoryViewStreamDefault()
         decompress(input, stream)
@@ -52,7 +52,7 @@ object CompressionUtil {
         return stream.bufferSlice()
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun decompress(
         input: ReadableByteStream,
         output: WritableByteStream
@@ -60,7 +60,7 @@ object CompressionUtil {
         ZInflater(8192).use { filter -> filter(input, output, filter) }
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun filter(
         input: ReadableByteStream,
         output: WritableByteStream,
@@ -85,10 +85,10 @@ object CompressionUtil {
     }
 
     interface Filter : AutoCloseable {
-        @Throws(IOException::class)
+        // FIXME @Throws(IOException::class)
         fun input(buffer: ReadableByteStream): Boolean
 
-        @Throws(IOException::class)
+        // FIXME @Throws(IOException::class)
         fun output(buffer: WritableByteStream): Int
 
         fun finish()

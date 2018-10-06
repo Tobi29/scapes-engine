@@ -54,7 +54,7 @@ private val e = BigInteger("65537")
  * @throws InvalidKeySpecException when an invalid key was given
  * @return The [RSAPrivateKey]
  */
-@Throws(InvalidKeySpecException::class)
+// FIXME @Throws(InvalidKeySpecException::class)
 fun readPrivate(str: String): RSAPrivateKey {
     return try {
         val keySpec = PKCS8EncodedKeySpec(str.fromBase64())
@@ -73,7 +73,7 @@ fun readPrivate(str: String): RSAPrivateKey {
  * @throws InvalidKeySpecException when an invalid key was given
  * @return The [PublicKey]
  */
-@Throws(InvalidKeySpecException::class)
+// FIXME @Throws(InvalidKeySpecException::class)
 fun extractPublic(key: RSAPrivateKey): PublicKey {
     val publicKeySpec = RSAPublicKeySpec(key.modulus, e)
     return FACTORY.generatePublic(publicKeySpec)
@@ -87,7 +87,7 @@ fun extractPublic(key: RSAPrivateKey): PublicKey {
  * @throws InvalidKeySpecException when an invalid key was given
  * @return The [PublicKey]
  */
-@Throws(InvalidKeySpecException::class)
+// FIXME @Throws(InvalidKeySpecException::class)
 fun readPublic(str: String): PublicKey {
     return try {
         val spec = X509EncodedKeySpec(str.fromBase64())
@@ -106,7 +106,7 @@ fun readPublic(str: String): PublicKey {
  * @throws InvalidKeySpecException  when an invalid key was given
  * @return A [String] containing the PKCS8 encoded key in Base64
  */
-@Throws(InvalidKeySpecException::class)
+// FIXME @Throws(InvalidKeySpecException::class)
 fun writePrivate(key: PrivateKey): String {
     val spec = FACTORY.getKeySpec(key, PKCS8EncodedKeySpec::class.java)
     val packed = spec.encoded
@@ -123,7 +123,7 @@ fun writePrivate(key: PrivateKey): String {
  * @throws InvalidKeySpecException  when an invalid key was given
  * @return A [String] containing the X509 encoded key in Base64
  */
-@Throws(InvalidKeySpecException::class)
+// FIXME @Throws(InvalidKeySpecException::class)
 fun writePublic(key: PublicKey): String {
     val spec = FACTORY.getKeySpec(key, X509EncodedKeySpec::class.java)
     return spec.encoded.toBase64()
@@ -136,7 +136,7 @@ fun writePublic(key: PublicKey): String {
  * @throws KeyStoreException  when an error occurred
  * @return An [Array] containing the [KeyManager]s created from the [KeyStore]
  */
-@Throws(KeyStoreException::class)
+// FIXME @Throws(KeyStoreException::class)
 fun keyManagers(keyStore: KeyStore,
                 password: String): Array<KeyManager> {
     return try {
@@ -157,7 +157,7 @@ fun keyManagers(keyStore: KeyStore,
  * @throws KeyStoreException  when an error occurred
  * @return An [Array] containing the [TrustManager]s created from the [KeyStore]
  */
-@Throws(KeyStoreException::class)
+// FIXME @Throws(KeyStoreException::class)
 fun trustManagers(keyStore: KeyStore): Array<TrustManager> {
     return try {
         val trustManagerFactory = TrustManagerFactory.getInstance(
@@ -177,7 +177,7 @@ fun trustManagers(keyStore: KeyStore): Array<TrustManager> {
  * @throws IOException when an IO error occurs
  * @return A [KeyStore] containing the read keys
  */
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun keyStore(filepath: String,
              password: String,
              classLoader: ClassLoader): KeyStore {
@@ -193,7 +193,7 @@ fun keyStore(filepath: String,
  * @throws IOException when an IO error occurs
  * @return A [KeyStore] containing the read keys
  */
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun keyStore(stream: ReadableByteStream,
              password: String): KeyStore {
     ByteStreamInputStream(stream).use { streamIn ->
@@ -208,7 +208,7 @@ fun keyStore(stream: ReadableByteStream,
  * @throws IOException when an IO error occurs
  * @return A [KeyStore] containing the read keys
  */
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun keyStore(streamIn: InputStream,
              password: String): KeyStore {
     return try {
@@ -230,7 +230,7 @@ fun keyStore(streamIn: InputStream,
  * @throws IOException when an IO error occurs
  * @return A list of [RSAPrivateKey]s
  */
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun readPrivateKeys(reader: BufferedReader): List<RSAPrivateKey> {
     val keys = ArrayList<RSAPrivateKey>()
     readPEM(reader, { type, data ->
@@ -253,7 +253,7 @@ fun readPrivateKeys(reader: BufferedReader): List<RSAPrivateKey> {
  * @throws IOException when an IO error occurs
  * @return A list of [Certificate]s
  */
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun readCertificateChain(reader: BufferedReader): List<Certificate> {
     try {
         val factory = CertificateFactory.getInstance("X.509")
@@ -282,7 +282,7 @@ fun readCertificateChain(reader: BufferedReader): List<Certificate> {
  * @param consumer Called for each entry in the file
  * @throws IOException when an IO error occurs
  */
-@Throws(IOException::class)
+// FIXME @Throws(IOException::class)
 fun readPEM(reader: BufferedReader,
             consumer: (PEMType, ByteArray) -> Unit) {
     var line: String? = reader.readLine()

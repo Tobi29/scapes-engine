@@ -24,12 +24,12 @@ import java.io.OutputStream
 
 class ByteStreamInputStream(private val stream: ReadableByteStream) :
     InputStream() {
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun read(): Int {
         return stream.get().toInt() and 0xFF
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun read(
         b: ByteArray,
         off: Int,
@@ -38,26 +38,26 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) :
         return stream.getSome(b.view.slice(off, len))
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun skip(n: Long): Long {
         val len = n.toInt()
         stream.skip(len)
         return len.toLong()
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun available(): Int = stream.available
 }
 
 class ByteStreamOutputStream(private val stream: WritableByteStream) :
     OutputStream() {
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun write(b: Int) {
         stream.put(b.toByte())
     }
 
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun write(
         b: ByteArray,
         off: Int,

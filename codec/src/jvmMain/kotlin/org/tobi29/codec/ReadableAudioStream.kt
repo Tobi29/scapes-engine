@@ -48,14 +48,14 @@ interface ReadableAudioStream : Closeable {
      * @return [Result], for info head there
      * @see [Result]
      */
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     fun get(buffer: AudioBuffer?): Result
 
     /**
      * Disposes any resources held by this object, no further calls should be
      * done on it
      */
-    @Throws(IOException::class)
+    // FIXME @Throws(IOException::class)
     override fun close() {}
 
     /**
