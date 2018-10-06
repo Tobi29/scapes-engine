@@ -21,20 +21,22 @@ import org.tobi29.scapes.engine.sound.AudioController
 import kotlin.math.abs
 
 internal class OpenALAudioController(
-        override var pitch: Double,
-        override var gain: Double,
-        override var referenceDistance: Double,
-        override var rolloffFactor: Double
+    override var pitch: Double,
+    override var gain: Double,
+    override var referenceDistance: Double,
+    override var rolloffFactor: Double
 ) : AudioController {
     private var pitchAL = 0.0
     private var gainAL = 0.0
     private var referenceDistanceAL = 0.0
     private var rolloffFactorAL = 0.0
 
-    internal fun configure(openAL: OpenAL,
-                           source: Int,
-                           gain: Double,
-                           force: Boolean = false) {
+    internal fun configure(
+        openAL: OpenAL,
+        source: Int,
+        gain: Double,
+        force: Boolean = false
+    ) {
         val gainAL = this.gain * gain
         val pitchAL = pitch
         val referenceDistanceAL = referenceDistanceAL
@@ -48,7 +50,8 @@ internal class OpenALAudioController(
             this.pitchAL = pitchAL
         }
         if (force || abs(
-                referenceDistanceAL - this.referenceDistanceAL) > 0.001) {
+                referenceDistanceAL - this.referenceDistanceAL
+            ) > 0.001) {
             openAL.setReferenceDistance(source, referenceDistanceAL)
             this.referenceDistanceAL = referenceDistanceAL
         }

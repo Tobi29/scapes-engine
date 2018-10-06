@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+package org.tobi29.codec.spi
 
-package org.tobi29.codec
+import org.tobi29.codec.ReadableAudioStream
+import org.tobi29.io.ReadableByteChannel
 
-import org.tobi29.stdex.math.clamp
-import kotlin.math.roundToInt
+interface ReadableAudioStreamProvider {
+    fun accepts(mime: String): Boolean
 
-inline fun toInt16(sample: Float): Short {
-    val pcm = (sample * Short.MAX_VALUE).roundToInt()
-    return clamp(pcm, Short.MIN_VALUE.toInt(),
-            Short.MAX_VALUE.toInt()).toShort()
+    // FIXME @Throws(IOException::class)
+    operator fun get(channel: ReadableByteChannel): ReadableAudioStream
 }

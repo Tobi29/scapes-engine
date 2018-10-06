@@ -19,14 +19,12 @@ package org.tobi29.scapes.engine.backends.openal.openal.internal
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.SendChannel
-import kotlinx.coroutines.experimental.channels.actor
-import kotlinx.coroutines.experimental.yield
 import org.tobi29.codec.AudioBuffer
-import org.tobi29.codec.AudioStream
-import org.tobi29.codec.ReadableAudioStream
 import org.tobi29.codec.toPCM16
-import org.tobi29.contentinfo.mimeType
-import org.tobi29.io.*
+import org.tobi29.io.ByteViewE
+import org.tobi29.io.IOException
+import org.tobi29.io.MemoryViewStream
+import org.tobi29.io.ReadSource
 import org.tobi29.logging.KLogging
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.allocateMemoryBuffer
@@ -183,42 +181,7 @@ internal class OpenALStreamAudio(
     companion object : KLogging()
 }
 
-private fun CoroutineScope.decodeActor(
+internal expect fun CoroutineScope.decodeActor(
     asset: ReadSource,
     state: Boolean
-): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>> {
-    val output = Channel<AudioBuffer>()
-    val actor = actor<AudioBuffer>(capacity = 1) {
-        try {
-            do {
-                asset.channel().use { dataChannel ->
-                    AudioStream.create(
-                        dataChannel,
-                        asset.mimeType()
-                    ).use { stream ->
-                        loop@ while (true) {
-                            val buffer = channel.receive()
-                            while (true) {
-                                when (stream.get(buffer)) {
-                                    ReadableAudioStream.Result.YIELD -> yield()
-                                    ReadableAudioStream.Result.BUFFER -> {
-                                        output.send(buffer)
-                                        continue@loop
-                                    }
-                                    ReadableAudioStream.Result.EOS -> {
-                                        output.send(buffer)
-                                        break@loop
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } while (state)
-        } finally {
-            output.close()
-        }
-    }
-    repeat(1) { actor.offer(AudioBuffer(4096)) }
-    return actor to output
-}
+): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>>

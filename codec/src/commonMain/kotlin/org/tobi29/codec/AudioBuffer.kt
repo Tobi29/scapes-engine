@@ -29,8 +29,7 @@ class AudioBuffer(private val size: Int) {
     var isDone = false
         private set
 
-    fun buffer(channels: Int,
-               rate: Int): HeapFloats {
+    fun buffer(channels: Int, rate: Int): HeapFloats {
         if (empty) {
             empty = false
             val bufferSize = size * channels

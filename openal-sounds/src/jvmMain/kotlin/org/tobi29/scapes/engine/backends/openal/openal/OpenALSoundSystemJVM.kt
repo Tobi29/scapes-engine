@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.openal.openal.internal
+package org.tobi29.scapes.engine.backends.openal.openal
 
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
-import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.math.vector.Vector3d
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.Job
+import org.tobi29.coroutines.launchThread
+import java.util.concurrent.locks.LockSupport
 
-internal interface OpenALAudio {
-    fun poll(sounds: OpenALSoundSystem,
-             openAL: OpenAL,
-             listenerPosition: Vector3d,
-             delta: Double): Boolean
-
-    fun isPlaying(channel: String): Boolean
-
-    fun stop(sounds: OpenALSoundSystem,
-             openAL: OpenAL)
+internal actual fun CoroutineScope.launchAudioCoroutine(
+    block: suspend ((Long) -> Unit, () -> Unit) -> Unit
+): Pair<Job, () -> Unit> = launchThread("Engine-Sounds") {
+    block({ LockSupport.parkNanos(it) }, { LockSupport.park() })
+}.let {
+    it to { LockSupport.unpark(it.thread) }
 }

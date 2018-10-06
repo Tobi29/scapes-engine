@@ -21,40 +21,40 @@ import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteChannel
 import org.tobi29.logging.KLogging
 import org.tobi29.stdex.ConcurrentHashMap
-import org.tobi29.stdex.Throws
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
 
-object AudioStream : KLogging() {
-    private val CODECS = ConcurrentHashMap<String, ReadableAudioStreamProvider>()
+actual object AudioStream : KLogging() {
+    private val CODECS =
+        ConcurrentHashMap<String, ReadableAudioStreamProvider>()
 
     // FIXME @Throws(IOException::class)
-    fun create(channel: ReadableByteChannel,
-               mime: String): ReadableAudioStream {
+    actual fun create(
+        channel: ReadableByteChannel, mime: String
+    ): ReadableAudioStream {
         val codec = AudioStream[mime]
         if (codec != null) return codec[channel]
         throw IOException("No compatible decoder found for type: $mime")
     }
 
-    fun playable(mime: String): Boolean {
-        return AudioStream[mime] != null
-    }
+    actual fun playable(mime: String): Boolean = AudioStream[mime] != null
 
     private operator fun get(mime: String): ReadableAudioStreamProvider? {
-        var codec = AudioStream.CODECS[mime]
+        var codec = CODECS[mime]
         if (codec == null) {
             codec = AudioStream.loadService(mime)
             if (codec != null) {
-                AudioStream.CODECS.put(mime, codec)
+                CODECS[mime] = codec
             }
         }
         return codec
     }
 
     private fun loadService(mime: String): ReadableAudioStreamProvider? =
-            spiLoadFirst(
-                    spiLoad<ReadableAudioStreamProvider>(
-                            AudioStream::class.java.classLoader), { e ->
+        spiLoadFirst(
+            spiLoad<ReadableAudioStreamProvider>(
+                AudioStream::class.java.classLoader
+            ), { e ->
                 logger.warn(e) { "Service configuration error" }
             }, { it.accepts(mime) })
 }

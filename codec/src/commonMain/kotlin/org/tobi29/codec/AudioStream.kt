@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package org.tobi29.codec.spi
+package org.tobi29.codec
 
-import org.tobi29.codec.ReadableAudioStream
-import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteChannel
-import org.tobi29.stdex.Throws
+import org.tobi29.logging.KLogging
 
-interface ReadableAudioStreamProvider {
-    fun accepts(mime: String): Boolean
-
+expect object AudioStream : KLogging {
     // FIXME @Throws(IOException::class)
-    operator fun get(channel: ReadableByteChannel): ReadableAudioStream
+    fun create(channel: ReadableByteChannel, mime: String): ReadableAudioStream
+
+    fun playable(mime: String): Boolean
 }

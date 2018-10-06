@@ -17,9 +17,7 @@
 package org.tobi29.codec
 
 import org.tobi29.io.Closeable
-import org.tobi29.io.IOException
 import org.tobi29.io.tag.TagMap
-import org.tobi29.stdex.Throws
 
 /**
  * Interface for reading audio data from an encoded source
@@ -80,5 +78,4 @@ interface ReadableAudioStream : Closeable {
     }
 }
 
-data class AudioMetaData(val vendor: String?,
-                         val comment: TagMap?)
+data class AudioMetaData(val vendor: String?, val comment: TagMap?)

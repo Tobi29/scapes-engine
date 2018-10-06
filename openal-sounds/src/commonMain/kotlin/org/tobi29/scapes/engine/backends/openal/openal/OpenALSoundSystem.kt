@@ -20,9 +20,7 @@ import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
-import org.tobi29.coroutines.ThreadJob
 import org.tobi29.coroutines.Timer
-import org.tobi29.coroutines.launchThread
 import org.tobi29.io.ByteViewERO
 import org.tobi29.io.ReadSource
 import org.tobi29.io.use
@@ -41,7 +39,6 @@ import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.volume
 import org.tobi29.stdex.ConcurrentHashSet
 import org.tobi29.utils.*
-import java.util.concurrent.locks.LockSupport
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.math.roundToLong
 
@@ -61,7 +58,8 @@ class OpenALSoundSystem(
     override val coroutineContext: CoroutineContext get() = this + job
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
-    private var updateJob: ThreadJob? = null
+    private val updateJob: Job
+    private val updateWake: () -> Unit
     private var enabled = false
     private var origin = Vector3d.ZERO
     private var listenerPosition = Vector3d.ZERO
@@ -69,7 +67,7 @@ class OpenALSoundSystem(
     private var listenerVelocity = Vector3d.ZERO
 
     init {
-        updateJob = engine.launchThread("Engine-Sounds") {
+        val (job, wake) = engine.launchAudioCoroutine { sleep, park ->
             try {
                 start(openAL)
                 try {
@@ -81,9 +79,9 @@ class OpenALSoundSystem(
                         val tickDiff =
                             if (active) {
                                 timer.cap(maxDiff,
-                                    { LockSupport.parkNanos(it) })
+                                    { sleep(it) })
                             } else {
-                                LockSupport.park()
+                                park()
                                 0L
                             }
                         yield() // Allow cancel
@@ -115,6 +113,8 @@ class OpenALSoundSystem(
                 openAL.destroy()
             }
         }
+        updateJob = job
+        updateWake = wake
     }
 
     private fun start(openAL: OpenAL) {
@@ -315,12 +315,10 @@ class OpenALSoundSystem(
         queue { cache.clear() }
     }
 
-    override fun dispose() {
-        updateJob?.let { job ->
-            job.cancel()
-            LockSupport.unpark(job.thread)
-            runBlocking { job.join() }
-        }
+    override suspend fun dispose() {
+        updateJob.cancel()
+        updateWake()
+        updateJob.join()
     }
 
     internal fun volume(channel: VolumeChannel): Double {
@@ -425,9 +423,7 @@ class OpenALSoundSystem(
 
     private fun queue(consumer: (OpenAL) -> Unit) {
         if (!queue.offer(consumer)) throw IllegalStateException("Queue full")
-        updateJob?.let { job ->
-            LockSupport.unpark(job.thread)
-        }
+        updateWake()
     }
 
     private fun isSoundPlaying(openAL: OpenAL): Boolean {
@@ -436,3 +432,7 @@ class OpenALSoundSystem(
 
     companion object : KLogging()
 }
+
+internal expect fun CoroutineScope.launchAudioCoroutine(
+    block: suspend ((Long) -> Unit, () -> Unit) -> Unit
+): Pair<Job, () -> Unit>

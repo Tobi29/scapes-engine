@@ -23,103 +23,130 @@ import org.tobi29.scapes.engine.ScapesEngine
 interface SoundSystem {
     val engine: ScapesEngine
 
-    fun setListener(position: Vector3d,
-                    orientation: Vector3d,
-                    velocity: Vector3d)
+    fun setListener(
+        position: Vector3d,
+        orientation: Vector3d,
+        velocity: Vector3d
+    )
 
     fun isPlaying(channel: VolumeChannel): Boolean
 
-    fun playMusic(asset: String,
-                  channel: VolumeChannel,
-                  state: Boolean,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0) =
-            playMusic(engine.files[asset], channel, state, pitch, gain,
-                    referenceDistance, rolloffFactor)
+    fun playMusic(
+        asset: String,
+        channel: VolumeChannel,
+        state: Boolean,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    ) = playMusic(
+        engine.files[asset], channel, state, pitch, gain,
+        referenceDistance, rolloffFactor
+    )
 
-    fun playMusic(asset: String,
-                  channel: VolumeChannel,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  state: Boolean,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0) =
-            playMusic(engine.files[asset], channel, position, velocity,
-                    state, pitch, gain, referenceDistance, rolloffFactor)
+    fun playMusic(
+        asset: String,
+        channel: VolumeChannel,
+        position: Vector3d,
+        velocity: Vector3d,
+        state: Boolean,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    ) = playMusic(
+        engine.files[asset], channel, position, velocity,
+        state, pitch, gain, referenceDistance, rolloffFactor
+    )
 
-    fun playMusic(asset: ReadSource,
-                  channel: VolumeChannel,
-                  state: Boolean,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0)
+    fun playMusic(
+        asset: ReadSource,
+        channel: VolumeChannel,
+        state: Boolean,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    )
 
-    fun playMusic(asset: ReadSource,
-                  channel: VolumeChannel,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  state: Boolean,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0)
+    fun playMusic(
+        asset: ReadSource,
+        channel: VolumeChannel,
+        position: Vector3d,
+        velocity: Vector3d,
+        state: Boolean,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    )
 
-    fun playSound(asset: String,
-                  channel: VolumeChannel,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0) =
-            playSound(engine.files[asset], channel, pitch, gain,
-                    referenceDistance, rolloffFactor)
+    fun playSound(
+        asset: String,
+        channel: VolumeChannel,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    ) = playSound(
+        engine.files[asset], channel, pitch, gain,
+        referenceDistance, rolloffFactor
+    )
 
-    fun playSound(asset: String,
-                  channel: VolumeChannel,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0) =
-            playSound(engine.files[asset], channel, position, velocity, pitch,
-                    gain, referenceDistance, rolloffFactor)
+    fun playSound(
+        asset: String,
+        channel: VolumeChannel,
+        position: Vector3d,
+        velocity: Vector3d,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    ) = playSound(
+        engine.files[asset], channel, position, velocity, pitch,
+        gain, referenceDistance, rolloffFactor
+    )
 
-    fun playSound(asset: ReadSource,
-                  channel: VolumeChannel,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0)
+    fun playSound(
+        asset: ReadSource,
+        channel: VolumeChannel,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    )
 
-    fun playSound(asset: ReadSource,
-                  channel: VolumeChannel,
-                  position: Vector3d,
-                  velocity: Vector3d,
-                  pitch: Double = 1.0,
-                  gain: Double = 1.0,
-                  referenceDistance: Double = 1.0,
-                  rolloffFactor: Double = 1.0)
+    fun playSound(
+        asset: ReadSource,
+        channel: VolumeChannel,
+        position: Vector3d,
+        velocity: Vector3d,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    )
 
-    fun playStaticAudio(asset: String,
-                        channel: VolumeChannel,
-                        pitch: Double = 1.0,
-                        gain: Double = 1.0,
-                        referenceDistance: Double = 1.0,
-                        rolloffFactor: Double = 1.0) =
-            playStaticAudio(engine.files[asset], channel, pitch, gain,
-                    referenceDistance, rolloffFactor)
+    fun playStaticAudio(
+        asset: String,
+        channel: VolumeChannel,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    ) = playStaticAudio(
+        engine.files[asset], channel, pitch, gain,
+        referenceDistance, rolloffFactor
+    )
 
-    fun playStaticAudio(asset: ReadSource,
-                        channel: VolumeChannel,
-                        pitch: Double = 1.0,
-                        gain: Double = 1.0,
-                        referenceDistance: Double = 1.0,
-                        rolloffFactor: Double = 1.0): StaticAudio
+    fun playStaticAudio(
+        asset: ReadSource,
+        channel: VolumeChannel,
+        pitch: Double = 1.0,
+        gain: Double = 1.0,
+        referenceDistance: Double = 1.0,
+        rolloffFactor: Double = 1.0
+    ): StaticAudio
 
     fun stop(channel: VolumeChannel)
 
@@ -129,5 +156,5 @@ interface SoundSystem {
 
     fun clearCache()
 
-    fun dispose()
+    suspend fun dispose()
 }

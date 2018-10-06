@@ -16,49 +16,56 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import org.tobi29.io.ReadSource
+import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.stdex.assert
-import org.tobi29.io.ReadSource
 import org.tobi29.utils.tryUnwrap
 
 internal class OpenALStaticAudio(
-        private val asset: ReadSource,
-        private val channel: String,
-        private val controller: OpenALAudioController
+    private val asset: ReadSource,
+    private val channel: String,
+    private val controller: OpenALAudioController
 ) : OpenALAudio,
-        StaticAudio,
-        AudioController by controller {
+    StaticAudio,
+    AudioController by controller {
     private var buffer = -1
     private var source = -1
     private var playing = false
     private var dispose = false
 
-    constructor(asset: ReadSource,
-                channel: String,
-                pitch: Double,
-                gain: Double,
-                referenceDistance: Double,
-                rolloffFactor: Double
-    ) : this(asset, channel,
-            OpenALAudioController(pitch, gain, referenceDistance,
-                    rolloffFactor))
+    constructor(
+        asset: ReadSource,
+        channel: String,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ) : this(
+        asset, channel,
+        OpenALAudioController(
+            pitch, gain, referenceDistance,
+            rolloffFactor
+        )
+    )
 
     override fun dispose() {
         dispose = true
     }
 
-    override fun poll(sounds: OpenALSoundSystem,
-                      openAL: OpenAL,
-                      listenerPosition: Vector3d,
-                      delta: Double): Boolean {
+    override fun poll(
+        sounds: OpenALSoundSystem,
+        openAL: OpenAL,
+        listenerPosition: Vector3d,
+        delta: Double
+    ): Boolean {
         if (buffer == -1) {
             val audio = sounds.getAudioData(openAL, asset)
-                    .tryUnwrap() ?: return false
+                .tryUnwrap() ?: return false
             buffer = audio.buffer()
         }
         assert { buffer != -1 }
@@ -73,10 +80,14 @@ internal class OpenALStaticAudio(
                 if (source != -1) {
                     playing = true
                     openAL.setBuffer(source, buffer)
-                    controller.configure(openAL, source, sounds.volume(channel),
-                            true)
-                    sounds.playSound(openAL, source, Vector3d.ZERO,
-                            Vector3d.ZERO, true, false)
+                    controller.configure(
+                        openAL, source, sounds.volume(channel),
+                        true
+                    )
+                    sounds.playSound(
+                        openAL, source, Vector3d.ZERO,
+                        Vector3d.ZERO, true, false
+                    )
                 }
             }
         } else {
@@ -94,12 +105,14 @@ internal class OpenALStaticAudio(
     }
 
     override fun isPlaying(channel: String) =
-            VolumeChannelEnvironment.run {
-                this@OpenALStaticAudio.channel in channel
-            }
+        VolumeChannelEnvironment.run {
+            this@OpenALStaticAudio.channel in channel
+        }
 
-    override fun stop(sounds: OpenALSoundSystem,
-                      openAL: OpenAL) {
+    override fun stop(
+        sounds: OpenALSoundSystem,
+        openAL: OpenAL
+    ) {
         if (source != -1) {
             openAL.deleteSource(source)
             source = -1

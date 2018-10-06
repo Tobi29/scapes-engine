@@ -31,43 +31,33 @@ interface OpenAL {
 
     fun destroy()
 
-    fun setListener(position: Vector3d,
-                    orientation: Vector3d,
-                    velocity: Vector3d)
+    fun setListener(
+        position: Vector3d, orientation: Vector3d, velocity: Vector3d
+    )
 
     fun createSource(): Int
 
     fun deleteSource(id: Int)
 
-    fun setBuffer(id: Int,
-                  value: Int)
+    fun setBuffer(id: Int, value: Int)
 
-    fun setPitch(id: Int,
-                 value: Double)
+    fun setPitch(id: Int, value: Double)
 
-    fun setGain(id: Int,
-                value: Double)
+    fun setGain(id: Int, value: Double)
 
-    fun setLooping(id: Int,
-                   value: Boolean)
+    fun setLooping(id: Int, value: Boolean)
 
-    fun setRelative(id: Int,
-                    value: Boolean)
+    fun setRelative(id: Int, value: Boolean)
 
-    fun setPosition(id: Int,
-                    pos: Vector3d)
+    fun setPosition(id: Int, pos: Vector3d)
 
-    fun setVelocity(id: Int,
-                    vel: Vector3d)
+    fun setVelocity(id: Int, vel: Vector3d)
 
-    fun setReferenceDistance(id: Int,
-                             value: Double)
+    fun setReferenceDistance(id: Int, value: Double)
 
-    fun setRolloffFactor(id: Int,
-                         value: Double)
+    fun setRolloffFactor(id: Int, value: Double)
 
-    fun setMaxDistance(id: Int,
-                       value: Double)
+    fun setMaxDistance(id: Int, value: Double)
 
     fun play(id: Int)
 
@@ -77,10 +67,7 @@ interface OpenAL {
 
     fun deleteBuffer(id: Int)
 
-    fun storeBuffer(id: Int,
-                    format: AudioFormat,
-                    buffer: BytesRO,
-                    rate: Int)
+    fun storeBuffer(id: Int, format: AudioFormat, buffer: BytesRO, rate: Int)
 
     fun isPlaying(id: Int): Boolean
 
@@ -90,8 +77,7 @@ interface OpenAL {
 
     fun getBuffersProcessed(id: Int): Int
 
-    fun queue(id: Int,
-              buffer: Int)
+    fun queue(id: Int, buffer: Int)
 
     fun unqueue(id: Int): Int
 
