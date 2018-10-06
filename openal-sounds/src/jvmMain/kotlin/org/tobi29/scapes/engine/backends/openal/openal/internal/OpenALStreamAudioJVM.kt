@@ -27,6 +27,7 @@ import org.tobi29.codec.ReadableAudioStream
 import org.tobi29.contentinfo.mimeType
 import org.tobi29.io.ReadSource
 import org.tobi29.io.use
+import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 
 internal actual fun CoroutineScope.decodeActor(
     asset: ReadSource,
@@ -38,8 +39,7 @@ internal actual fun CoroutineScope.decodeActor(
             do {
                 asset.channel().use { dataChannel ->
                     AudioStream.create(
-                        dataChannel,
-                        asset.mimeType()
+                        dataChannel, asset.mimeType()
                     ).use { stream ->
                         loop@ while (true) {
                             val buffer = channel.receive()
@@ -60,6 +60,8 @@ internal actual fun CoroutineScope.decodeActor(
                     }
                 }
             } while (state)
+        } catch (e: Exception) {
+            OpenALSoundSystem.logger.error(e) { "Failed decoding audio stream" }
         } finally {
             output.close()
         }
