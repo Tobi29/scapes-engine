@@ -34,7 +34,6 @@ import kotlin.experimental.or
  * @author graywatson
  */
 data class MagicEntry(
-    val level: Int,
     val name: String?,
     val mimeType: String?,
     val matcher: MagicMatcher,
@@ -51,7 +50,6 @@ data class MagicEntry(
         if (offset != 0) true else matcher.canStartWithByte(value)
 
     constructor(
-        level: Int,
         name: String?,
         mimeType: String?,
         matcher: MagicMatcher,
@@ -64,7 +62,6 @@ data class MagicEntry(
         formatter: MagicFormatter?,
         children: List<MagicEntry>
     ) : this(
-        level,
         name,
         mimeType,
         matcher,
@@ -262,8 +259,7 @@ internal fun MagicEntry.write(stream: WritableByteStream) {
 
 internal fun readMagicEntry(
     stream: MemoryViewReadableStream<HeapViewByteBE>,
-    names: MutableMap<String, MagicEntry>? = null,
-    level: Int = 0
+    names: MutableMap<String, MagicEntry>? = null
 ): MagicEntry {
     val flags = stream.get()
     val nameHas = flags.maskAt(0)
@@ -296,12 +292,11 @@ internal fun readMagicEntry(
     val children = lazy {
         ArrayList<MagicEntry>().apply {
             while (childrenStream.hasRemaining) {
-                add(readMagicEntry(childrenStream, names, level + 1))
+                add(readMagicEntry(childrenStream, names))
             }
         }
     }
     val entry = MagicEntry(
-        level,
         name,
         mimeType,
         matcher,

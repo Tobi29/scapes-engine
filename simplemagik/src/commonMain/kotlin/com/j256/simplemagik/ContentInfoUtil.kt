@@ -19,6 +19,7 @@ package com.j256.simplemagik
 import com.j256.simplemagik.entries.MagicEntries
 import com.j256.simplemagik.entries.MagicEntry
 import com.j256.simplemagik.entries.readMagicEntry
+import com.j256.simplemagik.types.NameType
 import org.tobi29.arrays.sliceOver
 import org.tobi29.io.MemoryViewReadableStream
 import org.tobi29.io.viewBE
@@ -60,7 +61,10 @@ class ContentInfoUtil
         val stream = MemoryViewReadableStream(data.viewBE)
         val entries = ArrayList<MagicEntry>()
         val names = HashMap<String, MagicEntry>()
-        while (stream.hasRemaining) entries.add(readMagicEntry(stream, names))
+        while (stream.hasRemaining) {
+            val entry = readMagicEntry(stream, names)
+            if (entry.matcher !is NameType) entries.add(entry)
+        }
         val magicEntries = MagicEntries(entries, names)
         magicEntries
     }

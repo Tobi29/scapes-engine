@@ -52,7 +52,6 @@ internal class MagicEntryBuilder(
 }
 
 private fun MagicEntryBuilder.toMagicEntry(): MagicEntry = MagicEntry(
-    level,
     name,
     mimeType,
     matcher,
