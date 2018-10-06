@@ -99,7 +99,9 @@ class MissingOptionException(
     tokens: List<String>? = null,
     commandLine: CommandLine,
     val option: CommandOption,
-    message: String = "No value given for ${option.simpleName}"
+    reason: String? = null,
+    message: String = "No value given for ${option.simpleName}${
+    if (reason != null) " ($reason)" else ""}"
 ) : InvalidCommandLineException(tokens, commandLine, message)
 
 class MissingOptionArgumentException(
@@ -127,7 +129,7 @@ class InvalidOptionArgumentException(
     reason: String? = null,
     message: String = "Invalid option for ${token.option.simpleName
     }: ${token.value.joinToString(" ")}${
-    if (reason != null) " ($reason)" else ""}\""
+    if (reason != null) " ($reason)" else ""}"
 ) : InvalidTokenParameterException(tokens, commandLine, token, message)
 
 class MissingArgumentException(
@@ -135,7 +137,9 @@ class MissingArgumentException(
     commandLine: CommandLine,
     val argument: CommandArgument,
     val amount: Int = 1,
-    message: String = "Not enough values supplied for ${argument.name}"
+    reason: String? = null,
+    message: String = "Not enough values supplied for ${argument.name}${
+    if (reason != null) " ($reason)" else ""}"
 ) : InvalidCommandLineException(tokens, commandLine, message)
 
 class ExtraArgumentException(

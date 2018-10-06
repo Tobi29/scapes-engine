@@ -35,7 +35,7 @@ inline fun CommandLine.getToken(option: CommandOption): TokenParser.Token.Parame
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 @Throws(MissingOptionException::class)
-inline fun CommandLine.requireToken(option: CommandOption): TokenParser.Token.Parameter? =
+inline fun CommandLine.requireToken(option: CommandOption): TokenParser.Token.Parameter =
     getToken(option)
             ?: throw MissingOptionException(null, this, option)
 
@@ -53,20 +53,6 @@ inline fun CommandLine.getList(option: CommandOption): List<String>? =
 /**
  * Fetches the first option for the option from the given [CommandLine]
  * @param block Called with option and token if an option was found
- * @return Return value of [block] or `null` if the option was not found
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-inline fun <R> CommandLine.getListWithToken(
-    option: CommandOption,
-    block: (List<String>, TokenParser.Token.Parameter) -> R
-): R? = getToken(option)?.let { token ->
-    block(token.value, token)
-}
-
-/**
- * Fetches the first option for the option from the given [CommandLine]
- * @param block Called with option and token if an option was found
  * @throws MissingOptionException If the option was not found
  */
 @InlineUtility
@@ -75,9 +61,9 @@ inline fun <R> CommandLine.getListWithToken(
 inline fun <R> CommandLine.getListSafe(
     option: CommandOption,
     block: (List<String>?) -> R?
-): R? = getListWithToken(option) { value, token ->
+): R? = getToken(option)?.let { token ->
     try {
-        block(value)
+        block(token.value)
     } catch (e: IllegalArgumentException) {
         throw InvalidOptionArgumentException(null, this, token, e.message)
     }
@@ -91,8 +77,7 @@ inline fun <R> CommandLine.getListSafe(
 @Suppress("NOTHING_TO_INLINE")
 @Throws(MissingOptionException::class)
 inline fun CommandLine.requireList(option: CommandOption): List<String> =
-    getList(option)
-            ?: throw MissingOptionException(null, this, option)
+    requireList(option) { it }
 
 /**
  * Fetches the first option for the option from the given [CommandLine] and
@@ -111,20 +96,19 @@ inline fun <R> CommandLine.requireList(
             ?: throw MissingOptionException(null, this, option)
 )
 
-
 /**
  * Fetches the first option for the option from the given [CommandLine] and
  * calls [block] with it before returning
- * @param block Called right after retrieving the value and the token
+ * @param block Called right after retrieving the value
  * @throws MissingOptionException If the option was not found
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 @Throws(MissingOptionException::class)
-inline fun <R> CommandLine.requireListWithToken(
+inline fun <R : Any> CommandLine.requireListOrNull(
     option: CommandOption,
-    block: (List<String>, TokenParser.Token.Parameter) -> R
-): R = getListWithToken(option, block)
+    block: (List<String>?) -> R?
+): R = block(getList(option))
         ?: throw MissingOptionException(null, this, option)
 
 /**
@@ -140,13 +124,38 @@ inline fun <R> CommandLine.requireListWithToken(
 inline fun <R> CommandLine.requireListSafe(
     option: CommandOption,
     block: (List<String>) -> R
-): R = requireListWithToken(option) { value, token ->
+): R = requireToken(option).let { token ->
     try {
-        block(value)
+        block(token.value)
     } catch (e: IllegalArgumentException) {
         throw InvalidOptionArgumentException(null, this, token, e.message)
     }
 }
+
+/**
+ * Fetches the first option for the option from the given [CommandLine] and
+ * calls [block] with it before returning
+ * @param block Called right after retrieving the value
+ * @throws InvalidOptionArgumentException If [block] threw [IllegalArgumentException]
+ * @throws MissingOptionException If the option was not found
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+inline fun <R : Any> CommandLine.requireListSafeOrNull(
+    option: CommandOption,
+    block: (List<String>?) -> R?
+): R = getToken(option).let { token ->
+    try {
+        block(token?.value)
+    } catch (e: IllegalArgumentException) {
+        throw if (token == null) {
+            MissingOptionException(null, this, option, e.message)
+        } else {
+            InvalidOptionArgumentException(null, this, token, e.message)
+        }
+    }
+} ?: throw MissingOptionException(null, this, option)
 
 // First element only
 
@@ -200,8 +209,7 @@ inline fun <R> CommandLine.getSafe(
 @Suppress("NOTHING_TO_INLINE")
 @Throws(MissingOptionException::class)
 inline fun CommandLine.require(option: CommandOption): String =
-    get(option)
-            ?: throw MissingOptionException(null, this, option)
+    require(option) { it }
 
 /**
  * Fetches the first option for the option from the given [CommandLine] and
@@ -215,24 +223,25 @@ inline fun CommandLine.require(option: CommandOption): String =
 inline fun <R> CommandLine.require(
     option: CommandOption,
     block: (String) -> R
-): R = block(
-    get(option)
-            ?: throw MissingOptionException(null, this, option)
-)
+): R = requireList(option) { value ->
+    block(
+        value.firstOrNull() ?: throw MissingOptionException(null, this, option)
+    )
+}
 
 /**
  * Fetches the first option for the option from the given [CommandLine] and
  * calls [block] with it before returning
- * @param block Called right after retrieving the value and the token
+ * @param block Called right after retrieving the value
  * @throws MissingOptionException If the option was not found
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 @Throws(MissingOptionException::class)
-inline fun <R> CommandLine.requireWithToken(
+inline fun <R : Any> CommandLine.requireOrNull(
     option: CommandOption,
-    block: (String, TokenParser.Token.Parameter) -> R
-): R = getWithToken(option, block)
+    block: (String?) -> R?
+): R = block(get(option))
         ?: throw MissingOptionException(null, this, option)
 
 /**
@@ -248,13 +257,36 @@ inline fun <R> CommandLine.requireWithToken(
 inline fun <R> CommandLine.requireSafe(
     option: CommandOption,
     block: (String) -> R
-): R = requireWithToken(option) { value, token ->
-    try {
-        block(value)
-    } catch (e: IllegalArgumentException) {
-        throw InvalidOptionArgumentException(null, this, token, e.message)
-    }
+): R = requireListSafe(option) { value ->
+    block(
+        value.firstOrNull() ?: throw MissingOptionException(null, this, option)
+    )
 }
+
+/**
+ * Fetches the first option for the option from the given [CommandLine] and
+ * calls [block] with it before returning
+ * @param block Called right after retrieving the value
+ * @throws InvalidOptionArgumentException If [block] threw [IllegalArgumentException]
+ * @throws MissingOptionException If the option was not found
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+@Throws(InvalidOptionArgumentException::class, MissingOptionException::class)
+inline fun <R : Any> CommandLine.requireSafeOrNull(
+    option: CommandOption,
+    block: (String?) -> R?
+): R = getToken(option).let { token ->
+    try {
+        block(token?.value?.firstOrNull())
+    } catch (e: IllegalArgumentException) {
+        throw if (token == null) {
+            MissingOptionException(null, this, option, e.message)
+        } else {
+            InvalidOptionArgumentException(null, this, token, e.message)
+        }
+    }
+} ?: throw MissingOptionException(null, this, option)
 
 // Conversions for common types
 

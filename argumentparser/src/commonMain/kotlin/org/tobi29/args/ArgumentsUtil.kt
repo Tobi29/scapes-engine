@@ -29,6 +29,17 @@ inline fun CommandLine.getToken(argument: CommandArgument): TokenParser.Token.Ar
     argumentTokens[argument]?.firstOrNull()
 
 /**
+ * Fetches the token from the given [CommandLine]
+ * @throws MissingArgumentException If the argument was not found
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+@Throws(MissingArgumentException::class)
+inline fun CommandLine.requireToken(argument: CommandArgument): TokenParser.Token.Argument =
+    getToken(argument)
+            ?: throw MissingArgumentException(null, this, argument)
+
+/**
  * Fetches the first argument for the argument from the given [CommandLine]
  * @return A string or `null` if the argument was not found
  */
@@ -36,20 +47,6 @@ inline fun CommandLine.getToken(argument: CommandArgument): TokenParser.Token.Ar
 @Suppress("NOTHING_TO_INLINE")
 inline fun CommandLine.get(argument: CommandArgument): String? =
     getToken(argument)?.value
-
-/**
- * Fetches the first argument for the argument from the given [CommandLine]
- * @param block Called with argument and token if an argument was found
- * @return Return value of [block] or `null` if the argument was not found
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-inline fun <R> CommandLine.getWithToken(
-    argument: CommandArgument,
-    block: (String, TokenParser.Token.Argument) -> R
-): R? = getToken(argument)?.let { token ->
-    block(token.value, token)
-}
 
 /**
  * Fetches the first argument for the argument from the given [CommandLine]
@@ -62,24 +59,13 @@ inline fun <R> CommandLine.getWithToken(
 inline fun <R> CommandLine.getSafe(
     argument: CommandArgument,
     block: (String?) -> R?
-): R? = getWithToken(argument) { value, token ->
+): R? = getToken(argument)?.let { token ->
     try {
-        block(value)
+        block(token.value)
     } catch (e: IllegalArgumentException) {
         throw InvalidArgumentException(null, this, token, e.message)
     }
 }
-
-/**
- * Fetches the token from the given [CommandLine]
- * @throws MissingArgumentException If the argument was not found
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-@Throws(MissingArgumentException::class)
-inline fun CommandLine.requireToken(argument: CommandArgument): TokenParser.Token.Argument? =
-    getToken(argument)
-            ?: throw MissingArgumentException(null, this, argument)
 
 /**
  * Fetches the first argument for the argument from the given [CommandLine]
@@ -112,16 +98,16 @@ inline fun <R> CommandLine.require(
 /**
  * Fetches the first argument for the argument from the given [CommandLine] and
  * calls [block] with it before returning
- * @param block Called right after retrieving the value and the token
+ * @param block Called right after retrieving the value
  * @throws MissingArgumentException If the argument was not found
  */
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 @Throws(MissingArgumentException::class)
-inline fun <R> CommandLine.requireWithToken(
+inline fun <R : Any> CommandLine.requireOrNull(
     argument: CommandArgument,
-    block: (String, TokenParser.Token.Argument) -> R
-): R = getWithToken(argument, block)
+    block: (String?) -> R?
+): R = block(get(argument))
         ?: throw MissingArgumentException(null, this, argument)
 
 /**
@@ -137,13 +123,38 @@ inline fun <R> CommandLine.requireWithToken(
 inline fun <R> CommandLine.requireSafe(
     argument: CommandArgument,
     block: (String) -> R
-): R = requireWithToken(argument) { value, token ->
+): R = requireToken(argument).let { token ->
     try {
-        block(value)
+        block(token.value)
     } catch (e: IllegalArgumentException) {
         throw InvalidArgumentException(null, this, token, e.message)
     }
 }
+
+/**
+ * Fetches the first argument for the argument from the given [CommandLine] and
+ * calls [block] with it before returning
+ * @param block Called right after retrieving the value
+ * @throws InvalidArgumentException If [block] threw [IllegalArgumentException]
+ * @throws MissingArgumentException If the argument was not found
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+@Throws(InvalidArgumentException::class, MissingArgumentException::class)
+inline fun <R : Any> CommandLine.requireSafeOrNull(
+    argument: CommandArgument,
+    block: (String?) -> R?
+): R = getToken(argument).let { token ->
+    try {
+        block(token?.value)
+    } catch (e: IllegalArgumentException) {
+        throw if (token == null) {
+            MissingArgumentException(null, this, argument, reason = e.message)
+        } else {
+            InvalidArgumentException(null, this, token, e.message)
+        }
+    }
+} ?: throw MissingArgumentException(null, this, argument)
 
 // Conversions for common types
 
