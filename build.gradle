@@ -60,7 +60,7 @@ allprojects {
                 }
             }
         }
-        
+
         tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile) {
             compileTask ->
                 compileTask.kotlinOptions.metaInfo = true
@@ -73,9 +73,10 @@ allprojects {
 
 ext {
     kotlinVersion = "1.2.71"
-    kotlin = { module -> "org.jetbrains.kotlin:$module-common:$kotlinVersion" }
-    kotlinJVM = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
-    kotlinJS = { module -> "org.jetbrains.kotlin:$module-js:$kotlinVersion" }
+    kotlinBase = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
+    kotlin = { module -> kotlinBase("$module-common") }
+    kotlinJVM = { module -> kotlinBase("$module") }
+    kotlinJS = { module -> kotlinBase("$module-js") }
 
     kotlinxCoroutinesVersion = "0.30.1"
     kotlinxCoroutinesBase = { module ->
