@@ -16,22 +16,15 @@
 
 package org.tobi29.logging
 
-/**
- * Simple implementation for a [KLoggable]
- *
- * Useful as a super type for (companion) objects
- */
+// TODO: Remove after 0.0.14
+
+@Deprecated("KLoggable and KLogging are deprecated")
 open class KLogging(name: String? = null) : KLoggable {
     @Suppress("LeakingThis")
     override val logger: KLogger = KLogger(this, name)
 }
 
-/**
- * Generic interface for objects with a logger
- */
+@Deprecated("KLoggable and KLogging are deprecated")
 interface KLoggable {
-    /**
-     * The member that performs the actual logging
-     */
     val logger: KLogger
 }

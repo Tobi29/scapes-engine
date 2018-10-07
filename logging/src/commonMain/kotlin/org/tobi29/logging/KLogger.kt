@@ -16,206 +16,155 @@
 
 package org.tobi29.logging
 
+import org.tobi29.stdex.InlineUtility
+import kotlin.reflect.KClass
+
 /**
- * Pure Kotlin Logger to allow logging on both JVM and JS
- * (and Native in the future)
+ * Returns a logger named using [name]
  */
-abstract class KLogger {
-    abstract val isTraceEnabled: Boolean
-    abstract val isDebugEnabled: Boolean
-    abstract val isInfoEnabled: Boolean
-    abstract val isWarnEnabled: Boolean
-    abstract val isErrorEnabled: Boolean
+expect fun KLogger(name: String): KLogger
+
+/**
+ * Returns a logger named after the given [clazz]
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun KLogger(clazz: KClass<*>): KLogger = KLogger(clazz.loggerName)
+
+/**
+ * Returns a logger named after the class of the receiver
+ */
+fun Any.KLogger(): KLogger = KLogger(this::class)
+
+/**
+ * Multiplatform Kotlin Logger
+ */
+expect class KLogger {
+    val isTraceEnabled: Boolean
+    val isDebugEnabled: Boolean
+    val isInfoEnabled: Boolean
+    val isWarnEnabled: Boolean
+    val isErrorEnabled: Boolean
 
     /**
-     * Log a message at the TRACE level.
-     * @param msg the message string to be logged
+     * Logs a message at the TRACE level.
      */
-    abstract fun trace(msg: String)
+    fun trace(message: String)
 
     /**
-     * Log a message at the DEBUG level.
-     * @param msg the message string to be logged
+     * Logs a message at the DEBUG level.
      */
-    abstract fun debug(msg: String)
+    fun debug(message: String)
 
     /**
-     * Log a message at the INFO level.
-     * @param msg the message string to be logged
+     * Logs a message at the INFO level.
      */
-    abstract fun info(msg: String)
+    fun info(message: String)
 
     /**
-     * Log a message at the WARN level.
-     * @param msg the message string to be logged
+     * Logs a message at the WARN level.
      */
-    abstract fun warn(msg: String)
+    fun warn(message: String)
 
     /**
-     * Log a message at the ERROR level.
-     * @param msg the message string to be logged
+     * Logs a message at the ERROR level.
      */
-    abstract fun error(msg: String)
+    fun error(message: String)
 
     /**
-     * Log a message at the TRACE level.
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
+     * Logs a message at the TRACE level.
      */
-    open fun trace(msg: String, t: Throwable) =
-        trace { "$msg: ${t.message}" }
+    fun trace(message: String, throwable: Throwable)
 
     /**
-     * Log a message at the DEBUG level.
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
+     * Logs a message at the DEBUG level.
      */
-    open fun debug(msg: String, t: Throwable) =
-        debug { "$msg: ${t.message}" }
+    fun debug(message: String, throwable: Throwable)
 
     /**
-     * Log a message at the INFO level.
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
+     * Logs a message at the INFO level.
      */
-    open fun info(msg: String, t: Throwable) =
-        info { "$msg: ${t.message}" }
+    fun info(message: String, throwable: Throwable)
 
     /**
-     * Log a message at the WARN level.
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
+     * Logs a message at the WARN level.
      */
-    open fun warn(msg: String, t: Throwable) =
-        warn { "$msg: ${t.message}" }
+    fun warn(message: String, throwable: Throwable)
 
     /**
-     * Log a message at the ERROR level.
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
+     * Logs a message at the ERROR level.
      */
-    open fun error(msg: String, t: Throwable) =
-        error { "$msg: ${t.message}" }
+    fun error(message: String, throwable: Throwable)
 
     /**
-     * Log a message at the TRACE level.
+     * Logs a message at the TRACE level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param msg the message string to be logged
      */
-    inline fun trace(msg: () -> String) {
-        if (isTraceEnabled) trace(msg.invoke())
-    }
+    fun trace(message: () -> String)
 
     /**
-     * Log a message at the DEBUG level.
+     * Logs a message at the DEBUG level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param msg the message string to be logged
      */
-    inline fun debug(msg: () -> String) {
-        if (isDebugEnabled) debug(msg.invoke())
-    }
+    fun debug(message: () -> String)
 
     /**
-     * Log a message at the INFO level.
+     * Logs a message at the INFO level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param msg the message string to be logged
      */
-    inline fun info(msg: () -> String) {
-        if (isInfoEnabled) info(msg.invoke())
-    }
+    fun info(message: () -> String)
 
     /**
-     * Log a message at the WARN level.
+     * Logs a message at the WARN level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param msg the message string to be logged
      */
-    inline fun warn(msg: () -> String) {
-        if (isWarnEnabled) warn(msg.invoke())
-    }
+    fun warn(message: () -> String)
 
     /**
-     * Log a message at the ERROR level.
+     * Logs a message at the ERROR level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param msg the message string to be logged
      */
-    inline fun error(msg: () -> String) {
-        if (isErrorEnabled) error(msg.invoke())
-    }
+    fun error(message: () -> String)
 
     /**
-     * Log a message at the TRACE level.
+     * Logs a message at the TRACE level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
      */
-    inline fun trace(
-        t: Throwable,
-        msg: () -> String
-    ) {
-        if (isTraceEnabled) trace(msg.invoke(), t)
-    }
+    fun trace(throwable: Throwable, message: () -> String)
 
     /**
-     * Log a message at the DEBUG level.
+     * Logs a message at the DEBUG level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
      */
-    inline fun debug(
-        t: Throwable,
-        msg: () -> String
-    ) {
-        if (isDebugEnabled) debug(msg.invoke(), t)
-    }
+    fun debug(throwable: Throwable, message: () -> String)
 
     /**
-     * Log a message at the INFO level.
+     * Logs a message at the INFO level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
      */
-    inline fun info(
-        t: Throwable,
-        msg: () -> String
-    ) {
-        if (isInfoEnabled) info(msg.invoke(), t)
-    }
+    fun info(throwable: Throwable, message: () -> String)
 
     /**
-     * Log a message at the WARN level.
+     * Logs a message at the WARN level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
      */
-    inline fun warn(
-        t: Throwable,
-        msg: () -> String
-    ) {
-        if (isWarnEnabled) warn(msg.invoke(), t)
-    }
+    fun warn(throwable: Throwable, message: () -> String)
 
     /**
-     * Log a message at the ERROR level.
+     * Logs a message at the ERROR level.
      *
      * **Note:** The lambda will only get evaluated when log level is enabled
-     * @param t the exception (throwable) to log
-     * @param msg the message string to be logged
      */
-    inline fun error(
-        t: Throwable,
-        msg: () -> String
-    ) {
-        if (isErrorEnabled) error(msg.invoke(), t)
-    }
+    fun error(throwable: Throwable, message: () -> String)
 }
 
 /**

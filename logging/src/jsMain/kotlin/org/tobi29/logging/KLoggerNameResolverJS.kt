@@ -16,12 +16,12 @@
 
 @file:Suppress("NOTHING_TO_INLINE")
 
-package org.tobi29.logging.internal
+package org.tobi29.logging
 
-import org.tobi29.logging.KLoggable
 import kotlin.reflect.KClass
 
-internal actual inline val KLoggable.name: String
+@PublishedApi
+internal actual val KClass<*>.loggerName: String
     get() = unwrapCompanionClass(this::class).simpleName ?: "???"
 
 private inline fun <T : Any> unwrapCompanionClass(

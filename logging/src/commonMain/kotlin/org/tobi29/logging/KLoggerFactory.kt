@@ -16,21 +16,8 @@
 
 package org.tobi29.logging
 
-import org.tobi29.logging.internal.createDefaultLogger
-import org.tobi29.logging.internal.name
+// TODO: Remove after 0.0.14
 
-/**
- * Returns a logger named after the given [loggable] or [name]
- * @param loggable Class to fetch the name from
- * @param name Allows overriding the name
- */
-fun KLogger(
-    loggable: KLoggable,
-    name: String? = null
-): KLogger = KLogger(name ?: loggable.name)
-
-/**
- * Returns a logger named using [name]
- * @param name The name for the logger
- */
-fun KLogger(name: String): KLogger = createDefaultLogger(name)
+@Deprecated("KLoggable and KLogging are deprecated")
+inline fun KLogger(loggable: KLoggable, name: String? = null): KLogger =
+    if (name == null) KLogger(loggable::class) else KLogger(name)

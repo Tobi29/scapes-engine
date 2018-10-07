@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package org.tobi29.logging.internal
+package org.tobi29.logging
 
-import org.tobi29.logging.KLogger
+import kotlin.reflect.KClass
 
-internal expect fun createDefaultLogger(name: String): KLogger
+@PublishedApi
+internal expect val KClass<*>.loggerName: String

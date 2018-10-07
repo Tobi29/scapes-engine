@@ -203,8 +203,8 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
 
     override fun clearCache() {}
 
-    override fun dispose() {
-        updateJob.cancel()
+    override suspend fun dispose() {
+        updateJob.cancelAndJoin()
         context.close()
     }
 
