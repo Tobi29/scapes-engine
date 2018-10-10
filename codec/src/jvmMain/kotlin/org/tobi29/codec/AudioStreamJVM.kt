@@ -19,12 +19,14 @@ package org.tobi29.codec
 import org.tobi29.codec.spi.ReadableAudioStreamProvider
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadableByteChannel
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
 
-actual object AudioStream : KLogging() {
+actual object AudioStream {
+    private val logger = KLogger<AudioStream>()
+
     private val CODECS =
         ConcurrentHashMap<String, ReadableAudioStreamProvider>()
 

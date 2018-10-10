@@ -17,7 +17,6 @@ package org.tobi29.scapes.engine.graphics
 
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.io.view
-import org.tobi29.logging.KLogging
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
@@ -188,7 +187,7 @@ class FontRenderer(
         }
     }
 
-    companion object : KLogging() {
+    companion object {
         val EMPTY_TEXT_INFO = TextInfo("", Vector2d.ZERO, 0)
 
         fun to(

@@ -19,7 +19,7 @@ import org.lwjgl.openal.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io._rewind
 import org.tobi29.io.readAsNativeByteBuffer
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.backends.lwjgl3.stackFrame
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
@@ -290,5 +290,7 @@ class LWJGL3OpenAL : OpenAL {
         return AL10.alGetSourcei(id, AL10.AL_BUFFER)
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<LWJGL3OpenAL>()
+    }
 }

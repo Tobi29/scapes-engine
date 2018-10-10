@@ -18,7 +18,7 @@ package com.j256.simplemagik.entries
 
 import com.j256.simplemagik.ContentInfo
 import org.tobi29.arrays.BytesRO
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.stdex.maskAt
 
 /**
@@ -101,5 +101,7 @@ internal class MagicEntries(
         }
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<MagicEntries>()
+    }
 }

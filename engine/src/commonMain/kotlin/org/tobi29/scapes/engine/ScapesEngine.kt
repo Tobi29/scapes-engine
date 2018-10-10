@@ -21,7 +21,6 @@ import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Runnable
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
-import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -68,7 +67,7 @@ expect class ScapesEngine(
     suspend fun dispose()
     fun debugMap(): Map<String, String>
 
-    companion object : KLogging {
+    companion object {
         val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>
     }
 }

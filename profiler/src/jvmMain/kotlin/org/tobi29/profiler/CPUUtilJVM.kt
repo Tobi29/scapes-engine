@@ -16,7 +16,7 @@
 
 package org.tobi29.profiler
 
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.profiler.spi.CPUReaderProvider
 import org.tobi29.utils.spiLoad
 import org.tobi29.utils.spiLoadFirst
@@ -24,7 +24,9 @@ import org.tobi29.utils.spiLoadFirst
 /**
  * Object to read the current cpu usage of the program
  */
-object CPUUtil : KLogging() {
+object CPUUtil {
+    private val logger = KLogger<CPUUtil>()
+
     private val i = spiLoadFirst(
             spiLoad<CPUReaderProvider>(
                     CPUUtil::class.java.classLoader), { e ->

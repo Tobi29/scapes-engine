@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.backends.opengl
 
 import org.tobi29.io.IOException
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.graphics.FramebufferStatus
 import org.tobi29.scapes.engine.graphics.RenderType
 import org.tobi29.scapes.engine.shader.CompiledShader
@@ -53,12 +53,12 @@ fun GLHandle.drawbuffers(attachments: Int) {
 
 fun GLHandle.printLogShader(id: GLShader) {
     val log = glGetShaderInfoLog(id)?.takeIf { it.isNotEmpty() } ?: return
-    GLLogger.logger.info { "Shader log: $log" }
+    glLogger.info { "Shader log: $log" }
 }
 
 fun GLHandle.printLogProgram(id: GLProgram) {
     val log = glGetProgramInfoLog(id)?.takeIf { it.isNotEmpty() } ?: return
-    GLLogger.logger.info { "Program log: $log" }
+    glLogger.info { "Program log: $log" }
 }
 
 fun GLHandle.compileShader(
@@ -91,7 +91,7 @@ fun GLHandle.createProgram(
     glAttachShader(program, fragment)
     glLinkProgram(program)
     if (!glGetProgramb(program, GL_LINK_STATUS)) {
-        GLLogger.logger.error { "Failed to link status bar!" }
+        glLogger.error { "Failed to link status bar!" }
         printLogProgram(program)
     }
     val uniformLocations = glUniformArray(uniforms.size) { i ->
@@ -111,4 +111,4 @@ fun GLHandle.createProgram(
     return Pair(program, uniformLocations)
 }
 
-internal object GLLogger : KLogging()
+internal val glLogger = KLogger("GL")

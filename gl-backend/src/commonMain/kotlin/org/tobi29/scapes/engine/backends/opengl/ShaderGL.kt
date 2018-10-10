@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
-import org.tobi29.logging.KLogging
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.Shader
@@ -295,6 +294,4 @@ internal class ShaderGL(
         valid = true
         detach = gl.shaderTracker.attach(this)
     }
-
-    companion object : KLogging()
 }

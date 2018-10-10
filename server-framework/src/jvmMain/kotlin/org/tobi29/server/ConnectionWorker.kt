@@ -23,7 +23,7 @@ import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
 import org.tobi29.coroutines.processDrain
 import org.tobi29.io.IOException
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.stdex.atomic.AtomicLong
 import org.tobi29.utils.systemClock
@@ -163,7 +163,9 @@ class ConnectionWorker(
         }
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<ConnectionWorker>()
+    }
 
     private class ConnectionHandle(val job: Job,
                                    val requestClose: AtomicBoolean)

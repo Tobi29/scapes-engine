@@ -22,7 +22,7 @@ import kotlinx.coroutines.experimental.sync.withLock
 import org.tobi29.coroutines.*
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
@@ -226,7 +226,9 @@ actual class ScapesEngine actual constructor(
         return state.tps
     }
 
-    actual companion object : KLogging() {
+    actual companion object {
+        private val logger = KLogger<ScapesEngine>()
+
         actual val CONFIG_MAP_COMPONENT =
             ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
     }

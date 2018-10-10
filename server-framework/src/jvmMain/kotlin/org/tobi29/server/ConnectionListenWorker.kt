@@ -19,8 +19,8 @@ package org.tobi29.server
 import kotlinx.coroutines.experimental.yield
 import org.tobi29.io.IOException
 import org.tobi29.io.toChannel
-import org.tobi29.logging.KLogging
 import org.tobi29.io.view
+import org.tobi29.logging.KLogger
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
 import java.nio.channels.ServerSocketChannel
@@ -123,5 +123,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                    id: Byte,
                                    connection: Connection)
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<ConnectionListenWorker>()
+    }
 }

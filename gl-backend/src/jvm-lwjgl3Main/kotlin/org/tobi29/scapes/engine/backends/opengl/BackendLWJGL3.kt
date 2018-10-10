@@ -21,14 +21,16 @@ import org.lwjgl.system.Platform
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toBoolean
 import org.tobi29.io.tag.toMap
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.GLBackend
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 
-object GLBackendLWJGL : KLogging(), GLBackend {
+object GLBackendLWJGL : GLBackend {
+    private val logger = KLogger<GLBackendLWJGL>()
+
     override fun createGL(container: Container): Pair<GraphicsObjectSupplier, GL> =
         GLHandle(container).let { it to GLImpl(it) }
 

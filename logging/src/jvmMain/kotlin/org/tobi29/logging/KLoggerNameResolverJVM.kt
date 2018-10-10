@@ -18,25 +18,8 @@
 
 package org.tobi29.logging
 
-import java.lang.reflect.Modifier
 import kotlin.reflect.KClass
 
 @PublishedApi
 internal actual val KClass<*>.loggerName: String
-    get() = unwrapCompanionClass(this::class).java.simpleName ?: "???"
-
-private inline fun <T : Any> unwrapCompanionClass(clazz: KClass<T>): KClass<*> {
-    if (clazz.java.enclosingClass != null) {
-        try {
-            val field = clazz.java.enclosingClass.getField(
-                clazz.java.simpleName
-            )
-            if (Modifier.isStatic(field.modifiers)
-                && field.type == clazz.java) {
-                return clazz.java.enclosingClass.kotlin
-            }
-        } catch (e: Exception) {
-        }
-    }
-    return clazz
-}
+    get() = java.simpleName ?: "???"

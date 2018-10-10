@@ -24,7 +24,7 @@ import org.tobi29.coroutines.Timer
 import org.tobi29.io.ByteViewERO
 import org.tobi29.io.ReadSource
 import org.tobi29.io.use
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.math.threadLocalRandom
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.math.vector.distanceSqr
@@ -430,7 +430,9 @@ class OpenALSoundSystem(
         return sources.any { !openAL.isStopped(it) }
     }
 
-    companion object : KLogging()
+    companion object {
+        internal val logger = KLogger<OpenALSoundSystem>()
+    }
 }
 
 internal expect fun CoroutineScope.launchAudioCoroutine(

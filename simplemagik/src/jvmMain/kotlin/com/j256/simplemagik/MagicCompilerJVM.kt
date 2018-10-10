@@ -19,12 +19,11 @@ package com.j256.simplemagik
 import com.j256.simplemagik.entries.readMagicEntries
 import com.j256.simplemagik.entries.write
 import org.tobi29.io.OutputStreamByteStream
-import org.tobi29.logging.KLogging
 import org.tobi29.stdex.JvmStatic
 import org.tobi29.stdex.printerrln
 import kotlin.coroutines.experimental.buildIterator
 
-object MagicCompiler : KLogging() {
+object MagicCompiler {
     @JvmStatic
     fun main(args: Array<String>) {
         val entries = readMagicEntries(buildIterator {

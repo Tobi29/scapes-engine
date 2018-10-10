@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.input
 
 import org.tobi29.io.tag.MutableTagMap
 import org.tobi29.io.tag.mapMut
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.ComponentStep
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
@@ -106,7 +106,9 @@ abstract class InputManager<M : InputMode>(
         newInputMode.enabled()
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<InputManager<*>>()
+    }
 }
 
 interface InputMode {

@@ -24,7 +24,7 @@ import com.j256.simplemagik.types.UseType
 import com.j256.simplemagik.types.parseId3
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io.*
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.stdex.*
 import kotlin.experimental.or
 
@@ -218,7 +218,9 @@ data class MagicEntry(
         }
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<MagicEntry>()
+    }
 }
 
 internal fun MagicEntry.write(stream: WritableByteStream) {

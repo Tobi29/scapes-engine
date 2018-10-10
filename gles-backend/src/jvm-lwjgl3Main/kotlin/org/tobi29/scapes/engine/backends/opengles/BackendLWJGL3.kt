@@ -18,14 +18,16 @@ package org.tobi29.scapes.engine.backends.opengles
 
 import org.lwjgl.opengles.GLES
 import org.lwjgl.opengles.GLES20
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.GLESBackend
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 
-object GLESBackendLWJGL : KLogging(), GLESBackend {
+object GLESBackendLWJGL : GLESBackend {
+    private val logger = KLogger<GLESBackendLWJGL>()
+
     override fun createGL(container: Container): Pair<GraphicsObjectSupplier, GL> =
         GLESHandle(container).let { it to GLESImpl(it) }
 

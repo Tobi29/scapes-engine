@@ -26,7 +26,6 @@ import org.tobi29.arrays.HeapFloats
 import org.tobi29.codec.AudioMetaData
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.toTag
-import org.tobi29.logging.KLogging
 import kotlin.collections.set
 
 class VorbisInitializer(private val info: Info,
@@ -99,6 +98,4 @@ class VorbisReadStream(info: Info,
         }
         dspState.synthesis_blockin(block)
     }
-
-    companion object : KLogging()
 }

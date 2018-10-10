@@ -18,7 +18,7 @@ package org.tobi29.profiler
 
 import kotlinx.coroutines.experimental.ThreadContextElement
 import kotlinx.coroutines.experimental.withContext
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.profiler.spi.ProfilerDispatcherProvider
 import org.tobi29.stdex.ThreadLocal
 import org.tobi29.stdex.readOnly
@@ -45,7 +45,9 @@ actual class Profiler {
 
 internal actual val dispatchers get() = Dispatchers.i
 
-private object Dispatchers : KLogging() {
+private object Dispatchers {
+    private val logger = KLogger<Dispatchers>()
+
     @JvmStatic
     val i = spiLoad(
         spiLoad<ProfilerDispatcherProvider>(

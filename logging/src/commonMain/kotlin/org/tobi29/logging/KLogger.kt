@@ -32,9 +32,9 @@ expect fun KLogger(name: String): KLogger
 inline fun KLogger(clazz: KClass<*>): KLogger = KLogger(clazz.loggerName)
 
 /**
- * Returns a logger named after the class of the receiver
+ * Returns a logger named after the generic class
  */
-fun Any.KLogger(): KLogger = KLogger(this::class)
+inline fun <reified T> KLogger() = KLogger(T::class)
 
 /**
  * Multiplatform Kotlin Logger

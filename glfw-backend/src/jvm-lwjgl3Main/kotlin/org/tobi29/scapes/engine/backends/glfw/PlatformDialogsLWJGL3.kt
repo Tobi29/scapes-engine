@@ -24,7 +24,7 @@ import org.tobi29.io.ReadableByteStream
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.path
 import org.tobi29.io.filesystem.read
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.platform.PLATFORM
 import org.tobi29.platform.Platform
 import org.tobi29.platform.launchProcess
@@ -133,7 +133,7 @@ actual fun openFile(path: FilePath) {
     try {
         launchProcess(executable, *arguments)
     } catch (e: IOException) {
-        PlatformDialogs.logger.warn { "Failed to open file: $e" }
+        logger.warn { "Failed to open file: $e" }
     }
 }
 
@@ -165,4 +165,4 @@ private inline fun <R> iconify(
     }
 }
 
-private object PlatformDialogs : KLogging()
+private val logger = KLogger("PlatformDialogs")

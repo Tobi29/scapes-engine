@@ -21,7 +21,7 @@ import org.tobi29.coroutines.*
 import org.tobi29.io.AutoCloseable
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.use
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.platform.PLATFORM
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.*
@@ -511,7 +511,9 @@ class ContainerGLFW(
         }
     }
 
-    companion object : KLogging()
+    companion object {
+        internal val logger = KLogger<ContainerGLFW>()
+    }
 }
 
 inline fun ContainerGLFW.run(

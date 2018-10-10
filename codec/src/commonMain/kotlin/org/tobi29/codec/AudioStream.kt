@@ -17,9 +17,8 @@
 package org.tobi29.codec
 
 import org.tobi29.io.ReadableByteChannel
-import org.tobi29.logging.KLogging
 
-expect object AudioStream : KLogging {
+expect object AudioStream {
     // FIXME @Throws(IOException::class)
     fun create(channel: ReadableByteChannel, mime: String): ReadableAudioStream
 

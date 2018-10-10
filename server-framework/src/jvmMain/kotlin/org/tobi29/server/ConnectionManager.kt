@@ -22,7 +22,7 @@ import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.runBlocking
 import org.tobi29.coroutines.launchThread
 import org.tobi29.io.IOException
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.stdex.atomic.AtomicBoolean
 import org.tobi29.utils.ComponentHolder
 import org.tobi29.utils.ComponentRegistered
@@ -132,7 +132,8 @@ class ConnectionManager(
 
     override fun dispose(holder: ComponentHolder<out Any>) = dispose()
 
-    companion object : KLogging() {
+    companion object {
+        private val logger = KLogger<ConnectionManager>()
         val COMPONENT = ComponentTypeRegisteredUniversal<ConnectionManager>()
     }
 }

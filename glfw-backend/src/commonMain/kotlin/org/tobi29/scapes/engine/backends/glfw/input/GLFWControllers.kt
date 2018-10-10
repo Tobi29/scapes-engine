@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.backends.glfw.input
 
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.FloatsRO
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.backends.glfw.*
 import org.tobi29.scapes.engine.input.Controller
 import org.tobi29.utils.EventDispatcher
@@ -152,7 +152,9 @@ internal class GLFWControllers(
         }
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<GLFWControllers>()
+    }
 }
 
 private const val DEADZONES = 0.05

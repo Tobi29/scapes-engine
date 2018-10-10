@@ -22,8 +22,4 @@ import kotlin.reflect.KClass
 
 @PublishedApi
 internal actual val KClass<*>.loggerName: String
-    get() = unwrapCompanionClass(this::class).simpleName ?: "???"
-
-private inline fun <T : Any> unwrapCompanionClass(
-    clazz: KClass<T>
-): KClass<*> = clazz
+    get() = simpleName ?: "???"

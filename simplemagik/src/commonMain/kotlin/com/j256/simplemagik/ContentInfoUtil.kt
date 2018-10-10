@@ -23,7 +23,7 @@ import com.j256.simplemagik.types.NameType
 import org.tobi29.arrays.sliceOver
 import org.tobi29.io.MemoryViewReadableStream
 import org.tobi29.io.viewBE
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 
 /**
  *
@@ -86,7 +86,9 @@ class ContentInfoUtil
         }
     }
 
-    companion object : KLogging() {
+    companion object {
+        private val logger = KLogger<ContentInfoUtil>()
+
         /**
          * Number of bytes that the utility class by default reads to determine the content type information.
          */

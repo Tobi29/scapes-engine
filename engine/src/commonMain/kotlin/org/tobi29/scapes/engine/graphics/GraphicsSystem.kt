@@ -23,7 +23,7 @@ import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
 import org.tobi29.io.view
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -165,5 +165,7 @@ class GraphicsSystem(
         }
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<GraphicsSystem>()
+    }
 }

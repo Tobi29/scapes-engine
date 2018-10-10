@@ -25,7 +25,7 @@ import org.tobi29.io.ByteViewE
 import org.tobi29.io.IOException
 import org.tobi29.io.MemoryViewStream
 import org.tobi29.io.ReadSource
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
@@ -178,7 +178,9 @@ internal class OpenALStreamAudio(
         streamBuffer.reset()
     }
 
-    companion object : KLogging()
+    companion object {
+        private val logger = KLogger<OpenALStreamAudio>()
+    }
 }
 
 internal expect fun CoroutineScope.decodeActor(

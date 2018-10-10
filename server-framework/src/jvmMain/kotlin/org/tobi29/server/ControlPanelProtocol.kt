@@ -22,9 +22,8 @@ import org.tobi29.io.tag.*
 import org.tobi29.io.tag.binary.readBinary
 import org.tobi29.io.tag.binary.writeBinary
 import org.tobi29.io.view
-import org.tobi29.logging.KLogging
+import org.tobi29.logging.KLogger
 import org.tobi29.stdex.ConcurrentHashMap
-import org.tobi29.stdex.Throws
 import org.tobi29.stdex.computeAbsent
 import org.tobi29.utils.EventDispatcher
 import org.tobi29.utils.ListenerRegistrar
@@ -399,7 +398,9 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         events.disable()
     }
 
-    companion object : KLogging() {
+    companion object {
+        private val logger = KLogger<ControlPanelProtocol>()
+
         private val CHALLENGE_LENGTH = 1 shl 10 shl 2
         private val SALT_LENGTH = 8
         private val CHALLENGE_CIPHER_LENGTH = CHALLENGE_LENGTH + SALT_LENGTH
