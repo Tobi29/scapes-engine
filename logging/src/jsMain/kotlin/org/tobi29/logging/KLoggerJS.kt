@@ -18,6 +18,12 @@ package org.tobi29.logging
 
 import org.tobi29.stdex.PlatformProvidedImplementation
 
+var logLevel: KLogLevel = KLogLevel.INFO
+    set(value) {
+        check(logLevel <= KLogLevel.INFO) { "INFO or higher cannot be disabled" }
+        field = value
+    }
+
 @PlatformProvidedImplementation
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun KLogger(name: String): KLogger =
@@ -28,10 +34,10 @@ actual class KLogger @PublishedApi internal constructor(
     internal val name: String, dummy: Nothing?
 ) {
     actual inline val isTraceEnabled: Boolean
-        get() = true
+        get() = logLevel <= KLogLevel.TRACE
 
     actual inline val isDebugEnabled: Boolean
-        get() = true
+        get() = logLevel <= KLogLevel.DEBUG
 
     actual inline val isInfoEnabled: Boolean
         get() = true
