@@ -27,11 +27,11 @@ var logLevel: KLogLevel = KLogLevel.INFO
 @PlatformProvidedImplementation
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun KLogger(name: String): KLogger =
-    KLogger(name, null)
+    KLogger("$name: ", null)
 
 actual class KLogger @PublishedApi internal constructor(
     @PublishedApi
-    internal val name: String, dummy: Nothing?
+    internal val prefix: String, dummy: Nothing?
 ) {
     actual inline val isTraceEnabled: Boolean
         get() = logLevel <= KLogLevel.TRACE
@@ -51,31 +51,31 @@ actual class KLogger @PublishedApi internal constructor(
     @PlatformProvidedImplementation
     @Suppress("NOTHING_TO_INLINE")
     actual inline fun trace(message: String) {
-        if (isTraceEnabled) console.log("[TRACE] $name: $message")
+        if (isTraceEnabled) console.log("[TRACE] $prefix$message")
     }
 
     @PlatformProvidedImplementation
     @Suppress("NOTHING_TO_INLINE")
     actual inline fun debug(message: String) {
-        if (isDebugEnabled) console.log("[DEBUG] $name: $message")
+        if (isDebugEnabled) console.log("[DEBUG] $prefix$message")
     }
 
     @PlatformProvidedImplementation
     @Suppress("NOTHING_TO_INLINE")
     actual inline fun info(message: String) {
-        if (isInfoEnabled) console.log("[INFO] $name: $message")
+        if (isInfoEnabled) console.info("$prefix$message")
     }
 
     @PlatformProvidedImplementation
     @Suppress("NOTHING_TO_INLINE")
     actual inline fun warn(message: String) {
-        if (isWarnEnabled) console.warn("[WARN] $name: $message")
+        if (isWarnEnabled) console.warn("$prefix$message")
     }
 
     @PlatformProvidedImplementation
     @Suppress("NOTHING_TO_INLINE")
     actual inline fun error(message: String) {
-        if (isErrorEnabled) console.error("[ERROR] $name: $message")
+        if (isErrorEnabled) console.error("$prefix$message")
     }
 
     @PlatformProvidedImplementation
