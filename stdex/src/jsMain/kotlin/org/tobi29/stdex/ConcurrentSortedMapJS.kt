@@ -115,8 +115,9 @@ actual class ConcurrentSortedMap<K : Comparable<K>, V> :
             for (j in i + 1 until list.size) {
                 newList.add(list[j])
             }
-            list = newList
-            list[i].value
+            list[i].value.also {
+                list = newList
+            }
         }
     }
 
