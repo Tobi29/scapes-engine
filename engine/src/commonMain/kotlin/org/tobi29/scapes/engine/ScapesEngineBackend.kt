@@ -39,7 +39,7 @@ interface ScapesEngineBackend {
 
     @Deprecated(
         "Use allocateMemoryBuffer",
-        ReplaceWith("allocateMemoryBuffer(size")
+        ReplaceWith("allocateMemoryBuffer(size)")
     )
     fun allocateNative(size: Int): ByteViewE =
         allocateMemoryBuffer(size)
