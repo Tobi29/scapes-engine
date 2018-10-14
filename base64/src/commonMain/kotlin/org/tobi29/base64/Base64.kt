@@ -235,6 +235,7 @@ inline fun encodeBase64Digit(
  * @param decodingTable Array to convert ASCII codes to digits or `-1`
  * @throws IllegalArgumentException When an invalid character was encountered
  * @return Reason for data end
+ * @see base64DecodingTableASCII
  */
 inline fun decodeBase64(
     input: () -> Int,
@@ -310,17 +311,28 @@ enum class Base64Result {
     NOT_PADDED
 }
 
+/**
+ * Creates a decoding table from the given [encodingTable]
+ *
+ * **Note:** Only ASCII characters are allowed in [encodingTable]
+ */
+fun base64DecodingTableASCII(encodingTable: String): ByteArray =
+    ByteArray(128) { -1 }.apply {
+        for ((i, c) in encodingTable.withIndex()) {
+            require(c.toInt() in 0 until 128) {
+                "Invalid character in encoding table: '$c'"
+            }
+            this[c.toInt()] = i.toByte()
+        }
+    }
+
 @Constant
 @PublishedApi
 internal inline val ENCODE_TABLE
     get() = "$alphabetLatinUppercase$alphabetLatinLowercase$digitsArabic+/="
 
 @PublishedApi
-internal val base64DecodeTable = ByteArray(128) { -1 }.apply {
-    for ((i, c) in ENCODE_TABLE.withIndex()) {
-        this[c.toInt()] = i.toByte()
-    }
-}
+internal val base64DecodeTable = base64DecodingTableASCII(ENCODE_TABLE)
 
 @PublishedApi
 internal inline fun <R> base64EncodeBatch(
