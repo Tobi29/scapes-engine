@@ -131,22 +131,22 @@ inline fun Timer.loop(
     }
 }
 
-suspend fun Timer.loopUntilCancel(
+suspend inline fun Timer.loopUntilCancel(
     maxDiff: Long,
-    step: suspend (Double) -> Unit
+    crossinline step: suspend (Double) -> Unit
 ) = loopUntilCancel(maxDiff, 0L, {}, step)
 
-suspend fun Timer.loopUntilCancel(
+suspend inline fun Timer.loopUntilCancel(
     maxDiff: Long,
     minSkipDelay: Long,
-    step: suspend (Double) -> Unit
+    crossinline step: suspend (Double) -> Unit
 ) = loopUntilCancel(maxDiff, minSkipDelay, {}, step)
 
 suspend inline fun Timer.loopUntilCancel(
     maxDiff: Long,
     minSkipDelay: Long = 0L,
     logSkip: (Long) -> Unit,
-    noinline step: suspend (Double) -> Unit
+    crossinline step: suspend (Double) -> Unit
 ) = loopUntilCancel(
     maxDiff, { delayNanos(it) },
     minSkipDelay, logSkip, step
@@ -157,7 +157,7 @@ suspend inline fun Timer.loopUntilCancel(
     park: (Long) -> Unit,
     minSkipDelay: Long = 0L,
     logSkip: (Long) -> Unit,
-    noinline step: suspend (Double) -> Unit
+    crossinline step: suspend (Double) -> Unit
 ) {
     loop(maxDiff, park, minSkipDelay, logSkip) { delta ->
         withContext(NonCancellable) { step(delta) }

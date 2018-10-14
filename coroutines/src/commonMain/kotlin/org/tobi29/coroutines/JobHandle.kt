@@ -31,10 +31,9 @@ class JobHandle(private val scope: CoroutineScope) {
     fun launch(
         context: CoroutineContext = EmptyCoroutineContext,
         start: CoroutineStart = CoroutineStart.DEFAULT,
-        onCompletion: CompletionHandler? = null,
         block: suspend CoroutineScope.() -> Unit
     ): Job? = launchImpl(block, {
-        scope.launch(context, start, onCompletion, it)
+        scope.launch(context, start, it)
     })?.let { (job, mutex) ->
         mutex.unlock()
         job
@@ -43,10 +42,9 @@ class JobHandle(private val scope: CoroutineScope) {
     fun launchLater(
         context: CoroutineContext = EmptyCoroutineContext,
         start: CoroutineStart = CoroutineStart.DEFAULT,
-        onCompletion: CompletionHandler? = null,
         block: suspend CoroutineScope.() -> Unit
     ): Pair<Job, () -> Unit>? = launchImpl(block, {
-        scope.launch(context, start, onCompletion, it)
+        scope.launch(context, start, it)
     })?.let { (job, mutex) -> job to { mutex.unlock() } }
 
     private inline fun launchImpl(
@@ -71,10 +69,50 @@ class JobHandle(private val scope: CoroutineScope) {
     private fun cleanInactive() {
         if (_job.get()?.isActive != true) _job.set(null)
     }
+
+    // TODO: Remove after 0.0.14
+
+    @Deprecated("onCompletion parameter is deprecated in kotlinx.coroutines")
+    fun launch(
+        context: CoroutineContext = EmptyCoroutineContext,
+        start: CoroutineStart = CoroutineStart.DEFAULT,
+        onCompletion: CompletionHandler? = null,
+        block: suspend CoroutineScope.() -> Unit
+    ): Job? = launchImpl(block, {
+        scope.launch(context, start, onCompletion, it)
+    })?.let { (job, mutex) ->
+        mutex.unlock()
+        job
+    }
+
+    @Deprecated("onCompletion parameter is deprecated in kotlinx.coroutines")
+    fun launchLater(
+        context: CoroutineContext = EmptyCoroutineContext,
+        start: CoroutineStart = CoroutineStart.DEFAULT,
+        onCompletion: CompletionHandler? = null,
+        block: suspend CoroutineScope.() -> Unit
+    ): Pair<Job, () -> Unit>? = launchImpl(block, {
+        scope.launch(context, start, onCompletion, it)
+    })?.let { (job, mutex) -> job to { mutex.unlock() } }
 }
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
+inline fun JobHandle.launchOrStop(
+    state: Boolean,
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    noinline block: suspend CoroutineScope.() -> Unit
+): Job? {
+    job?.cancel()
+    return if (state) launch(
+        context, start, block
+    ) else null
+}
+
+// TODO: Remove after 0.0.14
+
+@Deprecated("onCompletion parameter is deprecated in kotlinx.coroutines")
 inline fun JobHandle.launchOrStop(
     state: Boolean,
     context: CoroutineContext = EmptyCoroutineContext,

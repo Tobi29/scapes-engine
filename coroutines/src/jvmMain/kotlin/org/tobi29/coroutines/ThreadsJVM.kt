@@ -21,6 +21,35 @@ import kotlinx.coroutines.experimental.channels.ActorScope
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.SendChannel
+import org.tobi29.utils.Duration64Nanos
+import org.tobi29.utils.sleepNanos
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadFactory
+import kotlin.coroutines.experimental.CoroutineContext
+
+actual suspend fun <R> CoroutineScope.responsiveContext(
+    block: suspend ResponsiveCoroutineScope.(CoroutineContext) -> R
+): R {
+    val name = coroutineContext[CoroutineName.Key]?.name
+    val threadFactory = if (name == null) {
+        Executors.defaultThreadFactory()
+    } else {
+        ThreadFactory { target -> Thread(target, name) }
+    }
+    return Executors.newSingleThreadScheduledExecutor(threadFactory)
+        .asCoroutineDispatcher().use { context ->
+            ResponsiveCoroutineScope(this).block(context)
+        }
+}
+
+actual class ResponsiveCoroutineScope(
+    private val delegate: CoroutineScope
+) : CoroutineScope by delegate {
+    actual suspend inline fun delayResponsiveNanos(time: Duration64Nanos) {
+        sleepNanos(time)
+        yield()
+    }
+}
 
 /**
  * Launch a new single thread context and execute [block] on it

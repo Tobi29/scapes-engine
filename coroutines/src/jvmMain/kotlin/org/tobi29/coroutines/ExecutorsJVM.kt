@@ -16,31 +16,27 @@
 
 package org.tobi29.coroutines
 
+import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.asCoroutineDispatcher
 import org.tobi29.stdex.atomic.AtomicInt
-import org.tobi29.stdex.checkPermission
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
-private val commonExecutor by lazy {
-    (tryGetForkJoinPoolCommon() ?: run {
-        val parallelism = defaultParallelism()
-        tryCreateForkJoinPool(parallelism)
-                ?: createScheduledExecutor(
-                    "Background-Executor",
-                    parallelism
-                ) { isDaemon = true }
-    }).asCoroutineDispatcher()
-}
+// TODO: Remove after 0.0.14
 
+@Deprecated(
+    "Use Dispatchers.Default",
+    ReplaceWith(
+        "Dispatchers.Default",
+        "kotlinx.coroutines.experimental.Dispatchers"
+    )
+)
 val defaultBackgroundExecutor
-    get() = run {
-        checkPermission("scapesengine.defaultbackgroundexecutor")
-        commonExecutor
-    }
+    get() = Dispatchers.Default
 
+@Deprecated("Use asCoroutineDispatcher manually")
 fun ExecutorService.convertToCoroutineDispatcher(parent: Job? = null) =
     asCoroutineDispatcher().let { dispatcher ->
         val job = Job(parent)
@@ -48,6 +44,7 @@ fun ExecutorService.convertToCoroutineDispatcher(parent: Job? = null) =
         dispatcher + job
     }
 
+@Deprecated("Removed without replacement")
 fun createScheduledExecutor(
     name: String,
     parallelism: Int,
@@ -59,35 +56,9 @@ fun createScheduledExecutor(
     }
 }
 
+@Deprecated("Removed without replacement")
 fun createScheduledExecutor(
     parallelism: Int,
     threadFactory: (Runnable) -> Thread
 ): ScheduledExecutorService =
     Executors.newScheduledThreadPool(parallelism) { threadFactory(it) }
-
-private fun tryGetForkJoinPoolCommon() =
-    try {
-        val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
-        val fjpCommonPool = fjp.getMethod("commonPool")
-        fjpCommonPool.invoke(null) as? ExecutorService
-    } catch (e: Throwable) {
-        null
-    }
-
-private fun tryCreateForkJoinPool(parallelism: Int) =
-    try {
-        val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
-        val fjpNew = fjp.getConstructor(Int::class.java)
-        fjpNew.newInstance(parallelism) as? ExecutorService
-    } catch (e: Throwable) {
-        null
-    }
-
-private fun defaultParallelism() =
-    try {
-        val fjp = Class.forName("java.util.concurrent.ForkJoinPool")
-        val fjpParallelism = fjp.getMethod("getCommonPoolParallelism")
-        fjpParallelism.invoke(null) as? Int
-    } catch (e: Throwable) {
-        null
-    } ?: (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)

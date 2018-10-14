@@ -161,14 +161,15 @@ actual class ScapesEngine actual constructor(
     actual fun start() {
         val startTps = AtomicDouble(1.0)
         updateJob.launchLater(taskExecutor) {
-            launchThread("Engine-State") {
+            launchResponsive(CoroutineName("Engine-State")) {
                 var tps = startTps.get()
                 val timer = Timer()
                 timer.init()
                 try {
                     while (true) {
-                        val tickDiff =
-                            timer.cap(Timer.toDiff(tps), { delayNanos(it) })
+                        val tickDiff = timer.cap(
+                            Timer.toDiff(tps), { delayResponsiveNanos(it) }
+                        )
                         tpsDebug.setValue(Timer.toTps(tickDiff))
                         val delta =
                             Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
@@ -179,7 +180,7 @@ actual class ScapesEngine actual constructor(
                         .filterIsInstance<ComponentLifecycle<*>>()
                         .forEach { it.halt() }
                 }
-            }.join()
+            }
         }?.let { (_, launch) ->
             components.asSequence().filterIsInstance<ComponentLifecycle<*>>()
                 .forEach { it.start() }
