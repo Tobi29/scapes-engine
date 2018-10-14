@@ -34,11 +34,21 @@ kotlin {
                 implementation project(":test-assertions")
             }
         }
+        commonUriMain {
+            dependsOn commonMain
+        }
+        commonUriTest {
+            dependsOn commonTest
+        }
         jsMain {
+            dependsOn commonUriMain
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
                 implementation project(":kzlib")
             }
+        }
+        jsTest {
+            dependsOn commonUriTest
         }
         jvmMain {
             dependencies {

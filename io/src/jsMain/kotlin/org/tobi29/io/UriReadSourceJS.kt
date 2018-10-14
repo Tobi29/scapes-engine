@@ -42,56 +42,11 @@ class UriPath(private val uri: Uri) : Path {
 
     override fun toUri(): Uri = uri
 
-    // TODO: Add resolve functionality to Uri
     override val parent: Path?
-        get() = UnixPathEnvironment.run {
-            UriPath(
-                when (uri) {
-                    is UriHierarchicalAbsolute -> UriHierarchicalAbsolute(
-                        uri.scheme,
-                        uri.path.parent ?: return null, uri.query, uri.fragment
-                    )
-                    is UriHierarchicalNet -> UriHierarchicalNet(
-                        uri.scheme,
-                        uri.userInfo, uri.host, uri.port,
-                        uri.path?.parent ?: return null, uri.query,
-                        uri.fragment
-                    )
-                    is UriRelative -> UriRelative(
-                        uri.path.parent ?: return null,
-                        uri.query, uri.fragment
-                    )
-                    else -> throw UnsupportedOperationException(
-                        "Cannot resolve from opaque URI"
-                    )
-                }
-            )
-        }
+        get() = get("..")
 
-    // TODO: Add resolve functionality to Uri
-    override fun get(path: String): Path = UnixPathEnvironment.run {
-        UriPath(
-            when (uri) {
-                is UriHierarchicalAbsolute -> UriHierarchicalAbsolute(
-                    uri.scheme,
-                    uri.path.resolve(path), uri.query, uri.fragment
-                )
-                is UriHierarchicalNet -> UriHierarchicalNet(
-                    uri.scheme,
-                    uri.userInfo, uri.host, uri.port,
-                    (uri.path ?: "/").resolve(path), uri.query,
-                    uri.fragment
-                )
-                is UriRelative -> UriRelative(
-                    uri.path.resolve(path), uri.query,
-                    uri.fragment
-                )
-                else -> throw UnsupportedOperationException(
-                    "Cannot resolve from opaque URI"
-                )
-            }
-        )
-    }
+    override fun get(path: String): Path =
+        UriPath(uri.resolve(UriRelativePath(path)))
 
     override fun channel(): ReadableByteChannel {
         request()

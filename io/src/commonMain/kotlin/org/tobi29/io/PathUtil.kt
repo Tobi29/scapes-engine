@@ -77,11 +77,22 @@ abstract class StandardPathEnvironment : PathEnvironment {
      */
     abstract val separator: String
 
-    protected tailrec fun String.sanitize(): String {
+    /**
+     * Whether or not trailing separators should be removed on sanitize
+     */
+    open val stripTrailingSeparator: Boolean get() = true
+
+    /**
+     * Whether or not the parent of root is the root again
+     */
+    open val recursiveRoot: Boolean get() = true
+
+    protected open tailrec fun String.sanitize(): String {
         val sanitized = replace("$separator$separator", separator)
         return when {
             this == separator -> this
-            this == sanitized -> removeSuffix(separator)
+            this == sanitized ->
+                if (stripTrailingSeparator) removeSuffix(separator) else this
             else -> sanitized.sanitize()
         }
     }
@@ -121,31 +132,39 @@ abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
     FilePathEnvironment {
     override fun String.normalize(): String {
         val path = sanitize()
-        val root = path.startsWith(separator)
+        val root = path.startsWith(UriPathEnvironment.separator)
+        val directory = path.endsWith(UriPathEnvironment.separator)
         val components = path.components
         val stack = ArrayDeque<String>(components.size)
+        var forceDirectory = false
         for (component in components) {
             when (component) {
-                "." -> run {}
-                ".." -> stack.pollLast()?.also {
-                    if (it == component) {
-                        stack.add(component)
-                        stack.add(component)
-                    }
-                } ?: run {
-                    if (!root) {
-                        stack.add(component)
-                    }
+                "." -> {
+                    forceDirectory = true
                 }
-                else -> stack.add(component)
+                ".." -> {
+                    val last = stack.pollLast()
+                    if (last == null) {
+                        if (!root || !recursiveRoot) {
+                            stack.add(component)
+                        }
+                    } else if (last == component) {
+                        stack.add(component)
+                        stack.add(component)
+                    }
+                    forceDirectory = true
+                }
+                else -> {
+                    stack.add(component)
+                    forceDirectory = false
+                }
             }
         }
-        val normalized = stack.joinToString(separator)
-        return if (root) {
-            "$separator$normalized"
-        } else {
-            normalized
-        }
+        val normalized = stack.joinToString(UriPathEnvironment.separator)
+        forceDirectory = (directory || forceDirectory) && stack.isNotEmpty()
+        forceDirectory = forceDirectory && !stripTrailingSeparator
+        return "${if (root) UriPathEnvironment.separator else ""
+        }$normalized${if (forceDirectory) UriPathEnvironment.separator else ""}"
     }
 
     fun String.relativize(other: String): String? {
@@ -185,15 +204,11 @@ abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
     override val String.isAbsolute get() = startsWith(separator)
 
     override val String.components
-        get() = sanitize().let {
+        get() = sanitize().removePrefix(separator).removeSuffix(separator).let {
             if (isEmpty()) {
                 emptyList()
             } else {
-                if (it.isAbsolute) {
-                    it.substring(separator.length)
-                } else {
-                    it
-                }.split(separator)
+                it.split(separator)
             }
         }
 
@@ -230,4 +245,41 @@ abstract class StandardFilePathEnvironment : StandardPathEnvironment(),
  */
 object UnixPathEnvironment : StandardFilePathEnvironment() {
     override val separator get() = "/"
+}
+
+/**
+ * Path environment that emulates uri paths
+ */
+object UriPathEnvironment : StandardFilePathEnvironment() {
+    override val separator get() = "/"
+    override val stripTrailingSeparator get() = false
+    override val recursiveRoot get() = false
+
+    override tailrec fun String.sanitize(): String {
+        val sanitized = replace("$separator$separator", separator)
+        return when {
+            this == separator || this == sanitized -> this
+            else -> sanitized.sanitize()
+        }
+    }
+
+    override fun String.resolve(path: String): String {
+        val base = if (endsWith(separator)) {
+            this
+        } else {
+            val index = lastIndexOf(separator)
+            if (index == -1) "" else substring(0, index + separator.length)
+        }
+        val left = base.sanitize()
+        val right = path.sanitize()
+        return if (right == ".") {
+            left
+        } else if (left.isEmpty() || right.startsWith(separator)) {
+            right
+        } else if (left.endsWith(separator)) {
+            "$left$right"
+        } else {
+            "$left$separator$right"
+        }.normalize()
+    }
 }

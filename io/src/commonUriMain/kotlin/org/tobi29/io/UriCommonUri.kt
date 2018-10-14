@@ -76,7 +76,8 @@ actual class UriHierarchicalNet(
     scheme: String,
     actual val userInfo: String?,
     actual val host: String?,
-    private val portStr: String?,
+    @PublishedApi
+    internal val portStr: String?,
     path: String?,
     query: String?,
     fragment: String?
@@ -146,17 +147,72 @@ actual class UriOpaque actual constructor(
     }
 }
 
-actual class UriRelative actual constructor(
-    actual val path: String,
+actual sealed class UriRelative(
+    path: String?,
     actual val query: String?,
     fragment: String?
 ) : Uri(fragment) {
+    @Suppress("CanBePrimaryConstructorProperty") // Keep parameter for verify
+    actual open val path: String? = path
+}
+
+actual class UriRelativeNet(
+    actual val userInfo: String?,
+    actual val host: String?,
+    @PublishedApi
+    internal val portStr: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+) : UriRelative(path, query, fragment) {
     init {
-        path.uriPathRelativeVerify()
+        path?.uriPathAbsoluteVerify()
     }
 
+    actual constructor(
+        userInfo: String?,
+        host: String?,
+        port: Int?,
+        path: String?,
+        query: String?,
+        fragment: String?
+    ) : this(userInfo, host, port?.toString(), path, query, fragment)
+
+    actual val port: Int? get() = portStr?.toInt()?.takeIf { it in 0x0 until 0xFFFF }
+
     actual override fun toString(): String =
-        "${path.uriEscapePath()
+        "//${userInfo?.uriEscapeUserInfo()?.let { "$it@" } ?: ""
+        }${host?.uriEscapeHost() ?: ""
+        }${portStr?.let { ":$it" } ?: ""
+        }${path?.uriEscapePath() ?: ""
+        }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
+        }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
+
+    actual override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is UriRelative) return false
+        return path == other.path
+                && query == other.query
+                && fragment == other.fragment
+    }
+
+    actual override fun hashCode(): Int {
+        var result = host?.hashCode() ?: 0
+        result = 31 * result + (port ?: 0)
+        result = 31 * result + (path?.hashCode() ?: 0)
+        result = 31 * result + (query?.hashCode() ?: 0)
+        result = 31 * result + (fragment?.hashCode() ?: 0)
+        return result
+    }
+}
+
+actual class UriRelativePath actual constructor(
+    actual override val path: String,
+    query: String?,
+    fragment: String?
+) : UriRelative(path, query, fragment) {
+    actual override fun toString(): String =
+        "${if (path.startsWith(':')) "./" else ""}${path.uriEscapePath()
         }${query?.uriEscapeQuery()?.let { "?$it" } ?: ""
         }${fragment?.uriEscapeBase()?.let { "#$it" } ?: ""}"
 
@@ -176,64 +232,6 @@ actual class UriRelative actual constructor(
     }
 }
 
-actual fun Uri(str: String): Uri {
-    UriParseRegex.run {
-        uriParseHierarchicalNet.matchEntire(str)?.let { match ->
-            return UriHierarchicalNet(
-                match.groups[1]?.value!!,
-                match.groups[4]?.value, match.groups[5]?.value,
-                match.groups[7]?.value?.toIntOrNull(), match.groups[8]?.value,
-                match.groups[10]?.value, match.groups[12]?.value
-            )
-        }
-        uriParseHierarchicalAbsolute.matchEntire(str)?.let { match ->
-            return UriHierarchicalAbsolute(
-                match.groups[1]?.value!!,
-                match.groups[2]?.value!!, match.groups[4]?.value,
-                match.groups[6]?.value
-            )
-        }
-        uriParseOpaque.matchEntire(str)?.let { match ->
-            return UriOpaque(
-                match.groups[1]?.value!!,
-                match.groups[2]?.value!!, match.groups[4]?.value
-            )
-        }
-        uriParseRelative.matchEntire(str)?.let { match ->
-            return UriRelative(
-                match.groups[1]?.value!!,
-                match.groups[3]?.value, match.groups[5]?.value
-            )
-        }
-    }
-    throw IllegalArgumentException("Invalid url: $str")
-}
-
-private const val uriScheme = """([^:/?#]*)"""
-private const val uriUserInfo = """([^@/?#]*)@"""
-private const val uriHost = """([^:/?#]+)"""
-private const val uriPort = """:([^/?#]*)"""
-private const val uriPath = """(/[^?#]*)"""
-private const val uriQuery = """\?([^#]*)"""
-private const val uriOpaque = """([^/#][^#]*)"""
-private const val uriRelativePath = """([^/?#][^?#]*)"""
-private const val uriFragment = """#(.*)"""
-
-private object UriParseRegex {
-    val uriParseHierarchicalAbsolute =
-        "$uriScheme:$uriPath($uriQuery)?($uriFragment)?".toRegex()
-    // Scheme : Path : ?Query : Query : #Fragment : Fragment
-    val uriParseHierarchicalNet =
-        "$uriScheme://(($uriUserInfo)?$uriHost($uriPort)?)?$uriPath?($uriQuery)?($uriFragment)?".toRegex()
-    // Scheme : UserInfo@Host:Port : UserInfo@ : UserInfo : Host : :Port : Port : Path : ?Query : Query : #Fragment : Fragment
-    val uriParseOpaque =
-        "$uriScheme:$uriOpaque($uriFragment)?".toRegex()
-    // Scheme : Opaque : #Fragment : Fragment
-    val uriParseRelative =
-        "$uriRelativePath($uriQuery)?($uriFragment)?".toRegex()
-    // Path : ?Query : Query : #Fragment : Fragment
-}
-
 private fun String.uriSchemeVerify() {
     toLowerCase().find { it !in "$alphabetLatinLowercase$digitsArabic+.-" }
         ?.let {
@@ -242,11 +240,8 @@ private fun String.uriSchemeVerify() {
 }
 
 private fun String.uriPathAbsoluteVerify() {
+    if (isEmpty()) return
     if (this[0] != '/') throw IllegalArgumentException("Path is relative")
-}
-
-private fun String.uriPathRelativeVerify() {
-    if (this[0] == '/') throw IllegalArgumentException("Path is absolute")
 }
 
 private fun String.uriEscapeUserInfo() = uriEscape(
