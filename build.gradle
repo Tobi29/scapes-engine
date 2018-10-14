@@ -89,7 +89,7 @@ ext {
     slf4jVersion = "1.7.25"
     slf4jJVM = { module -> "org.slf4j:$module:$slf4jVersion" }
 
-    spekVersion = "2.0.0-alpha.2"
+    spekVersion = "2.0.0-alpha.1"
     spekBase = { module -> "org.spekframework.spek2:$module:$spekVersion" }
     spek = { module -> spekBase("$module-common") }
     spekJVM = { module -> spekBase("$module-jvm") }
