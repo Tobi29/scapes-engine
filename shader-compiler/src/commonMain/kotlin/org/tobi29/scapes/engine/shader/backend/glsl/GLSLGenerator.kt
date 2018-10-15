@@ -101,14 +101,14 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun unaryExpression(statement: UnaryStatement): String {
         val str = pack(statement.value)
         return when (statement.type) {
-            UnaryType.INCREMENT_GET -> "++" + str
-            UnaryType.DECREMENT_GET -> "--" + str
-            UnaryType.GET_INCREMENT -> str + "++"
-            UnaryType.GET_DECREMENT -> str + "--"
-            UnaryType.POSITIVE -> '+' + str
-            UnaryType.NEGATIVE -> '-' + str
-            UnaryType.BIT_NOT -> '~' + str
-            UnaryType.NOT -> '!' + str
+            UnaryType.INCREMENT_GET -> "++$str"
+            UnaryType.DECREMENT_GET -> "--$str"
+            UnaryType.GET_INCREMENT -> "$str++"
+            UnaryType.GET_DECREMENT -> "$str--"
+            UnaryType.POSITIVE -> "+$str"
+            UnaryType.NEGATIVE -> "-$str"
+            UnaryType.BIT_NOT -> "~$str"
+            UnaryType.NOT -> "!$str"
             else -> throw IllegalArgumentException(
                 "Unexpected expression type: ${statement.type}"
             )
@@ -155,7 +155,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
     private fun decimalExpression(expression: DecimalExpression): String {
         val str = expression.value.toString()
         if (str.indexOf('.') == -1) {
-            return str + ".0"
+            return "$str.0"
         }
         return str
     }
@@ -234,7 +234,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         )
         val declaration = type(statement.type, statement.identifier)
         if (statement.initializer == null) {
-            println(level, declaration + ';')
+            println(level, "$declaration;")
         } else {
             println(
                 level, declaration + " = " +

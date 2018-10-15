@@ -110,26 +110,19 @@ actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R {
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun combineToLong(
-    b7: Byte,
-    b6: Byte,
-    b5: Byte,
-    b4: Byte,
-    b3: Byte,
-    b2: Byte,
-    b1: Byte,
-    b0: Byte
-): Long =
-    combineToLong(combineToInt(b7, b6, b5, b4), combineToInt(b3, b2, b1, b0))
+    b7: Byte, b6: Byte, b5: Byte, b4: Byte,
+    b3: Byte, b2: Byte, b1: Byte, b0: Byte
+): Long = combineToLong(
+    combineToInt(b7, b6, b5, b4), combineToInt(b3, b2, b1, b0)
+)
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun combineToLong(
-    s3: Short,
-    s2: Short,
-    s1: Short,
-    s0: Short
-): Long =
-    combineToLong(combineToInt(s3, s2), combineToInt(s1, s0))
+    s3: Short, s2: Short, s1: Short, s0: Short
+): Long = combineToLong(
+    combineToInt(s3, s2), combineToInt(s1, s0)
+)
 
 @PlatformProvidedImplementation
 @Suppress("NOTHING_TO_INLINE", "UnsafeCastFromDynamic")

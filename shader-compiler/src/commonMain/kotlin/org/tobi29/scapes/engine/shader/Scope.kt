@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.shader
 
 import org.tobi29.stdex.assert
 
-class Scope(vararg private val parents: Scope) {
+class Scope(private vararg val parents: Scope) {
     private val map = HashMap<String, Identifier>()
 
     fun add(name: String,

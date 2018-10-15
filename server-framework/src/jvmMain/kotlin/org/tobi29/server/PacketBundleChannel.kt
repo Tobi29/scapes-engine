@@ -22,7 +22,6 @@ import org.tobi29.io.compression.deflate.DeflateHandle
 import org.tobi29.io.compression.deflate.InflateHandle
 import org.tobi29.io.compression.deflate.process
 import org.tobi29.stdex.ThreadLocal
-import org.tobi29.stdex.Throws
 import org.tobi29.stdex.assert
 import java.lang.ref.WeakReference
 
@@ -67,7 +66,7 @@ class PacketBundleChannel(
         compressStreamOut.flip()
         val size = compressStreamOut.remaining
         if (size > BUNDLE_MAX_SIZE) {
-            throw IOException("Bundle size too large: " + size)
+            throw IOException("Bundle size too large: $size")
         }
         val bundle = buffer(BUNDLE_HEADER_SIZE + size)
         bundle.setInt(0, size)
@@ -165,7 +164,7 @@ class PacketBundleChannel(
             }
             val limit = input.getInt()
             if (limit > BUNDLE_MAX_SIZE) {
-                throw IOException("Bundle size too large: " + limit)
+                throw IOException("Bundle size too large: $limit")
             }
             input.reset()
             input.limit = limit

@@ -20,31 +20,25 @@ package org.tobi29.io
 
 import org.tobi29.arrays.*
 
-expect sealed class HeapViewByte : HeapBytes, HeapView {
-    // FIXME: Kotlin/Native bug
-    @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor(array: ByteArray, offset: Int, size: Int)
-
+expect sealed class HeapViewByte(
+    array: ByteArray, offset: Int, size: Int
+) : HeapBytes, HeapView {
     abstract override fun slice(index: Int): HeapViewByte
 
     abstract override fun slice(index: Int, size: Int): HeapViewByte
 }
 
-expect class HeapViewByteBE : HeapViewByte, ByteViewBE {
-    // FIXME: Kotlin/Native bug
-    @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor(array: ByteArray, offset: Int, size: Int)
-
+expect class HeapViewByteBE(
+    array: ByteArray, offset: Int, size: Int
+) : HeapViewByte, ByteViewBE {
     override fun slice(index: Int): HeapViewByteBE
 
     override fun slice(index: Int, size: Int): HeapViewByteBE
 }
 
-expect class HeapViewByteLE : HeapViewByte, ByteViewLE {
-    // FIXME: Kotlin/Native bug
-    @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor(array: ByteArray, offset: Int, size: Int)
-
+expect class HeapViewByteLE(
+    array: ByteArray, offset: Int, size: Int
+) : HeapViewByte, ByteViewLE {
     override fun slice(index: Int): HeapViewByteLE
 
     override fun slice(index: Int, size: Int): HeapViewByteLE

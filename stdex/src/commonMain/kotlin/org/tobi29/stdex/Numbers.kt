@@ -81,14 +81,17 @@ fun String.toIntCaseSensitiveOrNull(radix: Int): Int? {
 
         start = 1
 
-        if (firstChar == '-') {
-            isNegative = true
-            limit = Int.MIN_VALUE
-        } else if (firstChar == '+') {
-            isNegative = false
-            limit = -Int.MAX_VALUE
-        } else
-            return null
+        when (firstChar) {
+            '-' -> {
+                isNegative = true
+                limit = Int.MIN_VALUE
+            }
+            '+' -> {
+                isNegative = false
+                limit = -Int.MAX_VALUE
+            }
+            else -> return null
+        }
     } else {
         start = 0
         isNegative = false
@@ -131,14 +134,17 @@ fun String.toLongCaseSensitiveOrNull(radix: Int): Long? {
 
         start = 1
 
-        if (firstChar == '-') {
-            isNegative = true
-            limit = Long.MIN_VALUE
-        } else if (firstChar == '+') {
-            isNegative = false
-            limit = -Long.MAX_VALUE
-        } else
-            return null
+        when (firstChar) {
+            '-' -> {
+                isNegative = true
+                limit = Long.MIN_VALUE
+            }
+            '+' -> {
+                isNegative = false
+                limit = -Long.MAX_VALUE
+            }
+            else -> return null
+        }
     } else {
         start = 0
         isNegative = false

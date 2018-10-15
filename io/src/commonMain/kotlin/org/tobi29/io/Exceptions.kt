@@ -22,22 +22,10 @@ expect open class IOException : Exception {
     constructor(cause: Throwable)
 }
 
-expect class ClosedChannelException : IOException {
-    // FIXME: Kotlin/Native bug
-    @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor()
-}
+expect class ClosedChannelException() : IOException
 
-expect class BufferOverflowException : RuntimeException {
-    // FIXME: Kotlin/Native bug
-    @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor()
-}
+expect class BufferOverflowException() : RuntimeException
 
-expect class BufferUnderflowException : RuntimeException {
-    // FIXME: Kotlin/Native bug
-    @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor()
-}
+expect class BufferUnderflowException() : RuntimeException
 
 class EndOfStreamException : IOException()

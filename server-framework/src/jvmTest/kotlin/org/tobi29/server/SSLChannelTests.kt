@@ -16,13 +16,13 @@
 
 package org.tobi29.server
 
+import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.runBlocking
 import kotlinx.coroutines.experimental.yield
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import org.tobi29.assertions.shouldEqual
-import org.tobi29.coroutines.defaultBackgroundExecutor
 import org.tobi29.io.*
 import org.tobi29.stdex.atomic.AtomicLong
 import java.nio.channels.Pipe
@@ -35,8 +35,6 @@ object SSLChannelTests : Spek({
         val sslServer = SSLHandle(getKeyManagers())
         val sslClient = SSLHandle.insecure()
         describe("writing data through a pipe") {
-            val taskExecutor = defaultBackgroundExecutor
-
             val success = AtomicLong(0L)
 
             val address = RemoteAddress("test.dummy", 0)
@@ -59,19 +57,19 @@ object SSLChannelTests : Spek({
                 address,
                 sslServer.newSSLChannel(
                     address, sourceLeft, sinkLeft,
-                    taskExecutor, false
-                ), taskExecutor, true
+                    Dispatchers.Default, false
+                ), Dispatchers.Default, true
             )
             val channelRight = sslServer.newSSLChannel(
                 address,
                 sslClient.newSSLChannel(
                     address, sourceRight, sinkRight,
-                    taskExecutor, true
-                ), taskExecutor, false
+                    Dispatchers.Default, true
+                ), Dispatchers.Default, false
             )
 
             runBlocking {
-                val job1 = launch(taskExecutor) {
+                val job1 = launch(Dispatchers.Default) {
                     val bufferSend =
                         ByteBuffer(1024).apply { fill { 42 }._flip() }
                     val bufferReceive = ByteBuffer(1024)
@@ -112,7 +110,7 @@ object SSLChannelTests : Spek({
                     success.getAndIncrement()
                 }
 
-                val job2 = launch(taskExecutor) {
+                val job2 = launch(Dispatchers.Default) {
                     val bufferSend =
                         ByteBuffer(1024).apply { fill { 43 }._flip() }
                     while (bufferSend.hasRemaining()) {

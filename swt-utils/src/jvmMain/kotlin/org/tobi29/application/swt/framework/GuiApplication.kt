@@ -16,6 +16,7 @@
 package org.tobi29.application.swt.framework
 
 import kotlinx.coroutines.experimental.CoroutineDispatcher
+import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.Runnable
 import org.eclipse.swt.SWT
 import org.eclipse.swt.program.Program
@@ -26,7 +27,6 @@ import org.tobi29.application.StatusCode
 import org.tobi29.application.swt.platform.*
 import org.tobi29.application.swt.widgets.Dialogs
 import org.tobi29.args.CommandLine
-import org.tobi29.coroutines.defaultBackgroundExecutor
 import org.tobi29.io.*
 import org.tobi29.io.filesystem.FilePath
 import org.tobi29.io.filesystem.createTempFile
@@ -36,7 +36,7 @@ import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.system.exitProcess
 
 abstract class GuiApplication(
-        val taskExecutor: CoroutineContext = defaultBackgroundExecutor
+    val taskExecutor: CoroutineContext = Dispatchers.Default
 ) : Application() {
     val display: Display by lazy {
         Display.setAppName(name)
@@ -47,9 +47,11 @@ abstract class GuiApplication(
         DisplayDispatcher(display)
     }
 
-    fun message(style: Int,
-                title: String,
-                message: String): Int {
+    fun message(
+        style: Int,
+        title: String,
+        message: String
+    ): Int {
         val shell = activeShell ?: return 0
         return Dialogs.openMessage(shell, style, title, message)
     }
@@ -119,10 +121,12 @@ abstract class GuiApplication(
         try {
             val path = createTempFile("CrashReport", ".txt")
             write(path) {
-                it.writeCrashReport(e, "SWT Application",
-                        crashReportSectionStacktrace(e),
-                        crashReportSectionActiveThreads(),
-                        crashReportSectionSystemProperties())
+                it.writeCrashReport(
+                    e, "SWT Application",
+                    crashReportSectionStacktrace(e),
+                    crashReportSectionActiveThreads(),
+                    crashReportSectionSystemProperties()
+                )
             }
             return path
         } catch (e1: IOException) {
@@ -145,8 +149,10 @@ abstract class GuiApplication(
 }
 
 class DisplayDispatcher(private val display: Display) : CoroutineDispatcher() {
-    override fun dispatch(context: CoroutineContext,
-                          block: Runnable) {
+    override fun dispatch(
+        context: CoroutineContext,
+        block: Runnable
+    ) {
         display.asyncExec(block)
     }
 }

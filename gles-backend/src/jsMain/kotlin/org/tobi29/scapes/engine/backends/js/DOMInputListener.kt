@@ -221,7 +221,7 @@ class DOMInputListener(private val engine: ScapesEngine) {
     }
 }
 
-internal external open class TouchEvent : Event {
+internal open external class TouchEvent : Event {
     val touches: TouchList
     val targetTouches: TouchList
 }
@@ -250,6 +250,7 @@ internal inline val MouseEvent.offsetX: Double
                 "Mouse offset property unavailable"
             )
         }
+        @Suppress("UnsafeCastFromDynamic")
         return value
     }
 
@@ -261,6 +262,7 @@ internal inline val MouseEvent.offsetY: Double
                 "Mouse offset property unavailable"
             )
         }
+        @Suppress("UnsafeCastFromDynamic")
         return value
     }
 
@@ -275,6 +277,7 @@ internal inline val MouseEvent.movementX: Double
                 "Mouse movement property unavailable"
             )
         }
+        @Suppress("UnsafeCastFromDynamic")
         return value
     }
 
@@ -289,6 +292,7 @@ internal inline val MouseEvent.movementY: Double
                 "Mouse movement property unavailable"
             )
         }
+        @Suppress("UnsafeCastFromDynamic")
         return value
     }
 
@@ -300,6 +304,7 @@ internal inline val Element.offsetLeft: Double
                 "Element offset property unavailable"
             )
         }
+        @Suppress("UnsafeCastFromDynamic")
         return value
     }
 
@@ -311,5 +316,6 @@ internal inline val Element.offsetTop: Double
                 "Element offset property unavailable"
             )
         }
+        @Suppress("UnsafeCastFromDynamic")
         return value
     }

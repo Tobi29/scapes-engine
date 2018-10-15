@@ -62,7 +62,7 @@ fun ReadableByteStream.asString(): String =
 
 fun ReadableByteStream.asByteView(): HeapViewByteBE =
     (if (this is SeekableByteChannel) MemoryViewStreamDefault(
-        ByteArray(remaining().toIntClamped()).viewBE
+        ByteArray(remaining.toIntClamped()).viewBE
     )
     else MemoryViewStreamDefault()).also { stream ->
         process { stream.put(it) }

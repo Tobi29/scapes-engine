@@ -29,9 +29,9 @@ actual sealed class HeapViewByte actual constructor(
             throw IndexOutOfBoundsException("Invalid offset or size")
     }
 
-    actual override abstract fun slice(index: Int): HeapViewByte
+    actual abstract override fun slice(index: Int): HeapViewByte
 
-    actual override abstract fun slice(index: Int,
+    actual abstract override fun slice(index: Int,
                                        size: Int): HeapViewByte
 }
 

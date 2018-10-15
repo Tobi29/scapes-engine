@@ -42,6 +42,7 @@ actual fun <P1, P2> chain(vararg functions: (P1, P2) -> Unit): (P1, P2) -> Unit 
 
 private fun <T : Function<Unit>> T.unchain(): Array<T> =
     if (isChained(this)) {
+        @Suppress("UnsafeCastFromDynamic")
         asDynamic()._ScapesEngine_ChainedFunctions
     } else {
         arrayOf(this)

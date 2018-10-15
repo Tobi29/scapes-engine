@@ -512,7 +512,7 @@ private fun parseOffset(
     if (matcher == null) {
         errorCallBack?.invoke(
             line,
-            "invalid offset pattern: " + offsetString,
+            "invalid offset pattern: $offsetString",
             null
         )
         return null
@@ -524,7 +524,7 @@ private fun parseOffset(
     } catch (e: NumberFormatException) {
         errorCallBack?.invoke(
             line,
-            "invalid long offset number: " + offsetString,
+            "invalid long offset number: $offsetString",
             e
         )
         return null
@@ -533,7 +533,7 @@ private fun parseOffset(
     if (matcher.groups[3] == null) {
         errorCallBack?.invoke(
             line,
-            "invalid long offset type: " + offsetString,
+            "invalid long offset type: $offsetString",
             null
         )
         return null
@@ -605,7 +605,7 @@ private fun parseOffset(
     }
     var add = 0
     // the +# section is optional
-    if (matcher.groups[5] != null && matcher.groupValues[5].length > 0) {
+    if (matcher.groups[5] != null && matcher.groupValues[5].isNotEmpty()) {
         try {
             add = decodeInt(matcher.groupValues[5])
         } catch (e: NumberFormatException) {

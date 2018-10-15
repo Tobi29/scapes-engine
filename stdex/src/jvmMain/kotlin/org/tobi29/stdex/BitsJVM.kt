@@ -107,34 +107,29 @@ actual inline fun <R> Long.splitToInts(output: (Int, Int) -> R): R =
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 actual inline fun combineToLong(
-    b7: Byte,
-    b6: Byte,
-    b5: Byte,
-    b4: Byte,
-    b3: Byte,
-    b2: Byte,
-    b1: Byte,
-    b0: Byte
-): Long =
-    (b7.toLong() and 0xFF shl 56) or
-            (b6.toLong() and 0xFF shl 48) or
-            (b5.toLong() and 0xFF shl 40) or
-            (b4.toLong() and 0xFF shl 32) or
-            (b3.toLong() and 0xFF shl 24) or
-            (b2.toLong() and 0xFF shl 16) or
-            (b1.toLong() and 0xFF shl 8) or
-            (b0.toLong() and 0xFF shl 0)
+    b7: Byte, b6: Byte, b5: Byte, b4: Byte,
+    b3: Byte, b2: Byte, b1: Byte, b0: Byte
+): Long = (b7.toLong() and 0xFF shl 56) or
+        (b6.toLong() and 0xFF shl 48) or
+        (b5.toLong() and 0xFF shl 40) or
+        (b4.toLong() and 0xFF shl 32) or
+        (b3.toLong() and 0xFF shl 24) or
+        (b2.toLong() and 0xFF shl 16) or
+        (b1.toLong() and 0xFF shl 8) or
+        (b0.toLong() and 0xFF shl 0)
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-actual inline fun combineToLong(s3: Short, s2: Short, s1: Short, s0: Short): Long =
-    (s3.toLong() and 0xFFFF shl 48) or
-            (s2.toLong() and 0xFFFF shl 32) or
-            (s1.toLong() and 0xFFFF shl 16) or
-            (s0.toLong() and 0xFFFF shl 0)
+actual inline fun combineToLong(
+    s3: Short, s2: Short, s1: Short, s0: Short
+): Long = (s3.toLong() and 0xFFFF shl 48) or
+        (s2.toLong() and 0xFFFF shl 32) or
+        (s1.toLong() and 0xFFFF shl 16) or
+        (s0.toLong() and 0xFFFF shl 0)
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
-actual inline fun combineToLong(i1: Int, i0: Int): Long =
-    (i1.toLong() and 0xFFFFFFFF shl 32) or
-            (i0.toLong() and 0xFFFFFFFF shl 0)
+actual inline fun combineToLong(
+    i1: Int, i0: Int
+): Long = (i1.toLong() and 0xFFFFFFFF shl 32) or
+        (i0.toLong() and 0xFFFFFFFF shl 0)

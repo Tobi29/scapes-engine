@@ -93,7 +93,7 @@ class IanaEntry(
             } else if (url.startsWith("http")) {
                 // do nothing
             } else {
-                url = MIME_TYPE_REFERENCE_BASE_URL + "#" + url
+                url = "$MIME_TYPE_REFERENCE_BASE_URL#$url"
             }
             urls.add(url)
         }

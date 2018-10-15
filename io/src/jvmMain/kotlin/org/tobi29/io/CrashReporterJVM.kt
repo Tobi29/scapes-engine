@@ -34,9 +34,9 @@ fun crashReportSectionStacktrace(e: Throwable): Pair<String, Appendable.() -> Un
 fun crashReportSectionActiveThreads(): Pair<String, Appendable.() -> Unit> =
         Pair<String, Appendable.() -> Unit>("Active Threads", {
             for ((key1, value1) in Thread.getAllStackTraces()) {
-                println("Thread:" + key1)
+                println("Thread:$key1")
                 for (element in value1) {
-                    println("\tat " + element)
+                    println("\tat $element")
                 }
                 println()
             }

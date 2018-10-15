@@ -25,4 +25,5 @@ actual open class IOException : Exception {
 actual class ClosedChannelException : IOException()
 
 actual class BufferOverflowException : RuntimeException()
+
 actual class BufferUnderflowException : RuntimeException()

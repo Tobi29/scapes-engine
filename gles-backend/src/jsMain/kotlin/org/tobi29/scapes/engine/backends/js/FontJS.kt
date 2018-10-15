@@ -41,7 +41,7 @@ external class FontFace(
     fun load(): Promise<FontFace>
 }
 
-external abstract class FontFaceSet : EventTarget {
+abstract external class FontFaceSet : EventTarget {
     fun add(font: FontFace): FontFaceSet
     fun delete(font: FontFace): FontFace?
     fun clear()

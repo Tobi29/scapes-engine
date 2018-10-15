@@ -123,12 +123,12 @@ private inline fun <R> compressSha256(
     data: Int,
     output: (Int, Int, Int, Int, Int, Int, Int, Int) -> R
 ): R {
-    val S1 = (e rrot 6) xor (e rrot 11) xor (e rrot 25)
+    val s1 = (e rrot 6) xor (e rrot 11) xor (e rrot 25)
     val ch = (e and f) xor (e.inv() and g)
-    val temp1 = h + S1 + ch + sha256ConstantsTable[i] + data
-    val S0 = (a rrot 2) xor (a rrot 13) xor (a rrot 22)
+    val temp1 = h + s1 + ch + sha256ConstantsTable[i] + data
+    val s0 = (a rrot 2) xor (a rrot 13) xor (a rrot 22)
     val maj = (a and b) xor (a and c) xor (b and c)
-    val temp2 = S0 + maj
+    val temp2 = s0 + maj
     return output(temp1 + temp2, a, b, c, d + temp1, e, f, g)
 }
 

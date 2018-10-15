@@ -95,7 +95,7 @@ actual class EventDispatcher internal actual constructor(
     }
 }
 
-actual class ListenerRegistrar actual internal constructor(actual val events: EventDispatcher) {
+actual class ListenerRegistrar internal actual constructor(actual val events: EventDispatcher) {
     fun <E : Any> listen(
         clazz: KClass<E>,
         priority: Int,
