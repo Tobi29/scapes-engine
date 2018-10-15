@@ -46,7 +46,7 @@ class UriPath(private val uri: Uri) : Path {
         get() = get("..")
 
     override fun get(path: String): Path =
-        UriPath(uri.resolve(UriRelativePath(path)))
+        UriPath(uri.appendSeparator().resolve(UriRelativePath(path)))
 
     override fun channel(): ReadableByteChannel {
         request()

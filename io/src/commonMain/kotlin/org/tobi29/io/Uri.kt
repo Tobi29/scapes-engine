@@ -337,6 +337,62 @@ inline fun UriRelativePath.copy(
  */
 expect fun Uri(str: String): Uri
 
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun Uri.appendSeparator(): Uri = when (this) {
+    is UriAbsolute -> appendSeparator()
+    is UriRelative -> appendSeparator()
+    else -> error("Impossible")
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun UriAbsolute.appendSeparator(): UriAbsolute = when (this) {
+    is UriHierarchical -> appendSeparator()
+    is UriOpaque -> throw IllegalArgumentException("Cannot append to opaque URI")
+    else -> error("Impossible")
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun UriHierarchical.appendSeparator(): UriHierarchical = when (this) {
+    is UriHierarchicalAbsolute -> appendSeparator()
+    is UriHierarchicalNet -> appendSeparator()
+    else -> error("Impossible")
+}
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun UriHierarchicalAbsolute.appendSeparator(): UriHierarchicalAbsolute =
+    copy(path = path.let {
+        if (it.endsWith('/')) it else "$it/"
+    })
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun UriHierarchicalNet.appendSeparator(): UriHierarchicalNet =
+    copy(path = path.let {
+        if (it == null) "/" else if (it.endsWith('/')) it else "$it/"
+    })
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun UriRelative.appendSeparator(): UriRelative = when (this) {
+    is UriRelativeNet -> appendSeparator()
+    is UriRelativePath -> appendSeparator()
+    else -> error("Impossible")
+}
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun UriRelativeNet.appendSeparator(): UriRelativeNet =
+    copy(path = path.let {
+        if (it == null) "/" else if (it.endsWith('/')) it else "$it/"
+    })
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun UriRelativePath.appendSeparator(): UriRelativePath =
+    copy(path = path.let {
+        if (it.endsWith('/')) it else "$it/"
+    })
+
 expect fun Uri.resolve(path: Uri): Uri
 
 expect fun Uri.resolve(path: UriRelativeNet): Uri
