@@ -16,6 +16,7 @@
 
 package org.tobi29.io
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.alphabetLatinLowercase
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.digitsArabic
@@ -231,6 +232,33 @@ actual class UriRelativePath actual constructor(
         return result
     }
 }
+
+@PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+internal actual inline fun UriHierarchicalNet.copyImpl(
+    scheme: String,
+    userInfo: String?,
+    host: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+): UriHierarchicalNet = UriHierarchicalNet(
+    scheme, userInfo, host, portStr, path, query, fragment
+)
+
+@PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+internal actual inline fun UriRelativeNet.copyImpl(
+    userInfo: String?,
+    host: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+): UriRelativeNet = UriRelativeNet(
+    userInfo, host, portStr, path, query, fragment
+)
 
 private fun String.uriSchemeVerify() {
     toLowerCase().find { it !in "$alphabetLatinLowercase$digitsArabic+.-" }

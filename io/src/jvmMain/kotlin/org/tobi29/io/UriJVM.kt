@@ -16,6 +16,9 @@
 
 package org.tobi29.io
 
+import org.tobi29.stdex.InlineUtility
+import org.tobi29.stdex.substringAfterLastOrNull
+
 typealias JavaUri = java.net.URI
 
 actual sealed class Uri(val java: JavaUri) {
@@ -264,6 +267,33 @@ actual class UriRelativePath(
 
 actual fun Uri(str: String): Uri = JavaUri(str).toUri()
 
+@PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+internal actual inline fun UriHierarchicalNet.copyImpl(
+    scheme: String,
+    userInfo: String?,
+    host: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+): UriHierarchicalNet = UriHierarchicalNet(
+    JavaUri(scheme, java.authority(userInfo, host), path, query, fragment)
+)
+
+@PublishedApi
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+internal actual inline fun UriRelativeNet.copyImpl(
+    userInfo: String?,
+    host: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+): UriRelativeNet = UriRelativeNet(
+    JavaUri(null, java.authority(userInfo, host), path, query, fragment)
+)
+
 fun JavaUri.toUri(): Uri =
     if (isAbsolute) {
         if (!isOpaque) {
@@ -273,4 +303,21 @@ fun JavaUri.toUri(): Uri =
     } else {
         if (host == null) UriRelativePath(this)
         else UriRelativeNet(this)
+    }
+
+@PublishedApi
+internal fun JavaUri.authority(
+    userInfo: String?,
+    host: String?
+): String {
+    val port = portStr?.let { ":$it" } ?: ""
+    val convertUri = JavaUri(null, userInfo, host, -1, null, null, null)
+    return "${convertUri.authority}$port"
+}
+
+@PublishedApi
+internal val JavaUri.portStr: String?
+    get() = when {
+        port >= 0 -> port.toString()
+        else -> authority?.substringAfterLastOrNull(':')
     }

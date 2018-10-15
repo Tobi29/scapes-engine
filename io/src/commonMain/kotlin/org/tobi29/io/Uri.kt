@@ -144,7 +144,28 @@ inline fun UriHierarchicalNet.copy(
     scheme: String = this.scheme,
     userInfo: String? = this.userInfo,
     host: String? = this.host,
-    port: Int? = this.port,
+    path: String? = this.path,
+    query: String? = this.query,
+    fragment: String? = this.fragment
+): UriHierarchicalNet = copyImpl(scheme, userInfo, host, path, query, fragment)
+
+@PublishedApi
+internal expect fun UriHierarchicalNet.copyImpl(
+    scheme: String,
+    userInfo: String?,
+    host: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+): UriHierarchicalNet
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun UriHierarchicalNet.copy(
+    scheme: String = this.scheme,
+    userInfo: String? = this.userInfo,
+    host: String? = this.host,
+    port: Int?,
     path: String? = this.path,
     query: String? = this.query,
     fragment: String? = this.fragment
@@ -244,7 +265,26 @@ inline operator fun UriRelativeNet.component5(): String? = fragment
 inline fun UriRelativeNet.copy(
     userInfo: String? = this.userInfo,
     host: String? = this.host,
-    port: Int? = this.port,
+    path: String? = this.path,
+    query: String? = this.query,
+    fragment: String? = this.fragment
+): UriRelativeNet = copyImpl(userInfo, host, path, query, fragment)
+
+@PublishedApi
+internal expect fun UriRelativeNet.copyImpl(
+    userInfo: String?,
+    host: String?,
+    path: String?,
+    query: String?,
+    fragment: String?
+): UriRelativeNet
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun UriRelativeNet.copy(
+    userInfo: String? = this.userInfo,
+    host: String? = this.host,
+    port: Int?,
     path: String? = this.path,
     query: String? = this.query,
     fragment: String? = this.fragment
