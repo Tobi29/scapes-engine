@@ -17,13 +17,19 @@
 package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.CoroutineStart
+import kotlinx.coroutines.experimental.launch
 import org.tobi29.utils.Duration64Nanos
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.EmptyCoroutineContext
 
-actual suspend fun <R> CoroutineScope.responsiveContext(
-    block: suspend ResponsiveCoroutineScope.(CoroutineContext) -> R
-): R = ResponsiveCoroutineScope(this).block(EmptyCoroutineContext)
+actual inline fun CoroutineScope.launchResponsive(
+    context: CoroutineContext,
+    start: CoroutineStart,
+    noinline block: suspend ResponsiveCoroutineScope.() -> Unit
+) = launch(context, start) {
+    ResponsiveCoroutineScope(this).block()
+}
 
 actual class ResponsiveCoroutineScope(
     private val delegate: CoroutineScope

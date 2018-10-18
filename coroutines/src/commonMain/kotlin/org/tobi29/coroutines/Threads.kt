@@ -18,24 +18,17 @@ package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.CoroutineStart
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import org.tobi29.utils.Duration64Nanos
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.EmptyCoroutineContext
 
-expect suspend fun <R> CoroutineScope.responsiveContext(
-    block: suspend ResponsiveCoroutineScope.(CoroutineContext) -> R
-): R
-
-inline fun CoroutineScope.launchResponsive(
+expect inline fun CoroutineScope.launchResponsive(
     context: CoroutineContext = EmptyCoroutineContext,
     start: CoroutineStart = CoroutineStart.DEFAULT,
     noinline block: suspend ResponsiveCoroutineScope.() -> Unit
-) = launch(context, start) {
-    responsiveContext { responsiveContext ->
-        launch(responsiveContext) { block() }.join()
-    }
-}
+): Job
 
 expect class ResponsiveCoroutineScope : CoroutineScope {
     suspend inline fun delayResponsiveNanos(time: Duration64Nanos)

@@ -20,6 +20,7 @@ import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
+import org.tobi29.coroutines.ResponsiveCoroutineScope
 import org.tobi29.coroutines.Timer
 import org.tobi29.io.ByteViewERO
 import org.tobi29.io.ReadSource
@@ -436,5 +437,8 @@ class OpenALSoundSystem(
 }
 
 internal expect fun CoroutineScope.launchAudioCoroutine(
-    block: suspend ((Long) -> Unit, () -> Unit) -> Unit
+    block: suspend ResponsiveCoroutineScope.(
+        suspend ResponsiveCoroutineScope.(Long) -> Unit,
+        suspend ResponsiveCoroutineScope.() -> Unit
+    ) -> Unit
 ): Pair<Job, () -> Unit>

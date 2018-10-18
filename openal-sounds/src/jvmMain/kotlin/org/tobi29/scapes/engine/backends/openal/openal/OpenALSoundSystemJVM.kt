@@ -16,15 +16,22 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal
 
+import kotlinx.coroutines.experimental.CoroutineName
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.Job
-import org.tobi29.coroutines.launchThread
-import java.util.concurrent.locks.LockSupport
+import org.tobi29.coroutines.ResponsiveCoroutineScope
+import org.tobi29.coroutines.launchResponsive
+import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.utils.unpark
 
 internal actual fun CoroutineScope.launchAudioCoroutine(
-    block: suspend ((Long) -> Unit, () -> Unit) -> Unit
-): Pair<Job, () -> Unit> = launchThread("Engine-Sounds") {
-    block({ LockSupport.parkNanos(it) }, { LockSupport.park() })
-}.let {
-    it to { LockSupport.unpark(it.thread) }
+    block: suspend ResponsiveCoroutineScope.(
+        suspend ResponsiveCoroutineScope.(Long) -> Unit,
+        suspend ResponsiveCoroutineScope.() -> Unit
+    ) -> Unit
+): Pair<Job, () -> Unit> {
+    val thread = AtomicReference<Thread?>(null)
+    return launchResponsive(CoroutineName("Engine-Sounds")) {
+        block({ delayResponsiveNanos(it) }, { parkResponsive(thread) })
+    } to { thread.unpark() }
 }

@@ -16,11 +16,8 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.runBlocking
-import org.tobi29.coroutines.launchThread
+import kotlinx.coroutines.experimental.*
+import org.tobi29.coroutines.launchResponsive
 import org.tobi29.io.IOException
 import org.tobi29.logging.KLogger
 import org.tobi29.stdex.atomic.AtomicBoolean
@@ -65,7 +62,7 @@ class ConnectionManager(
         val stop = AtomicBoolean(false)
         val w = Triple(worker,
             // TODO: Use proper scope?
-            GlobalScope.launchThread("Connection-Worker") {
+            GlobalScope.launchResponsive(CoroutineName("Connection-Worker")) {
                 try {
                     worker.run(stop)
                 } finally {

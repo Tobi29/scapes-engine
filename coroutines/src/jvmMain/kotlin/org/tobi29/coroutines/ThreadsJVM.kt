@@ -21,25 +21,38 @@ import kotlinx.coroutines.experimental.channels.ActorScope
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.SendChannel
+import org.tobi29.stdex.atomic.AtomicReference
 import org.tobi29.utils.Duration64Nanos
+import org.tobi29.utils.park
 import org.tobi29.utils.sleepNanos
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import kotlin.coroutines.experimental.CoroutineContext
 
-actual suspend fun <R> CoroutineScope.responsiveContext(
-    block: suspend ResponsiveCoroutineScope.(CoroutineContext) -> R
-): R {
+actual inline fun CoroutineScope.launchResponsive(
+    context: CoroutineContext,
+    start: CoroutineStart,
+    noinline block: suspend ResponsiveCoroutineScope.() -> Unit
+) = launch(context, start) {
+    newThreadContext().use { responsiveContext ->
+        launch(responsiveContext) {
+            ResponsiveCoroutineScope(this).block()
+        }.join()
+    }
+}
+
+fun CoroutineScope.newThreadContext(): ExecutorCoroutineDispatcher {
     val name = coroutineContext[CoroutineName.Key]?.name
+    val defaultThreadFactory = Executors.defaultThreadFactory()
     val threadFactory = if (name == null) {
         Executors.defaultThreadFactory()
     } else {
-        ThreadFactory { target -> Thread(target, name) }
+        ThreadFactory { target ->
+            defaultThreadFactory.newThread(target).apply { setName(name) }
+        }
     }
     return Executors.newSingleThreadScheduledExecutor(threadFactory)
-        .asCoroutineDispatcher().use { context ->
-            ResponsiveCoroutineScope(this).block(context)
-        }
+        .asCoroutineDispatcher()
 }
 
 actual class ResponsiveCoroutineScope(
@@ -49,21 +62,16 @@ actual class ResponsiveCoroutineScope(
         sleepNanos(time)
         yield()
     }
+
+    suspend inline fun parkResponsive(thread: AtomicReference<in Thread>? = null) {
+        park(thread)
+        yield()
+    }
 }
 
-/**
- * Launch a new single thread context and execute [block] on it
- *
- * Upon completion of [block] the thread dispatcher is closed
- *
- * This aims at being a coroutine compatible alternative to creating a
- * [Thread] manually, in case e.g. precise timings are required or blocking
- * cannot be avoided
- * @param name Name for thread context
- * @param parent Parent job for thread context
- * @param block Code to execute on thread context
- * @return ThreadJob for the running [block]
- */
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use launchResponsive or similar")
 fun CoroutineScope.launchThread(
     name: String,
     block: suspend CoroutineScope.() -> Unit
@@ -78,15 +86,7 @@ fun CoroutineScope.launchThread(
     }
 }
 
-/**
- * Launch a new single thread context and execute the actor [block] on it
- *
- * Upon completion of [block] the thread context is cancelled
- * @param name Name for thread context
- * @param capacity Capacity for created [Channel]
- * @param block Code to execute on thread context
- * @return ActorThreadJob for the running [block]
- */
+@Deprecated("Use launchResponsive or similar")
 fun <E> CoroutineScope.actorThread(
     name: String,
     capacity: Int = 0,
@@ -107,14 +107,13 @@ fun <E> CoroutineScope.actorThread(
     }
 }
 
+@Deprecated("Use launchResponsive or similar")
 interface ThreadJob : Job {
     val thread: Thread
 }
 
-interface ActorThreadJob<in E> : SendChannel<E>,
-    ThreadJob
-
-// TODO: Remove after 0.0.14
+@Deprecated("Use launchResponsive or similar")
+interface ActorThreadJob<in E> : SendChannel<E>, ThreadJob
 
 @Deprecated("Use with CoroutineScope")
 fun launchThread(
