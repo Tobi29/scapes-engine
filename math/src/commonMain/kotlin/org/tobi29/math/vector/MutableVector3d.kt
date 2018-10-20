@@ -19,12 +19,15 @@ package org.tobi29.math.vector
 import org.tobi29.arrays.Doubles
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toDouble
+import org.tobi29.stdex.InlineUtility
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 data class MutableVector3d(
     override var x: Double = 0.0,
     override var y: Double = 0.0,
     override var z: Double = 0.0
-) : ReadVector3d, Doubles {
+) : ReadVector3d, Doubles, ReadWriteProperty<Any?, Vector3d> {
     constructor(vector: ReadVector3d) : this(vector.x, vector.y, vector.z)
 
     constructor(vector: ReadVector3i) : this(
@@ -77,5 +80,27 @@ data class MutableVector3d(
         map["X"]?.toDouble()?.let { x = it }
         map["Y"]?.toDouble()?.let { y = it }
         map["Z"]?.toDouble()?.let { z = it }
+    }
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE", "OVERRIDE_BY_INLINE")
+    override inline fun getValue(
+        thisRef: Any?, property: KProperty<*>
+    ): Vector3d = now()
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE", "OVERRIDE_BY_INLINE")
+    override inline fun setValue(
+        thisRef: Any?, property: KProperty<*>, value: Vector3d
+    ) {
+        set(value)
+    }
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun setValue(
+        thisRef: Any?, property: KProperty<*>, value: ReadVector3d
+    ) {
+        set(value)
     }
 }

@@ -19,11 +19,14 @@ package org.tobi29.math.vector
 import org.tobi29.arrays.Doubles
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toDouble
+import org.tobi29.stdex.InlineUtility
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 data class MutableVector2d(
     override var x: Double = 0.0,
     override var y: Double = 0.0
-) : ReadVector2d, Doubles {
+) : ReadVector2d, Doubles, ReadWriteProperty<Any?, Vector2d> {
     constructor(vector: ReadVector2d) : this(vector.x, vector.y)
 
     constructor(vector: ReadVector2i) : this(
@@ -66,5 +69,27 @@ data class MutableVector2d(
     fun set(map: ReadTagMutableMap) {
         map["X"]?.toDouble()?.let { x = it }
         map["Y"]?.toDouble()?.let { y = it }
+    }
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE", "OVERRIDE_BY_INLINE")
+    override inline fun getValue(
+        thisRef: Any?, property: KProperty<*>
+    ): Vector2d = now()
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE", "OVERRIDE_BY_INLINE")
+    override inline fun setValue(
+        thisRef: Any?, property: KProperty<*>, value: Vector2d
+    ) {
+        set(value)
+    }
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun setValue(
+        thisRef: Any?, property: KProperty<*>, value: ReadVector2d
+    ) {
+        set(value)
     }
 }

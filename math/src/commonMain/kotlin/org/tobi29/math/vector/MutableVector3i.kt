@@ -19,12 +19,15 @@ package org.tobi29.math.vector
 import org.tobi29.arrays.Ints
 import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.toInt
+import org.tobi29.stdex.InlineUtility
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
 data class MutableVector3i(
     override var x: Int = 0,
     override var y: Int = 0,
     override var z: Int = 0
-) : ReadVector3i, Ints {
+) : ReadVector3i, Ints, ReadWriteProperty<Any?, Vector3i> {
     constructor(vector: ReadVector3i) : this(vector.x, vector.y, vector.z)
 
     fun now(): Vector3i = Vector3i(x, y, z)
@@ -71,5 +74,27 @@ data class MutableVector3i(
         map["X"]?.toInt()?.let { x = it }
         map["Y"]?.toInt()?.let { y = it }
         map["Z"]?.toInt()?.let { z = it }
+    }
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE", "OVERRIDE_BY_INLINE")
+    override inline fun getValue(
+        thisRef: Any?, property: KProperty<*>
+    ): Vector3i = now()
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE", "OVERRIDE_BY_INLINE")
+    override inline fun setValue(
+        thisRef: Any?, property: KProperty<*>, value: Vector3i
+    ) {
+        set(value)
+    }
+
+    @InlineUtility
+    @Suppress("NOTHING_TO_INLINE")
+    inline fun setValue(
+        thisRef: Any?, property: KProperty<*>, value: ReadVector3i
+    ) {
+        set(value)
     }
 }
