@@ -22,6 +22,7 @@ import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.SendChannel
 import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.Duration64Nanos
 import org.tobi29.utils.park
 import org.tobi29.utils.sleepNanos
@@ -29,11 +30,13 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import kotlin.coroutines.experimental.CoroutineContext
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun CoroutineScope.launchResponsive(
     context: CoroutineContext,
     start: CoroutineStart,
     noinline block: suspend ResponsiveCoroutineScope.() -> Unit
-) = launch(context, start) {
+) = launch(context + Dispatchers.Default, start) {
     newThreadContext().use { responsiveContext ->
         launch(responsiveContext) {
             ResponsiveCoroutineScope(this).block()

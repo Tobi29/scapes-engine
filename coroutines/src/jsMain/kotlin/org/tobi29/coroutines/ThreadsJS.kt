@@ -18,16 +18,19 @@ package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.CoroutineStart
+import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.launch
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.Duration64Nanos
 import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.coroutines.experimental.EmptyCoroutineContext
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun CoroutineScope.launchResponsive(
     context: CoroutineContext,
     start: CoroutineStart,
     noinline block: suspend ResponsiveCoroutineScope.() -> Unit
-) = launch(context, start) {
+) = launch(context + Dispatchers.Default, start) {
     ResponsiveCoroutineScope(this).block()
 }
 
