@@ -18,6 +18,7 @@ package org.tobi29.io
 
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
+import org.tobi29.arrays.sliceOver
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.assertions.suites.createByteArrays
 
@@ -31,7 +32,7 @@ object BufferedStreamTests : Spek({
                 WritableByteStreamChannel(buffer)
             ).apply {
                 for (array in arrays) {
-                    put(array.view)
+                    put(array.sliceOver())
                 }
                 put(123)
                 putShort(1234)
@@ -45,7 +46,7 @@ object BufferedStreamTests : Spek({
             ).apply {
                 for (array in arrays) {
                     val check = ByteArray(array.size)
-                    get(check.view)
+                    get(check.sliceOver())
                     it("should equal to original array") {
                         check shouldEqual array
                     }

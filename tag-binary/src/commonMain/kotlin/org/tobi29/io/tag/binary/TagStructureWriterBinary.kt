@@ -16,6 +16,7 @@
 
 package org.tobi29.io.tag.binary
 
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.*
 import org.tobi29.io.compression.deflate.deflate
 import org.tobi29.io.tag.*
@@ -35,7 +36,7 @@ class TagStructureWriterBinary(
             byteStream.reset()
             byteStream
         } else {
-            stream.put(HEADER_MAGIC.view)
+            stream.put(HEADER_MAGIC.sliceOver())
             stream.put(HEADER_VERSION)
             stream.put(compression)
             stream
@@ -56,7 +57,7 @@ class TagStructureWriterBinary(
             deflate(byteStream, compressionStream)
             compressionStream.flip()
             byteStream.reset()
-            stream.put(HEADER_MAGIC.view)
+            stream.put(HEADER_MAGIC.sliceOver())
             stream.put(HEADER_VERSION)
             stream.put(compression)
             stream.putInt(compressionStream.remaining)

@@ -16,7 +16,11 @@
 
 package org.tobi29.io.tag.binary
 
-import org.tobi29.io.*
+import org.tobi29.arrays.sliceOver
+import org.tobi29.io.IOException
+import org.tobi29.io.LimitedBufferStream
+import org.tobi29.io.MemoryStream
+import org.tobi29.io.ReadableByteStream
 import org.tobi29.io.compression.deflate.inflate
 import org.tobi29.io.tag.Tag
 import org.tobi29.io.tag.TagList
@@ -33,7 +37,7 @@ class TagStructureReaderBinary(
 
     init {
         val magic = ByteArray(HEADER_MAGIC.size)
-        stream.get(magic.view)
+        stream.get(magic.sliceOver())
         if (!(magic contentEquals HEADER_MAGIC)) {
             throw IOException(
                 "Not in tag format! (Magic-Header: ${magic.joinToString()})"

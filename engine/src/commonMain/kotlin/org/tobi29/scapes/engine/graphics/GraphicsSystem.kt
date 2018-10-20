@@ -19,10 +19,10 @@ package org.tobi29.scapes.engine.graphics
 import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CoroutineDispatcher
 import kotlinx.coroutines.experimental.Runnable
+import org.tobi29.arrays.sliceOver
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
 import org.tobi29.coroutines.processCurrent
-import org.tobi29.io.view
 import org.tobi29.logging.KLogger
 import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.ScapesEngine
@@ -45,7 +45,7 @@ class GraphicsSystem(
     private lateinit var shaderDebug: GuiWidgetDebugValues.Element
     private val empty: Texture = createTexture(
         1, 1,
-        byteArrayOf(-1, -1, -1, -1).view, 0
+        byteArrayOf(-1, -1, -1, -1).sliceOver(), 0
     )
     private val queue = TaskChannel<(GL) -> Unit>()
     private var lastContentWidth = 0

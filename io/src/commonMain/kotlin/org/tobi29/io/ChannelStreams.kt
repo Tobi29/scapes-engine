@@ -18,6 +18,7 @@ package org.tobi29.io
 
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 
 class BufferedReadChannelStream(
     private val channel: ReadableByteChannel,
@@ -191,7 +192,7 @@ class BufferedWriteChannelStream(
 class DirectWriteChannelStream(
     private val channel: WritableByteChannel
 ) : WritableByteStream {
-    private val single = ByteArray(1).view
+    private val single = ByteArray(1).sliceOver()
 
     override fun put(value: Byte) {
         single[0] = value

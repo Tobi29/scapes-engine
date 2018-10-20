@@ -16,11 +16,11 @@
 
 package org.tobi29.io.filesystem.io.internal
 
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.EndOfStreamException
 import org.tobi29.io.filesystem.*
 import org.tobi29.io.toUri
 import org.tobi29.io.use
-import org.tobi29.io.view
 import org.tobi29.utils.*
 import java.io.File
 import java.io.FileNotFoundException
@@ -220,7 +220,7 @@ internal object IOFileUtilImpl : FileUtilImpl {
                     OPEN_TRUNCATE_EXISTING
                 )
             ).use { channelOut ->
-                val buffer = ByteArray(1024).view
+                val buffer = ByteArray(1024).sliceOver()
                 while (true) {
                     val read = channelIn.read(buffer)
                     if (read < 0) break

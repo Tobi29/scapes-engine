@@ -17,6 +17,7 @@
 package org.tobi29.io
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.toIntClamped
 import org.tobi29.stdex.utf8ToString
 
@@ -24,7 +25,7 @@ inline fun ReadableByteStream.process(
     bufferSize: Int = 1024,
     sink: (BytesRO) -> Unit
 ) {
-    val buffer = ByteArray(bufferSize).view
+    val buffer = ByteArray(bufferSize).sliceOver()
     while (true) {
         val read = getSome(buffer)
         if (read < 0) break

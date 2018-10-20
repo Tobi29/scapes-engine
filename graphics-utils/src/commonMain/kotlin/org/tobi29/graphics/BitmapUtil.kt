@@ -20,7 +20,6 @@ package org.tobi29.graphics
 
 import org.tobi29.arrays.*
 import org.tobi29.io.DefaultMemoryViewProvider
-import org.tobi29.io.view
 import org.tobi29.stdex.JvmName
 import org.tobi29.stdex.combineToInt
 import org.tobi29.stdex.splitToBytes
@@ -369,7 +368,7 @@ fun flipVertical(
     if (limit != buffer.size)
         throw IllegalArgumentException("Buffer not correctly sized")
 
-    val swap = ByteArray(scanline).view
+    val swap = ByteArray(scanline).sliceOver()
     val offsetInv = limit - scanline
     for (yy in 0 until (height shr 1)) {
         val yyy = yy * scanline

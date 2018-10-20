@@ -17,6 +17,7 @@
 package org.tobi29.io
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.splitToBytes
 import org.tobi29.stdex.utf8ToArray
 
@@ -120,7 +121,7 @@ interface WritableByteStream : Appendable {
             put(0xFF.toByte())
             putInt(value.size)
         }
-        put(value.view)
+        put(value.sliceOver())
     }
 
     /**
@@ -138,7 +139,7 @@ interface WritableByteStream : Appendable {
             putShort(0xFFFF.toShort())
             putInt(value.size)
         }
-        put(value.view)
+        put(value.sliceOver())
     }
 
     /**
@@ -152,7 +153,7 @@ interface WritableByteStream : Appendable {
     fun putString(value: String) = putByteArray(value.utf8ToArray())
 
     override fun append(c: Char): Appendable {
-        put(c.toString().utf8ToArray().view)
+        put(c.toString().utf8ToArray().sliceOver())
         return this
     }
 
@@ -165,7 +166,7 @@ interface WritableByteStream : Appendable {
         end: Int
     ): Appendable {
         val str = csq?.toString() ?: "null"
-        put(str.utf8ToArray().view)
+        put(str.utf8ToArray().sliceOver())
         return this
     }
 }

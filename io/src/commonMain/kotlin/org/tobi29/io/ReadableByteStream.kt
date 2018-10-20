@@ -17,6 +17,7 @@
 package org.tobi29.io
 
 import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.*
 import kotlin.experimental.and
 
@@ -191,7 +192,7 @@ interface ReadableByteStream : Readable {
             )
         }
         val array = ByteArray(len)
-        get(array.view.slice(0, array.size))
+        get(array.sliceOver(0, array.size))
         return array
     }
 
@@ -218,7 +219,7 @@ interface ReadableByteStream : Readable {
             )
         }
         val array = ByteArray(len)
-        get(array.view.slice(0, array.size))
+        get(array.sliceOver(0, array.size))
         return array
     }
 

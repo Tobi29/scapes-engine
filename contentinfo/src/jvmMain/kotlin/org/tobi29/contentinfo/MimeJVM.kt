@@ -18,8 +18,8 @@ package org.tobi29.contentinfo
 
 import com.j256.simplemagik.ContentInfoUtil
 import com.j256.simplemagik.ContentType
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.ReadableByteStream
-import org.tobi29.io.view
 
 internal actual fun detectMimeImpl(
     stream: ReadableByteStream?,
@@ -27,7 +27,7 @@ internal actual fun detectMimeImpl(
 ): String {
     val array = if (stream != null) {
         val array = ByteArray(ContentInfoUtil.DEFAULT_READ_SIZE)
-        val read = stream.getSome(array.view).coerceAtLeast(0)
+        val read = stream.getSome(array.sliceOver()).coerceAtLeast(0)
         array.sliceArray(0 until read)
     } else ByteArray(0)
     val contentInfoUtil = SimpleMagik.contentInfoUtil

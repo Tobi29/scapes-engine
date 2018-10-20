@@ -16,6 +16,7 @@
 
 package org.tobi29.io
 
+import org.tobi29.arrays.sliceOver
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
@@ -42,7 +43,7 @@ actual class ZDeflater actual constructor(
 
     actual override fun output(buffer: WritableByteStream): Int {
         val length = deflater.deflate(output)
-        buffer.put(output.view.slice(0, length))
+        buffer.put(output.sliceOver(0, length))
         input.reset()
         return length
     }
@@ -88,7 +89,7 @@ actual class ZInflater actual constructor(
 
     actual override fun output(buffer: WritableByteStream): Int {
         val length = inflater.inflate(output)
-        buffer.put(output.view.slice(0, length))
+        buffer.put(output.sliceOver(0, length))
         input.reset()
         return length
     }

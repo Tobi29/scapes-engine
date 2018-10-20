@@ -18,12 +18,12 @@ package org.tobi29.io.tag.bundle
 
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.UnixPathEnvironment
 import org.tobi29.io.ro
 import org.tobi29.io.tag.TagMap
 import org.tobi29.io.tag.toByteArray
 import org.tobi29.io.tag.toMap
-import org.tobi29.io.view
 
 class TagBundle(private val map: TagMap) {
     fun resolve(path: String): BytesRO? {
@@ -50,6 +50,6 @@ class TagBundle(private val map: TagMap) {
         if (this["Type"].toString() != "File") {
             return null
         }
-        return this["Contents"]?.toByteArray()?.view
+        return this["Contents"]?.toByteArray()?.sliceOver()
     }
 }

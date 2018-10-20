@@ -158,7 +158,7 @@ private inline fun z_stream.bufferOutput(
     next_out_i = 0
     avail_out = outputBuffer.size
     val status = output()
-    buffer.put(outputBuffer.view.slice(0, next_out_i))
+    buffer.put(outputBuffer.sliceOver(0, next_out_i))
     return status
 }
 

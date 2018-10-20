@@ -419,51 +419,6 @@ typealias DoubleViewBE = LongViewBE
 typealias DoubleViewLERO = LongViewLERO
 typealias DoubleViewLE = LongViewLE
 
-val ByteArray.view: HeapBytes
-    get() = HeapBytes(this, 0, size)
-
-val BytesRO.view: BytesRO
-    get() = when (this) {
-        is HeapBytes -> HeapBytes(array, offset, size)
-        else -> ByteArraySliceViewRO(this)
-    }
-
-open class ByteArraySliceViewRO(
-    open val slice: BytesRO
-) : BytesRO by slice {
-    override fun slice(index: Int): ByteArraySliceViewRO =
-        slice(index, size - index)
-
-    override fun slice(index: Int, size: Int): ByteArraySliceViewRO =
-        slice.slice(index, size).let {
-            if (it === slice) this else ByteArraySliceViewRO(it)
-        }
-
-    override fun getByte(index: Int): Byte = slice[index]
-}
-
-val Bytes.view: Bytes
-    get() = when (this) {
-        is HeapBytes -> HeapBytes(array, offset, size)
-        else -> ByteArraySliceView(this)
-    }
-
-open class ByteArraySliceView(
-    override val slice: Bytes
-) : ByteArraySliceViewRO(slice), Bytes by slice {
-    override fun slice(index: Int): ByteArraySliceView =
-        slice(index, size - index)
-
-    override fun slice(index: Int, size: Int): ByteArraySliceView =
-        slice.slice(index, size).let {
-            if (it === slice) this else ByteArraySliceView(it)
-        }
-
-    override fun get(index: Int): Byte = slice[index]
-
-    override fun setByte(index: Int, value: Byte) = slice.set(index, value)
-}
-
 fun BytesRO.readAsByteArray(): ByteArray = when (this) {
     is HeapBytes ->
         if (size == array.size && offset == 0) array else {
@@ -511,3 +466,26 @@ typealias ByteViewRO = BytesRO
 
 @Deprecated("Use Bytes", ReplaceWith("Bytes", "org.tobi29.arrays.Bytes"))
 typealias ByteView = Bytes
+
+@Deprecated("Use BytesRO", ReplaceWith("BytesRO", "org.tobi29.arrays.BytesRO"))
+typealias ByteArraySliceViewRO = BytesRO
+
+@Deprecated("Use Bytes", ReplaceWith("Bytes", "org.tobi29.arrays.Bytes"))
+typealias ByteArraySliceView = Bytes
+
+@Deprecated(
+    "Use sliceOver",
+    ReplaceWith("sliceOver()", "org.tobi29.arrays.sliceOver")
+)
+inline val ByteArray.view: HeapBytes
+    get() = sliceOver()
+
+@Deprecated("Redundant", ReplaceWith("this"))
+inline val BytesRO.view: BytesRO
+    get() = this
+
+@Deprecated("Redundant", ReplaceWith("this"))
+inline val Bytes.view: Bytes
+    get() = this
+
+

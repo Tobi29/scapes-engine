@@ -19,7 +19,6 @@
 package org.tobi29.graphics
 
 import org.tobi29.arrays.*
-import org.tobi29.io.view
 import org.tobi29.math.vector.Vector2i
 
 data class BitmapC<DF : Vars2, out D : DF, out F : ColorFormat<DF>>(
@@ -104,7 +103,7 @@ inline fun <F : ColorFormatInt> IntByteViewBitmap(
 inline fun <F : ColorFormatInt> MutableIntByteViewBitmap(
     width: Int, height: Int, format: F
 ): MutableIntByteViewBitmap<F> = BitmapC(
-    Int2ByteArray(ByteArray(width * height shl 2).view, width, height),
+    Int2ByteArray(ByteArray(width * height shl 2).sliceOver(), width, height),
     format
 )
 

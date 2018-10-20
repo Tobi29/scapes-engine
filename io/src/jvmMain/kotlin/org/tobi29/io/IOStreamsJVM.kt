@@ -18,6 +18,7 @@ package org.tobi29.io
 
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.readAsByteArray
+import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.Throws
 import java.io.InputStream
 import java.io.OutputStream
@@ -35,7 +36,7 @@ class ByteStreamInputStream(private val stream: ReadableByteStream) :
         off: Int,
         len: Int
     ): Int {
-        return stream.getSome(b.view.slice(off, len))
+        return stream.getSome(b.sliceOver(off, len))
     }
 
     // FIXME @Throws(IOException::class)
@@ -63,7 +64,7 @@ class ByteStreamOutputStream(private val stream: WritableByteStream) :
         off: Int,
         len: Int
     ) {
-        stream.put(b.view.slice(off, len))
+        stream.put(b.sliceOver(off, len))
     }
 }
 

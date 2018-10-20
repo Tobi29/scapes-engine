@@ -18,6 +18,7 @@ package org.tobi29.io
 
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.JsName
 import org.tobi29.stdex.toIntClamped
 
@@ -36,7 +37,7 @@ interface ReadableByteChannel : Channel {
     fun read(buffer: Bytes): Int
 
     fun skip(length: Long): Long {
-        val buffer = ByteArray(length.coerceAtMost(4096).toInt()).view
+        val buffer = ByteArray(length.coerceAtMost(4096).toInt()).sliceOver()
         while (length > 0) {
             val read = read(
                 buffer.slice(

@@ -16,7 +16,7 @@
 package org.tobi29.scapes.engine.graphics
 
 import kotlinx.coroutines.experimental.launch
-import org.tobi29.io.view
+import org.tobi29.arrays.sliceOver
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GlyphRenderer
@@ -166,12 +166,14 @@ class FontRenderer(
             val imageSize = pageInfo.size
             val texture = engine.graphics.createTexture(
                 1, 1,
-                ByteArray(4).view, 0, TextureFilter.LINEAR,
+                ByteArray(4).sliceOver(), 0, TextureFilter.LINEAR,
                 TextureFilter.LINEAR,
                 TextureWrap.CLAMP, TextureWrap.CLAMP
             )
             engine.launch {
-                texture.setBuffer(renderer.page(id).view, imageSize, imageSize)
+                texture.setBuffer(
+                    renderer.page(id).sliceOver(), imageSize, imageSize
+                )
             }
             if (pages.size <= id) {
                 val newPages = arrayOfNulls<GlyphPage>(id + 1)

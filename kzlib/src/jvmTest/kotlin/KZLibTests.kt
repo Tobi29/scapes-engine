@@ -19,6 +19,7 @@ package org.tobi29.kzlib
 import org.spekframework.spek2.Spek
 import org.spekframework.spek2.style.specification.describe
 import org.tobi29.arrays.readAsByteArray
+import org.tobi29.arrays.sliceOver
 import org.tobi29.assertions.shouldEqual
 import org.tobi29.io.*
 import org.tobi29.stdex.utf8ToArray
@@ -69,9 +70,9 @@ object KZLibTests : Spek({
                     }
 
                     it("decompressing the compressed data should result in the original data") {
-                        refDecompressed shouldEqual array.view
-                        decompressed shouldEqual array.view
-                        decompressedRef shouldEqual array.view
+                        refDecompressed shouldEqual array.sliceOver()
+                        decompressed shouldEqual array.sliceOver()
+                        decompressedRef shouldEqual array.sliceOver()
                     }
                 }
             }

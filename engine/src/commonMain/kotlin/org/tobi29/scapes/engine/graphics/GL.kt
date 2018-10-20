@@ -17,9 +17,9 @@
 package org.tobi29.scapes.engine.graphics
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Cam
-import org.tobi29.io.view
 import org.tobi29.math.matrix.Matrix4f
 import org.tobi29.stdex.assert
 import kotlin.math.max
@@ -42,7 +42,7 @@ abstract class GL(
     var timestamp = 0L
         private set
     val textureEmpty by lazy {
-        createTexture(1, 1, byteArrayOf(-1, -1, -1, -1).view, 0)
+        createTexture(1, 1, byteArrayOf(-1, -1, -1, -1).sliceOver(), 0)
     }
 
     fun reshape(

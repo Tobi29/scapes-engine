@@ -19,11 +19,11 @@ package org.tobi29.scapes.engine.graphics
 import kotlinx.coroutines.experimental.Deferred
 import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.asBytesRO
+import org.tobi29.arrays.sliceOver
 import org.tobi29.graphics.*
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
 import org.tobi29.io.tag.binary.readBinary
-import org.tobi29.io.view
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.shader.CompiledShader
 import org.tobi29.scapes.engine.shader.Expression
@@ -39,8 +39,9 @@ interface GraphicsObjectSupplier {
     fun createTexture(
         width: Int,
         height: Int
-    ): Texture =
-        createTexture(width, height, ByteArray(width * height * 4).view, 0)
+    ): Texture = createTexture(
+        width, height, ByteArray(width * height * 4).sliceOver(), 0
+    )
 
     fun createTexture(
         image: Bitmap<*, *>,
@@ -59,10 +60,9 @@ interface GraphicsObjectSupplier {
         width: Int,
         height: Int,
         mipmaps: Int
-    ): Texture =
-        createTexture(
-            width, height, ByteArray(width * height * 4).view, mipmaps
-        )
+    ): Texture = createTexture(
+        width, height, ByteArray(width * height * 4).sliceOver(), mipmaps
+    )
 
     fun createTexture(
         width: Int,
@@ -72,11 +72,10 @@ interface GraphicsObjectSupplier {
         magFilter: TextureFilter,
         wrapS: TextureWrap,
         wrapT: TextureWrap
-    ): Texture =
-        createTexture(
-            width, height, ByteArray(width * height * 4).view, mipmaps,
-            minFilter, magFilter, wrapS, wrapT
-        )
+    ): Texture = createTexture(
+        width, height, ByteArray(width * height * 4).sliceOver(), mipmaps,
+        minFilter, magFilter, wrapS, wrapT
+    )
 
     fun createTexture(
         image: Bitmap<*, *>,
