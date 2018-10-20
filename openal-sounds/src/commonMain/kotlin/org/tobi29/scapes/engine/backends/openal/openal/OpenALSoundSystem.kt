@@ -20,8 +20,8 @@ import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.channels.Channel
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
-import org.tobi29.coroutines.ResponsiveCoroutineScope
 import org.tobi29.coroutines.Timer
+import org.tobi29.coroutines.launchResponsive
 import org.tobi29.io.ByteViewERO
 import org.tobi29.io.ReadSource
 import org.tobi29.io.use
@@ -59,8 +59,6 @@ class OpenALSoundSystem(
     override val coroutineContext: CoroutineContext get() = this + job
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
-    private val updateJob: Job
-    private val updateWake: () -> Unit
     private var enabled = false
     private var origin = Vector3d.ZERO
     private var listenerPosition = Vector3d.ZERO
@@ -68,7 +66,7 @@ class OpenALSoundSystem(
     private var listenerVelocity = Vector3d.ZERO
 
     init {
-        val (job, wake) = engine.launchAudioCoroutine { sleep, park ->
+        launchResponsive(CoroutineName("Engine-Sounds")) {
             try {
                 start(openAL)
                 try {
@@ -77,19 +75,16 @@ class OpenALSoundSystem(
                     timer.init()
                     var active = false
                     while (true) {
-                        val tickDiff =
-                            if (active) {
-                                timer.cap(maxDiff,
-                                    { sleep(it) })
-                            } else {
-                                park()
-                                0L
-                            }
-                        yield() // Allow cancel
+                        val tickDiff = if (active) {
+                            timer.cap(maxDiff, { delayResponsiveNanos(it) })
+                        } else {
+                            queue.receiveOrNull()?.invoke(openAL)
+                            0L
+                        }
                         active = tick(openAL, tickDiff)
                     }
                 } finally {
-                    job.cancel()
+                    queue.close()
                     audios.forEach {
                         it.stop(this@OpenALSoundSystem, openAL)
                     }
@@ -114,8 +109,6 @@ class OpenALSoundSystem(
                 openAL.destroy()
             }
         }
-        updateJob = job
-        updateWake = wake
     }
 
     private fun start(openAL: OpenAL) {
@@ -317,9 +310,7 @@ class OpenALSoundSystem(
     }
 
     override suspend fun dispose() {
-        updateJob.cancel()
-        updateWake()
-        updateJob.join()
+        job.cancelAndJoin()
     }
 
     internal fun volume(channel: VolumeChannel): Double {
@@ -424,7 +415,6 @@ class OpenALSoundSystem(
 
     private fun queue(consumer: (OpenAL) -> Unit) {
         if (!queue.offer(consumer)) throw IllegalStateException("Queue full")
-        updateWake()
     }
 
     private fun isSoundPlaying(openAL: OpenAL): Boolean {
@@ -435,10 +425,3 @@ class OpenALSoundSystem(
         internal val logger = KLogger<OpenALSoundSystem>()
     }
 }
-
-internal expect fun CoroutineScope.launchAudioCoroutine(
-    block: suspend ResponsiveCoroutineScope.(
-        suspend ResponsiveCoroutineScope.(Long) -> Unit,
-        suspend ResponsiveCoroutineScope.() -> Unit
-    ) -> Unit
-): Pair<Job, () -> Unit>
