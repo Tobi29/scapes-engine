@@ -68,7 +68,7 @@ class GuiComponentEditableText(
         set(value) = data.lock.withLock {
             if (data.text.toString() != text) {
                 data.text.clear()
-                data.text.append(text)
+                data.text.append(value)
                 dirty()
             }
         }
