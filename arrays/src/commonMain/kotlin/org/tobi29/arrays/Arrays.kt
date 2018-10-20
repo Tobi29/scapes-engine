@@ -57,7 +57,7 @@ interface ElementsRO<out T> : VarsIterable<T> {
 /**
  * 1-dimensional read-write array
  */
-interface Elements<T> : ElementsRO<T> {
+interface Elements<T> : ElementsRO<T>, VarsModifiableIterable<T> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -74,6 +74,15 @@ interface Elements<T> : ElementsRO<T> {
 
     fun setElements(index: Int, slice: ElementsRO<T>) =
         slice.getElements(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<T> =
+        object : SliceModifiableIterator<T>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: T) =
+                set(index, value)
+        }
 }
 
 /**

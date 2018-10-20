@@ -59,7 +59,7 @@ interface LongsRO : VarsIterable<Long> {
 /**
  * 1-dimensional read-write array
  */
-interface Longs : LongsRO {
+interface Longs : LongsRO, VarsModifiableIterable<Long> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Longs : LongsRO {
 
     fun setLongs(index: Int, slice: LongsRO) =
         slice.getLongs(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Long> =
+        object : SliceModifiableIterator<Long>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Long) =
+                set(index, value)
+        }
 }
 
 /**

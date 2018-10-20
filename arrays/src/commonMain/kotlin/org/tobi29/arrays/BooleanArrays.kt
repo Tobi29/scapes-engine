@@ -59,7 +59,7 @@ interface BooleansRO : VarsIterable<Boolean> {
 /**
  * 1-dimensional read-write array
  */
-interface Booleans : BooleansRO {
+interface Booleans : BooleansRO, VarsModifiableIterable<Boolean> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Booleans : BooleansRO {
 
     fun setBooleans(index: Int, slice: BooleansRO) =
         slice.getBooleans(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Boolean> =
+        object : SliceModifiableIterator<Boolean>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Boolean) =
+                set(index, value)
+        }
 }
 
 /**

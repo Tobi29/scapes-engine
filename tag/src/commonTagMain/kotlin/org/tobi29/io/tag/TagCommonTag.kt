@@ -17,6 +17,8 @@
 package org.tobi29.io.tag
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.asIterable
+import org.tobi29.arrays.asSequence
 import org.tobi29.arrays.sliceOver
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.ConcurrentMap
@@ -128,7 +130,7 @@ actual class TagByteArray actual constructor(
     }
 
     override fun toString(): String {
-        return value.joinToString(prefix = "[", postfix = "]")
+        return value.asIterable().joinToString(prefix = "[", postfix = "]")
     }
 }
 

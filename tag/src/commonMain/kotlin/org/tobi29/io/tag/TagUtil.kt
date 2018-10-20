@@ -94,7 +94,9 @@ fun MutableTag.toList(): List<Tag>? = when (this) {
     is TagByteArray -> {
         val value = value
         ArrayList<Tag>(value.size).apply {
-            value.forEach { add(it.toTag()) }
+            for (entry in value) {
+                add(entry.toTag())
+            }
         }
     }
     else -> null

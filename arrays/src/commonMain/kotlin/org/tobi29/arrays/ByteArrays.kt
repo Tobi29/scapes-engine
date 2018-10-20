@@ -59,7 +59,7 @@ interface BytesRO : VarsIterable<Byte> {
 /**
  * 1-dimensional read-write array
  */
-interface Bytes : BytesRO {
+interface Bytes : BytesRO, VarsModifiableIterable<Byte> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Bytes : BytesRO {
 
     fun setBytes(index: Int, slice: BytesRO) =
         slice.getBytes(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Byte> =
+        object : SliceModifiableIterator<Byte>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Byte) =
+                set(index, value)
+        }
 }
 
 /**

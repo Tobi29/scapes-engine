@@ -35,7 +35,34 @@ interface Vars {
 /**
  * Arbitrary 1-dimensional array
  */
-interface VarsIterable<out T> : Vars, Iterable<T>
+interface VarsIterable<out T> : Vars {
+    operator fun iterator(): Iterator<T>
+}
+
+/**
+ * Arbitrary 1-dimensional array
+ */
+interface VarsModifiableIterable<T> : VarsIterable<T> {
+    override fun iterator(): ModifiableIterator<T>
+}
+
+fun <T> VarsIterable<T>.asIterable(): Iterable<T> = object : Iterable<T> {
+    override fun iterator(): Iterator<T> = this@asIterable.iterator()
+}
+
+fun <T> VarsIterable<T>.asSequence(): Sequence<T> = object : Sequence<T> {
+    override fun iterator(): Iterator<T> = this@asSequence.iterator()
+}
+
+/**
+ * Iterator which allows modifying elements
+ */
+interface ModifiableIterator<T> : Iterator<T> {
+    /**
+     * Changed the element at the index of the last [next] call
+     */
+    fun set(value: T)
+}
 
 /**
  * Arbitrary 2-dimensional array
@@ -181,16 +208,33 @@ inline fun Vars3.indices(block: (Int, Int, Int) -> Unit) {
     }
 }
 
-internal abstract class SliceIterator<out T>(size: Int) : Iterator<T> {
-    private var index = 0
-    private val end = index + size
-    override fun hasNext() = index < end
+internal abstract class SliceIterator<out T>(
+    private val size: Int
+) : Iterator<T> {
+    protected var index = -1
+        private set
+
+    override fun hasNext() = index + 1 < size
     override fun next(): T {
-        if (index >= end) throw NoSuchElementException(
+        if (!hasNext()) throw NoSuchElementException(
             "No more elements in iterator"
         )
-        return access(index++)
+        index++
+        return access(index)
     }
 
     protected abstract fun access(index: Int): T
+}
+
+internal abstract class SliceModifiableIterator<T>(
+    size: Int
+) : SliceIterator<T>(size), ModifiableIterator<T> {
+    override fun set(value: T) {
+        if (index < 0) throw NoSuchElementException(
+            "Need to call next at least once before calling set"
+        )
+        accessSet(index, value)
+    }
+
+    protected abstract fun accessSet(index: Int, value: T)
 }

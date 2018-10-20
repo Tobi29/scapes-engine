@@ -17,6 +17,7 @@
 package org.tobi29.checksums
 
 import org.tobi29.arrays.BytesRO
+import org.tobi29.arrays.asIterable
 import org.tobi29.stdex.InlineUtility
 
 @InlineUtility
@@ -109,7 +110,7 @@ inline fun chainCrc32(
     crc: Int,
     data: BytesRO,
     table: IntArray
-): Int = data.fold(crc) { c, d -> chainCrc32(c, d, table) }
+): Int = data.asIterable().fold(crc) { c, d -> chainCrc32(c, d, table) }
 
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")

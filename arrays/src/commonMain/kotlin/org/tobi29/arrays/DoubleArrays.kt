@@ -59,7 +59,7 @@ interface DoublesRO : VarsIterable<Double> {
 /**
  * 1-dimensional read-write array
  */
-interface Doubles : DoublesRO {
+interface Doubles : DoublesRO, VarsModifiableIterable<Double> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Doubles : DoublesRO {
 
     fun setDoubles(index: Int, slice: DoublesRO) =
         slice.getDoubles(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Double> =
+        object : SliceModifiableIterator<Double>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Double) =
+                set(index, value)
+        }
 }
 
 /**

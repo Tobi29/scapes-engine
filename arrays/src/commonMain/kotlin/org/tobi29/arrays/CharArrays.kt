@@ -59,7 +59,7 @@ interface CharsRO : VarsIterable<Char> {
 /**
  * 1-dimensional read-write array
  */
-interface Chars : CharsRO {
+interface Chars : CharsRO, VarsModifiableIterable<Char> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Chars : CharsRO {
 
     fun setChars(index: Int, slice: CharsRO) =
         slice.getChars(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Char> =
+        object : SliceModifiableIterator<Char>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Char) =
+                set(index, value)
+        }
 }
 
 /**

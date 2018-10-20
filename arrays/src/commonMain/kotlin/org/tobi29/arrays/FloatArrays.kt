@@ -59,7 +59,7 @@ interface FloatsRO : VarsIterable<Float> {
 /**
  * 1-dimensional read-write array
  */
-interface Floats : FloatsRO {
+interface Floats : FloatsRO, VarsModifiableIterable<Float> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Floats : FloatsRO {
 
     fun setFloats(index: Int, slice: FloatsRO) =
         slice.getFloats(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Float> =
+        object : SliceModifiableIterator<Float>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Float) =
+                set(index, value)
+        }
 }
 
 /**

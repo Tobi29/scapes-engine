@@ -59,7 +59,7 @@ interface ShortsRO : VarsIterable<Short> {
 /**
  * 1-dimensional read-write array
  */
-interface Shorts : ShortsRO {
+interface Shorts : ShortsRO, VarsModifiableIterable<Short> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -77,6 +77,15 @@ interface Shorts : ShortsRO {
 
     fun setShorts(index: Int, slice: ShortsRO) =
         slice.getShorts(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<Short> =
+        object : SliceModifiableIterator<Short>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: Short) =
+                set(index, value)
+        }
 }
 
 /**

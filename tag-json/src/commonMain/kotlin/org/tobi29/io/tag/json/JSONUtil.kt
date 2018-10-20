@@ -16,6 +16,7 @@
 
 package org.tobi29.io.tag.json
 
+import org.tobi29.arrays.asIterable
 import org.tobi29.io.IOException
 import org.tobi29.io.tag.*
 import org.tobi29.stdex.isISOControl
@@ -27,8 +28,8 @@ internal fun Appendable.primitive(tag: TagPrimitive) = when (tag) {
     is TagInteger -> append(tag.value.toString())
     is TagDecimal -> append(verify(tag.value).toString())
     is TagString -> append('"').append(tag.value.jsonEscape()).append('"')
-    is TagByteArray -> tag.value.joinTo(this, separator = ",", prefix = "[",
-            postfix = "]")
+    is TagByteArray -> tag.value.asIterable()
+        .joinTo(this, separator = ",", prefix = "[", postfix = "]")
     else -> throw IOException("Invalid type: $this")
 }
 

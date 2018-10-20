@@ -31,10 +31,20 @@ kotlin {
                 implementation project(":test-assertions")
             }
         }
+        commonTagMain {
+            dependsOn commonMain
+        }
+        commonTagTest {
+            dependsOn commonTest
+        }
         jsMain {
+            dependsOn commonTagMain
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
             }
+        }
+        jsTest {
+            dependsOn commonTagTest
         }
         jvmMain {
             dependencies {

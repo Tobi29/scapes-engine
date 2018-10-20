@@ -201,7 +201,7 @@ ${if (!isReference) """    fun get$type(index: Int): $type = get(index)
 /**
  * 1-dimensional read-write array
  */
-interface ${specialize(elements)} : ${specialize(elementsRO)} {
+interface ${specialize(elements)} : ${specialize(elementsRO)}, VarsModifiableIterable<$type> {
     /**
      * Sets the element at the given index in the array
      * @param index Index of the element
@@ -221,6 +221,15 @@ ${if (!isReference) """    fun set$type(index: Int, value: $type) = set(index, v
         elementsRO
     )}) =
         slice.get${if (isReference) "Element" else type}s(0, slice(index, slice.size))
+
+    override fun iterator(): ModifiableIterator<$type> =
+        object : SliceModifiableIterator<$type>(size) {
+            override fun access(index: Int) =
+                get(index)
+
+            override fun accessSet(index: Int, value: $type) =
+                set(index, value)
+        }
 }
 
 /**
