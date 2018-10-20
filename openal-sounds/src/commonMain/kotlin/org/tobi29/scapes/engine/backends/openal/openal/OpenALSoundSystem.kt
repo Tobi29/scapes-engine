@@ -50,13 +50,14 @@ class OpenALSoundSystem(
     openAL: OpenAL,
     maxSources: Int,
     latency: Double
-) : CoroutineDispatcher(), CoroutineScope, SoundSystem {
+) : CoroutineScope, SoundSystem {
     val speedOfSound = 343.3
     private val cache =
         HashMap<ReadSource, Either<Deferred<AudioData?>, OpenALAudioData>?>()
     private val queue = Channel<(OpenAL) -> Unit>(Channel.UNLIMITED)
     private val job = Job()
-    override val coroutineContext: CoroutineContext get() = this + job
+    override val coroutineContext: CoroutineContext
+        get() = job + engine.taskExecutor
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
     private var enabled = false
@@ -358,7 +359,11 @@ class OpenALSoundSystem(
                         AudioStream.create(channel, asset.mimeType())
                             .use { readAudioData(it) }
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
+                    // Catch internal errors from decoding
+                    // (Old) Android is buggy
                     logger.error(e) { "Failed decoding sound effect" }
                     null
                 }
@@ -404,13 +409,6 @@ class OpenALSoundSystem(
             }
         }
         return -1
-    }
-
-    override fun dispatch(
-        context: CoroutineContext,
-        block: Runnable
-    ) {
-        queue { block.run() }
     }
 
     private fun queue(consumer: (OpenAL) -> Unit) {

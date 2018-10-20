@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import kotlinx.coroutines.experimental.CancellationException
 import kotlinx.coroutines.experimental.CoroutineScope
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.SendChannel
@@ -60,7 +61,11 @@ internal actual fun CoroutineScope.decodeActor(
                     }
                 }
             } while (state)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
+            // Catch internal errors from decoding
+            // (Old) Android is buggy
             OpenALSoundSystem.logger.error(e) { "Failed decoding audio stream" }
         } finally {
             output.close()
