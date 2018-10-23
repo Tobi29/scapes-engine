@@ -243,7 +243,7 @@ actual class UriRelativePath(
         path: String,
         query: String?,
         fragment: String?
-    ) : this(JavaUri(null, path, query, fragment), true)
+    ) : this(JavaUri(null, null, path, query, fragment), true)
 
     actual override val path: String get() = java.path ?: "" // Crash safety
 
