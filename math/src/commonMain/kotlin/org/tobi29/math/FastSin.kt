@@ -24,7 +24,7 @@ import org.tobi29.stdex.math.TWO_PI
 import org.tobi29.stdex.math.mix
 import org.tobi29.stdex.math.remP
 
-val FastSin = SinLUT(12)
+val SinTable = SinLUT(12)
 
 class SinLUT(bits: Int) {
     private val mask = (-1 shl bits).inv()
@@ -67,3 +67,12 @@ class SinLUT(bits: Int) {
 
     fun cos(value: Double): Double = sin(value + HALF_PI)
 }
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use SinTable",
+    ReplaceWith("SinTable", "org.tobi29.math.SinTable")
+)
+inline val FastSin
+    get() = SinTable

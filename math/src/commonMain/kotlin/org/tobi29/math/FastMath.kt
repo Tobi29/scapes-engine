@@ -13,59 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.math
 
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use top-level functions")
 object FastMath {
-    fun convertFloatToHalf(a: Float): Short {
-        val bits = a.toRawBits()
-        val sign = bits.ushr(16) and 0x8000
-        var value = (bits and 0x7fffffff) + 0x1000
-        if (value >= 0x47800000) {
-            if (bits and 0x7fffffff >= 0x47800000) {
-                if (value < 0x7f800000) {
-                    return (sign or 0x7c00).toShort()
-                }
-                return (sign or 0x7c00 or (bits and 0x007fffff).ushr(
-                    13
-                )).toShort()
-            }
-            return (sign or 0x7bff).toShort()
-        }
-        if (value >= 0x38800000) {
-            return (sign or (value - 0x38000000).ushr(13)).toShort()
-        }
-        if (value < 0x33000000) {
-            return sign.toShort()
-        }
-        value = (bits and 0x7fffffff).ushr(23)
-        return (sign or ((bits and 0x7fffff or 0x800000) + 0x800000.ushr(
-            value - 102
-        )).ushr(126 - value)).toShort()
-    }
+    @Deprecated(
+        "Use extension function",
+        ReplaceWith("a.toHalfFloat()", "org.tobi29.math.toHalfFloat")
+    )
+    inline fun convertFloatToHalf(a: Float): Short = a.toHalfFloat()
 
-    fun diff(
-        value1: Double,
-        value2: Double,
-        modulus: Double
-    ): Double {
-        var diff = (value2 - value1) % modulus
-        val h = modulus * 0.5
-        while (diff > h) {
-            diff -= modulus
-        }
-        while (diff <= -h) {
-            diff += modulus
-        }
-        return diff
-    }
+    @Deprecated(
+        "Use top-level function",
+        ReplaceWith("diff(value1, value2, modulus)", "org.tobi29.math.diff")
+    )
+    inline fun diff(value1: Double, value2: Double, modulus: Double): Double =
+        org.tobi29.math.diff(value1, value2, modulus)
 
-    fun nextPowerOfTwo(value: Int): Int {
-        var output = value - 1
-        output = output or (output shr 1)
-        output = output or (output shr 2)
-        output = output or (output shr 4)
-        output = output or (output shr 8)
-        output = output or (output shr 16)
-        return output + 1
-    }
+    @Deprecated(
+        "Use top-level function",
+        ReplaceWith("nextPowerOfTwo(value)", "org.tobi29.math.nextPowerOfTwo")
+    )
+    inline fun nextPowerOfTwo(value: Int): Int =
+        org.tobi29.math.nextPowerOfTwo(value)
 }

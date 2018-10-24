@@ -223,7 +223,7 @@ inline fun clamp(
  * @return Result between `-1.0` and `1.0`
  */
 inline fun sinTable(value: Float): Float {
-    return FastSin.sin(value)
+    return SinTable.sin(value)
 }
 
 /**
@@ -232,7 +232,7 @@ inline fun sinTable(value: Float): Float {
  * @return Result between `-1.0` and `1.0`
  */
 inline fun sinTable(value: Double): Double {
-    return FastSin.sin(value)
+    return SinTable.sin(value)
 }
 
 /**
@@ -241,7 +241,7 @@ inline fun sinTable(value: Double): Double {
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
 inline fun asinTable(value: Float): Float {
-    return FastAsin.asin(value)
+    return AsinTable.asin(value)
 }
 
 /**
@@ -250,7 +250,7 @@ inline fun asinTable(value: Float): Float {
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
 inline fun asinTable(value: Double): Double {
-    return FastAsin.asin(value)
+    return AsinTable.asin(value)
 }
 
 /**
@@ -259,7 +259,7 @@ inline fun asinTable(value: Double): Double {
  * @return Result between `-1.0` and `1.0`
  */
 inline fun cosTable(value: Float): Float {
-    return FastSin.cos(value)
+    return SinTable.cos(value)
 }
 
 /**
@@ -268,7 +268,7 @@ inline fun cosTable(value: Float): Float {
  * @return Result between `-1.0` and `1.0`
  */
 inline fun cosTable(value: Double): Double {
-    return FastSin.cos(value)
+    return SinTable.cos(value)
 }
 
 /**
@@ -277,7 +277,7 @@ inline fun cosTable(value: Double): Double {
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
 inline fun acosTable(value: Float): Float {
-    return FastAsin.acos(value)
+    return AsinTable.acos(value)
 }
 
 /**
@@ -286,36 +286,33 @@ inline fun acosTable(value: Float): Float {
  * @return Result between `0.0` and `pi` in radians or `NaN` if an invalid [value] was passed
  */
 inline fun acosTable(value: Double): Double {
-    return FastAsin.acos(value)
+    return AsinTable.acos(value)
 }
 
 /**
- * Computes the atan2 of [value1] and [value2]
+ * Computes the atan2 of [value1] and [value2] using a less accurate table
  * @param value1 The first value
  * @param value2 The second value
  * @return The atan2 of [value1] and [value2]
  */
-inline fun atan2Fast(
+inline fun atan2Table(
     value1: Float,
     value2: Float
 ): Float {
-    return atan2Fast(
-        value1.toDouble(),
-        value2.toDouble()
-    ).toFloat()
+    return Atan2Table.atan2(value1, value2)
 }
 
 /**
- * Computes the atan2 of [value1] and [value2]
+ * Computes the atan2 of [value1] and [value2] using a less accurate table
  * @param value1 The first value
  * @param value2 The second value
  * @return The atan2 of [value1] and [value2]
  */
-inline fun atan2Fast(
+inline fun atan2Table(
     value1: Double,
     value2: Double
 ): Double {
-    return FastAtan2.atan2(value1, value2)
+    return Atan2Table.atan2(value1, value2)
 }
 
 /**
@@ -377,12 +374,20 @@ inline fun diff(
  * @param modulus The modulus to use
  * @return Returns the difference in range `-[modulus] / 2` and `[modulus] / 2`
  */
-inline fun diff(
+fun diff(
     value1: Double,
     value2: Double,
     modulus: Double
 ): Double {
-    return FastMath.diff(value1, value2, modulus)
+    var diff = (value2 - value1) % modulus
+    val h = modulus * 0.5
+    while (diff > h) {
+        diff -= modulus
+    }
+    while (diff <= -h) {
+        diff += modulus
+    }
+    return diff
 }
 
 /**
@@ -418,6 +423,55 @@ inline fun margin(
  * @param value The value
  * @return Returns the smallest higher power of two greater or equal to value
  */
-inline fun nextPowerOfTwo(value: Int): Int {
-    return FastMath.nextPowerOfTwo(value)
+fun nextPowerOfTwo(value: Int): Int {
+    var output = value - 1
+    output = output or (output shr 1)
+    output = output or (output shr 2)
+    output = output or (output shr 4)
+    output = output or (output shr 8)
+    output = output or (output shr 16)
+    return output + 1
 }
+
+fun Float.toHalfFloat(): Short {
+    val bits = toRawBits()
+    val sign = bits.ushr(16) and 0x8000
+    var value = (bits and 0x7fffffff) + 0x1000
+    if (value >= 0x47800000) {
+        if (bits and 0x7fffffff >= 0x47800000) {
+            if (value < 0x7f800000) {
+                return (sign or 0x7c00).toShort()
+            }
+            return (sign or 0x7c00 or (bits and 0x007fffff).ushr(
+                13
+            )).toShort()
+        }
+        return (sign or 0x7bff).toShort()
+    }
+    if (value >= 0x38800000) {
+        return (sign or (value - 0x38000000).ushr(13)).toShort()
+    }
+    if (value < 0x33000000) {
+        return sign.toShort()
+    }
+    value = (bits and 0x7fffffff).ushr(23)
+    return (sign or ((bits and 0x7fffff or 0x800000) + 0x800000.ushr(
+        value - 102
+    )).ushr(126 - value)).toShort()
+}
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use atan2Table",
+    ReplaceWith("atan2Table(value1, value2)", "org.tobi29.math.atan2Table")
+)
+inline fun atan2Fast(value1: Float, value2: Float): Float =
+    atan2Table(value1, value2)
+
+@Deprecated(
+    "Use atan2Table",
+    ReplaceWith("atan2Table(value1, value2)", "org.tobi29.math.atan2Table")
+)
+inline fun atan2Fast(value1: Double, value2: Double): Double =
+    atan2Table(value1, value2)

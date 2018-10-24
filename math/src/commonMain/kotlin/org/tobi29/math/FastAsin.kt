@@ -18,7 +18,7 @@ package org.tobi29.math
 import org.tobi29.stdex.math.HALF_PI
 import org.tobi29.stdex.math.mix
 
-val FastAsin = AsinLUT(12)
+val AsinTable = AsinLUT(12)
 
 class AsinLUT(bits: Int) {
     private val count = 1 shl bits
@@ -54,3 +54,13 @@ class AsinLUT(bits: Int) {
 
     fun acos(value: Double): Double = HALF_PI - asin(value)
 }
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use AsinTable",
+    ReplaceWith("AsinTable", "org.tobi29.math.AsinTable")
+)
+inline val FastAsin
+    get() = AsinTable
+
