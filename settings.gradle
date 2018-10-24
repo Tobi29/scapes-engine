@@ -29,6 +29,7 @@ include "utils"
 include "uuid"
 
 // Tier 2
+include "algorithms"
 include "argumentparser"
 include "base64"
 include "checksums"
