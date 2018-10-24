@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentSkipListMap
 import java.util.concurrent.ConcurrentSkipListSet
 
 actual typealias Queue<E> = java.util.Queue<E>
+actual typealias AbstractQueue<E> = java.util.AbstractQueue<E>
 actual typealias Deque<E> = java.util.Deque<E>
 actual typealias ArrayDeque<E> = java.util.ArrayDeque<E>
 
@@ -222,6 +223,8 @@ actual inline fun <T> List<T>.synchronized(): List<T> =
 actual inline fun <T> MutableList<T>.synchronized(): MutableList<T> =
     java.util.Collections.synchronizedList(this)
 
+@PlatformProvidedImplementation
+@Suppress("NOTHING_TO_INLINE")
 actual inline fun <T> Set<T>.synchronized(): Set<T> =
     java.util.Collections.synchronizedSet(this)
 

@@ -21,7 +21,17 @@ expect interface Queue<E> : MutableCollection<E> {
     fun remove(): E
     fun poll(): E?
     fun element(): E
-    fun peek(): E
+    fun peek(): E?
+}
+
+// FIXME: Cannot expose constructor due to typealias JVM
+expect abstract class AbstractQueue<E> /* protected constructor(
+) */ : /* AbstractCollection<E>, */ Queue<E> {
+    override fun add(element: E): Boolean
+    override fun addAll(elements: Collection<E>): Boolean
+    override fun remove(): E
+    override fun element(): E
+    override fun clear()
 }
 
 expect interface Deque<E> : Queue<E> {

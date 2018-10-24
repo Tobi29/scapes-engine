@@ -21,7 +21,34 @@ actual interface Queue<E> : MutableCollection<E> {
     actual fun remove(): E
     actual fun poll(): E?
     actual fun element(): E
-    actual fun peek(): E
+    actual fun peek(): E?
+}
+
+actual abstract class AbstractQueue<E> /* protected actual constructor(
+) */ : AbstractCollection<E>(), Queue<E> {
+    actual override fun add(element: E): Boolean =
+        offer(element) || throw IllegalStateException("Queue full")
+
+    actual override fun addAll(elements: Collection<E>): Boolean {
+        require(elements !== this)
+        var modified = false
+        for (e in elements) {
+            if (add(e)) modified = true
+        }
+        return modified
+    }
+
+    actual override fun remove(): E =
+        poll() ?: throw NoSuchElementException()
+
+    actual override fun element(): E =
+        peek() ?: throw NoSuchElementException()
+
+    actual override fun clear() {
+        while (true) {
+            poll() ?: break
+        }
+    }
 }
 
 actual interface Deque<E> : Queue<E> {
