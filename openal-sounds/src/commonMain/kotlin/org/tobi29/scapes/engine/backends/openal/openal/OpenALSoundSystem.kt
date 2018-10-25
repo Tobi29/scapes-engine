@@ -21,7 +21,8 @@ import kotlinx.coroutines.experimental.channels.Channel
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
 import org.tobi29.coroutines.Timer
-import org.tobi29.coroutines.launchResponsive
+import org.tobi29.coroutines.delayNanos
+import org.tobi29.coroutines.newResponsiveContext
 import org.tobi29.io.ByteViewERO
 import org.tobi29.io.ReadSource
 import org.tobi29.io.use
@@ -56,8 +57,9 @@ class OpenALSoundSystem(
         HashMap<ReadSource, Either<Deferred<AudioData?>, OpenALAudioData>?>()
     private val queue = Channel<(OpenAL) -> Unit>(Channel.UNLIMITED)
     private val job = Job()
+    private val executor: CoroutineContext
     override val coroutineContext: CoroutineContext
-        get() = job + engine.taskExecutor
+        get() = job + executor
     private val audios = ConcurrentHashSet<OpenALAudio>()
     private val sources = IntArray(maxSources)
     private var enabled = false
@@ -67,7 +69,10 @@ class OpenALSoundSystem(
     private var listenerVelocity = Vector3d.ZERO
 
     init {
-        launchResponsive(CoroutineName("Engine-Sounds")) {
+        val (executor, closeExecutor) = CoroutineScope(job)
+            .newResponsiveContext(CoroutineName("Engine-Sounds"))
+        this.executor = executor
+        launch {
             try {
                 start(openAL)
                 try {
@@ -77,7 +82,7 @@ class OpenALSoundSystem(
                     var active = false
                     while (true) {
                         val tickDiff = if (active) {
-                            timer.cap(maxDiff, { delayResponsiveNanos(it) })
+                            timer.cap(maxDiff, { delayNanos(it) })
                         } else {
                             queue.receiveOrNull()?.invoke(openAL)
                             0L
@@ -108,6 +113,7 @@ class OpenALSoundSystem(
                 logger.warn(e) { "Fatal error in sound system" }
             } finally {
                 openAL.destroy()
+                closeExecutor()
             }
         }
     }
@@ -353,7 +359,7 @@ class OpenALSoundSystem(
     ): Option<OpenALAudioData?> {
         val entry = cache[asset]
         return if (entry == null) {
-            cache[asset] = EitherLeft(engine.async(engine.taskExecutor) {
+            cache[asset] = EitherLeft(async {
                 try {
                     asset.channel().use { channel ->
                         AudioStream.create(channel, asset.mimeType())
