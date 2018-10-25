@@ -38,7 +38,7 @@ class GuiComponentEditableText(
     private var vaoCursor: List<Pair<Model, Texture>>? = null
     private var vaoSelection: List<Pair<Model, Texture>>? = null
     private var focused = false
-    private var updateJob = JobHandle(engine)
+    private var updateJob = JobHandle(this)
     var textFilter: (String) -> String = { it }
         set(value) {
             field = value
@@ -60,8 +60,6 @@ class GuiComponentEditableText(
         data.cursor = data.text.length
         dirty()
     }
-
-    val isActive: Boolean get() = active()
 
     var text: String
         get() = data.lock.withLock { data.text.toString() }
@@ -120,9 +118,9 @@ class GuiComponentEditableText(
     }
 
     private fun update() {
-        if (isActive) {
+        if (active()) {
             if (!focused) {
-                engine.guiController.focusTextField({ isActive }, data, false)
+                engine.guiController.focusTextField(active, data, false)
                 focused = true
             }
         } else if (focused) {
@@ -162,7 +160,7 @@ class GuiComponentEditableText(
         delta: Double
     ) {
         super.renderComponent(gl, shader, size, pixelSize, delta)
-        if (isActive) {
+        if (active()) {
             if (gl.timestamp / 600000000L % 2L == 0L) {
                 vaoCursor?.forEach {
                     it.second.bind(gl)

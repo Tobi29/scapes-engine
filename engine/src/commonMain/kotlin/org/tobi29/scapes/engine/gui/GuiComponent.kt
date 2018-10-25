@@ -15,6 +15,8 @@
  */
 package org.tobi29.scapes.engine.gui
 
+import kotlinx.coroutines.experimental.CoroutineScope
+import kotlinx.coroutines.experimental.Job
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.math.vector.times
@@ -39,7 +41,11 @@ abstract class GuiComponent(
     val engine: ScapesEngine,
     val parent: GuiLayoutData,
     listenerParent: EventDispatcher
-) : Comparable<GuiComponent> {
+) : CoroutineScope, Comparable<GuiComponent> {
+    private var job = Job().apply { cancel() }
+    override val coroutineContext: CoroutineContext
+        get() = job + engine.taskExecutor
+
     @Volatile
     private var _visible = true
     private val hover = AtomicInt(0)
@@ -49,7 +55,6 @@ abstract class GuiComponent(
     private val guiEvents =
         ConcurrentHashMap<GuiEvent<*>, MutableSet<(GuiComponentEvent) -> Unit>>()
     protected val lock = ReentrantLock()
-    protected val taskExecutor: CoroutineContext get() = engine.taskExecutor
     protected val renderExecutor: CoroutineContext get() = engine.graphics
     @Suppress("LeakingThis")
     val gui = gui(parent) ?: this as Gui
@@ -305,6 +310,7 @@ abstract class GuiComponent(
         lock.withLock {
             if (added) return
             added = true
+            job = Job()
             events.enable()
             init()
         }
@@ -330,6 +336,7 @@ abstract class GuiComponent(
             added = false
             gui.deselect(this)
             events.disable()
+            job.cancel()
             dispose()
         }
         updateVisible()

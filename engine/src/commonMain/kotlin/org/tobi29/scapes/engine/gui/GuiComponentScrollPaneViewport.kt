@@ -59,7 +59,7 @@ class GuiComponentScrollPaneViewport(
     private var size = Vector2d.ZERO
     internal var max = Vector2d.ZERO
         private set
-    private var updateJob = JobHandle(engine)
+    private var updateJob = JobHandle(this)
     var scrollX = 0.0
     var scrollY = 0.0
 

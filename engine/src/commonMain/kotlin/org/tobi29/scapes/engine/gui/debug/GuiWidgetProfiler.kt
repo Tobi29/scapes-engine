@@ -30,7 +30,7 @@ class GuiWidgetProfiler(
     private val profilerNotEnabled: GuiComponentText
     private var elements: List<Element> = emptyList()
     private var node: Node? = profiler?.root
-    private var updateJob = JobHandle(engine)
+    private var updateJob = JobHandle(this)
 
     init {
         val slab = addVert(2.0, 2.0, -1.0, 20.0) { GuiComponentGroupSlab(it) }

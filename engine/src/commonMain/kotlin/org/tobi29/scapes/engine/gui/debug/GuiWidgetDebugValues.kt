@@ -33,7 +33,7 @@ open class GuiWidgetDebugValues(
         10.0, 10.0,
         -1.0, -1.0
     ) { GuiComponentScrollPane(it, 20) }.viewport
-    private var updateJob = JobHandle(engine)
+    private var updateJob = JobHandle(this)
 
     operator fun get(key: String): Element {
         return lock.withLock {

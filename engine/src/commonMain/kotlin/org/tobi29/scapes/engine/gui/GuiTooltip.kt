@@ -27,7 +27,7 @@ class GuiTooltip(style: GuiStyle) : Gui(style) {
         AtomicReference<Pair<GuiComponent, GuiCursor>?>(null)
     private var lastTooltip: Pair<GuiComponent, GuiCursor>? = null
     private var currentPane: Pair<GuiComponent, () -> Unit>? = null
-    private var updateJob = JobHandle(engine)
+    private var updateJob = JobHandle(this)
 
     fun setTooltip(component: Pair<GuiComponent, GuiCursor>?) {
         currentTooltip.set(component)
