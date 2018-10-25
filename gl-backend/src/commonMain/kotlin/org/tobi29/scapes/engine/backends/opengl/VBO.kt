@@ -18,7 +18,7 @@ package org.tobi29.scapes.engine.backends.opengl
 
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
-import org.tobi29.math.FastMath
+import org.tobi29.math.toHalfFloat
 import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelAttribute
@@ -151,7 +151,7 @@ internal class VBO(
                         )
                     VertexType.HALF_FLOAT ->
                         buffer.storeShorts(
-                            { FastMath.convertFloatToHalf(floatArray[it]) },
+                            { floatArray[it].toHalfFloat() },
                             vertices,
                             attribute.offset,
                             attribute.size,
