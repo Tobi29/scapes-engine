@@ -17,11 +17,11 @@ package org.tobi29.server
 
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.IOException
 import org.tobi29.io.tag.*
 import org.tobi29.io.tag.binary.readBinary
 import org.tobi29.io.tag.binary.writeBinary
-import org.tobi29.io.view
 import org.tobi29.logging.KLogger
 import org.tobi29.stdex.ConcurrentHashMap
 import org.tobi29.stdex.computeAbsent
@@ -224,11 +224,11 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         }
         val challenge = ByteArray(CHALLENGE_CIPHER_LENGTH)
         val salt = ByteArray(SALT_LENGTH)
-        channel.inputStream.get(challenge.view)
-        channel.inputStream.get(salt.view)
+        channel.inputStream.get(challenge.sliceOver())
+        channel.inputStream.get(salt.sliceOver())
         try {
             val cipher = authentication(client, Cipher.DECRYPT_MODE, salt)
-            channel.outputStream.put(cipher.doFinal(challenge).view)
+            channel.outputStream.put(cipher.doFinal(challenge).sliceOver())
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
@@ -254,8 +254,8 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         try {
             val cipher = authentication(id, Cipher.ENCRYPT_MODE,
                     salt) ?: throw IOException("Unknown id")
-            channel.outputStream.put(cipher.doFinal(challenge).view)
-            channel.outputStream.put(salt.view)
+            channel.outputStream.put(cipher.doFinal(challenge).sliceOver())
+            channel.outputStream.put(salt.sliceOver())
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
@@ -273,10 +273,10 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             return true
         }
         val challenge = ByteArray(ASYM_CHALLENGE_CIPHER_LENGTH)
-        channel.inputStream.get(challenge.view)
+        channel.inputStream.get(challenge.sliceOver())
         try {
             val cipher = authentication(client, Cipher.DECRYPT_MODE)
-            channel.outputStream.put(cipher.doFinal(challenge).view)
+            channel.outputStream.put(cipher.doFinal(challenge).sliceOver())
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
@@ -300,7 +300,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
         try {
             val cipher = authentication(id,
                     Cipher.ENCRYPT_MODE) ?: throw IOException("Unknown id")
-            channel.outputStream.put(cipher.doFinal(challenge).view)
+            channel.outputStream.put(cipher.doFinal(challenge).sliceOver())
         } catch (e: IllegalBlockSizeException) {
             throw IOException(e)
         } catch (e: BadPaddingException) {
@@ -316,7 +316,7 @@ open class ControlPanelProtocol(private val worker: ConnectionWorker,
             return true
         }
         val check = ByteArray(challenge.size)
-        channel.inputStream.get(check.view)
+        channel.inputStream.get(check.sliceOver())
         if (!(check contentEquals challenge)) {
             throw ConnectionCloseException("Failed password authentication")
         }

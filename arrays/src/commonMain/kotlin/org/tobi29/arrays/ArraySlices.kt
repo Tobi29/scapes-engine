@@ -118,8 +118,8 @@ internal inline fun <T, R : HeapArrayVarSlice<*>> R.prepareSlice(
     size: Int,
     array: T,
     supplier: (T, Int, Int) -> R
-): R = prepareSlice(this.offset, this.size, index, size) { offset, size ->
-    supplier(array, offset, size)
+): R = prepareSlice(this.offset, this.size, index, size) { offset, sliceSize ->
+    supplier(array, offset, sliceSize)
 }
 
 internal inline fun <T, R : Vars> R.prepareSlice(
@@ -127,8 +127,8 @@ internal inline fun <T, R : Vars> R.prepareSlice(
     size: Int,
     array: T,
     supplier: (T, Int, Int) -> R
-): R = prepareSlice(0, this.size, index, size) { offset, size ->
-    supplier(array, offset, size)
+): R = prepareSlice(0, this.size, index, size) { offset, sliceSize ->
+    supplier(array, offset, sliceSize)
 }
 
 fun checkSliceBounds(

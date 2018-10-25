@@ -39,9 +39,9 @@ inline fun <T, R> Deferred<T>.map(
             try {
                 deferred.complete(transform(getCompleted()))
             } catch (e: Throwable) {
-                deferred.completeExceptionally(e)
+                deferred.cancel(e)
             }
-        } else deferred.completeExceptionally(cause)
+        } else deferred.cancel(cause)
     })
 }
 

@@ -17,9 +17,9 @@
 package org.tobi29.server
 
 import kotlinx.coroutines.experimental.yield
+import org.tobi29.arrays.sliceOver
 import org.tobi29.io.IOException
 import org.tobi29.io.toChannel
-import org.tobi29.io.view
 import org.tobi29.logging.KLogger
 import java.net.InetSocketAddress
 import java.nio.channels.SelectionKey
@@ -71,7 +71,7 @@ abstract class ConnectionListenWorker(private val connections: ConnectionManager
                                     }
                                     val header = ByteArray(
                                             connectionHeader.size)
-                                    bundleChannel.inputStream.get(header.view)
+                                    bundleChannel.inputStream.get(header.sliceOver())
                                     val id = bundleChannel.inputStream.get()
                                     if (header contentEquals connectionHeader) {
                                         client.register(worker.selector,

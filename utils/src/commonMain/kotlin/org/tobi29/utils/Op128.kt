@@ -351,7 +351,7 @@ internal fun compareImpl(
     bl: Long
 ) =
     slice32(ah, al) { a96, a64, a32, a00 ->
-        s@ slice32(bh, bl) { b96, b64, b32, b00 ->
+        slice32(bh, bl) { b96, b64, b32, b00 ->
             val c96 = a96.compareTo(b96)
             if (c96 == 0) {
                 val c64 = a64.compareTo(b64)
