@@ -17,14 +17,13 @@
 package org.tobi29.utils
 
 import org.tobi29.stdex.InlineUtility
-import org.tobi29.stdex.atomic.AtomicReference
-import java.util.concurrent.locks.LockSupport
 
 /**
  * Calls [Thread.sleep] whilst catching [InterruptedException] and discarding it
  * @param time The time to sleep in milliseconds
  */
 fun sleep(time: Long) {
+    if (time <= 0L) return
     try {
         Thread.sleep(time)
     } catch (e: InterruptedException) {
@@ -54,33 +53,5 @@ fun sleepAtLeast(time: Long) {
 @InlineUtility
 @Suppress("NOTHING_TO_INLINE")
 inline fun sleepNanos(time: Long) {
-    LockSupport.parkNanos(time)
-}
-
-/**
- * Park the current thread until [unpark] is called for it
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-fun park(thread: AtomicReference<in Thread>? = null) {
-    thread?.set(Thread.currentThread())
-    LockSupport.park()
-}
-
-/**
- * Park the thread
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-fun Thread.unpark() {
-    LockSupport.unpark(this)
-}
-
-/**
- * Park the thread
- */
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-fun AtomicReference<out Thread?>.unpark() {
-    get()?.unpark()
+    sleep((time + 500000L) / 1000000L)
 }

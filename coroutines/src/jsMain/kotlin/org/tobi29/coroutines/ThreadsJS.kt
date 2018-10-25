@@ -17,24 +17,15 @@
 package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.CoroutineScope
-import kotlinx.coroutines.experimental.CoroutineStart
 import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.launch
-import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.Duration64Nanos
 import kotlin.coroutines.experimental.CoroutineContext
 
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline fun CoroutineScope.launchResponsive(
-    context: CoroutineContext,
-    start: CoroutineStart,
-    noinline block: suspend ResponsiveCoroutineScope.() -> Unit
-) = launch(context + Dispatchers.Default, start) {
-    ResponsiveCoroutineScope(this).block()
-}
+actual fun CoroutineScope.newResponsiveContext(
+    context: CoroutineContext
+): Pair<CoroutineContext, () -> Unit> = (context + Dispatchers.Default) to {}
 
-actual class ResponsiveCoroutineScope(
+actual class ResponsiveCoroutineScope actual constructor(
     private val delegate: CoroutineScope
 ) : CoroutineScope by delegate {
     actual suspend inline fun delayResponsiveNanos(time: Duration64Nanos) =

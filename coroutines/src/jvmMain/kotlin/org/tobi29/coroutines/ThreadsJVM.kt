@@ -21,31 +21,16 @@ import kotlinx.coroutines.experimental.channels.ActorScope
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.ReceiveChannel
 import kotlinx.coroutines.experimental.channels.SendChannel
-import org.tobi29.stdex.atomic.AtomicReference
-import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.Duration64Nanos
-import org.tobi29.utils.park
 import org.tobi29.utils.sleepNanos
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import kotlin.coroutines.experimental.CoroutineContext
 
-@InlineUtility
-@Suppress("NOTHING_TO_INLINE")
-actual inline fun CoroutineScope.launchResponsive(
-    context: CoroutineContext,
-    start: CoroutineStart,
-    noinline block: suspend ResponsiveCoroutineScope.() -> Unit
-) = launch(context + Dispatchers.Default, start) {
-    newThreadContext().use { responsiveContext ->
-        launch(responsiveContext) {
-            ResponsiveCoroutineScope(this).block()
-        }.join()
-    }
-}
-
-fun CoroutineScope.newThreadContext(): ExecutorCoroutineDispatcher {
-    val name = coroutineContext[CoroutineName.Key]?.name
+actual fun CoroutineScope.newResponsiveContext(
+    context: CoroutineContext
+): Pair<CoroutineContext, () -> Unit> {
+    val name = context[CoroutineName.Key]?.name
     val defaultThreadFactory = Executors.defaultThreadFactory()
     val threadFactory = if (name == null) {
         Executors.defaultThreadFactory()
@@ -55,19 +40,14 @@ fun CoroutineScope.newThreadContext(): ExecutorCoroutineDispatcher {
         }
     }
     return Executors.newSingleThreadScheduledExecutor(threadFactory)
-        .asCoroutineDispatcher()
+        .asCoroutineDispatcher().let { (context + it) to { it.close() } }
 }
 
-actual class ResponsiveCoroutineScope(
+actual class ResponsiveCoroutineScope actual constructor(
     private val delegate: CoroutineScope
 ) : CoroutineScope by delegate {
     actual suspend inline fun delayResponsiveNanos(time: Duration64Nanos) {
         sleepNanos(time)
-        yield()
-    }
-
-    suspend inline fun parkResponsive(thread: AtomicReference<in Thread>? = null) {
-        park(thread)
         yield()
     }
 }
