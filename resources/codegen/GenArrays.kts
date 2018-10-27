@@ -711,33 +711,87 @@ inline $genericFunReified ${specializeName("Array3")}(
 )
 
 /**
- * Fills the given array with values
- * @receiver Array to fill
- * @param supplier Supplier called for each value written to the array
+ * Calls the given [block] with all indices of the given wrapper.
+ * @receiver The wrapper to iterate through
+ * @param block Called with x index of the element
  */
-inline $genericFun ${specializeIn("Array")}.fill(supplier: (Int) -> $type) {
-    for (i in indices) {
-        set(i, supplier(i))
+inline fun ${specializeAny("Array")}.indices(block: (Int) -> Unit) {
+    for (x in indices) {
+        block(x)
     }
 }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array and stores its return value in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x and y coords of the element
+ * Fills the given array with values
  */
-inline $genericFun ${specializeIn("Array2")}.fill(block: (Int, Int) -> $type) =
-    indices { x, y -> this[x, y] = block(x, y) }
+inline $genericFun ${specializeIn("Array")}.fill(supplier: (Int) -> $type) =
+    indices { x -> this[x] = supplier(x) }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array and stores its return value in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x, y and z coords of the element
+ * Fills the given array with values
  */
-inline $genericFun ${specializeIn("Array3")}.fill(block: (Int, Int, Int) -> $type) =
-    indices { x, y, z -> this[x, y, z] = block(x, y, z) }
+inline $genericFun ${specializeIn(elements)}.fill(supplier: (Int) -> $type) =
+    indices { x -> this[x] = supplier(x) }
+
+/**
+ * Fills the given array with values
+ */
+inline $genericFun ${specializeIn("Array2")}.fill(supplier: (Int, Int) -> $type) =
+    indices { x, y -> this[x, y] = supplier(x, y) }
+
+/**
+ * Fills the given array with values
+ */
+inline $genericFun ${specializeIn("Array3")}.fill(supplier: (Int, Int, Int) -> $type) =
+    indices { x, y, z -> this[x, y, z] = supplier(x, y, z) }
+
+/**
+ * Updates the value at the given index
+ *
+ * **Note:** This operation is not atomic
+ */
+inline $genericFun ${specialize("Array")}.change(
+    index1: Int,
+    update: ($type) -> $type
+) {
+    this[index1] = update(this[index1])
+}
+
+/**
+ * Updates the value at the given index
+ *
+ * **Note:** This operation is not atomic
+ */
+inline $genericFun ${specialize(elements)}.change(
+    index1: Int,
+    update: ($type) -> $type
+) {
+    this[index1] = update(this[index1])
+}
+
+/**
+ * Updates the value at the given indices
+ *
+ * **Note:** This operation is not atomic
+ */
+inline $genericFun ${specialize("Array2")}.change(
+    index1: Int, index2: Int,
+    update: ($type) -> $type
+) {
+    this[index1, index2] = update(this[index1, index2])
+}
+
+/**
+ * Updates the value at the given indices
+ *
+ * **Note:** This operation is not atomic
+ */
+inline $genericFun ${specialize("Array3")}.change(
+    index1: Int, index2: Int, index3: Int,
+    update: ($type) -> $type
+) {
+    this[index1, index2, index3] = update(this[index1, index2, index3])
+}
 
 inline $genericFun ${specialize("Array2")}.shift(
     x: Int,

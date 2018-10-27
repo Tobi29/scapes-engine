@@ -167,13 +167,22 @@ inline fun index(
 }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array.
+ * Last accessible index in array
+ */
+inline val Vars.lastIndex: Int get() = size - 1
+
+/**
+ * Range containing all valid indices
+ */
+inline val Vars.indices: IntRange get() = 0..lastIndex
+
+/**
+ * Calls the given [block] with all indices of the given wrapper.
  * @receiver The wrapper to iterate through
  * @param block Called with x index of the element
  */
 inline fun Vars.indices(block: (Int) -> Unit) {
-    for (x in 0 until size) {
+    for (x in indices) {
         block(x)
     }
 }

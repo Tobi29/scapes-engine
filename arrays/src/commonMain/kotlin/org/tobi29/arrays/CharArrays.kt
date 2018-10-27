@@ -538,33 +538,87 @@ inline fun CharArray3(
 )
 
 /**
- * Fills the given array with values
- * @receiver Array to fill
- * @param supplier Supplier called for each value written to the array
+ * Calls the given [block] with all indices of the given wrapper.
+ * @receiver The wrapper to iterate through
+ * @param block Called with x index of the element
  */
-inline fun CharArray.fill(supplier: (Int) -> Char) {
-    for (i in indices) {
-        set(i, supplier(i))
+inline fun CharArray.indices(block: (Int) -> Unit) {
+    for (x in indices) {
+        block(x)
     }
 }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array and stores its return value in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x and y coords of the element
+ * Fills the given array with values
  */
-inline fun CharArray2.fill(block: (Int, Int) -> Char) =
-    indices { x, y -> this[x, y] = block(x, y) }
+inline fun CharArray.fill(supplier: (Int) -> Char) =
+    indices { x -> this[x] = supplier(x) }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array and stores its return value in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x, y and z coords of the element
+ * Fills the given array with values
  */
-inline fun CharArray3.fill(block: (Int, Int, Int) -> Char) =
-    indices { x, y, z -> this[x, y, z] = block(x, y, z) }
+inline fun Chars.fill(supplier: (Int) -> Char) =
+    indices { x -> this[x] = supplier(x) }
+
+/**
+ * Fills the given array with values
+ */
+inline fun CharArray2.fill(supplier: (Int, Int) -> Char) =
+    indices { x, y -> this[x, y] = supplier(x, y) }
+
+/**
+ * Fills the given array with values
+ */
+inline fun CharArray3.fill(supplier: (Int, Int, Int) -> Char) =
+    indices { x, y, z -> this[x, y, z] = supplier(x, y, z) }
+
+/**
+ * Updates the value at the given index
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun CharArray.change(
+    index1: Int,
+    update: (Char) -> Char
+) {
+    this[index1] = update(this[index1])
+}
+
+/**
+ * Updates the value at the given index
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun Chars.change(
+    index1: Int,
+    update: (Char) -> Char
+) {
+    this[index1] = update(this[index1])
+}
+
+/**
+ * Updates the value at the given indices
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun CharArray2.change(
+    index1: Int, index2: Int,
+    update: (Char) -> Char
+) {
+    this[index1, index2] = update(this[index1, index2])
+}
+
+/**
+ * Updates the value at the given indices
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun CharArray3.change(
+    index1: Int, index2: Int, index3: Int,
+    update: (Char) -> Char
+) {
+    this[index1, index2, index3] = update(this[index1, index2, index3])
+}
 
 inline fun CharArray2.shift(
     x: Int,

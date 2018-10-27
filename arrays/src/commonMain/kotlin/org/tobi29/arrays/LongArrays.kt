@@ -538,33 +538,87 @@ inline fun LongArray3(
 )
 
 /**
- * Fills the given array with values
- * @receiver Array to fill
- * @param supplier Supplier called for each value written to the array
+ * Calls the given [block] with all indices of the given wrapper.
+ * @receiver The wrapper to iterate through
+ * @param block Called with x index of the element
  */
-inline fun LongArray.fill(supplier: (Int) -> Long) {
-    for (i in indices) {
-        set(i, supplier(i))
+inline fun LongArray.indices(block: (Int) -> Unit) {
+    for (x in indices) {
+        block(x)
     }
 }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array and stores its return value in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x and y coords of the element
+ * Fills the given array with values
  */
-inline fun LongArray2.fill(block: (Int, Int) -> Long) =
-    indices { x, y -> this[x, y] = block(x, y) }
+inline fun LongArray.fill(supplier: (Int) -> Long) =
+    indices { x -> this[x] = supplier(x) }
 
 /**
- * Calls the given [block] with all indices of the given wrapper ordered by
- * their layout in the array and stores its return value in the array.
- * @receiver The wrapper to iterate through
- * @param block Called with x, y and z coords of the element
+ * Fills the given array with values
  */
-inline fun LongArray3.fill(block: (Int, Int, Int) -> Long) =
-    indices { x, y, z -> this[x, y, z] = block(x, y, z) }
+inline fun Longs.fill(supplier: (Int) -> Long) =
+    indices { x -> this[x] = supplier(x) }
+
+/**
+ * Fills the given array with values
+ */
+inline fun LongArray2.fill(supplier: (Int, Int) -> Long) =
+    indices { x, y -> this[x, y] = supplier(x, y) }
+
+/**
+ * Fills the given array with values
+ */
+inline fun LongArray3.fill(supplier: (Int, Int, Int) -> Long) =
+    indices { x, y, z -> this[x, y, z] = supplier(x, y, z) }
+
+/**
+ * Updates the value at the given index
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun LongArray.change(
+    index1: Int,
+    update: (Long) -> Long
+) {
+    this[index1] = update(this[index1])
+}
+
+/**
+ * Updates the value at the given index
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun Longs.change(
+    index1: Int,
+    update: (Long) -> Long
+) {
+    this[index1] = update(this[index1])
+}
+
+/**
+ * Updates the value at the given indices
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun LongArray2.change(
+    index1: Int, index2: Int,
+    update: (Long) -> Long
+) {
+    this[index1, index2] = update(this[index1, index2])
+}
+
+/**
+ * Updates the value at the given indices
+ *
+ * **Note:** This operation is not atomic
+ */
+inline fun LongArray3.change(
+    index1: Int, index2: Int, index3: Int,
+    update: (Long) -> Long
+) {
+    this[index1, index2, index3] = update(this[index1, index2, index3])
+}
 
 inline fun LongArray2.shift(
     x: Int,
