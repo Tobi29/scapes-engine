@@ -17,28 +17,16 @@
 package org.tobi29.generation.maze
 
 import org.tobi29.arrays.BitFieldGrid
-import org.tobi29.arrays.getAt
+import org.tobi29.arrays.ByteArray2
+import org.tobi29.arrays.Vars2
 import org.tobi29.math.Face
+import org.tobi29.stdex.maskAt
 import kotlin.experimental.and
 
 /**
  * Class representing a maze using one byte per cell
  */
-class Maze
-/**
- * Constructs a new maze
- * @param grid The cells of the maze
- */
-(private val grid: BitFieldGrid) {
-    /**
-     * The width of the maze
-     */
-    val width get() = grid.width
-    /**
-     * The height of the maze
-     */
-    val height get() = grid.height
-
+class Maze(private val array: ByteArray2) : Vars2 by array {
     /**
      * Returns `true` if the cell has a wall in the given direction
      *
@@ -49,11 +37,8 @@ class Maze
      * @return `true` if the cell has a wall in the direction
      * @throws IllegalArgumentException When an invalid direction was given
      */
-    fun isWall(x: Int,
-               y: Int,
-               direction: Face): Boolean {
-        return isWall({ x, y, i -> getAt(x, y, i) }, x, y, direction)
-    }
+    fun isWall(x: Int, y: Int, direction: Face): Boolean =
+        isWall({ xx, yy, i -> getAt(xx, yy, i) }, x, y, direction)
 
     /**
      * Checks if the given coordinates are inside of the maze
@@ -61,8 +46,8 @@ class Maze
      * @param y y-coordinate of the cell
      * @return `true` if x and y are inside the maze
      */
-    fun isInside(x: Int,
-                 y: Int) = grid.isInside(x, y)
+    fun isInside(x: Int, y: Int): Boolean =
+        x in 0 until width && y in 0 until height
 
     /**
      * Returns a [BitFieldGrid] in order to modify a copy of this maze
@@ -70,34 +55,21 @@ class Maze
      * **Note**: All flags other than at index 0 and 1 get cleared
      * @return A new [BitFieldGrid]
      */
-    fun edit(): BitFieldGrid {
-        val cleanData = ByteArray(grid.data.size) { grid.data[it] and 0x3 }
-        return BitFieldGrid(cleanData, grid.width, grid.height)
-    }
+    fun edit(): ByteArray2 =
+        ByteArray2(array.width, array.size) { x, y -> array[x, y] and 0x3 }
 
     @Suppress("NOTHING_TO_INLINE")
-    private inline fun getAt(x: Int,
-                             y: Int,
-                             i: Int): Boolean {
-        if (!isInside(x, y)) {
-            return true
-        }
-        return grid.getAt(x, y, i)
-    }
+    private inline fun getAt(x: Int, y: Int, i: Int): Boolean =
+        !isInside(x, y) || array[x, y].maskAt(i)
+}
 
-    companion object {
-        internal inline fun isWall(getAt: (Int, Int, Int) -> Boolean,
-                                   x: Int,
-                                   y: Int,
-                                   direction: Face): Boolean {
-            return when (direction) {
-                Face.NORTH -> !getAt(x, y, 0)
-                Face.WEST -> !getAt(x, y, 1)
-                Face.SOUTH -> !getAt(x, y + 1, 0)
-                Face.EAST -> !getAt(x + 1, y, 1)
-                else -> throw IllegalArgumentException(
-                        "Invalid direction: $direction")
-            }
-        }
-    }
+internal inline fun isWall(
+    getAt: (Int, Int, Int) -> Boolean,
+    x: Int, y: Int, direction: Face
+): Boolean = when (direction) {
+    Face.NORTH -> !getAt(x, y, 0)
+    Face.WEST -> !getAt(x, y, 1)
+    Face.SOUTH -> !getAt(x, y + 1, 0)
+    Face.EAST -> !getAt(x + 1, y, 1)
+    else -> throw IllegalArgumentException("Invalid direction: $direction")
 }

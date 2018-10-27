@@ -24,28 +24,24 @@ import org.tobi29.math.Random
 interface MazeGenerator {
     /**
      * Generates a new maze
-     * @param width width of the maze
-     * @param height height of the maze
-     * @param random rng instance
      */
-    fun generate(width: Int,
-                 height: Int,
-                 random: Random): Maze {
-        return generate(width, height, random.nextInt(width),
-                random.nextInt(height), random)
-    }
+    fun generate(
+        width: Int,
+        height: Int,
+        random: Random
+    ): Maze = generate(
+        width, height, random.nextInt(width),
+        random.nextInt(height), random
+    )
 
     /**
      * Generates a new maze
-     * @param width width of the maze
-     * @param height height of the maze
-     * @param startX starting x-position in the maze algorithm
-     * @param startY starting y-position in the maze algorithm
-     * @param random rng instance
      */
-    fun generate(width: Int,
-                 height: Int,
-                 startX: Int,
-                 startY: Int,
-                 random: Random): Maze
+    fun generate(
+        width: Int,
+        height: Int,
+        startX: Int,
+        startY: Int,
+        random: Random
+    ): Maze
 }

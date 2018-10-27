@@ -16,24 +16,27 @@
 
 package org.tobi29.generation.maze
 
-import org.tobi29.arrays.BitFieldGrid
-import org.tobi29.arrays.getAt
-import org.tobi29.arrays.setAt
+import org.tobi29.arrays.ByteArray2
+import org.tobi29.arrays.change
 import org.tobi29.math.Face
 import org.tobi29.math.Random
 import org.tobi29.math.vector.MutableVector2i
+import org.tobi29.stdex.maskAt
+import org.tobi29.stdex.setAt
 import org.tobi29.utils.Pool
 
 /**
  * Maze generator using recursive backtracking
  */
 object RecursiveBacktrackerMazeGenerator : MazeGenerator {
-    override fun generate(width: Int,
-                          height: Int,
-                          startX: Int,
-                          startY: Int,
-                          random: Random): Maze {
-        val maze = BitFieldGrid(width, height)
+    override fun generate(
+        width: Int,
+        height: Int,
+        startX: Int,
+        startY: Int,
+        random: Random
+    ): Maze {
+        val maze = ByteArray2(width, height)
         val maxX = width - 1
         val maxY = height - 1
         val path = Pool { MutableVector2i() }
@@ -42,30 +45,30 @@ object RecursiveBacktrackerMazeGenerator : MazeGenerator {
         while (current != null) {
             val x = current.x
             val y = current.y
-            maze.setAt(x, y, 2, true)
+            maze.change(x, y) { it.setAt(2) }
             var validDirections = 0
-            if (x < maxX && !maze.getAt(x + 1, y, 2)) {
+            if (x < maxX && !maze[x + 1, y].maskAt(2)) {
                 directions[validDirections++] = Face.EAST
             }
-            if (y < maxY && !maze.getAt(x, y + 1, 2)) {
+            if (y < maxY && !maze[x, y + 1].maskAt(2)) {
                 directions[validDirections++] = Face.SOUTH
             }
-            if (x > 0 && !maze.getAt(x - 1, y, 2)) {
+            if (x > 0 && !maze[x - 1, y].maskAt(2)) {
                 directions[validDirections++] = Face.WEST
             }
-            if (y > 0 && !maze.getAt(x, y - 1, 2)) {
+            if (y > 0 && !maze[x, y - 1].maskAt(2)) {
                 directions[validDirections++] = Face.NORTH
             }
             current = if (validDirections > 0) {
                 val direction = directions[random.nextInt(validDirections)]
                 if (direction == Face.NORTH) {
-                    maze.setAt(x, y, 0, true)
+                    maze.change(x, y) { it.setAt(0) }
                 } else if (direction == Face.EAST) {
-                    maze.setAt(x + 1, y, 1, true)
+                    maze.change(x + 1, y) { it.setAt(1) }
                 } else if (direction == Face.SOUTH) {
-                    maze.setAt(x, y + 1, 0, true)
+                    maze.change(x, y + 1) { it.setAt(0) }
                 } else if (direction == Face.WEST) {
-                    maze.setAt(x, y, 1, true)
+                    maze.change(x, y) { it.setAt(1) }
                 }
                 path.push().setXY(x + direction.x, y + direction.y)
             } else {
