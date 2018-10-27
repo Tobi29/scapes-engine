@@ -783,10 +783,10 @@ class Body(
         // data.center.set(m_sweep.localCenter);
 
         data.mass = mass
-        data.I = m_I + mass *
+        data.i = m_I + mass *
                 (m_sweep.localCenter.x * m_sweep.localCenter.x + m_sweep.localCenter.y * m_sweep.localCenter.y)
-        data.center.x = m_sweep.localCenter.x
-        data.center.y = m_sweep.localCenter.y
+        data._center.x = m_sweep.localCenter.x
+        data._center.y = m_sweep.localCenter.y
     }
 
     /**
@@ -818,8 +818,8 @@ class Body(
 
         m_invMass = 1.0 / mass
 
-        if (massData.I > 0.0 && m_flags and e_fixedRotationFlag == 0) {
-            m_I = massData.I - mass * (massData.center dot massData.center)
+        if (massData.i > 0.0 && m_flags and e_fixedRotationFlag == 0) {
+            m_I = massData.i - mass * (massData._center dot massData._center)
             assert { m_I > 0.0 }
             m_invI = 1.0 / m_I
         }
@@ -827,7 +827,7 @@ class Body(
         val oldCenter = world.pool.popMutableVector2d()
         // Move center of mass.
         oldCenter.set(m_sweep.c)
-        m_sweep.localCenter.set(massData.center)
+        m_sweep.localCenter.set(massData._center)
         // m_sweep.c0 = m_sweep.c = Mul(m_xf, m_sweep.localCenter);
         Transform.mulToOut(transform, m_sweep.localCenter, m_sweep.c0)
         m_sweep.c.set(m_sweep.c0)
@@ -880,9 +880,9 @@ class Body(
             f.getMassData(massData)
             mass += massData.mass
             // center += massData.mass * massData.center;
-            temp.set(massData.center).multiply(massData.mass)
+            temp.set(massData._center).multiply(massData.mass)
             localCenter.add(temp)
-            m_I += massData.I
+            m_I += massData.i
             f = f.next
         }
 

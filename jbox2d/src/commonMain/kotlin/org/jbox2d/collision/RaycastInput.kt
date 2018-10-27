@@ -32,11 +32,7 @@ import org.tobi29.math.vector.MutableVector2d
 class RaycastInput {
     val p1 = MutableVector2d()
     val p2 = MutableVector2d()
-    var maxFraction: Double = 0.0
-
-    init {
-        maxFraction = 0.0
-    }
+    var maxFraction = 0.0
 
     fun set(rci: RaycastInput) {
         p1.set(rci.p1)

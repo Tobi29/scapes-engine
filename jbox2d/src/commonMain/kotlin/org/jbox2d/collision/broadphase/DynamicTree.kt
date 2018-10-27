@@ -75,7 +75,7 @@ class DynamicTree : BroadPhaseStrategy {
                     continue
                 }
 
-                assert { node.child1 == null == false }
+                assert { node.child1 != null }
 
                 val child1 = node.child1!!
                 val child2 = node.child2!!
@@ -366,7 +366,7 @@ class DynamicTree : BroadPhaseStrategy {
     }
 
     private fun computeHeight(node: DynamicTreeNode): Int {
-        assert { 0 <= node.id && node.id < nodeCapacity }
+        assert { node.id in 0 until nodeCapacity }
 
         if (node.child1 == null) {
             return 0
@@ -387,7 +387,7 @@ class DynamicTree : BroadPhaseStrategy {
         var freeNode: DynamicTreeNode? =
             if (freeList != NULL_NODE) nodes[freeList] else null
         while (freeNode != null) {
-            assert { 0 <= freeNode!!.id && freeNode!!.id < nodeCapacity }
+            assert { freeNode!!.id in 0 until nodeCapacity }
             assert { freeNode === nodes[freeNode!!.id] }
             freeNode = freeNode.parent
             ++freeCount
@@ -669,8 +669,8 @@ class DynamicTree : BroadPhaseStrategy {
 
         val iB = iA.child1!!
         val iC = iA.child2!!
-        assert { 0 <= iB.id && iB.id < nodeCapacity }
-        assert { 0 <= iC.id && iC.id < nodeCapacity }
+        assert { iB.id in 0 until nodeCapacity }
+        assert { iC.id in 0 until nodeCapacity }
 
         val balance = iC.height - iB.height
 
@@ -678,8 +678,8 @@ class DynamicTree : BroadPhaseStrategy {
         if (balance > 1) {
             val iF = iC.child1!!
             val iG = iC.child2!!
-            assert { 0 <= iF.id && iF.id < nodeCapacity }
-            assert { 0 <= iG.id && iG.id < nodeCapacity }
+            assert { iF.id in 0 until nodeCapacity }
+            assert { iG.id in 0 until nodeCapacity }
 
             // Swap A and C
             iC.child1 = iA
@@ -726,8 +726,8 @@ class DynamicTree : BroadPhaseStrategy {
         if (balance < -1) {
             val iD = iB.child1!!
             val iE = iB.child2!!
-            assert { 0 <= iD.id && iD.id < nodeCapacity }
-            assert { 0 <= iE.id && iE.id < nodeCapacity }
+            assert { iD.id in 0 until nodeCapacity }
+            assert { iE.id in 0 until nodeCapacity }
 
             // Swap A and B
             iB.child1 = iA
@@ -794,8 +794,8 @@ class DynamicTree : BroadPhaseStrategy {
 
         child2!!
 
-        assert { 0 <= child1.id && child1.id < nodeCapacity }
-        assert { 0 <= child2.id && child2.id < nodeCapacity }
+        assert { child1.id in 0 until nodeCapacity }
+        assert { child2.id in 0 until nodeCapacity }
 
         assert { child1.parent === node }
         assert { child2.parent === node }
@@ -820,8 +820,8 @@ class DynamicTree : BroadPhaseStrategy {
 
         child2!!
 
-        assert { 0 <= child1.id && child1.id < nodeCapacity }
-        assert { 0 <= child2.id && child2.id < nodeCapacity }
+        assert { child1.id in 0 until nodeCapacity }
+        assert { child2.id in 0 until nodeCapacity }
 
         val height1 = child1.height
         val height2 = child2.height

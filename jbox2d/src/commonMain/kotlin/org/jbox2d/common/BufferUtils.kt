@@ -128,8 +128,8 @@ object BufferUtils {
         last: Int
     ) {
         var first = first
-        var new_first = new_first
-        var next = new_first
+        var newfirst = new_first
+        var next = newfirst
         while (next != first) {
             val temp = ray[first]
             ray[first] = ray[next]
@@ -137,9 +137,9 @@ object BufferUtils {
             first++
             next++
             if (next == last) {
-                next = new_first
-            } else if (first == new_first) {
-                new_first = next
+                next = newfirst
+            } else if (first == newfirst) {
+                newfirst = next
             }
         }
     }
@@ -152,8 +152,8 @@ object BufferUtils {
         last: Int
     ) {
         var first = first
-        var new_first = new_first
-        var next = new_first
+        var newfirst = new_first
+        var next = newfirst
         while (next != first) {
             val temp = ray[first]
             ray[first] = ray[next]
@@ -161,9 +161,9 @@ object BufferUtils {
             first++
             next++
             if (next == last) {
-                next = new_first
-            } else if (first == new_first) {
-                new_first = next
+                next = newfirst
+            } else if (first == newfirst) {
+                newfirst = next
             }
         }
     }
@@ -176,8 +176,8 @@ object BufferUtils {
         last: Int
     ) {
         var first = first
-        var new_first = new_first
-        var next = new_first
+        var newfirst = new_first
+        var next = newfirst
         while (next != first) {
             val temp = ray[first]
             ray[first] = ray[next]
@@ -185,9 +185,9 @@ object BufferUtils {
             first++
             next++
             if (next == last) {
-                next = new_first
-            } else if (first == new_first) {
-                new_first = next
+                next = newfirst
+            } else if (first == newfirst) {
+                newfirst = next
             }
         }
     }

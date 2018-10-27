@@ -56,7 +56,7 @@ abstract class Shape(
      *
      * @param radius
      */
-    var m_radius: Double = 0.0
+    var radius: Double = 0.0
 
     /**
      * Get the number of child primitives
@@ -101,7 +101,7 @@ abstract class Shape(
      */
     abstract fun computeAABB(
         aabb: AABB2,
-        xf: Transform,
+        transform: Transform,
         childIndex: Int
     )
 
@@ -121,14 +121,14 @@ abstract class Shape(
      * Compute the distance from the current shape to the specified point. This only works for convex
      * shapes.
      *
-     * @param xf the shape world transform.
-     * @param p a point in world coordinates.
+     * @param transform the shape world transform.
+     * @param point a point in world coordinates.
      * @param normalOut returns the direction in which the distance increases.
      * @return distance returns the distance from the current shape.
      */
     abstract fun computeDistanceToOut(
-        xf: Transform,
-        p: Vector2d,
+        transform: Transform,
+        point: Vector2d,
         childIndex: Int,
         normalOut: MutableVector2d
     ): Double

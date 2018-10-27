@@ -219,12 +219,12 @@ class DynamicTreeFlatNodes : BroadPhaseStrategy {
     }
 
     override fun getUserData(proxyId: Int): Any? {
-        assert { 0 <= proxyId && proxyId < nodeCount }
+        assert { proxyId in 0 until nodeCount }
         return userData[proxyId]
     }
 
     override fun getFatAABB(proxyId: Int): AABB2 {
-        assert { 0 <= proxyId && proxyId < nodeCount }
+        assert { proxyId in 0 until nodeCount }
         return aabbs[proxyId]
     }
 
@@ -386,7 +386,7 @@ class DynamicTreeFlatNodes : BroadPhaseStrategy {
     }
 
     private fun computeHeight(node: Int): Int {
-        assert { 0 <= node && node < nodeCapacity }
+        assert { node in 0 until nodeCapacity }
 
         if (child1[node] == NULL_NODE) {
             return 0
@@ -406,7 +406,7 @@ class DynamicTreeFlatNodes : BroadPhaseStrategy {
         var freeCount = 0
         var freeNode = freeList
         while (freeNode != NULL_NODE) {
-            assert { 0 <= freeNode && freeNode < nodeCapacity }
+            assert { freeNode in 0 until nodeCapacity }
             freeNode = parent[freeNode]
             ++freeCount
         }
@@ -691,8 +691,8 @@ class DynamicTreeFlatNodes : BroadPhaseStrategy {
 
         val iB = child1[iA]
         val iC = child2[iA]
-        assert { 0 <= iB && iB < nodeCapacity }
-        assert { 0 <= iC && iC < nodeCapacity }
+        assert { iB in 0 until nodeCapacity }
+        assert { iC in 0 until nodeCapacity }
 
         val balance = heights[iC] - heights[iB]
 
@@ -702,8 +702,8 @@ class DynamicTreeFlatNodes : BroadPhaseStrategy {
             val iG = child2[iC]
             // assert (F != null);
             // assert (G != null);
-            assert { 0 <= iF && iF < nodeCapacity }
-            assert { 0 <= iG && iG < nodeCapacity }
+            assert { iF in 0 until nodeCapacity }
+            assert { iG in 0 until nodeCapacity }
 
             // Swap A and C
             child1[iC] = iA
@@ -763,22 +763,22 @@ class DynamicTreeFlatNodes : BroadPhaseStrategy {
         if (balance < -1) {
             val iD = child1[iB]
             val iE = child2[iB]
-            assert { 0 <= iD && iD < nodeCapacity }
-            assert { 0 <= iE && iE < nodeCapacity }
+            assert { iD in 0 until nodeCapacity }
+            assert { iE in 0 until nodeCapacity }
 
             // Swap A and B
             child1[iB] = iA
             parent[iB] = parent[iA]
-            val Bparent = parent[iB]
+            val bParent = parent[iB]
             parent[iA] = iB
 
             // A's old parent should point to B
-            if (Bparent != NULL_NODE) {
-                if (child1[Bparent] == iA) {
-                    child1[Bparent] = iB
+            if (bParent != NULL_NODE) {
+                if (child1[bParent] == iA) {
+                    child1[bParent] = iB
                 } else {
-                    assert { child2[Bparent] == iA }
-                    child2[Bparent] = iB
+                    assert { child2[bParent] == iA }
+                    child2[bParent] = iB
                 }
             } else {
                 root = iB

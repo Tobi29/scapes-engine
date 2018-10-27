@@ -83,7 +83,6 @@ interface ContactListener {
      * @param impulse this is usually a pooled variable, so it will be modified after
      * this call
      */
-    fun postSolve(contact: Contact,
-                  impulse: ContactImpulse) {
+    fun postSolve(contact: Contact, impulse: ContactImpulse) {
     }
 }

@@ -354,8 +354,8 @@ class Distance {
             e12.set(w2).subtract(w1)
 
             // w1 region
-            val d12_2 = -(w1 dot e12)
-            if (d12_2 <= 0.0) {
+            val d122 = -(w1 dot e12)
+            if (d122 <= 0.0) {
                 // a2 <= 0, so we clamp it to 0
                 m_v1.a = 1.0
                 m_count = 1
@@ -363,8 +363,8 @@ class Distance {
             }
 
             // w2 region
-            val d12_1 = (w2 dot e12)
-            if (d12_1 <= 0.0) {
+            val d121 = (w2 dot e12)
+            if (d121 <= 0.0) {
                 // a1 <= 0, so we clamp it to 0
                 m_v2.a = 1.0
                 m_count = 1
@@ -373,9 +373,9 @@ class Distance {
             }
 
             // Must be in e12 region.
-            val inv_d12 = 1.0 / (d12_1 + d12_2)
-            m_v1.a = d12_1 * inv_d12
-            m_v2.a = d12_2 * inv_d12
+            val invD12 = 1.0 / (d121 + d122)
+            m_v1.a = d121 * invD12
+            m_v2.a = d122 * invD12
             m_count = 2
         }
 
@@ -399,7 +399,7 @@ class Distance {
             e12.set(w2).subtract(w1)
             val w1e12 = (w1 dot e12)
             val w2e12 = (w2 dot e12)
-            val d12_2 = -w1e12
+            val d122 = -w1e12
 
             // Edge13
             // [1 1 ][a1] = [1]
@@ -408,7 +408,7 @@ class Distance {
             e13.set(w3).subtract(w1)
             val w1e13 = (w1 dot e13)
             val w3e13 = (w3 dot e13)
-            val d13_2 = -w1e13
+            val d132 = -w1e13
 
             // Edge23
             // [1 1 ][a2] = [1]
@@ -417,43 +417,43 @@ class Distance {
             e23.set(w3).subtract(w2)
             val w2e23 = (w2 dot e23)
             val w3e23 = (w3 dot e23)
-            val d23_2 = -w2e23
+            val d232 = -w2e23
 
             // Triangle123
             val n123 = (e12 cross e13)
 
-            val d123_1 = n123 * (w2 cross w3)
-            val d123_2 = n123 * (w3 cross w1)
-            val d123_3 = n123 * (w1 cross w2)
+            val d1231 = n123 * (w2 cross w3)
+            val d1232 = n123 * (w3 cross w1)
+            val d1233 = n123 * (w1 cross w2)
 
             // w1 region
-            if (d12_2 <= 0.0 && d13_2 <= 0.0) {
+            if (d122 <= 0.0 && d132 <= 0.0) {
                 m_v1.a = 1.0
                 m_count = 1
                 return
             }
 
             // e12
-            if (w2e12 > 0.0 && d12_2 > 0.0 && d123_3 <= 0.0) {
-                val inv_d12 = 1.0 / (w2e12 + d12_2)
-                m_v1.a = w2e12 * inv_d12
-                m_v2.a = d12_2 * inv_d12
+            if (w2e12 > 0.0 && d122 > 0.0 && d1233 <= 0.0) {
+                val invD12 = 1.0 / (w2e12 + d122)
+                m_v1.a = w2e12 * invD12
+                m_v2.a = d122 * invD12
                 m_count = 2
                 return
             }
 
             // e13
-            if (w3e13 > 0.0 && d13_2 > 0.0 && d123_2 <= 0.0) {
-                val inv_d13 = 1.0 / (w3e13 + d13_2)
-                m_v1.a = w3e13 * inv_d13
-                m_v3.a = d13_2 * inv_d13
+            if (w3e13 > 0.0 && d132 > 0.0 && d1232 <= 0.0) {
+                val invD13 = 1.0 / (w3e13 + d132)
+                m_v1.a = w3e13 * invD13
+                m_v3.a = d132 * invD13
                 m_count = 2
                 m_v2.set(m_v3)
                 return
             }
 
             // w2 region
-            if (w2e12 <= 0.0 && d23_2 <= 0.0) {
+            if (w2e12 <= 0.0 && d232 <= 0.0) {
                 m_v2.a = 1.0
                 m_count = 1
                 m_v1.set(m_v2)
@@ -469,20 +469,20 @@ class Distance {
             }
 
             // e23
-            if (w3e23 > 0.0 && d23_2 > 0.0 && d123_1 <= 0.0) {
-                val inv_d23 = 1.0 / (w3e23 + d23_2)
-                m_v2.a = w3e23 * inv_d23
-                m_v3.a = d23_2 * inv_d23
+            if (w3e23 > 0.0 && d232 > 0.0 && d1231 <= 0.0) {
+                val invD23 = 1.0 / (w3e23 + d232)
+                m_v2.a = w3e23 * invD23
+                m_v3.a = d232 * invD23
                 m_count = 2
                 m_v1.set(m_v3)
                 return
             }
 
             // Must be in triangle123
-            val inv_d123 = 1.0 / (d123_1 + d123_2 + d123_3)
-            m_v1.a = d123_1 * inv_d123
-            m_v2.a = d123_2 * inv_d123
-            m_v3.a = d123_3 * inv_d123
+            val invD123 = 1.0 / (d1231 + d1232 + d1233)
+            m_v1.a = d1231 * invD123
+            m_v2.a = d1232 * invD123
+            m_v3.a = d1233 * invD123
             m_count = 3
         }
     }
@@ -518,40 +518,40 @@ class Distance {
             when (shape.type) {
                 ShapeType.CIRCLE -> {
                     val circle = shape as CircleShape
-                    m_vertices[0].set(circle.m_p)
+                    m_vertices[0].set(circle.center)
                     vertexCount = 1
-                    m_radius = circle.m_radius
+                    m_radius = circle.radius
                 }
                 ShapeType.POLYGON -> {
                     val poly = shape as PolygonShape
                     vertexCount = poly.m_count
-                    m_radius = poly.m_radius
+                    m_radius = poly.radius
                     for (i in 0 until vertexCount) {
                         m_vertices[i].set(poly.m_vertices[i])
                     }
                 }
                 ShapeType.CHAIN -> {
                     val chain = shape as ChainShape
-                    assert { 0 <= index && index < chain.m_count }
+                    assert { 0 <= index && index < chain.count }
 
-                    val b0 = chain.m_vertices[index]
-                    val b1 = if (index + 1 < chain.m_count) {
-                        chain.m_vertices[index + 1]
+                    val b0 = chain.vertices[index]
+                    val b1 = if (index + 1 < chain.count) {
+                        chain.vertices[index + 1]
                     } else {
-                        chain.m_vertices[0]
+                        chain.vertices[0]
                     }
 
                     m_vertices[0].set(b0)
                     m_vertices[1].set(b1)
                     vertexCount = 2
-                    m_radius = chain.m_radius
+                    m_radius = chain.radius
                 }
                 ShapeType.EDGE -> {
                     val edge = shape as EdgeShape
-                    m_vertices[0].set(edge.m_vertex1)
-                    m_vertices[1].set(edge.m_vertex2)
+                    m_vertices[0].set(edge.vertex1)
+                    m_vertices[1].set(edge.vertex2)
                     vertexCount = 2
-                    m_radius = edge.m_radius
+                    m_radius = edge.radius
                 }
                 else -> assert { false }
             }

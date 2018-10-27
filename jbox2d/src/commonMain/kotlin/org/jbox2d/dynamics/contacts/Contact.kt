@@ -171,8 +171,8 @@ abstract class Contact protected constructor(protected val pool: IWorldPool) {
         val shapeB = fixtureB!!.shape
 
         worldManifold.initialize(
-            manifold, bodyA!!.transform, shapeA!!.m_radius,
-            bodyB!!.transform, shapeB!!.m_radius
+            manifold, bodyA!!.transform, shapeA!!.radius,
+            bodyB!!.transform, shapeB!!.radius
         )
     }
 

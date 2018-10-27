@@ -85,7 +85,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         m_count = 0
         m_vertices = Array(Settings.maxPolygonVertices) { MutableVector2d() }
         m_normals = Array(Settings.maxPolygonVertices) { MutableVector2d() }
-        m_radius = Settings.polygonRadius
+        radius = Settings.polygonRadius
         m_centroid.setXY(0.0, 0.0)
     }
 
@@ -96,7 +96,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             shape.m_normals[i].set(m_normals[i])
             shape.m_vertices[i].set(m_vertices[i])
         }
-        shape.m_radius = this.m_radius
+        shape.radius = this.radius
         shape.m_count = this.m_count
         return shape
     }
@@ -315,16 +315,16 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
 
     override fun computeAABB(
         aabb: AABB2,
-        xf: Transform,
+        transform: Transform,
         childIndex: Int
     ) {
         val lower = aabb.min
         val upper = aabb.max
         val v1 = m_vertices[0]
-        val xfqc = xf.q.cos
-        val xfqs = xf.q.sin
-        val xfpx = xf.p.x
-        val xfpy = xf.p.y
+        val xfqc = transform.q.cos
+        val xfqs = transform.q.sin
+        val xfpx = transform.p.x
+        val xfpy = transform.p.y
         lower.x = xfqc * v1.x - xfqs * v1.y + xfpx
         lower.y = xfqs * v1.x + xfqc * v1.y + xfpy
         upper.x = lower.x
@@ -341,10 +341,10 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             upper.y = if (upper.y > vy) upper.y else vy
         }
 
-        lower.x -= m_radius
-        lower.y -= m_radius
-        upper.x += m_radius
-        upper.y += m_radius
+        lower.x -= radius
+        lower.y -= radius
+        upper.x += radius
+        upper.y += radius
     }
 
     /**
@@ -359,15 +359,15 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
     }
 
     override fun computeDistanceToOut(
-        xf: Transform,
-        p: Vector2d,
+        transform: Transform,
+        point: Vector2d,
         childIndex: Int,
         normalOut: MutableVector2d
     ): Double {
-        val xfqc = xf.q.cos
-        val xfqs = xf.q.sin
-        var tx = p.x - xf.p.x
-        var ty = p.y - xf.p.y
+        val xfqc = transform.q.cos
+        val xfqs = transform.q.sin
+        var tx = point.x - transform.p.x
+        var ty = point.y - transform.p.y
         val pLocalx = xfqc * tx + xfqs * ty
         val pLocaly = -xfqs * tx + xfqc * ty
 
@@ -531,9 +531,9 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             e1.set(p2).subtract(pRef)
             e2.set(p3).subtract(pRef)
 
-            val D = (e1 cross e2)
+            val d = (e1 cross e2)
 
-            val triangleArea = 0.5 * D
+            val triangleArea = 0.5 * d
             area += triangleArea
 
             // Area weighted centroid
@@ -582,38 +582,38 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         val center = pool1
         center.setXY(0.0, 0.0)
         var area = 0.0
-        var I = 0.0
+        var i = 0.0
 
         // pRef is the reference point for forming triangles.
         // It's location doesn't change the result (except for rounding error).
         val s = pool2
         s.setXY(0.0, 0.0)
         // This code would put the reference point inside the polygon.
-        for (i in 0 until m_count) {
-            s.add(m_vertices[i])
+        for (j in 0 until m_count) {
+            s.add(m_vertices[j])
         }
         s.multiply(1.0 / m_count)
 
-        val k_inv3 = 1.0 / 3.0
+        val kinv3 = 1.0 / 3.0
 
         val e1 = pool3
         val e2 = pool4
 
-        for (i in 0 until m_count) {
+        for (j in 0 until m_count) {
             // Triangle vertices.
-            e1.set(m_vertices[i]).subtract(s)
+            e1.set(m_vertices[j]).subtract(s)
             e2.set(s)
             e2.negate()
-            e2.add(if (i + 1 < m_count) m_vertices[i + 1] else m_vertices[0])
+            e2.add(if (j + 1 < m_count) m_vertices[j + 1] else m_vertices[0])
 
-            val D = (e1 cross e2)
+            val d = (e1 cross e2)
 
-            val triangleArea = 0.5 * D
+            val triangleArea = 0.5 * d
             area += triangleArea
 
             // Area weighted centroid
-            center.x += triangleArea * k_inv3 * (e1.x + e2.x)
-            center.y += triangleArea * k_inv3 * (e1.y + e2.y)
+            center.x += triangleArea * kinv3 * (e1.x + e2.x)
+            center.y += triangleArea * kinv3 * (e1.y + e2.y)
 
             val ex1 = e1.x
             val ey1 = e1.y
@@ -623,7 +623,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             val intx2 = ex1 * ex1 + ex2 * ex1 + ex2 * ex2
             val inty2 = ey1 * ey1 + ey2 * ey1 + ey2 * ey2
 
-            I += 0.25 * k_inv3 * D * (intx2 + inty2)
+            i += 0.25 * kinv3 * d * (intx2 + inty2)
         }
 
         // Total mass
@@ -632,13 +632,13 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         // Center of mass
         assert { area > Settings.EPSILON }
         center.multiply(1.0 / area)
-        massData.center.set(center).add(s)
+        massData._center.set(center).add(s)
 
         // Inertia tensor relative to the local origin (point s)
-        massData.I = I * density
+        massData.i = i * density
 
         // Shift to center of mass then to original body origin.
-        massData.I += massData.mass * (massData.center dot massData.center)
+        massData.i += massData.mass * (massData._center dot massData._center)
     }
 
     /**

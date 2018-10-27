@@ -49,19 +49,26 @@ import org.tobi29.math.vector.MutableVector2d
  * This structure is stored across time steps, so we keep it small.
  */
 class Manifold {
-
-    /** The points of contact.  */
+    /**
+     * The points of contact.
+     */
     val points: Array<ManifoldPoint>
 
-    /** not use for Type::e_points  */
+    /**
+     * not use for Type::e_points
+     */
     val localNormal = MutableVector2d()
 
-    /** usage depends on manifold type  */
+    /**
+     * usage depends on manifold type
+     */
     val localPoint = MutableVector2d()
 
     var type: ManifoldType? = null
 
-    /** The number of manifold points.  */
+    /**
+     * The number of manifold points.
+     */
     var pointCount = 0
 
     enum class ManifoldType {
@@ -77,7 +84,6 @@ class Manifold {
 
     /**
      * Creates this manifold as a copy of the other
-     *
      * @param other
      */
     constructor(other: Manifold) {
@@ -93,7 +99,6 @@ class Manifold {
 
     /**
      * copies this manifold from the given one
-     *
      * @param cp manifold to copy from
      */
     fun set(cp: Manifold) {

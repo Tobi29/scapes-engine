@@ -122,27 +122,27 @@ class Transform() {
         }
 
         fun mul(
-            A: Transform,
-            B: Transform
+            a: Transform,
+            b: Transform
         ): Transform {
-            val C = Transform()
-            Rot.mul(A.q, B.q, C.q)
-            Rot.mulToOut(A.q, B.p, C.p)
-            C.p.add(A.p)
-            return C
+            val c = Transform()
+            Rot.mul(a.q, b.q, c.q)
+            Rot.mulToOut(a.q, b.p, c.p)
+            c.p.add(a.p)
+            return c
         }
 
         fun mulTrans(
-            A: Transform,
-            B: Transform
+            a: Transform,
+            b: Transform
         ): Transform {
             val pool = MutableVector2d()
-            val C = Transform()
-            Rot.mulTrans(A.q, B.q, C.q)
-            pool.set(B.p)
-            pool.subtract(A.p)
-            Rot.mulTrans(A.q, pool, C.p)
-            return C
+            val c = Transform()
+            Rot.mulTrans(a.q, b.q, c.q)
+            pool.set(b.p)
+            pool.subtract(a.p)
+            Rot.mulTrans(a.q, pool, c.p)
+            return c
         }
     }
 }

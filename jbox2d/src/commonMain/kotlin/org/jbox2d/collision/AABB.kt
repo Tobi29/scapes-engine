@@ -25,8 +25,8 @@ package org.jbox2d.collision
 
 import org.jbox2d.common.Settings
 import org.jbox2d.common.isValid
-import org.jbox2d.pooling.IWorldPool
 import org.jbox2d.pooling.DefaultWorldPool
+import org.jbox2d.pooling.IWorldPool
 import org.tobi29.math.AABB2
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.subtract
@@ -129,9 +129,9 @@ fun AABB2.raycast(
             return false
         }
     } else {
-        val inv_d = 1.0 / d.x
-        var t1 = (min.x - p.x) * inv_d
-        var t2 = (max.x - p.x) * inv_d
+        val invD = 1.0 / d.x
+        var t1 = (min.x - p.x) * invD
+        var t2 = (max.x - p.x) * invD
 
         // Sign of the normal vector.
         var s = -1.0
@@ -166,9 +166,9 @@ fun AABB2.raycast(
             return false
         }
     } else {
-        val inv_d = 1.0 / d.y
-        var t1 = (min.y - p.y) * inv_d
-        var t2 = (max.y - p.y) * inv_d
+        val invD = 1.0 / d.y
+        var t1 = (min.y - p.y) * invD
+        var t2 = (max.y - p.y) * invD
 
         // Sign of the normal vector.
         var s = -1.0

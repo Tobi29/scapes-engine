@@ -39,24 +39,27 @@ import kotlin.math.sqrt
  * @author Daniel
  */
 class EdgeShape : Shape(ShapeType.EDGE) {
-
+    val _vertex1 = MutableVector2d()
     /**
      * edge vertex 1
      */
-    val m_vertex1 = MutableVector2d()
+    var vertex1 by _vertex1
+
+    val _vertex2 = MutableVector2d()
     /**
      * edge vertex 2
      */
-    val m_vertex2 = MutableVector2d()
+    var vertex2 by _vertex2
 
     /**
      * optional adjacent vertex 1. Used for smooth collision
      */
-    var m_vertex0: Vector2d? = null
+    var vertex0: Vector2d? = null
+
     /**
      * optional adjacent vertex 2. Used for smooth collision
      */
-    var m_vertex3: Vector2d? = null
+    var vertex3: Vector2d? = null
 
     override val childCount: Int
         get() = 1
@@ -65,27 +68,27 @@ class EdgeShape : Shape(ShapeType.EDGE) {
     private val normal = MutableVector2d()
 
     init {
-        m_radius = Settings.polygonRadius
+        radius = Settings.polygonRadius
     }
 
     fun set(
         v1: Vector2d,
         v2: Vector2d
     ) {
-        m_vertex1.set(v1)
-        m_vertex2.set(v2)
-        m_vertex0 = null
-        m_vertex3 = null
+        _vertex1.set(v1)
+        _vertex2.set(v2)
+        vertex0 = null
+        vertex3 = null
     }
 
     fun set(
         v1: MutableVector2d,
         v2: MutableVector2d
     ) {
-        m_vertex1.set(v1)
-        m_vertex2.set(v2)
-        m_vertex0 = null
-        m_vertex3 = null
+        _vertex1.set(v1)
+        _vertex2.set(v2)
+        vertex0 = null
+        vertex3 = null
     }
 
     override fun testPoint(
@@ -96,30 +99,30 @@ class EdgeShape : Shape(ShapeType.EDGE) {
     }
 
     override fun computeDistanceToOut(
-        xf: Transform,
-        p: Vector2d,
+        transform: Transform,
+        point: Vector2d,
         childIndex: Int,
         normalOut: MutableVector2d
     ): Double {
-        val xfqc = xf.q.cos
-        val xfqs = xf.q.sin
-        val xfpx = xf.p.x
-        val xfpy = xf.p.y
-        val v1x = xfqc * m_vertex1.x - xfqs * m_vertex1.y + xfpx
-        val v1y = xfqs * m_vertex1.x + xfqc * m_vertex1.y + xfpy
-        val v2x = xfqc * m_vertex2.x - xfqs * m_vertex2.y + xfpx
-        val v2y = xfqs * m_vertex2.x + xfqc * m_vertex2.y + xfpy
+        val xfqc = transform.q.cos
+        val xfqs = transform.q.sin
+        val xfpx = transform.p.x
+        val xfpy = transform.p.y
+        val v1x = xfqc * _vertex1.x - xfqs * _vertex1.y + xfpx
+        val v1y = xfqs * _vertex1.x + xfqc * _vertex1.y + xfpy
+        val v2x = xfqc * _vertex2.x - xfqs * _vertex2.y + xfpx
+        val v2y = xfqs * _vertex2.x + xfqc * _vertex2.y + xfpy
 
-        var dx = p.x - v1x
-        var dy = p.y - v1y
+        var dx = point.x - v1x
+        var dy = point.y - v1y
         val sx = v2x - v1x
         val sy = v2y - v1y
         val ds = dx * sx + dy * sy
         if (ds > 0) {
             val s2 = sx * sx + sy * sy
             if (ds > s2) {
-                dx = p.x - v2x
-                dy = p.y - v2y
+                dx = point.x - v2x
+                dy = point.y - v2y
             } else {
                 dx -= ds / s2 * sx
                 dy -= ds / s2 * sy
@@ -150,8 +153,8 @@ class EdgeShape : Shape(ShapeType.EDGE) {
 
         var tempx: Double
         var tempy: Double
-        val v1 = m_vertex1
-        val v2 = m_vertex2
+        val v1 = _vertex1
+        val v2 = _vertex2
         val xfq = xf.q
         val xfp = xf.p
 
@@ -232,27 +235,27 @@ class EdgeShape : Shape(ShapeType.EDGE) {
 
     override fun computeAABB(
         aabb: AABB2,
-        xf: Transform,
+        transform: Transform,
         childIndex: Int
     ) {
         val lowerBound = aabb.min
         val upperBound = aabb.max
-        val xfq = xf.q
+        val xfq = transform.q
 
-        val v1x = xfq.cos * m_vertex1.x - xfq.sin * m_vertex1.y + xf.p.x
-        val v1y = xfq.sin * m_vertex1.x + xfq.cos * m_vertex1.y + xf.p.y
-        val v2x = xfq.cos * m_vertex2.x - xfq.sin * m_vertex2.y + xf.p.x
-        val v2y = xfq.sin * m_vertex2.x + xfq.cos * m_vertex2.y + xf.p.y
+        val v1x = xfq.cos * _vertex1.x - xfq.sin * _vertex1.y + transform.p.x
+        val v1y = xfq.sin * _vertex1.x + xfq.cos * _vertex1.y + transform.p.y
+        val v2x = xfq.cos * _vertex2.x - xfq.sin * _vertex2.y + transform.p.x
+        val v2y = xfq.sin * _vertex2.x + xfq.cos * _vertex2.y + transform.p.y
 
         lowerBound.x = if (v1x < v2x) v1x else v2x
         lowerBound.y = if (v1y < v2y) v1y else v2y
         upperBound.x = if (v1x > v2x) v1x else v2x
         upperBound.y = if (v1y > v2y) v1y else v2y
 
-        lowerBound.x -= m_radius
-        lowerBound.y -= m_radius
-        upperBound.x += m_radius
-        upperBound.y += m_radius
+        lowerBound.x -= radius
+        lowerBound.y -= radius
+        upperBound.x += radius
+        upperBound.y += radius
     }
 
     override fun computeMass(
@@ -260,19 +263,19 @@ class EdgeShape : Shape(ShapeType.EDGE) {
         density: Double
     ) {
         massData.mass = 0.0
-        massData.center.set(m_vertex1)
-        massData.center.add(m_vertex2)
-        massData.center.multiply(0.5)
-        massData.I = 0.0
+        massData._center.set(_vertex1)
+        massData._center.add(_vertex2)
+        massData._center.multiply(0.5)
+        massData.i = 0.0
     }
 
     override fun clone(): Shape {
         val edge = EdgeShape()
-        edge.m_radius = this.m_radius
-        edge.m_vertex0 = this.m_vertex0
-        edge.m_vertex1.set(this.m_vertex1)
-        edge.m_vertex2.set(this.m_vertex2)
-        edge.m_vertex3 = this.m_vertex3
+        edge.radius = this.radius
+        edge.vertex0 = this.vertex0
+        edge._vertex1.set(this._vertex1)
+        edge._vertex2.set(this._vertex2)
+        edge.vertex3 = this.vertex3
         return edge
     }
 }

@@ -31,7 +31,9 @@ import org.jbox2d.common.Transform
 import org.tobi29.math.AABB2
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
+import org.tobi29.math.vector.lengthSqr
 import org.tobi29.math.vector.normalizeSafe
+import org.tobi29.stdex.math.sqr
 import kotlin.math.PI
 import kotlin.math.sqrt
 
@@ -39,26 +41,20 @@ import kotlin.math.sqrt
  * A circle shape.
  */
 class CircleShape : Shape(ShapeType.CIRCLE) {
-    val m_p = MutableVector2d()
-
-    var center: Vector2d
-        get() = m_p.now()
-        set(value) {
-            m_p.set(value)
-        }
+    private val _center = MutableVector2d()
+    var center by _center
 
     override val childCount: Int
         get() = 1
 
     init {
-        m_radius = 0.0
+        radius = 0.0
     }
 
     override fun clone(): Shape {
         val shape = CircleShape()
-        shape.m_p.x = m_p.x
-        shape.m_p.y = m_p.y
-        shape.m_radius = m_radius
+        shape.center = center
+        shape.radius = radius
         return shape
     }
 
@@ -73,27 +69,27 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
         // return Vec2.dot(d, d) <= m_radius * m_radius;
         val q = transform.q
         val tp = transform.p
-        val centerx = -(q.cos * m_p.x - q.sin * m_p.y + tp.x - p.x)
-        val centery = -(q.sin * m_p.x + q.cos * m_p.y + tp.y - p.y)
+        val centerx = -(q.cos * _center.x - q.sin * _center.y + tp.x - p.x)
+        val centery = -(q.sin * _center.x + q.cos * _center.y + tp.y - p.y)
 
-        return centerx * centerx + centery * centery <= m_radius * m_radius
+        return centerx * centerx + centery * centery <= radius * radius
     }
 
     override fun computeDistanceToOut(
-        xf: Transform,
-        p: Vector2d,
+        transform: Transform,
+        point: Vector2d,
         childIndex: Int,
         normalOut: MutableVector2d
     ): Double {
-        val xfq = xf.q
-        val centerx = xfq.cos * m_p.x - xfq.sin * m_p.y + xf.p.x
-        val centery = xfq.sin * m_p.x + xfq.cos * m_p.y + xf.p.y
-        val dx = p.x - centerx
-        val dy = p.y - centery
+        val xfq = transform.q
+        val centerx = xfq.cos * _center.x - xfq.sin * _center.y + transform.p.x
+        val centery = xfq.sin * _center.x + xfq.cos * _center.y + transform.p.y
+        val dx = point.x - centerx
+        val dy = point.y - centery
         val d1 = sqrt(dx * dx + dy * dy)
         normalOut.x = dx * 1 / d1
         normalOut.y = dy * 1 / d1
-        return d1 - m_radius
+        return d1 - radius
     }
 
     // Collision Detection in Interactive 3D Environments by Gino van den Bergen
@@ -114,13 +110,13 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
 
         // Rot.mulToOutUnsafe(transform.q, m_p, position);
         // position.addLocal(transform.p);
-        val positionx = tq.cos * m_p.x - tq.sin * m_p.y + tp.x
-        val positiony = tq.sin * m_p.x + tq.cos * m_p.y + tp.y
+        val positionx = tq.cos * _center.x - tq.sin * _center.y + tp.x
+        val positiony = tq.sin * _center.x + tq.cos * _center.y + tp.y
 
         val sx = inputp1.x - positionx
         val sy = inputp1.y - positiony
         // final float b = Vec2.dot(s, s) - m_radius * m_radius;
-        val b = sx * sx + sy * sy - m_radius * m_radius
+        val b = sx * sx + sy * sy - radius * radius
 
         // Solve quadratic equation.
         val rx = inputp2.x - inputp1.x
@@ -159,26 +155,24 @@ class CircleShape : Shape(ShapeType.CIRCLE) {
     ) {
         val tq = transform.q
         val tp = transform.p
-        val px = tq.cos * m_p.x - tq.sin * m_p.y + tp.x
-        val py = tq.sin * m_p.x + tq.cos * m_p.y + tp.y
+        val px = tq.cos * _center.x - tq.sin * _center.y + tp.x
+        val py = tq.sin * _center.x + tq.cos * _center.y + tp.y
 
-        aabb.min.x = px - m_radius
-        aabb.min.y = py - m_radius
-        aabb.max.x = px + m_radius
-        aabb.max.y = py + m_radius
+        aabb.min.x = px - radius
+        aabb.min.y = py - radius
+        aabb.max.x = px + radius
+        aabb.max.y = py + radius
     }
 
     override fun computeMass(
         massData: MassData,
         density: Double
     ) {
-        massData.mass = density * PI * m_radius * m_radius
-        massData.center.x = m_p.x
-        massData.center.y = m_p.y
+        massData.mass = density * PI * radius * radius
+        massData.center = center
 
         // inertia about the local origin
         // massData.I = massData.mass * (0.5 * m_radius * m_radius + Vec2.dot(m_p, m_p));
-        massData.I = massData.mass *
-                (0.5 * m_radius * m_radius + (m_p.x * m_p.x + m_p.y * m_p.y))
+        massData.i = massData.mass * (0.5 * sqr(radius) + _center.lengthSqr())
     }
 }

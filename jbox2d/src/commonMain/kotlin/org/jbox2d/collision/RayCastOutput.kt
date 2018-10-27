@@ -21,22 +21,18 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.jbox2d.collision
 
 import org.tobi29.math.vector.MutableVector2d
 
-// updated to rev 100
 /**
  * Ray-cast output data. The ray hits at p1 + fraction * (p2 - p1), where p1 and p2
  * come from b2RayCastInput.
  */
 class RayCastOutput {
-    val normal  = MutableVector2d()
-    var fraction: Double = 0.0
-
-    init {
-        fraction = 0.0
-    }
+    val normal = MutableVector2d()
+    var fraction = 0.0
 
     fun set(rco: RayCastOutput) {
         normal.set(rco.normal)

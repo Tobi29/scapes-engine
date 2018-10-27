@@ -21,6 +21,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.jbox2d.collision
 
 import org.tobi29.math.vector.MutableVector2d
@@ -36,8 +37,8 @@ class DistanceOutput {
     /** Closest point on shapeB  */
     val pointB = MutableVector2d()
 
-    var distance: Double = 0.0
+    var distance = 0.0
 
     /** number of gjk iterations used  */
-    var iterations: Int = 0
+    var iterations = 0
 }

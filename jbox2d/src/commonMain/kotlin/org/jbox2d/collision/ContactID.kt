@@ -45,26 +45,25 @@
  */
 package org.jbox2d.collision
 
+import org.tobi29.stdex.combineToInt
+
 /**
  * Contact ids to facilitate warm starting. Note: the ContactFeatures class is just embedded in here
  */
 class ContactID : Comparable<ContactID> {
-
     var indexA: Byte = 0
     var indexB: Byte = 0
     var typeA: Byte = 0
     var typeB: Byte = 0
 
     val key: Int
-        get() = indexA.toInt() shl 24 or (indexB.toInt() shl 16) or (typeA.toInt() shl 8) or typeB.toInt()
+        get() = combineToInt(indexA, indexB, typeA, typeB)
 
     enum class Type {
         VERTEX, FACE
     }
 
-    fun isEqual(cid: ContactID): Boolean {
-        return key == cid.key
-    }
+    fun isEqual(cid: ContactID): Boolean = key == cid.key
 
     constructor()
 
@@ -98,7 +97,5 @@ class ContactID : Comparable<ContactID> {
         typeB = 0
     }
 
-    override fun compareTo(o: ContactID): Int {
-        return key - o.key
-    }
+    override fun compareTo(other: ContactID): Int = key.compareTo(other.key)
 }

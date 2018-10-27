@@ -52,17 +52,20 @@ import org.tobi29.math.vector.MutableVector2d
 class MassData {
     /** The mass of the shape, usually in kilograms.  */
     var mass: Double = 0.0
+
+    val _center = MutableVector2d()
     /** The position of the shape's centroid relative to the shape's origin.  */
-    val center = MutableVector2d()
+    var center by _center
+
     /** The rotational inertia of the shape about the local origin.  */
-    var I: Double = 0.0
+    var i: Double = 0.0
 
     /**
      * Blank mass data
      */
     constructor() {
-        I = 0.0
-        mass = I
+        i = 0.0
+        mass = i
     }
 
     /**
@@ -73,14 +76,14 @@ class MassData {
      */
     constructor(md: MassData) {
         mass = md.mass
-        I = md.I
-        center.set(md.center)
+        i = md.i
+        _center.set(md._center)
     }
 
     fun set(md: MassData) {
         mass = md.mass
-        I = md.I
-        center.set(md.center)
+        i = md.i
+        _center.set(md._center)
     }
 
 }

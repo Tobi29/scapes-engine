@@ -252,15 +252,15 @@ class Island {
         // Integrate velocities and apply damping. Initialize the body state.
         for (i in 0 until m_bodyCount) {
             val b = m_bodies!![i]!!
-            val bm_sweep = b.m_sweep
-            val c = bm_sweep.c
-            val a = bm_sweep.a
+            val bmSweep = b.m_sweep
+            val c = bmSweep.c
+            val a = bmSweep.a
             val v = b.m_linearVelocity
             var w = b.m_angularVelocity
 
             // Store positions for continuous collision.
-            bm_sweep.c0.set(bm_sweep.c)
-            bm_sweep.a0 = bm_sweep.a
+            bmSweep.c0.set(bmSweep.c)
+            bmSweep.a0 = bmSweep.a
 
             if (b.m_type == BodyType.DYNAMIC) {
                 // Integrate velocities.

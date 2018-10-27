@@ -44,18 +44,18 @@ import org.tobi29.stdex.math.sqr
  * @author Daniel
  */
 class ChainShape : Shape(ShapeType.CHAIN) {
-    var m_vertices: Array<Vector2d> = emptyArray()
-    var m_count: Int = 0
+    var vertices: Array<Vector2d> = emptyArray()
+    var count: Int = 0
     var prevVertex: Vector2d? = null
     var nextVertex: Vector2d? = null
 
     private val pool0 = EdgeShape()
 
     override val childCount: Int
-        get() = m_count - 1
+        get() = count - 1
 
     init {
-        m_radius = Settings.polygonRadius
+        radius = Settings.polygonRadius
     }
 
     /**
@@ -65,40 +65,36 @@ class ChainShape : Shape(ShapeType.CHAIN) {
         edge: EdgeShape,
         index: Int
     ) {
-        assert { 0 <= index && index < m_count - 1 }
-        edge.m_radius = m_radius
+        assert { 0 <= index && index < count - 1 }
+        edge.radius = radius
 
-        val v0 = m_vertices[index + 0]
-        val v1 = m_vertices[index + 1]
-        edge.m_vertex1.x = v0.x
-        edge.m_vertex1.y = v0.y
-        edge.m_vertex2.x = v1.x
-        edge.m_vertex2.y = v1.y
+        edge.vertex1 = vertices[index + 0]
+        edge.vertex2 = vertices[index + 1]
 
         if (index > 0) {
-            val v = m_vertices[index - 1]
-            edge.m_vertex0 = v
+            val v = vertices[index - 1]
+            edge.vertex0 = v
         } else {
-            edge.m_vertex0 = prevVertex
+            edge.vertex0 = prevVertex
         }
 
-        if (index < m_count - 2) {
-            val v = m_vertices[index + 2]
-            edge.m_vertex3 = v
+        if (index < count - 2) {
+            val v = vertices[index + 2]
+            edge.vertex3 = v
         } else {
-            edge.m_vertex3 = nextVertex
+            edge.vertex3 = nextVertex
         }
     }
 
     override fun computeDistanceToOut(
-        xf: Transform,
-        p: Vector2d,
+        transform: Transform,
+        point: Vector2d,
         childIndex: Int,
         normalOut: MutableVector2d
     ): Double {
         val edge = pool0
         getChildEdge(edge, childIndex)
-        return edge.computeDistanceToOut(xf, p, 0, normalOut)
+        return edge.computeDistanceToOut(transform, point, 0, normalOut)
     }
 
     override fun testPoint(
@@ -114,42 +110,42 @@ class ChainShape : Shape(ShapeType.CHAIN) {
         transform: Transform,
         childIndex: Int
     ): Boolean {
-        assert { childIndex < m_count }
+        assert { childIndex < count }
 
         val edgeShape = pool0
 
         var i2 = childIndex + 1
-        if (i2 == m_count) {
+        if (i2 == count) {
             i2 = 0
         }
-        val v = m_vertices[childIndex]
-        edgeShape.m_vertex1.x = v.x
-        edgeShape.m_vertex1.y = v.y
-        val v1 = m_vertices[i2]
-        edgeShape.m_vertex2.x = v1.x
-        edgeShape.m_vertex2.y = v1.y
+        val v = vertices[childIndex]
+        edgeShape._vertex1.x = v.x
+        edgeShape._vertex1.y = v.y
+        val v1 = vertices[i2]
+        edgeShape._vertex2.x = v1.x
+        edgeShape._vertex2.y = v1.y
 
         return edgeShape.raycast(output, input, transform, 0)
     }
 
     override fun computeAABB(
         aabb: AABB2,
-        xf: Transform,
+        transform: Transform,
         childIndex: Int
     ) {
-        assert { childIndex < m_count }
+        assert { childIndex < count }
         val lower = aabb.min
         val upper = aabb.max
 
         var i2 = childIndex + 1
-        if (i2 == m_count) {
+        if (i2 == count) {
             i2 = 0
         }
 
-        val vi1 = m_vertices[childIndex]
-        val vi2 = m_vertices[i2]
-        val xfq = xf.q
-        val xfp = xf.p
+        val vi1 = vertices[childIndex]
+        val vi2 = vertices[i2]
+        val xfq = transform.q
+        val xfp = transform.p
         val v1x = xfq.cos * vi1.x - xfq.sin * vi1.y + xfp.x
         val v1y = xfq.sin * vi1.x + xfq.cos * vi1.y + xfp.y
         val v2x = xfq.cos * vi2.x - xfq.sin * vi2.y + xfp.x
@@ -166,13 +162,13 @@ class ChainShape : Shape(ShapeType.CHAIN) {
         density: Double
     ) {
         massData.mass = 0.0
-        massData.center.setXY(0.0, 0.0)
-        massData.I = 0.0
+        massData._center.setXY(0.0, 0.0)
+        massData.i = 0.0
     }
 
     override fun clone(): Shape {
         val clone = ChainShape()
-        clone.createChain(m_vertices, m_count)
+        clone.createChain(vertices, count)
         clone.prevVertex = prevVertex
         clone.nextVertex = nextVertex
         return clone
@@ -188,9 +184,9 @@ class ChainShape : Shape(ShapeType.CHAIN) {
         vertices: Array<Vector2d>,
         count: Int
     ) {
-        assert { m_count == 0 }
+        assert { this.count == 0 }
         assert { count >= 3 }
-        m_count = count + 1
+        this.count = count + 1
         for (i in 1 until count) {
             val v1 = vertices[i - 1]
             val v2 = vertices[i]
@@ -202,12 +198,12 @@ class ChainShape : Shape(ShapeType.CHAIN) {
             }
         }
         val first = vertices[0]
-        m_vertices = Array(m_count) {
+        this.vertices = Array(this.count) {
             if (it == 0 || it == count) first
             else vertices[it]
         }
-        prevVertex = m_vertices[m_count - 2]
-        nextVertex = m_vertices[1]
+        prevVertex = this.vertices[this.count - 2]
+        nextVertex = this.vertices[1]
     }
 
     /**
@@ -220,10 +216,10 @@ class ChainShape : Shape(ShapeType.CHAIN) {
         vertices: Array<Vector2d>,
         count: Int
     ) {
-        assert { m_count == 0 }
+        assert { this.count == 0 }
         assert { count >= 2 }
-        m_count = count
-        for (i in 1 until m_count) {
+        this.count = count
+        for (i in 1 until this.count) {
             val v1 = vertices[i - 1]
             val v2 = vertices[i]
             // If the code crashes here, it means your vertices are too close together.
@@ -233,7 +229,7 @@ class ChainShape : Shape(ShapeType.CHAIN) {
                 )
             }
         }
-        m_vertices = Array(m_count) { vertices[it] }
+        this.vertices = Array(this.count) { vertices[it] }
         prevVertex = null
         nextVertex = null
     }

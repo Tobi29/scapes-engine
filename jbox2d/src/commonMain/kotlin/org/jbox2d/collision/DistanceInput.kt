@@ -21,6 +21,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
 package org.jbox2d.collision
 
 import org.jbox2d.collision.Distance.DistanceProxy
@@ -30,12 +31,11 @@ import org.jbox2d.common.Transform
  * Input for Distance.
  * You have to option to use the shape radii
  * in the computation.
- *
  */
 class DistanceInput {
     var proxyA = DistanceProxy()
     var proxyB = DistanceProxy()
     var transformA = Transform()
     var transformB = Transform()
-    var useRadii: Boolean = false
+    var useRadii = false
 }

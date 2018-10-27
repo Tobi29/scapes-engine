@@ -106,8 +106,8 @@ class ContactSolver {
             val fixtureB = contact.fixtureB!!
             val shapeA = fixtureA.shape
             val shapeB = fixtureB.shape
-            val radiusA = shapeA!!.m_radius
-            val radiusB = shapeB!!.m_radius
+            val radiusA = shapeA!!.radius
+            val radiusB = shapeB!!.radius
             val bodyA = fixtureA.body!!
             val bodyB = fixtureB.body!!
             val manifold = contact.manifold

@@ -48,7 +48,6 @@ package org.jbox2d.collision
 
 import org.tobi29.math.vector.MutableVector2d
 
-// updated to rev 100
 /**
  * A manifold point is a contact point belonging to a contact
  * manifold. It holds details related to the geometry and dynamics
@@ -61,34 +60,30 @@ import org.tobi29.math.vector.MutableVector2d
  * Note: the impulses are used for internal caching and may not
  * provide reliable contact forces, especially for high speed collisions.
  */
-class ManifoldPoint {
-    /** usage depends on manifold type  */
-    val localPoint = MutableVector2d()
-    /** the non-penetration impulse  */
-    var normalImpulse: Double = 0.0
-    /** the friction impulse  */
-    var tangentImpulse: Double = 0.0
-    /** uniquely identifies a contact point between two shapes  */
-    val id: ContactID
-
+class ManifoldPoint() {
     /**
-     * Blank manifold point with everything zeroed out.
+     * usage depends on manifold type
      */
-    constructor() {
-        tangentImpulse = 0.0
-        normalImpulse = tangentImpulse
-        id = ContactID()
-    }
+    val localPoint = MutableVector2d()
+    /**
+     * the non-penetration impulse
+     */
+    var normalImpulse = 0.0
+    /**
+     * the friction impulse
+     */
+    var tangentImpulse = 0.0
+    /**
+     * uniquely identifies a contact point between two shapes
+     */
+    val id = ContactID()
 
     /**
      * Creates a manifold point as a copy of the given point
      * @param cp point to copy from
      */
-    constructor(cp: ManifoldPoint) {
-        localPoint.set(cp.localPoint.now())
-        normalImpulse = cp.normalImpulse
-        tangentImpulse = cp.tangentImpulse
-        id = ContactID(cp.id)
+    constructor(cp: ManifoldPoint) : this() {
+        set(cp)
     }
 
     /**
@@ -96,7 +91,7 @@ class ManifoldPoint {
      * @param cp the point to copy from
      */
     fun set(cp: ManifoldPoint) {
-        localPoint.set(cp.localPoint.now())
+        localPoint.set(cp.localPoint)
         normalImpulse = cp.normalImpulse
         tangentImpulse = cp.tangentImpulse
         id.set(cp.id)
