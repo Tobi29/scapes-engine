@@ -20,6 +20,9 @@ import org.tobi29.stdex.maskAt
 import org.tobi29.stdex.setAt
 import org.tobi29.stdex.unsetAt
 
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use ByteArray2 directly")
 /**
  * Class for conveniently managing an 8-bit bit field mapped as a 2d grid
  */
