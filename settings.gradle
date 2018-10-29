@@ -58,11 +58,11 @@ include "codec-mp3"
 include "codec-ogg"
 include "codec-wav"
 include "generation-utils"
+include "jbox2d"
+include "libtiled"
 include "server-framework"
 include "shader-clike"
 include "shader-compiler"
-include "jbox2d"
-include "libtiled"
 
 // Sql
 include "sql-framework"
