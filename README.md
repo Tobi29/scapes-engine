@@ -26,8 +26,10 @@ For technical information visit that repository.
 Requires OpenGL ES 3.0, should run in an emulator with it enabled, however not
 tested due to rather interesting errors when trying to run it on Mesa Radeonsi.
 Should theoretically support API Level 18 and higher, however only 25 is
-actively tested. Also as Java performance varies a lot between older Android
-releases to now, the engine probably will not run smoothly on older devices.
+actively tested. There are known issues when running on Dalvik in particular
+with Vorbis decoding, hence targeting it is discouraged.
+Also as Java performance varies a lot between older Android releases to now,
+the engine probably will not run smoothly on older devices.
 
 Embedding into existing applications can be achieved using the available classes
 in the backend module.
@@ -63,52 +65,32 @@ To use anything you can add any module through
 [jitpack.io](https://jitpack.io/#Tobi29/ScapesEngine) or set up a composite
 build.
 
-# Modules
+## Artifacts
+All platform artifacts follow a naming scheme:
+
+| Platform      | Suffix      |
+|:--------------|:------------|
+| Common        | -metadata   |
+| JVM           | -jvm        |
+| JVM (LWJGL 3) | -jvm-lwjgl3 |
+| JS            | -js         |
+
+The `-jvm-lwjgl3` suffix is used for JVM artifacts that rely on LWJGL 3 and
+hence cannot be used on Android currently.
+
+# Modules (Tier 0)
+Only contains `stdex` as it mostly acts as a compatibility layer.
 
 ## STDEx
 Random extensions to the Kotlin stdlib to make multiplatform code easier.
 
 ### Artifacts
-  * stdex-metadata
-  * stdex-js
-  * stdex-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| stdex                   |    ✓    |    ✓    |
 
-## Logging
-Basic logging facade, backing into a platform specific implementaion.
-
-### Artifacts
-  * logging-metadata
-  * logging-js
-  * logging-jvm
-
-### Dependencies
-  * [SLF4J](http://www.slf4j.org) (JVM only)
-
-## Tag
-Tag structure classes as a universal JSON-like memory structure for
-dynamic hierarchical data.
-
-### Artifacts
-  * tag-metadata
-  * tag-js
-  * tag-jvm
-  * tag-binary-metadata
-  * tag-binary-js
-  * tag-binary-jvm
-  * tag-bundle-metadata
-  * tag-bundle-js
-  * tag-bundle-jvm
-  * tag-json-metadata
-  * tag-json-js
-  * tag-json-jvm
-
-## Uuid
-A cross-platform Uuid class.
-
-### Artifacts
-  * uuid-metadata
-  * uuid-js
-  * uuid-jvm
+# Modules (Tier 1)
+Modules providing fundamental data types to be used and shared in other modules
 
 ## Arrays
 Various interfaces for arrays and slices mostly useful for creating
@@ -116,94 +98,9 @@ very generic parameter types (whilst avoiding the more complex collections
 from Kotlin).
 
 ### Artifacts
-  * arrays-metadata
-  * arrays-js
-  * arrays-jvm
-
-## Argument Parser
-Simple lightweight argument parser both for parsing command line arguments
-as well as internal interactive commands (e.g. for remotely controlling a
-server or in-game commands).
-
-Allows building metadata once and parsing commands using that on threads
-in parallel multiple times.
-
-### Artifacts
-  * argumentparser-metadata
-  * argumentparser-js
-  * argumentparser-jvm
-
-## Base64
-Simple base 64 encoder and decoder with very flexible input and output
-handling.
-
-### Artifacts
-  * base64-metadata
-  * base64-js
-  * base64-jvm
-
-## Checksums
-Contains CRC32, Adler32 and SHA-256 implementations.
-Additional algorithms may come eventually.
-The JVM version uses the `MessageDigest` class wherever appropriate in order to
-keep things lightweight.
-
-### Artifacts
-  * checksums-metadata
-  * checksums-js
-  * checksums-jvm
-
-## Utils
-Contains various convenience functions and provides a common foundation
-for everything else to use.
-
-Depends on various libraries that provide features available in Java 8 to
-allow easier Android support.
-
-### Artifacts
-  * utils-metadata
-  * utils-js
-  * utils-jvm
-
-## Coroutines
-Various coroutine and thread related utilities.
-
-In particular useful to write cross-platform code that takes advantage of
-threads on the JVM but relies on coroutines on JS.
-
-### Artifacts
-  * coroutines-metadata
-  * coroutines-js
-  * coroutines-jvm
-
-## IO
-Base library for IO operations inspired by `java.nio`.
-
-Contains various interfaces and utilities for doing IO work.
-
-A file system api designed as a basic alternative to `java.nio.file` is
-also available for Kotlin/JVM (and later Kotlin/Native).
-
-Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
-Android or other platforms lacking support for `java.nio.file`.
-
-### Artifacts
-  * io-metadata
-  * io-js
-  * io-jvm
-  * filesystem-metadata
-  * filesystem-jvm
-  * filesystem-nio-jvm (not recommended on Android)
-  * filesystem-io-jvm (only recommended on Android)
-
-## Content Info
-Utilities for inspecting file contents, such as guessing the
-MIME types (aka Media Types) of some data.
-
-### Artifacts
-  * contentinfo-metadata
-  * contentinfo-js
-  * contentinfo-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| arrays                  |    ✓    |    ✓    |
 
 ## Math
 Various math primitives and utils
@@ -214,9 +111,127 @@ useful for game development, as well as a cross platform alternative to
 `java.util.Random`.
 
 ### Artifacts
-  * math-metadata
-  * math-js
-  * math-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| math                    |    ✓    |    ✓    |
+
+## Profiler
+Tracing profiler facade to allow cross platform code to take advantage
+of platform specific trace apis (e.g. Android).
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| profiler                |    ✓    |    ✓    |
+
+## Tag
+Tag structure classes as a universal JSON-like memory structure for
+dynamic hierarchical data.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| tag                     |    ✓    |    ✓    |
+
+## Utils
+Contains various convenience functions and provides a common foundation
+for everything else to use.
+
+Depends on various libraries that provide features available in Java 8 to
+allow easier Android support.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| utils                   |    ✓    |    ✓    |
+
+## Uuid
+A cross-platform Uuid class.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| uuid                    |    ✓    |    ✓    |
+
+# Modules (Tier 2)
+
+## Algorithms
+Generic implementations of various algorithms, in particular for AI,
+such as moving ships to collect loot.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| algorithms              |    ✓    |    ✓    |
+
+## Argument Parser
+Simple lightweight argument parser both for parsing command line arguments
+as well as internal interactive commands (e.g. for remotely controlling a
+server or in-game commands).
+
+Allows building metadata once and parsing commands using that on threads
+in parallel multiple times.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| argumentparser          |    ✓    |    ✓    |
+
+## Base64
+Simple base 64 encoder and decoder with very flexible input and output
+handling.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| base64                  |    ✓    |    ✓    |
+
+## Checksums
+Contains CRC32, Adler32 and SHA-256 implementations.
+Additional algorithms may come eventually.
+The JVM version uses the `MessageDigest` class wherever appropriate in order to
+keep things lightweight.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| checksums               |    ✓    |    ✓    |
+
+## Chrono
+Basic calendar classes and convertion from time instants to dates and time.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| chrono                  |    ✓    |    ✓    |
+
+## Compression Deflate
+Deflate and Inflate filters.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| compression-deflate     |    ✓    |    ✓    |
+
+## Content Info
+Utilities for inspecting file contents, such as guessing the
+MIME types (aka Media Types) of some data.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| contentinfo             |    ✓    |    ✓    |
+
+## Coroutines
+Various coroutine and thread related utilities.
+
+In particular useful to write cross-platform code that takes advantage of
+threads on the JVM but relies on coroutines on JS.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| coroutines              |    ✓    |    ✓    |
 
 ## Graphics Utils
 Library for image loading, writing and very basic manipulations.
@@ -225,36 +240,64 @@ Contains a PNG decoder and encoder function and a simple
 Image class to pass around images and do copy paste operations on them.
 
 ### Artifacts
-  * graphics-utils-metadata
-  * graphics-utils-js
-  * graphics-utils-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| graphics-utils          |    ✓    |    ✓    |
 
-## Generation Utils
-Various utilities for procedural generation, such as Perlin and OpenSimplex
-noise, noise transformations and maze generators
+## IO
+Base library for IO operations inspired by `java.nio`.
 
-### Artifacts
-  * generation-utils-metadata
-  * generation-utils-js
-  * generation-utils-jvm
-
-## Chrono
-Basic calendar classes and convertion from time instants to dates and time.
+Contains various interfaces and utilities for doing IO work.
 
 ### Artifacts
-  * chrono-metadata
-  * chrono-js
-  * chrono-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| io                      |    ✓    |    ✓    |
 
-## Platform Integration
-Various utilities to allow integrating with the host platform.
-
-Includes cross-platform functions for retrieving platform info,
-environment variables and standard paths.
+## Logging
+Basic logging facade, backing into a platform specific implementaion.
 
 ### Artifacts
-  * platformintegration-metadata
-  * platformintegration-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| logging                 |    ✓    |    ✓    |
+
+### Dependencies
+  * [SLF4J](http://www.slf4j.org) (JVM only)
+
+## Tag Binary
+Compact binary format for tag structure with compression support.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| tag-binary              |    ✓    |    ✓    |
+
+## Tag Bundle
+File tree stored in a tag structure
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| tag-bundle              |    ✓    |    ✓    |
+
+## Tag JSON
+JSON parser and writer using tag structures.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| tag-json                |    ✓    |    ✓    |
+
+## Tile Maps
+Basic classes for storing tile maps.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| tilemaps                |    ✓    |    ✓    |
+
+# Modules (Tier 3)
 
 ## Application Framework
 Simple entry point framework for as an easy starting point for all kinds
@@ -264,37 +307,48 @@ Automatically provides infrastructure for command line parsing, exit codes
 and program metadata.
 
 ### Artifacts
-  * application-framework-metadata
-  * application-framework-js
-  * application-framework-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| application-framework   |    ✓    |    ✓    |
 
-## SWT Utils
-Framework for multi-document SWT based gui applications.
+## Filesystem
+A file system api designed as a basic alternative to `java.nio.file`.
 
-### Artifacts
-  * swt-utils-jvm
-
-### Dependencies
-  * [SWT](https://www.eclipse.org/swt)
-
-## Server Framework
-Various utilities for non-blocking protocol implementations and
-encryption using SSL/TLS.
+Has a `java.nio.file` backend for the JVM and also a `java.io` based one for
+Android or other platforms lacking support for `java.nio.file`.
 
 ### Artifacts
-  * server-framework-metadata
-  * server-framework-js
-  * server-framework-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| filesystem              |    ✓    |         |
+| filesystem-nio          |    ✓    |         |
+| filesystem-io           |    ✓    |         |
+
+## Platform Integration
+Various utilities to allow integrating with the host platform.
+
+Includes cross-platform functions for retrieving platform info,
+environment variables and standard paths.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| platformintegration     |    ✓    |    ✓    |
+
+# Modules (Tier 4)
 
 ## Codec
 Audio decoding library that can use mime-types to identify the format
 and load an appropriate decoder through an SPI.
 
 ### Artifacts
-  * codec-metadata
-  * codec-mp3-jvm
-  * codec-ogg-jvm (Includes both Vorbis and Opus support)
-  * codec-wav-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| codec                   |    ✓    |         |
+| codec-mp3               |    ✓    |         |
+| codec-ogg               |    ✓    |         |
+| codec-wav               |    ✓    |         |
+
 ### Dependencies
   * [JOrbis](http://www.jcraft.com/jorbis) (OGG Vorbis and Opus, JVM only)
   * [Concentus](https://github.com/lostromb/concentus) (Code is currently stored
@@ -302,28 +356,75 @@ and load an appropriate decoder through an SPI.
   * [JLayer](http://www.javazoom.net/javalayer/javalayer.html)
     (MP3, JVM only)
 
+## Generation Utils
+Various utilities for procedural generation, such as Perlin and OpenSimplex
+noise, noise transformations and maze generators
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| generation-utils        |    ✓    |    ✓    |
+
+## JBox2D
+Kotlin port of [JBox2D](https://github.com/jbox2d/jbox2d).
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| jbox2d                  |    ✓    |    ✓    |
+
+## LibTiled
+A JVM-only parser for [Tiled](https://mapeditor.org), which in turn is loosely
+based on their old Java library.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| libtiled                |    ✓    |         |
+
+## Server Framework
+Various utilities for non-blocking protocol implementations and
+encryption using SSL/TLS.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| server-framework        |    ✓    |    ✓    |
+
+## Shader Compiler
+Intermediate representation for shaders, can generate GLSL shaders on runtime.
+
+There also is a JVM-only frontend for compiling the custom shader language.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| shader-compiler         |    ✓    |    ✓    |
+| shader-clike            |    ✓    |         |
+
+# Modules (SQL)
+
 ## SQL Framework
 Simple SQL api to allow basic database access without manually writing
 SQL statements.
 
 Allows abstracting over different backends more reliably.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| sql-framework           |    ✓    |         |
+| mariadb                 |    ✓    |         |
+| sqlite                  |    ✓    |         |
+| sqljet                  |    ✓    |         |
+
 ### Dependencies
   * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
     (SQLite, JVM only)
   * [SQLJet](https://sqljet.com) (SQLJet, JVM only)
   * [MariaDB](https://mariadb.org) (MariaDB, JVM only)
-
-## Tile Maps
-Basic classes for storing tile maps.
-
-A JVM-only parser for [Tiled](https://mapeditor.org) maps can be found in
-the LibTiled artifact, which in turn is loosely based on their old Java library.
-
-### Artifacts
-  * tilemaps-metadata
-  * tilemaps-js
-  * tilemaps-jvm
-  * libtiled-jvm
+  
+# Modules (Engine)
 
 ## Engine
 General purpose engine foundation
@@ -339,28 +440,51 @@ On Kotlin/JS `gles-backend-js` provides everything needed for starting
 the engine in an HTML 5 canvas.
 
 ### Artifacts
-  * engine-metadata
-  * engine-js
-  * gles-backend-js (Backend supporting WebGL 2 and WebAudio)
-  * engine-jvm
-  * gl-backend-jvm-lwjgl3 (OpenGL 3.3 using LWJGL 3 for bindings)
-  * gles-backend-jvm-lwjgl3 (OpenGL ES 3.0 using LWJGL 3 for bindings)
-  * glfw-backend-jvm-lwjgl3 (GLFW and OpenAL Soft using LWJGL 3 for bindings)
+| Component               |   JVM   | JVM (LWJGL 3) |   JS    |
+|:------------------------|:-------:|:-------------:|:-------:|
+| engine                  |    ✓    |               |    ✓    |
+| gl-backend              |         |       ✓       |    ✓    |
+| gles-backend            |         |       ✓       |    ✓    |
+| glfw-backend            |         |       ✓       |         |
+| lwjgl3-backend          |         |       ✓       |         |
 
 ### Dependencies
   * [LWJGL](http://lwjgl.org)
-
-## Profiler
-Tracing profiler facade to allow cross platform code to take advantage
-of platform specific trace apis (e.g. Android).
+  
+## Tile Maps Renderer
+2D tile renderer.
 
 ### Artifacts
-  * profiler-metadata
-  * profiler-js
-  * profiler-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| tilemaps-renderer       |    ✓    |    ✓    |
 
+# Modules (Misc)
+
+## MBeans CPU Reader
+CPU usage reader backend using mbeans on some JVMs.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| mbeans-cpu-reader       |    ✓    |         |
+
+## SWT Utils
+Framework for multi-document SWT based gui applications.
+
+### Artifacts
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| swt-utils               |    ✓    |         |
+
+### Dependencies
+  * [SWT](https://www.eclipse.org/swt)
+
+# Modules (Testing)
 ## Test Assertions
 Basic test assertions, in particular useful for Spek.
 
 ### Artifacts
-  * test-assertions-jvm
+| Component               |   JVM   |   JS    |
+|:------------------------|:-------:|:-------:|
+| test-assertions         |    ✓    |    ✓    |
