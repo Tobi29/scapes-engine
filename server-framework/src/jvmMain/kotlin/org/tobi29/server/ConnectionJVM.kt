@@ -33,7 +33,7 @@ import java.nio.channels.SocketChannel
  */
 suspend fun connect(worker: ConnectionWorker,
                     address: RemoteAddress): SocketChannel {
-    val socketAddress = address.resolve(worker.connection.taskExecutor)
+    val socketAddress = address.resolve()
             ?: throw UnresolvableAddressException(address.address)
     return connect(worker, socketAddress)
 }

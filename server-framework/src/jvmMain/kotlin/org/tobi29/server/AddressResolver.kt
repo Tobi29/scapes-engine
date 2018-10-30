@@ -16,24 +16,61 @@
 
 package org.tobi29.server
 
-import kotlinx.coroutines.experimental.CoroutineName
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.suspendCancellableCoroutine
+import kotlinx.coroutines.experimental.*
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.UnknownHostException
 import kotlin.coroutines.experimental.CoroutineContext
 
 /**
- * Resolves the [hostname] and calls [callback] once done
+ * Resolves the [hostname]
  * @param hostname The hostname or ip-address to resolve
- * @param taskExecutor The [CoroutineContext] to run a task with
- * @param callback Called with the resulting address or `null` if it failed to resolve
+ * @param context Context for running resolve
+ * @return The resulting address or `null` if it failed to resolve
  */
-fun resolve(hostname: String,
-            taskExecutor: CoroutineContext,
-            callback: (InetAddress?) -> Unit) {
-    launch(taskExecutor + CoroutineName("Resolve-Address")) {
+suspend inline fun resolve(
+    hostname: String,
+    context: CoroutineContext = Dispatchers.IO
+): InetAddress? = withContext(context) {
+    try {
+        InetAddress.getByName(hostname)
+    } catch (e: UnknownHostException) {
+        null
+    }
+}
+
+/**
+ * Resolves the [hostname]
+ * @param hostname The hostname or ip-address to resolve
+ * @param port The port that will be used to construct the socket address
+ * @param context Context for running resolve
+ * @return The resulting socket address or `null` if it failed to resolve
+ */
+suspend inline fun resolve(
+    hostname: String,
+    port: Int,
+    context: CoroutineContext = Dispatchers.IO
+): InetSocketAddress? = resolve(hostname, context)
+    ?.let { InetSocketAddress(it, port) }
+
+/**
+ * Resolves the hostname of the given address
+ * @param context Context for running resolve
+ * @return The resulting socket address or `null` if it failed to resolve
+ */
+suspend fun RemoteAddress.resolve(
+    context: CoroutineContext = Dispatchers.IO
+): InetSocketAddress? = resolve(address, port, context)
+
+// TODO: Remove after 0.0.14
+
+@Deprecated("Use suspending functions")
+fun resolve(
+    hostname: String,
+    taskExecutor: CoroutineContext,
+    callback: (InetAddress?) -> Unit
+) {
+    GlobalScope.launch(taskExecutor + CoroutineName("Resolve-Address")) {
         try {
             val address = InetAddress.getByName(hostname)
             callback(address)
@@ -43,62 +80,20 @@ fun resolve(hostname: String,
     }
 }
 
-/**
- * Resolves the [hostname] and calls [callback] once done
- * @param hostname The hostname or ip-address to resolve
- * @param port The port that will be used to construct the socket address
- * @param taskExecutor The [CoroutineContext] to run a task with
- * @param callback Called with the resulting socket address or `null` if it failed to resolve
- */
-inline fun resolve(hostname: String,
-                   port: Int,
-                   taskExecutor: CoroutineContext,
-                   crossinline callback: (InetSocketAddress?) -> Unit) =
-        resolve(hostname, taskExecutor) {
-            callback(it?.let { InetSocketAddress(it, port) })
-        }
-
-/**
- * Resolves the hostname of the given address and calls [callback] once done
- * @receiver The [RemoteAddress] to resolve
- * @param taskExecutor The [CoroutineContext] to run a task with
- * @param callback Called with the resulting socket address or `null` if it failed to resolve
- */
-inline fun RemoteAddress.resolve(
-        taskExecutor: CoroutineContext,
-        crossinline callback: (InetSocketAddress?) -> Unit) =
-        resolve(address, port, taskExecutor, callback)
-
-/**
- * Resolves the [hostname]
- * @param hostname The hostname or ip-address to resolve
- * @param taskExecutor The [CoroutineContext] to run a task with
- * @return The resulting address or `null` if it failed to resolve
- */
-suspend fun resolve(hostname: String,
-                    taskExecutor: CoroutineContext): InetAddress? {
-    return suspendCancellableCoroutine { cont ->
-        resolve(hostname, taskExecutor) { cont.resume(it) }
+@Deprecated("Use suspending functions")
+inline fun resolve(
+    hostname: String,
+    port: Int,
+    taskExecutor: CoroutineContext,
+    crossinline callback: (InetSocketAddress?) -> Unit
+) =
+    resolve(hostname, taskExecutor) {
+        callback(it?.let { InetSocketAddress(it, port) })
     }
-}
 
-/**
- * Resolves the [hostname]
- * @param hostname The hostname or ip-address to resolve
- * @param port The port that will be used to construct the socket address
- * @param taskExecutor The [CoroutineContext] to run a task with
- * @return The resulting socket address or `null` if it failed to resolve
- */
-suspend fun resolve(hostname: String,
-                    port: Int,
-                    taskExecutor: CoroutineContext) =
-        resolve(hostname, taskExecutor)?.let { InetSocketAddress(it, port) }
-
-/**
- * Resolves the hostname of the given address
- * @receiver The [RemoteAddress] to resolve
- * @param taskExecutor The [CoroutineContext] to run a task with
- * @return The resulting socket address or `null` if it failed to resolve
- */
-suspend fun RemoteAddress.resolve(taskExecutor: CoroutineContext) =
-        resolve(address, port, taskExecutor)
+@Deprecated("Use suspending functions")
+inline fun RemoteAddress.resolve(
+    taskExecutor: CoroutineContext,
+    crossinline callback: (InetSocketAddress?) -> Unit
+) =
+    resolve(address, port, taskExecutor, callback)
