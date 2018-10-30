@@ -28,7 +28,7 @@ object FastSinTests : Spek({
         it("should be close to the mathematical sin") {
             var r = -8.0
             while (r <= 8.0) {
-                val sin = FastSin.sin(r)
+                val sin = SinTable.sin(r)
                 val expected = sin(r)
                 sin.shouldEqual(expected, 0.002)
                 r += 0.0009765625
@@ -36,7 +36,7 @@ object FastSinTests : Spek({
             val big = 1e10
             r = big
             repeat(10000) {
-                val sin = FastSin.sin(r)
+                val sin = SinTable.sin(r)
                 val expected = sin(r)
                 sin.shouldEqual(expected, 0.002)
                 r += 0.1
@@ -54,7 +54,7 @@ object FastSinTests : Spek({
                 270.0.toRad() to -1.0,
                 360.0.toRad() to 0.0
             )) {
-                val sin = FastSin.sin(r)
+                val sin = SinTable.sin(r)
                 sin shouldEqual expected
             }
         }
@@ -63,7 +63,7 @@ object FastSinTests : Spek({
         it("should be close to the mathematical cos") {
             var r = -8.0
             while (r <= 8.0) {
-                val cos = FastSin.cos(r)
+                val cos = SinTable.cos(r)
                 val expected = cos(r)
                 cos.shouldEqual(expected, 0.002)
                 r += 0.0009765625
@@ -71,7 +71,7 @@ object FastSinTests : Spek({
             val big = 1e10
             r = big
             repeat(10000) {
-                val cos = FastSin.cos(r)
+                val cos = SinTable.cos(r)
                 val expected = cos(r)
                 cos.shouldEqual(expected, 0.002)
                 r += 0.1
@@ -89,7 +89,7 @@ object FastSinTests : Spek({
                 270.0.toRad() to 0.0,
                 360.0.toRad() to 1.0
             )) {
-                val sin = FastSin.cos(r)
+                val sin = SinTable.cos(r)
                 sin shouldEqual expected
             }
         }

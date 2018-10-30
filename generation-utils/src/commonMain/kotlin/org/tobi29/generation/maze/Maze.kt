@@ -16,7 +16,6 @@
 
 package org.tobi29.generation.maze
 
-import org.tobi29.arrays.BitFieldGrid
 import org.tobi29.arrays.ByteArray2
 import org.tobi29.arrays.Vars2
 import org.tobi29.math.Face

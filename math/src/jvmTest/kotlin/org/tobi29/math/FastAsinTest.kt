@@ -27,7 +27,7 @@ object FastAsinTests : Spek({
         it("should be close to the mathematical asin") {
             var r = -8.0
             while (r <= 8.0) {
-                val asin = FastAsin.asin(r)
+                val asin = AsinTable.asin(r)
                 val expected = asin(r)
                 asin.shouldEqual(expected, 0.007)
                 r += 0.0009765625
@@ -38,7 +38,7 @@ object FastAsinTests : Spek({
         it("should be close to the mathematical acos") {
             var r = -8.0
             while (r <= 8.0) {
-                val acos = FastAsin.acos(r)
+                val acos = AsinTable.acos(r)
                 val expected = acos(r)
                 acos.shouldEqual(expected, 0.007)
                 r += 0.0009765625
