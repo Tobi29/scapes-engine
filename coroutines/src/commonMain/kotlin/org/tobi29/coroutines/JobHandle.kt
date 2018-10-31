@@ -23,7 +23,7 @@ import org.tobi29.stdex.atomic.AtomicReference
 import kotlin.coroutines.experimental.CoroutineContext
 import kotlin.coroutines.experimental.EmptyCoroutineContext
 
-class JobHandle(private val scope: CoroutineScope) {
+class JobHandle(private val scope: CoroutineScope) : CoroutineScope by scope {
     private val _job = AtomicReference<Job?>(null)
 
     val job: Job? get() = _job.get()

@@ -42,6 +42,23 @@ inline fun CoroutineScope.launchResponsive(
     }
 }
 
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun JobHandle.launchResponsive(
+    context: CoroutineContext = EmptyCoroutineContext,
+    start: CoroutineStart = CoroutineStart.DEFAULT,
+    noinline block: suspend ResponsiveCoroutineScope.() -> Unit
+): Job? {
+    val (responsiveContext, closeExecutor) = newResponsiveContext()
+    return launch(context + responsiveContext, start) {
+        try {
+            ResponsiveCoroutineScope(this).block()
+        } finally {
+            closeExecutor()
+        }
+    }
+}
+
 expect fun CoroutineScope.newResponsiveContext(
     context: CoroutineContext = EmptyCoroutineContext
 ): Pair<CoroutineContext, () -> Unit>
