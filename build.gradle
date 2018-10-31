@@ -47,6 +47,10 @@ allprojects {
     afterEvaluate {
         def kotlin = extensions.findByName("kotlin")
         if (kotlin != null) {
+            kotlin.experimental {
+                coroutines "enable"
+            }
+            
             kotlin.sourceSets.each { sourceSet ->
                 sourceSet.languageSettings {
                     languageVersion = "1.2"
