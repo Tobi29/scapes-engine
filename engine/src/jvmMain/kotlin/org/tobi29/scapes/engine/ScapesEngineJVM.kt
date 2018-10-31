@@ -164,7 +164,6 @@ actual class ScapesEngine actual constructor(
             launchResponsive(CoroutineName("Engine-State")) {
                 var tps = startTps.get()
                 val timer = Timer()
-                timer.init()
                 try {
                     while (true) {
                         val tickDiff = timer.cap(

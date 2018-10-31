@@ -27,6 +27,10 @@ class Timer(val clock: SteadyClock = steadyClock) {
     var lastTimestamp = 0L
     var lastSync = 0L
 
+    init {
+        init()
+    }
+
     fun init() {
         lastSync = clock.timeSteadyNanos()
         lastTimestamp = lastSync

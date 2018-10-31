@@ -64,7 +64,7 @@ open class GuiWidgetDebugValues(
 
     override fun updateVisible() {
         updateJob.launchOrStop(isVisible, renderExecutor) {
-            Timer().apply { init() }.loopUntilCancel(Timer.toDiff(4.0)) {
+            Timer().loopUntilCancel(Timer.toDiff(4.0)) {
                 for (component in elements.values) {
                     component.update()
                 }

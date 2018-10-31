@@ -78,7 +78,6 @@ class OpenALSoundSystem(
                 try {
                     val timer = Timer()
                     val maxDiff = (latency * 1000000.0).roundToLong()
-                    timer.init()
                     var active = false
                     while (true) {
                         val tickDiff = if (active) {

@@ -46,9 +46,7 @@ class WebAudioSoundSystem(override val engine: ScapesEngine) : SoundSystem {
     private val config = engine[ScapesEngineConfig.COMPONENT]
     private val updateJob = engine.launch {
         while (true) {
-            Timer().apply { init() }.loopUntilCancel(
-                Timer.toDiff(10.0)
-            ) { delta ->
+            Timer().loopUntilCancel(Timer.toDiff(10.0)) { delta ->
                 channels.values.forEach { it.poll(delta) }
             }
         }

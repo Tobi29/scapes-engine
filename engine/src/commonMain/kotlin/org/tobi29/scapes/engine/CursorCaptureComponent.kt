@@ -31,14 +31,13 @@ class CursorCaptureComponent : ComponentJobHandle<ScapesEngine>(),
         holder.coroutineContext
 
     override suspend fun CoroutineScope.runJobTask(holder: ScapesEngine) {
-        Timer().apply { init() }
-            .loopUntilCancel(Timer.toDiff(10.0)) {
-                val cursorCapture = holder.isMouseGrabbed
-                if (cursorCapture != cursorCaptured) {
-                    cursorCaptured = cursorCapture
-                    holder.container.cursorCapture(cursorCapture)
-                }
+        Timer().loopUntilCancel(Timer.toDiff(10.0)) {
+            val cursorCapture = holder.isMouseGrabbed
+            if (cursorCapture != cursorCaptured) {
+                cursorCaptured = cursorCapture
+                holder.container.cursorCapture(cursorCapture)
             }
+        }
     }
 
     companion object {
