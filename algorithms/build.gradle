@@ -34,10 +34,20 @@ kotlin {
                 implementation project(":test-assertions")
             }
         }
+        commonPortableMain {
+            dependsOn commonMain
+        }
+        commonPortableTest {
+            dependsOn commonTest
+        }
         jsMain {
+            dependsOn commonPortableMain
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
             }
+        }
+        jsTest {
+            dependsOn commonPortableTest
         }
         jvmMain {
             dependencies {
