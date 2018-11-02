@@ -16,7 +16,6 @@
 
 package org.tobi29.args
 
-import org.tobi29.stdex.Throws
 import org.tobi29.stdex.readOnly
 
 /**
@@ -121,7 +120,7 @@ class TokenParser(command: CommandConfig) {
             return
         }
 
-        if (argumentCount > 0) args@ {
+        if (argumentCount > 0) {
             val argument = arguments[argumentsIndex]
             if (appendToken(Token.Argument(argument, token))) return
             // No need to maintain state when aborting
@@ -129,7 +128,7 @@ class TokenParser(command: CommandConfig) {
             if (argumentCount <= 0) {
                 argumentsIndex++
                 if (argumentsIndex >= arguments.size) {
-                    return@args // No arguments needed anymore, bail out
+                    throw StrayArgumentException(null, token)
                 }
                 argumentCount = arguments[argumentsIndex].count.last
             }
@@ -159,6 +158,7 @@ class TokenParser(command: CommandConfig) {
             val name = token[equals - 1]
             val argument = token.substring(equals + 1)
 
+            @Suppress("ReplaceSingleLineLet")
             (shortOptions[name]
                     ?: throw UnknownOptionException(null, name)).let {
                 appendToken(Token.Parameter(it, listOf(argument)))
@@ -197,6 +197,7 @@ class TokenParser(command: CommandConfig) {
             val name = token.substring(0, equals)
             val argument = token.substring(equals + 1)
 
+            @Suppress("ReplaceSingleLineLet")
             (longOptions[name]
                     ?: throw UnknownOptionException(null, name)).let {
                 appendToken(Token.Parameter(it, listOf(argument)))

@@ -18,11 +18,11 @@ package org.tobi29.coroutines
 
 import kotlinx.coroutines.experimental.NonCancellable
 import kotlinx.coroutines.experimental.withContext
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.SteadyClock
 import org.tobi29.utils.steadyClock
 import kotlin.math.roundToLong
 
-@Suppress("NOTHING_TO_INLINE")
 class Timer(val clock: SteadyClock = steadyClock) {
     var lastTimestamp = 0L
     var lastSync = 0L
@@ -40,8 +40,7 @@ class Timer(val clock: SteadyClock = steadyClock) {
         maxDiff: Long,
         park: (Long) -> Unit,
         minSkipDelay: Long = 0L
-    ): Long =
-        cap(maxDiff, park, minSkipDelay, {})
+    ): Long = cap(maxDiff, park, minSkipDelay, {})
 
     inline fun cap(
         maxDiff: Long,
@@ -75,12 +74,9 @@ class Timer(val clock: SteadyClock = steadyClock) {
         }, diff, tickDiff)
     }
 
-    inline fun tick(maxDiff: Long = 0L): Long =
-        tick(maxDiff, { clock.timeSteadyNanos() })
-
     inline fun tick(
         maxDiff: Long = 0L,
-        park: (Long) -> Long
+        park: (Long) -> Long = { clock.timeSteadyNanos() }
     ): Long {
         var tickDiff = 0L
         tick(maxDiff, park, {}, { tickDiff = it })
@@ -103,9 +99,20 @@ class Timer(val clock: SteadyClock = steadyClock) {
     }
 
     companion object {
-        fun toTps(diff: Long) = 1000000000.0 / diff
-        fun toDiff(tps: Double) = (1000000000.0 / tps).roundToLong()
-        fun toDelta(diff: Long) = diff / 1000000000.0
+        @InlineUtility
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun toTps(diff: Long): Double =
+            1000000000.0 / diff
+
+        @InlineUtility
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun toDiff(tps: Double): Long =
+            (1000000000.0 / tps).roundToLong()
+
+        @InlineUtility
+        @Suppress("NOTHING_TO_INLINE")
+        inline fun toDelta(diff: Long): Double =
+            diff / 1000000000.0
     }
 }
 

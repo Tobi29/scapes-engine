@@ -26,8 +26,7 @@ import org.tobi29.utils.ComponentTypeRegistered
 
 class MemoryProfilerComponent(
     private val debugValues: GuiWidgetDebugValues
-) : ComponentRegisteredHolder<ScapesEngine>,
-    ComponentStep {
+) : ComponentRegisteredHolder<ScapesEngine>, ComponentStep {
     private val runtime = Runtime.getRuntime()
     private var job: Job? = null
 
@@ -57,6 +56,7 @@ class MemoryProfilerComponent(
     }
 
     companion object {
-        val COMPONENT = ComponentTypeRegistered<ScapesEngine, MemoryProfilerComponent, Any>()
+        val COMPONENT =
+            ComponentTypeRegistered<ScapesEngine, MemoryProfilerComponent, Any>()
     }
 }

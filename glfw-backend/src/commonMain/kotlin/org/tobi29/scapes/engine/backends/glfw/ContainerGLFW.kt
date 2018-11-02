@@ -392,9 +392,7 @@ class ContainerGLFW(
         val timer = Timer()
 
         fun init() {
-            glfwSetMonitorCallback(
-                monitorFun
-            )
+            glfwSetMonitorCallback(monitorFun)
             controllers.init()
             timer.init()
         }
