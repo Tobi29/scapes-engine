@@ -433,7 +433,7 @@ fun nextPowerOfTwo(value: Int): Int {
     return output + 1
 }
 
-fun Float.toHalfFloat(): Short {
+fun Float.toHalfFloatShort(): Short {
     val bits = toRawBits()
     val sign = bits.ushr(16) and 0x8000
     var value = (bits and 0x7fffffff) + 0x1000

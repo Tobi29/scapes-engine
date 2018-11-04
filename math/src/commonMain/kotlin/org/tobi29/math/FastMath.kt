@@ -22,9 +22,9 @@ package org.tobi29.math
 object FastMath {
     @Deprecated(
         "Use extension function",
-        ReplaceWith("a.toHalfFloat()", "org.tobi29.math.toHalfFloat")
+        ReplaceWith("a.toHalfFloatShort()", "org.tobi29.math.toHalfFloatShort")
     )
-    inline fun convertFloatToHalf(a: Float): Short = a.toHalfFloat()
+    inline fun convertFloatToHalf(a: Float): Short = a.toHalfFloatShort()
 
     @Deprecated(
         "Use top-level function",
