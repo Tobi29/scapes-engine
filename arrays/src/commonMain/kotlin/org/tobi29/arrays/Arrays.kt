@@ -397,6 +397,24 @@ class Array2<T>(
      * @return A new wrapper around a new array
      */
     fun copyOf() = Array2(width, height, array.copyOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ElementsRO2<*>
+            || width != other.width || height != other.height) return false
+        indices { x, y ->
+            if (this[x, y] != other[x, y]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        indices { x, y ->
+            h = h * 31 + (this[x, y]?.hashCode() ?: 0)
+        }
+        return h
+    }
 }
 
 /**
@@ -489,6 +507,24 @@ class Array3<T>(
      * @return A new wrapper around a new array
      */
     fun copyOf() = Array3(width, height, depth, array.copyOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ElementsRO3<*>
+            || width != other.width || height != other.height) return false
+        indices { x, y, z ->
+            if (this[x, y, z] != other[x, y, z]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        indices { x, y, z ->
+            h = h * 31 + (this[x, y, z]?.hashCode() ?: 0)
+        }
+        return h
+    }
 }
 
 /**

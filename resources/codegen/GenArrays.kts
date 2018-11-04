@@ -320,7 +320,8 @@ internal class ${specialize("${elements}Slice")}(
     override val array: ${specialize(elements)},
     offset: Int,
     size: Int
-) : ${specialize("${elementsRO}Slice")}(array, offset, size), ${specialize(elements)} {
+) : ${specialize("${elementsRO}Slice")}(array, offset, size), ${
+    specialize(elements)} {
     override fun set(index: Int, value: $type) =
         array.set(index(offset, size, index), value)
 }
@@ -579,6 +580,24 @@ class ${specialize("Array2")}(
      * @return A new wrapper around a new array
      */
     fun copyOf() = ${specializeName("Array2")}(width, height, array.copyOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ${specializeAny(elementsRO2)}
+            || width != other.width || height != other.height) return false
+        indices { x, y ->
+            if (this[x, y] != other[x, y]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        indices { x, y ->
+            h = h * 31 + ${if (isReference) "(this[x, y]?.hashCode() ?: 0)" else "this[x, y].primitiveHashCode()"}
+        }
+        return h
+    }
 }
 
 /**
@@ -673,6 +692,24 @@ class ${specialize("Array3")}(
     fun copyOf() = ${specializeName(
         "Array3"
     )}(width, height, depth, array.copyOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ${specializeAny(elementsRO3)}
+            || width != other.width || height != other.height) return false
+        indices { x, y, z ->
+            if (this[x, y, z] != other[x, y, z]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        indices { x, y, z ->
+            h = h * 31 + ${if (isReference) "(this[x, y, z]?.hashCode() ?: 0)" else "this[x, y, z].primitiveHashCode()"}
+        }
+        return h
+    }
 }
 
 /**

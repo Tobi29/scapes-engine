@@ -408,6 +408,24 @@ class FloatArray2(
      * @return A new wrapper around a new array
      */
     fun copyOf() = FloatArray2(width, height, array.copyOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FloatsRO2
+            || width != other.width || height != other.height) return false
+        indices { x, y ->
+            if (this[x, y] != other[x, y]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        indices { x, y ->
+            h = h * 31 + this[x, y].primitiveHashCode()
+        }
+        return h
+    }
 }
 
 /**
@@ -500,6 +518,24 @@ class FloatArray3(
      * @return A new wrapper around a new array
      */
     fun copyOf() = FloatArray3(width, height, depth, array.copyOf())
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FloatsRO3
+            || width != other.width || height != other.height) return false
+        indices { x, y, z ->
+            if (this[x, y, z] != other[x, y, z]) return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var h = 1
+        indices { x, y, z ->
+            h = h * 31 + this[x, y, z].primitiveHashCode()
+        }
+        return h
+    }
 }
 
 /**
