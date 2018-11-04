@@ -18,6 +18,7 @@ package org.tobi29.math.matrix
 
 import org.tobi29.arrays.FloatArray2
 import org.tobi29.arrays.Floats2
+import org.tobi29.arrays.FloatsRO2
 import org.tobi29.math.cosTable
 import org.tobi29.math.sinTable
 import org.tobi29.math.vector.Vector3d
@@ -355,6 +356,14 @@ class MutableMatrix4f(
         }
         return true
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is FloatsRO2) return false
+        return array == other
+    }
+
+    override fun hashCode(): Int = array.hashCode()
 
     // TODO: Remove after 0.0.14
 

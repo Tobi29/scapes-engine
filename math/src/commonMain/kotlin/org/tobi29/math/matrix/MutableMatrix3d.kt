@@ -17,6 +17,7 @@ package org.tobi29.math.matrix
 
 import org.tobi29.arrays.DoubleArray2
 import org.tobi29.arrays.Doubles2
+import org.tobi29.arrays.DoublesRO2
 import org.tobi29.math.cosTable
 import org.tobi29.math.sinTable
 import org.tobi29.math.vector.MutableVector3d
@@ -217,11 +218,11 @@ class MutableMatrix3d(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is MutableMatrix3d) return false
-        return array.array contentEquals other.array.array
+        if (other !is DoublesRO2) return false
+        return array == other
     }
 
-    override fun hashCode(): Int = array.array.contentHashCode()
+    override fun hashCode(): Int = array.hashCode()
 
     // TODO: Remove after 0.0.14
 

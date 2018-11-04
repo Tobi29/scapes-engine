@@ -17,6 +17,7 @@ package org.tobi29.math.matrix
 
 import org.tobi29.arrays.DoubleArray2
 import org.tobi29.arrays.Doubles2
+import org.tobi29.arrays.DoublesRO2
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.dot
@@ -102,11 +103,11 @@ class MutableMatrix2d(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is MutableMatrix2d) return false
-        return array.array contentEquals other.array.array
+        if (other !is DoublesRO2) return false
+        return array == other
     }
 
-    override fun hashCode(): Int = array.array.contentHashCode()
+    override fun hashCode(): Int = array.hashCode()
 
     // TODO: Remove after 0.0.14
 
