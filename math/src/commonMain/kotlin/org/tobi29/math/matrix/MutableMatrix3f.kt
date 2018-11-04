@@ -16,6 +16,7 @@
 package org.tobi29.math.matrix
 
 import org.tobi29.arrays.FloatArray2
+import org.tobi29.arrays.Floats2
 import org.tobi29.math.cosTable
 import org.tobi29.math.sinTable
 import org.tobi29.math.vector.Vector3d
@@ -25,64 +26,49 @@ import org.tobi29.stdex.math.toRad
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Matrix3f {
-    val values = FloatArray(9)
-    private val values2 = FloatArray2(3, 3, values)
-
-    operator fun get(
-        x: Int,
-        y: Int
-    ) = values2[y, x]
-
-    operator fun set(
-        x: Int,
-        y: Int,
-        value: Float
-    ) {
-        values2[y, x] = value
+class MutableMatrix3f(
+    val array: FloatArray2 = FloatArray2(3, 3)
+) : Floats2 by array {
+    init {
+        require(array.width == 3) { "Array has invalid width" }
+        require(array.height == 3) { "Array has invalid height" }
     }
 
-    fun set(matrix: Matrix3f) {
-        copy(matrix.values, values)
+    fun set(matrix: MutableMatrix3f) {
+        copy(matrix.array.array, array.array)
     }
 
-    fun identity() = set(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f)
+    fun identity() = set(
+        1.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 1.0f
+    )
 
     fun set(
-        xx: Float,
-        xy: Float,
-        xz: Float,
-        yx: Float,
-        yy: Float,
-        yz: Float,
-        zx: Float,
-        zy: Float,
-        zz: Float
+        xx: Float, xy: Float, xz: Float,
+        yx: Float, yy: Float, yz: Float,
+        zx: Float, zy: Float, zz: Float
     ) {
-        values[0] = xx
-        values[1] = yx
-        values[2] = zx
-        values[3] = xy
-        values[4] = yy
-        values[5] = zy
-        values[6] = xz
-        values[7] = yz
-        values[8] = zz
+        this[0, 0] = xx
+        this[1, 0] = yx
+        this[2, 0] = zx
+        this[0, 1] = xy
+        this[1, 1] = yy
+        this[2, 1] = zy
+        this[0, 2] = xz
+        this[1, 2] = yz
+        this[2, 2] = zz
     }
 
     fun scale(
-        x: Float,
-        y: Float,
-        z: Float
+        x: Float = 1.0f,
+        y: Float = 1.0f,
+        z: Float = 1.0f
     ) {
-        for (i in 0..2) {
-            values[i] = values[i] * x
-        }
-        for (i in 3..5) {
-            values[i] = values[i] * y
-        }
-        for (i in 6..8) {
-            values[i] = values[i] * z
+        for (i in 0 until width) {
+            this[i, 0] = this[i, 0] * x
+            this[i, 1] = this[i, 1] * y
+            this[i, 2] = this[i, 2] * z
         }
     }
 
@@ -176,8 +162,8 @@ class Matrix3f {
     }
 
     fun multiply(
-        o: Matrix3d,
-        d: Matrix3d
+        o: MutableMatrix3f,
+        d: MutableMatrix3f
     ) {
         val v00 = xx
         val v01 = xy
@@ -214,6 +200,12 @@ class Matrix3f {
             yx.toDouble(), yy.toDouble(), yz.toDouble(), zx.toDouble(),
             zy.toDouble(), zz.toDouble(), v.x, v.y, v.z, ::Vector3d
         )
+
+    // TODO: Remove after 0.0.14
+
+    @Deprecated("Use array.array", ReplaceWith("array.array"))
+    inline val values: FloatArray
+        get() = array.array
 }
 
 inline fun <R> matrix3fMultiply(
@@ -228,30 +220,38 @@ inline fun <R> matrix3fMultiply(
     dot(xz, yz, zz, x, y, z)
 )
 
-inline var Matrix3f.xx: Float
+inline var MutableMatrix3f.xx: Float
     get() = get(0, 0)
     set(value) = set(0, 0, value)
-inline var Matrix3f.yx: Float
+inline var MutableMatrix3f.yx: Float
     get() = get(1, 0)
     set(value) = set(1, 0, value)
-inline var Matrix3f.zx: Float
+inline var MutableMatrix3f.zx: Float
     get() = get(2, 0)
     set(value) = set(2, 0, value)
-inline var Matrix3f.xy: Float
+inline var MutableMatrix3f.xy: Float
     get() = get(0, 1)
     set(value) = set(0, 1, value)
-inline var Matrix3f.yy: Float
+inline var MutableMatrix3f.yy: Float
     get() = get(1, 1)
     set(value) = set(1, 1, value)
-inline var Matrix3f.zy: Float
+inline var MutableMatrix3f.zy: Float
     get() = get(2, 1)
     set(value) = set(2, 1, value)
-inline var Matrix3f.xz: Float
+inline var MutableMatrix3f.xz: Float
     get() = get(0, 2)
     set(value) = set(0, 2, value)
-inline var Matrix3f.yz: Float
+inline var MutableMatrix3f.yz: Float
     get() = get(1, 2)
     set(value) = set(1, 2, value)
-inline var Matrix3f.zz: Float
+inline var MutableMatrix3f.zz: Float
     get() = get(2, 2)
     set(value) = set(2, 2, value)
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use MutableMatrix3f",
+    ReplaceWith("MutableMatrix3f", "org.tobi29.math.matrix.MutableMatrix3f")
+)
+typealias Matrix3f = MutableMatrix3f

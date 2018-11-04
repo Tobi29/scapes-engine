@@ -19,6 +19,7 @@
  */
 package org.tobi29.math
 
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.stdex.math.HALF_PI
 import org.tobi29.stdex.math.TWO_PI
 import org.tobi29.stdex.math.mix
@@ -67,6 +68,38 @@ class SinLUT(bits: Int) {
 
     fun cos(value: Double): Double = sin(value + HALF_PI)
 }
+
+/**
+ * Computes the sin of [value] using a less accurate table
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun sinTable(value: Float): Float =
+    SinTable.sin(value)
+
+/**
+ * Computes the sin of [value] using a less accurate table
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun sinTable(value: Double): Double =
+    SinTable.sin(value)
+
+/**
+ * Computes the cos of [value] using a less accurate table
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun cosTable(value: Float): Float =
+    SinTable.cos(value)
+
+/**
+ * Computes the cos of [value] using a less accurate table
+ */
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun cosTable(value: Double): Double =
+    SinTable.cos(value)
 
 // TODO: Remove after 0.0.14
 

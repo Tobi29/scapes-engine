@@ -22,9 +22,13 @@ import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.dot
 import org.tobi29.stdex.copy
 
-class Matrix2d() : Doubles2 {
-    val values = DoubleArray(4)
-    private val values2 = DoubleArray2(2, 2, values)
+class MutableMatrix2d(
+    val array: DoubleArray2 = DoubleArray2(2, 2)
+) : Doubles2 by array {
+    init {
+        require(array.width == 2) { "Array has invalid width" }
+        require(array.height == 2) { "Array has invalid height" }
+    }
 
     constructor(
         xx: Double, xy: Double,
@@ -33,42 +37,36 @@ class Matrix2d() : Doubles2 {
         set(xx, xy, yx, yy)
     }
 
-    override val width: Int get() = 2
-    override val height: Int get() = 2
-
-    override fun get(index1: Int, index2: Int): Double =
-        values2[index2, index1]
-
-    override fun set(index1: Int, index2: Int, value: Double) {
-        values2[index2, index1] = value
+    fun set(matrix: MutableMatrix2d) {
+        copy(matrix.array.array, array.array)
     }
 
-    fun set(matrix: Matrix2d) {
-        copy(matrix.values, values)
-    }
-
-    fun identity() = set(1.0, 0.0, 0.0, 1.0)
+    fun identity() = set(
+        1.0, 0.0,
+        0.0, 1.0
+    )
 
     fun set(
         xx: Double, xy: Double,
         yx: Double, yy: Double
     ) {
-        values[0] = xx
-        values[1] = yx
-        values[2] = xy
-        values[3] = yy
+        this[0, 0] = xx
+        this[1, 0] = yx
+        this[0, 1] = xy
+        this[1, 1] = yy
     }
 
-    fun scale(x: Double, y: Double) {
-        for (i in 0..1) {
-            values[i] = values[i] * x
-        }
-        for (i in 2..3) {
-            values[i] = values[i] * y
+    fun scale(
+        x: Double = 1.0,
+        y: Double = 1.0
+    ) {
+        for (i in 0 until width) {
+            this[i, 0] = this[i, 0] * x
+            this[i, 1] = this[i, 1] * y
         }
     }
 
-    fun multiply(o: Matrix2d, d: Matrix2d = o) {
+    fun multiply(o: MutableMatrix2d, d: MutableMatrix2d = o) {
         val v00 = xx
         val v01 = xy
         val v10 = yx
@@ -104,11 +102,17 @@ class Matrix2d() : Doubles2 {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Matrix2d) return false
-        return values contentEquals other.values
+        if (other !is MutableMatrix2d) return false
+        return array.array contentEquals other.array.array
     }
 
-    override fun hashCode(): Int = values.contentHashCode()
+    override fun hashCode(): Int = array.array.contentHashCode()
+
+    // TODO: Remove after 0.0.14
+
+    @Deprecated("Use array.array", ReplaceWith("array.array"))
+    inline val values: DoubleArray
+        get() = array.array
 }
 
 inline fun <R> matrix2dMultiply(
@@ -121,15 +125,23 @@ inline fun <R> matrix2dMultiply(
     dot(xy, yy, x, y)
 )
 
-inline var Matrix2d.xx: Double
+inline var MutableMatrix2d.xx: Double
     get() = get(0, 0)
     set(value) = set(0, 0, value)
-inline var Matrix2d.yx: Double
+inline var MutableMatrix2d.yx: Double
     get() = get(1, 0)
     set(value) = set(1, 0, value)
-inline var Matrix2d.xy: Double
+inline var MutableMatrix2d.xy: Double
     get() = get(0, 1)
     set(value) = set(0, 1, value)
-inline var Matrix2d.yy: Double
+inline var MutableMatrix2d.yy: Double
     get() = get(1, 1)
     set(value) = set(1, 1, value)
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use MutableMatrix2d",
+    ReplaceWith("MutableMatrix2d", "org.tobi29.math.matrix.MutableMatrix2d")
+)
+typealias Matrix2d = MutableMatrix2d

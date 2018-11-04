@@ -20,7 +20,7 @@ import org.tobi29.arrays.BytesRO
 import org.tobi29.arrays.sliceOver
 import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Cam
-import org.tobi29.math.matrix.Matrix4f
+import org.tobi29.math.matrix.MutableMatrix4f
 import org.tobi29.stdex.assert
 import kotlin.math.max
 import kotlin.math.roundToLong
@@ -194,7 +194,7 @@ inline val GL.space: Double
 inline val GL.contentSpace: Double
     get() = max(contentWidth, contentHeight) / 1920.0
 
-fun Matrix4f.camera(cam: Cam) {
+fun MutableMatrix4f.camera(cam: Cam) {
     rotateAccurate((-cam.tilt).toDouble(), 0.0f, 0.0f, 1.0f)
     rotateAccurate((-cam.pitch - 90.0f).toDouble(), 1.0f, 0.0f, 0.0f)
     rotateAccurate((-cam.yaw + 90.0f).toDouble(), 0.0f, 0.0f, 1.0f)

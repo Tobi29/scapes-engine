@@ -27,9 +27,13 @@ import org.tobi29.stdex.math.toRad
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Matrix3d() : Doubles2 {
-    val values = DoubleArray(9)
-    private val values2 = DoubleArray2(3, 3, values)
+class MutableMatrix3d(
+    val array: DoubleArray2 = DoubleArray2(3, 3)
+) : Doubles2 by array {
+    init {
+        require(array.width == 3) { "Array has invalid width" }
+        require(array.height == 3) { "Array has invalid height" }
+    }
 
     constructor(
         xx: Double, xy: Double, xz: Double,
@@ -39,47 +43,48 @@ class Matrix3d() : Doubles2 {
         set(xx, xy, xz, yx, yy, yz, zx, zy, zz)
     }
 
-    override val width: Int get() = 3
-    override val height: Int get() = 3
-
     override fun get(index1: Int, index2: Int): Double =
-        values2[index2, index1]
+        this[index2, index1]
 
     override fun set(index1: Int, index2: Int, value: Double) {
-        values2[index2, index1] = value
+        this[index2, index1] = value
     }
 
-    fun set(matrix: Matrix3d) {
-        copy(matrix.values, values)
+    fun set(matrix: MutableMatrix3d) {
+        copy(matrix.array.array, array.array)
     }
 
-    fun identity() = set(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+    fun identity() = set(
+        1.0, 0.0, 0.0,
+        0.0, 1.0, 0.0,
+        0.0, 0.0, 1.0
+    )
 
     fun set(
         xx: Double, xy: Double, xz: Double,
         yx: Double, yy: Double, yz: Double,
         zx: Double, zy: Double, zz: Double
     ) {
-        values[0] = xx
-        values[1] = yx
-        values[2] = zx
-        values[3] = xy
-        values[4] = yy
-        values[5] = zy
-        values[6] = xz
-        values[7] = yz
-        values[8] = zz
+        this[0, 0] = xx
+        this[1, 0] = yx
+        this[2, 0] = zx
+        this[0, 1] = xy
+        this[1, 1] = yy
+        this[2, 1] = zy
+        this[0, 2] = xz
+        this[1, 2] = yz
+        this[2, 2] = zz
     }
 
-    fun scale(x: Double, y: Double, z: Double) {
-        for (i in 0..2) {
-            values[i] = values[i] * x
-        }
-        for (i in 3..5) {
-            values[i] = values[i] * y
-        }
-        for (i in 6..8) {
-            values[i] = values[i] * z
+    fun scale(
+        x: Double = 1.0,
+        y: Double = 1.0,
+        z: Double = 1.0
+    ) {
+        for (i in 0 until width) {
+            this[i, 0] = this[i, 0] * x
+            this[i, 1] = this[i, 1] * y
+            this[i, 2] = this[i, 2] * z
         }
     }
 
@@ -161,7 +166,7 @@ class Matrix3d() : Doubles2 {
         yz = t12
     }
 
-    fun multiply(o: Matrix3d, d: Matrix3d) {
+    fun multiply(o: MutableMatrix3d, d: MutableMatrix3d) {
         val v00 = xx
         val v01 = xy
         val v02 = xz
@@ -212,11 +217,17 @@ class Matrix3d() : Doubles2 {
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Matrix3d) return false
-        return values contentEquals other.values
+        if (other !is MutableMatrix3d) return false
+        return array.array contentEquals other.array.array
     }
 
-    override fun hashCode(): Int = values.contentHashCode()
+    override fun hashCode(): Int = array.array.contentHashCode()
+
+    // TODO: Remove after 0.0.14
+
+    @Deprecated("Use array.array", ReplaceWith("array.array"))
+    inline val values: DoubleArray
+        get() = array.array
 }
 
 inline fun <R> matrix3dMultiply(
@@ -231,30 +242,38 @@ inline fun <R> matrix3dMultiply(
     dot(xz, yz, zz, x, y, z)
 )
 
-inline var Matrix3d.xx: Double
+inline var MutableMatrix3d.xx: Double
     get() = get(0, 0)
     set(value) = set(0, 0, value)
-inline var Matrix3d.yx: Double
+inline var MutableMatrix3d.yx: Double
     get() = get(1, 0)
     set(value) = set(1, 0, value)
-inline var Matrix3d.zx: Double
+inline var MutableMatrix3d.zx: Double
     get() = get(2, 0)
     set(value) = set(2, 0, value)
-inline var Matrix3d.xy: Double
+inline var MutableMatrix3d.xy: Double
     get() = get(0, 1)
     set(value) = set(0, 1, value)
-inline var Matrix3d.yy: Double
+inline var MutableMatrix3d.yy: Double
     get() = get(1, 1)
     set(value) = set(1, 1, value)
-inline var Matrix3d.zy: Double
+inline var MutableMatrix3d.zy: Double
     get() = get(2, 1)
     set(value) = set(2, 1, value)
-inline var Matrix3d.xz: Double
+inline var MutableMatrix3d.xz: Double
     get() = get(0, 2)
     set(value) = set(0, 2, value)
-inline var Matrix3d.yz: Double
+inline var MutableMatrix3d.yz: Double
     get() = get(1, 2)
     set(value) = set(1, 2, value)
-inline var Matrix3d.zz: Double
+inline var MutableMatrix3d.zz: Double
     get() = get(2, 2)
     set(value) = set(2, 2, value)
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use MutableMatrix3d",
+    ReplaceWith("MutableMatrix3d", "org.tobi29.math.matrix.MutableMatrix3d")
+)
+typealias Matrix3d = MutableMatrix3d

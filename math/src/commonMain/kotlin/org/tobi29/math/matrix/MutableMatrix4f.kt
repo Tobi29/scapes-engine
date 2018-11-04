@@ -17,6 +17,7 @@
 package org.tobi29.math.matrix
 
 import org.tobi29.arrays.FloatArray2
+import org.tobi29.arrays.Floats2
 import org.tobi29.math.cosTable
 import org.tobi29.math.sinTable
 import org.tobi29.math.vector.Vector3d
@@ -28,81 +29,60 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.tan
 
-class Matrix4f {
-    val values = FloatArray(16)
-    private val values2 = FloatArray2(4, 4, values)
-
-    operator fun get(
-        x: Int,
-        y: Int
-    ) = values2[y, x]
-
-    operator fun set(
-        x: Int,
-        y: Int,
-        value: Float
-    ) {
-        values2[y, x] = value
+class MutableMatrix4f(
+    val array: FloatArray2 = FloatArray2(4, 4)
+) : Floats2 by array {
+    init {
+        require(array.width == 4) { "Array has invalid width" }
+        require(array.height == 4) { "Array has invalid height" }
     }
 
-    fun set(matrix: Matrix4f) {
-        copy(matrix.values, values)
+    fun set(matrix: MutableMatrix4f) {
+        copy(matrix.array.array, array.array)
     }
 
     fun identity() = set(
-        1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
     )
 
     fun set(
-        xx: Float,
-        xy: Float,
-        xz: Float,
-        xw: Float,
-        yx: Float,
-        yy: Float,
-        yz: Float,
-        yw: Float,
-        zx: Float,
-        zy: Float,
-        zz: Float,
-        zw: Float,
-        wx: Float,
-        wy: Float,
-        wz: Float,
-        ww: Float
+        xx: Float, xy: Float, xz: Float, xw: Float,
+        yx: Float, yy: Float, yz: Float, yw: Float,
+        zx: Float, zy: Float, zz: Float, zw: Float,
+        wx: Float, wy: Float, wz: Float, ww: Float
     ) {
-        values[0] = xx
-        values[1] = yx
-        values[2] = zx
-        values[3] = wx
-        values[4] = xy
-        values[5] = yy
-        values[6] = zy
-        values[7] = wy
-        values[8] = xz
-        values[9] = yz
-        values[10] = zz
-        values[11] = wz
-        values[12] = xw
-        values[13] = yw
-        values[14] = zw
-        values[15] = ww
+        this[0, 0] = xx
+        this[1, 0] = yx
+        this[2, 0] = zx
+        this[3, 0] = wx
+        this[0, 1] = xy
+        this[1, 1] = yy
+        this[2, 1] = zy
+        this[3, 1] = wy
+        this[0, 2] = xz
+        this[1, 2] = yz
+        this[2, 2] = zz
+        this[3, 2] = wz
+        this[0, 3] = xw
+        this[1, 3] = yw
+        this[2, 3] = zw
+        this[3, 3] = ww
     }
 
     fun scale(
-        x: Float,
-        y: Float,
-        z: Float
+        x: Float = 1.0f,
+        y: Float = 1.0f,
+        z: Float = 1.0f,
+        w: Float = 1.0f
     ) {
-        for (i in 0..3) {
-            values[i] = values[i] * x
-        }
-        for (i in 4..7) {
-            values[i] = values[i] * y
-        }
-        for (i in 8..11) {
-            values[i] = values[i] * z
+        for (i in 0 until width) {
+            this[i, 0] = this[i, 0] * x
+            this[i, 1] = this[i, 1] * y
+            this[i, 2] = this[i, 2] * z
+            this[i, 3] = this[i, 3] * w
         }
     }
 
@@ -215,8 +195,8 @@ class Matrix4f {
     }
 
     fun multiply(
-        o: Matrix4f,
-        d: Matrix4f
+        o: MutableMatrix4f,
+        d: MutableMatrix4f
     ) {
         val v00 = xx
         val v01 = xy
@@ -331,57 +311,56 @@ class Matrix4f {
     }
 
     fun invert(
-        temp: Matrix4f,
-        out: Matrix4f
+        temp: MutableMatrix4f,
+        out: MutableMatrix4f
     ): Boolean {
         if (temp !== this) {
             temp.set(this)
         }
         out.identity()
         for (i in 0..3) {
-            val i4 = i shl 2
             var swap = i
             for (j in i + 1..3) {
-                if (abs(temp.values[(j shl 2) + i]) > abs(
-                        temp.values[i4 + i]
-                    )) {
+                if (abs(temp[i, j]) > abs(temp[i, i])) {
                     swap = j
                 }
             }
             if (swap != i) {
-                val swap4 = swap shl 2
                 for (k in 0..3) {
-                    var t = temp.values[i4 + k]
-                    temp.values[i4 + k] = temp.values[swap4 + k]
-                    temp.values[swap4 + k] = t
-                    t = out.values[i4 + k]
-                    out.values[i4 + k] = out.values[swap4 + k]
-                    out.values[swap4 + k] = t
+                    var t = temp[k, i]
+                    temp[k, i] = temp[k, swap]
+                    temp[k, swap] = t
+                    t = out[k, i]
+                    out[k, i] = out[k, swap]
+                    out[k, swap] = t
                 }
             }
-            if (temp.values[i4 + i] == 0f) {
+            if (temp[i, i] == 0f) {
                 return false
             }
-            var t = temp.values[i4 + i]
+            var t = temp[i, i]
             for (k in 0..3) {
-                temp.values[i4 + k] = temp.values[i4 + k] / t
-                out.values[i4 + k] = out.values[i4 + k] / t
+                temp[k, i] = temp[k, i] / t
+                out[k, i] = out[k, i] / t
             }
             for (j in 0..3) {
                 if (j != i) {
-                    val j4 = j shl 2
-                    t = temp.values[j4 + i]
+                    t = temp[j, i]
                     for (k in 0..3) {
-                        temp.values[j4 + k] = temp.values[j4 + k] - temp.values[i4 + k] *
-                                t
-                        out.values[j4 + k] = out.values[j4 + k] - out.values[i4 + k] *
-                                t
+                        temp[j, k] = temp[j, k] - temp[k, i] * t
+                        out[j, k] = out[j, k] - out[k, i] * t
                     }
                 }
             }
         }
         return true
     }
+
+    // TODO: Remove after 0.0.14
+
+    @Deprecated("Use array.array", ReplaceWith("array.array"))
+    inline val values: FloatArray
+        get() = array.array
 }
 
 inline fun <R> matrix4fMultiply(
@@ -398,51 +377,59 @@ inline fun <R> matrix4fMultiply(
     dot(xw, yw, zw, ww, x, y, z, w)
 )
 
-inline var Matrix4f.xx: Float
+inline var MutableMatrix4f.xx: Float
     get() = get(0, 0)
     set(value) = set(0, 0, value)
-inline var Matrix4f.yx: Float
+inline var MutableMatrix4f.yx: Float
     get() = get(1, 0)
     set(value) = set(1, 0, value)
-inline var Matrix4f.zx: Float
+inline var MutableMatrix4f.zx: Float
     get() = get(2, 0)
     set(value) = set(2, 0, value)
-inline var Matrix4f.wx: Float
+inline var MutableMatrix4f.wx: Float
     get() = get(3, 0)
     set(value) = set(3, 0, value)
-inline var Matrix4f.xy: Float
+inline var MutableMatrix4f.xy: Float
     get() = get(0, 1)
     set(value) = set(0, 1, value)
-inline var Matrix4f.yy: Float
+inline var MutableMatrix4f.yy: Float
     get() = get(1, 1)
     set(value) = set(1, 1, value)
-inline var Matrix4f.zy: Float
+inline var MutableMatrix4f.zy: Float
     get() = get(2, 1)
     set(value) = set(2, 1, value)
-inline var Matrix4f.wy: Float
+inline var MutableMatrix4f.wy: Float
     get() = get(3, 1)
     set(value) = set(3, 1, value)
-inline var Matrix4f.xz: Float
+inline var MutableMatrix4f.xz: Float
     get() = get(0, 2)
     set(value) = set(0, 2, value)
-inline var Matrix4f.yz: Float
+inline var MutableMatrix4f.yz: Float
     get() = get(1, 2)
     set(value) = set(1, 2, value)
-inline var Matrix4f.zz: Float
+inline var MutableMatrix4f.zz: Float
     get() = get(2, 2)
     set(value) = set(2, 2, value)
-inline var Matrix4f.wz: Float
+inline var MutableMatrix4f.wz: Float
     get() = get(3, 2)
     set(value) = set(3, 2, value)
-inline var Matrix4f.xw: Float
+inline var MutableMatrix4f.xw: Float
     get() = get(0, 3)
     set(value) = set(0, 3, value)
-inline var Matrix4f.yw: Float
+inline var MutableMatrix4f.yw: Float
     get() = get(1, 3)
     set(value) = set(1, 3, value)
-inline var Matrix4f.zw: Float
+inline var MutableMatrix4f.zw: Float
     get() = get(2, 3)
     set(value) = set(2, 3, value)
-inline var Matrix4f.ww: Float
+inline var MutableMatrix4f.ww: Float
     get() = get(3, 3)
     set(value) = set(3, 3, value)
+
+// TODO: Remove after 0.0.14
+
+@Deprecated(
+    "Use MutableMatrix4f",
+    ReplaceWith("MutableMatrix4f", "org.tobi29.math.matrix.MutableMatrix4f")
+)
+typealias Matrix4f = MutableMatrix4f

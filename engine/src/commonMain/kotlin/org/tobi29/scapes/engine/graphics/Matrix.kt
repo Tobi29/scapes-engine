@@ -15,14 +15,14 @@
  */
 package org.tobi29.scapes.engine.graphics
 
-import org.tobi29.math.matrix.Matrix3f
-import org.tobi29.math.matrix.Matrix4f
+import org.tobi29.math.matrix.MutableMatrix3f
+import org.tobi29.math.matrix.MutableMatrix4f
 import org.tobi29.stdex.math.toRad
 
 class Matrix {
-    private val modelViewProjectionMatrix = Matrix4f()
-    private val modelViewMatrix = Matrix4f()
-    private val normalMatrix = Matrix3f()
+    val modelViewProjectionMatrix = MutableMatrix4f()
+    val modelViewMatrix = MutableMatrix4f()
+    val normalMatrix = MutableMatrix3f()
 
     fun copy(matrix: Matrix) {
         modelViewProjectionMatrix.set(matrix.modelViewProjectionMatrix)
@@ -88,15 +88,29 @@ class Matrix {
         normalMatrix.rotateAccurateRad(angle, x, y, z)
     }
 
-    fun modelViewProjection(): Matrix4f {
+    // TODO: Remove after 0.0.14
+
+    @Deprecated(
+        "Use modelViewProjectionMatrix",
+        ReplaceWith("modelViewProjectionMatrix")
+    )
+    fun modelViewProjection(): MutableMatrix4f {
         return modelViewProjectionMatrix
     }
 
-    fun modelView(): Matrix4f {
+    @Deprecated(
+        "Use modelViewMatrix",
+        ReplaceWith("modelViewMatrix")
+    )
+    fun modelView(): MutableMatrix4f {
         return modelViewMatrix
     }
 
-    fun normal(): Matrix3f {
+    @Deprecated(
+        "Use normalMatrix",
+        ReplaceWith("normalMatrix")
+    )
+    fun normal(): MutableMatrix3f {
         return normalMatrix
     }
 }
