@@ -55,22 +55,22 @@ class MutableMatrix4f(
         zx: Float, zy: Float, zz: Float, zw: Float,
         wx: Float, wy: Float, wz: Float, ww: Float
     ) {
-        this[0, 0] = xx
-        this[1, 0] = yx
-        this[2, 0] = zx
-        this[3, 0] = wx
-        this[0, 1] = xy
-        this[1, 1] = yy
-        this[2, 1] = zy
-        this[3, 1] = wy
-        this[0, 2] = xz
-        this[1, 2] = yz
-        this[2, 2] = zz
-        this[3, 2] = wz
-        this[0, 3] = xw
-        this[1, 3] = yw
-        this[2, 3] = zw
-        this[3, 3] = ww
+        this.xx = xx
+        this.yx = yx
+        this.zx = zx
+        this.wx = wx
+        this.xy = xy
+        this.yy = yy
+        this.zy = zy
+        this.wy = wy
+        this.xz = xz
+        this.yz = yz
+        this.zz = zz
+        this.wz = wz
+        this.xw = xw
+        this.yw = yw
+        this.zw = zw
+        this.ww = ww
     }
 
     fun scale(
@@ -390,47 +390,47 @@ inline var MutableMatrix4f.xx: Float
     get() = get(0, 0)
     set(value) = set(0, 0, value)
 inline var MutableMatrix4f.yx: Float
-    get() = get(1, 0)
-    set(value) = set(1, 0, value)
-inline var MutableMatrix4f.zx: Float
-    get() = get(2, 0)
-    set(value) = set(2, 0, value)
-inline var MutableMatrix4f.wx: Float
-    get() = get(3, 0)
-    set(value) = set(3, 0, value)
-inline var MutableMatrix4f.xy: Float
     get() = get(0, 1)
     set(value) = set(0, 1, value)
+inline var MutableMatrix4f.zx: Float
+    get() = get(0, 2)
+    set(value) = set(0, 2, value)
+inline var MutableMatrix4f.wx: Float
+    get() = get(0, 3)
+    set(value) = set(0, 3, value)
+inline var MutableMatrix4f.xy: Float
+    get() = get(1, 0)
+    set(value) = set(1, 0, value)
 inline var MutableMatrix4f.yy: Float
     get() = get(1, 1)
     set(value) = set(1, 1, value)
 inline var MutableMatrix4f.zy: Float
-    get() = get(2, 1)
-    set(value) = set(2, 1, value)
-inline var MutableMatrix4f.wy: Float
-    get() = get(3, 1)
-    set(value) = set(3, 1, value)
-inline var MutableMatrix4f.xz: Float
-    get() = get(0, 2)
-    set(value) = set(0, 2, value)
-inline var MutableMatrix4f.yz: Float
     get() = get(1, 2)
     set(value) = set(1, 2, value)
+inline var MutableMatrix4f.wy: Float
+    get() = get(1, 3)
+    set(value) = set(1, 3, value)
+inline var MutableMatrix4f.xz: Float
+    get() = get(2, 0)
+    set(value) = set(2, 0, value)
+inline var MutableMatrix4f.yz: Float
+    get() = get(2, 1)
+    set(value) = set(2, 1, value)
 inline var MutableMatrix4f.zz: Float
     get() = get(2, 2)
     set(value) = set(2, 2, value)
 inline var MutableMatrix4f.wz: Float
-    get() = get(3, 2)
-    set(value) = set(3, 2, value)
-inline var MutableMatrix4f.xw: Float
-    get() = get(0, 3)
-    set(value) = set(0, 3, value)
-inline var MutableMatrix4f.yw: Float
-    get() = get(1, 3)
-    set(value) = set(1, 3, value)
-inline var MutableMatrix4f.zw: Float
     get() = get(2, 3)
     set(value) = set(2, 3, value)
+inline var MutableMatrix4f.xw: Float
+    get() = get(3, 0)
+    set(value) = set(3, 0, value)
+inline var MutableMatrix4f.yw: Float
+    get() = get(3, 1)
+    set(value) = set(3, 1, value)
+inline var MutableMatrix4f.zw: Float
+    get() = get(3, 2)
+    set(value) = set(3, 2, value)
 inline var MutableMatrix4f.ww: Float
     get() = get(3, 3)
     set(value) = set(3, 3, value)

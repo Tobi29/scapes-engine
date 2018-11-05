@@ -50,15 +50,15 @@ class MutableMatrix3f(
         yx: Float, yy: Float, yz: Float,
         zx: Float, zy: Float, zz: Float
     ) {
-        this[0, 0] = xx
-        this[1, 0] = yx
-        this[2, 0] = zx
-        this[0, 1] = xy
-        this[1, 1] = yy
-        this[2, 1] = zy
-        this[0, 2] = xz
-        this[1, 2] = yz
-        this[2, 2] = zz
+        this.xx = xx
+        this.yx = yx
+        this.zx = zx
+        this.xy = xy
+        this.yy = yy
+        this.zy = zy
+        this.xz = xz
+        this.yz = yz
+        this.zz = zz
     }
 
     fun scale(
@@ -233,26 +233,26 @@ inline var MutableMatrix3f.xx: Float
     get() = get(0, 0)
     set(value) = set(0, 0, value)
 inline var MutableMatrix3f.yx: Float
-    get() = get(1, 0)
-    set(value) = set(1, 0, value)
-inline var MutableMatrix3f.zx: Float
-    get() = get(2, 0)
-    set(value) = set(2, 0, value)
-inline var MutableMatrix3f.xy: Float
     get() = get(0, 1)
     set(value) = set(0, 1, value)
+inline var MutableMatrix3f.zx: Float
+    get() = get(0, 2)
+    set(value) = set(0, 2, value)
+inline var MutableMatrix3f.xy: Float
+    get() = get(1, 0)
+    set(value) = set(1, 0, value)
 inline var MutableMatrix3f.yy: Float
     get() = get(1, 1)
     set(value) = set(1, 1, value)
 inline var MutableMatrix3f.zy: Float
-    get() = get(2, 1)
-    set(value) = set(2, 1, value)
-inline var MutableMatrix3f.xz: Float
-    get() = get(0, 2)
-    set(value) = set(0, 2, value)
-inline var MutableMatrix3f.yz: Float
     get() = get(1, 2)
     set(value) = set(1, 2, value)
+inline var MutableMatrix3f.xz: Float
+    get() = get(2, 0)
+    set(value) = set(2, 0, value)
+inline var MutableMatrix3f.yz: Float
+    get() = get(2, 1)
+    set(value) = set(2, 1, value)
 inline var MutableMatrix3f.zz: Float
     get() = get(2, 2)
     set(value) = set(2, 2, value)

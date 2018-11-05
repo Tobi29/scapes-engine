@@ -51,10 +51,10 @@ class MutableMatrix2d(
         xx: Double, xy: Double,
         yx: Double, yy: Double
     ) {
-        this[0, 0] = xx
-        this[1, 0] = yx
-        this[0, 1] = xy
-        this[1, 1] = yy
+        this.xx = xx
+        this.yx = yx
+        this.xy = xy
+        this.yy = yy
     }
 
     fun scale(
@@ -130,11 +130,11 @@ inline var MutableMatrix2d.xx: Double
     get() = get(0, 0)
     set(value) = set(0, 0, value)
 inline var MutableMatrix2d.yx: Double
-    get() = get(1, 0)
-    set(value) = set(1, 0, value)
-inline var MutableMatrix2d.xy: Double
     get() = get(0, 1)
     set(value) = set(0, 1, value)
+inline var MutableMatrix2d.xy: Double
+    get() = get(1, 0)
+    set(value) = set(1, 0, value)
 inline var MutableMatrix2d.yy: Double
     get() = get(1, 1)
     set(value) = set(1, 1, value)

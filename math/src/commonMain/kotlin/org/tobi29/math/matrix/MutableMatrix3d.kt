@@ -66,15 +66,15 @@ class MutableMatrix3d(
         yx: Double, yy: Double, yz: Double,
         zx: Double, zy: Double, zz: Double
     ) {
-        this[0, 0] = xx
-        this[1, 0] = yx
-        this[2, 0] = zx
-        this[0, 1] = xy
-        this[1, 1] = yy
-        this[2, 1] = zy
-        this[0, 2] = xz
-        this[1, 2] = yz
-        this[2, 2] = zz
+        this.xx = xx
+        this.yx = yx
+        this.zx = zx
+        this.xy = xy
+        this.yy = yy
+        this.zy = zy
+        this.xz = xz
+        this.yz = yz
+        this.zz = zz
     }
 
     fun scale(
@@ -247,26 +247,26 @@ inline var MutableMatrix3d.xx: Double
     get() = get(0, 0)
     set(value) = set(0, 0, value)
 inline var MutableMatrix3d.yx: Double
-    get() = get(1, 0)
-    set(value) = set(1, 0, value)
-inline var MutableMatrix3d.zx: Double
-    get() = get(2, 0)
-    set(value) = set(2, 0, value)
-inline var MutableMatrix3d.xy: Double
     get() = get(0, 1)
     set(value) = set(0, 1, value)
+inline var MutableMatrix3d.zx: Double
+    get() = get(0, 2)
+    set(value) = set(0, 2, value)
+inline var MutableMatrix3d.xy: Double
+    get() = get(1, 0)
+    set(value) = set(1, 0, value)
 inline var MutableMatrix3d.yy: Double
     get() = get(1, 1)
     set(value) = set(1, 1, value)
 inline var MutableMatrix3d.zy: Double
-    get() = get(2, 1)
-    set(value) = set(2, 1, value)
-inline var MutableMatrix3d.xz: Double
-    get() = get(0, 2)
-    set(value) = set(0, 2, value)
-inline var MutableMatrix3d.yz: Double
     get() = get(1, 2)
     set(value) = set(1, 2, value)
+inline var MutableMatrix3d.xz: Double
+    get() = get(2, 0)
+    set(value) = set(2, 0, value)
+inline var MutableMatrix3d.yz: Double
+    get() = get(2, 1)
+    set(value) = set(2, 1, value)
 inline var MutableMatrix3d.zz: Double
     get() = get(2, 2)
     set(value) = set(2, 2, value)
