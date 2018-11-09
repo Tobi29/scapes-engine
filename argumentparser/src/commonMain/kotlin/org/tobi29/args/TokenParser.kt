@@ -127,10 +127,9 @@ class TokenParser(command: CommandConfig) {
             argumentCount--
             if (argumentCount <= 0) {
                 argumentsIndex++
-                if (argumentsIndex >= arguments.size) {
-                    throw StrayArgumentException(null, token)
+                if (argumentsIndex < arguments.size) {
+                    argumentCount = arguments[argumentsIndex].count.last
                 }
-                argumentCount = arguments[argumentsIndex].count.last
             }
             return
         }

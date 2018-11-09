@@ -395,6 +395,25 @@ object CommandLineTests : Spek({
                     mapOf(),
                     emptyList()
                 )
+            ),
+            data<CommandConfig, List<String>, Pair<List<TokenParser.Token>, CommandLine>>(
+                command2,
+                listOf(
+                    "a"
+                ),
+                expected = listOf(
+                    TokenParser.Token.Argument(
+                        argumentMinArgument,
+                        "a"
+                    )
+                ) to CommandLine(
+                    listOf(command2),
+                    mapOf(),
+                    mapOf(
+                        argumentMinArgument to listOf("a")
+                    ),
+                    null
+                )
             )
         ) { a, b, (expectedTokens, expectedCommandLine) ->
             val (subcommand, tokens) = a.parseTokens(b)
