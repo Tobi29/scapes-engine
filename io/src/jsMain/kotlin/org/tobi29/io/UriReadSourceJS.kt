@@ -107,13 +107,15 @@ class UriPath(private val uri: Uri) : Path {
         request.addEventListener("load", { event ->
             event as ProgressEvent
             resume(
-                if (request.status == 200.toShort() && request.statusText == "OK") {
+                if (request.status == 200.toShort()) {
                     @Suppress("UnsafeCastFromDynamic")
                     val buffer: ArrayBuffer = request.response.asDynamic()
                     ResultOk(
                         Int8Array(buffer, 0, buffer.byteLength).asArray().viewBE
                     )
-                } else ResultError(IOException(request.statusText))
+                } else {
+                    ResultError(IOException(request.statusText))
+                }
             )
         }, undefined)
 
