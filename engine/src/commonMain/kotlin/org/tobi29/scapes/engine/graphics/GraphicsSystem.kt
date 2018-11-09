@@ -16,9 +16,7 @@
 
 package org.tobi29.scapes.engine.graphics
 
-import kotlinx.coroutines.experimental.CancellationException
-import kotlinx.coroutines.experimental.CoroutineDispatcher
-import kotlinx.coroutines.experimental.Runnable
+import kotlinx.coroutines.experimental.*
 import org.tobi29.arrays.sliceOver
 import org.tobi29.coroutines.TaskChannel
 import org.tobi29.coroutines.offer
@@ -30,7 +28,6 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.stdex.concurrent.ReentrantLock
 import org.tobi29.stdex.concurrent.withLock
 import kotlin.coroutines.experimental.CoroutineContext
-import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
 
 class GraphicsSystem(
     val engine: ScapesEngine,
@@ -53,6 +50,9 @@ class GraphicsSystem(
     private var lastContentHeight = 0
     private var lastContainerWidth = 0
     private var lastContainerHeight = 0
+    @PublishedApi
+    internal var gl: GL? = null
+    private var dispatchReentry = 0
 
     val textures = TextureManager(engine)
 
@@ -146,7 +146,13 @@ class GraphicsSystem(
     }
 
     fun executeDispatched(gl: GL) {
+        if (dispatchReentry++ == 0) {
+            this.gl = gl
+        }
         queue.processCurrent { it(gl) }
+        if (--dispatchReentry == 0) {
+            this.gl = null
+        }
     }
 
     fun dispatch(block: (GL) -> Unit) {
@@ -172,7 +178,9 @@ class GraphicsSystem(
 }
 
 suspend inline fun <R> GraphicsSystem.withGraphics(
-    crossinline block: (GL) -> R
-): R = suspendCoroutineOrReturn { continuation ->
-    dispatch { continuation.resume(block(it)) }
+    crossinline block: suspend CoroutineScope.(GL) -> R
+): R = withContext(this) {
+    coroutineScope {
+        block(gl!!)
+    }
 }
