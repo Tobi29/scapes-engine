@@ -30,6 +30,7 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
 import org.tobi29.stdex.concurrent.ReentrantLock
 import org.tobi29.stdex.concurrent.withLock
 import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.experimental.intrinsics.suspendCoroutineOrReturn
 
 class GraphicsSystem(
     val engine: ScapesEngine,
@@ -168,4 +169,10 @@ class GraphicsSystem(
     companion object {
         private val logger = KLogger<GraphicsSystem>()
     }
+}
+
+suspend inline fun <R> GraphicsSystem.withGraphics(
+    crossinline block: (GL) -> R
+): R = suspendCoroutineOrReturn { continuation ->
+    dispatch { continuation.resume(block(it)) }
 }
