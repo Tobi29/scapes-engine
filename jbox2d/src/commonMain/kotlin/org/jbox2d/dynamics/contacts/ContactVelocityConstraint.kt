@@ -24,14 +24,14 @@
 package org.jbox2d.dynamics.contacts
 
 import org.jbox2d.common.Settings
-import org.tobi29.math.matrix.Matrix2d
+import org.tobi29.math.matrix.MutableMatrix2d
 import org.tobi29.math.vector.MutableVector2d
 
 class ContactVelocityConstraint {
     var points = Array(Settings.maxManifoldPoints) { VelocityConstraintPoint() }
     val normal = MutableVector2d()
-    val normalMass = Matrix2d()
-    val K = Matrix2d()
+    val normalMass = MutableMatrix2d()
+    val K = MutableMatrix2d()
     var indexA: Int = 0
     var indexB: Int = 0
     var invMassA: Double = 0.0

@@ -15,9 +15,9 @@
  */
 package org.tobi29.scapes.engine.gui
 
-import org.tobi29.scapes.engine.graphics.MatrixStack
 import org.tobi29.math.vector.Vector2d
 import org.tobi29.math.vector.Vector3d
+import org.tobi29.scapes.engine.graphics.MatrixStack
 
 class GuiRenderer : GuiRenderBatch(Vector2d(1.0, 1.0)) {
     private val matrixStack = MatrixStack(64)
@@ -29,6 +29,6 @@ class GuiRenderer : GuiRenderBatch(Vector2d(1.0, 1.0)) {
     override fun vector(x: Double,
                         y: Double): Vector3d {
         val matrix = matrixStack.current()
-        return matrix.modelView().multiply(Vector3d(x, y, 0.0))
+        return matrix.modelViewMatrix.multiply(Vector3d(x, y, 0.0))
     }
 }

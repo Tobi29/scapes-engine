@@ -26,7 +26,7 @@ package org.jbox2d.dynamics.joints
 import org.jbox2d.common.*
 import org.jbox2d.dynamics.SolverData
 import org.jbox2d.pooling.IWorldPool
-import org.tobi29.math.matrix.Matrix3d
+import org.tobi29.math.matrix.MutableMatrix3d
 import org.tobi29.math.matrix.xz
 import org.tobi29.math.matrix.yz
 import org.tobi29.math.vector.*
@@ -170,7 +170,7 @@ class PrismaticJoint(
     private var m_s2: Double = 0.0
     private var m_a1: Double = 0.0
     private var m_a2: Double = 0.0
-    private val m_K: Matrix3d
+    private val m_K: MutableMatrix3d
     private var m_motorMass: Double =
         0.0 // effective mass for motor/limit translational constraint.
 
@@ -286,7 +286,7 @@ class PrismaticJoint(
         isMotorEnabled = def.enableMotor
         m_limitState = LimitState.INACTIVE
 
-        m_K = Matrix3d()
+        m_K = MutableMatrix3d()
         m_axis = MutableVector2d()
         m_perp = MutableVector2d()
     }

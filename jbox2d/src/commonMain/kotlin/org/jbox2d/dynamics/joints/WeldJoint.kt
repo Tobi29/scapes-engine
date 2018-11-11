@@ -82,7 +82,7 @@ class WeldJoint(
     private var m_invMassB: Double = 0.0
     private var m_invIA: Double = 0.0
     private var m_invIB: Double = 0.0
-    private val m_mass = Matrix3d()
+    private val m_mass = MutableMatrix3d()
 
     init {
         frequency = def.frequencyHz

@@ -112,7 +112,7 @@ internal fun renderPostProcess(
     gl.setBlending(BlendingMode.NORMAL)
     gl.matrixStack.push { matrix ->
         matrix.identity()
-        matrix.modelViewProjection().orthogonal(0.0f, 0.0f, 1.0f, 1.0f)
+        matrix.modelViewProjectionMatrix.orthogonal(0.0f, 0.0f, 1.0f, 1.0f)
         gl.setAttribute4f(GL.COLOR_ATTRIBUTE, 1.0f, 1.0f, 1.0f, 1.0f)
         val texturesColor = framebuffer.texturesColor
         val textureColor = texturesColor[0]

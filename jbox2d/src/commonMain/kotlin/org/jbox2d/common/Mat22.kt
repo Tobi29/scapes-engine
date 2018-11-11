@@ -27,12 +27,12 @@ import org.tobi29.math.matrix.*
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.ReadVector2d
 
-fun Matrix2d.createScaleTransform(scale: Double) = apply {
+fun MutableMatrix2d.createScaleTransform(scale: Double) = apply {
     xx = scale
     yy = scale
 }
 
-fun Matrix2d.solveToOut(
+fun MutableMatrix2d.solveToOut(
     b: ReadVector2d,
     out: MutableVector2d
 ) {
@@ -49,7 +49,7 @@ fun Matrix2d.solveToOut(
     out.y = tempy
 }
 
-fun Matrix2d.invertToOut(out: Matrix2d) {
+fun MutableMatrix2d.invertToOut(out: MutableMatrix2d) {
     val a = xx
     val b = yx
     val c = xy

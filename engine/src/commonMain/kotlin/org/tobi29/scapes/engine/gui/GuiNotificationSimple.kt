@@ -61,7 +61,7 @@ class GuiNotificationSimple(
         val sin = sin(progress * PI).toFloat() - 1.0f
         var sqr = sin * sin
         sqr *= sqr
-        val start = matrix.modelView().multiply(Vector3d.ZERO)
+        val start = matrix.modelViewMatrix.multiply(Vector3d.ZERO)
         matrix.translate(0.0f, (sqr * sin * (start.y + size.y)).toFloat(), 0.0f)
     }
 }

@@ -72,7 +72,7 @@ class MouseJoint(
     private val m_localCenterB = MutableVector2d()
     private var m_invMassB: Double = 0.0
     private var m_invIB: Double = 0.0
-    private val m_mass = Matrix2d()
+    private val m_mass = MutableMatrix2d()
     private val m_C = MutableVector2d()
 
     init {

@@ -295,7 +295,7 @@ abstract class GuiComponent(
         val matrix = Matrix()
         matrix.identity()
         transform(matrix, size)
-        return matrix.modelView().multiply(pos.times(-1.0)).times(-1.0)
+        return matrix.modelViewMatrix.multiply(pos.times(-1.0)).times(-1.0)
     }
 
     protected open fun transform(matrix: Matrix, size: Vector2d) {}

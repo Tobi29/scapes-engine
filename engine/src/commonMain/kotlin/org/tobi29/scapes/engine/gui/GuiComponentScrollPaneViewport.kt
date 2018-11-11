@@ -111,8 +111,8 @@ class GuiComponentScrollPaneViewport(
         if (visible) {
             val matrixStack = gl.matrixStack
             val matrix = matrixStack.current()
-            val start = matrix.modelViewProjection().multiply(Vector3d.ZERO)
-            val end = matrix.modelViewProjection().multiply(
+            val start = matrix.modelViewProjectionMatrix.multiply(Vector3d.ZERO)
+            val end = matrix.modelViewProjectionMatrix.multiply(
                 Vector3d(size.x, size.y, 0.0)
             )
             val xx = ((start.x * 0.5 + 0.5) * gl.contentWidth).floorToInt()

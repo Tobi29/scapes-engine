@@ -30,8 +30,8 @@ import org.jbox2d.collision.TimeOfImpact
 import org.jbox2d.common.Rot
 import org.jbox2d.dynamics.contacts.*
 import org.tobi29.math.AABB2
-import org.tobi29.math.matrix.Matrix2d
-import org.tobi29.math.matrix.Matrix3d
+import org.tobi29.math.matrix.MutableMatrix2d
+import org.tobi29.math.matrix.MutableMatrix3d
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.MutableVector3d
 import org.tobi29.stdex.assert
@@ -49,9 +49,9 @@ class DefaultWorldPool(
         .apply { ensureCapacity(argContainerSize) }
     private val mutableVector3ds = Pool { MutableVector3d() }
         .apply { ensureCapacity(argContainerSize) }
-    private val matrix2ds = Pool { Matrix2d() }
+    private val matrix2ds = Pool { MutableMatrix2d() }
         .apply { ensureCapacity(argContainerSize) }
-    private val matrix3ds = Pool { Matrix3d() }
+    private val matrix3ds = Pool { MutableMatrix3d() }
         .apply { ensureCapacity(argContainerSize) }
     private val aabbs = Pool { AABB2() }
         .apply { ensureCapacity(argContainerSize) }

@@ -30,8 +30,8 @@ import org.jbox2d.collision.TimeOfImpact
 import org.jbox2d.common.Rot
 import org.jbox2d.dynamics.contacts.*
 import org.tobi29.math.AABB2
-import org.tobi29.math.matrix.Matrix2d
-import org.tobi29.math.matrix.Matrix3d
+import org.tobi29.math.matrix.MutableMatrix2d
+import org.tobi29.math.matrix.MutableMatrix3d
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.MutableVector3d
 import org.tobi29.utils.Pool
@@ -70,11 +70,11 @@ interface IWorldPool {
 
     fun pushMutableVector3d(num: Int)
 
-    fun popMatrix2d(): Matrix2d
+    fun popMatrix2d(): MutableMatrix2d
 
     fun pushMatrix2d(num: Int)
 
-    fun popMatrix3d(): Matrix3d
+    fun popMatrix3d(): MutableMatrix3d
 
     fun pushMatrix3d(num: Int)
 

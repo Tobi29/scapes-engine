@@ -91,7 +91,7 @@ class MotorJoint(
     private var m_invMassB: Double = 0.0
     private var m_invIA: Double = 0.0
     private var m_invIB: Double = 0.0
-    private val m_linearMass = Matrix2d()
+    private val m_linearMass = MutableMatrix2d()
     private var m_angularMass: Double = 0.0
 
     /**

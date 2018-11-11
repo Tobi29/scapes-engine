@@ -46,7 +46,7 @@ fun busyPipeline(gl: GL): suspend () -> () -> Unit {
             val width = gl.contentWidth.toFloat()
             val height = gl.contentHeight.toFloat()
             matrix.identity()
-            matrix.modelViewProjection().orthogonal(
+            matrix.modelViewProjectionMatrix.orthogonal(
                 -width * 0.5f, -height * 0.5f, width, height
             )
             gl.textureEmpty.bind(gl)

@@ -90,7 +90,7 @@ class RevoluteJoint(
     private var m_invIA: Double = 0.0
     private var m_invIB: Double = 0.0
     private val m_mass =
-        Matrix3d() // effective mass for point-to-point constraint.
+        MutableMatrix3d() // effective mass for point-to-point constraint.
     private var m_motorMass: Double =
         0.0 // effective mass for motor/limit angular constraint.
     private var m_limitState: LimitState? = null

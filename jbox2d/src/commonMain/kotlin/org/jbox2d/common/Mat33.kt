@@ -34,7 +34,7 @@ import org.tobi29.stdex.assert
  * @param b
  * @return
  */
-fun Matrix3d.solve22(b: Vector2d): Vector2d {
+fun MutableMatrix3d.solve22(b: Vector2d): Vector2d {
     val x = MutableVector2d()
     solve22ToOut(b, x)
     return x.now()
@@ -47,7 +47,7 @@ fun Matrix3d.solve22(b: Vector2d): Vector2d {
  * @param b
  * @return
  */
-fun Matrix3d.solve22ToOut(b: ReadVector2d, out: MutableVector2d) {
+fun MutableMatrix3d.solve22ToOut(b: ReadVector2d, out: MutableVector2d) {
     val a11 = xx
     val a12 = yx
     val a21 = xy
@@ -68,7 +68,7 @@ fun Matrix3d.solve22ToOut(b: ReadVector2d, out: MutableVector2d) {
  * @param b
  * @return
  */
-fun Matrix3d.solve33(b: Vector3d): Vector3d {
+fun MutableMatrix3d.solve33(b: Vector3d): Vector3d {
     return MutableVector3d().also {
         solve33ToOut(b, it)
     }.now()
@@ -81,7 +81,7 @@ fun Matrix3d.solve33(b: Vector3d): Vector3d {
  * @param b
  * @param out the result
  */
-fun Matrix3d.solve33ToOut(b: ReadVector3d, out: MutableVector3d) {
+fun MutableMatrix3d.solve33ToOut(b: ReadVector3d, out: MutableVector3d) {
     assert { b !== out }
     cross(yx, yy, yz, zx, zy, zz) { x, y, z -> out.setXYZ(x, y, z) }
     var det = dot(xx, xy, xz, out.x, out.y, out.z)
@@ -99,7 +99,7 @@ fun Matrix3d.solve33ToOut(b: ReadVector3d, out: MutableVector3d) {
     out.z = z
 }
 
-fun Matrix3d.getInverse22(M: Matrix3d) {
+fun MutableMatrix3d.getInverse22(M: MutableMatrix3d) {
     val a = xx
     val b = yx
     val c = xy
@@ -121,7 +121,7 @@ fun Matrix3d.getInverse22(M: Matrix3d) {
 }
 
 // / Returns the zero matrix if singular.
-fun Matrix3d.getSymInverse33(M: Matrix3d) {
+fun MutableMatrix3d.getSymInverse33(M: MutableMatrix3d) {
     val bx = yy * zz - yz * zy
     val by = yz * zx - yx * zz
     val bz = yx * zy - yy * zx

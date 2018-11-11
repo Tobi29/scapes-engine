@@ -149,7 +149,7 @@ class GuiStack {
             gl.setBlending(BlendingMode.NORMAL)
             gl.matrixStack.push { matrix ->
                 matrix.identity()
-                matrix.modelViewProjection().orthogonal(
+                matrix.modelViewProjectionMatrix.orthogonal(
                     0.0f, 0.0f,
                     size.x.toFloat(), size.y.toFloat()
                 )
