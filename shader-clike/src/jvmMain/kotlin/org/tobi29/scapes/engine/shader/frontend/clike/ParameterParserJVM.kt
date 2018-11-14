@@ -19,7 +19,8 @@ package org.tobi29.scapes.engine.shader.frontend.clike
 import org.tobi29.scapes.engine.shader.*
 
 internal tailrec fun ParameterScope.parameters(
-        context: ScapesShaderParser.ParameterListContext?) {
+    context: ScapesShaderParser.ParameterListContext?
+) {
     context ?: return
     val parameter = context.parameterDeclaration().ast(scope)
     add(parameter)
@@ -29,14 +30,17 @@ internal tailrec fun ParameterScope.parameters(
 internal fun ScapesShaderParser.ParameterDeclarationContext.ast(scope: Scope): Parameter {
     val type = declarator().ast(scope)
     val name = Identifier().text
-    val variable = scope.add(name,
-            type.exported) ?: throw ShaderCompileException(
-            "Redeclaring variable: $name", Identifier())
+    val variable = scope.add(
+        name, type
+    ) ?: throw ShaderCompileException(
+        "Redeclaring variable: $name", Identifier()
+    )
     return Parameter(type, variable)
 }
 
 internal tailrec fun ShaderParameterScope.parameters(
-        context: ScapesShaderParser.ShaderParameterListContext?) {
+    context: ScapesShaderParser.ShaderParameterListContext?
+) {
     context ?: return
     add(context.shaderParameterDeclaration().ast(scope))
     parameters(context.shaderParameterList())
@@ -52,10 +56,14 @@ internal fun ScapesShaderParser.ShaderParameterDeclarationContext.ast(scope: Sco
         idConstant.text.toInt()
     }
     val name = Identifier().text
-    val variable = scope.add(name,
-            type.exported) ?: throw ShaderCompileException(
-            "Redeclaring variable: $name", Identifier())
-    val available = expression() ?: return ShaderParameter(type, id,
-            variable, BooleanExpression(true))
+    val variable = scope.add(
+        name, type
+    ) ?: throw ShaderCompileException(
+        "Redeclaring variable: $name", Identifier()
+    )
+    val available = expression() ?: return ShaderParameter(
+        type, id,
+        variable, BooleanExpression(true)
+    )
     return ShaderParameter(type, id, variable, available.ast(scope))
 }

@@ -17,10 +17,7 @@
 package org.tobi29.scapes.engine.shader.frontend.clike
 
 import org.tobi29.profiler.profilerSection
-import org.tobi29.scapes.engine.shader.CompiledShader
-import org.tobi29.scapes.engine.shader.Scope
-import org.tobi29.scapes.engine.shader.ShaderCompileException
-import org.tobi29.scapes.engine.shader.Types
+import org.tobi29.scapes.engine.shader.*
 
 actual object CLikeShader {
     actual fun compile(source: String): CompiledShader {
@@ -28,11 +25,12 @@ actual object CLikeShader {
             parser(source)
         }
         val scope = Scope()
-        scope.add("out_Position", Types.Vector4.exported)
-        scope.add("varying_Fragment", Types.Vector4.exported)
+        scope.add("out_Position", Type(Types.Vector4))
+        scope.add("varying_Fragment", Type(Types.Vector4))
         val program = profilerSection("Parse program") {
-            externalDeclaration(parser.compilationUnit().translationUnit(),
-                    scope)
+            externalDeclaration(
+                parser.compilationUnit().translationUnit(), scope
+            )
         }
         val shaderFragment = program.shaders["fragment"]?.let { shader ->
             Pair(shader.first, shader.second(scope))
@@ -40,12 +38,15 @@ actual object CLikeShader {
         val shaderVertex = program.shaders["vertex"]?.let { shader ->
             if (shaderFragment == null) {
                 throw ShaderCompileException(
-                        "Vertex shader requires fragment shader!")
+                    "Vertex shader requires fragment shader!"
+                )
             }
             Pair(shader.first, shader.second(shaderFragment.first))
         }
-        return CompiledShader(program.declarations, program.functions,
-                shaderVertex?.second, shaderFragment?.second, program.outputs,
-                program.uniforms.toTypedArray(), program.properties)
+        return CompiledShader(
+            program.declarations, program.functions,
+            shaderVertex?.second, shaderFragment?.second, program.outputs,
+            program.uniforms.toTypedArray(), program.properties
+        )
     }
 }

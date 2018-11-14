@@ -33,13 +33,13 @@ fun <E : Expression> E.attach(token: Token): E = apply {
 }
 
 inline fun <E : Expression> ParserRuleContext.parse(
-        crossinline block: ParserRuleContext.() -> E
+    crossinline block: ParserRuleContext.() -> E
 ): E = block().attach(this)
 
 inline fun <E : Expression> TerminalNode.parse(
-        crossinline block: TerminalNode.() -> E
+    crossinline block: TerminalNode.() -> E
 ): E = block().attach(this)
 
 inline fun <E : Expression> Token.parse(
-        crossinline block: Token.() -> E
+    crossinline block: Token.() -> E
 ): E = block().attach(this)

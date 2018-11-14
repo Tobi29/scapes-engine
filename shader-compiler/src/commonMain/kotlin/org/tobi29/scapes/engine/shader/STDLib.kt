@@ -20,24 +20,24 @@ import org.tobi29.stdex.readOnly
 
 object STDLib {
     private val scalar = sequenceOf(
-        listOf(Types.Float.exported),
-        listOf(Types.Int.exported),
-        listOf(Types.Boolean.exported)
+        listOf(Type(Types.Float)),
+        listOf(Type(Types.Int)),
+        listOf(Type(Types.Boolean))
     )
     private val vector2 = sequenceOf(
-        listOf(Types.Vector2.exported),
-        listOf(Types.Vector2i.exported),
-        listOf(Types.Vector2b.exported)
+        listOf(Type(Types.Vector2)),
+        listOf(Type(Types.Vector2i)),
+        listOf(Type(Types.Vector2b))
     )
     private val vector3 = sequenceOf(
-        listOf(Types.Vector3.exported),
-        listOf(Types.Vector3i.exported),
-        listOf(Types.Vector3b.exported)
+        listOf(Type(Types.Vector3)),
+        listOf(Type(Types.Vector3i)),
+        listOf(Type(Types.Vector3b))
     )
     private val vector4 = sequenceOf(
-        listOf(Types.Vector4.exported),
-        listOf(Types.Vector4i.exported),
-        listOf(Types.Vector4b.exported)
+        listOf(Type(Types.Vector4)),
+        listOf(Type(Types.Vector4i)),
+        listOf(Type(Types.Vector4b))
     )
 
     val constructScalar = scalar.toSet().readOnly()
@@ -100,106 +100,106 @@ object STDLib {
         function(
             functions, FunctionExportedSignature(
                 "texture",
-                Types.Vector4.exported,
-                Types.Texture2.exported,
-                Types.Vector2.exported
+                Type(Types.Vector4),
+                Type(Types.Texture2),
+                Type(Types.Vector2)
             )
         )
 
         mathFunctions(
-            functions, Types.Float.exported,
-            Types.Boolean.exported, Types.Float.exported
+            functions, Type(Types.Float),
+            Type(Types.Boolean), Type(Types.Float)
         )
         mathFunctions(
-            functions, Types.Vector2.exported,
-            Types.Vector2b.exported, Types.Float.exported
+            functions, Type(Types.Vector2),
+            Type(Types.Vector2b), Type(Types.Float)
         )
         mathFunctions(
-            functions, Types.Vector3.exported,
-            Types.Vector3b.exported, Types.Float.exported
+            functions, Type(Types.Vector3),
+            Type(Types.Vector3b), Type(Types.Float)
         )
         mathFunctions(
-            functions, Types.Vector4.exported,
-            Types.Vector4b.exported, Types.Float.exported
+            functions, Type(Types.Vector4),
+            Type(Types.Vector4b), Type(Types.Float)
         )
 
         mathFunctions(
-            functions, Types.Int.exported,
-            Types.Boolean.exported, Types.Int.exported
+            functions, Type(Types.Int),
+            Type(Types.Boolean), Type(Types.Int)
         )
         mathFunctions(
-            functions, Types.Vector2i.exported,
-            Types.Vector2b.exported, Types.Int.exported
+            functions, Type(Types.Vector2i),
+            Type(Types.Vector2b), Type(Types.Int)
         )
         mathFunctions(
-            functions, Types.Vector3i.exported,
-            Types.Vector3b.exported, Types.Int.exported
+            functions, Type(Types.Vector3i),
+            Type(Types.Vector3b), Type(Types.Int)
         )
         mathFunctions(
-            functions, Types.Vector4i.exported,
-            Types.Vector4b.exported, Types.Int.exported
+            functions, Type(Types.Vector4i),
+            Type(Types.Vector4b), Type(Types.Int)
         )
 
         logicFunctions(
-            functions, Types.Boolean.exported,
-            Types.Boolean.exported
+            functions, Type(Types.Boolean),
+            Type(Types.Boolean)
         )
         logicFunctions(
-            functions, Types.Vector2b.exported,
-            Types.Vector2b.exported
+            functions, Type(Types.Vector2b),
+            Type(Types.Vector2b)
         )
         logicFunctions(
-            functions, Types.Vector3b.exported,
-            Types.Vector3b.exported
+            functions, Type(Types.Vector3b),
+            Type(Types.Vector3b)
         )
         logicFunctions(
-            functions, Types.Vector4b.exported,
-            Types.Vector4b.exported
+            functions, Type(Types.Vector4b),
+            Type(Types.Vector4b)
         )
 
         vectorFunctions(
-            functions, Types.Vector2.exported,
-            Types.Vector2b.exported, Types.Float.exported
+            functions, Type(Types.Vector2),
+            Type(Types.Vector2b), Type(Types.Float)
         )
         vectorFunctions(
-            functions, Types.Vector3.exported,
-            Types.Vector3b.exported, Types.Float.exported
+            functions, Type(Types.Vector3),
+            Type(Types.Vector3b), Type(Types.Float)
         )
         vectorFunctions(
-            functions, Types.Vector4.exported,
-            Types.Vector4b.exported, Types.Float.exported
+            functions, Type(Types.Vector4),
+            Type(Types.Vector4b), Type(Types.Float)
         )
 
         matrixFunctions(
-            functions, Types.Matrix2.exported,
-            Types.Vector2.exported
+            functions, Type(Types.Matrix2),
+            Type(Types.Vector2)
         )
         matrixFunctions(
-            functions, Types.Matrix3.exported,
-            Types.Vector3.exported
+            functions, Type(Types.Matrix3),
+            Type(Types.Vector3)
         )
         matrixFunctions(
-            functions, Types.Matrix4.exported,
-            Types.Vector4.exported
+            functions, Type(Types.Matrix4),
+            Type(Types.Vector4)
         )
 
         constructScalar.forEach {
             function(
                 functions, FunctionExportedSignature(
                     "float",
-                    Types.Float.exported, it
+                    Type(Types.Float), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "int",
-                    Types.Int.exported, it
+                    Type(Types.Int), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "boolean",
-                    Types.Boolean.exported, it
+                    Type(Types.Boolean), it
                 )
             )
         }
@@ -207,19 +207,19 @@ object STDLib {
             function(
                 functions, FunctionExportedSignature(
                     "vector2",
-                    Types.Vector2.exported, it
+                    Type(Types.Vector2), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "vector2i",
-                    Types.Vector2i.exported, it
+                    Type(Types.Vector2i), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "vector2b",
-                    Types.Vector2b.exported, it
+                    Type(Types.Vector2b), it
                 )
             )
         }
@@ -227,19 +227,19 @@ object STDLib {
             function(
                 functions, FunctionExportedSignature(
                     "vector3",
-                    Types.Vector3.exported, it
+                    Type(Types.Vector3), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "vector3i",
-                    Types.Vector3i.exported, it
+                    Type(Types.Vector3i), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "vector3b",
-                    Types.Vector3b.exported, it
+                    Type(Types.Vector3b), it
                 )
             )
         }
@@ -247,55 +247,33 @@ object STDLib {
             function(
                 functions, FunctionExportedSignature(
                     "vector4",
-                    Types.Vector4.exported, it
+                    Type(Types.Vector4), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "vector4i",
-                    Types.Vector4i.exported, it
+                    Type(Types.Vector4i), it
                 )
             )
             function(
                 functions, FunctionExportedSignature(
                     "vector4b",
-                    Types.Vector4b.exported, it
-                )
-            )
-        }
-        Types.values().forEach { type ->
-            function(
-                functions, FunctionExportedSignature(
-                    "return",
-                    Types.Void.exported, type.exported
-                )
-            )
-            function(
-                functions, FunctionExportedSignature(
-                    "return",
-                    Types.Void.exported, type.exportedArray
+                    Type(Types.Vector4b), it
                 )
             )
         }
         function(
             functions,
-            FunctionExportedSignature("break", Types.Void.exported)
-        )
-        function(
-            functions,
-            FunctionExportedSignature("continue", Types.Void.exported)
-        )
-        function(
-            functions,
-            FunctionExportedSignature("discard", Types.Void.exported)
+            FunctionExportedSignature("discard", Type(Types.Unit))
         )
     }
 
     private fun mathFunctions(
         functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
-        type: TypeExported,
-        typeBoolean: TypeExported,
-        typeScalar: TypeExported
+        type: Type,
+        typeBoolean: Type,
+        typeScalar: Type
     ) {
         function(
             functions, FunctionExportedSignature(
@@ -382,7 +360,7 @@ object STDLib {
                 "mod", type, type, type
             )
         )
-        if (type == Types.Int.exported) {
+        if (type == Type(Types.Int)) {
             function(
                 functions, FunctionExportedSignature(
                     "shl", type, type, type
@@ -419,10 +397,10 @@ object STDLib {
 
     private fun logicFunctions(
         functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
-        type: TypeExported,
-        typeBoolean: TypeExported
+        type: Type,
+        typeBoolean: Type
     ) {
-        if (type == Types.Int.exported || type == Types.Boolean.exported) {
+        if (type == Type(Types.Int) || type == Type(Types.Boolean)) {
             function(
                 functions, FunctionExportedSignature(
                     "and", type, type, type
@@ -448,9 +426,9 @@ object STDLib {
 
     private fun vectorFunctions(
         functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
-        type: TypeExported,
-        typeBoolean: TypeExported,
-        typeScalar: TypeExported
+        type: Type,
+        typeBoolean: Type,
+        typeScalar: Type
     ) {
         function(
             functions, FunctionExportedSignature(
@@ -546,8 +524,8 @@ object STDLib {
 
     private fun matrixFunctions(
         functions: MutableMap<FunctionExportedSignature, (List<Expression>) -> Expression>,
-        type: TypeExported,
-        typeVector: TypeExported
+        type: Type,
+        typeVector: Type
     ) {
         function(
             functions, FunctionExportedSignature(
@@ -594,50 +572,53 @@ object STDLib {
     ) = flatMap { a -> other.map { b -> "$a$b" } }
 
     private fun genT(
-        s: Sequence<List<TypeExported>>,
+        s: Sequence<List<Type>>,
         level: Int
-    ): Sequence<List<TypeExported>> =
+    ): Sequence<List<Type>> =
         if (level <= 1) s else (genT(s, level - 1) joinT s) + s
 
-    private infix fun Sequence<List<TypeExported>>.joinT(
-        other: Sequence<List<TypeExported>>
+    private infix fun Sequence<List<Type>>.joinT(
+        other: Sequence<List<Type>>
     ) = flatMap { a -> other.map { b -> a + b } }
 }
 
 fun TypeExported.memberType(name: String) =
-    if (array) null else type.memberType(name)
+    if (array != null) null else type.memberType(name)
+
+fun Type.memberType(name: String) =
+    exported.memberType(name)
 
 fun Types.memberType(name: String) = when (this) {
     Types.Vector2 -> if (name in STDLib.swizzle2to1) {
-        Types.Float.exported
+        Type(Types.Float)
     } else if (name in STDLib.swizzle2to2) {
-        Types.Vector2.exported
+        Type(Types.Vector2)
     } else if (name in STDLib.swizzle2to3) {
-        Types.Vector3.exported
+        Type(Types.Vector3)
     } else if (name in STDLib.swizzle2to4) {
-        Types.Vector4.exported
+        Type(Types.Vector4)
     } else {
         null
     }
     Types.Vector3 -> if (name in STDLib.swizzle3to1) {
-        Types.Float.exported
+        Type(Types.Float)
     } else if (name in STDLib.swizzle3to2) {
-        Types.Vector2.exported
+        Type(Types.Vector2)
     } else if (name in STDLib.swizzle3to3) {
-        Types.Vector3.exported
+        Type(Types.Vector3)
     } else if (name in STDLib.swizzle3to4) {
-        Types.Vector4.exported
+        Type(Types.Vector4)
     } else {
         null
     }
     Types.Vector4 -> if (name in STDLib.swizzle4to1) {
-        Types.Float.exported
+        Type(Types.Float)
     } else if (name in STDLib.swizzle4to2) {
-        Types.Vector2.exported
+        Type(Types.Vector2)
     } else if (name in STDLib.swizzle4to3) {
-        Types.Vector3.exported
+        Type(Types.Vector3)
     } else if (name in STDLib.swizzle4to4) {
-        Types.Vector4.exported
+        Type(Types.Vector4)
     } else {
         null
     }
@@ -658,6 +639,6 @@ val Types.vectorSize
         Types.Matrix2 -> 2
         Types.Matrix3 -> 3
         Types.Matrix4 -> 4
-        Types.Void -> 0
+        Types.Unit -> 0
         else -> 1
     }

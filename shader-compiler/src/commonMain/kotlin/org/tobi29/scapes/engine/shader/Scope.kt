@@ -21,8 +21,7 @@ import org.tobi29.stdex.assert
 class Scope(private vararg val parents: Scope) {
     private val map = HashMap<String, Identifier>()
 
-    fun add(name: String,
-            type: TypeExported): Identifier? {
+    fun add(name: String, type: Type): Identifier? {
         if (map.containsKey(name)) {
             return null
         }

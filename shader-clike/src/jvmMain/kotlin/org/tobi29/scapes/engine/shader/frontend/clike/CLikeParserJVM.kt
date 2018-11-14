@@ -22,11 +22,12 @@ import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.shader.*
 
 internal fun externalDeclaration(
-        context: ScapesShaderParser.TranslationUnitContext,
-        scope: Scope): ShaderProgram {
+    context: ScapesShaderParser.TranslationUnitContext,
+    scope: Scope
+): ShaderProgram {
     val declarations = ArrayList<DeclarationStatement>()
     val functions = ArrayList<CallFunction>()
-    val shaders = HashMap <String, Pair<Scope, (Scope) -> ShaderFunction>>()
+    val shaders = HashMap<String, Pair<Scope, (Scope) -> ShaderFunction>>()
     var outputSignature: ShaderSignature? = null
     val uniforms = ArrayList<Uniform?>()
     val properties = ArrayList<Property>()
@@ -55,8 +56,10 @@ internal fun externalDeclaration(
                 val name = signature.Identifier().text
                 val parameters = ArrayList<ShaderParameter>()
                 val inputScope = Scope(scope)
-                val parameterScope = ShaderParameterScope(inputScope,
-                        parameters)
+                val parameterScope = ShaderParameterScope(
+                    inputScope,
+                    parameters
+                )
                 parameterScope.parameters(signature.shaderParameterList())
                 val shaderSignature = ShaderSignature(name, parameters)
                 shaders[name] = Pair(inputScope, { shaderScope ->
@@ -71,7 +74,8 @@ internal fun externalDeclaration(
             profilerSection("Parse outputs") {
                 if (outputSignature != null) {
                     throw ShaderCompileException(
-                            "Multiple output declarations", outputs)
+                        "Multiple output declarations", outputs
+                    )
                 }
                 val parameters = ArrayList<ShaderParameter>()
                 val parameterScope = ShaderParameterScope(scope, parameters)
@@ -96,9 +100,10 @@ internal fun externalDeclaration(
                     precisionSpecifier.ast()
                 }
                 val functionSignature = FunctionSignature(
-                        name, returned,
-                        returnedPrecision,
-                        *parameters.toTypedArray())
+                    name, returned,
+                    returnedPrecision,
+                    *parameters.toTypedArray()
+                )
                 val compound = Scope(functionScope).compound {
                     block(function.compoundStatement().blockItemList())
                 }
@@ -108,8 +113,10 @@ internal fun externalDeclaration(
         current = current.translationUnit()
     }
     return profilerSection("Pack program data") {
-        ShaderProgram(declarations, functions, shaders,
-                outputSignature, uniforms, properties)
+        ShaderProgram(
+            declarations, functions, shaders,
+            outputSignature, uniforms, properties
+        )
     }
 }
 
@@ -120,14 +127,17 @@ internal fun parser(source: String): ScapesShaderParser {
         val parser = ScapesShaderParser(CommonTokenStream(lexer))
         parser.removeErrorListeners()
         parser.addErrorListener(object : BaseErrorListener() {
-            override fun syntaxError(recognizer: Recognizer<*, *>?,
-                                     offendingSymbol: Any?,
-                                     line: Int,
-                                     charPositionInLine: Int,
-                                     msg: String?,
-                                     e: RecognitionException?) {
+            override fun syntaxError(
+                recognizer: Recognizer<*, *>?,
+                offendingSymbol: Any?,
+                line: Int,
+                charPositionInLine: Int,
+                msg: String?,
+                e: RecognitionException?
+            ) {
                 throw ParseCancellationException(
-                        "line $line:$charPositionInLine $msg")
+                    "line $line:$charPositionInLine $msg"
+                )
             }
         })
         return parser
@@ -136,9 +146,11 @@ internal fun parser(source: String): ScapesShaderParser {
     }
 }
 
-internal fun uniform(context: ScapesShaderParser.UniformDeclarationContext,
-                     uniforms: MutableList<Uniform?>,
-                     scope: Scope) {
+internal fun uniform(
+    context: ScapesShaderParser.UniformDeclarationContext,
+    uniforms: MutableList<Uniform?>,
+    scope: Scope
+) {
     val uniform = context.ast(scope)
     while (uniforms.size <= uniform.id) {
         uniforms.add(null)
@@ -153,17 +165,21 @@ internal fun ScapesShaderParser.UniformDeclarationContext.ast(scope: Scope): Uni
     val field = declarator.declaratorField()
     if (field != null) {
         val type = field.ast()
-        val variable = scope.add(name,
-                type.exported) ?: throw ShaderCompileException(
-                "Redeclaring variable: $name", Identifier())
+        val variable = scope.add(
+            name, type
+        ) ?: throw ShaderCompileException(
+            "Redeclaring variable: $name", Identifier()
+        )
         return Uniform(type, id, variable)
     }
     val array = declarator.declaratorArray()
     if (array != null) {
         val type = array.ast(scope)
-        val variable = scope.add(name,
-                type.exported) ?: throw ShaderCompileException(
-                "Redeclaring variable: $name", Identifier())
+        val variable = scope.add(
+            name, type
+        ) ?: throw ShaderCompileException(
+            "Redeclaring variable: $name", Identifier()
+        )
         return Uniform(type, id, variable)
     }
     throw IllegalStateException("Invalid parse tree")
@@ -175,30 +191,37 @@ internal fun ScapesShaderParser.PropertyDeclarationContext.ast(scope: Scope): Pr
     val field = declarator.declaratorField()
     if (field != null) {
         val type = field.ast()
-        val variable = scope.add(name,
-                type.exported) ?: throw ShaderCompileException(
-                "Redeclaring variable: $name", Identifier())
+        val variable = scope.add(
+            name, type
+        ) ?: throw ShaderCompileException(
+            "Redeclaring variable: $name", Identifier()
+        )
         return Property(type, variable)
     }
     val array = declarator.declaratorArray()
     if (array != null) {
         val type = array.ast(scope)
-        val variable = scope.add(name,
-                type.exported) ?: throw ShaderCompileException(
-                "Redeclaring variable: $name", Identifier())
+        val variable = scope.add(
+            name, type
+        ) ?: throw ShaderCompileException(
+            "Redeclaring variable: $name", Identifier()
+        )
         return Property(type, variable)
     }
     throw IllegalStateException("Invalid parse tree")
 }
 
-internal fun statement(context: ScapesShaderParser.StatementContext,
-                       scope: Scope): Statement {
+internal fun statement(
+    context: ScapesShaderParser.StatementContext,
+    scope: Scope
+): Statement {
     val expression = context.expressionStatement()
     if (expression != null) {
         return expression.ast(scope) as? Statement
                 ?: throw ShaderCompileException(
-                "Expression cannot be used as statement",
-                context.expressionStatement())
+                    "Expression cannot be used as statement",
+                    context.expressionStatement()
+                )
     }
     val declaration = context.declaration()
     if (declaration != null) {
@@ -208,12 +231,14 @@ internal fun statement(context: ScapesShaderParser.StatementContext,
     if (selection != null) {
         val ifStatement = selection.ifStatement()
         val elseStatement = selection.elseStatement() ?: return IfStatement(
-                ifStatement.ast(scope),
-                statement(selection.statement(), scope))
+            ifStatement.ast(scope),
+            statement(selection.statement(), scope)
+        )
         return IfStatement(
-                ifStatement.ast(scope),
-                statement(selection.statement(), scope),
-                statement(elseStatement.statement(), scope))
+            ifStatement.ast(scope),
+            statement(selection.statement(), scope),
+            statement(elseStatement.statement(), scope)
+        )
     }
     val rangeLoop = context.rangeLoopStatement()
     if (rangeLoop != null) {
@@ -221,12 +246,15 @@ internal fun statement(context: ScapesShaderParser.StatementContext,
         val start = rangeLoop.expression(0).ast(scope)
         val end = rangeLoop.expression(1).ast(scope)
         val loopScope = Scope(scope)
-        val variable = loopScope.add(name,
-                Types.Int.exported) ?: throw ShaderCompileException(
-                "Redeclaring variable: $name", rangeLoop.Identifier())
+        val variable = loopScope.add(
+            name, Type(Types.Int)
+        ) ?: throw ShaderCompileException(
+            "Redeclaring variable: $name", rangeLoop.Identifier()
+        )
         val statement = statement(rangeLoop.statement(), loopScope)
         return LoopFixedStatement(
-                variable, start, end, statement)
+            variable, start, end, statement
+        )
     }
     return scope.compound { block(context.compoundStatement().blockItemList()) }
 }
@@ -237,8 +265,10 @@ internal fun ScapesShaderParser.DeclarationContext.ast(scope: Scope): Declaratio
     throw IllegalStateException("Invalid parse tree")
 }
 
-internal fun declaration(context: ScapesShaderParser.DeclarationFieldContext,
-                         scope: Scope): FieldDeclarationStatement {
+internal fun declaration(
+    context: ScapesShaderParser.DeclarationFieldContext,
+    scope: Scope
+): FieldDeclarationStatement {
     val declarator = context.declaratorField()
     val type = declarator.ast()
     val initializer = context.expression()
@@ -247,8 +277,10 @@ internal fun declaration(context: ScapesShaderParser.DeclarationFieldContext,
     return scope.declaration(type, name, init)
 }
 
-internal fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
-                         scope: Scope): ArrayDeclarationStatement {
+internal fun declaration(
+    context: ScapesShaderParser.DeclarationArrayContext,
+    scope: Scope
+): ArrayDeclarationStatement {
     val declarator = context.declaratorArray()
     val type = declarator.ast(scope)
     val initializer = context.initializerArray()
@@ -257,8 +289,10 @@ internal fun declaration(context: ScapesShaderParser.DeclarationArrayContext,
     return scope.arrayDeclaration(type, type.array!!, name, init)
 }
 
-internal fun initializer(context: ScapesShaderParser.InitializerArrayContext,
-                         scope: Scope): Expression {
+internal fun initializer(
+    context: ScapesShaderParser.InitializerArrayContext,
+    scope: Scope
+): Expression {
     val list = context.expressionList()
     if (list != null) {
         return ArrayExpression(list.ast(scope))

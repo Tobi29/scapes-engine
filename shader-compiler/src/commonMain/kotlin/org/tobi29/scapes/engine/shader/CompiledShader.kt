@@ -32,10 +32,7 @@ class CompiledShader(
         HashMap<FunctionParameterSignature, FunctionExportedSignature>()
             .also { functionMap ->
                 functions.asSequence().map {
-                    Pair(
-                        it.signature.exported.call,
-                        it.signature.exported
-                    )
+                    Pair(it.signature.exported.call, it.signature.exported)
                 }.toMap(functionMap)
                 STDLib.functions.keys.forEach {
                     functionMap[it.call] = it
@@ -101,4 +98,8 @@ class ShaderContext(
     val functions = functions.readOnly()
     val functionSimplifications = functionSimplifications.readOnly()
     val properties = properties.readOnly()
+
+    fun function(signature: FunctionParameterSignature) {
+
+    }
 }

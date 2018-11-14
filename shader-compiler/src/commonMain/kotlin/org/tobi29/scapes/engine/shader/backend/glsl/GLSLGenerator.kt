@@ -51,6 +51,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return ternaryExpression(expression)
         } else if (expression is FunctionStatement) {
             return functionExpression(expression)
+        } else if (expression is ReturnStatement) {
+            return returnExpression(expression)
         } else if (expression is ArrayAccessExpression) {
             return arrayAccessExpression(expression)
         } else if (expression is BooleanExpression) {
@@ -65,7 +67,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             return variableExpression(expression)
         } else if (expression is MemberExpression) {
             return memberExpression(expression)
-        } else if (expression is VoidStatement) {
+        } else if (expression is UnitStatement) {
             return ""
         }
         throw IllegalArgumentException(
@@ -137,6 +139,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         throw ShaderGenerateException(
             "No functions for given arguments: $signature", statement
         )
+    }
+
+    private fun returnExpression(statement: ReturnStatement): String {
+        return "return ${pack(statement.value)}"
     }
 
     private fun arrayAccessExpression(expression: ArrayAccessExpression): String {
@@ -212,7 +218,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         level: Int
     ) {
         identifiers[statement.identifier] = GLSLExpression(
-            statement.identifier.type, statement.identifier.name
+            statement.identifier.type.exported, statement.identifier.name
         )
         val declaration = type(statement.type, statement.identifier)
         if (statement.initializer == null) {
@@ -230,7 +236,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         level: Int
     ) {
         identifiers[statement.identifier] = GLSLExpression(
-            statement.identifier.type, statement.identifier.name
+            statement.identifier.type.exported, statement.identifier.name
         )
         val declaration = type(statement.type, statement.identifier)
         if (statement.initializer == null) {
@@ -336,7 +342,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun type(type: Types): String {
         when (type) {
-            Types.Void -> return "void"
+            Types.Unit -> return "void"
             Types.Float -> return "float"
             Types.Boolean -> return "bool"
             Types.Int -> return "int"
@@ -388,10 +394,10 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
 
     private fun init(scope: Scope) {
         initBuiltIn(scope["out_Position"]) {
-            GLSLExpression(Types.Vector4.exported, "gl_Position")
+            GLSLExpression(Types.Vector4.exported(), "gl_Position")
         }
         initBuiltIn(scope["varying_Fragment"]) {
-            GLSLExpression(Types.Vector4.exported, "gl_FragCoord")
+            GLSLExpression(Types.Vector4.exported(), "gl_FragCoord")
         }
     }
 
@@ -404,8 +410,8 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             STDLib.functions, properties
         )
         val scope = Scope()
-        scope.add("out_Position", Types.Vector4.exported)
-        scope.add("varying_Fragment", Types.Vector4.exported)
+        scope.add("out_Position", Type(Types.Vector4))
+        scope.add("varying_Fragment", Type(Types.Vector4))
         shader.declarations.forEach { scope.add(it.identifier) }
         shader.properties.forEach { scope.add(it.identifier) }
         shader.uniforms().asSequence().filterNotNull()
@@ -497,7 +503,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         for (uniform in uniforms) {
             if (uniform != null) {
                 identifiers[uniform.identifier] = GLSLExpression(
-                    uniform.identifier.type, uniform.identifier.name
+                    uniform.identifier.type.exported, uniform.identifier.name
                 )
                 println(
                     0, "uniform " + type(uniform.type) + ' ' +
@@ -513,7 +519,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
-                parameter.identifier.type, parameter.identifier.name
+                parameter.identifier.type.exported, parameter.identifier.name
             )
             if (parameter.id == -1) {
                 println(
@@ -536,7 +542,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                 continue
             }
             identifiers[parameter.identifier] = GLSLExpression(
-                parameter.identifier.type, parameter.identifier.name
+                parameter.identifier.type.exported, parameter.identifier.name
             )
         }
     }
@@ -550,10 +556,12 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
                     ?: throw ShaderGenerateException(
                         "No value defined for property: ${property.identifier.name}"
                     )
+            val propertyType =
+                property.type.exported.simplify(context, identifiers)
             val valueType = value.type(context)
-            if (property.type.exported != valueType) {
+            if (propertyType != valueType) {
                 throw ShaderGenerateException(
-                    "Property declaration for ${property.identifier.name} and value type conflict: ${property.type.exported} <-> $valueType"
+                    "Property declaration for ${property.identifier.name} and value type conflict: $propertyType <-> $valueType"
                 )
             }
             identifiers[property.identifier] = value
@@ -601,7 +609,7 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
         val str = StringBuilder(24)
         str.append(precision(signature.returnedPrecision)).append(' ')
         str.append(type(signature.returned.type))
-        if (signature.returned.array) {
+        if (signature.returned.array != null) {
             str.append("[]")
         }
         str.append(' ')
@@ -610,14 +618,16 @@ class GLSLGenerator(private val version: GLSLGenerator.Version) {
             run {
                 val parameter = signature.parameters[0]
                 identifiers[parameter.identifier] = GLSLExpression(
-                    parameter.identifier.type, parameter.identifier.name
+                    parameter.identifier.type.exported,
+                    parameter.identifier.name
                 )
                 str.append(type(parameter.type, parameter.identifier))
             }
             for (i in 1..signature.parameters.lastIndex) {
                 val parameter = signature.parameters[1]
                 identifiers[parameter.identifier] = GLSLExpression(
-                    parameter.identifier.type, parameter.identifier.name
+                    parameter.identifier.type.exported,
+                    parameter.identifier.name
                 )
                 str.append(", ").append(
                     type(parameter.type, parameter.identifier)

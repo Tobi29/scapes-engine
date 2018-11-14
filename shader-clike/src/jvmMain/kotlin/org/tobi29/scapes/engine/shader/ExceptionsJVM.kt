@@ -20,13 +20,15 @@ import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.Token
 import org.antlr.v4.runtime.tree.TerminalNode
 
-fun ShaderCompileException(message: String,
-                           context: TerminalNode) =
-        ShaderCompileException(message(message, context.symbol))
+fun ShaderCompileException(
+    message: String,
+    context: TerminalNode
+) = ShaderCompileException(message(message, context.symbol))
 
-fun ShaderCompileException(message: String,
-                           context: ParserRuleContext) =
-        ShaderCompileException(message(message, context.start))
+fun ShaderCompileException(
+    message: String,
+    context: ParserRuleContext
+) = ShaderCompileException(message(message, context.start))
 
 inline fun <T : TerminalNode, R> T.compileContext(block: T.() -> R) = try {
     block()
@@ -40,7 +42,9 @@ inline fun <C : ParserRuleContext, R> C.compileContext(block: C.() -> R) = try {
     throw ShaderCompileException(e.message ?: "", this)
 }
 
-private fun message(message: String,
-                    token: Token): String {
+private fun message(
+    message: String,
+    token: Token
+): String {
     return "${token.line}:${token.charPositionInLine} -> $message"
 }

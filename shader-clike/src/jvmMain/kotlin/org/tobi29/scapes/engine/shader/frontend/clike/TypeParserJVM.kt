@@ -43,13 +43,15 @@ internal fun ScapesShaderParser.DeclaratorArrayContext.ast(scope: Scope): Type {
         }
     }
     val precision = precisionSpecifier()?.ast() ?: Precision.mediump
-    return Type(typeSpecifier().ast(), expression().ast(scope), constant,
-            precision)
+    return Type(
+        typeSpecifier().ast(), expression().ast(scope), constant, precision
+    )
 }
 
-internal fun ScapesShaderParser.TypeContext.ast(): TypeExported {
+internal fun ScapesShaderParser.TypeContext.ast(): Type {
     val array = childCount > 1
-    return typeSpecifier().ast().exported(array)
+    if (array) TODO()
+    return Type(typeSpecifier().ast())
 }
 
 internal fun ScapesShaderParser.TypeSpecifierContext.ast(): Types {
