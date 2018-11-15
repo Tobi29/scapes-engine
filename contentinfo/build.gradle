@@ -40,7 +40,6 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation project(":logging")
                 implementation project(":simplemagik")
             }
         }
