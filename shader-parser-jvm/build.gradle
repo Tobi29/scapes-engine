@@ -15,7 +15,7 @@
  */
 
 
-apply plugin: "maven-publish"
+apply from: rootProject.file("gradle/publish-maven.gradle")
 apply plugin: "java"
 apply plugin: "antlr"
 apply plugin: "idea"

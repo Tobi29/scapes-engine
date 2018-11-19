@@ -1,0 +1,15 @@
+image: gradle:alpine
+
+variables:
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+before_script:
+    - export GRADLE_USER_HOME=`pwd`/.gradle
+    - export MAVEN_HOME=`pwd`/scapes-engine
+
+build:
+    stage: build
+    script: gradle --parallel build check publishToMavenLocal publish -Dmaven.repo.local="$MAVEN_HOME"
+    artifacts:
+        paths:
+            - scapes-engine

@@ -15,7 +15,7 @@
  */
 
 apply plugin: "kotlin-multiplatform"
-apply plugin: "maven-publish"
+apply from: rootProject.file("gradle/publish-maven.gradle")
 
 kotlin {
     sourceSets {
