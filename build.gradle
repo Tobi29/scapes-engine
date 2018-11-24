@@ -40,6 +40,9 @@ allprojects {
             url "https://maven-eclipse.github.io/maven"
         }
         maven {
+            url "https://dl.bintray.com/gitout/scapes-engine"
+        }
+        maven {
             url "https://jitpack.io"
         }
     }
@@ -90,10 +93,9 @@ ext {
     lwjglVersion = "3.2.0"
     lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 
-    webKTBindingsVersion = "0.0.5"
-    webKTBindingsJS = { module ->
-        "com.github.Tobi29.WebKTBindings:$module:$webKTBindingsVersion"
-    }
+    webKTBindingsVersion = "0.0.6"
+    webKTBindingsBase = { module -> "net.gitout.web-kt-bindings:$module:$webKTBindingsVersion" }
+    webKTBindingsJS = { module -> webKTBindingsBase("$module-js") }
 
     junitJupiterVersion = "5.2.0"
     junitJupiterJVM =
