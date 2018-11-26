@@ -9,7 +9,7 @@ before_script:
 
 build:
     stage: build
-    script: gradle --parallel build check publishToMavenLocal publish -Dmaven.repo.local="$MAVEN_HOME"
+    script: ./gradlew --parallel build check publishToMavenLocal publish -Dmaven.repo.local="$MAVEN_HOME"
     artifacts:
         paths:
             - scapes-engine
