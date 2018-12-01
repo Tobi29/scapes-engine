@@ -21,6 +21,7 @@
 package com.j256.simplemagik
 
 internal actual val magic: ByteArray
-    get() = Magic::class.java.getResourceAsStream("magic").readBytes(497974)
+    get() = Magic::class.java.getResourceAsStream("magic")
+        .use { it.readBytes() }
 
 private class Magic

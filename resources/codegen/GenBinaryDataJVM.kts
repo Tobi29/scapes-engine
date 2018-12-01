@@ -50,7 +50,8 @@ println(
 package $pkg
 
 internal actual val $name: ByteArray
-    get() = ${name.capitalize()}::class.java.getResourceAsStream("$name").readBytes($size)
+    get() = ${name.capitalize()}::class.java.getResourceAsStream("$name")
+        .use { it.readBytes() }
 
 private class ${name.capitalize()}"""
 )
