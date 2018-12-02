@@ -35,8 +35,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject
-                        .mariaDBJavaClientJVM("mariadb-java-client")
+                api rootProject.mariaDBJavaClientJVM("mariadb-java-client")
             }
         }
     }

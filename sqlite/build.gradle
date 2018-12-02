@@ -35,7 +35,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.sqliteJDBCJVM("sqlite-jdbc")
+                api rootProject.sqliteJDBCJVM("sqlite-jdbc")
             }
         }
     }
