@@ -17,9 +17,11 @@
 package org.tobi29.scapes.engine.backends.js
 
 import kotlinx.coroutines.awaitAnimationFrame
+import org.khronos.webgl2.WebGL2Options
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
+import org.tobi29.stdex.InlineUtility
 import org.tobi29.utils.steadyClock
 import org.w3c.dom.Document
 import org.w3c.dom.HTMLCanvasElement
@@ -111,6 +113,32 @@ suspend fun ContainerCanvas.run(engine: ScapesEngine): Nothing {
     } finally {
         canvas.removeEventListener("click", clickListener)
     }
+}
+
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun ContainerCanvas(
+    canvas: HTMLCanvasElement,
+    alpha: Boolean? = null,
+    depth: Boolean? = null,
+    stencil: Boolean? = null,
+    antialias: Boolean? = null,
+    premultipliedAlpha: Boolean? = null,
+    preserveDrawingBuffer: Boolean? = null,
+    failIfMajorPerformanceCaveat: Boolean? = null
+): ContainerCanvas {
+    val wgl = canvas.getContext(
+        "webgl2", WebGL2Options(
+            alpha,
+            depth,
+            stencil,
+            antialias,
+            premultipliedAlpha,
+            preserveDrawingBuffer,
+            failIfMajorPerformanceCaveat
+        )
+    ) as WGL2
+    return ContainerCanvas(canvas, wgl)
 }
 
 @Suppress("UnsafeCastFromDynamic")
