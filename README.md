@@ -402,28 +402,6 @@ There also is a JVM-only frontend for compiling the custom shader language.
 | shader-compiler         |    ✓    |    ✓    |
 | shader-clike            |    ✓    |         |
 
-# Modules (SQL)
-
-## SQL Framework
-Simple SQL api to allow basic database access without manually writing
-SQL statements.
-
-Allows abstracting over different backends more reliably.
-
-### Artifacts
-| Component               |   JVM   |   JS    |
-|:------------------------|:-------:|:-------:|
-| sql-framework           |    ✓    |         |
-| mariadb                 |    ✓    |         |
-| sqlite                  |    ✓    |         |
-| sqljet                  |    ✓    |         |
-
-### Dependencies
-  * [SQLite JDBC Driver](https://github.com/xerial/sqlite-jdbc)
-    (SQLite, JVM only)
-  * [SQLJet](https://sqljet.com) (SQLJet, JVM only)
-  * [MariaDB](https://mariadb.org) (MariaDB, JVM only)
-  
 # Modules (Engine)
 
 ## Engine

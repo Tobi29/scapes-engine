@@ -111,16 +111,6 @@ ext {
     antlrVersion = "4.7.1"
     antlrJVM = { module -> "org.antlr:$module:$antlrVersion" }
 
-    mariaDBJavaClientVersion = "1.7.4"
-    mariaDBJavaClientJVM =
-            { module -> "org.mariadb.jdbc:$module:$mariaDBJavaClientVersion" }
-
-    sqliteJDBCVersion = "3.23.1"
-    sqliteJDBCJVM = { module -> "org.xerial:$module:$sqliteJDBCVersion" }
-
-    sqljetVersion = "1.1.11"
-    sqljetJVM = { module -> "org.tmatesoft.sqljet:$module:$sqljetVersion" }
-
     jlayerVersion = "1.0.1"
     jlayerJVM = { module -> "javazoom:$module:$jlayerVersion" }
 

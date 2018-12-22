@@ -64,12 +64,6 @@ include "server-framework"
 include "shader-clike"
 include "shader-compiler"
 
-// Sql
-include "sql-framework"
-include "mariadb"
-include "sqlite"
-include "sqljet"
-
 // Engine
 include "engine"
 include "tilemaps-renderer"
