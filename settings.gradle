@@ -73,7 +73,6 @@ include "glfw-backend"
 
 // Misc
 include "mbeans-cpu-reader"
-include "swt-utils"
 
 // Internal
 include "kzlib"

@@ -39,9 +39,6 @@ allprojects {
             url "https://dl.bintray.com/spekframework/spek-dev"
         }
         maven {
-            url "https://maven-eclipse.github.io/maven"
-        }
-        maven {
             url "https://dl.bintray.com/gitout/scapes-engine"
         }
         maven {
@@ -104,9 +101,6 @@ ext {
     junitJupiterVersion = "5.2.0"
     junitJupiterJVM =
             { module -> "org.junit.jupiter:$module:$junitJupiterVersion" }
-
-    swtVersion = "4.6"
-    swtWindows32 = "org.eclipse.swt:org.eclipse.swt.win32.win32.x86:$swtVersion"
 
     antlrVersion = "4.7.1"
     antlrJVM = { module -> "org.antlr:$module:$antlrVersion" }

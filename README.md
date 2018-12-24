@@ -447,17 +447,6 @@ CPU usage reader backend using mbeans on some JVMs.
 |:------------------------|:-------:|:-------:|
 | mbeans-cpu-reader       |    ✓    |         |
 
-## SWT Utils
-Framework for multi-document SWT based gui applications.
-
-### Artifacts
-| Component               |   JVM   |   JS    |
-|:------------------------|:-------:|:-------:|
-| swt-utils               |    ✓    |         |
-
-### Dependencies
-  * [SWT](https://www.eclipse.org/swt)
-
 # Modules (Testing)
 ## Test Assertions
 Basic test assertions, in particular useful for Spek.
