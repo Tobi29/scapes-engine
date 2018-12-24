@@ -16,13 +16,14 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.*
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.stdex.assert
 
 internal class TextureFBOColor(
-    glh: GLESHandle,
+    glh: GLESImpl<GLES30>,
     width: Int,
     height: Int,
     minFilter: TextureFilter,
@@ -34,7 +35,7 @@ internal class TextureFBOColor(
 ) : TextureFBO(glh, width, height, 0, minFilter, magFilter, wrapS, wrapT) {
     fun attach(gl: GL, i: Int) {
         store(gl)
-        glh.glFramebufferTexture2D(
+        glh.gl.glFramebufferTexture2D(
             GL_FRAMEBUFFER,
             GL_COLOR_ATTACHMENT(i),
             GL_TEXTURE_2D,
@@ -46,11 +47,11 @@ internal class TextureFBOColor(
     override fun texture(gl: GL) {
         assert { isStored }
         gl.check()
-        glh.glBindTexture(GL_TEXTURE_2D, textureID)
+        glh.gl.glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
         // TODO: Consider fixing this in a few years
         /*if (hdr) {
-            glh.glTexImage2D(
+            glh.gl.glTexImage2D(
                 GL_TEXTURE_2D, 0,
                 if (alpha) GL_RGBA16F else GL_RGB16F,
                 buffer.width, buffer.height, 0,
@@ -58,7 +59,7 @@ internal class TextureFBOColor(
                 GL_HALF_FLOAT, null
             )
         } else {*/
-        glh.glTexImage2D(
+        glh.gl.glTexImage2D(
             GL_TEXTURE_2D, 0,
             if (alpha) GL_RGBA else GL_RGB, buffer.width,
             buffer.height, 0, if (alpha) GL_RGBA else GL_RGB,

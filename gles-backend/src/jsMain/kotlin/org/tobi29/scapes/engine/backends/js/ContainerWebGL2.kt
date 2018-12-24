@@ -18,23 +18,22 @@ package org.tobi29.scapes.engine.backends.js
 
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngineBackend
-import org.tobi29.scapes.engine.backends.opengles.GLESHandle
 import org.tobi29.scapes.engine.backends.opengles.GLESImpl
 import org.tobi29.scapes.engine.graphics.GL
+import net.gitout.ktbindings.gles.webgl.WebGL2RenderingContext as WGL2
 import org.khronos.webgl.WebGLRenderingContext as WGL1
-import org.khronos.webgl2.WebGL2RenderingContext as WGL2
 
 abstract class ContainerWebGL2(
     wgl: WGL2
 ) : Container, ScapesEngineBackend by ScapesEngineJS {
-    final override val gos = GLESHandle(wgl, this)
-    protected val gl = GLESImpl(gos)
+    final override val gos =
+        GLESImpl({ wgl }, {}, ::isRenderCall).apply { init() }
     protected var isRendering = 0
 
     protected inline fun <R> renderCall(block: (GL) -> R): R {
         isRendering++
         return try {
-            block(gl)
+            block(gos)
         } finally {
             isRendering--
         }

@@ -95,9 +95,11 @@ ext {
     lwjglVersion = "3.2.0"
     lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 
-    webKTBindingsVersion = "0.0.6"
-    webKTBindingsBase = { module -> "net.gitout.web-kt-bindings:$module:$webKTBindingsVersion" }
-    webKTBindingsJS = { module -> webKTBindingsBase("$module-js") }
+    ktBindingsVersion = "5ba0f43e61e74e0ef2594bd53001b7f6730e57f3"
+    ktBindingsBase = { module -> "net.gitout.kt-bindings:$module:$ktBindingsVersion" }
+    ktBindings = { module -> ktBindingsBase("$module-metadata") }
+    ktBindingsJS = { module -> ktBindingsBase("$module-js") }
+    ktBindingsJVMLWJGL3 = { module -> ktBindingsBase("$module-jvm-lwjgl3") }
 
     junitJupiterVersion = "5.2.0"
     junitJupiterJVM =

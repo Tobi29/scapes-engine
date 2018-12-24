@@ -24,13 +24,11 @@ import org.tobi29.graphics.*
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
 import org.tobi29.io.tag.binary.readBinary
-import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.shader.CompiledShader
 import org.tobi29.scapes.engine.shader.Expression
 import org.tobi29.scapes.engine.shader.toCompiledShader
 
 interface GraphicsObjectSupplier {
-    val container: Container
     val vaoTracker: GraphicsObjectTracker<Model>
     val textureTracker: GraphicsObjectTracker<Texture>
     val fboTracker: GraphicsObjectTracker<Framebuffer>
@@ -126,8 +124,9 @@ interface GraphicsObjectSupplier {
         length: Int,
         index: IntArray,
         renderType: RenderType
-    ): Model =
-        createModelStatic(attributes, length, index, index.size, renderType)
+    ): Model = createModelStatic(
+        attributes, length, index, index.size, renderType
+    )
 
     fun createModelStatic(
         attributes: List<ModelAttribute>,

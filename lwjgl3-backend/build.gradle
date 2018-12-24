@@ -30,7 +30,7 @@ kotlin {
                 implementation project(":io")
                 implementation project(":logging")
                 implementation project(":engine")
-                implementation project(":stb-truetype-font")
+                implementation project(":stb-truetype-font-renderer")
                 implementation project(":openal-sounds")
             }
         }

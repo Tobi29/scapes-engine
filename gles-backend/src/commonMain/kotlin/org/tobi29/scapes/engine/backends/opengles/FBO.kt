@@ -16,12 +16,13 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.*
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.readOnly
 
 internal class FBO(
-    private val glh: GLESHandle,
+    private val glh: GLESImpl<GLES30>,
     private val currentFBO: CurrentFBO,
     width: Int,
     height: Int,
@@ -36,7 +37,7 @@ internal class FBO(
     override val texturesColor: List<TextureFBOColor>
     override val textureDepth: TextureFBODepth?
     private var detach: (() -> Unit)? = null
-    private var framebufferID = GLFBO_EMPTY
+    private var framebufferID = emptyGLFramebuffer
     private var width = 0
     private var currentWidth = 0
     private var height = 0
@@ -128,12 +129,12 @@ internal class FBO(
         }
         if (gl != null) {
             gl.check()
-            glh.glDeleteFramebuffers(framebufferID)
+            glh.gl.glDeleteFramebuffer(framebufferID)
         }
         isStored = false
         detach?.invoke()
         detach = null
-        framebufferID = GLFBO_EMPTY
+        framebufferID = emptyGLFramebuffer
         markAsDisposed = false
         for (textureColor in texturesColor) {
             textureColor.dispose(gl)
@@ -145,20 +146,20 @@ internal class FBO(
         assert { !isStored }
         isStored = true
         gl.check()
-        framebufferID = glh.glGenFramebuffers()
+        framebufferID = glh.gl.glCreateFramebuffer()
         bind(gl)
         textureDepth?.attach(gl)
         for (i in texturesColor.indices) {
             texturesColor[i].attach(gl, i)
         }
-        glh.drawbuffers(texturesColor.size)
-        val status = glh.status()
+        glh.gl.drawbuffers(texturesColor.size)
+        val status = glh.gl.status()
         if (status !== FramebufferStatus.COMPLETE) {
             // TODO: Add error handling
             println(status)
         }
-        glh.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
-        glh.glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        glh.gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f)
+        glh.gl.glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         unbind(gl)
         detach = gl.fboTracker.attach(this)
     }
@@ -166,12 +167,12 @@ internal class FBO(
     private fun bind(gl: GL) {
         gl.check()
         currentFBO.push(framebufferID)
-        glh.glBindFramebuffer(GL_FRAMEBUFFER, framebufferID)
+        glh.gl.glBindFramebuffer(GL_FRAMEBUFFER, framebufferID)
     }
 
     private fun unbind(gl: GL) {
         gl.check()
         val previous = currentFBO.pop(framebufferID)
-        glh.glBindFramebuffer(GL_FRAMEBUFFER, previous)
+        glh.gl.glBindFramebuffer(GL_FRAMEBUFFER, previous)
     }
 }

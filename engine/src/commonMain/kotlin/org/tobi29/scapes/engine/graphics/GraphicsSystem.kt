@@ -66,15 +66,6 @@ class GraphicsSystem(
         shaderDebug = debugValues["Graphics-Shaders"]
     }
 
-    fun dispose(gl: GL) {
-        lock.withLock {
-            gos.vaoTracker.disposeAll(gl)
-            gos.textureTracker.disposeAll(gl)
-            gos.fboTracker.disposeAll(gl)
-            gos.shaderTracker.disposeAll(gl)
-        }
-    }
-
     fun textureEmpty(): Texture {
         return empty
     }

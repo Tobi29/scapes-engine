@@ -17,7 +17,7 @@
 package org.tobi29.scapes.engine.backends.js
 
 import kotlinx.coroutines.awaitAnimationFrame
-import org.khronos.webgl2.WebGL2Options
+import net.gitout.ktbindings.gles.webgl.WebGL2Options
 import org.tobi29.scapes.engine.Container
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.gui.GuiController
@@ -28,8 +28,8 @@ import org.w3c.dom.HTMLCanvasElement
 import org.w3c.dom.events.Event
 import kotlin.browser.document
 import kotlin.browser.window
+import net.gitout.ktbindings.gles.webgl.WebGL2RenderingContext as WGL2
 import org.khronos.webgl.WebGLRenderingContext as WGL1
-import org.khronos.webgl2.WebGL2RenderingContext as WGL2
 
 class ContainerCanvas(
     val canvas: HTMLCanvasElement,

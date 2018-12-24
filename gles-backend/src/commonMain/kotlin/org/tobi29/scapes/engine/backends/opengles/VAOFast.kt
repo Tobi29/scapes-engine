@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.RenderType
@@ -26,10 +27,8 @@ internal class VAOFast(
     private val vbo: VBO,
     private var length: Int,
     private val renderType: RenderType
-) : VAO(
-    vbo.glh
-) {
-    private var arrayID = GLVAO_EMPTY
+) : VAO(vbo.glh) {
+    private var arrayID = emptyGLVertexArrayObject
 
     init {
         if (renderType == RenderType.TRIANGLES && length % 3 != 0) {
@@ -56,8 +55,8 @@ internal class VAOFast(
         }
         gl.check()
         shader(gl, shader)
-        glh.glBindVertexArray(arrayID)
-        glh.glDrawArrays(renderType.enum, 0, length)
+        glh.gl.glBindVertexArray(arrayID)
+        glh.gl.glDrawArrays(renderType.enum, 0, length)
         return true
     }
 
@@ -80,8 +79,8 @@ internal class VAOFast(
         }
         gl.check()
         shader(gl, shader)
-        glh.glBindVertexArray(arrayID)
-        glh.glDrawArraysInstanced(renderType.enum, 0, length, count)
+        glh.gl.glBindVertexArray(arrayID)
+        glh.gl.glDrawArraysInstanced(renderType.enum, 0, length, count)
         return true
     }
 
@@ -92,8 +91,8 @@ internal class VAOFast(
         }
         isStored = true
         gl.check()
-        arrayID = glh.glGenVertexArrays()
-        glh.glBindVertexArray(arrayID)
+        arrayID = glh.gl.glCreateVertexArray()
+        glh.gl.glBindVertexArray(arrayID)
         vbo.store(gl, weak)
         detach = gl.vaoTracker.attach(this)
         return true
@@ -106,7 +105,7 @@ internal class VAOFast(
         if (gl != null) {
             gl.check()
             vbo.dispose(gl)
-            glh.glDeleteVertexArrays(arrayID)
+            glh.gl.glDeleteVertexArray(arrayID)
         }
         isStored = false
         detach?.invoke()

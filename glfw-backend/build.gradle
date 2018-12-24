@@ -22,6 +22,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation rootProject.kotlin("kotlin-stdlib")
+                implementation rootProject.ktBindings("glfw")
                 implementation project(":stdex")
                 implementation project(":arrays")
                 implementation project(":coroutines")
@@ -44,8 +45,8 @@ kotlin {
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
+                implementation rootProject.ktBindingsJVMLWJGL3("glfw")
                 implementation rootProject.lwjglJVM("lwjgl")
-                implementation rootProject.lwjglJVM("lwjgl-glfw")
                 implementation rootProject.lwjglJVM("lwjgl-tinyfd")
                 implementation project(":lwjgl3-backend")
             }

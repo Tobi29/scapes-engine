@@ -16,10 +16,12 @@
 
 package org.tobi29.scapes.engine.backends.glfw.input
 
-import org.tobi29.arrays.BytesRO
-import org.tobi29.arrays.FloatsRO
+import net.gitout.ktbindings.glfw.*
+import net.gitout.ktbindings.utils.ByteReadBuffer
+import net.gitout.ktbindings.utils.FloatReadBuffer
+import net.gitout.ktbindings.utils.get
+import net.gitout.ktbindings.utils.size
 import org.tobi29.logging.KLogger
-import org.tobi29.scapes.engine.backends.glfw.*
 import org.tobi29.scapes.engine.input.Controller
 import org.tobi29.utils.EventDispatcher
 
@@ -139,12 +141,11 @@ internal class GLFWControllers(
 
     private fun updateState(
         joystick: GLFWControllerJoystick,
-        axes: FloatsRO,
-        buttons: BytesRO
+        axes: FloatReadBuffer,
+        buttons: ByteReadBuffer
     ) {
         for (i in 0 until axes.size) {
-            joystick.setAxis(i,
-                deadzones(axes[i].toDouble()), events)
+            joystick.setAxis(i, deadzones(axes[i].toDouble()), events)
         }
         for (i in 0 until buttons.size) {
             val value = (buttons[i].toInt() and 0xFF) == GLFW_PRESS

@@ -17,6 +17,7 @@
 package org.tobi29.scapes.engine.backends.glfw
 
 import kotlinx.coroutines.*
+import net.gitout.ktbindings.glfw.*
 import org.tobi29.coroutines.*
 import org.tobi29.io.AutoCloseable
 import org.tobi29.io.tag.ReadTagMutableMap
@@ -32,7 +33,6 @@ import org.tobi29.scapes.engine.backends.glfw.input.glfwKey
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsCheckException
 import org.tobi29.scapes.engine.graphics.GraphicsException
-import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.gui.GuiController
 import org.tobi29.scapes.engine.input.*
 import org.tobi29.stdex.ConcurrentHashMap
@@ -71,8 +71,7 @@ class ContainerGLFW(
             logger.error { "Error $error occurred in GLFW" }
         }
     private val useGLES: Boolean
-    override val gos: GraphicsObjectSupplier
-    private val gl: GL
+    override val gos: GL
     private val initContext: () -> Unit
     private val requestLegacy: (ReadTagMutableMap) -> String?
     var window = GLFWWindow_EMPTY
@@ -101,18 +100,14 @@ class ContainerGLFW(
         when (graphicsBackend) {
             is GLBackend -> {
                 useGLES = false
-                val (a, b) = graphicsBackend.createGL(this)
-                gos = a
-                gl = b
-                initContext = graphicsBackend::initContext
+                gos = graphicsBackend.createGL(this)
+                initContext = gos::init
                 requestLegacy = graphicsBackend::requestLegacy
             }
             is GLESBackend -> {
                 useGLES = true
-                val (a, b) = graphicsBackend.createGL(this)
-                gos = a
-                gl = b
-                initContext = graphicsBackend::initContext
+                gos = graphicsBackend.createGL(this)
+                initContext = gos::init
                 requestLegacy = { null }
             }
             else -> error("Unsupported graphics backend: ${graphicsBackend::class}")
@@ -141,25 +136,13 @@ class ContainerGLFW(
                 mouseX = containerWidth / density * 0.5
                 mouseY = containerHeight / density * 0.5
                 if (cursorCapture) {
-                    glfwSetInputMode(
-                        window,
-                        GLFW_CURSOR,
-                        GLFW_CURSOR_DISABLED
-                    )
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
                     mouseDeltaSkip = true
                 } else {
                     mouseX = containerWidth / density * 0.5
                     mouseY = containerHeight / density * 0.5
-                    glfwSetInputMode(
-                        window,
-                        GLFW_CURSOR,
-                        GLFW_CURSOR_NORMAL
-                    )
-                    glfwSetCursorPos(
-                        window,
-                        mouseX,
-                        mouseY
-                    )
+                    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL)
+                    glfwSetCursorPos(window, mouseX, mouseY)
                 }
                 controllerDesktop.set(mouseX, mouseY)
             }
@@ -168,20 +151,13 @@ class ContainerGLFW(
 
     override fun clipboardCopy(value: String) {
         launch {
-            glfwSetClipboardString(
-                window,
-                value
-            )
+            glfwSetClipboardString(window, value)
         }
     }
 
     override fun clipboardPaste(callback: (String) -> Unit) {
         launch {
-            callback(
-                glfwGetClipboardString(
-                    window
-                ) ?: ""
-            )
+            callback(glfwGetClipboardString(window) ?: "")
         }
     }
 
@@ -191,12 +167,7 @@ class ContainerGLFW(
         message: String
     ) {
         launch {
-            message(
-                this@ContainerGLFW,
-                messageType,
-                title,
-                message
-            )
+            message(this@ContainerGLFW, messageType, title, message)
         }
     }
 
@@ -206,12 +177,7 @@ class ContainerGLFW(
         multiline: Boolean
     ) {
         launch {
-            dialog(
-                this@ContainerGLFW,
-                title,
-                text,
-                multiline
-            )
+            dialog(this@ContainerGLFW, title, text, multiline)
         }
     }
 
@@ -230,11 +196,7 @@ class ContainerGLFW(
         val engine: ScapesEngine
     ) : AutoCloseable {
         val engineConfig = engine[ScapesEngineConfig.COMPONENT]
-        val controllers =
-            GLFWControllers(
-                engine.events,
-                joysticks
-            )
+        val controllers = GLFWControllers(engine.events, joysticks)
         val windowSizeFun =
             GLFWWindowSizeCallback { _, width, height ->
                 containerWidth = (width * density).roundToInt()
@@ -337,9 +299,7 @@ class ContainerGLFW(
             }
         val monitorFun =
             GLFWMonitorCallback { _, _ ->
-                refreshRate = refreshRate(
-                    window
-                ) ?: 60
+                refreshRate = refreshRate(window) ?: 60
             }
         val latencyDebug = engine.debugValues["Input-Latency"]
         val plebSyncDebug = engine.debugValues["PlebSync™-Sleep"]
@@ -412,22 +372,13 @@ class ContainerGLFW(
                 engineConfig.fullscreen, engineConfig.vSync,
                 useGLES, this
             )
-            refreshRate = refreshRate(
-                window
-            ) ?: 60
+            refreshRate = refreshRate(window) ?: 60
             val widthBuffer = IntArray(1)
             val heightBuffer = IntArray(1)
-            glfwGetWindowSize(
-                window,
-                widthBuffer,
-                heightBuffer
-            )
+            glfwGetWindowSize(window, widthBuffer, heightBuffer)
             containerWidth = (widthBuffer[0] * density).roundToInt()
             containerHeight = (heightBuffer[0] * density).roundToInt()
-            glfwGetFramebufferSize(
-                window, widthBuffer,
-                heightBuffer
-            )
+            glfwGetFramebufferSize(window, widthBuffer, heightBuffer)
             contentWidth = widthBuffer[0]
             contentHeight = heightBuffer[0]
             valid = true
@@ -445,7 +396,7 @@ class ContainerGLFW(
 
         fun render(tickDiff: Long) = profilerSection("Render") {
             engine.graphics.render(
-                gl,
+                gos,
                 Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
                 contentWidth,
                 contentHeight,
@@ -489,7 +440,7 @@ class ContainerGLFW(
                 engine.events.fire(Controller.RemoveEvent(controllerDesktop))
             }
             logger.info { "Disposing graphics system" }
-            engine.graphics.dispose(gl)
+            gos.dispose()
         }
 
         override fun close() {
@@ -605,42 +556,15 @@ private fun initWindow(
         window
     }
     initContext()
-    glfwSetWindowSizeCallback(
-        window,
-        state.windowSizeFun
-    )
-    glfwSetWindowCloseCallback(
-        window,
-        state.windowCloseFun
-    )
-    glfwSetWindowFocusCallback(
-        window,
-        state.windowFocusFun
-    )
-    glfwSetFramebufferSizeCallback(
-        window,
-        state.frameBufferSizeFun
-    )
-    glfwSetKeyCallback(
-        window,
-        state.keyFun
-    )
-    glfwSetCharCallback(
-        window,
-        state.charFun
-    )
-    glfwSetMouseButtonCallback(
-        window,
-        state.mouseButtonFun
-    )
-    glfwSetCursorPosCallback(
-        window,
-        state.cursorPosFun
-    )
-    glfwSetScrollCallback(
-        window,
-        state.scrollFun
-    )
+    glfwSetWindowSizeCallback(window, state.windowSizeFun)
+    glfwSetWindowCloseCallback(window, state.windowCloseFun)
+    glfwSetWindowFocusCallback(window, state.windowFocusFun)
+    glfwSetFramebufferSizeCallback(window, state.frameBufferSizeFun)
+    glfwSetKeyCallback(window, state.keyFun)
+    glfwSetCharCallback(window, state.charFun)
+    glfwSetMouseButtonCallback(window, state.mouseButtonFun)
+    glfwSetCursorPosCallback(window, state.cursorPosFun)
+    glfwSetScrollCallback(window, state.scrollFun)
     glfwSwapInterval(if (vSync) 1 else 0)
     return window
 }
@@ -648,70 +572,31 @@ private fun initWindow(
 private fun disposeWindow(
     window: GLFWWindow
 ) {
-    glfwSetWindowSizeCallback(
-        window,
-        null
-    )
-    glfwSetWindowCloseCallback(
-        window,
-        null
-    )
-    glfwSetWindowFocusCallback(
-        window,
-        null
-    )
-    glfwSetFramebufferSizeCallback(
-        window,
-        null
-    )
+    glfwSetWindowSizeCallback(window, null)
+    glfwSetWindowCloseCallback(window, null)
+    glfwSetWindowFocusCallback(window, null)
+    glfwSetFramebufferSizeCallback(window, null)
     glfwSetKeyCallback(window, null)
     glfwSetCharCallback(window, null)
-    glfwSetMouseButtonCallback(
-        window,
-        null
-    )
-    glfwSetCursorPosCallback(
-        window,
-        null
-    )
+    glfwSetMouseButtonCallback(window, null)
+    glfwSetCursorPosCallback(window, null)
     glfwSetScrollCallback(window, null)
     glfwDestroyWindow(window)
 }
 
 private fun initContextGL(contextLegacy: Boolean = false) {
     if (!contextLegacy) {
-        glfwWindowHint(
-            GLFW_CONTEXT_VERSION_MAJOR,
-            3
-        )
-        glfwWindowHint(
-            GLFW_CONTEXT_VERSION_MINOR,
-            3
-        )
-        glfwWindowHint(
-            GLFW_OPENGL_PROFILE,
-            GLFW_OPENGL_CORE_PROFILE
-        )
-        glfwWindowHint(
-            GLFW_OPENGL_FORWARD_COMPAT,
-            GLFW_TRUE
-        )
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3)
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE)
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE)
     }
 }
 
 private fun initContextGLES() {
-    glfwWindowHint(
-        GLFW_CLIENT_API,
-        GLFW_OPENGL_ES_API
-    )
-    glfwWindowHint(
-        GLFW_CONTEXT_VERSION_MAJOR,
-        3
-    )
-    glfwWindowHint(
-        GLFW_CONTEXT_VERSION_MINOR,
-        0
-    )
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0)
 }
 
 private fun initWindow(
@@ -721,15 +606,11 @@ private fun initWindow(
     monitorWidth: Int,
     monitorHeight: Int
 ): GLFWWindow {
-    glfwWindowHint(
-        GLFW_VISIBLE,
-        GLFW_FALSE
-    )
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE)
     // >:V Seriously, stop with this crap!
-    glfwWindowHint(
-        GLFW_AUTO_ICONIFY,
-        GLFW_FALSE
-    )
+    glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE)
+    // TODO: Disable
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE)
     return if (fullscreen) {
         val window = glfwCreateWindow(
             monitorWidth, monitorHeight, title, monitor, 0L

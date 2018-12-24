@@ -18,7 +18,7 @@
 
 package org.tobi29.scapes.engine.backends.glfw.input
 
-import org.tobi29.scapes.engine.backends.glfw.*
+import net.gitout.ktbindings.glfw.*
 import org.tobi29.scapes.engine.input.ControllerAxis
 import org.tobi29.scapes.engine.input.ControllerKey
 

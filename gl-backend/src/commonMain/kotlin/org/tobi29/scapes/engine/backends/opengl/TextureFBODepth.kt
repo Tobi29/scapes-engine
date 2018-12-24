@@ -16,13 +16,14 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
+import net.gitout.ktbindings.gl.*
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.stdex.assert
 
 internal class TextureFBODepth(
-    glh: GLHandle,
+    glh: GLImpl<GL33>,
     width: Int,
     height: Int,
     minFilter: TextureFilter,
@@ -32,8 +33,9 @@ internal class TextureFBODepth(
 ) : TextureFBO(glh, width, height, 0, minFilter, magFilter, wrapS, wrapT) {
     fun attach(gl: GL) {
         store(gl)
-        glh.glFramebufferTexture2D(
-            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        glh.gl.glFramebufferTexture2D(
+            GL_FRAMEBUFFER,
+            GL_DEPTH_ATTACHMENT,
             GL_TEXTURE_2D, textureID, 0
         )
     }
@@ -41,11 +43,13 @@ internal class TextureFBODepth(
     override fun texture(gl: GL) {
         assert { isStored }
         gl.check()
-        glh.glBindTexture(GL_TEXTURE_2D, textureID)
+        glh.gl.glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
-        glh.glTexImage2D(
-            GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,
-            buffer.width, buffer.height, 0, GL_DEPTH_COMPONENT,
+        glh.gl.glTexImage2D(
+            GL_TEXTURE_2D, 0,
+            GL_DEPTH_COMPONENT24,
+            buffer.width, buffer.height, 0,
+            GL_DEPTH_COMPONENT,
             GL_UNSIGNED_INT, null
         )
     }

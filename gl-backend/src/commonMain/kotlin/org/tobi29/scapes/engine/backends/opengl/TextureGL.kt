@@ -16,15 +16,17 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
+import net.gitout.ktbindings.gl.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.graphics.generateMipMapsNullable
 import org.tobi29.io.ByteViewE
+import org.tobi29.scapes.engine.allocateMemoryBuffer
 import org.tobi29.scapes.engine.graphics.*
 import org.tobi29.stdex.assert
 import org.tobi29.stdex.atomic.AtomicBoolean
 
 internal open class TextureGL(
-    protected val glh: GLHandle,
+    protected val glh: GLImpl<GL33>,
     width: Int,
     height: Int,
     buffer: BytesRO?,
@@ -37,7 +39,7 @@ internal open class TextureGL(
     override val gos: GraphicsObjectSupplier get() = glh
     protected val dirtyFilter = AtomicBoolean(true)
     protected val dirtyBuffer = AtomicBoolean(true)
-    protected var textureID = GLTexture_EMPTY
+    protected var textureID = emptyGLTexture
     protected var minFilter = TextureFilter.NEAREST
     protected var magFilter = TextureFilter.NEAREST
     protected var wrapS = TextureWrap.REPEAT
@@ -46,7 +48,12 @@ internal open class TextureGL(
     protected var markAsDisposed = false
     protected var used: Long = 0
     protected var detach: (() -> Unit)? = null
-    protected var buffer = TextureBuffer(emptyArray(), width, height)
+    protected var buffer =
+        TextureBuffer(
+            emptyArray(),
+            width,
+            height
+        )
 
     init {
         this.minFilter = minFilter
@@ -59,7 +66,7 @@ internal open class TextureGL(
     override fun bind(gl: GL) {
         ensureStored(gl)
         gl.check()
-        glh.glBindTexture(GL_TEXTURE_2D, textureID)
+        glh.gl.glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
     }
 
@@ -67,13 +74,15 @@ internal open class TextureGL(
         if (dirtyFilter.getAndSet(false)) {
             if (mipmaps > 0) {
                 when (minFilter) {
-                    TextureFilter.NEAREST -> glh.glTexParameteri(
+                    TextureFilter.NEAREST -> glh.gl.glTexParameteri(
                         GL_TEXTURE_2D,
-                        GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR
+                        GL_TEXTURE_MIN_FILTER,
+                        GL_NEAREST_MIPMAP_LINEAR
                     )
-                    TextureFilter.LINEAR -> glh.glTexParameteri(
+                    TextureFilter.LINEAR -> glh.gl.glTexParameteri(
                         GL_TEXTURE_2D,
-                        GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR
+                        GL_TEXTURE_MIN_FILTER,
+                        GL_LINEAR_MIPMAP_LINEAR
                     )
                     else -> throw IllegalArgumentException(
                         "Illegal texture-filter!"
@@ -81,11 +90,15 @@ internal open class TextureGL(
                 }
             } else {
                 when (minFilter) {
-                    TextureFilter.NEAREST -> glh.glTexParameteri(
-                        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST
+                    TextureFilter.NEAREST -> glh.gl.glTexParameteri(
+                        GL_TEXTURE_2D,
+                        GL_TEXTURE_MIN_FILTER,
+                        GL_NEAREST
                     )
-                    TextureFilter.LINEAR -> glh.glTexParameteri(
-                        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR
+                    TextureFilter.LINEAR -> glh.gl.glTexParameteri(
+                        GL_TEXTURE_2D,
+                        GL_TEXTURE_MIN_FILTER,
+                        GL_LINEAR
                     )
                     else -> throw IllegalArgumentException(
                         "Illegal texture-filter!"
@@ -93,31 +106,43 @@ internal open class TextureGL(
                 }
             }
             when (magFilter) {
-                TextureFilter.NEAREST -> glh.glTexParameteri(
-                    GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST
+                TextureFilter.NEAREST -> glh.gl.glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    GL_NEAREST
                 )
-                TextureFilter.LINEAR -> glh.glTexParameteri(
-                    GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR
+                TextureFilter.LINEAR -> glh.gl.glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    GL_LINEAR
                 )
                 else -> throw IllegalArgumentException(
                     "Illegal texture-filter!"
                 )
             }
             when (wrapS) {
-                TextureWrap.REPEAT -> glh.glTexParameteri(
-                    GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT
+                TextureWrap.REPEAT -> glh.gl.glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S,
+                    GL_REPEAT
                 )
-                TextureWrap.CLAMP -> glh.glTexParameteri(
-                    GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE
+                TextureWrap.CLAMP -> glh.gl.glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S,
+                    GL_CLAMP_TO_EDGE
                 )
                 else -> throw IllegalArgumentException("Illegal texture-wrap!")
             }
             when (wrapT) {
-                TextureWrap.REPEAT -> glh.glTexParameteri(
-                    GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT
+                TextureWrap.REPEAT -> glh.gl.glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T,
+                    GL_REPEAT
                 )
-                TextureWrap.CLAMP -> glh.glTexParameteri(
-                    GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE
+                TextureWrap.CLAMP -> glh.gl.glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T,
+                    GL_CLAMP_TO_EDGE
                 )
                 else -> throw IllegalArgumentException("Illegal texture-wrap!")
             }
@@ -197,7 +222,7 @@ internal open class TextureGL(
         }
         if (gl != null) {
             gl.check()
-            glh.glDeleteTextures(textureID)
+            glh.gl.glDeleteTexture(textureID)
         }
         isStored = false
         detach?.invoke()
@@ -209,7 +234,7 @@ internal open class TextureGL(
         assert { !isStored }
         isStored = true
         gl.check()
-        textureID = glh.glGenTextures()
+        textureID = glh.gl.glCreateTexture()
         texture(gl)
         dirtyFilter.set(true)
         detach = gl.textureTracker.attach(this)
@@ -218,31 +243,40 @@ internal open class TextureGL(
     protected open fun texture(gl: GL) {
         assert { isStored }
         gl.check()
-        glh.glBindTexture(GL_TEXTURE_2D, textureID)
+        glh.gl.glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
         if (buffer.buffers.size > 1) {
-            glh.glTexParameteri(
-                GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,
+            glh.gl.glTexParameteri(
+                GL_TEXTURE_2D,
+                GL_TEXTURE_MAX_LEVEL,
                 buffer.buffers.size - 1
             )
-            glh.glTexImage2D(
-                GL_TEXTURE_2D, 0, GL_RGBA, buffer.width,
-                buffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                buffer.buffers[0]
+            glh.gl.glTexImage2D(
+                GL_TEXTURE_2D, 0,
+                GL_RGBA, buffer.width,
+                buffer.height, 0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                buffer.buffers[0]?.asDataBuffer()
             )
             for (i in 1 until buffer.buffers.size) {
-                glh.glTexImage2D(
-                    GL_TEXTURE_2D, i, GL_RGBA,
+                glh.gl.glTexImage2D(
+                    GL_TEXTURE_2D, i,
+                    GL_RGBA,
                     (buffer.width shr i).coerceAtLeast(1),
-                    (buffer.height shr i).coerceAtLeast(1), 0, GL_RGBA,
-                    GL_UNSIGNED_BYTE, buffer.buffers[i]
+                    (buffer.height shr i).coerceAtLeast(1), 0,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE, buffer.buffers[i]?.asDataBuffer()
                 )
             }
         } else {
-            glh.glTexImage2D(
-                GL_TEXTURE_2D, 0, GL_RGBA, buffer.width,
-                buffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                buffer.buffers[0]
+            glh.gl.glTexImage2D(
+                GL_TEXTURE_2D, 0,
+                GL_RGBA, buffer.width,
+                buffer.height, 0,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                buffer.buffers[0]?.asDataBuffer()
             )
         }
     }
@@ -255,7 +289,7 @@ internal open class TextureGL(
         return TextureBuffer(
             generateMipMapsNullable(
                 buffer,
-                { glh.byteView(it) }, width, height, mipmaps,
+                { allocateMemoryBuffer(it) }, width, height, mipmaps,
                 minFilter == TextureFilter.LINEAR
             ), width, height
         )

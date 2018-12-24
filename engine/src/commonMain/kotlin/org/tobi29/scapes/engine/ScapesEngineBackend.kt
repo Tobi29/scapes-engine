@@ -23,7 +23,6 @@ import org.tobi29.io.tag.ReadTagMutableMap
 import org.tobi29.io.tag.TagMap
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.graphics.GL
-import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.dummy.DummyFont
 import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.dummy.DummySoundSystem
@@ -68,12 +67,10 @@ inline fun <B : MemoryBufferPinned, R> B.use(block: (B) -> R) = try {
 interface GraphicsBackend
 
 interface GLBackend : GraphicsBackend {
-    fun createGL(container: Container): Pair<GraphicsObjectSupplier, GL>
+    fun createGL(container: Container): GL
     fun requestLegacy(config: ReadTagMutableMap = TagMap()): String? = null
-    fun initContext()
 }
 
 interface GLESBackend : GraphicsBackend {
-    fun createGL(container: Container): Pair<GraphicsObjectSupplier, GL>
-    fun initContext()
+    fun createGL(container: Container): GL
 }

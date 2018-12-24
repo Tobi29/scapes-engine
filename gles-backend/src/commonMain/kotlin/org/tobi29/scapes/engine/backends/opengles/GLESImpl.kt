@@ -13,20 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.graphics.Bitmap
 import org.tobi29.graphics.Ints2BytesBitmap
 import org.tobi29.graphics.RGBA
 import org.tobi29.graphics.flipVertical
-import org.tobi29.scapes.engine.graphics.BlendingMode
-import org.tobi29.scapes.engine.graphics.GL
-import org.tobi29.scapes.engine.graphics.GraphicsException
+import org.tobi29.logging.KLogger
+import org.tobi29.scapes.engine.allocateMemoryBuffer
+import org.tobi29.scapes.engine.graphics.*
+import org.tobi29.scapes.engine.shader.CompiledShader
+import org.tobi29.scapes.engine.shader.Expression
+import org.tobi29.stdex.assert
 
-class GLESImpl(private val glh: GLESHandle) : GL(glh) {
+class GLESImpl<out G : GLES30>(
+    private val glInit: () -> G,
+    private val glDispose: (G) -> Unit,
+    private val checkRenderCall: () -> Boolean
+) : GL() {
+    override val vaoTracker = GraphicsObjectTracker<Model>()
+    override val textureTracker = GraphicsObjectTracker<Texture>()
+    override val fboTracker = GraphicsObjectTracker<Framebuffer>()
+    override val shaderTracker = GraphicsObjectTracker<Shader>()
+    private val currentFBO = CurrentFBO()
+    private var _gl: G? = null
+    internal val gl: G get() = _gl!!
+
+    override fun init() {
+        _gl = glInit()
+
+        logger.info {
+            "OpenGL ES: ${gl.glGetString(GL_VERSION)
+            } (Vendor: ${gl.glGetString(GL_VENDOR)
+            }, Renderer: ${gl.glGetString(GL_RENDERER)})"
+        }
+    }
+
+    override fun dispose() {
+        vaoTracker.disposeAll(this)
+        textureTracker.disposeAll(this)
+        fboTracker.disposeAll(this)
+        shaderTracker.disposeAll(this)
+        glDispose(gl)
+        _gl = null
+    }
+
     override fun checkError(message: String) {
-        val error = glh.glGetError()
+        val error = gl.glGetError()
         if (error != GL_NO_ERROR) {
             val errorName = when (error) {
                 GL_INVALID_ENUM -> "Enum argument out of range"
@@ -40,25 +76,78 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         }
     }
 
+    override fun isRenderCall(): Boolean = checkRenderCall()
+
+    override fun createTexture(
+        width: Int, height: Int,
+        buffer: BytesRO,
+        mipmaps: Int,
+        minFilter: TextureFilter, magFilter: TextureFilter,
+        wrapS: TextureWrap, wrapT: TextureWrap
+    ): Texture = TextureGL(
+        this, width, height, buffer, mipmaps, minFilter, magFilter, wrapS, wrapT
+    )
+
+    override fun createFramebuffer(
+        width: Int, height: Int,
+        colorAttachments: Int, depth: Boolean,
+        hdr: Boolean, alpha: Boolean,
+        minFilter: TextureFilter, magFilter: TextureFilter
+    ): Framebuffer = FBO(
+        this, currentFBO, width, height, colorAttachments, depth, hdr, alpha,
+        minFilter, magFilter
+    )
+
+    override fun createModelFast(
+        attributes: List<ModelAttribute>, length: Int,
+        renderType: RenderType
+    ): Model {
+        val vbo = VBO(this, attributes, length)
+        return VAOFast(vbo, length, renderType)
+    }
+
+    override fun createModelStatic(
+        attributes: List<ModelAttribute>, length: Int,
+        index: IntArray, indexLength: Int,
+        renderType: RenderType
+    ): Model {
+        val vbo = VBO(this, attributes, length)
+        return VAOStatic(vbo, index, indexLength, renderType)
+    }
+
+    override fun createModelHybrid(
+        attributes: List<ModelAttribute>, length: Int,
+        attributesStream: List<ModelAttribute>, lengthStream: Int,
+        renderType: RenderType
+    ): ModelHybrid {
+        val vbo = VBO(this, attributes, length)
+        val vboStream = VBO(this, attributesStream, lengthStream)
+        return VAOHybrid(vbo, vboStream, renderType)
+    }
+
+    override fun createShader(
+        shader: CompiledShader, properties: Map<String, Expression>
+    ): Shader = ShaderGL(this, shader, properties)
+
     override fun clear(r: Float, g: Float, b: Float, a: Float) {
-        glh.glClearColor(r, g, b, a)
-        glh.glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
+        gl.glClearColor(r, g, b, a)
+        gl.glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
     }
 
     override fun clearDepth() {
-        glh.glClear(GL_DEPTH_BUFFER_BIT)
+        gl.glClear(GL_DEPTH_BUFFER_BIT)
     }
 
     override fun disableCulling() {
-        glh.glDisable(GL_CULL_FACE)
+        gl.glDisable(GL_CULL_FACE)
     }
 
     override fun disableDepthTest() {
-        glh.glDisable(GL_DEPTH_TEST)
+        gl.glDisable(GL_DEPTH_TEST)
     }
 
     override fun disableDepthMask() {
-        glh.glDepthMask(false)
+        gl.glDepthMask(false)
     }
 
     override fun disableWireframe() {
@@ -66,20 +155,20 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
     }
 
     override fun disableScissor() {
-        glh.glDisable(GL_SCISSOR_TEST)
+        gl.glDisable(GL_SCISSOR_TEST)
     }
 
     override fun enableCulling() {
-        glh.glEnable(GL_CULL_FACE)
+        gl.glEnable(GL_CULL_FACE)
     }
 
     override fun enableDepthTest() {
-        glh.glEnable(GL_DEPTH_TEST)
-        glh.glDepthFunc(GL_LEQUAL)
+        gl.glEnable(GL_DEPTH_TEST)
+        gl.glDepthFunc(GL_LEQUAL)
     }
 
     override fun enableDepthMask() {
-        glh.glDepthMask(true)
+        gl.glDepthMask(true)
     }
 
     override fun enableWireframe() {
@@ -92,30 +181,30 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         width: Int,
         height: Int
     ) {
-        glh.glEnable(GL_SCISSOR_TEST)
-        glh.glScissor(x, contentHeight - y - height, width, height)
+        gl.glEnable(GL_SCISSOR_TEST)
+        gl.glScissor(x, contentHeight - y - height, width, height)
     }
 
     override fun setBlending(mode: BlendingMode) {
         when (mode) {
-            BlendingMode.NONE -> glh.glDisable(GL_BLEND)
+            BlendingMode.NONE -> gl.glDisable(GL_BLEND)
             BlendingMode.NORMAL -> {
-                glh.glEnable(GL_BLEND)
-                glh.glBlendFunc(
+                gl.glEnable(GL_BLEND)
+                gl.glBlendFunc(
                     GL_SRC_ALPHA,
                     GL_ONE_MINUS_SRC_ALPHA
                 )
             }
             BlendingMode.ADD -> {
-                glh.glEnable(GL_BLEND)
-                glh.glBlendFunc(
+                gl.glEnable(GL_BLEND)
+                gl.glBlendFunc(
                     GL_SRC_ALPHA,
                     GL_DST_ALPHA
                 )
             }
             BlendingMode.INVERT -> {
-                glh.glEnable(GL_BLEND)
-                glh.glBlendFunc(
+                gl.glEnable(GL_BLEND)
+                gl.glBlendFunc(
                     GL_ONE_MINUS_DST_COLOR,
                     GL_ONE_MINUS_SRC_COLOR
                 )
@@ -129,11 +218,11 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         width: Int,
         height: Int
     ) {
-        glh.glViewport(x, y, width, height)
+        gl.glViewport(x, y, width, height)
     }
 
     override fun getViewport(output: IntArray) {
-        glh.glGetIntegerv(GL_VIEWPORT, output)
+        gl.glGetIntegerv(GL_VIEWPORT, output)
     }
 
     override fun getFrontBuffer(
@@ -142,7 +231,7 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         width: Int,
         height: Int
     ): Bitmap<*, *> {
-        glh.glReadBuffer(GL_FRONT)
+        gl.glReadBuffer(GL_FRONT)
         return readPixels(x, y, width, height)
     }
 
@@ -153,7 +242,7 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         height: Int,
         attachment: Int
     ): Bitmap<*, *> {
-        glh.glReadBuffer(GL_COLOR_ATTACHMENT(attachment))
+        gl.glReadBuffer(GL_COLOR_ATTACHMENT(attachment))
         return readPixels(x, y, width, height)
     }
 
@@ -163,18 +252,18 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         width: Int,
         height: Int
     ): Bitmap<*, *> {
-        glh.glReadBuffer(GL_DEPTH_ATTACHMENT)
+        gl.glReadBuffer(GL_DEPTH_ATTACHMENT)
         return readPixels(x, y, width, height)
     }
 
     private fun readPixels(
         x: Int, y: Int, width: Int, height: Int
     ): Bitmap<*, *> {
-        val buffer = glh.byteView(width * height shl 2)
-        glh.glReadPixels(
+        val buffer = allocateMemoryBuffer(width * height shl 2)
+        gl.glReadPixels(
             x, y, width, height,
             GL_RGBA,
-            GL_UNSIGNED_BYTE, buffer
+            GL_UNSIGNED_BYTE, buffer.asDataBuffer()
         )
         return Ints2BytesBitmap(buffer, width, height, RGBA).apply {
             flipVertical()
@@ -185,7 +274,7 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         id: Int,
         v0: Float
     ) {
-        glh.glVertexAttrib1f(id, v0)
+        gl.glVertexAttrib1f(id.toUInt(), v0)
     }
 
     override fun setAttribute2f(
@@ -193,7 +282,7 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         v0: Float,
         v1: Float
     ) {
-        glh.glVertexAttrib2f(id, v0, v1)
+        gl.glVertexAttrib2f(id.toUInt(), v0, v1)
     }
 
     override fun setAttribute3f(
@@ -202,7 +291,7 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         v1: Float,
         v2: Float
     ) {
-        glh.glVertexAttrib3f(id, v0, v1, v2)
+        gl.glVertexAttrib3f(id.toUInt(), v0, v1, v2)
     }
 
     override fun setAttribute4f(
@@ -212,35 +301,35 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         v2: Float,
         v3: Float
     ) {
-        glh.glVertexAttrib4f(id, v0, v1, v2, v3)
+        gl.glVertexAttrib4f(id.toUInt(), v0, v1, v2, v3)
     }
 
     override fun setAttribute1f(
         uniform: Int,
         values: FloatArray
     ) {
-        glh.glVertexAttrib1fv(uniform, values)
+        gl.glVertexAttrib1fv(uniform.toUInt(), values)
     }
 
     override fun setAttribute2f(
         uniform: Int,
         values: FloatArray
     ) {
-        glh.glVertexAttrib2fv(uniform, values)
+        gl.glVertexAttrib2fv(uniform.toUInt(), values)
     }
 
     override fun setAttribute3f(
         uniform: Int,
         values: FloatArray
     ) {
-        glh.glVertexAttrib3fv(uniform, values)
+        gl.glVertexAttrib3fv(uniform.toUInt(), values)
     }
 
     override fun setAttribute4f(
         uniform: Int,
         values: FloatArray
     ) {
-        glh.glVertexAttrib4fv(uniform, values)
+        gl.glVertexAttrib4fv(uniform.toUInt(), values)
     }
 
     override fun replaceTexture(
@@ -250,10 +339,10 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         height: Int,
         buffer: BytesRO
     ) {
-        glh.glTexSubImage2D(
+        gl.glTexSubImage2D(
             GL_TEXTURE_2D, 0, x, y, width, height,
             GL_RGBA,
-            GL_UNSIGNED_BYTE, buffer
+            GL_UNSIGNED_BYTE, buffer.asDataBuffer()
         )
     }
 
@@ -264,24 +353,48 @@ class GLESImpl(private val glh: GLESHandle) : GL(glh) {
         height: Int,
         vararg buffers: BytesRO
     ) {
-        glh.glTexSubImage2D(
+        gl.glTexSubImage2D(
             GL_TEXTURE_2D, 0, x, y, width, height,
             GL_RGBA,
-            GL_UNSIGNED_BYTE, buffers[0]
+            GL_UNSIGNED_BYTE, buffers[0].asDataBuffer()
         )
         for (i in 1 until buffers.size) {
             val scale = 1 shl i
-            glh.glTexSubImage2D(
+            gl.glTexSubImage2D(
                 GL_TEXTURE_2D, i, x / scale, y / scale,
                 (width / scale).coerceAtLeast(1),
                 (height / scale).coerceAtLeast(1),
                 GL_RGBA,
-                GL_UNSIGNED_BYTE, buffers[i]
+                GL_UNSIGNED_BYTE, buffers[i].asDataBuffer()
             )
         }
     }
 
     override fun activeTexture(i: Int) {
-        glh.glActiveTexture(GL_TEXTURE(i))
+        gl.glActiveTexture(GL_TEXTURE(i))
+    }
+
+    private companion object {
+        private val logger = KLogger<GLESImpl<*>>()
+    }
+}
+
+private const val FBO_STACK_SIZE = 64
+
+class CurrentFBO {
+    private val stack = Array(FBO_STACK_SIZE) { emptyGLFramebuffer }
+    private var index = 0
+
+    fun push(fbo: GLFramebuffer) {
+        if (index >= stack.size - 1)
+            throw IllegalStateException("Framebuffer stack overflowed")
+        stack[++index] = fbo
+    }
+
+    fun pop(fbo: GLFramebuffer): GLFramebuffer {
+        if (index <= 0)
+            throw IllegalStateException("Framebuffer stack underflowed")
+        assert { stack[index] == fbo }
+        return stack[--index]
     }
 }

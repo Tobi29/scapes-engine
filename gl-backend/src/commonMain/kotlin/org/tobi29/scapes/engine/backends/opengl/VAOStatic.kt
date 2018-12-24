@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
+import net.gitout.ktbindings.gl.*
 import org.tobi29.arrays.Bytes
 import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.allocateMemoryBuffer
@@ -33,8 +34,8 @@ internal class VAOStatic(
 ) : VAO(vbo.glh),
     ModelIndexed {
     private var data: Bytes? = null
-    private var indexID = GLVBO_EMPTY
-    private var arrayID = GLVAO_EMPTY
+    private var indexID = emptyGLBuffer
+    private var arrayID = emptyGLVertexArrayObject
 
     init {
         if (renderType == RenderType.TRIANGLES && length % 3 != 0) {
@@ -66,10 +67,10 @@ internal class VAOStatic(
         }
         gl.check()
         shader(gl, shader)
-        glh.glBindVertexArray(arrayID)
-        glh.glDrawElements(
+        glh.gl.glBindVertexArray(arrayID)
+        glh.gl.glDrawElements(
             renderType.enum, length,
-            GL_UNSIGNED_SHORT, 0
+            GL_UNSIGNED_SHORT, 0u
         )
         return true
     }
@@ -103,13 +104,13 @@ internal class VAOStatic(
         }
         isStored = true
         gl.check()
-        arrayID = glh.glGenVertexArrays()
-        glh.glBindVertexArray(arrayID)
+        arrayID = glh.gl.glCreateVertexArray()
+        glh.gl.glBindVertexArray(arrayID)
         vbo.store(gl, weak)
-        indexID = glh.glGenBuffers()
-        glh.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
-        glh.glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER, data,
+        indexID = glh.gl.glCreateBuffer()
+        glh.gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
+        glh.gl.glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER, data.asDataBuffer(),
             GL_STATIC_DRAW
         )
         detach = gl.vaoTracker.attach(this)
@@ -126,8 +127,8 @@ internal class VAOStatic(
         if (gl != null) {
             gl.check()
             vbo.dispose(gl)
-            glh.glDeleteBuffers(indexID)
-            glh.glDeleteVertexArrays(arrayID)
+            glh.gl.glDeleteBuffer(indexID)
+            glh.gl.glDeleteVertexArray(arrayID)
         }
         isStored = false
         detach?.invoke()
@@ -150,9 +151,9 @@ internal class VAOStatic(
         buffer: BytesRO
     ) {
         ensureStored(gl)
-        glh.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
-        glh.glBufferData(
-            GL_ELEMENT_ARRAY_BUFFER, buffer,
+        glh.gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexID)
+        glh.gl.glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER, buffer.asDataBuffer(),
             GL_STREAM_DRAW
         )
     }

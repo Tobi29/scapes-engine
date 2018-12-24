@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
-import org.tobi29.logging.KLogger
+import net.gitout.ktbindings.gles.*
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.Shader
@@ -25,7 +25,7 @@ import org.tobi29.scapes.engine.shader.Expression
 import org.tobi29.stdex.assert
 
 internal class ShaderGL(
-    private val glh: GLESHandle,
+    private val glh: GLESImpl<GLES30>,
     shader: CompiledShader,
     properties: Map<String, Expression>
 ) : Shader {
@@ -36,13 +36,13 @@ internal class ShaderGL(
     private val uniforms = shader.uniforms()
     private var valid = false
     private var markAsDisposed = false
-    private var uniformLocations: GLUniformArray? = null
-    private var program = GLProgram_EMPTY
+    private var uniformLocations: Array<GLUniformLocation>? = null
+    private var program = emptyGLProgram
     private var used = 0L
     private var detach: (() -> Unit)? = null
 
     init {
-        val shaders = glh.compileShader(shader, properties)
+        val shaders = glh.gl.compileShader(shader, properties)
         vertexSource = shaders.vertex
         fragmentSource = shaders.fragment
     }
@@ -70,7 +70,7 @@ internal class ShaderGL(
         }
         if (gl != null) {
             gl.check()
-            glh.glDeleteProgram(program)
+            glh.gl.glDeleteProgram(program)
         }
         isStored = false
         detach?.invoke()
@@ -84,14 +84,14 @@ internal class ShaderGL(
             return
         }
         gl.check()
-        glh.glUseProgram(program)
+        glh.gl.glUseProgram(program)
     }
 
     override fun updateUniforms(gl: GL) {
         gl.check()
     }
 
-    fun uniformLocation(uniform: Int): GLUniform {
+    fun uniformLocation(uniform: Int): GLUniformLocation {
         uniformLocations?.let { return it[uniform] }
         throw IllegalStateException("Shader not stored")
     }
@@ -102,7 +102,7 @@ internal class ShaderGL(
         v0: Float
     ) {
         activate(gl)
-        glh.glUniform1f(uniformLocation(uniform), v0)
+        glh.gl.glUniform1f(uniformLocation(uniform), v0)
     }
 
     override fun setUniform2f(
@@ -112,7 +112,7 @@ internal class ShaderGL(
         v1: Float
     ) {
         activate(gl)
-        glh.glUniform2f(uniformLocation(uniform), v0, v1)
+        glh.gl.glUniform2f(uniformLocation(uniform), v0, v1)
     }
 
     override fun setUniform3f(
@@ -123,7 +123,7 @@ internal class ShaderGL(
         v2: Float
     ) {
         activate(gl)
-        glh.glUniform3f(uniformLocation(uniform), v0, v1, v2)
+        glh.gl.glUniform3f(uniformLocation(uniform), v0, v1, v2)
     }
 
     override fun setUniform4f(
@@ -135,7 +135,7 @@ internal class ShaderGL(
         v3: Float
     ) {
         activate(gl)
-        glh.glUniform4f(uniformLocation(uniform), v0, v1, v2, v3)
+        glh.gl.glUniform4f(uniformLocation(uniform), v0, v1, v2, v3)
     }
 
     override fun setUniform1i(
@@ -144,7 +144,7 @@ internal class ShaderGL(
         v0: Int
     ) {
         activate(gl)
-        glh.glUniform1i(uniformLocation(uniform), v0)
+        glh.gl.glUniform1i(uniformLocation(uniform), v0)
     }
 
     override fun setUniform2i(
@@ -154,7 +154,7 @@ internal class ShaderGL(
         v1: Int
     ) {
         activate(gl)
-        glh.glUniform2i(uniformLocation(uniform), v0, v1)
+        glh.gl.glUniform2i(uniformLocation(uniform), v0, v1)
     }
 
     override fun setUniform3i(
@@ -165,7 +165,7 @@ internal class ShaderGL(
         v2: Int
     ) {
         activate(gl)
-        glh.glUniform3i(uniformLocation(uniform), v0, v1, v2)
+        glh.gl.glUniform3i(uniformLocation(uniform), v0, v1, v2)
     }
 
     override fun setUniform4i(
@@ -177,7 +177,7 @@ internal class ShaderGL(
         v3: Int
     ) {
         activate(gl)
-        glh.glUniform4i(uniformLocation(uniform), v0, v1, v2, v3)
+        glh.gl.glUniform4i(uniformLocation(uniform), v0, v1, v2, v3)
     }
 
     override fun setUniform1(
@@ -186,7 +186,7 @@ internal class ShaderGL(
         values: FloatArray
     ) {
         activate(gl)
-        glh.glUniform1fv(uniformLocation(uniform), values)
+        glh.gl.glUniform1fv(uniformLocation(uniform), values)
     }
 
     override fun setUniform2(
@@ -195,7 +195,7 @@ internal class ShaderGL(
         values: FloatArray
     ) {
         activate(gl)
-        glh.glUniform2fv(uniformLocation(uniform), values)
+        glh.gl.glUniform2fv(uniformLocation(uniform), values)
     }
 
     override fun setUniform3(
@@ -204,7 +204,7 @@ internal class ShaderGL(
         values: FloatArray
     ) {
         activate(gl)
-        glh.glUniform3fv(uniformLocation(uniform), values)
+        glh.gl.glUniform3fv(uniformLocation(uniform), values)
     }
 
     override fun setUniform4(
@@ -213,7 +213,7 @@ internal class ShaderGL(
         values: FloatArray
     ) {
         activate(gl)
-        glh.glUniform4fv(uniformLocation(uniform), values)
+        glh.gl.glUniform4fv(uniformLocation(uniform), values)
     }
 
     override fun setUniform1(
@@ -222,7 +222,7 @@ internal class ShaderGL(
         values: IntArray
     ) {
         activate(gl)
-        glh.glUniform1iv(uniformLocation(uniform), values)
+        glh.gl.glUniform1iv(uniformLocation(uniform), values)
     }
 
     override fun setUniform2(
@@ -231,7 +231,7 @@ internal class ShaderGL(
         values: IntArray
     ) {
         activate(gl)
-        glh.glUniform2iv(uniformLocation(uniform), values)
+        glh.gl.glUniform2iv(uniformLocation(uniform), values)
     }
 
     override fun setUniform3(
@@ -240,7 +240,7 @@ internal class ShaderGL(
         values: IntArray
     ) {
         activate(gl)
-        glh.glUniform3iv(uniformLocation(uniform), values)
+        glh.gl.glUniform3iv(uniformLocation(uniform), values)
     }
 
     override fun setUniform4(
@@ -249,7 +249,7 @@ internal class ShaderGL(
         values: IntArray
     ) {
         activate(gl)
-        glh.glUniform4iv(uniformLocation(uniform), values)
+        glh.gl.glUniform4iv(uniformLocation(uniform), values)
     }
 
     override fun setUniformMatrix2(
@@ -259,7 +259,7 @@ internal class ShaderGL(
         matrices: FloatArray
     ) {
         activate(gl)
-        glh.glUniformMatrix2fv(uniformLocation(uniform), transpose, matrices)
+        glh.gl.glUniformMatrix2fv(uniformLocation(uniform), transpose, matrices)
     }
 
     override fun setUniformMatrix3(
@@ -269,7 +269,7 @@ internal class ShaderGL(
         matrices: FloatArray
     ) {
         activate(gl)
-        glh.glUniformMatrix3fv(uniformLocation(uniform), transpose, matrices)
+        glh.gl.glUniformMatrix3fv(uniformLocation(uniform), transpose, matrices)
     }
 
     override fun setUniformMatrix4(
@@ -279,14 +279,14 @@ internal class ShaderGL(
         matrices: FloatArray
     ) {
         activate(gl)
-        glh.glUniformMatrix4fv(uniformLocation(uniform), transpose, matrices)
+        glh.gl.glUniformMatrix4fv(uniformLocation(uniform), transpose, matrices)
     }
 
     private fun store(gl: GL) {
         assert { !isStored }
         isStored = true
         gl.check()
-        val program = glh.createProgram(
+        val program = glh.gl.createProgram(
             vertexSource, fragmentSource,
             uniforms
         )

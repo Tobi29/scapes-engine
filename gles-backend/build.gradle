@@ -22,6 +22,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation rootProject.kotlin("kotlin-stdlib")
+                implementation rootProject.ktBindings("gles")
                 implementation project(":stdex")
                 implementation project(":arrays")
                 implementation project(":math")
@@ -42,17 +43,16 @@ kotlin {
         jsMain {
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
-                implementation rootProject.webKTBindingsJS("gamepad")
-                implementation rootProject.webKTBindingsJS("webaudio")
-                implementation rootProject.webKTBindingsJS("webgl2")
+                implementation rootProject.ktBindingsJS("gamepad")
+                implementation rootProject.ktBindingsJS("webaudio")
+                implementation rootProject.ktBindingsJS("gles")
                 implementation project(":coroutines")
             }
         }
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.lwjglJVM("lwjgl")
-                implementation rootProject.lwjglJVM("lwjgl-opengles")
+                implementation rootProject.ktBindingsJVMLWJGL3("gles")
             }
         }
     }

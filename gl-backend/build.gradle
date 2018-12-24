@@ -22,6 +22,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation rootProject.kotlin("kotlin-stdlib")
+                implementation rootProject.ktBindings("gl")
                 implementation project(":stdex")
                 implementation project(":arrays")
                 implementation project(":math")
@@ -30,6 +31,7 @@ kotlin {
                 implementation project(":graphics-utils")
                 implementation project(":io")
                 implementation project(":logging")
+                implementation project(":platformintegration")
                 implementation project(":engine")
                 implementation project(":shader-compiler")
             }
@@ -42,8 +44,7 @@ kotlin {
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.lwjglJVM("lwjgl")
-                implementation rootProject.lwjglJVM("lwjgl-opengl")
+                implementation rootProject.ktBindingsJVMLWJGL3("gl")
             }
         }
     }

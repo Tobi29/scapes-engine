@@ -25,9 +25,7 @@ import org.tobi29.stdex.assert
 import kotlin.math.max
 import kotlin.math.roundToLong
 
-abstract class GL(
-    private val gos: GraphicsObjectSupplier
-) : GraphicsObjectSupplier by gos {
+abstract class GL : GraphicsObjectSupplier {
     val matrixStack = MatrixStack(64)
     var contentWidth = 1
         protected set
@@ -67,11 +65,15 @@ abstract class GL(
         timestamp += max((1000000000.0 * delta).roundToLong(), 1L)
     }
 
-    fun isRenderCall() = container.isRenderCall()
+    open fun isRenderCall() = true
 
     fun check() {
         assert { isRenderCall() }
     }
+
+    abstract fun init()
+
+    abstract fun dispose()
 
     abstract fun checkError(message: String)
 

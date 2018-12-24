@@ -16,12 +16,18 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.GLES30
+import net.gitout.ktbindings.gles.emptyGLUniformLocation
+import net.gitout.ktbindings.gles.glUniformMatrix3fv
+import net.gitout.ktbindings.gles.glUniformMatrix4fv
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.GraphicsObjectSupplier
 import org.tobi29.scapes.engine.graphics.Model
 import org.tobi29.scapes.engine.graphics.Shader
 
-internal abstract class VAO(protected val glh: GLESHandle) : Model {
+internal abstract class VAO(
+    protected val glh: GLESImpl<GLES30>
+) : Model {
     override val gos: GraphicsObjectSupplier get() = glh
     protected var used: Long = 0
     override var isStored = false
@@ -88,22 +94,22 @@ internal abstract class VAO(protected val glh: GLESHandle) : Model {
         shader.activate(gl)
         shader.updateUniforms(gl)
         var uniformLocation = shader.uniformLocation(0)
-        if (uniformLocation != GLUniform_EMPTY) {
-            glh.glUniformMatrix4fv(
+        if (uniformLocation != emptyGLUniformLocation) {
+            glh.gl.glUniformMatrix4fv(
                 uniformLocation, false,
                 matrix.modelViewMatrix.array.array
             )
         }
         uniformLocation = shader.uniformLocation(1)
-        if (uniformLocation != GLUniform_EMPTY) {
-            glh.glUniformMatrix4fv(
+        if (uniformLocation != emptyGLUniformLocation) {
+            glh.gl.glUniformMatrix4fv(
                 uniformLocation, false,
                 matrix.modelViewProjectionMatrix.array.array
             )
         }
         uniformLocation = shader.uniformLocation(2)
-        if (uniformLocation != GLUniform_EMPTY) {
-            glh.glUniformMatrix3fv(
+        if (uniformLocation != emptyGLUniformLocation) {
+            glh.gl.glUniformMatrix3fv(
                 uniformLocation, false,
                 matrix.normalMatrix.array.array
             )

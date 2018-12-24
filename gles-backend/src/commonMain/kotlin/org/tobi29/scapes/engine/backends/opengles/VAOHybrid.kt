@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.ModelHybrid
@@ -27,10 +28,8 @@ internal class VAOHybrid(
     private val vbo1: VBO,
     private val vbo2: VBO,
     private val renderType: RenderType
-) : VAO(
-    vbo1.glh
-), ModelHybrid {
-    private var arrayID = GLVAO_EMPTY
+) : VAO(vbo1.glh), ModelHybrid {
+    private var arrayID = emptyGLVertexArrayObject
 
     override fun render(
         gl: GL,
@@ -51,8 +50,8 @@ internal class VAOHybrid(
         }
         gl.check()
         shader(gl, shader)
-        glh.glBindVertexArray(arrayID)
-        glh.glDrawArrays(renderType.enum, 0, length)
+        glh.gl.glBindVertexArray(arrayID)
+        glh.gl.glDrawArrays(renderType.enum, 0, length)
         return true
     }
 
@@ -77,8 +76,8 @@ internal class VAOHybrid(
         }
         gl.check()
         shader(gl, shader)
-        glh.glBindVertexArray(arrayID)
-        glh.glDrawArraysInstanced(
+        glh.gl.glBindVertexArray(arrayID)
+        glh.gl.glDrawArraysInstanced(
             renderType.enum,
             0,
             length,
@@ -97,8 +96,8 @@ internal class VAOHybrid(
         }
         isStored = true
         gl.check()
-        arrayID = glh.glGenVertexArrays()
-        glh.glBindVertexArray(arrayID)
+        arrayID = glh.gl.glCreateVertexArray()
+        glh.gl.glBindVertexArray(arrayID)
         vbo1.store(gl, weak)
         vbo2.store(gl, weak)
         detach = gl.vaoTracker.attach(this)
@@ -113,7 +112,7 @@ internal class VAOHybrid(
             gl.check()
             vbo1.dispose(gl)
             vbo2.dispose(gl)
-            glh.glDeleteVertexArrays(arrayID)
+            glh.gl.glDeleteVertexArray(arrayID)
         }
         isStored = false
         detach?.invoke()

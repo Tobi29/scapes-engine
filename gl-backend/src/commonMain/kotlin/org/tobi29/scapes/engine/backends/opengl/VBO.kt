@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
+import net.gitout.ktbindings.gl.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
 import org.tobi29.math.toHalfFloatShort
@@ -29,14 +30,14 @@ import org.tobi29.utils.EitherRight
 import kotlin.math.round
 
 internal class VBO(
-    val glh: GLHandle,
+    val glh: GLImpl<GL33>,
     attributes: List<ModelAttribute>,
     length: Int
 ) {
     private val stride: Int
     private val attributes = ArrayList<ModelAttributeData>()
     private var data: BytesRO? = null
-    private var vertexID = GLVBO_EMPTY
+    private var vertexID = emptyGLBuffer
     private var stored = false
 
     init {
@@ -47,7 +48,12 @@ internal class VBO(
                     "Inconsistent attribute data length"
                 )
             }
-            this.attributes.add(ModelAttributeData(attribute, stride))
+            this.attributes.add(
+                ModelAttributeData(
+                    attribute,
+                    stride.toUInt()
+                )
+            )
             attribute.offset = stride
             val size = attribute.size * attribute.vertexType.bytes
             stride += (size - 1 or 0x03) + 1
@@ -59,77 +65,80 @@ internal class VBO(
     }
 
     fun stride(): Int {
-        return stride
+        return stride.toInt()
     }
 
     fun replaceBuffer(gl: GL, buffer: BytesRO) {
         gl.check()
         data = buffer
         if (!stored) return
-        glh.glBindBuffer(GL_ARRAY_BUFFER, vertexID)
-        glh.glBufferData(GL_ARRAY_BUFFER, buffer.size, GL_STREAM_DRAW)
-        glh.glBufferSubData(GL_ARRAY_BUFFER, 0, buffer)
+        glh.gl.glBindBuffer(GL_ARRAY_BUFFER, vertexID)
+        glh.gl.glBufferData(
+            GL_ARRAY_BUFFER, buffer.size.toUInt(),
+            GL_STREAM_DRAW
+        )
+        glh.gl.glBufferSubData(GL_ARRAY_BUFFER, 0u, buffer.asDataBuffer())
     }
 
     private fun storeAttribute(gl: GL, attribute: ModelAttributeData) {
         gl.check()
-        glh.glEnableVertexAttribArray(attribute.id)
+        glh.gl.glEnableVertexAttribArray(attribute.id)
         if (!attribute.integer) {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> glh.glVertexAttribPointer(
+                VertexType.FLOAT -> glh.gl.glVertexAttribPointer(
                     attribute.id, attribute.size, GL_FLOAT,
                     attribute.normalized, stride, attribute.offset
                 )
-                VertexType.HALF_FLOAT -> glh.glVertexAttribPointer(
+                VertexType.HALF_FLOAT -> glh.gl.glVertexAttribPointer(
                     attribute.id, attribute.size, GL_HALF_FLOAT,
                     attribute.normalized, stride, attribute.offset
                 )
-                VertexType.BYTE -> glh.glVertexAttribPointer(
+                VertexType.BYTE -> glh.gl.glVertexAttribPointer(
                     attribute.id, attribute.size, GL_BYTE,
                     attribute.normalized, stride, attribute.offset
                 )
-                VertexType.UNSIGNED_BYTE -> glh.glVertexAttribPointer(
+                VertexType.UNSIGNED_BYTE -> glh.gl.glVertexAttribPointer(
                     attribute.id, attribute.size, GL_UNSIGNED_BYTE,
                     attribute.normalized, stride, attribute.offset
                 )
-                VertexType.SHORT -> glh.glVertexAttribPointer(
+                VertexType.SHORT -> glh.gl.glVertexAttribPointer(
                     attribute.id, attribute.size, GL_SHORT,
                     attribute.normalized, stride, attribute.offset
                 )
-                VertexType.UNSIGNED_SHORT -> glh.glVertexAttribPointer(
+                VertexType.UNSIGNED_SHORT -> glh.gl.glVertexAttribPointer(
                     attribute.id, attribute.size, GL_UNSIGNED_SHORT,
                     attribute.normalized, stride, attribute.offset
                 )
             }
         } else {
             when (attribute.vertexType) {
-                VertexType.FLOAT -> glh.glVertexAttribIPointer(
+                VertexType.FLOAT -> glh.gl.glVertexAttribIPointer(
                     attribute.id, attribute.size, GL_FLOAT,
                     stride, attribute.offset
                 )
-                VertexType.HALF_FLOAT -> glh.glVertexAttribIPointer(
+                VertexType.HALF_FLOAT -> glh.gl.glVertexAttribIPointer(
                     attribute.id, attribute.size, GL_HALF_FLOAT,
                     stride, attribute.offset
                 )
-                VertexType.BYTE -> glh.glVertexAttribIPointer(
+                VertexType.BYTE -> glh.gl.glVertexAttribIPointer(
                     attribute.id, attribute.size, GL_BYTE,
                     stride, attribute.offset
                 )
-                VertexType.UNSIGNED_BYTE -> glh.glVertexAttribIPointer(
+                VertexType.UNSIGNED_BYTE -> glh.gl.glVertexAttribIPointer(
                     attribute.id, attribute.size, GL_UNSIGNED_BYTE,
                     stride, attribute.offset
                 )
-                VertexType.SHORT -> glh.glVertexAttribIPointer(
+                VertexType.SHORT -> glh.gl.glVertexAttribIPointer(
                     attribute.id, attribute.size, GL_SHORT,
                     stride, attribute.offset
                 )
-                VertexType.UNSIGNED_SHORT -> glh.glVertexAttribIPointer(
+                VertexType.UNSIGNED_SHORT -> glh.gl.glVertexAttribIPointer(
                     attribute.id, attribute.size, GL_UNSIGNED_SHORT,
                     stride, attribute.offset
                 )
             }
         }
-        glh.glVertexAttribDivisor(attribute.id, attribute.divisor)
+        glh.gl.glVertexAttribDivisor(attribute.id, attribute.divisor)
     }
 
     private fun addToBuffer(
@@ -261,9 +270,12 @@ internal class VBO(
         )
         stored = true
         gl.check()
-        vertexID = glh.glGenBuffers()
-        glh.glBindBuffer(GL_ARRAY_BUFFER, vertexID)
-        glh.glBufferData(GL_ARRAY_BUFFER, data, GL_STATIC_DRAW)
+        vertexID = glh.gl.glCreateBuffer()
+        glh.gl.glBindBuffer(GL_ARRAY_BUFFER, vertexID)
+        glh.gl.glBufferData(
+            GL_ARRAY_BUFFER, data.asDataBuffer(),
+            GL_STATIC_DRAW
+        )
         attributes.forEach { storeAttribute(gl, it) }
         if (weak) {
             this.data = null
@@ -274,7 +286,7 @@ internal class VBO(
         assert { stored }
         stored = false
         gl.check()
-        glh.glDeleteBuffers(vertexID)
+        glh.gl.glDeleteBuffer(vertexID)
     }
 
     fun reset() {
@@ -283,12 +295,12 @@ internal class VBO(
 
     private class ModelAttributeData(
         attribute: ModelAttribute,
-        val offset: Int
+        val offset: UInt
     ) {
         val vertexType = attribute.vertexType
-        val id = attribute.id
+        val id = attribute.id.toUInt()
         val size = attribute.size
-        val divisor = attribute.divisor
+        val divisor = attribute.divisor.toUInt()
         val normalized = attribute.normalized
         val integer = attribute.data is EitherRight<IntArray>
     }
@@ -300,7 +312,12 @@ private inline fun ByteViewE.storeBytes(
     offset: Int,
     size: Int,
     stride: Int
-) = store({ i, j -> setByte(j, source(i)) }, vertices, offset, size, stride, 1)
+) = store({ i, j ->
+    setByte(
+        j,
+        source(i)
+    )
+}, vertices, offset, size, stride, 1)
 
 private inline fun ByteViewE.storeShorts(
     source: (Int) -> Short,
@@ -308,7 +325,12 @@ private inline fun ByteViewE.storeShorts(
     offset: Int,
     size: Int,
     stride: Int
-) = store({ i, j -> setShort(j, source(i)) }, vertices, offset, size, stride, 2)
+) = store({ i, j ->
+    setShort(
+        j,
+        source(i)
+    )
+}, vertices, offset, size, stride, 2)
 
 private inline fun ByteViewE.storeInts(
     source: (Int) -> Int,
@@ -316,7 +338,12 @@ private inline fun ByteViewE.storeInts(
     offset: Int,
     size: Int,
     stride: Int
-) = store({ i, j -> setInt(j, source(i)) }, vertices, offset, size, stride, 4)
+) = store({ i, j ->
+    setInt(
+        j,
+        source(i)
+    )
+}, vertices, offset, size, stride, 4)
 
 private inline fun ByteViewE.storeFloats(
     source: (Int) -> Float,
@@ -324,7 +351,12 @@ private inline fun ByteViewE.storeFloats(
     offset: Int,
     size: Int,
     stride: Int
-) = store({ i, j -> setFloat(j, source(i)) }, vertices, offset, size, stride, 4)
+) = store({ i, j ->
+    setFloat(
+        j,
+        source(i)
+    )
+}, vertices, offset, size, stride, 4)
 
 private inline fun store(
     copy: (Int, Int) -> Unit,

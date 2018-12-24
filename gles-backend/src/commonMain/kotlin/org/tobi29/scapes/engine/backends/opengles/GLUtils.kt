@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.*
 import org.tobi29.io.IOException
 import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.graphics.FramebufferStatus
@@ -26,14 +27,14 @@ import org.tobi29.scapes.engine.shader.ShaderException
 import org.tobi29.scapes.engine.shader.Uniform
 import org.tobi29.scapes.engine.shader.backend.glsl.GLSLGenerator
 
-val RenderType.enum: Int
+val RenderType.enum: GLenum
     get() = when (this) {
         RenderType.TRIANGLES -> GL_TRIANGLES
         RenderType.LINES -> GL_LINES
         else -> throw IllegalArgumentException("Unknown render type: $this")
     }
 
-fun GLESHandle.status(): FramebufferStatus {
+fun GLES20.status(): FramebufferStatus {
     val status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
     return when (status) {
         GL_FRAMEBUFFER_COMPLETE -> FramebufferStatus.COMPLETE
@@ -42,7 +43,7 @@ fun GLESHandle.status(): FramebufferStatus {
     }
 }
 
-fun GLESHandle.drawbuffers(attachments: Int) {
+fun GLES30.drawbuffers(attachments: Int) {
     if (attachments < 0 || attachments > 15) {
         throw IllegalArgumentException(
             "Attachments must be 0-15, was $attachments"
@@ -51,17 +52,17 @@ fun GLESHandle.drawbuffers(attachments: Int) {
     glDrawBuffers(IntArray(attachments) { GL_COLOR_ATTACHMENT(it) })
 }
 
-fun GLESHandle.printLogShader(id: GLShader) {
+fun GLES20.printLogShader(id: GLShader) {
     val log = glGetShaderInfoLog(id)?.takeIf { it.isNotEmpty() } ?: return
     glLogger.info { "Shader log: $log" }
 }
 
-fun GLESHandle.printLogProgram(id: GLProgram) {
+fun GLES20.printLogProgram(id: GLProgram) {
     val log = glGetProgramInfoLog(id)?.takeIf { it.isNotEmpty() } ?: return
     glLogger.info { "Program log: $log" }
 }
 
-fun GLESHandle.compileShader(
+fun GLES20.compileShader(
     shader: CompiledShader,
     properties: Map<String, Expression>
 ) = try {
@@ -73,11 +74,11 @@ fun GLESHandle.compileShader(
     throw IOException(e)
 }
 
-fun GLESHandle.createProgram(
+fun GLES20.createProgram(
     vertexSource: String,
     fragmentSource: String,
     uniforms: Array<Uniform?>
-): Pair<GLProgram, GLUniformArray> {
+): Pair<GLProgram, Array<GLUniformLocation>> {
     val vertex = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertex, vertexSource)
     glCompileShader(vertex)
@@ -94,10 +95,10 @@ fun GLESHandle.createProgram(
         glLogger.error { "Failed to link status bar!" }
         printLogProgram(program)
     }
-    val uniformLocations = glUniformArray(uniforms.size) { i ->
+    val uniformLocations = Array(uniforms.size) { i ->
         val uniform = uniforms[i]
         if (uniform == null) {
-            GLUniform_EMPTY
+            emptyGLUniformLocation
         } else {
             glGetUniformLocation(
                 program, uniform.identifier.name

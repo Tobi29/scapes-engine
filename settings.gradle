@@ -86,7 +86,7 @@ include "kzlib"
 include "simplemagik"
 include "openal-sounds"
 include "lwjgl3-backend"
-include "stb-truetype-font"
+include "stb-truetype-font-renderer"
 include "shader-parser-jvm"
 
 // Testing

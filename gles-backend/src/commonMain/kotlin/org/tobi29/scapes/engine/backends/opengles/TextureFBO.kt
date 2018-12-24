@@ -16,13 +16,17 @@
 
 package org.tobi29.scapes.engine.backends.opengles
 
+import net.gitout.ktbindings.gles.GLES30
+import net.gitout.ktbindings.gles.GL_TEXTURE_2D
+import net.gitout.ktbindings.gles.glBindTexture
+import net.gitout.ktbindings.gles.glCreateTexture
 import org.tobi29.scapes.engine.graphics.GL
 import org.tobi29.scapes.engine.graphics.TextureFilter
 import org.tobi29.scapes.engine.graphics.TextureWrap
 import org.tobi29.stdex.assert
 
 internal abstract class TextureFBO(
-    glh: GLESHandle,
+    glh: GLESImpl<GLES30>,
     width: Int,
     height: Int,
     mipmaps: Int,
@@ -43,7 +47,7 @@ internal abstract class TextureFBO(
             return
         }
         gl.check()
-        glh.glBindTexture(GL_TEXTURE_2D, textureID)
+        glh.gl.glBindTexture(GL_TEXTURE_2D, textureID)
         setFilter()
     }
 
@@ -71,7 +75,7 @@ internal abstract class TextureFBO(
         assert { !isStored }
         isStored = true
         gl.check()
-        textureID = glh.glGenTextures()
+        textureID = glh.gl.glCreateTexture()
         texture(gl)
         dirtyFilter.set(true)
     }

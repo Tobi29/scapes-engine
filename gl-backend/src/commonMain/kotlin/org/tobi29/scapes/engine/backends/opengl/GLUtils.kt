@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.opengl
 
+import net.gitout.ktbindings.gl.*
 import org.tobi29.io.IOException
 import org.tobi29.logging.KLogger
 import org.tobi29.scapes.engine.graphics.FramebufferStatus
@@ -26,14 +27,14 @@ import org.tobi29.scapes.engine.shader.ShaderException
 import org.tobi29.scapes.engine.shader.Uniform
 import org.tobi29.scapes.engine.shader.backend.glsl.GLSLGenerator
 
-val RenderType.enum: Int
+val RenderType.enum: GLenum
     get() = when (this) {
         RenderType.TRIANGLES -> GL_TRIANGLES
         RenderType.LINES -> GL_LINES
         else -> throw IllegalArgumentException("Unknown render type: $this")
     }
 
-fun GLHandle.status(): FramebufferStatus {
+fun GL30.status(): FramebufferStatus {
     val status = glCheckFramebufferStatus(GL_FRAMEBUFFER)
     return when (status) {
         GL_FRAMEBUFFER_COMPLETE -> FramebufferStatus.COMPLETE
@@ -42,7 +43,7 @@ fun GLHandle.status(): FramebufferStatus {
     }
 }
 
-fun GLHandle.drawbuffers(attachments: Int) {
+fun GL20.drawbuffers(attachments: Int) {
     if (attachments < 0 || attachments > 15) {
         throw IllegalArgumentException(
             "Attachments must be 0-15, was $attachments"
@@ -51,33 +52,33 @@ fun GLHandle.drawbuffers(attachments: Int) {
     glDrawBuffers(IntArray(attachments) { GL_COLOR_ATTACHMENT(it) })
 }
 
-fun GLHandle.printLogShader(id: GLShader) {
+fun GL20.printLogShader(id: GLShader) {
     val log = glGetShaderInfoLog(id)?.takeIf { it.isNotEmpty() } ?: return
     glLogger.info { "Shader log: $log" }
 }
 
-fun GLHandle.printLogProgram(id: GLProgram) {
+fun GL20.printLogProgram(id: GLProgram) {
     val log = glGetProgramInfoLog(id)?.takeIf { it.isNotEmpty() } ?: return
     glLogger.info { "Program log: $log" }
 }
 
-fun GLHandle.compileShader(
+fun GL20.compileShader(
     shader: CompiledShader,
     properties: Map<String, Expression>
 ) = try {
     GLSLGenerator.generate(
-        GLSLGenerator.Version.GL_330, shader,
+        GLSLGenerator.Version.GLES_300, shader,
         properties
     )
 } catch (e: ShaderException) {
     throw IOException(e)
 }
 
-fun GLHandle.createProgram(
+fun GL20.createProgram(
     vertexSource: String,
     fragmentSource: String,
     uniforms: Array<Uniform?>
-): Pair<GLProgram, GLUniformArray> {
+): Pair<GLProgram, Array<GLUniformLocation>> {
     val vertex = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertex, vertexSource)
     glCompileShader(vertex)
@@ -94,10 +95,10 @@ fun GLHandle.createProgram(
         glLogger.error { "Failed to link status bar!" }
         printLogProgram(program)
     }
-    val uniformLocations = glUniformArray(uniforms.size) { i ->
+    val uniformLocations = Array(uniforms.size) { i ->
         val uniform = uniforms[i]
         if (uniform == null) {
-            GLUniform_EMPTY
+            emptyGLUniformLocation
         } else {
             glGetUniformLocation(
                 program, uniform.identifier.name
