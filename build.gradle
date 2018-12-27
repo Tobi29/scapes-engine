@@ -15,7 +15,7 @@
  */
 
 buildscript {
-    def kotlinVersion = "1.3.10"
+    def kotlinVersion = "1.3.11"
     def dokkaVersion = "0.9.17"
     def bintrayVersion = "1.8.4"
 
@@ -70,13 +70,13 @@ allprojects {
 }
 
 ext {
-    kotlinVersion = "1.3.10"
+    kotlinVersion = "1.3.11"
     kotlinBase = { module -> "org.jetbrains.kotlin:$module:$kotlinVersion" }
     kotlin = { module -> kotlinBase("$module-common") }
     kotlinJVM = { module -> kotlinBase("$module") }
     kotlinJS = { module -> kotlinBase("$module-js") }
 
-    kotlinxCoroutinesVersion = "1.0.1"
+    kotlinxCoroutinesVersion = "1.1.0"
     kotlinxCoroutinesBase = { module ->
         "org.jetbrains.kotlinx:$module:$kotlinxCoroutinesVersion"
     }
