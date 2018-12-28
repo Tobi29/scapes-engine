@@ -18,15 +18,12 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteBufferNative
 import org.tobi29.io.ByteBufferView
-import org.tobi29.io.readAsNativeByteBuffer
 import org.tobi29.io.viewBufferE
 
 actual typealias MemoryBuffer = ByteBufferView
 actual typealias MemoryBufferPinned = ByteBufferView
-actual typealias MemoryBufferExternal = ByteBufferView
 
 actual inline fun MemoryBufferPinned.close() {}
 
@@ -37,9 +34,3 @@ actual inline fun allocateMemoryBuffer(size: Int): MemoryBuffer =
 
 actual inline fun allocateMemoryBufferPinned(size: Int): MemoryBuffer =
     allocateMemoryBuffer(size)
-
-actual inline fun BytesRO.readAsMemoryBuffer(): MemoryBuffer =
-    readAsNativeByteBuffer().viewBufferE
-
-actual inline fun BytesRO.readAsMemoryBufferPinned(): MemoryBufferPinned =
-    readAsMemoryBuffer()

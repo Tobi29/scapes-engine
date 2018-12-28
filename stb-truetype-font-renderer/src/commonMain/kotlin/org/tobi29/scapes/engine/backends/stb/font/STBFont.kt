@@ -24,10 +24,10 @@ import org.tobi29.arrays.BytesRO
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
 import org.tobi29.scapes.engine.MemoryBufferPinned
+import org.tobi29.scapes.engine.allocateMemoryBufferPinned
 import org.tobi29.scapes.engine.close
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
-import org.tobi29.scapes.engine.readAsMemoryBufferPinned
 
 class STBFont(
     private val fontBufferPin: MemoryBufferPinned,
@@ -46,7 +46,8 @@ class STBFont(
             loadFont(asset.data())
 
         fun loadFont(font: BytesRO): STBFont {
-            val fontBufferPin = font.readAsMemoryBufferPinned()
+            val fontBufferPin = allocateMemoryBufferPinned(font.size)
+            fontBufferPin.setBytes(0, font)
             val info = STBTTFontinfo()
             if (stbtt_InitFont(
                     info,

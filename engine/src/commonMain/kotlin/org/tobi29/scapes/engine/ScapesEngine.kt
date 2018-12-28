@@ -16,11 +16,14 @@
 
 package org.tobi29.scapes.engine
 
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.tobi29.coroutines.*
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
+import org.tobi29.logging.KLogger
+import org.tobi29.profiler.profilerSection
 import org.tobi29.scapes.engine.graphics.GraphicsSystem
 import org.tobi29.scapes.engine.gui.*
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetDebugValues
@@ -28,49 +31,213 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
+import org.tobi29.stdex.atomic.AtomicDouble
+import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.withLock
+import org.tobi29.stdex.readOnly
 import org.tobi29.utils.*
 import org.tobi29.utils.ComponentLifecycle
 import kotlin.coroutines.CoroutineContext
 
-expect class ScapesEngine(
-    container: Container,
+class ScapesEngine(
+    val container: Container,
     defaultGuiStyle: (ScapesEngine) -> GuiStyle,
-    taskExecutor: CoroutineContext,
+    val taskExecutor: CoroutineContext,
     configMap: MutableTagMap
-) : CoroutineDispatcher, CoroutineScope, ComponentHolder<Any> {
-    override val componentStorage: ComponentStorage<Any>
-    val taskExecutor: CoroutineContext
-    val files: FileSystemContainer
-    val events: EventDispatcher
-    val resources: ResourceLoader
-    val container: Container
+) : CoroutineDispatcher(), CoroutineScope, ComponentHolder<Any> {
+    private val mutex = Mutex()
+    override val componentStorage = ComponentStorage<Any>()
+    private val queue = TaskChannel<(Double) -> Unit>()
+    private val job = Job()
+    override val coroutineContext: CoroutineContext get() = this + job
+
+    private val tpsDebug: GuiWidgetDebugValues.Element
+    private val newState = AtomicReference<GameState?>(null)
+    private val updateJob = JobHandle(this)
+    private var _state: GameState? = null
+    val state: GameState? get() = _state
+    val files = FileSystemContainer()
+    val events = EventDispatcher()
+    val resources = ResourceLoader(CoroutineScope(taskExecutor + job))
     val graphics: GraphicsSystem
     val sounds: SoundSystem
     val guiStyle: GuiStyle
-    val guiStack: GuiStack
-    var guiController: GuiController
+    val guiStack = GuiStack()
+    var guiController: GuiController = GuiControllerDummy(this)
     val notifications: GuiNotifications
     val tooltip: GuiTooltip
     val debugValues: GuiWidgetDebugValues
     val profiler: GuiWidgetProfiler
     val performance: GuiWidgetPerformance
-    val state: GameState?
+
+    init {
+        registerComponent(CONFIG_MAP_COMPONENT, configMap)
+
+        logger.info { "Starting Scapes-Engine: $this" }
+        initEngineEarly()
+
+        logger.info { "Creating backend" }
+        sounds = container.createSoundSystem(this)
+
+        logger.info { "Creating graphics system" }
+        graphics = GraphicsSystem(this, container.gos)
+
+        logger.info { "Setting up GUI" }
+        guiStyle = defaultGuiStyle(this)
+        notifications = GuiNotifications(guiStyle)
+        guiStack.addUnfocused("90-Notifications", notifications)
+        tooltip = GuiTooltip(guiStyle)
+        guiStack.addUnfocused("80-Tooltip", tooltip)
+        val debugGui = Gui(guiStyle)
+        debugValues = debugGui.add(32.0, 32.0, 360.0, 256.0) {
+            GuiWidgetDebugValues(it)
+        }
+        debugValues.visible = false
+        profiler = debugGui.add(32.0, 32.0, 360.0, 256.0) {
+            GuiWidgetProfiler(it)
+        }
+        profiler.visible = false
+        performance = debugGui.add(32.0, 32.0, 360.0, 256.0) {
+            GuiWidgetPerformance(it)
+        }
+        performance.visible = false
+        guiStack.addUnfocused("99-Debug", debugGui)
+        tpsDebug = debugValues["Engine-Tps"]
+
+        logger.info { "Initializing engine" }
+        registerComponent(
+            DeltaProfilerComponent.COMPONENT,
+            DeltaProfilerComponent(performance)
+        )
+        registerComponent(
+            CursorCaptureComponent.COMPONENT,
+            CursorCaptureComponent()
+        )
+        initEngineLate()
+        graphics.initDebug(debugValues)
+
+        logger.info { "Engine created" }
+    }
 
     override fun dispatch(
         context: CoroutineContext,
         block: Runnable
-    )
+    ) {
+        queue.offer {
+            try {
+                block.run()
+            } catch (e: CancellationException) {
+                logger.warn { "Job cancelled: ${e.message}" }
+            }
+        }
+    }
 
-    fun switchState(state: GameState)
-    fun start()
-    suspend fun halt()
-    suspend fun dispose()
-    fun debugMap(): Map<String, String>
+    fun switchState(state: GameState) {
+        newState.set(state)
+    }
+
+    fun start() {
+        val startTps = AtomicDouble(1.0)
+        updateJob.launchLater(taskExecutor) {
+            launchResponsive(CoroutineName("Engine-State")) {
+                var tps = startTps.get()
+                val timer = Timer()
+                try {
+                    while (true) {
+                        val tickDiff = timer.cap(
+                            Timer.toDiff(tps), { delayResponsiveNanos(it) }
+                        )
+                        tpsDebug.setValue(Timer.toTps(tickDiff))
+                        val delta =
+                            Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
+                        tps = withContext(NonCancellable) { step(delta) }
+                    }
+                } finally {
+                    components.asSequence()
+                        .filterIsInstance<ComponentLifecycle<*>>()
+                        .forEach { it.halt() }
+                }
+            }
+        }?.let { (_, launch) ->
+            components.asSequence().filterIsInstance<ComponentLifecycle<*>>()
+                .forEach { it.start() }
+            startTps.set(step(0.0001))
+            launch()
+        }
+    }
+
+    suspend fun halt() {
+        updateJob.job?.cancelAndJoin()
+    }
+
+    suspend fun dispose() {
+        halt()
+        mutex.withLock {
+            logger.info { "Disposing last state" }
+            state?.disposeState()
+            _state = null
+            logger.info { "Disposing GUI" }
+            guiStack.clear()
+            logger.info { "Disposing sound system" }
+            sounds.dispose()
+            logger.info { "Disposing components" }
+            clearComponents()
+            logger.info { "Stopped Scapes-Engine" }
+            job.cancel()
+        }
+    }
+
+    fun debugMap(): Map<String, String> {
+        val debugValues = HashMap<String, String>()
+        for ((key, value) in this.debugValues.elements()) {
+            debugValues[key] = value.toString()
+        }
+        return debugValues.readOnly()
+    }
+
+    private fun step(delta: Double): Double {
+        var currentState = state
+        val newState = newState.getAndSet(null)
+        if (newState != null) {
+            graphics.lock.withLock {
+                state?.disposeState()
+                _state = newState
+                newState.initState()
+            }
+            currentState = newState
+        }
+        profilerSection("Components") {
+            components.asSequence().filterIsInstance<ComponentStep>()
+                .forEach { it.step(delta) }
+        }
+        profilerSection("Gui-Controller") {
+            guiController.update(delta)
+        }
+        val state = currentState
+                ?: return this[ScapesEngineConfig.COMPONENT].fps
+        profilerSection("Container") {
+            container.update(delta)
+        }
+        profilerSection("State") {
+            state.step(delta)
+        }
+        profilerSection("Tasks") {
+            queue.processCurrent { it(delta) }
+        }
+        return state.tps
+    }
 
     companion object {
-        val CONFIG_MAP_COMPONENT: ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>
+        internal val logger = KLogger<ScapesEngine>()
+
+        val CONFIG_MAP_COMPONENT =
+            ComponentTypeRegistered<ScapesEngine, MutableTagMap, Any>()
     }
 }
+
+internal expect fun ScapesEngine.initEngineEarly()
+
+internal expect fun ScapesEngine.initEngineLate()
 
 interface ComponentStep {
     fun step(delta: Double) {}

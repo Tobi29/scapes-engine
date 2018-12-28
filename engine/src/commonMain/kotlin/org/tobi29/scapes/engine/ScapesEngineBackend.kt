@@ -16,7 +16,6 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.arrays.BytesRO
 import org.tobi29.io.ByteViewE
 import org.tobi29.io.ReadSource
 import org.tobi29.io.tag.ReadTagMutableMap
@@ -46,7 +45,6 @@ interface ScapesEngineBackend {
 
 expect sealed class MemoryBuffer : ByteViewE
 expect sealed class MemoryBufferPinned : /* MemoryBuffer, */ ByteViewE
-expect sealed class MemoryBufferExternal : ByteViewE
 
 expect fun MemoryBufferPinned.asMemoryBuffer(): MemoryBuffer
 
@@ -54,9 +52,6 @@ expect fun MemoryBufferPinned.close()
 
 expect fun allocateMemoryBuffer(size: Int): MemoryBuffer
 expect fun allocateMemoryBufferPinned(size: Int): MemoryBufferPinned
-
-expect fun BytesRO.readAsMemoryBuffer(): MemoryBuffer
-expect fun BytesRO.readAsMemoryBufferPinned(): MemoryBufferPinned
 
 inline fun <B : MemoryBufferPinned, R> B.use(block: (B) -> R) = try {
     block(this)

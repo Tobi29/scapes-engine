@@ -18,15 +18,14 @@
 
 package org.tobi29.scapes.engine
 
-import org.tobi29.arrays.BytesRO
-import org.tobi29.arrays.readAsByteArray
-import org.tobi29.io.*
+import org.tobi29.io.TypedView
+import org.tobi29.io.viewBE
+import org.tobi29.io.viewLE
 import org.tobi29.stdex.BIG_ENDIAN
 import org.tobi29.stdex.NATIVE_ENDIAN
 
 actual typealias MemoryBuffer = TypedView
 actual typealias MemoryBufferPinned = TypedView
-actual typealias MemoryBufferExternal = TypedView
 
 actual inline fun MemoryBufferPinned.close() {}
 
@@ -37,12 +36,3 @@ actual inline fun allocateMemoryBuffer(size: Int): MemoryBuffer =
 
 actual inline fun allocateMemoryBufferPinned(size: Int): MemoryBuffer =
     allocateMemoryBuffer(size)
-
-actual inline fun BytesRO.readAsMemoryBuffer(): MemoryBuffer =
-    readAsByteArray { array, index, size ->
-        if (NATIVE_ENDIAN == BIG_ENDIAN) HeapViewByteBE(array, index, size)
-        else HeapViewByteLE(array, index, size)
-    }
-
-actual inline fun BytesRO.readAsMemoryBufferPinned(): MemoryBufferPinned =
-    readAsMemoryBuffer()
