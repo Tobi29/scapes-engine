@@ -258,8 +258,7 @@ inline fun ShortArray.sliceOver(
  * **Note:** The array may or may not be a copy of the slice, so modifying it
  * is under no circumstances supported
  *
- * **Note:** The lifecycle of the exposed array does *not* extend outside
- * of this call, so storing the array for later use is not supported
+ * **Note:** The array *may* be used after returning out of the function
  *
  * **Note:** To improve performance the section containing the slice data
  * may be only a sub sequence of the array
@@ -289,6 +288,48 @@ inline fun <R> ShortsRO.readAsShortArray(block: (ShortArray, Int, Int) -> R): R 
  * Exposes the contents of the slice in an array and calls [block] with
  * the array and beginning and end of the slice data in it
  *
+ * The last parameter is a callback to dispose the array (which will write
+ * back data if needed)
+ *
+ * **Note:** The array may or may not be a copy of the slice, so reading
+ * or modifying the original slice during this call can lead to surprising
+ * results
+ *
+ * **Note:** The array *may* be used after returning out of the function,
+ * but not after calling the close callback
+ *
+ * **Note:** To improve performance the section containing the slice data
+ * may be only a sub sequence of the array
+ *
+ * **Note:** This is a performance oriented function, so read those notes!
+ * @param block Code to execute with the arrays contents
+ * @receiver The slice to read and modify
+ * @return Return value of [block]
+ */
+inline fun <R> Shorts.mutateAsShortArray(block: (ShortArray, Int, Int, () -> Unit) -> R): R {
+    val array: ShortArray
+    val offset: Int
+    val mapped = when (this) {
+        is HeapShorts -> {
+            array = this.array
+            offset = this.offset
+            true
+        }
+        else -> {
+            array = toShortArray()
+            offset = 0
+            false
+        }
+    }
+    return block(array, offset, size) {
+        if (!mapped) setShorts(0, array.sliceOver())
+    }
+}
+
+/**
+ * Exposes the contents of the slice in an array and calls [block] with
+ * the array and beginning and end of the slice data in it
+ *
  * **Note:** The array may or may not be a copy of the slice, so reading
  * or modifying the original slice during this call can lead to surprising
  * results
@@ -304,33 +345,23 @@ inline fun <R> ShortsRO.readAsShortArray(block: (ShortArray, Int, Int) -> R): R 
  * @receiver The slice to read and modify
  * @return Return value of [block]
  */
-inline fun <R> Shorts.mutateAsShortArray(block: (ShortArray, Int, Int) -> R): R {
-    val array: ShortArray
-    val offset: Int
-    val mapped = when (this) {
-        is HeapShorts -> {
-            array = this.array
-            offset = this.offset
-            true
-        }
-        else -> {
-            array = toShortArray()
-            offset = 0
-            false
+inline fun <R> Shorts.mutateAsShortArray(block: (ShortArray, Int, Int) -> R): R =
+    mutateAsShortArray { array, offset, size, close ->
+        try {
+            block(array, offset, size)
+        } finally {
+            close()
         }
     }
-    return try {
-        block(array, offset, size)
-    } finally {
-        if (!mapped) setShorts(0, array.sliceOver())
-    }
-}
 
 /**
  * Exposes the contents of the slice in an array
  *
  * **Note:** The array may or may not be a copy of the slice, so modifying it
  * is under no circumstances supported
+ *
+ * **Note:** Consider using the function taking a lambda to avoid copies on
+ * array slices
  * @receiver The slice to read
  * @return Array containing the data of the slice
  */
