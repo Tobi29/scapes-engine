@@ -16,16 +16,13 @@
 
 package org.tobi29.scapes.engine.input
 
-import org.tobi29.stdex.ConcurrentHashMap
-import org.tobi29.stdex.computeAbsent
-
-class ControllerKey private constructor(val name: String,
-                                        val humanName: String) {
+class ControllerKey internal constructor(
+    val name: String,
+    val humanName: String
+) {
     override fun toString() = name
 
     companion object {
-        private val keyCache = ConcurrentHashMap<String, ControllerKey>()
-
         val KEY_SPACE = of("KEY_SPACE", "Space")
         val KEY_APOSTROPHE = of("KEY_APOSTROPHE", "Apostrophe")
         val KEY_COMMA = of("KEY_COMMA", "Comma")
@@ -293,13 +290,11 @@ class ControllerKey private constructor(val name: String,
         val AXIS_NEG_14 = of("AXIS_NEG_14", "Axis Negative 14")
         val AXIS_NEG_15 = of("AXIS_NEG_15", "Axis Negative 15")
 
-        fun valueOf(name: String) = keyCache[name]
+        fun valueOf(name: String): ControllerKey? =
+            controllerKeyValueOfImpl(name)
 
-        fun of(name: String,
-               humanName: String): ControllerKey =
-                keyCache.computeAbsent(name) {
-                    ControllerKey(name, humanName)
-                }
+        fun of(name: String, humanName: String): ControllerKey =
+            controllerKeyOfImpl(name, humanName)
 
         private val BUTTONS = Array(80) {
             ControllerKey.valueOf("BUTTON_$it")
@@ -318,6 +313,14 @@ class ControllerKey private constructor(val name: String,
         fun axisNegative(i: Int) = AXES_NEG.getOrNull(i)
     }
 }
+
+internal expect fun controllerKeyValueOfImpl(
+    name: String
+): ControllerKey?
+
+internal expect fun controllerKeyOfImpl(
+    name: String, humanName: String
+): ControllerKey
 
 object ControllerAxis {
     val X_LEFT = 0
