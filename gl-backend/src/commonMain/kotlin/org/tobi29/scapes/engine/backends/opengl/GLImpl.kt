@@ -70,13 +70,13 @@ class GLImpl<out G : GL33>(
                     GLDebugMode.VERBOSE -> {
                         val debugCallback =
                             GLDebugMessageCallback { source, type, id,
-                                                     severity, message, _ ->
+                                                     severity, message ->
                                 printerrln("$source $type $severity: $message")
                             }
                         this.debugCallback = debugCallback
                         gl.glEnable(GL_DEBUG_OUTPUT)
                         gl.glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS)
-                        gl.glDebugMessageCallback(debugCallback, 0L)
+                        gl.glDebugMessageCallback(debugCallback)
                         gl.glDebugMessageControl(
                             GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, null, true
                         )

@@ -58,7 +58,7 @@ allprojects {
                 }
             }
         }
-        
+
         tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile) {
             compileTask ->
                 compileTask.kotlinOptions.metaInfo = true
@@ -95,7 +95,7 @@ ext {
     lwjglVersion = "3.2.0"
     lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 
-    ktBindingsVersion = "5ba0f43e61e74e0ef2594bd53001b7f6730e57f3"
+    ktBindingsVersion = "79a5bb3be27486855128d6c88137cbd21e36ef5f"
     ktBindingsBase = { module -> "net.gitout.kt-bindings:$module:$ktBindingsVersion" }
     ktBindings = { module -> ktBindingsBase("$module-metadata") }
     ktBindingsJS = { module -> ktBindingsBase("$module-js") }

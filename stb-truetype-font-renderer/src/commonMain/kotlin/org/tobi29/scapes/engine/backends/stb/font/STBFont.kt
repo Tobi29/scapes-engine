@@ -20,17 +20,16 @@ import net.gitout.ktbindings.stb.ttf.STBTTFontinfo
 import net.gitout.ktbindings.stb.ttf.close
 import net.gitout.ktbindings.stb.ttf.stbtt_GetFontOffsetForIndex
 import net.gitout.ktbindings.stb.ttf.stbtt_InitFont
+import net.gitout.ktbindings.utils.DataBufferPinned
+import net.gitout.ktbindings.utils.pinRead
 import org.tobi29.arrays.BytesRO
 import org.tobi29.io.IOException
 import org.tobi29.io.ReadSource
-import org.tobi29.scapes.engine.MemoryBufferPinned
-import org.tobi29.scapes.engine.allocateMemoryBufferPinned
-import org.tobi29.scapes.engine.close
 import org.tobi29.scapes.engine.graphics.Font
 import org.tobi29.scapes.engine.gui.GlyphRenderer
 
 class STBFont(
-    private val fontBufferPin: MemoryBufferPinned,
+    private val fontBufferPin: DataBufferPinned,
     internal val info: STBTTFontinfo
 ) : Font {
     override fun createGlyphRenderer(size: Int): GlyphRenderer =
@@ -46,14 +45,13 @@ class STBFont(
             loadFont(asset.data())
 
         fun loadFont(font: BytesRO): STBFont {
-            val fontBufferPin = allocateMemoryBufferPinned(font.size)
-            fontBufferPin.setBytes(0, font)
+            val fontBufferPin = font.asDataBuffer().pinRead()
             val info = STBTTFontinfo()
             if (stbtt_InitFont(
                     info,
-                    fontBufferPin.asDataBuffer(),
+                    fontBufferPin,
                     stbtt_GetFontOffsetForIndex(
-                        fontBufferPin.asDataBuffer(), 0
+                        fontBufferPin, 0
                     )
                 )) {
                 return STBFont(fontBufferPin, info)
