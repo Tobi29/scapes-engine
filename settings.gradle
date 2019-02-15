@@ -15,7 +15,6 @@
  */
 
 // FIXME: enableFeaturePreview("GRADLE_METADATA")
-enableFeaturePreview("STABLE_PUBLISHING")
 
 // Tier 0
 include "stdex"
