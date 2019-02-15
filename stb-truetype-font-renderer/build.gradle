@@ -37,7 +37,6 @@ kotlin {
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.ktBindingsJVMLWJGL3("stb-truetype-font")
             }
         }
     }

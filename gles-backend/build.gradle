@@ -43,23 +43,23 @@ kotlin {
         jsMain {
             dependencies {
                 implementation rootProject.kotlinJS("kotlin-stdlib")
-                implementation rootProject.ktBindingsJS("gamepad")
-                implementation rootProject.ktBindingsJS("webaudio")
-                implementation rootProject.ktBindingsJS("gles")
+                implementation rootProject.ktBindings("gamepad")
+                implementation rootProject.ktBindings("webaudio")
                 implementation project(":coroutines")
             }
         }
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.ktBindingsJVMLWJGL3("gles")
+                implementation rootProject.lwjglJVM("lwjgl")
+                implementation rootProject.lwjglJVM("lwjgl-opengles")
             }
         }
     }
     targets {
         // Kotlin/JS
         fromPreset(presets.js, "js")
-        
+
         // Kotlin/JVM (LWJGL 3)
         fromPreset(presets.jvm, "jvm-lwjgl3")
     }

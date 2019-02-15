@@ -89,14 +89,11 @@ ext {
     spek = { module -> spekBase("$module-common") }
     spekJVM = { module -> spekBase("$module-jvm") }
 
-    lwjglVersion = "3.2.0"
+    lwjglVersion = "3.2.1"
     lwjglJVM = { module -> "org.lwjgl:$module:$lwjglVersion" }
 
-    ktBindingsVersion = "79a5bb3be27486855128d6c88137cbd21e36ef5f"
-    ktBindingsBase = { module -> "net.gitout.kt-bindings:$module:$ktBindingsVersion" }
-    ktBindings = { module -> ktBindingsBase("$module-metadata") }
-    ktBindingsJS = { module -> ktBindingsBase("$module-js") }
-    ktBindingsJVMLWJGL3 = { module -> ktBindingsBase("$module-jvm-lwjgl3") }
+    ktBindingsVersion = "0.0.7"
+    ktBindings = { module -> "net.gitout.kt-bindings:$module:$ktBindingsVersion" }
 
     junitJupiterVersion = "5.2.0"
     junitJupiterJVM =

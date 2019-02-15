@@ -45,8 +45,8 @@ kotlin {
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.ktBindingsJVMLWJGL3("glfw")
                 implementation rootProject.lwjglJVM("lwjgl")
+                implementation rootProject.lwjglJVM("lwjgl-glfw")
                 implementation rootProject.lwjglJVM("lwjgl-tinyfd")
                 implementation project(":lwjgl3-backend")
             }
