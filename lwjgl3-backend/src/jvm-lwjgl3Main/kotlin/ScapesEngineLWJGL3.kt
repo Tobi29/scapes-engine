@@ -19,7 +19,6 @@ package org.tobi29.scapes.engine.backends.lwjgl3
 import org.tobi29.io.ReadSource
 import org.tobi29.scapes.engine.ScapesEngine
 import org.tobi29.scapes.engine.ScapesEngineBackend
-import org.tobi29.scapes.engine.backends.lwjgl3.openal.LWJGL3OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.backends.stb.font.STBFont
 import org.tobi29.scapes.engine.graphics.Font
@@ -30,5 +29,5 @@ object ScapesEngineLWJGL3 : ScapesEngineBackend {
         STBFont.loadFont(asset)
 
     override fun createSoundSystem(engine: ScapesEngine): SoundSystem =
-        OpenALSoundSystem(engine, LWJGL3OpenAL(), 64, 5.0)
+        OpenALSoundSystem(engine, 64, 5.0)
 }

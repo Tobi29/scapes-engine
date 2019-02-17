@@ -18,6 +18,7 @@ package org.tobi29.scapes.engine.backends.openal.openal
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import net.gitout.ktbindings.al.*
 import org.tobi29.codec.AudioStream
 import org.tobi29.contentinfo.mimeType
 import org.tobi29.coroutines.Timer
@@ -40,28 +41,31 @@ import org.tobi29.scapes.engine.sound.StaticAudio
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.volume
 import org.tobi29.stdex.ConcurrentHashSet
+import org.tobi29.stdex.math.toRad
 import org.tobi29.utils.*
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.cos
 import kotlin.math.roundToLong
+import kotlin.math.sin
 
 private typealias AudioData = Triple<ByteViewERO, Int, Int>
 
 class OpenALSoundSystem(
     override val engine: ScapesEngine,
-    openAL: OpenAL,
     maxSources: Int,
     latency: Double
 ) : CoroutineScope, SoundSystem {
     val speedOfSound = 343.3
     private val cache =
         HashMap<ReadSource, Either<Deferred<AudioData?>, OpenALAudioData>?>()
-    private val queue = Channel<(OpenAL) -> Unit>(Channel.UNLIMITED)
+    private val queue =
+        Channel<(ALCDevice, ALCContext, AL11) -> Unit>(Channel.UNLIMITED)
     private val job = Job()
     private val executor: CoroutineContext
     override val coroutineContext: CoroutineContext
         get() = job + executor
     private val audios = ConcurrentHashSet<OpenALAudio>()
-    private val sources = IntArray(maxSources)
+    private val sources = Array(maxSources) { emptyALSource }
     private var enabled = false
     private var origin = Vector3d.ZERO
     private var listenerPosition = Vector3d.ZERO
@@ -74,74 +78,108 @@ class OpenALSoundSystem(
         this.executor = executor
         launch {
             try {
-                start(openAL)
+                val (device, context, al) = start()
                 try {
-                    val timer = Timer()
-                    val maxDiff = (latency * 1000000.0).roundToLong()
-                    var active = false
-                    while (true) {
-                        val tickDiff = if (active) {
-                            timer.cap(maxDiff, { delayNanos(it) })
-                        } else {
-                            queue.receiveOrNull()?.invoke(openAL)
-                            0L
+                    try {
+                        al.checkError("Initializing")
+                        val timer = Timer()
+                        val maxDiff = (latency * 1000000.0).roundToLong()
+                        var active = false
+                        while (true) {
+                            val tickDiff = if (active) {
+                                timer.cap(maxDiff, { delayNanos(it) })
+                            } else {
+                                queue.receiveOrNull()
+                                    ?.invoke(device, context, al)
+                                0L
+                            }
+                            active = tick(device, context, al, tickDiff)
                         }
-                        active = tick(openAL, tickDiff)
+                    } finally {
+                        queue.close()
+                        audios.forEach {
+                            it.stop(this@OpenALSoundSystem, al)
+                        }
+                        audios.clear()
+                        cache.values.asSequence()
+                            .filterIsInstance<EitherRight<OpenALAudioData>>()
+                            .forEach {
+                                it.value.dispose(this@OpenALSoundSystem, al)
+                            }
+                        for (i in sources.indices) {
+                            val source = sources[i]
+                            al.alSourceStop(source)
+                            al.alSourceBuffer(source, AL_BUFFER, emptyALBuffer)
+                            al.alDeleteSource(source)
+                            sources[i] = emptyALSource
+                        }
+                        al.checkError("Disposing")
                     }
+                } catch (e: SoundException) {
+                    logger.warn(e) { "Fatal error in sound system" }
                 } finally {
-                    queue.close()
-                    audios.forEach {
-                        it.stop(this@OpenALSoundSystem, openAL)
-                    }
-                    audios.clear()
-                    cache.values.asSequence()
-                        .filterIsInstance<EitherRight<OpenALAudioData>>()
-                        .forEach {
-                            it.value.dispose(this@OpenALSoundSystem, openAL)
-                        }
-                    for (i in sources.indices) {
-                        val source = sources[i]
-                        openAL.stop(source)
-                        openAL.setBuffer(source, 0)
-                        openAL.deleteSource(source)
-                        sources[i] = -1
-                    }
-                    openAL.checkError("Disposing")
+                    alcDestroyContext(context)
+                    alcCloseDevice(device)
                 }
-            } catch (e: SoundException) {
-                logger.warn(e) { "Fatal error in sound system" }
             } finally {
-                openAL.destroy()
                 closeExecutor()
             }
         }
     }
 
-    private fun start(openAL: OpenAL) {
-        openAL.create(speedOfSound)
-        for (i in sources.indices) {
-            sources[i] = openAL.createSource()
+    private fun start(): Triple<ALCDevice, ALCContext, AL11> {
+        val device = alcOpenDevice(null)
+        if (device == emptyALCDevice) {
+            throw IllegalStateException(
+                "Failed to open the default device."
+            )
         }
-        openAL.pause()
-        openAL.checkError("Initializing")
+        val context = alcCreateContext(device)
+        if (context == emptyALCContext) {
+            alcCloseDevice(device)
+            throw IllegalStateException(
+                "Failed to create an OpenAL context."
+            )
+        }
+        alcMakeContextCurrent(context)
+        val al = contextAL11()
+        logger.info {
+            "OpenAL: ${al.alGetString(
+                AL_VERSION
+            )} (Vendor: ${al.alGetString(
+                AL_VENDOR
+            )}, Renderer: ${al.alGetString(
+                AL_RENDERER
+            )})"
+        }
+        al.alSpeedOfSound(speedOfSound.toFloat())
+        al.alDistanceModel(AL_INVERSE_DISTANCE_CLAMPED)
+        al.setListener(Vector3d.ZERO, Vector3d.ZERO, Vector3d.ZERO)
+        for (i in sources.indices) {
+            sources[i] = al.alCreateSource()
+        }
+        alcDevicePauseSOFT(device)
+        return Triple(device, context, al)
     }
 
-    private fun enable(openAL: OpenAL) {
+    private fun enable(device: ALCDevice) {
         if (!enabled) {
             enabled = true
-            openAL.resume()
+            alcDeviceResumeSOFT(device)
         }
     }
 
-    private fun disable(openAL: OpenAL) {
+    private fun disable(device: ALCDevice) {
         if (enabled) {
             enabled = false
-            openAL.pause()
+            alcDevicePauseSOFT(device)
         }
     }
 
     private fun tick(
-        openAL: OpenAL,
+        device: ALCDevice,
+        context: ALCContext,
+        al: AL11,
         tickDiff: Long
     ): Boolean {
         try {
@@ -149,7 +187,7 @@ class OpenALSoundSystem(
             var active = false
             if (!queue.isEmpty) {
                 while (true) {
-                    (queue.poll() ?: break).invoke(openAL)
+                    (queue.poll() ?: break).invoke(device, context, al)
                 }
                 active = true
             }
@@ -158,23 +196,23 @@ class OpenALSoundSystem(
             while (iterator.hasNext()) {
                 val element = iterator.next()
                 if (element.poll(
-                        this@OpenALSoundSystem, openAL,
+                        this@OpenALSoundSystem, al,
                         listenerPosition, delta
                     )) {
                     iterator.remove()
                 }
             }
-            openAL.checkError("Sound-Effects")
-            openAL.setListener(
+            al.checkError("Sound-Effects")
+            al.setListener(
                 listenerPosition.minus(origin),
                 listenerOrientation, listenerVelocity
             )
             val distance = origin.distanceSqr(listenerPosition)
             if (distance > 1024.0
-                && (distance > 4096.0 || !isSoundPlaying(openAL))) {
+                && (distance > 4096.0 || !isSoundPlaying(al))) {
                 origin = listenerPosition
             }
-            openAL.checkError("Updating-System")
+            al.checkError("Updating-System")
             return enabled && active
         } catch (e: SoundException) {
             logger.warn { "Error polling sound-system: $e" }
@@ -207,7 +245,7 @@ class OpenALSoundSystem(
         referenceDistance: Double,
         rolloffFactor: Double
     ) {
-        queue {
+        queue { _, _, _ ->
             audios.add(
                 OpenALStreamAudio(
                     asset, channel, Vector3d.ZERO, Vector3d.ZERO,
@@ -228,7 +266,7 @@ class OpenALSoundSystem(
         referenceDistance: Double,
         rolloffFactor: Double
     ) {
-        queue {
+        queue { _, _, _ ->
             audios.add(
                 OpenALStreamAudio(
                     asset, channel, position, velocity,
@@ -247,7 +285,7 @@ class OpenALSoundSystem(
         rolloffFactor: Double
     ) {
         val time = steadyClock.timeSteadyNanos()
-        queue {
+        queue { _, _, _ ->
             audios.add(
                 OpenALEffectAudio(
                     asset, channel, Vector3d.ZERO,
@@ -269,7 +307,7 @@ class OpenALSoundSystem(
         rolloffFactor: Double
     ) {
         val time = steadyClock.timeSteadyNanos()
-        queue {
+        queue { _, _, _ ->
             audios.add(
                 OpenALEffectAudio(
                     asset, channel, position, velocity,
@@ -291,28 +329,28 @@ class OpenALSoundSystem(
             asset, channel, pitch, gain,
             referenceDistance, rolloffFactor
         )
-        queue { audios.add(staticAudio) }
+        queue { _, _, _ -> audios.add(staticAudio) }
         return staticAudio
     }
 
     override fun stop(channel: VolumeChannel) {
-        queue { openAL ->
+        queue { _, _, al ->
             val stopped = audios.filter { it.isPlaying(channel) }
-            stopped.forEach { it.stop(this, openAL) }
+            stopped.forEach { it.stop(this, al) }
             audios.removeAll(stopped)
         }
     }
 
     override fun enable() {
-        queue(::enable)
+        queue { device, _, _ -> enable(device) }
     }
 
     override fun disable() {
-        queue(::disable)
+        queue { device, _, _ -> disable(device) }
     }
 
     override fun clearCache() {
-        queue { cache.clear() }
+        queue { _, _, _ -> cache.clear() }
     }
 
     override suspend fun dispose() {
@@ -323,37 +361,30 @@ class OpenALSoundSystem(
         return engine[ScapesEngineConfig.COMPONENT].volume(channel)
     }
 
-    internal fun playSound(
-        openAL: OpenAL,
-        source: Int,
-        position: Vector3d,
-        velocity: Vector3d,
-        state: Boolean,
-        hasPosition: Boolean
-    ) {
-        openAL.setLooping(source, state)
-        position(openAL, source, position, hasPosition)
-        openAL.setVelocity(source, velocity)
-        openAL.setMaxDistance(source, Double.POSITIVE_INFINITY)
-        openAL.play(source)
-    }
-
     internal fun position(
-        openAL: OpenAL,
-        source: Int,
+        al: AL11,
+        source: ALSource,
         position: Vector3d,
         hasPosition: Boolean
     ) {
-        openAL.setRelative(source, !hasPosition)
         if (hasPosition) {
-            openAL.setPosition(source, position.minus(origin))
+            al.alSourcei(source, AL_SOURCE_RELATIVE, AL_FALSE)
+            val relativePosition = position.minus(origin)
+            al.alSource3f(
+                source, AL_POSITION, relativePosition.x.toFloat(),
+                relativePosition.y.toFloat(), relativePosition.z.toFloat()
+            )
         } else {
-            openAL.setPosition(source, position)
+            al.alSourcei(source, AL_SOURCE_RELATIVE, AL_TRUE)
+            al.alSource3f(
+                source, AL_POSITION, position.x.toFloat(), position.y.toFloat(),
+                position.z.toFloat()
+            )
         }
     }
 
     internal fun getAudioData(
-        openAL: OpenAL,
+        al: AL11,
         asset: ReadSource
     ): Option<OpenALAudioData?> {
         val entry = cache[asset]
@@ -381,7 +412,7 @@ class OpenALSoundSystem(
                         ?.let {
                             OpenALAudioData(
                                 it.first, it.second, it.third,
-                                openAL
+                                al
                             )
                         }
                     cache[asset] = completed?.let { EitherRight(completed) }
@@ -392,39 +423,75 @@ class OpenALSoundSystem(
     }
 
     internal fun removeBufferFromSources(
-        openAL: OpenAL,
-        buffer: Int
+        al: AL11,
+        buffer: ALBuffer
     ) {
         for (source in sources) {
-            if (openAL.getBuffer(source) == buffer) {
-                openAL.stop(source)
-                openAL.setBuffer(source, 0)
+            if (al.alGetSourceBuffer(source, AL_BUFFER) == buffer) {
+                al.alSourceStop(source)
+                al.alSourceBuffer(source, AL_BUFFER, emptyALBuffer)
             }
         }
     }
 
-    internal fun freeSource(openAL: OpenAL): Int {
+    internal fun freeSource(al: AL11): ALSource {
         val random = threadLocalRandom()
         val offset = random.nextInt(sources.size)
         for (i in sources.indices) {
             val j = (i + offset) % sources.size
             val source = sources[j]
-            if (openAL.isStopped(source)) {
+            if (al.isStopped(source)) {
                 return source
             }
         }
-        return -1
+        return emptyALSource
     }
 
-    private fun queue(consumer: (OpenAL) -> Unit) {
+    private fun queue(consumer: (ALCDevice, ALCContext, AL11) -> Unit) {
         if (!queue.offer(consumer)) throw IllegalStateException("Queue full")
     }
 
-    private fun isSoundPlaying(openAL: OpenAL): Boolean {
-        return sources.any { !openAL.isStopped(it) }
+    private fun isSoundPlaying(al: AL11): Boolean {
+        return sources.any { !al.isStopped(it) }
     }
 
     companion object {
         internal val logger = KLogger<OpenALSoundSystem>()
     }
+}
+
+internal fun AL10.checkError(message: String) {
+    val error = alGetError()
+    if (error != AL_NO_ERROR) {
+        throw SoundException("${alGetString(error)} in $message")
+    }
+}
+
+internal fun AL10.setListener(
+    position: Vector3d,
+    orientation: Vector3d,
+    velocity: Vector3d
+) {
+    val cos = cos(orientation.x.toFloat().toRad())
+    val lookX = cos(orientation.z.toFloat().toRad()) * cos
+    val lookY = sin(orientation.z.toFloat().toRad()) * cos
+    val lookZ = sin(orientation.x.toFloat().toRad())
+    alListenerfv(
+        AL_ORIENTATION, floatArrayOf(
+            lookX, lookY, lookZ, 0.0f, 0.0f, 1.0f
+        )
+    )
+    alListener3f(
+        AL_POSITION, position.x.toFloat(),
+        position.y.toFloat(), position.z.toFloat()
+    )
+    alListener3f(
+        AL_VELOCITY, velocity.x.toFloat(),
+        velocity.y.toFloat(), velocity.z.toFloat()
+    )
+}
+
+internal fun AL10.isStopped(source: ALSource): Boolean {
+    val state = alGetSourcei(source, AL_SOURCE_STATE)
+    return state != AL_PLAYING && state != AL_PAUSED
 }

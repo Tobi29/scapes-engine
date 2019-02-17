@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import net.gitout.ktbindings.al.*
 import org.tobi29.arrays.BytesRO
 import org.tobi29.codec.AudioBuffer
 import org.tobi29.codec.ReadableAudioStream
@@ -24,36 +25,31 @@ import org.tobi29.io.ByteViewE
 import org.tobi29.io.IOException
 import org.tobi29.io.MemoryViewStream
 import org.tobi29.scapes.engine.allocateMemoryBuffer
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
-import org.tobi29.scapes.engine.sound.AudioFormat
+import org.tobi29.scapes.engine.backends.openal.openal.asDataBuffer
 
 internal class OpenALAudioData(
     data: BytesRO,
     channels: Int,
     rate: Int,
-    openAL: OpenAL
+    al: AL11
 ) {
-    private val buffer: Int = openAL.createBuffer()
+    val buffer = al.alCreateBuffer()
 
     init {
-        openAL.storeBuffer(
+        al.alBufferData(
             buffer,
-            if (channels > 1) AudioFormat.STEREO else AudioFormat.MONO,
-            data, rate
+            if (channels > 1) AL_FORMAT_STEREO16 else AL_FORMAT_MONO16,
+            data.asDataBuffer(), rate
         )
     }
 
     fun dispose(
         soundSystem: OpenALSoundSystem,
-        openAL: OpenAL
+        al: AL11
     ) {
-        soundSystem.removeBufferFromSources(openAL, buffer)
-        openAL.deleteBuffer(buffer)
-    }
-
-    fun buffer(): Int {
-        return buffer
+        soundSystem.removeBufferFromSources(al, buffer)
+        al.alDeleteBuffer(buffer)
     }
 }
 

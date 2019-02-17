@@ -16,7 +16,7 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
+import net.gitout.ktbindings.al.*
 import org.tobi29.scapes.engine.sound.AudioController
 import kotlin.math.abs
 
@@ -32,8 +32,8 @@ internal class OpenALAudioController(
     private var rolloffFactorAL = 0.0
 
     internal fun configure(
-        openAL: OpenAL,
-        source: Int,
+        al: AL11,
+        source: ALSource,
         gain: Double,
         force: Boolean = false
     ) {
@@ -42,21 +42,23 @@ internal class OpenALAudioController(
         val referenceDistanceAL = referenceDistanceAL
         val rolloffFactorAL = rolloffFactorAL
         if (force || abs(gainAL - this.gainAL) > 0.001) {
-            openAL.setGain(source, gainAL)
+            al.alSourcef(source, AL_GAIN, gainAL.toFloat())
             this.gainAL = gainAL
         }
         if (force || abs(pitchAL - this.pitchAL) > 0.001) {
-            openAL.setPitch(source, pitchAL)
+            al.alSourcef(source, AL_PITCH, pitchAL.toFloat())
             this.pitchAL = pitchAL
         }
         if (force || abs(
                 referenceDistanceAL - this.referenceDistanceAL
             ) > 0.001) {
-            openAL.setReferenceDistance(source, referenceDistanceAL)
+            al.alSourcef(
+                source, AL_REFERENCE_DISTANCE, referenceDistanceAL.toFloat()
+            )
             this.referenceDistanceAL = referenceDistanceAL
         }
         if (force || abs(rolloffFactorAL - this.rolloffFactorAL) > 0.001) {
-            openAL.setRolloffFactor(source, rolloffFactorAL)
+            al.alSourcef(source, AL_ROLLOFF_FACTOR, rolloffFactorAL.toFloat())
             this.rolloffFactorAL = rolloffFactorAL
         }
     }

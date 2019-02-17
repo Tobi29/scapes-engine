@@ -16,22 +16,24 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import net.gitout.ktbindings.al.*
 import org.tobi29.codec.AudioBuffer
+import org.tobi29.codec.AudioStream
+import org.tobi29.codec.ReadableAudioStream
 import org.tobi29.codec.toPCM16
-import org.tobi29.io.ByteViewE
-import org.tobi29.io.IOException
-import org.tobi29.io.MemoryViewStream
-import org.tobi29.io.ReadSource
+import org.tobi29.contentinfo.mimeType
+import org.tobi29.io.*
 import org.tobi29.logging.KLogger
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.scapes.engine.allocateMemoryBuffer
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import org.tobi29.scapes.engine.backends.openal.openal.asDataBuffer
 import org.tobi29.scapes.engine.sound.AudioController
-import org.tobi29.scapes.engine.sound.AudioFormat
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.scapes.engine.sound.VolumeChannelEnvironment
 import org.tobi29.stdex.assert
@@ -48,7 +50,7 @@ internal class OpenALStreamAudio(
     AudioController by controller {
     private val streamBuffer =
         MemoryViewStream<ByteViewE>({ allocateMemoryBuffer(it) })
-    private var source = -1
+    private var source = emptyALSource
     private var queued = 0
     private var decodeActor: Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>>? =
         null
@@ -76,59 +78,99 @@ internal class OpenALStreamAudio(
 
     override fun poll(
         sounds: OpenALSoundSystem,
-        openAL: OpenAL,
+        al: AL11,
         listenerPosition: Vector3d,
         delta: Double
     ): Boolean {
-        if (source == -1) {
-            source = openAL.createSource()
-            if (source == -1) {
-                return true
+        if (source == emptyALSource) {
+            source = al.alCreateSource()
+            controller.configure(al, source, sounds.volume(channel), true)
+            al.alSourcei(source, AL_LOOPING, AL_FALSE)
+            sounds.position(al, source, pos, hasPosition)
+            al.alSource3f(
+                source, AL_VELOCITY, velocity.x.toFloat(), velocity.y.toFloat(),
+                velocity.z.toFloat()
+            )
+            al.alSourcef(source, AL_REFERENCE_DISTANCE, 1.0f)
+            al.alSourcef(source, AL_MAX_DISTANCE, Float.POSITIVE_INFINITY)
+            val input = Channel<AudioBuffer>(1)
+            val output = Channel<AudioBuffer>()
+            sounds.launch {
+                try {
+                    do {
+                        asset.channel().use { dataChannel ->
+                            AudioStream.create(
+                                dataChannel, asset.mimeType()
+                            ).use { stream ->
+                                loop@ while (true) {
+                                    val buffer = input.receive()
+                                    while (true) {
+                                        when (stream.get(buffer)) {
+                                            ReadableAudioStream.Result.YIELD -> yield()
+                                            ReadableAudioStream.Result.BUFFER -> {
+                                                output.send(buffer)
+                                                continue@loop
+                                            }
+                                            ReadableAudioStream.Result.EOS -> {
+                                                output.send(buffer)
+                                                break@loop
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } while (state)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    // Catch internal errors from decoding
+                    // (Old) Android is buggy
+                    logger.error(e) { "Failed decoding audio stream" }
+                } finally {
+                    output.close()
+                }
             }
-            controller.configure(openAL, source, sounds.volume(channel), true)
-            openAL.setLooping(source, false)
-            sounds.position(openAL, source, pos, hasPosition)
-            openAL.setVelocity(source, velocity)
-            openAL.setReferenceDistance(source, 1.0)
-            openAL.setMaxDistance(source, Double.POSITIVE_INFINITY)
-            decodeActor = sounds.decodeActor(asset, state)
+            repeat(1) { input.offer(AudioBuffer(4096)) }
+            decodeActor = input to output
         }
         val (decode, buffers) = decodeActor ?: return true
         if (buffers.isClosedForReceive) return true
         try {
-            controller.configure(openAL, source, sounds.volume(channel))
+            controller.configure(al, source, sounds.volume(channel))
             while (queued < 3) {
                 val buffer = buffers.poll() ?: break
-                val audioBuffer = openAL.createBuffer()
-                store(openAL, buffer, audioBuffer)
+                val audioBuffer = al.alCreateBuffer()
+                store(al, buffer, audioBuffer)
                 buffer.clear()
                 if (!decode.offer(buffer))
                     throw IllegalStateException("Buffer lost")
-                openAL.queue(source, audioBuffer)
+                al.alSourceQueueBuffers(source, audioBuffer)
                 queued++
             }
-            if (queued > 0 && !openAL.isPlaying(source)) {
-                openAL.play(source)
+            if (queued > 0
+                && al.alGetSourcei(source, AL_SOURCE_STATE) != AL_PLAYING) {
+                al.alSourcePlay(source)
             }
-            var finished = openAL.getBuffersProcessed(source)
+            var finished = al.alGetSourcei(source, AL_BUFFERS_PROCESSED)
             while (finished > 0) {
-                val unqueued = openAL.unqueue(source)
+                val unqueued = al.alSourceUnqueueBuffers(source)
                 val buffer = buffers.poll()
                 if (buffer == null) {
-                    openAL.deleteBuffer(unqueued)
+                    al.alDeleteBuffer(unqueued)
                     queued--
                     break
                 }
-                store(openAL, buffer, unqueued)
+                store(al, buffer, unqueued)
                 buffer.clear()
                 if (!decode.offer(buffer))
                     throw IllegalStateException("Buffer lost")
-                openAL.queue(source, unqueued)
+                al.alSourceQueueBuffers(source, unqueued)
                 finished--
             }
         } catch (e: IOException) {
             logger.warn { "Failed to stream music: $e" }
-            stop(sounds, openAL)
+            stop(sounds, al)
             return true
         }
         return false
@@ -141,17 +183,17 @@ internal class OpenALStreamAudio(
 
     override fun stop(
         sounds: OpenALSoundSystem,
-        openAL: OpenAL
+        al: AL11
     ) {
-        if (source != -1) {
-            openAL.stop(source)
-            var queued = openAL.getBuffersQueued(source)
+        if (source != emptyALSource) {
+            al.alSourceStop(source)
+            var queued = al.alGetSourcei(source, AL_BUFFERS_QUEUED)
             while (queued-- > 0) {
-                openAL.deleteBuffer(openAL.unqueue(source))
+                al.alDeleteBuffer(al.alSourceUnqueueBuffers(source))
                 this.queued--
             }
-            openAL.deleteSource(source)
-            source = -1
+            al.alDeleteSource(source)
+            source = emptyALSource
             assert { this.queued == 0 }
         }
         try {
@@ -163,16 +205,16 @@ internal class OpenALStreamAudio(
     }
 
     private fun store(
-        openAL: OpenAL,
+        al: AL11,
         buffer: AudioBuffer,
-        audioBuffer: Int
+        audioBuffer: ALBuffer
     ) {
         buffer.toPCM16 { streamBuffer.putShort(it) }
         streamBuffer.flip()
-        openAL.storeBuffer(
+        al.alBufferData(
             audioBuffer,
-            if (buffer.channels() > 1) AudioFormat.STEREO
-            else AudioFormat.MONO, streamBuffer.bufferSlice(),
+            if (buffer.channels() > 1) AL_FORMAT_STEREO16
+            else AL_FORMAT_MONO16, streamBuffer.bufferSlice().asDataBuffer(),
             buffer.rate()
         )
         streamBuffer.reset()
@@ -182,8 +224,3 @@ internal class OpenALStreamAudio(
         private val logger = KLogger<OpenALStreamAudio>()
     }
 }
-
-internal expect fun CoroutineScope.decodeActor(
-    asset: ReadSource,
-    state: Boolean
-): Pair<SendChannel<AudioBuffer>, Channel<AudioBuffer>>

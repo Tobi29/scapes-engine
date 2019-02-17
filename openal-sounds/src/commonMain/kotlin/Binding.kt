@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package org.tobi29.scapes.engine.backends.openal.openal.internal
+package org.tobi29.scapes.engine.backends.openal.openal
 
-import net.gitout.ktbindings.al.AL11
-import org.tobi29.math.vector.Vector3d
-import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
+import net.gitout.ktbindings.utils.DataBuffer
+import org.tobi29.arrays.Bytes
+import org.tobi29.arrays.BytesRO
+import org.tobi29.stdex.InlineUtility
 
-internal interface OpenALAudio {
-    fun poll(
-        sounds: OpenALSoundSystem,
-        al: AL11,
-        listenerPosition: Vector3d,
-        delta: Double
-    ): Boolean
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun BytesRO.asDataBuffer(): BytesRODataBuffer = BytesRODataBuffer(this)
 
-    fun isPlaying(channel: String): Boolean
+@InlineUtility
+@Suppress("NOTHING_TO_INLINE")
+inline fun Bytes.asDataBuffer(): BytesDataBuffer = BytesDataBuffer(this)
 
-    fun stop(sounds: OpenALSoundSystem, al: AL11)
-}
+expect class BytesRODataBuffer(bytes: BytesRO) : DataBuffer
+
+expect class BytesDataBuffer(bytes: Bytes) : DataBuffer

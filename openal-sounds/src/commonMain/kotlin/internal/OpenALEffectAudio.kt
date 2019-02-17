@@ -16,10 +16,10 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import net.gitout.ktbindings.al.*
 import org.tobi29.io.ReadSource
 import org.tobi29.math.vector.Vector3d
 import org.tobi29.math.vector.distance
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.VolumeChannel
 import org.tobi29.utils.steadyClock
@@ -40,32 +40,42 @@ internal class OpenALEffectAudio(
 
     override fun poll(
         sounds: OpenALSoundSystem,
-        openAL: OpenAL,
+        al: AL11,
         listenerPosition: Vector3d,
         delta: Double
     ): Boolean {
         if (!hasPosition || run {
                 val diff = (steadyClock.timeSteadyNanos() - time) / 1000000000.0
-                val delay = listenerPosition.distance(
-                    pos
-                ) / sounds.speedOfSound - delta * 0.5
+                val delay = listenerPosition.distance(pos) /
+                        sounds.speedOfSound - delta * 0.5
                 diff >= delay
             }) {
-            val audio = sounds.getAudioData(openAL, asset)
+            val audio = sounds.getAudioData(al, asset)
                 .unwrapOr { return false }
             if (audio != null) {
                 val gain = gain * sounds.volume(channel)
-                val source = sounds.freeSource(openAL)
-                if (source != -1) {
-                    openAL.setBuffer(source, audio.buffer())
-                    openAL.setGain(source, gain)
-                    openAL.setPitch(source, pitch)
-                    openAL.setReferenceDistance(source, referenceDistance)
-                    openAL.setRolloffFactor(source, rolloffFactor)
-                    sounds.playSound(
-                        openAL, source, pos, velocity, false,
-                        hasPosition
+                val source = sounds.freeSource(al)
+                if (source != emptyALSource) {
+                    al.alSourceBuffer(source, AL_BUFFER, audio.buffer)
+                    al.alSourcef(source, AL_GAIN, gain.toFloat())
+                    al.alSourcef(source, AL_PITCH, pitch.toFloat())
+                    al.alSourcef(
+                        source, AL_REFERENCE_DISTANCE,
+                        referenceDistance.toFloat()
                     )
+                    al.alSourcef(
+                        source, AL_ROLLOFF_FACTOR, rolloffFactor.toFloat()
+                    )
+                    al.alSourcei(source, AL_LOOPING, AL_FALSE)
+                    sounds.position(al, source, pos, hasPosition)
+                    al.alSource3f(
+                        source, AL_VELOCITY, velocity.x.toFloat(),
+                        velocity.y.toFloat(), velocity.z.toFloat()
+                    )
+                    al.alSourcef(
+                        source, AL_MAX_DISTANCE, Float.POSITIVE_INFINITY
+                    )
+                    al.alSourcePlay(source)
                 }
             }
             return true
@@ -77,7 +87,7 @@ internal class OpenALEffectAudio(
 
     override fun stop(
         sounds: OpenALSoundSystem,
-        openAL: OpenAL
+        al: AL11
     ) {
     }
 }

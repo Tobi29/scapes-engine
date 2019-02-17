@@ -16,9 +16,9 @@
 
 package org.tobi29.scapes.engine.backends.openal.openal.internal
 
+import net.gitout.ktbindings.al.*
 import org.tobi29.io.ReadSource
 import org.tobi29.math.vector.Vector3d
-import org.tobi29.scapes.engine.backends.openal.openal.OpenAL
 import org.tobi29.scapes.engine.backends.openal.openal.OpenALSoundSystem
 import org.tobi29.scapes.engine.sound.AudioController
 import org.tobi29.scapes.engine.sound.StaticAudio
@@ -33,8 +33,8 @@ internal class OpenALStaticAudio(
 ) : OpenALAudio,
     StaticAudio,
     AudioController by controller {
-    private var buffer = -1
-    private var source = -1
+    private var buffer = emptyALBuffer
+    private var source = emptyALSource
     private var playing = false
     private var dispose = false
 
@@ -59,46 +59,49 @@ internal class OpenALStaticAudio(
 
     override fun poll(
         sounds: OpenALSoundSystem,
-        openAL: OpenAL,
+        al: AL11,
         listenerPosition: Vector3d,
         delta: Double
     ): Boolean {
-        if (buffer == -1) {
-            val audio = sounds.getAudioData(openAL, asset)
+        if (buffer == emptyALBuffer) {
+            val audio = sounds.getAudioData(al, asset)
                 .tryUnwrap() ?: return false
-            buffer = audio.buffer()
+            buffer = audio.buffer
         }
-        assert { buffer != -1 }
+        assert { buffer != emptyALBuffer }
         if (gain > 0.001) {
             if (playing) {
-                assert { source != -1 }
-                controller.configure(openAL, source, sounds.volume(channel))
+                assert { source != emptyALSource }
+                controller.configure(al, source, sounds.volume(channel))
             } else {
-                if (source == -1) {
-                    source = openAL.createSource()
+                if (source == emptyALSource) {
+                    source = al.alCreateSource()
                 }
-                if (source != -1) {
+                if (source != emptyALSource) {
                     playing = true
-                    openAL.setBuffer(source, buffer)
+                    al.alSourceBuffer(source, AL_BUFFER, buffer)
                     controller.configure(
-                        openAL, source, sounds.volume(channel),
+                        al, source, sounds.volume(channel),
                         true
                     )
-                    sounds.playSound(
-                        openAL, source, Vector3d.ZERO,
-                        Vector3d.ZERO, true, false
+                    al.alSourcei(source, AL_LOOPING, AL_TRUE)
+                    sounds.position(al, source, Vector3d.ZERO, false)
+                    al.alSource3f(source, AL_VELOCITY, 0.0f, 0.0f, 0.0f)
+                    al.alSourcef(
+                        source, AL_MAX_DISTANCE, Float.POSITIVE_INFINITY
                     )
+                    al.alSourcePlay(source)
                 }
             }
         } else {
             if (playing) {
-                assert { source != -1 }
+                assert { source != emptyALSource }
                 playing = false
-                stop(sounds, openAL)
+                stop(sounds, al)
             }
         }
         if (dispose) {
-            stop(sounds, openAL)
+            stop(sounds, al)
             return true
         }
         return false
@@ -111,11 +114,11 @@ internal class OpenALStaticAudio(
 
     override fun stop(
         sounds: OpenALSoundSystem,
-        openAL: OpenAL
+        al: AL11
     ) {
-        if (source != -1) {
-            openAL.deleteSource(source)
-            source = -1
+        if (source != emptyALSource) {
+            al.alDeleteSource(source)
+            source = emptyALSource
         }
     }
 }

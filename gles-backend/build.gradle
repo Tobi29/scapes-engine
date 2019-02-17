@@ -51,8 +51,6 @@ kotlin {
         "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
-                implementation rootProject.lwjglJVM("lwjgl")
-                implementation rootProject.lwjglJVM("lwjgl-opengles")
             }
         }
     }

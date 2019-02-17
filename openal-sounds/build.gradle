@@ -22,6 +22,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation rootProject.kotlin("kotlin-stdlib")
+                implementation rootProject.ktBindings("al")
                 implementation project(":stdex")
                 implementation project(":arrays")
                 implementation project(":coroutines")
@@ -40,20 +41,14 @@ kotlin {
                 implementation project(":test-assertions")
             }
         }
-        jvmMain {
+        "jvm-lwjgl3Main" {
             dependencies {
                 implementation rootProject.kotlinJVM("kotlin-stdlib")
             }
         }
     }
     targets {
-        // Kotlin/JVM
-        fromPreset(presets.jvm, "jvm")
-    }
-}
-
-jvmTest {
-    useJUnitPlatform {
-        includeEngines "spek2"
+        // Kotlin/JVM (LWJGL 3)
+        fromPreset(presets.jvm, "jvm-lwjgl3")
     }
 }
