@@ -72,7 +72,6 @@ class ContainerGLFW(
         }
     private val useGLES: Boolean
     override val gos: GL
-    private val initContext: () -> Unit
     private val requestLegacy: (ReadTagMutableMap) -> String?
     var window = GLFWWindow_EMPTY
         private set
@@ -101,13 +100,11 @@ class ContainerGLFW(
             is GLBackend -> {
                 useGLES = false
                 gos = graphicsBackend.createGL(this)
-                initContext = gos::init
                 requestLegacy = graphicsBackend::requestLegacy
             }
             is GLESBackend -> {
                 useGLES = true
                 gos = graphicsBackend.createGL(this)
-                initContext = gos::init
                 requestLegacy = { null }
             }
             else -> error("Unsupported graphics backend: ${graphicsBackend::class}")
@@ -358,17 +355,16 @@ class ContainerGLFW(
         }
 
         fun initWindow() {
-            engine.graphics.reset()
             controllerDesktop.clearStates()
             visible = false
             if (window != GLFWWindow_EMPTY) {
-                disposeWindow(window)
+                disposeWindow(gos, window)
             }
             val requestLegacy: () -> String? = {
                 requestLegacy(engineConfig.configMap)
             }
             window = initWindow(
-                initContext, requestLegacy, title,
+                gos, requestLegacy, title,
                 engineConfig.fullscreen, engineConfig.vSync,
                 useGLES, this
             )
@@ -444,7 +440,7 @@ class ContainerGLFW(
         }
 
         override fun close() {
-            disposeWindow(window)
+            disposeWindow(gos, window)
             glfwSetMonitorCallback(null)
             controllers.dispose()
             windowSizeFun.close()
@@ -510,7 +506,7 @@ private val plebSyncGap
     }
 
 private fun initWindow(
-    initContext: () -> Unit,
+    gos: GL,
     requestLegacy: () -> String?,
     title: String,
     fullscreen: Boolean,
@@ -555,7 +551,7 @@ private fun initWindow(
         }
         window
     }
-    initContext()
+    gos.init()
     glfwSetWindowSizeCallback(window, state.windowSizeFun)
     glfwSetWindowCloseCallback(window, state.windowCloseFun)
     glfwSetWindowFocusCallback(window, state.windowFocusFun)
@@ -570,8 +566,10 @@ private fun initWindow(
 }
 
 private fun disposeWindow(
+    gos: GL,
     window: GLFWWindow
 ) {
+    gos.dispose()
     glfwSetWindowSizeCallback(window, null)
     glfwSetWindowCloseCallback(window, null)
     glfwSetWindowFocusCallback(window, null)

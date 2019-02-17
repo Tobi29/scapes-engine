@@ -73,6 +73,8 @@ abstract class GL : GraphicsObjectSupplier {
 
     abstract fun init()
 
+    abstract fun reset()
+
     abstract fun dispose()
 
     abstract fun checkError(message: String)

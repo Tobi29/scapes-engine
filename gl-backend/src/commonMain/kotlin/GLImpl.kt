@@ -52,6 +52,8 @@ class GLImpl<out G : GL33>(
     internal val gl: G get() = _gl!!
 
     override fun init() {
+        if (_gl != null) return
+
         _gl = glInit()
 
         logger.info {
@@ -86,7 +88,21 @@ class GLImpl<out G : GL33>(
         }
     }
 
+    override fun reset() {
+        if (_gl == null) return
+
+        vaoTracker.resetAll()
+        textureTracker.resetAll()
+        fboTracker.resetAll()
+        shaderTracker.resetAll()
+        debugCallback?.close()
+        debugCallback = null
+        _gl = null
+    }
+
     override fun dispose() {
+        if (_gl == null) return
+
         vaoTracker.disposeAll(this)
         textureTracker.disposeAll(this)
         fboTracker.disposeAll(this)

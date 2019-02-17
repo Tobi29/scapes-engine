@@ -129,13 +129,6 @@ class GraphicsSystem(
         }
     }
 
-    fun reset() {
-        gos.vaoTracker.resetAll()
-        gos.textureTracker.resetAll()
-        gos.fboTracker.resetAll()
-        gos.shaderTracker.resetAll()
-    }
-
     fun executeDispatched(gl: GL) {
         if (dispatchReentry++ == 0) {
             this.gl = gl
