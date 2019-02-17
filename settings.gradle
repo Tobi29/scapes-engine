@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// FIXME: enableFeaturePreview("GRADLE_METADATA")
+enableFeaturePreview("GRADLE_METADATA")
 
 // Tier 0
 include "stdex"
