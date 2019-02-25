@@ -98,7 +98,7 @@ class ConnectionWorker(
                         GlobalScope.launch(this) {
                             while (job.isActive) {
                                 if (systemClock.timeMillis() > timeout.get()) {
-                                    job.cancel(CancellationException("Timeout"))
+                                    job.cancel()
                                 }
                                 yield()
                             }
@@ -121,7 +121,7 @@ class ConnectionWorker(
         }
         connections.forEach {
             queue.offer {
-                it.job.cancel(CancellationException("Killing worker"))
+                it.job.cancel()
             }
         }
         while (connections.isNotEmpty()) {

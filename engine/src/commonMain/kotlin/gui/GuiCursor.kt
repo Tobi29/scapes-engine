@@ -18,8 +18,6 @@ package org.tobi29.scapes.engine.gui
 
 import org.tobi29.math.vector.MutableVector2d
 import org.tobi29.math.vector.Vector2d
-import org.tobi29.math.vector.getValue
-import org.tobi29.math.vector.setValue
 
 class GuiCursor {
     var pos: Vector2d by MutableVector2d()

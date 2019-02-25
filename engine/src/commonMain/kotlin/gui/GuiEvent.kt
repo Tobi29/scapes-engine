@@ -16,6 +16,7 @@
 
 package org.tobi29.scapes.engine.gui
 
+@Suppress("ClassName")
 sealed class GuiEvent<T : GuiComponentEvent> {
     object CLICK_LEFT : GuiEvent<GuiComponentEvent>()
     object PRESS_LEFT : GuiEvent<GuiComponentEvent>()

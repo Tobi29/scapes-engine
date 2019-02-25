@@ -30,7 +30,7 @@
  * (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
  */
 
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "ClassName")
 
 package org.tobi29.kzlib
 

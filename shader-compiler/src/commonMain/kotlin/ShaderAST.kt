@@ -938,6 +938,7 @@ fun MutableTag.toConditionType(): ConditionType? = try {
     null
 }
 
+@Suppress("EnumEntryName")
 enum class Precision : TagWrite {
     lowp,
     mediump,

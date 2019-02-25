@@ -48,16 +48,14 @@ enum class Face(
     }
 
     companion object {
-        operator fun get(data: Int): Face {
-            return when (data) {
-                0 -> UP
-                1 -> DOWN
-                2 -> NORTH
-                3 -> EAST
-                4 -> SOUTH
-                5 -> WEST
-                else -> NONE
-            }
+        operator fun get(data: Int): Face = when (data) {
+            0 -> UP
+            1 -> DOWN
+            2 -> NORTH
+            3 -> EAST
+            4 -> SOUTH
+            5 -> WEST
+            else -> NONE
         }
     }
 }

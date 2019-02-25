@@ -23,59 +23,69 @@ import org.tobi29.scapes.engine.sound.SoundSystem
 import org.tobi29.scapes.engine.sound.StaticAudio
 
 class DummySoundSystem(override val engine: ScapesEngine) : SoundSystem {
-    override fun setListener(position: Vector3d,
-                             orientation: Vector3d,
-                             velocity: Vector3d) {
+    override fun setListener(
+        position: Vector3d,
+        orientation: Vector3d,
+        velocity: Vector3d
+    ) {
     }
 
-    override fun isPlaying(channel: String): Boolean {
-        return false
+    override fun isPlaying(channel: String): Boolean = false
+
+    override fun playMusic(
+        asset: ReadSource,
+        channel: String,
+        state: Boolean,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ) {
     }
 
-    override fun playMusic(asset: ReadSource,
-                           channel: String,
-                           state: Boolean,
-                           pitch: Double,
-                           gain: Double,
-                           referenceDistance: Double,
-                           rolloffFactor: Double) {
+    override fun playMusic(
+        asset: ReadSource,
+        channel: String,
+        position: Vector3d,
+        velocity: Vector3d,
+        state: Boolean,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ) {
     }
 
-    override fun playMusic(asset: ReadSource,
-                           channel: String,
-                           position: Vector3d,
-                           velocity: Vector3d,
-                           state: Boolean,
-                           pitch: Double,
-                           gain: Double,
-                           referenceDistance: Double,
-                           rolloffFactor: Double) {
+    override fun playSound(
+        asset: ReadSource,
+        channel: String,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ) {
     }
 
-    override fun playSound(asset: ReadSource,
-                           channel: String,
-                           pitch: Double,
-                           gain: Double,
-                           referenceDistance: Double,
-                           rolloffFactor: Double) {
+    override fun playSound(
+        asset: ReadSource,
+        channel: String,
+        position: Vector3d,
+        velocity: Vector3d,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ) {
     }
 
-    override fun playSound(asset: ReadSource,
-                           channel: String,
-                           position: Vector3d,
-                           velocity: Vector3d,
-                           pitch: Double,
-                           gain: Double,
-                           referenceDistance: Double,
-                           rolloffFactor: Double) {
-    }
-
-    override fun playStaticAudio(asset: ReadSource,
-                                 channel: String,
-                                 pitch: Double,
-                                 gain: Double,
-                                 referenceDistance: Double,
-                                 rolloffFactor: Double): StaticAudio {
+    override fun playStaticAudio(
+        asset: ReadSource,
+        channel: String,
+        pitch: Double,
+        gain: Double,
+        referenceDistance: Double,
+        rolloffFactor: Double
+    ): StaticAudio {
         return DummyStaticAudio()
     }
 

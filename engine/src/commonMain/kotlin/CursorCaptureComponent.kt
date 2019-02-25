@@ -23,8 +23,7 @@ import org.tobi29.coroutines.loopUntilCancel
 import org.tobi29.utils.ComponentTypeRegistered
 import kotlin.coroutines.CoroutineContext
 
-class CursorCaptureComponent : ComponentJobHandle<ScapesEngine>(),
-    ComponentStep {
+class CursorCaptureComponent : ComponentJobHandle<ScapesEngine>() {
     private var cursorCaptured = false
 
     override fun coroutineContextFor(holder: ScapesEngine): CoroutineContext =
