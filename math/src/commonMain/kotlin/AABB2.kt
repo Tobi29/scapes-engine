@@ -90,6 +90,11 @@ fun AABB2.getVertexNY(normaly: Double): Double {
     return p
 }
 
+inline fun AABB2.getVertexN(normal: ReadVector2d): Vector2d = Vector2d(
+    getVertexNX(normal.x),
+    getVertexNY(normal.y)
+)
+
 fun AABB2.getVertexPX(normalx: Double): Double {
     var p = min.x
     if (normalx > 0) {
@@ -105,6 +110,11 @@ fun AABB2.getVertexPY(normaly: Double): Double {
     }
     return p
 }
+
+inline fun AABB2.getVertexP(normal: ReadVector2d): Vector2d = Vector2d(
+    getVertexPX(normal.x),
+    getVertexPY(normal.y)
+)
 
 inline fun AABB2.grow(
     x: Double,

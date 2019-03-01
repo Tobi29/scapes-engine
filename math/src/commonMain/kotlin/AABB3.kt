@@ -104,6 +104,12 @@ fun AABB3.getVertexNZ(normalz: Double): Double {
     return p
 }
 
+inline fun AABB3.getVertexN(normal: ReadVector3d): Vector3d = Vector3d(
+    getVertexNX(normal.x),
+    getVertexNY(normal.y),
+    getVertexNZ(normal.z)
+)
+
 fun AABB3.getVertexPX(normalx: Double): Double {
     var p = min.x
     if (normalx > 0) {
@@ -127,6 +133,12 @@ fun AABB3.getVertexPZ(normalz: Double): Double {
     }
     return p
 }
+
+inline fun AABB3.getVertexP(normal: ReadVector3d): Vector3d = Vector3d(
+    getVertexPX(normal.x),
+    getVertexPY(normal.y),
+    getVertexPZ(normal.z)
+)
 
 inline fun AABB3.grow(
     x: Double,
