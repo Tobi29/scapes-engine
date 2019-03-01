@@ -17,3 +17,19 @@
 apply from: rootProject.file("gradle/build-gitlab.gradle")
 apply plugin: "maven-publish"
 apply from: rootProject.file("gradle/publish-bintray.gradle")
+
+publishing {
+    publications.each {
+        it.pom {
+            name = "Scapes Engine"
+            description = "General purpose game engine written in Kotlin"
+            url = "https://github.com/Tobi29/scapes-engine"
+            licenses {
+                license {
+                    name = "The Apache License, Version 2.0"
+                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                }
+            }
+        }
+    }
+}
