@@ -44,13 +44,6 @@ class MutableMatrix3d(
         set(xx, xy, xz, yx, yy, yz, zx, zy, zz)
     }
 
-    override fun get(index1: Int, index2: Int): Double =
-        this[index2, index1]
-
-    override fun set(index1: Int, index2: Int, value: Double) {
-        this[index2, index1] = value
-    }
-
     fun set(matrix: MutableMatrix3d) {
         copy(matrix.array.array, array.array)
     }
