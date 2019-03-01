@@ -19,7 +19,9 @@ package org.tobi29.scapes.engine
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.tobi29.coroutines.*
+import org.tobi29.coroutines.TaskChannel
+import org.tobi29.coroutines.offer
+import org.tobi29.coroutines.processCurrent
 import org.tobi29.io.FileSystemContainer
 import org.tobi29.io.tag.MutableTagMap
 import org.tobi29.logging.KLogger
@@ -31,11 +33,13 @@ import org.tobi29.scapes.engine.gui.debug.GuiWidgetPerformance
 import org.tobi29.scapes.engine.gui.debug.GuiWidgetProfiler
 import org.tobi29.scapes.engine.resource.ResourceLoader
 import org.tobi29.scapes.engine.sound.SoundSystem
-import org.tobi29.stdex.atomic.AtomicDouble
-import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.stdex.concurrent.ReentrantLock
 import org.tobi29.stdex.concurrent.withLock
 import org.tobi29.stdex.readOnly
 import org.tobi29.utils.*
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 
 class ScapesEngine(
@@ -44,15 +48,13 @@ class ScapesEngine(
     val taskExecutor: CoroutineContext,
     configMap: MutableTagMap
 ) : CoroutineDispatcher(), CoroutineScope, ComponentHolder<Any> {
+    private val lock = ReentrantLock()
     private val mutex = Mutex()
     override val componentStorage = ComponentStorage<Any>()
     private val queue = TaskChannel<(Double) -> Unit>()
     private val job = Job()
     override val coroutineContext: CoroutineContext get() = this + job
 
-    private val tpsDebug: GuiWidgetDebugValues.Element
-    private val newState = AtomicReference<GameState?>(null)
-    private val updateJob = JobHandle(this)
     private var _state: GameState? = null
     val state: GameState? get() = _state
     val files = FileSystemContainer()
@@ -101,13 +103,8 @@ class ScapesEngine(
         }
         performance.visible = false
         guiStack.addUnfocused("99-Debug", debugGui)
-        tpsDebug = debugValues["Engine-Tps"]
 
         logger.info { "Initializing engine" }
-        registerComponent(
-            DeltaProfilerComponent.COMPONENT,
-            DeltaProfilerComponent(performance)
-        )
         registerComponent(
             CursorCaptureComponent.COMPONENT,
             CursorCaptureComponent()
@@ -132,41 +129,28 @@ class ScapesEngine(
     }
 
     fun switchState(state: GameState) {
-        newState.set(state)
-    }
-
-    fun start() {
-        val startTps = AtomicDouble(1.0)
-        updateJob.launchLater(taskExecutor) {
-            launchResponsive(CoroutineName("Engine-State")) {
-                var tps = startTps.get()
-                val timer = Timer()
-                try {
-                    while (true) {
-                        val tickDiff = timer.cap(
-                            Timer.toDiff(tps), { delayResponsiveNanos(it) }
-                        )
-                        tpsDebug.setValue(Timer.toTps(tickDiff))
-                        val delta =
-                            Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1)
-                        tps = withContext(NonCancellable) { step(delta) }
-                    }
-                } finally {
-                    components.asSequence()
-                        .filterIsInstance<ComponentLifecycle<*>>()
-                        .forEach { it.halt() }
-                }
+        lock.withLock {
+            graphics.lock.withLock {
+                _state?.disposeState()
+                _state = state
+                state.initState()
             }
-        }?.let { (_, launch) ->
-            components.asSequence().filterIsInstance<ComponentLifecycle<*>>()
-                .forEach { it.start() }
-            startTps.set(step(0.0001))
-            launch()
         }
     }
 
-    suspend fun halt() {
-        updateJob.job?.cancelAndJoin()
+    fun start() {
+        lock.withLock {
+            components.asSequence().filterIsInstance<ComponentLifecycle<*>>()
+                .forEach { it.start() }
+        }
+    }
+
+    fun halt() {
+        lock.withLock {
+            components.asSequence()
+                .filterIsInstance<ComponentLifecycle<*>>()
+                .forEach { it.halt() }
+        }
     }
 
     suspend fun dispose() {
@@ -194,36 +178,23 @@ class ScapesEngine(
         return debugValues.readOnly()
     }
 
-    private fun step(delta: Double): Double {
-        var currentState = state
-        val newState = newState.getAndSet(null)
-        if (newState != null) {
-            graphics.lock.withLock {
-                state?.disposeState()
-                _state = newState
-                newState.initState()
+    fun update(delta: Double) {
+        lock.withLock {
+            profilerSection("Components") {
+                components.asSequence().filterIsInstance<ComponentStep>()
+                    .forEach { it.step(delta) }
             }
-            currentState = newState
+            profilerSection("Gui-Controller") {
+                guiController.update(delta)
+            }
+            val state = state ?: return
+            profilerSection("State") {
+                state.step(delta)
+            }
+            profilerSection("Tasks") {
+                queue.processCurrent { it(delta) }
+            }
         }
-        profilerSection("Components") {
-            components.asSequence().filterIsInstance<ComponentStep>()
-                .forEach { it.step(delta) }
-        }
-        profilerSection("Gui-Controller") {
-            guiController.update(delta)
-        }
-        val state = currentState
-                ?: return this[ScapesEngineConfig.COMPONENT].fps
-        profilerSection("Container") {
-            container.update(delta)
-        }
-        profilerSection("State") {
-            state.step(delta)
-        }
-        profilerSection("Tasks") {
-            queue.processCurrent { it(delta) }
-        }
-        return state.tps
     }
 
     companion object {

@@ -390,15 +390,19 @@ class ContainerGLFW(
             controllers.poll()
         }
 
-        fun render(tickDiff: Long) = profilerSection("Render") {
-            engine.graphics.render(
-                gos,
-                Timer.toDelta(tickDiff).coerceIn(0.0001, 0.1),
-                contentWidth,
-                contentHeight,
-                containerWidth,
-                containerHeight
-            )
+        fun render(tickDiff: Long): Boolean {
+            val delta = Timer.toDelta(tickDiff)
+            val swap = profilerSection("Render") {
+                engine.graphics.render(
+                    gos, delta,
+                    contentWidth, contentHeight,
+                    containerWidth, containerHeight
+                )
+            }
+            profilerSection("Update") {
+                engine.update(delta)
+            }
+            return swap
         }
 
         fun swap(

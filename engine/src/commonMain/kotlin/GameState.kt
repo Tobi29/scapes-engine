@@ -58,7 +58,7 @@ abstract class GameState(val engine: ScapesEngine) : CoroutineScope {
 
     abstract val isMouseGrabbed: Boolean
 
-    abstract fun step(delta: Double)
+    open fun step(delta: Double) {}
 
     fun renderState(gl: GL, delta: Double, updateSize: Boolean): Boolean {
         while (!newPipeline.isEmpty) {

@@ -25,9 +25,8 @@ class GuiWidgetPerformance(
 ) : GuiComponentWidget(parent, "Performance Graph") {
     private val graph: GuiComponentGraph = addVert(0.0, 0.0, -1.0, -1.0) {
         GuiComponentGraph(
-            it, 2, floatArrayOf(1.0f, 0.0f),
-            floatArrayOf(0.0f, 0.0f), floatArrayOf(0.0f, 1.0f),
-            floatArrayOf(1.0f, 1.0f)
+            it, 1, floatArrayOf(1.0f), floatArrayOf(0.0f),
+            floatArrayOf(0.0f), floatArrayOf(1.0f)
         )
     }
 

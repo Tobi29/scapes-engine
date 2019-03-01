@@ -27,8 +27,6 @@ interface Container : ScapesEngineBackend {
 
     fun updateContainer() {}
 
-    fun update(delta: Double) {}
-
     fun stop()
 
     fun cursorCapture(value: Boolean) {}

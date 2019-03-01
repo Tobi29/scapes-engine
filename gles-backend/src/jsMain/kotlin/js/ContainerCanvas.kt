@@ -45,15 +45,16 @@ class ContainerCanvas(
     fun render(
         delta: Double,
         engine: ScapesEngine
-    ) = renderCall { gl ->
-        engine.graphics.render(
-            gl,
-            delta,
-            canvas.width,
-            canvas.height,
-            canvas.width,
-            canvas.height
-        )
+    ): Boolean {
+        val swap = renderCall { gl ->
+            engine.graphics.render(
+                gl, delta,
+                canvas.width, canvas.height,
+                canvas.width, canvas.height
+            )
+        }
+        engine.update(delta)
+        return swap
     }
 
     // TODO: Implement?

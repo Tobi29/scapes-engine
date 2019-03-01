@@ -17,17 +17,14 @@
 package org.tobi29.scapes.engine
 
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.tobi29.scapes.engine.graphics.busyPipeline
-import org.tobi29.stdex.atomic.AtomicReference
+import org.tobi29.scapes.engine.resource.awaitDone
 
 class GameStateStartup(
     engine: ScapesEngine,
     private val switch: () -> GameState
-) : GameState(
-    engine
-) {
-    val readySwitch = AtomicReference<GameState?>(null)
-
+) : GameState(engine) {
     override fun init() {
         switchPipeline { gl ->
             val busy = busyPipeline(gl)
@@ -39,18 +36,12 @@ class GameStateStartup(
         }
         }
         }
-        launch(engine.taskExecutor) {
-            readySwitch.set(switch())
+        launch {
+            val state = withContext(engine.taskExecutor) { switch() }
+            engine.resources.awaitDone()
+            engine.switchState(state)
         }
     }
 
     override val isMouseGrabbed = false
-
-    override fun step(delta: Double) {
-        readySwitch.get()?.let { switch ->
-            if (engine.resources.isDone()) {
-                engine.switchState(switch)
-            }
-        }
-    }
 }
