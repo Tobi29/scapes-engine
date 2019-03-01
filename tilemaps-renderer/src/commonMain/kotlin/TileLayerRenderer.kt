@@ -41,11 +41,6 @@ class TileLayerRenderer(
 ) {
     private val cw = 1 shl cx
     private val ch = 1 shl cy
-    private val atlasMask = (1 shl atlasBits) - 1
-    private val vlimit = Vector2d(
-        (cw * tileDimensions.x).toDouble(),
-        (ch * tileDimensions.y).toDouble()
-    )
     private val addAbove = Vector2i(
         (atlas.maxBy { it.maxSize.x }?.maxSize?.x ?: 0) / tileDimensions.x,
         (atlas.maxBy { it.maxSize.y }?.maxSize?.y ?: 0) / tileDimensions.y
@@ -147,54 +142,70 @@ class TileLayerRenderer(
         }
 
         fun prepare() {
-            val meshes = ArrayList<Pair<Texture, Mesh>>()
-            var atlas: TileAtlas? = null
-            var mesh: Mesh? = null
-            val xc = x shl cx
-            val yc = y shl cy
-            for (yy in 0..ch + addAbove.y) {
-                val yyy = yc + yy
-                for (xx in -addAbove.x..cw) {
-                    val xxx = xc + xx
+            model = map.prepareToMeshes(
+                engine, atlas, atlasBits,
+                tileDimensions, x shl cx, y shl cy, cw, ch,
+                Vector2i(addAbove.x, 0), Vector2i(0, addAbove.y)
+            )
+        }
+    }
+}
 
-                    val tile = map.getOrNull(xxx, yyy) ?: continue
-                    val nextAtlas =
-                        this@TileLayerRenderer.atlas[tile.id ushr atlasBits]
-                    if (nextAtlas !== atlas || mesh == null) {
-                        mesh = Mesh(false, false)
-                        atlas = nextAtlas
-                        meshes.add(atlas.texture to mesh)
-                    }
-                    val entry = atlas.tile(tile.id and atlasMask) ?: continue
+fun Array2<out Tile?>.prepareToMeshes(
+    engine: ScapesEngine, atlas: Array<TileAtlas>, atlasBits: Int,
+    tileDimensions: Vector2i, x: Int, y: Int, width: Int, height: Int,
+    overscanMin: Vector2i = Vector2i.ZERO, overscanMax: Vector2i = Vector2i.ZERO
+): Array<Pair<Texture, Model>> {
+    val meshes = ArrayList<Pair<Texture, Mesh>>()
+    var currentAtlas: TileAtlas? = null
+    var mesh: Mesh? = null
 
-                    val yo = tileDimensions.y - tile.size.y
-                    val vx = (xx * tileDimensions.x).toDouble()
-                    val vy = (yy * tileDimensions.y + yo).toDouble()
-                    val vxh = vx + tile.size.x
-                    val vyh = vy + tile.size.y
-                    val vx1 = clamp(vx, 0.0, vlimit.x)
-                    val vy1 = clamp(vy, 0.0, vlimit.y)
-                    val vx2 = clamp(vxh, 0.0, vlimit.x)
-                    val vy2 = clamp(vyh, 0.0, vlimit.y)
+    val atlasMask = (1 shl atlasBits) - 1
+    val vlimit = Vector2d(
+        (width * tileDimensions.x).toDouble(),
+        (height * tileDimensions.y).toDouble()
+    )
 
-                    if (vx1 != vx2 && vy1 != vy2) {
-                        val tx1 = entry.marginX((vx1 - vx) / tile.size.x)
-                        val ty1 = entry.marginY((vy1 - vy) / tile.size.y)
-                        val tx2 = entry.marginX((vx2 - vx) / tile.size.x)
-                        val ty2 = entry.marginY((vy2 - vy) / tile.size.y)
+    for (yy in -overscanMin.y..height + overscanMax.y) {
+        val yyy = y + yy
+        for (xx in -overscanMin.x..width + overscanMax.x) {
+            val xxx = x + xx
 
-                        mesh.addVertex(vx1, vy1, 0.0, tx1, ty1)
-                        mesh.addVertex(vx2, vy1, 0.0, tx2, ty1)
-                        mesh.addVertex(vx2, vy2, 0.0, tx2, ty2)
-                        mesh.addVertex(vx1, vy2, 0.0, tx1, ty2)
-                    }
-                }
+            val tile = getOrNull(xxx, yyy) ?: continue
+            val nextAtlas = atlas[tile.id ushr atlasBits]
+            if (nextAtlas !== currentAtlas || mesh == null) {
+                mesh = Mesh(false, false)
+                currentAtlas = nextAtlas
+                meshes.add(currentAtlas.texture to mesh)
             }
-            model = Array(meshes.size) {
-                meshes[it].let { (texture, mesh) ->
-                    texture to mesh.finish(engine.graphics)
-                }
+            val entry = currentAtlas.tile(tile.id and atlasMask) ?: continue
+
+            val yo = tileDimensions.y - tile.size.y
+            val vx = (xx * tileDimensions.x).toDouble()
+            val vy = (yy * tileDimensions.y + yo).toDouble()
+            val vxh = vx + tile.size.x
+            val vyh = vy + tile.size.y
+            val vx1 = clamp(vx, 0.0, vlimit.x)
+            val vy1 = clamp(vy, 0.0, vlimit.y)
+            val vx2 = clamp(vxh, 0.0, vlimit.x)
+            val vy2 = clamp(vyh, 0.0, vlimit.y)
+
+            if (vx1 != vx2 && vy1 != vy2) {
+                val tx1 = entry.marginX((vx1 - vx) / tile.size.x)
+                val ty1 = entry.marginY((vy1 - vy) / tile.size.y)
+                val tx2 = entry.marginX((vx2 - vx) / tile.size.x)
+                val ty2 = entry.marginY((vy2 - vy) / tile.size.y)
+
+                mesh.addVertex(vx1, vy1, 0.0, tx1, ty1)
+                mesh.addVertex(vx2, vy1, 0.0, tx2, ty1)
+                mesh.addVertex(vx2, vy2, 0.0, tx2, ty2)
+                mesh.addVertex(vx1, vy2, 0.0, tx1, ty2)
             }
+        }
+    }
+    return Array(meshes.size) {
+        meshes[it].let { (texture, mesh) ->
+            texture to mesh.finish(engine.graphics)
         }
     }
 }
