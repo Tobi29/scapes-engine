@@ -92,7 +92,7 @@ data class MutableVector3i(
 
     @InlineUtility
     @Suppress("NOTHING_TO_INLINE")
-    inline fun setValue(
+    inline operator fun setValue(
         thisRef: Any?, property: KProperty<*>, value: ReadVector3i
     ) {
         set(value)
